@@ -1,0 +1,73 @@
+name: Lint
+# This workflow is run on every pull request and push to master
+# The `golangci` will pass without running if no *.{go, mod, sum} files have been changed.
+on:
+  pull_request:
+    paths:
+      - "**.go"
+      - "go.mod"
+      - "go.sum"
+  push:
+    branches:
+      - main
+      - "release/*"
+    paths:
+      - "**.go"
+      - "go.mod"
+      - "go.sum"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  golangci:
+    env:
+      # for private repo access
+      GOPRIVATE: github.com/initia-labs/*
+      GITHUB_ACCESS_TOKEN: ${{ secrets.GH_READ_TOKEN }}
+    name: golangci-lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-go@v2.1.4
+        with:
+          go-version: 1.19
+      - uses: technote-space/get-diff-action@v5
+        id: git_diff
+        with:
+          PATTERNS: |
+            **/**.go
+            go.mod
+            go.sum
+      # for private repo access
+      - run: git config --global url.https://${GITHUB_ACCESS_TOKEN}:x-oauth-basic@github.com/.insteadOf https://github.com/
+      - name: run go linters
+        run: |
+          make tools 
+          make lint
+        if: env.GIT_DIFF
+  # Use --check or --exit-code when available (Go 1.19?)
+  # https://github.com/golang/go/issues/27005
+  tidy:
+    env:
+      # for private repo access
+      GOPRIVATE: github.com/initia-labs/*
+      GITHUB_ACCESS_TOKEN: ${{ secrets.GH_READ_TOKEN }}
+    runs-on: ubuntu-latest
+    name: tidy
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+      # for private repo access
+      - run: git config --global url.https://${GITHUB_ACCESS_TOKEN}:x-oauth-basic@github.com/.insteadOf https://github.com/
+      - run: |
+          go mod tidy
+          CHANGES_IN_REPO=$(git status --porcelain)
+          if [[ -n "$CHANGES_IN_REPO" ]]; then
+            echo "Repository is dirty. Showing 'git status' and 'git --no-pager diff' for debugging now:"
+            git status && git --no-pager diff
+            exit 1
+          fi

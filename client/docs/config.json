@@ -1,0 +1,238 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Cosmos SDK - Legacy REST and gRPC Gateway docs",
+    "description": "A REST interface for state queries, legacy transactions",
+    "version": "1.0.0"
+  },
+  "apis": [
+    {
+      "url": "./tmp-swagger-gen/cosmos/auth/v1beta1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "AuthParams"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/cosmos/authz/v1beta1/query.swagger.json"
+    },
+    {
+      "url": "./tmp-swagger-gen/cosmos/bank/v1beta1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "BankParams"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/cosmos/base/tendermint/v1beta1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "BaseParams"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/cosmos/evidence/v1beta1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "EvidenceParams"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/cosmos/gov/v1beta1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "GovParams"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/cosmos/gov/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "GovV1Params",
+          "Proposal": "GovV1Proposal",
+          "Proposals": "GovV1Proposal",
+          "Vote": "GovV1Vote",
+          "Votes": "GovV1Votes",
+          "Deposit": "GovV1Deposit",
+          "Deposits": "GovV1Deposit",
+          "TallyResult": "GovV1TallyResult"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/cosmos/params/v1beta1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "Params"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/cosmos/slashing/v1beta1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "SlashingParams"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/cosmos/distribution/v1beta1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "DistributionParams"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/cosmos/tx/v1beta1/service.swagger.json",
+      "dereference": {
+        "circular": "ignore"
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/cosmos/upgrade/v1beta1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "UpgradeParams"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/cosmos/feegrant/v1beta1/query.swagger.json"
+    },
+    {
+      "url": "./tmp-swagger-gen/cosmos/group/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "GroupParams",
+          "Proposal": "GroupProposal",
+          "TallyResult": "GroupTallyResult"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/cosmos/consensus/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "GroupParams",
+          "Proposal": "GroupProposal",
+          "TallyResult": "GroupTallyResult"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/ibc/core/channel/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "IBCChannelParams"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/ibc/core/client/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "IBCClientParams",
+          "UpgradedConsensusState": "IBCUpgradedConsensusState"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/ibc/core/connection/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "IBCConnectionParams"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/ibc/applications/transfer/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "IBCTransferParams"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/ibc/applications/interchain_accounts/controller/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "IBCInterChainAccountsControllerParams",
+          "InterchainAccount": "IBCInterChainAccountsControllerInterChainAccount"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/ibc/applications/interchain_accounts/host/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "IBCInterChainAccountsHostParams",
+          "InterchainAccount": "IBCInterChainAccountsHostInterChainAccount"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/ibc/applications/nft_transfer/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "IBCNftParams",
+          "EscrowAddress": "IBCNftEscrowAddress"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/ibc/applications/fee/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "FeeParams"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/initia/intertx/v1/query.swagger.json"
+    },
+    {
+      "url": "./tmp-swagger-gen/initia/reward/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "RewardParams"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/initia/distribution/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "CustomParams",
+          "DelegationTotalRewards": "CustomDelegationTotalRewards",
+          "DelegationRewards": "CustomDelegationRewards",
+          "ValidatorCommission": "CustomValidatorCommission",
+          "ValidatorOutstandingRewards": "CustomValidatorOutstandingRewards",
+          "ValidatorSlashes": "CustomValidatorSlashes"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/initia/mstaking/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "StakingParams",
+          "DelegatorValidators": "StakingDelegatorValidators"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/initia/move/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "MoveParams"
+        }
+      }
+    }
+  ]
+}

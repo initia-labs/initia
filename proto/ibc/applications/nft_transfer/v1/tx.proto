@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+package ibc.applications.nft_transfer.v1;
+
+import "amino/amino.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "cosmos/msg/v1/msg.proto";
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+import "ibc/applications/nft_transfer/v1/types.proto";
+import "ibc/core/client/v1/client.proto";
+
+option go_package = "github.com/initia-labs/initia/x/ibc/nft-transfer/types";
+
+// Msg defines the ibc/nft Msg service.
+service Msg {
+  // NftTransfer defines a rpc handler method for MsgNftTransfer.
+  rpc NftTransfer(MsgNftTransfer) returns (MsgNftTransferResponse);
+
+  // UpdateParams defines an operation for updating the x/ibc/nft-transfer module
+  // parameters.
+  rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
+}
+
+// MsgNftTransfer defines a msg to transfer non-fungible tokens (i.e NFTs) between
+// ics721-1 enabled chains. See ICS Spec here:
+// https://github.com/cosmos/ibc/tree/main/spec/app/ics-721-nft-transfer
+message MsgNftTransfer {
+  option (cosmos.msg.v1.signer) = "sender";
+  option (amino.name) = "nft-transfer/MsgNftTransfer";
+
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  // the port on which the packet will be sent
+  string source_port = 1 [(gogoproto.moretags) = "yaml:\"source_port\""];
+  // the channel by which the packet will be sent
+  string source_channel = 2 [(gogoproto.moretags) = "yaml:\"source_channel\""];
+  // the class id is the struct tag of the extension
+  string class_id = 3 [(gogoproto.moretags) = "yaml:\"class_id\""];
+  // the token id of the NFT
+  repeated string token_ids = 4 [(gogoproto.moretags) = "yaml:\"token_ids\""];
+  // the sender address
+  string sender = 5 [
+    (gogoproto.moretags) = "yaml:\"sender\"",
+    (cosmos_proto.scalar) = "cosmos.AddressString"
+  ];
+  // the recipient address on the destination chain
+  string receiver = 6 [
+    (gogoproto.moretags) = "yaml:\"receiver\"",
+    (cosmos_proto.scalar) = "cosmos.AddressString"
+  ];
+  // Timeout height relative to the current block height.
+  // The timeout is disabled when set to 0.
+  ibc.core.client.v1.Height timeout_height = 7 [
+    (gogoproto.moretags) = "yaml:\"timeout_height\"",
+    (gogoproto.nullable) = false
+  ];
+  // Timeout timestamp in absolute nanoseconds since unix epoch.
+  // The timeout is disabled when set to 0.
+  uint64 timeout_timestamp = 8 [(gogoproto.moretags) = "yaml:\"timeout_timestamp\""];
+  // optional memo
+  string memo = 9;
+}
+
+// MsgNftTransferResponse defines the Msg/NftTransfer response type.
+message MsgNftTransferResponse {
+  // sequence number of the nft transfer packet sent
+  uint64 sequence = 1;
+}
+
+// MsgUpdateParams is the Msg/UpdateParams request type.
+message MsgUpdateParams {
+  option (cosmos.msg.v1.signer) = "authority";
+  option (amino.name) = "nft-transfer/MsgUpdateParams";
+
+  // authority is the address that controls the module (defaults to x/gov unless overwritten).
+  string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // params defines the x/staking parameters to update.
+  //
+  // NOTE: All parameters must be supplied.
+  Params params = 2 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+// MsgUpdateParamsResponse defines the response structure for executing a
+// MsgUpdateParams message.
+//
+// Since: cosmos-sdk 0.47
+message MsgUpdateParamsResponse {}

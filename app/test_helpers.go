@@ -1,0 +1,172 @@
+package app
+
+// DONTCOVER
+
+import (
+	"encoding/json"
+	"time"
+
+	dbm "github.com/cometbft/cometbft-db"
+	abci "github.com/cometbft/cometbft/abci/types"
+	"github.com/cometbft/cometbft/libs/log"
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	tmtypes "github.com/cometbft/cometbft/types"
+
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
+	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
+
+	moveconfig "github.com/initia-labs/initia/x/move/config"
+)
+
+// defaultConsensusParams defines the default Tendermint consensus params used in
+// InitiaApp testing.
+var defaultConsensusParams = &tmproto.ConsensusParams{
+	Block: &tmproto.BlockParams{
+		MaxBytes: 8000000,
+		MaxGas:   1234000000,
+	},
+	Evidence: &tmproto.EvidenceParams{
+		MaxAgeNumBlocks: 302400,
+		MaxAgeDuration:  504 * time.Hour, // 3 weeks is the max duration
+		MaxBytes:        10000,
+	},
+	Validator: &tmproto.ValidatorParams{
+		PubKeyTypes: []string{
+			tmtypes.ABCIPubKeyTypeEd25519,
+		},
+	},
+}
+
+func getOrCreateMemDB(db *dbm.DB) dbm.DB {
+	if db != nil {
+		return *db
+	}
+	return dbm.NewMemDB()
+}
+
+func setup(db *dbm.DB, withGenesis bool) (*InitiaApp, GenesisState) {
+	encCdc := MakeEncodingConfig()
+	app := NewInitiaApp(
+		log.NewNopLogger(),
+		getOrCreateMemDB(db),
+		nil,
+		true,
+		moveconfig.DefaultMoveConfig(),
+		simtestutil.EmptyAppOptions{},
+	)
+
+	if withGenesis {
+		return app, NewDefaultGenesisState(encCdc.Marshaler).
+			ConfigureBondDenom(encCdc.Marshaler, BondDenom)
+	}
+
+	return app, GenesisState{}
+}
+
+// SetupWithGenesisAccounts setup initiaapp with genesis account
+func SetupWithGenesisAccounts(
+	valSet *tmtypes.ValidatorSet,
+	genAccs []authtypes.GenesisAccount,
+	balances ...banktypes.Balance,
+) *InitiaApp {
+	app, genesisState := setup(nil, true)
+
+	// set genesis accounts
+	authGenesis := authtypes.NewGenesisState(authtypes.DefaultParams(), genAccs)
+	genesisState[authtypes.ModuleName] = app.AppCodec().MustMarshalJSON(authGenesis)
+
+	// allow empty validator
+	if valSet == nil || len(valSet.Validators) == 0 {
+		privVal := ed25519.GenPrivKey()
+		pubKey, err := cryptocodec.ToTmPubKeyInterface(privVal.PubKey())
+		if err != nil {
+			panic(err)
+		}
+
+		validator := tmtypes.NewValidator(pubKey, 1)
+		valSet = tmtypes.NewValidatorSet([]*tmtypes.Validator{validator})
+	}
+
+	if genAccs == nil || len(genAccs) == 0 {
+		privAcc := secp256k1.GenPrivKey()
+		genAccs = []authtypes.GenesisAccount{
+			authtypes.NewBaseAccount(privAcc.PubKey().Address().Bytes(), privAcc.PubKey(), 0, 0),
+		}
+	}
+
+	validators := make([]stakingtypes.Validator, 0, len(valSet.Validators))
+	delegations := make([]stakingtypes.Delegation, 0, len(valSet.Validators))
+
+	bondAmt := sdk.TokensFromConsensusPower(1, sdk.DefaultPowerReduction)
+	bondCoins := sdk.NewCoins(sdk.NewCoin(BondDenom, bondAmt))
+
+	for _, val := range valSet.Validators {
+		pk, err := cryptocodec.FromTmPubKeyInterface(val.PubKey)
+		if err != nil {
+			panic(err)
+		}
+		pkAny, err := codectypes.NewAnyWithValue(pk)
+		if err != nil {
+			panic(err)
+		}
+
+		validator := stakingtypes.Validator{
+			OperatorAddress: sdk.ValAddress(val.Address).String(),
+			ConsensusPubkey: pkAny,
+			Jailed:          false,
+			Status:          stakingtypes.Bonded,
+			Tokens:          bondCoins,
+			DelegatorShares: sdk.NewDecCoins(sdk.NewDecCoinFromDec(BondDenom, sdk.OneDec())),
+			Description:     stakingtypes.Description{},
+			UnbondingHeight: int64(0),
+			UnbondingTime:   time.Unix(0, 0).UTC(),
+			Commission:      stakingtypes.NewCommission(sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec()),
+		}
+
+		validators = append(validators, validator)
+		delegations = append(delegations, stakingtypes.NewDelegation(genAccs[0].GetAddress(), val.Address.Bytes(), sdk.NewDecCoins(sdk.NewDecCoinFromDec(BondDenom, sdk.OneDec()))))
+	}
+
+	// set validators and delegations
+	var stakingGenesis stakingtypes.GenesisState
+	app.AppCodec().MustUnmarshalJSON(genesisState[stakingtypes.ModuleName], &stakingGenesis)
+
+	// add bonded amount to bonded pool module account
+	balances = append(balances, banktypes.Balance{
+		Address: authtypes.NewModuleAddress(stakingtypes.BondedPoolName).String(),
+		Coins:   sdk.Coins{sdk.NewCoin(BondDenom, bondAmt.Mul(sdk.NewInt(int64(len(valSet.Validators)))))},
+	})
+
+	// set validators and delegations
+	stakingGenesis = *stakingtypes.NewGenesisState(stakingGenesis.Params, validators, delegations)
+	genesisState[stakingtypes.ModuleName] = app.AppCodec().MustMarshalJSON(&stakingGenesis)
+
+	// update total supply
+	bankGenesis := banktypes.NewGenesisState(banktypes.DefaultGenesisState().Params, balances, sdk.NewCoins(), []banktypes.Metadata{}, []banktypes.SendEnabled{})
+	genesisState[banktypes.ModuleName] = app.AppCodec().MustMarshalJSON(bankGenesis)
+
+	stateBytes, err := json.MarshalIndent(genesisState, "", " ")
+	if err != nil {
+		panic(err)
+	}
+
+	app.InitChain(
+		abci.RequestInitChain{
+			Validators:      []abci.ValidatorUpdate{},
+			ConsensusParams: defaultConsensusParams,
+			AppStateBytes:   stateBytes,
+		},
+	)
+
+	app.Commit()
+	app.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{Height: app.LastBlockHeight() + 1}})
+
+	return app
+}

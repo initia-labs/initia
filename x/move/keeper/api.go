@@ -1,0 +1,68 @@
+package keeper
+
+import (
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"github.com/initia-labs/initia/x/move/types"
+	vmapi "github.com/initia-labs/initiavm/api"
+	vmtypes "github.com/initia-labs/initiavm/types"
+)
+
+var _ vmapi.GoAPI = &GoApi{}
+
+type GoApi struct {
+	Keeper
+	ctx sdk.Context
+}
+
+func NewApi(k Keeper, ctx sdk.Context) GoApi {
+	return GoApi{k, ctx}
+}
+
+// GetAccountInfo return account info (account number, sequence)
+func (api GoApi) GetAccountInfo(addr vmtypes.AccountAddress) (bool /* found */, uint64 /* account number */, uint64 /* sequence */) {
+	sdkAddr := types.ConvertVMAddressToSDKAddress(addr)
+	if api.authKeeper.HasAccount(api.ctx, sdkAddr) {
+		acc := api.authKeeper.GetAccount(api.ctx, sdkAddr)
+		return true, acc.GetAccountNumber(), acc.GetSequence()
+	}
+
+	return false, 0, 0
+}
+
+// AmountToShare convert amount to share
+func (api GoApi) AmountToShare(valBz []byte, metadata vmtypes.AccountAddress, amount uint64) (uint64, error) {
+	valAddr, err := sdk.ValAddressFromBech32(string(valBz))
+	if err != nil {
+		return 0, err
+	}
+
+	denom, err := types.DenomFromMetadataAddress(api.ctx, NewMoveBankKeeper(&api.Keeper), metadata)
+	if err != nil {
+		return 0, err
+	}
+
+	share, err := api.Keeper.AmountToShare(api.ctx, valAddr, sdk.NewCoin(denom, sdk.NewIntFromUint64(amount)))
+	return share.Uint64(), err
+}
+
+// ShareToAmount convert share to amount
+func (api GoApi) ShareToAmount(valBz []byte, metadata vmtypes.AccountAddress, share uint64) (uint64, error) {
+	valAddr, err := sdk.ValAddressFromBech32(string(valBz))
+	if err != nil {
+		return 0, err
+	}
+
+	denom, err := types.DenomFromMetadataAddress(api.ctx, NewMoveBankKeeper(&api.Keeper), metadata)
+	if err != nil {
+		return 0, err
+	}
+
+	amount, err := api.Keeper.ShareToAmount(api.ctx, valAddr, sdk.NewDecCoin(denom, sdk.NewIntFromUint64(share)))
+	return amount.Uint64(), err
+}
+
+// UnbondTimestamp return staking unbond time
+func (api GoApi) UnbondTimestamp() uint64 {
+	return uint64(api.ctx.BlockTime().Unix()) + uint64(api.StakingKeeper.UnbondingTime(api.ctx))
+}

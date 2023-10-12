@@ -1,0 +1,11 @@
+[package]
+name = "test1"
+version = "0.0.0"
+
+[dependencies]
+InitiaStdlib = { local = "../../../../../initiavm/precompile/modules/initia_stdlib"  }
+
+[addresses]
+initia_std = "0x1"
+std = "0x1"
+TestAccount = "0x2"

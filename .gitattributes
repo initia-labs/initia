@@ -1,0 +1,3 @@
+client/docs/* linguist-vendored=true
+client/docs/swagger-ui/* linguist-vendored=true
+docs/* linguist-documentation=true

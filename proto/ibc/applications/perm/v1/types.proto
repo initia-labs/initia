@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package ibc.applications.perm.v1;
+
+option go_package = "github.com/initia-labs/initia/x/ibc/perm/types";
+
+// ChannelRelayer is used to specifiy the permissioned relayer for
+// the specific channel.
+message ChannelRelayer {
+  string channel = 1;
+  string relayer = 2;
+}
