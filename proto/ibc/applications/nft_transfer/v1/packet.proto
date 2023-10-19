@@ -10,22 +10,22 @@ import "gogoproto/gogo.proto";
 // See NonFungibleTokenPacketData spec:
 // https://github.com/cosmos/ibc/tree/main/spec/app/ics-721-nft-transfer
 message NonFungibleTokenPacketData {
-    // collection id == extension struct tag
-    string class_id = 1 [(gogoproto.moretags) = "yaml:\"class_id\""]; 
-    // collection url
-    string class_uri = 2 [(gogoproto.moretags) = "yaml:\"class_uri\""]; 
-    // collection data
-    string class_data = 3 [(gogoproto.moretags) = "yaml:\"class_data\""]; 
-    // nft token ids 
-    repeated string token_ids = 4 [(gogoproto.moretags) = "yaml:\"token_ids\""];
-    // nft token uris
-    repeated string token_uris = 5 [(gogoproto.moretags) = "yaml:\"token_uris\""];
-    // nft token data array
-    repeated string token_data = 6 [(gogoproto.moretags) = "yaml:\"token_data\""];
-    // sender of nft
-    string sender = 7 [(gogoproto.moretags) = "yaml:\"sender\""];
-    // receiver of nft
-    string receiver = 8 [(gogoproto.moretags) = "yaml:\"receiver\""];
-    // optional memo field for future use
-    string memo = 9 [(gogoproto.moretags) = "yaml:\"memo\""];
+  // collection id == extension struct tag
+  string class_id = 1 [(gogoproto.moretags) = "yaml:\"class_id\""];
+  // collection url
+  string class_uri = 2 [(gogoproto.moretags) = "yaml:\"class_uri\""];
+  // collection data
+  string class_data = 3 [(gogoproto.moretags) = "yaml:\"class_data\""];
+  // nft token ids
+  repeated string token_ids = 4 [(gogoproto.moretags) = "yaml:\"token_ids\""];
+  // nft token uris
+  repeated string token_uris = 5 [(gogoproto.moretags) = "yaml:\"token_uris\""];
+  // nft token data array
+  repeated string token_data = 6 [(gogoproto.moretags) = "yaml:\"token_data\""];
+  // sender of nft
+  string sender = 7 [(gogoproto.moretags) = "yaml:\"sender\""];
+  // receiver of nft
+  string receiver = 8 [(gogoproto.moretags) = "yaml:\"receiver\""];
+  // optional memo field for future use
+  string memo = 9 [(gogoproto.moretags) = "yaml:\"memo\""];
 }

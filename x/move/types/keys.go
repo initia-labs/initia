@@ -89,12 +89,12 @@ func GetModuleKey(addr vmtypes.AccountAddress, moduleName string) ([]byte, error
 		return nil, err
 	}
 
-	return append(append([]byte(addr.Bytes()), ModuleSeparator), bz...), nil
+	return append(append(addr.Bytes(), ModuleSeparator), bz...), nil
 }
 
 // GetResourcePrefix returns the prefix key of an account resource store
 func GetResourcePrefix(addr vmtypes.AccountAddress) []byte {
-	return append([]byte(addr.Bytes()), ResourceSeparator)
+	return append(addr.Bytes(), ResourceSeparator)
 }
 
 // GetResourceKey returns the store key of the Move resource
@@ -104,20 +104,20 @@ func GetResourceKey(addr vmtypes.AccountAddress, structTag vmtypes.StructTag) ([
 		return nil, err
 	}
 
-	return append(append([]byte(addr.Bytes()), ResourceSeparator), bz...), nil
+	return append(append(addr.Bytes(), ResourceSeparator), bz...), nil
 }
 
 // GetTableInfoKey returns the store key of the table info
 func GetTableInfoKey(tableAddr vmtypes.AccountAddress) []byte {
-	return append([]byte(tableAddr.Bytes()), TableInfoSeparator)
+	return append(tableAddr.Bytes(), TableInfoSeparator)
 }
 
 // GetTableEntryPrefix returns the prefix key of an table store
 func GetTableEntryPrefix(tableAddr vmtypes.AccountAddress) []byte {
-	return append([]byte(tableAddr.Bytes()), TableEntrySeparator)
+	return append(tableAddr.Bytes(), TableEntrySeparator)
 }
 
 // GetTableEntryKey returns the store key of the Move resource
 func GetTableEntryKey(tableAddr vmtypes.AccountAddress, key []byte) []byte {
-	return append(append([]byte(tableAddr.Bytes()), TableEntrySeparator), key...)
+	return append(append(tableAddr.Bytes(), TableEntrySeparator), key...)
 }

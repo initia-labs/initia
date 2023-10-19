@@ -2,6 +2,7 @@ package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	"github.com/initia-labs/initia/x/move/types"
 	vmapi "github.com/initia-labs/initiavm/api"
@@ -20,14 +21,27 @@ func NewApi(k Keeper, ctx sdk.Context) GoApi {
 }
 
 // GetAccountInfo return account info (account number, sequence)
-func (api GoApi) GetAccountInfo(addr vmtypes.AccountAddress) (bool /* found */, uint64 /* account number */, uint64 /* sequence */) {
+func (api GoApi) GetAccountInfo(addr vmtypes.AccountAddress) (bool /* found */, uint64 /* account number */, uint64 /* sequence */, uint8 /* account_type */) {
 	sdkAddr := types.ConvertVMAddressToSDKAddress(addr)
 	if api.authKeeper.HasAccount(api.ctx, sdkAddr) {
 		acc := api.authKeeper.GetAccount(api.ctx, sdkAddr)
-		return true, acc.GetAccountNumber(), acc.GetSequence()
+		var accType uint8
+		switch acc.(type) {
+		case *authtypes.BaseAccount:
+			accType = vmtypes.AccountType_Base
+		case *types.ObjectAccount:
+			accType = vmtypes.AccountType_Object
+		case *types.TableAccount:
+			accType = vmtypes.AccountType_Table
+		case *authtypes.ModuleAccount:
+			accType = vmtypes.AccountType_Module
+		default:
+			panic("unknown account type")
+		}
+		return true, acc.GetAccountNumber(), acc.GetSequence(), accType
 	}
 
-	return false, 0, 0
+	return false, 0, 0, 0
 }
 
 // AmountToShare convert amount to share

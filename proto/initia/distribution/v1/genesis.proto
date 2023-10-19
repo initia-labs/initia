@@ -108,7 +108,8 @@ message GenesisState {
   Params params = 1 [(gogoproto.nullable) = false, (gogoproto.moretags) = "yaml:\"params\""];
 
   // fee_pool defines the fee pool at genesis.
-  cosmos.distribution.v1beta1.FeePool fee_pool = 2 [(gogoproto.nullable) = false, (gogoproto.moretags) = "yaml:\"fee_pool\""];
+  cosmos.distribution.v1beta1.FeePool fee_pool = 2
+      [(gogoproto.nullable) = false, (gogoproto.moretags) = "yaml:\"fee_pool\""];
 
   // fee_pool defines the delegator withdraw infos at genesis.
   repeated cosmos.distribution.v1beta1.DelegatorWithdrawInfo delegator_withdraw_infos = 3

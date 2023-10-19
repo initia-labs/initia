@@ -23,7 +23,7 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	// we also need to update `LIBINITIAVM_VERSION` of images/private/Dockerfile#5
-	github.com/initia-labs/initiavm v0.1.2-beta.0
+	github.com/initia-labs/initiavm v0.1.2-beta.0.0.20231019083945-cfd3e33ab691
 	github.com/novifinancial/serde-reflection/serde-generate/runtime/golang v0.0.0-20220519162058-e5cd3c3b3f3a
 	github.com/pelletier/go-toml v1.9.5
 	github.com/pkg/errors v0.9.1

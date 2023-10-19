@@ -42976,7 +42976,7 @@ paths:
                         weight:
                           type: string
                       description: |-
-                        RewardWeight represents reward allocation ratio between 
+                        RewardWeight represents reward allocation ratio between
                         pools.
             description: >-
               QueryParamsResponse is the response type for the Query/Params RPC
@@ -76508,7 +76508,7 @@ definitions:
             weight:
               type: string
           description: |-
-            RewardWeight represents reward allocation ratio between 
+            RewardWeight represents reward allocation ratio between
             pools.
     description: Params defines the set of params for the distribution module.
   initia.distribution.v1.QueryDelegationRewardsResponse:
@@ -76635,7 +76635,7 @@ definitions:
                 weight:
                   type: string
               description: |-
-                RewardWeight represents reward allocation ratio between 
+                RewardWeight represents reward allocation ratio between
                 pools.
     description: QueryParamsResponse is the response type for the Query/Params RPC method.
   initia.distribution.v1.QueryValidatorCommissionResponse:
@@ -76779,7 +76779,7 @@ definitions:
       weight:
         type: string
     description: |-
-      RewardWeight represents reward allocation ratio between 
+      RewardWeight represents reward allocation ratio between
       pools.
   initia.distribution.v1.ValidatorAccumulatedCommission:
     type: object
