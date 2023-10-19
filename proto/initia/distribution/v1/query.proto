@@ -127,8 +127,7 @@ message QueryDelegationRewardsRequest {
 // Query/DelegationRewards RPC method.
 message QueryDelegationRewardsResponse {
   // rewards defines the rewards accrued by a delegation.
-  repeated DecPool rewards = 1
-      [(gogoproto.nullable) = false, (gogoproto.castrepeated) = "DecPools"];
+  repeated DecPool rewards = 1 [(gogoproto.nullable) = false, (gogoproto.castrepeated) = "DecPools"];
 }
 
 // QueryDelegationTotalRewardsRequest is the request type for the
@@ -146,6 +145,5 @@ message QueryDelegationTotalRewardsResponse {
   // rewards defines all the rewards accrued by a delegator.
   repeated DelegationDelegatorReward rewards = 1 [(gogoproto.nullable) = false];
   // total defines the sum of all the rewards.
-  repeated DecPool total = 2
-      [(gogoproto.nullable) = false, (gogoproto.castrepeated) = "DecPools"];
+  repeated DecPool total = 2 [(gogoproto.nullable) = false, (gogoproto.castrepeated) = "DecPools"];
 }

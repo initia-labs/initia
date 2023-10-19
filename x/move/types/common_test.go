@@ -47,6 +47,8 @@ var (
 	addr1 = sdk.AccAddress(priv1.PubKey().Address())
 	priv2 = secp256k1.GenPrivKey()
 	addr2 = sdk.AccAddress(priv2.PubKey().Address())
+	priv3 = secp256k1.GenPrivKey()
+	addr3 = sdk.AccAddress(priv3.PubKey().Address())
 
 	valKey = ed25519.GenPrivKey()
 

@@ -17,7 +17,7 @@ import (
 var _ protoreflect.List = (*_GenesisState_3_list)(nil)
 
 type _GenesisState_3_list struct {
-	list *[]string
+	list *[][]byte
 }
 
 func (x *_GenesisState_3_list) Len() int {
@@ -28,23 +28,23 @@ func (x *_GenesisState_3_list) Len() int {
 }
 
 func (x *_GenesisState_3_list) Get(i int) protoreflect.Value {
-	return protoreflect.ValueOfString((*x.list)[i])
+	return protoreflect.ValueOfBytes((*x.list)[i])
 }
 
 func (x *_GenesisState_3_list) Set(i int, value protoreflect.Value) {
-	valueUnwrapped := value.String()
+	valueUnwrapped := value.Bytes()
 	concreteValue := valueUnwrapped
 	(*x.list)[i] = concreteValue
 }
 
 func (x *_GenesisState_3_list) Append(value protoreflect.Value) {
-	valueUnwrapped := value.String()
+	valueUnwrapped := value.Bytes()
 	concreteValue := valueUnwrapped
 	*x.list = append(*x.list, concreteValue)
 }
 
 func (x *_GenesisState_3_list) AppendMutable() protoreflect.Value {
-	panic(fmt.Errorf("AppendMutable can not be called on message GenesisState at list field CoinWhitelist as it is not of Message kind"))
+	panic(fmt.Errorf("AppendMutable can not be called on message GenesisState at list field Stdlibs as it is not of Message kind"))
 }
 
 func (x *_GenesisState_3_list) Truncate(n int) {
@@ -52,8 +52,8 @@ func (x *_GenesisState_3_list) Truncate(n int) {
 }
 
 func (x *_GenesisState_3_list) NewElement() protoreflect.Value {
-	v := ""
-	return protoreflect.ValueOfString(v)
+	var v []byte
+	return protoreflect.ValueOfBytes(v)
 }
 
 func (x *_GenesisState_3_list) IsValid() bool {
@@ -63,7 +63,7 @@ func (x *_GenesisState_3_list) IsValid() bool {
 var _ protoreflect.List = (*_GenesisState_4_list)(nil)
 
 type _GenesisState_4_list struct {
-	list *[][]byte
+	list *[]*Module
 }
 
 func (x *_GenesisState_4_list) Len() int {
@@ -74,32 +74,37 @@ func (x *_GenesisState_4_list) Len() int {
 }
 
 func (x *_GenesisState_4_list) Get(i int) protoreflect.Value {
-	return protoreflect.ValueOfBytes((*x.list)[i])
+	return protoreflect.ValueOfMessage((*x.list)[i].ProtoReflect())
 }
 
 func (x *_GenesisState_4_list) Set(i int, value protoreflect.Value) {
-	valueUnwrapped := value.Bytes()
-	concreteValue := valueUnwrapped
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*Module)
 	(*x.list)[i] = concreteValue
 }
 
 func (x *_GenesisState_4_list) Append(value protoreflect.Value) {
-	valueUnwrapped := value.Bytes()
-	concreteValue := valueUnwrapped
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*Module)
 	*x.list = append(*x.list, concreteValue)
 }
 
 func (x *_GenesisState_4_list) AppendMutable() protoreflect.Value {
-	panic(fmt.Errorf("AppendMutable can not be called on message GenesisState at list field Stdlibs as it is not of Message kind"))
+	v := new(Module)
+	*x.list = append(*x.list, v)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
 
 func (x *_GenesisState_4_list) Truncate(n int) {
+	for i := n; i < len(*x.list); i++ {
+		(*x.list)[i] = nil
+	}
 	*x.list = (*x.list)[:n]
 }
 
 func (x *_GenesisState_4_list) NewElement() protoreflect.Value {
-	var v []byte
-	return protoreflect.ValueOfBytes(v)
+	v := new(Module)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
 
 func (x *_GenesisState_4_list) IsValid() bool {
@@ -109,7 +114,7 @@ func (x *_GenesisState_4_list) IsValid() bool {
 var _ protoreflect.List = (*_GenesisState_5_list)(nil)
 
 type _GenesisState_5_list struct {
-	list *[]*Module
+	list *[]*Resource
 }
 
 func (x *_GenesisState_5_list) Len() int {
@@ -125,18 +130,18 @@ func (x *_GenesisState_5_list) Get(i int) protoreflect.Value {
 
 func (x *_GenesisState_5_list) Set(i int, value protoreflect.Value) {
 	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*Module)
+	concreteValue := valueUnwrapped.Interface().(*Resource)
 	(*x.list)[i] = concreteValue
 }
 
 func (x *_GenesisState_5_list) Append(value protoreflect.Value) {
 	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*Module)
+	concreteValue := valueUnwrapped.Interface().(*Resource)
 	*x.list = append(*x.list, concreteValue)
 }
 
 func (x *_GenesisState_5_list) AppendMutable() protoreflect.Value {
-	v := new(Module)
+	v := new(Resource)
 	*x.list = append(*x.list, v)
 	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
@@ -149,7 +154,7 @@ func (x *_GenesisState_5_list) Truncate(n int) {
 }
 
 func (x *_GenesisState_5_list) NewElement() protoreflect.Value {
-	v := new(Module)
+	v := new(Resource)
 	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
 
@@ -160,7 +165,7 @@ func (x *_GenesisState_5_list) IsValid() bool {
 var _ protoreflect.List = (*_GenesisState_6_list)(nil)
 
 type _GenesisState_6_list struct {
-	list *[]*Resource
+	list *[]*TableInfo
 }
 
 func (x *_GenesisState_6_list) Len() int {
@@ -176,18 +181,18 @@ func (x *_GenesisState_6_list) Get(i int) protoreflect.Value {
 
 func (x *_GenesisState_6_list) Set(i int, value protoreflect.Value) {
 	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*Resource)
+	concreteValue := valueUnwrapped.Interface().(*TableInfo)
 	(*x.list)[i] = concreteValue
 }
 
 func (x *_GenesisState_6_list) Append(value protoreflect.Value) {
 	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*Resource)
+	concreteValue := valueUnwrapped.Interface().(*TableInfo)
 	*x.list = append(*x.list, concreteValue)
 }
 
 func (x *_GenesisState_6_list) AppendMutable() protoreflect.Value {
-	v := new(Resource)
+	v := new(TableInfo)
 	*x.list = append(*x.list, v)
 	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
@@ -200,7 +205,7 @@ func (x *_GenesisState_6_list) Truncate(n int) {
 }
 
 func (x *_GenesisState_6_list) NewElement() protoreflect.Value {
-	v := new(Resource)
+	v := new(TableInfo)
 	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
 
@@ -262,7 +267,7 @@ func (x *_GenesisState_7_list) IsValid() bool {
 var _ protoreflect.List = (*_GenesisState_8_list)(nil)
 
 type _GenesisState_8_list struct {
-	list *[]*DexPairEntry
+	list *[]*DexPair
 }
 
 func (x *_GenesisState_8_list) Len() int {
@@ -278,18 +283,18 @@ func (x *_GenesisState_8_list) Get(i int) protoreflect.Value {
 
 func (x *_GenesisState_8_list) Set(i int, value protoreflect.Value) {
 	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*DexPairEntry)
+	concreteValue := valueUnwrapped.Interface().(*DexPair)
 	(*x.list)[i] = concreteValue
 }
 
 func (x *_GenesisState_8_list) Append(value protoreflect.Value) {
 	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*DexPairEntry)
+	concreteValue := valueUnwrapped.Interface().(*DexPair)
 	*x.list = append(*x.list, concreteValue)
 }
 
 func (x *_GenesisState_8_list) AppendMutable() protoreflect.Value {
-	v := new(DexPairEntry)
+	v := new(DexPair)
 	*x.list = append(*x.list, v)
 	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
@@ -302,7 +307,7 @@ func (x *_GenesisState_8_list) Truncate(n int) {
 }
 
 func (x *_GenesisState_8_list) NewElement() protoreflect.Value {
-	v := new(DexPairEntry)
+	v := new(DexPair)
 	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
 
@@ -314,10 +319,10 @@ var (
 	md_GenesisState                   protoreflect.MessageDescriptor
 	fd_GenesisState_params            protoreflect.FieldDescriptor
 	fd_GenesisState_execution_counter protoreflect.FieldDescriptor
-	fd_GenesisState_coin_whitelist    protoreflect.FieldDescriptor
 	fd_GenesisState_stdlibs           protoreflect.FieldDescriptor
 	fd_GenesisState_modules           protoreflect.FieldDescriptor
 	fd_GenesisState_resources         protoreflect.FieldDescriptor
+	fd_GenesisState_table_infos       protoreflect.FieldDescriptor
 	fd_GenesisState_table_entries     protoreflect.FieldDescriptor
 	fd_GenesisState_dex_pairs         protoreflect.FieldDescriptor
 )
@@ -327,10 +332,10 @@ func init() {
 	md_GenesisState = File_initia_move_v1_genesis_proto.Messages().ByName("GenesisState")
 	fd_GenesisState_params = md_GenesisState.Fields().ByName("params")
 	fd_GenesisState_execution_counter = md_GenesisState.Fields().ByName("execution_counter")
-	fd_GenesisState_coin_whitelist = md_GenesisState.Fields().ByName("coin_whitelist")
 	fd_GenesisState_stdlibs = md_GenesisState.Fields().ByName("stdlibs")
 	fd_GenesisState_modules = md_GenesisState.Fields().ByName("modules")
 	fd_GenesisState_resources = md_GenesisState.Fields().ByName("resources")
+	fd_GenesisState_table_infos = md_GenesisState.Fields().ByName("table_infos")
 	fd_GenesisState_table_entries = md_GenesisState.Fields().ByName("table_entries")
 	fd_GenesisState_dex_pairs = md_GenesisState.Fields().ByName("dex_pairs")
 }
@@ -412,27 +417,27 @@ func (x *fastReflection_GenesisState) Range(f func(protoreflect.FieldDescriptor,
 			return
 		}
 	}
-	if len(x.CoinWhitelist) != 0 {
-		value := protoreflect.ValueOfList(&_GenesisState_3_list{list: &x.CoinWhitelist})
-		if !f(fd_GenesisState_coin_whitelist, value) {
-			return
-		}
-	}
 	if len(x.Stdlibs) != 0 {
-		value := protoreflect.ValueOfList(&_GenesisState_4_list{list: &x.Stdlibs})
+		value := protoreflect.ValueOfList(&_GenesisState_3_list{list: &x.Stdlibs})
 		if !f(fd_GenesisState_stdlibs, value) {
 			return
 		}
 	}
 	if len(x.Modules) != 0 {
-		value := protoreflect.ValueOfList(&_GenesisState_5_list{list: &x.Modules})
+		value := protoreflect.ValueOfList(&_GenesisState_4_list{list: &x.Modules})
 		if !f(fd_GenesisState_modules, value) {
 			return
 		}
 	}
 	if len(x.Resources) != 0 {
-		value := protoreflect.ValueOfList(&_GenesisState_6_list{list: &x.Resources})
+		value := protoreflect.ValueOfList(&_GenesisState_5_list{list: &x.Resources})
 		if !f(fd_GenesisState_resources, value) {
+			return
+		}
+	}
+	if len(x.TableInfos) != 0 {
+		value := protoreflect.ValueOfList(&_GenesisState_6_list{list: &x.TableInfos})
+		if !f(fd_GenesisState_table_infos, value) {
 			return
 		}
 	}
@@ -467,14 +472,14 @@ func (x *fastReflection_GenesisState) Has(fd protoreflect.FieldDescriptor) bool 
 		return x.Params != nil
 	case "initia.move.v1.GenesisState.execution_counter":
 		return len(x.ExecutionCounter) != 0
-	case "initia.move.v1.GenesisState.coin_whitelist":
-		return len(x.CoinWhitelist) != 0
 	case "initia.move.v1.GenesisState.stdlibs":
 		return len(x.Stdlibs) != 0
 	case "initia.move.v1.GenesisState.modules":
 		return len(x.Modules) != 0
 	case "initia.move.v1.GenesisState.resources":
 		return len(x.Resources) != 0
+	case "initia.move.v1.GenesisState.table_infos":
+		return len(x.TableInfos) != 0
 	case "initia.move.v1.GenesisState.table_entries":
 		return len(x.TableEntries) != 0
 	case "initia.move.v1.GenesisState.dex_pairs":
@@ -499,14 +504,14 @@ func (x *fastReflection_GenesisState) Clear(fd protoreflect.FieldDescriptor) {
 		x.Params = nil
 	case "initia.move.v1.GenesisState.execution_counter":
 		x.ExecutionCounter = nil
-	case "initia.move.v1.GenesisState.coin_whitelist":
-		x.CoinWhitelist = nil
 	case "initia.move.v1.GenesisState.stdlibs":
 		x.Stdlibs = nil
 	case "initia.move.v1.GenesisState.modules":
 		x.Modules = nil
 	case "initia.move.v1.GenesisState.resources":
 		x.Resources = nil
+	case "initia.move.v1.GenesisState.table_infos":
+		x.TableInfos = nil
 	case "initia.move.v1.GenesisState.table_entries":
 		x.TableEntries = nil
 	case "initia.move.v1.GenesisState.dex_pairs":
@@ -533,29 +538,29 @@ func (x *fastReflection_GenesisState) Get(descriptor protoreflect.FieldDescripto
 	case "initia.move.v1.GenesisState.execution_counter":
 		value := x.ExecutionCounter
 		return protoreflect.ValueOfBytes(value)
-	case "initia.move.v1.GenesisState.coin_whitelist":
-		if len(x.CoinWhitelist) == 0 {
-			return protoreflect.ValueOfList(&_GenesisState_3_list{})
-		}
-		listValue := &_GenesisState_3_list{list: &x.CoinWhitelist}
-		return protoreflect.ValueOfList(listValue)
 	case "initia.move.v1.GenesisState.stdlibs":
 		if len(x.Stdlibs) == 0 {
-			return protoreflect.ValueOfList(&_GenesisState_4_list{})
+			return protoreflect.ValueOfList(&_GenesisState_3_list{})
 		}
-		listValue := &_GenesisState_4_list{list: &x.Stdlibs}
+		listValue := &_GenesisState_3_list{list: &x.Stdlibs}
 		return protoreflect.ValueOfList(listValue)
 	case "initia.move.v1.GenesisState.modules":
 		if len(x.Modules) == 0 {
-			return protoreflect.ValueOfList(&_GenesisState_5_list{})
+			return protoreflect.ValueOfList(&_GenesisState_4_list{})
 		}
-		listValue := &_GenesisState_5_list{list: &x.Modules}
+		listValue := &_GenesisState_4_list{list: &x.Modules}
 		return protoreflect.ValueOfList(listValue)
 	case "initia.move.v1.GenesisState.resources":
 		if len(x.Resources) == 0 {
+			return protoreflect.ValueOfList(&_GenesisState_5_list{})
+		}
+		listValue := &_GenesisState_5_list{list: &x.Resources}
+		return protoreflect.ValueOfList(listValue)
+	case "initia.move.v1.GenesisState.table_infos":
+		if len(x.TableInfos) == 0 {
 			return protoreflect.ValueOfList(&_GenesisState_6_list{})
 		}
-		listValue := &_GenesisState_6_list{list: &x.Resources}
+		listValue := &_GenesisState_6_list{list: &x.TableInfos}
 		return protoreflect.ValueOfList(listValue)
 	case "initia.move.v1.GenesisState.table_entries":
 		if len(x.TableEntries) == 0 {
@@ -593,22 +598,22 @@ func (x *fastReflection_GenesisState) Set(fd protoreflect.FieldDescriptor, value
 		x.Params = value.Message().Interface().(*Params)
 	case "initia.move.v1.GenesisState.execution_counter":
 		x.ExecutionCounter = value.Bytes()
-	case "initia.move.v1.GenesisState.coin_whitelist":
-		lv := value.List()
-		clv := lv.(*_GenesisState_3_list)
-		x.CoinWhitelist = *clv.list
 	case "initia.move.v1.GenesisState.stdlibs":
 		lv := value.List()
-		clv := lv.(*_GenesisState_4_list)
+		clv := lv.(*_GenesisState_3_list)
 		x.Stdlibs = *clv.list
 	case "initia.move.v1.GenesisState.modules":
 		lv := value.List()
-		clv := lv.(*_GenesisState_5_list)
+		clv := lv.(*_GenesisState_4_list)
 		x.Modules = *clv.list
 	case "initia.move.v1.GenesisState.resources":
 		lv := value.List()
-		clv := lv.(*_GenesisState_6_list)
+		clv := lv.(*_GenesisState_5_list)
 		x.Resources = *clv.list
+	case "initia.move.v1.GenesisState.table_infos":
+		lv := value.List()
+		clv := lv.(*_GenesisState_6_list)
+		x.TableInfos = *clv.list
 	case "initia.move.v1.GenesisState.table_entries":
 		lv := value.List()
 		clv := lv.(*_GenesisState_7_list)
@@ -642,29 +647,29 @@ func (x *fastReflection_GenesisState) Mutable(fd protoreflect.FieldDescriptor) p
 			x.Params = new(Params)
 		}
 		return protoreflect.ValueOfMessage(x.Params.ProtoReflect())
-	case "initia.move.v1.GenesisState.coin_whitelist":
-		if x.CoinWhitelist == nil {
-			x.CoinWhitelist = []string{}
-		}
-		value := &_GenesisState_3_list{list: &x.CoinWhitelist}
-		return protoreflect.ValueOfList(value)
 	case "initia.move.v1.GenesisState.stdlibs":
 		if x.Stdlibs == nil {
 			x.Stdlibs = [][]byte{}
 		}
-		value := &_GenesisState_4_list{list: &x.Stdlibs}
+		value := &_GenesisState_3_list{list: &x.Stdlibs}
 		return protoreflect.ValueOfList(value)
 	case "initia.move.v1.GenesisState.modules":
 		if x.Modules == nil {
 			x.Modules = []*Module{}
 		}
-		value := &_GenesisState_5_list{list: &x.Modules}
+		value := &_GenesisState_4_list{list: &x.Modules}
 		return protoreflect.ValueOfList(value)
 	case "initia.move.v1.GenesisState.resources":
 		if x.Resources == nil {
 			x.Resources = []*Resource{}
 		}
-		value := &_GenesisState_6_list{list: &x.Resources}
+		value := &_GenesisState_5_list{list: &x.Resources}
+		return protoreflect.ValueOfList(value)
+	case "initia.move.v1.GenesisState.table_infos":
+		if x.TableInfos == nil {
+			x.TableInfos = []*TableInfo{}
+		}
+		value := &_GenesisState_6_list{list: &x.TableInfos}
 		return protoreflect.ValueOfList(value)
 	case "initia.move.v1.GenesisState.table_entries":
 		if x.TableEntries == nil {
@@ -674,7 +679,7 @@ func (x *fastReflection_GenesisState) Mutable(fd protoreflect.FieldDescriptor) p
 		return protoreflect.ValueOfList(value)
 	case "initia.move.v1.GenesisState.dex_pairs":
 		if x.DexPairs == nil {
-			x.DexPairs = []*DexPairEntry{}
+			x.DexPairs = []*DexPair{}
 		}
 		value := &_GenesisState_8_list{list: &x.DexPairs}
 		return protoreflect.ValueOfList(value)
@@ -698,23 +703,23 @@ func (x *fastReflection_GenesisState) NewField(fd protoreflect.FieldDescriptor) 
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
 	case "initia.move.v1.GenesisState.execution_counter":
 		return protoreflect.ValueOfBytes(nil)
-	case "initia.move.v1.GenesisState.coin_whitelist":
-		list := []string{}
-		return protoreflect.ValueOfList(&_GenesisState_3_list{list: &list})
 	case "initia.move.v1.GenesisState.stdlibs":
 		list := [][]byte{}
-		return protoreflect.ValueOfList(&_GenesisState_4_list{list: &list})
+		return protoreflect.ValueOfList(&_GenesisState_3_list{list: &list})
 	case "initia.move.v1.GenesisState.modules":
 		list := []*Module{}
-		return protoreflect.ValueOfList(&_GenesisState_5_list{list: &list})
+		return protoreflect.ValueOfList(&_GenesisState_4_list{list: &list})
 	case "initia.move.v1.GenesisState.resources":
 		list := []*Resource{}
+		return protoreflect.ValueOfList(&_GenesisState_5_list{list: &list})
+	case "initia.move.v1.GenesisState.table_infos":
+		list := []*TableInfo{}
 		return protoreflect.ValueOfList(&_GenesisState_6_list{list: &list})
 	case "initia.move.v1.GenesisState.table_entries":
 		list := []*TableEntry{}
 		return protoreflect.ValueOfList(&_GenesisState_7_list{list: &list})
 	case "initia.move.v1.GenesisState.dex_pairs":
-		list := []*DexPairEntry{}
+		list := []*DexPair{}
 		return protoreflect.ValueOfList(&_GenesisState_8_list{list: &list})
 	default:
 		if fd.IsExtension() {
@@ -793,12 +798,6 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		if len(x.CoinWhitelist) > 0 {
-			for _, s := range x.CoinWhitelist {
-				l = len(s)
-				n += 1 + l + runtime.Sov(uint64(l))
-			}
-		}
 		if len(x.Stdlibs) > 0 {
 			for _, b := range x.Stdlibs {
 				l = len(b)
@@ -813,6 +812,12 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 		}
 		if len(x.Resources) > 0 {
 			for _, e := range x.Resources {
+				l = options.Size(e)
+				n += 1 + l + runtime.Sov(uint64(l))
+			}
+		}
+		if len(x.TableInfos) > 0 {
+			for _, e := range x.TableInfos {
 				l = options.Size(e)
 				n += 1 + l + runtime.Sov(uint64(l))
 			}
@@ -890,6 +895,22 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 				dAtA[i] = 0x3a
 			}
 		}
+		if len(x.TableInfos) > 0 {
+			for iNdEx := len(x.TableInfos) - 1; iNdEx >= 0; iNdEx-- {
+				encoded, err := options.Marshal(x.TableInfos[iNdEx])
+				if err != nil {
+					return protoiface.MarshalOutput{
+						NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+						Buf:               input.Buf,
+					}, err
+				}
+				i -= len(encoded)
+				copy(dAtA[i:], encoded)
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+				i--
+				dAtA[i] = 0x32
+			}
+		}
 		if len(x.Resources) > 0 {
 			for iNdEx := len(x.Resources) - 1; iNdEx >= 0; iNdEx-- {
 				encoded, err := options.Marshal(x.Resources[iNdEx])
@@ -903,7 +924,7 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 				copy(dAtA[i:], encoded)
 				i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
 				i--
-				dAtA[i] = 0x32
+				dAtA[i] = 0x2a
 			}
 		}
 		if len(x.Modules) > 0 {
@@ -919,7 +940,7 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 				copy(dAtA[i:], encoded)
 				i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
 				i--
-				dAtA[i] = 0x2a
+				dAtA[i] = 0x22
 			}
 		}
 		if len(x.Stdlibs) > 0 {
@@ -927,15 +948,6 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 				i -= len(x.Stdlibs[iNdEx])
 				copy(dAtA[i:], x.Stdlibs[iNdEx])
 				i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Stdlibs[iNdEx])))
-				i--
-				dAtA[i] = 0x22
-			}
-		}
-		if len(x.CoinWhitelist) > 0 {
-			for iNdEx := len(x.CoinWhitelist) - 1; iNdEx >= 0; iNdEx-- {
-				i -= len(x.CoinWhitelist[iNdEx])
-				copy(dAtA[i:], x.CoinWhitelist[iNdEx])
-				i = runtime.EncodeVarint(dAtA, i, uint64(len(x.CoinWhitelist[iNdEx])))
 				i--
 				dAtA[i] = 0x1a
 			}
@@ -1082,38 +1094,6 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 				iNdEx = postIndex
 			case 3:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field CoinWhitelist", wireType)
-				}
-				var stringLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					stringLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				intStringLen := int(stringLen)
-				if intStringLen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + intStringLen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				x.CoinWhitelist = append(x.CoinWhitelist, string(dAtA[iNdEx:postIndex]))
-				iNdEx = postIndex
-			case 4:
-				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Stdlibs", wireType)
 				}
 				var byteLen int
@@ -1144,7 +1124,7 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 				x.Stdlibs = append(x.Stdlibs, make([]byte, postIndex-iNdEx))
 				copy(x.Stdlibs[len(x.Stdlibs)-1], dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
-			case 5:
+			case 4:
 				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Modules", wireType)
 				}
@@ -1178,7 +1158,7 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
 				}
 				iNdEx = postIndex
-			case 6:
+			case 5:
 				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Resources", wireType)
 				}
@@ -1209,6 +1189,40 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 				}
 				x.Resources = append(x.Resources, &Resource{})
 				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.Resources[len(x.Resources)-1]); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			case 6:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TableInfos", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.TableInfos = append(x.TableInfos, &TableInfo{})
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.TableInfos[len(x.TableInfos)-1]); err != nil {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
 				}
 				iNdEx = postIndex
@@ -1275,7 +1289,7 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.DexPairs = append(x.DexPairs, &DexPairEntry{})
+				x.DexPairs = append(x.DexPairs, &DexPair{})
 				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.DexPairs[len(x.DexPairs)-1]); err != nil {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
 				}
@@ -1334,15 +1348,14 @@ type GenesisState struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Params           *Params `protobuf:"bytes,1,opt,name=params,proto3" json:"params,omitempty"`
-	ExecutionCounter []byte  `protobuf:"bytes,2,opt,name=execution_counter,json=executionCounter,proto3" json:"execution_counter,omitempty"`
-	// used only to whitelist coin from the `0x1::coin::register`
-	CoinWhitelist []string        `protobuf:"bytes,3,rep,name=coin_whitelist,json=coinWhitelist,proto3" json:"coin_whitelist,omitempty"`
-	Stdlibs       [][]byte        `protobuf:"bytes,4,rep,name=stdlibs,proto3" json:"stdlibs,omitempty"`
-	Modules       []*Module       `protobuf:"bytes,5,rep,name=modules,proto3" json:"modules,omitempty"`
-	Resources     []*Resource     `protobuf:"bytes,6,rep,name=resources,proto3" json:"resources,omitempty"`
-	TableEntries  []*TableEntry   `protobuf:"bytes,7,rep,name=table_entries,json=tableEntries,proto3" json:"table_entries,omitempty"`
-	DexPairs      []*DexPairEntry `protobuf:"bytes,8,rep,name=dex_pairs,json=dexPairs,proto3" json:"dex_pairs,omitempty"`
+	Params           *Params       `protobuf:"bytes,1,opt,name=params,proto3" json:"params,omitempty"`
+	ExecutionCounter []byte        `protobuf:"bytes,2,opt,name=execution_counter,json=executionCounter,proto3" json:"execution_counter,omitempty"`
+	Stdlibs          [][]byte      `protobuf:"bytes,3,rep,name=stdlibs,proto3" json:"stdlibs,omitempty"`
+	Modules          []*Module     `protobuf:"bytes,4,rep,name=modules,proto3" json:"modules,omitempty"`
+	Resources        []*Resource   `protobuf:"bytes,5,rep,name=resources,proto3" json:"resources,omitempty"`
+	TableInfos       []*TableInfo  `protobuf:"bytes,6,rep,name=table_infos,json=tableInfos,proto3" json:"table_infos,omitempty"`
+	TableEntries     []*TableEntry `protobuf:"bytes,7,rep,name=table_entries,json=tableEntries,proto3" json:"table_entries,omitempty"`
+	DexPairs         []*DexPair    `protobuf:"bytes,8,rep,name=dex_pairs,json=dexPairs,proto3" json:"dex_pairs,omitempty"`
 }
 
 func (x *GenesisState) Reset() {
@@ -1379,13 +1392,6 @@ func (x *GenesisState) GetExecutionCounter() []byte {
 	return nil
 }
 
-func (x *GenesisState) GetCoinWhitelist() []string {
-	if x != nil {
-		return x.CoinWhitelist
-	}
-	return nil
-}
-
 func (x *GenesisState) GetStdlibs() [][]byte {
 	if x != nil {
 		return x.Stdlibs
@@ -1407,6 +1413,13 @@ func (x *GenesisState) GetResources() []*Resource {
 	return nil
 }
 
+func (x *GenesisState) GetTableInfos() []*TableInfo {
+	if x != nil {
+		return x.TableInfos
+	}
+	return nil
+}
+
 func (x *GenesisState) GetTableEntries() []*TableEntry {
 	if x != nil {
 		return x.TableEntries
@@ -1414,7 +1427,7 @@ func (x *GenesisState) GetTableEntries() []*TableEntry {
 	return nil
 }
 
-func (x *GenesisState) GetDexPairs() []*DexPairEntry {
+func (x *GenesisState) GetDexPairs() []*DexPair {
 	if x != nil {
 		return x.DexPairs
 	}
@@ -1431,7 +1444,7 @@ var file_initia_move_v1_genesis_proto_rawDesc = []byte{
 	0x6f, 0x1a, 0x14, 0x67, 0x6f, 0x67, 0x6f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x67, 0x6f, 0x67,
 	0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x1a, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2f,
 	0x6d, 0x6f, 0x76, 0x65, 0x2f, 0x76, 0x31, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x2e, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x22, 0xad, 0x05, 0x0a, 0x0c, 0x47, 0x65, 0x6e, 0x65, 0x73, 0x69, 0x73, 0x53,
+	0x6f, 0x74, 0x6f, 0x22, 0xc3, 0x05, 0x0a, 0x0c, 0x47, 0x65, 0x6e, 0x65, 0x73, 0x69, 0x73, 0x53,
 	0x74, 0x61, 0x74, 0x65, 0x12, 0x39, 0x0a, 0x06, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x18, 0x01,
 	0x20, 0x01, 0x28, 0x0b, 0x32, 0x16, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x6d, 0x6f,
 	0x76, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x42, 0x09, 0xc8, 0xde,
@@ -1443,49 +1456,50 @@ var file_initia_move_v1_genesis_proto_rawDesc = []byte{
 	0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x2e, 0x49, 0x6e, 0x74, 0xf2, 0xde, 0x1f, 0x18, 0x79, 0x61,
 	0x6d, 0x6c, 0x3a, 0x22, 0x65, 0x78, 0x65, 0x63, 0x75, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x63, 0x6f,
 	0x75, 0x6e, 0x74, 0x65, 0x72, 0x22, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x10, 0x65, 0x78, 0x65,
-	0x63, 0x75, 0x74, 0x69, 0x6f, 0x6e, 0x43, 0x6f, 0x75, 0x6e, 0x74, 0x65, 0x72, 0x12, 0x43, 0x0a,
-	0x0e, 0x63, 0x6f, 0x69, 0x6e, 0x5f, 0x77, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x18,
-	0x03, 0x20, 0x03, 0x28, 0x09, 0x42, 0x1c, 0xea, 0xde, 0x1f, 0x18, 0x63, 0x6f, 0x69, 0x6e, 0x5f,
-	0x77, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x2c, 0x6f, 0x6d, 0x69, 0x74, 0x65, 0x6d,
-	0x70, 0x74, 0x79, 0x52, 0x0d, 0x63, 0x6f, 0x69, 0x6e, 0x57, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69,
-	0x73, 0x74, 0x12, 0x2f, 0x0a, 0x07, 0x73, 0x74, 0x64, 0x6c, 0x69, 0x62, 0x73, 0x18, 0x04, 0x20,
-	0x03, 0x28, 0x0c, 0x42, 0x15, 0xea, 0xde, 0x1f, 0x11, 0x73, 0x74, 0x64, 0x6c, 0x69, 0x62, 0x73,
-	0x2c, 0x6f, 0x6d, 0x69, 0x74, 0x65, 0x6d, 0x70, 0x74, 0x79, 0x52, 0x07, 0x73, 0x74, 0x64, 0x6c,
-	0x69, 0x62, 0x73, 0x12, 0x50, 0x0a, 0x07, 0x6d, 0x6f, 0x64, 0x75, 0x6c, 0x65, 0x73, 0x18, 0x05,
-	0x20, 0x03, 0x28, 0x0b, 0x32, 0x16, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x6d, 0x6f,
-	0x76, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x6f, 0x64, 0x75, 0x6c, 0x65, 0x42, 0x1e, 0xc8, 0xde,
-	0x1f, 0x00, 0xea, 0xde, 0x1f, 0x11, 0x6d, 0x6f, 0x64, 0x75, 0x6c, 0x65, 0x73, 0x2c, 0x6f, 0x6d,
-	0x69, 0x74, 0x65, 0x6d, 0x70, 0x74, 0x79, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x07, 0x6d, 0x6f,
-	0x64, 0x75, 0x6c, 0x65, 0x73, 0x12, 0x58, 0x0a, 0x09, 0x72, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63,
-	0x65, 0x73, 0x18, 0x06, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x18, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69,
-	0x61, 0x2e, 0x6d, 0x6f, 0x76, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x65, 0x73, 0x6f, 0x75, 0x72,
-	0x63, 0x65, 0x42, 0x20, 0xc8, 0xde, 0x1f, 0x00, 0xea, 0xde, 0x1f, 0x13, 0x72, 0x65, 0x73, 0x6f,
-	0x75, 0x72, 0x63, 0x65, 0x73, 0x2c, 0x6f, 0x6d, 0x69, 0x74, 0x65, 0x6d, 0x70, 0x74, 0x79, 0xa8,
-	0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x09, 0x72, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x73, 0x12,
-	0x65, 0x0a, 0x0d, 0x74, 0x61, 0x62, 0x6c, 0x65, 0x5f, 0x65, 0x6e, 0x74, 0x72, 0x69, 0x65, 0x73,
-	0x18, 0x07, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e,
-	0x6d, 0x6f, 0x76, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x54, 0x61, 0x62, 0x6c, 0x65, 0x45, 0x6e, 0x74,
-	0x72, 0x79, 0x42, 0x24, 0xc8, 0xde, 0x1f, 0x00, 0xea, 0xde, 0x1f, 0x17, 0x74, 0x61, 0x62, 0x6c,
-	0x65, 0x5f, 0x65, 0x6e, 0x74, 0x72, 0x69, 0x65, 0x73, 0x2c, 0x6f, 0x6d, 0x69, 0x74, 0x65, 0x6d,
-	0x70, 0x74, 0x79, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x0c, 0x74, 0x61, 0x62, 0x6c, 0x65, 0x45,
-	0x6e, 0x74, 0x72, 0x69, 0x65, 0x73, 0x12, 0x5b, 0x0a, 0x09, 0x64, 0x65, 0x78, 0x5f, 0x70, 0x61,
-	0x69, 0x72, 0x73, 0x18, 0x08, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x69, 0x6e, 0x69, 0x74,
-	0x69, 0x61, 0x2e, 0x6d, 0x6f, 0x76, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x44, 0x65, 0x78, 0x50, 0x61,
-	0x69, 0x72, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x42, 0x20, 0xc8, 0xde, 0x1f, 0x00, 0xea, 0xde, 0x1f,
-	0x13, 0x64, 0x65, 0x78, 0x5f, 0x70, 0x61, 0x69, 0x72, 0x73, 0x2c, 0x6f, 0x6d, 0x69, 0x74, 0x65,
-	0x6d, 0x70, 0x74, 0x79, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x08, 0x64, 0x65, 0x78, 0x50, 0x61,
-	0x69, 0x72, 0x73, 0x42, 0xa4, 0x01, 0x0a, 0x12, 0x63, 0x6f, 0x6d, 0x2e, 0x69, 0x6e, 0x69, 0x74,
-	0x69, 0x61, 0x2e, 0x6d, 0x6f, 0x76, 0x65, 0x2e, 0x76, 0x31, 0x42, 0x0c, 0x47, 0x65, 0x6e, 0x65,
-	0x73, 0x69, 0x73, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x26, 0x63, 0x6f, 0x73, 0x6d,
-	0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x69, 0x6e, 0x69,
-	0x74, 0x69, 0x61, 0x2f, 0x6d, 0x6f, 0x76, 0x65, 0x2f, 0x76, 0x31, 0x3b, 0x6d, 0x6f, 0x76, 0x65,
-	0x76, 0x31, 0xa2, 0x02, 0x03, 0x49, 0x4d, 0x58, 0xaa, 0x02, 0x0e, 0x49, 0x6e, 0x69, 0x74, 0x69,
-	0x61, 0x2e, 0x4d, 0x6f, 0x76, 0x65, 0x2e, 0x56, 0x31, 0xca, 0x02, 0x0e, 0x49, 0x6e, 0x69, 0x74,
-	0x69, 0x61, 0x5c, 0x4d, 0x6f, 0x76, 0x65, 0x5c, 0x56, 0x31, 0xe2, 0x02, 0x1a, 0x49, 0x6e, 0x69,
-	0x74, 0x69, 0x61, 0x5c, 0x4d, 0x6f, 0x76, 0x65, 0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d,
-	0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x10, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61,
-	0x3a, 0x3a, 0x4d, 0x6f, 0x76, 0x65, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x33,
+	0x63, 0x75, 0x74, 0x69, 0x6f, 0x6e, 0x43, 0x6f, 0x75, 0x6e, 0x74, 0x65, 0x72, 0x12, 0x2f, 0x0a,
+	0x07, 0x73, 0x74, 0x64, 0x6c, 0x69, 0x62, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0c, 0x42, 0x15,
+	0xea, 0xde, 0x1f, 0x11, 0x73, 0x74, 0x64, 0x6c, 0x69, 0x62, 0x73, 0x2c, 0x6f, 0x6d, 0x69, 0x74,
+	0x65, 0x6d, 0x70, 0x74, 0x79, 0x52, 0x07, 0x73, 0x74, 0x64, 0x6c, 0x69, 0x62, 0x73, 0x12, 0x50,
+	0x0a, 0x07, 0x6d, 0x6f, 0x64, 0x75, 0x6c, 0x65, 0x73, 0x18, 0x04, 0x20, 0x03, 0x28, 0x0b, 0x32,
+	0x16, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x6d, 0x6f, 0x76, 0x65, 0x2e, 0x76, 0x31,
+	0x2e, 0x4d, 0x6f, 0x64, 0x75, 0x6c, 0x65, 0x42, 0x1e, 0xc8, 0xde, 0x1f, 0x00, 0xea, 0xde, 0x1f,
+	0x11, 0x6d, 0x6f, 0x64, 0x75, 0x6c, 0x65, 0x73, 0x2c, 0x6f, 0x6d, 0x69, 0x74, 0x65, 0x6d, 0x70,
+	0x74, 0x79, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x07, 0x6d, 0x6f, 0x64, 0x75, 0x6c, 0x65, 0x73,
+	0x12, 0x58, 0x0a, 0x09, 0x72, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x73, 0x18, 0x05, 0x20,
+	0x03, 0x28, 0x0b, 0x32, 0x18, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x6d, 0x6f, 0x76,
+	0x65, 0x2e, 0x76, 0x31, 0x2e, 0x52, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x42, 0x20, 0xc8,
+	0xde, 0x1f, 0x00, 0xea, 0xde, 0x1f, 0x13, 0x72, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x73,
+	0x2c, 0x6f, 0x6d, 0x69, 0x74, 0x65, 0x6d, 0x70, 0x74, 0x79, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52,
+	0x09, 0x72, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x73, 0x12, 0x5e, 0x0a, 0x0b, 0x74, 0x61,
+	0x62, 0x6c, 0x65, 0x5f, 0x69, 0x6e, 0x66, 0x6f, 0x73, 0x18, 0x06, 0x20, 0x03, 0x28, 0x0b, 0x32,
+	0x19, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x6d, 0x6f, 0x76, 0x65, 0x2e, 0x76, 0x31,
+	0x2e, 0x54, 0x61, 0x62, 0x6c, 0x65, 0x49, 0x6e, 0x66, 0x6f, 0x42, 0x22, 0xc8, 0xde, 0x1f, 0x00,
+	0xea, 0xde, 0x1f, 0x15, 0x74, 0x61, 0x62, 0x6c, 0x65, 0x5f, 0x69, 0x6e, 0x66, 0x6f, 0x73, 0x2c,
+	0x6f, 0x6d, 0x69, 0x74, 0x65, 0x6d, 0x70, 0x74, 0x79, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x0a,
+	0x74, 0x61, 0x62, 0x6c, 0x65, 0x49, 0x6e, 0x66, 0x6f, 0x73, 0x12, 0x65, 0x0a, 0x0d, 0x74, 0x61,
+	0x62, 0x6c, 0x65, 0x5f, 0x65, 0x6e, 0x74, 0x72, 0x69, 0x65, 0x73, 0x18, 0x07, 0x20, 0x03, 0x28,
+	0x0b, 0x32, 0x1a, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x6d, 0x6f, 0x76, 0x65, 0x2e,
+	0x76, 0x31, 0x2e, 0x54, 0x61, 0x62, 0x6c, 0x65, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x42, 0x24, 0xc8,
+	0xde, 0x1f, 0x00, 0xea, 0xde, 0x1f, 0x17, 0x74, 0x61, 0x62, 0x6c, 0x65, 0x5f, 0x65, 0x6e, 0x74,
+	0x72, 0x69, 0x65, 0x73, 0x2c, 0x6f, 0x6d, 0x69, 0x74, 0x65, 0x6d, 0x70, 0x74, 0x79, 0xa8, 0xe7,
+	0xb0, 0x2a, 0x01, 0x52, 0x0c, 0x74, 0x61, 0x62, 0x6c, 0x65, 0x45, 0x6e, 0x74, 0x72, 0x69, 0x65,
+	0x73, 0x12, 0x56, 0x0a, 0x09, 0x64, 0x65, 0x78, 0x5f, 0x70, 0x61, 0x69, 0x72, 0x73, 0x18, 0x08,
+	0x20, 0x03, 0x28, 0x0b, 0x32, 0x17, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x6d, 0x6f,
+	0x76, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x44, 0x65, 0x78, 0x50, 0x61, 0x69, 0x72, 0x42, 0x20, 0xc8,
+	0xde, 0x1f, 0x00, 0xea, 0xde, 0x1f, 0x13, 0x64, 0x65, 0x78, 0x5f, 0x70, 0x61, 0x69, 0x72, 0x73,
+	0x2c, 0x6f, 0x6d, 0x69, 0x74, 0x65, 0x6d, 0x70, 0x74, 0x79, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52,
+	0x08, 0x64, 0x65, 0x78, 0x50, 0x61, 0x69, 0x72, 0x73, 0x42, 0xa4, 0x01, 0x0a, 0x12, 0x63, 0x6f,
+	0x6d, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x6d, 0x6f, 0x76, 0x65, 0x2e, 0x76, 0x31,
+	0x42, 0x0c, 0x47, 0x65, 0x6e, 0x65, 0x73, 0x69, 0x73, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01,
+	0x5a, 0x26, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x61,
+	0x70, 0x69, 0x2f, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2f, 0x6d, 0x6f, 0x76, 0x65, 0x2f, 0x76,
+	0x31, 0x3b, 0x6d, 0x6f, 0x76, 0x65, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x49, 0x4d, 0x58, 0xaa, 0x02,
+	0x0e, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x4d, 0x6f, 0x76, 0x65, 0x2e, 0x56, 0x31, 0xca,
+	0x02, 0x0e, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x5c, 0x4d, 0x6f, 0x76, 0x65, 0x5c, 0x56, 0x31,
+	0xe2, 0x02, 0x1a, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x5c, 0x4d, 0x6f, 0x76, 0x65, 0x5c, 0x56,
+	0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x10,
+	0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x3a, 0x3a, 0x4d, 0x6f, 0x76, 0x65, 0x3a, 0x3a, 0x56, 0x31,
+	0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -1506,20 +1520,22 @@ var file_initia_move_v1_genesis_proto_goTypes = []interface{}{
 	(*Params)(nil),       // 1: initia.move.v1.Params
 	(*Module)(nil),       // 2: initia.move.v1.Module
 	(*Resource)(nil),     // 3: initia.move.v1.Resource
-	(*TableEntry)(nil),   // 4: initia.move.v1.TableEntry
-	(*DexPairEntry)(nil), // 5: initia.move.v1.DexPairEntry
+	(*TableInfo)(nil),    // 4: initia.move.v1.TableInfo
+	(*TableEntry)(nil),   // 5: initia.move.v1.TableEntry
+	(*DexPair)(nil),      // 6: initia.move.v1.DexPair
 }
 var file_initia_move_v1_genesis_proto_depIdxs = []int32{
 	1, // 0: initia.move.v1.GenesisState.params:type_name -> initia.move.v1.Params
 	2, // 1: initia.move.v1.GenesisState.modules:type_name -> initia.move.v1.Module
 	3, // 2: initia.move.v1.GenesisState.resources:type_name -> initia.move.v1.Resource
-	4, // 3: initia.move.v1.GenesisState.table_entries:type_name -> initia.move.v1.TableEntry
-	5, // 4: initia.move.v1.GenesisState.dex_pairs:type_name -> initia.move.v1.DexPairEntry
-	5, // [5:5] is the sub-list for method output_type
-	5, // [5:5] is the sub-list for method input_type
-	5, // [5:5] is the sub-list for extension type_name
-	5, // [5:5] is the sub-list for extension extendee
-	0, // [0:5] is the sub-list for field type_name
+	4, // 3: initia.move.v1.GenesisState.table_infos:type_name -> initia.move.v1.TableInfo
+	5, // 4: initia.move.v1.GenesisState.table_entries:type_name -> initia.move.v1.TableEntry
+	6, // 5: initia.move.v1.GenesisState.dex_pairs:type_name -> initia.move.v1.DexPair
+	6, // [6:6] is the sub-list for method output_type
+	6, // [6:6] is the sub-list for method input_type
+	6, // [6:6] is the sub-list for extension type_name
+	6, // [6:6] is the sub-list for extension extendee
+	0, // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_initia_move_v1_genesis_proto_init() }

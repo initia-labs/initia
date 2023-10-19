@@ -7,8 +7,8 @@ import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "initia/move/v1/types.proto";
 
-option go_package = "github.com/initia-labs/initia/x/move/types";
-option (gogoproto.equal_all) = false;
+option go_package                      = "github.com/initia-labs/initia/x/move/types";
+option (gogoproto.equal_all)           = false;
 option (gogoproto.goproto_getters_all) = false;
 
 // Query provides defines the gRPC querier service
@@ -83,11 +83,7 @@ message QueryModuleRequest {
 // method
 message QueryModuleResponse {
   option (gogoproto.equal) = true;
-  Module module = 1 [
-    (gogoproto.embed) = true,
-    (gogoproto.nullable) = false,
-    (gogoproto.jsontag) = ""
-  ];
+  Module module            = 1 [(gogoproto.embed) = true, (gogoproto.nullable) = false, (gogoproto.jsontag) = ""];
 }
 
 // QueryModulesRequest is the request type for the Query/Modules
@@ -102,10 +98,7 @@ message QueryModulesRequest {
 // QueryModulesResponse is the response type for the
 // Query/Modules RPC method
 message QueryModulesResponse {
-  repeated Module modules = 1 [
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
+  repeated Module modules = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
   // pagination defines the pagination in the response.
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
@@ -123,11 +116,7 @@ message QueryResourceRequest {
 // method
 message QueryResourceResponse {
   option (gogoproto.equal) = true;
-  Resource resource = 1 [
-    (gogoproto.embed) = true,
-    (gogoproto.nullable) = false,
-    (gogoproto.jsontag) = ""
-  ];
+  Resource resource        = 1 [(gogoproto.embed) = true, (gogoproto.nullable) = false, (gogoproto.jsontag) = ""];
 }
 
 // QueryResourcesRequest is the request type for the Query/Resources RPC
@@ -142,10 +131,7 @@ message QueryResourcesRequest {
 // QueryResourcesResponse is the response type for the Query/Resources RPC
 // method
 message QueryResourcesResponse {
-  repeated Resource resources = 1 [
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
+  repeated Resource resources = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
   // pagination defines the pagination in the response.
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
@@ -160,10 +146,7 @@ message QueryTableInfoRequest {
 // QueryTableInfoResponse is the response type for the Query/TableInfo RPC
 // method
 message QueryTableInfoResponse {
-  TableInfo table_info = 1 [
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
+  TableInfo table_info = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
 }
 
 // QueryTableEntryRequest is the request type for the Query/TableEntry RPC
@@ -178,10 +161,7 @@ message QueryTableEntryRequest {
 // QueryTableEntryResponse is the response type for the Query/TableEntry RPC
 // method
 message QueryTableEntryResponse {
-  TableEntry table_entry = 1 [
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
+  TableEntry table_entry = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
 }
 
 // QueryTableEntriesRequest is the request type for the Query/TableEntries RPC
@@ -196,10 +176,7 @@ message QueryTableEntriesRequest {
 // QueryTableEntriesResponse is the response type for the Query/TableEntries RPC
 // method
 message QueryTableEntriesResponse {
-  repeated TableEntry table_entries = 1 [
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
+  repeated TableEntry table_entries = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
   // pagination defines the pagination in the response.
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }

@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"errors"
 	"math"
 	"strings"
 
@@ -309,12 +310,19 @@ func (k Keeper) handleExecuteResponse(
 		addr := types.ConvertVMAddressToSDKAddress(acc.Address)
 
 		var accI authtypes.AccountI
-		if acc.IsObjectAccount {
-			accI = types.NewObjectAccountWithAddress(addr)
-		} else {
+		switch acc.AccountType {
+		case vmtypes.AccountType_Base:
 			accI = authtypes.NewBaseAccountWithAddress(addr)
+		case vmtypes.AccountType_Object:
+			accI = types.NewObjectAccountWithAddress(addr)
+		case vmtypes.AccountType_Table:
+			accI = types.NewTableAccountWithAddress(addr)
+		default:
+			return errors.New("unsupported account type")
 		}
-		accI.SetAccountNumber(acc.AccountNumber)
+		if err := accI.SetAccountNumber(acc.AccountNumber); err != nil {
+			return err
+		}
 
 		k.authKeeper.SetAccount(ctx, accI)
 		k.authKeeper.NextAccountNumber(ctx) // increase global account number

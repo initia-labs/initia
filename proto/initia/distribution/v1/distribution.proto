@@ -14,22 +14,20 @@ message Params {
   option (gogoproto.equal)            = true;
   option (gogoproto.goproto_stringer) = false;
 
-  string community_tax                = 1 [
+  string community_tax = 1 [
     (gogoproto.moretags)   = "yaml:\"community_tax\"",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable)   = false
   ];
-  bool withdraw_addr_enabled = 2 [(gogoproto.moretags) = "yaml:\"withdraw_addr_enabled\""];
-  repeated RewardWeight reward_weights = 3 [
-    (gogoproto.moretags)   = "yaml:\"reward_weights\"",
-    (gogoproto.nullable)   = false
-  ];
+  bool                  withdraw_addr_enabled = 2 [(gogoproto.moretags) = "yaml:\"withdraw_addr_enabled\""];
+  repeated RewardWeight reward_weights        = 3
+      [(gogoproto.moretags) = "yaml:\"reward_weights\"", (gogoproto.nullable) = false];
 }
 
-// RewardWeight represents reward allocation ratio between 
+// RewardWeight represents reward allocation ratio between
 // pools.
 message RewardWeight {
-  string denom = 1 [(gogoproto.moretags) = "yaml:\"denom\""];
+  string denom  = 1 [(gogoproto.moretags) = "yaml:\"denom\""];
   string weight = 2 [
     (gogoproto.moretags)   = "yaml:\"weight\"",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
@@ -39,7 +37,7 @@ message RewardWeight {
 
 // Pool is a Coins wrapper with denom.
 message Pool {
-  string                            denom = 1 [(gogoproto.moretags) = "yaml:\"denom\""];
+  string   denom                          = 1 [(gogoproto.moretags) = "yaml:\"denom\""];
   repeated cosmos.base.v1beta1.Coin coins = 2 [
     (gogoproto.moretags)     = "yaml:\"coins\"",
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
@@ -49,14 +47,14 @@ message Pool {
 
 // DecPool is a DecCoins wrapper with denom.
 message DecPool {
-  string                               denom = 1 [(gogoproto.moretags) = "yaml:\"denom\""];
+  string   denom                                 = 1 [(gogoproto.moretags) = "yaml:\"denom\""];
   repeated cosmos.base.v1beta1.DecCoin dec_coins = 2 [
     (gogoproto.moretags)     = "yaml:\"dec_coins\"",
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins",
     (gogoproto.nullable)     = false
   ];
 }
-  
+
 // ValidatorHistoricalRewards represents historical rewards for a validator.
 // Height is implicit within the store key.
 // Cumulative reward ratio is the sum from the zeroeth period
@@ -82,11 +80,8 @@ message ValidatorHistoricalRewards {
 // period for a validator kept as a running counter and incremented
 // each block as long as the validator's tokens remain constant.
 message ValidatorCurrentRewards {
-  repeated DecPool rewards = 1 [
-    (gogoproto.moretags)     = "yaml:\"rewards\"",
-    (gogoproto.castrepeated) = "DecPools", 
-    (gogoproto.nullable) = false
-  ];
+  repeated DecPool rewards = 1
+      [(gogoproto.moretags) = "yaml:\"rewards\"", (gogoproto.castrepeated) = "DecPools", (gogoproto.nullable) = false];
   uint64 period = 2;
 }
 
@@ -95,19 +90,16 @@ message ValidatorCurrentRewards {
 message ValidatorAccumulatedCommission {
   repeated DecPool commissions = 1 [
     (gogoproto.moretags)     = "yaml:\"commissions\"",
-    (gogoproto.castrepeated) = "DecPools", 
-    (gogoproto.nullable) = false
+    (gogoproto.castrepeated) = "DecPools",
+    (gogoproto.nullable)     = false
   ];
 }
 
 // ValidatorOutstandingRewards represents outstanding (un-withdrawn) rewards
 // for a validator inexpensive to track, allows simple sanity checks.
 message ValidatorOutstandingRewards {
-  repeated DecPool rewards = 1 [
-    (gogoproto.moretags)     = "yaml:\"rewards\"",
-    (gogoproto.castrepeated) = "DecPools",
-    (gogoproto.nullable)     = false
-  ];
+  repeated DecPool rewards = 1
+      [(gogoproto.moretags) = "yaml:\"rewards\"", (gogoproto.castrepeated) = "DecPools", (gogoproto.nullable) = false];
 }
 
 // ValidatorSlashEvent represents a validator slash event.
@@ -115,7 +107,7 @@ message ValidatorOutstandingRewards {
 // This is needed to calculate appropriate amount of staking tokens
 // for delegations which are withdrawn after a slash has occurred.
 message ValidatorSlashEvent {
-  uint64 validator_period = 1 [(gogoproto.moretags) = "yaml:\"validator_period\""];
+  uint64   validator_period                      = 1 [(gogoproto.moretags) = "yaml:\"validator_period\""];
   repeated cosmos.base.v1beta1.DecCoin fractions = 2 [
     (gogoproto.nullable)     = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins",
@@ -137,11 +129,11 @@ message ValidatorSlashEvents {
 // the delegators within the validator may be left with less than a full token,
 // thus sdk.Dec is used.
 message DelegatorStartingInfo {
-  uint64 previous_period                       = 1 [(gogoproto.moretags) = "yaml:\"previous_period\""];
-  repeated cosmos.base.v1beta1.DecCoin  stakes = 2 [
-    (gogoproto.moretags)   = "yaml:\"stakes\"",
+  uint64   previous_period                    = 1 [(gogoproto.moretags) = "yaml:\"previous_period\""];
+  repeated cosmos.base.v1beta1.DecCoin stakes = 2 [
+    (gogoproto.moretags)     = "yaml:\"stakes\"",
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins",
-    (gogoproto.nullable)   = false
+    (gogoproto.nullable)     = false
   ];
   uint64 height = 3 [(gogoproto.moretags) = "yaml:\"creation_height\"", (gogoproto.jsontag) = "creation_height"];
 }
@@ -152,6 +144,6 @@ message DelegationDelegatorReward {
   option (gogoproto.goproto_getters)  = false;
   option (gogoproto.goproto_stringer) = true;
 
-  string validator_address = 1 [(gogoproto.moretags) = "yaml:\"validator_address\""];
-  repeated DecPool reward = 2 [(gogoproto.castrepeated) = "DecPools", (gogoproto.nullable) = false];
+  string           validator_address = 1 [(gogoproto.moretags) = "yaml:\"validator_address\""];
+  repeated DecPool reward            = 2 [(gogoproto.castrepeated) = "DecPools", (gogoproto.nullable) = false];
 }

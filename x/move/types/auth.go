@@ -11,6 +11,8 @@ import (
 var (
 	_ authtypes.AccountI       = (*ObjectAccount)(nil)
 	_ authtypes.GenesisAccount = (*ObjectAccount)(nil)
+	_ authtypes.AccountI       = (*TableAccount)(nil)
+	_ authtypes.GenesisAccount = (*TableAccount)(nil)
 )
 
 // NewObjectAccountWithAddress create new object account with the given address.
@@ -23,4 +25,16 @@ func NewObjectAccountWithAddress(addr sdk.AccAddress) *ObjectAccount {
 // SetPubKey - Implements AccountI
 func (ma ObjectAccount) SetPubKey(pubKey cryptotypes.PubKey) error {
 	return fmt.Errorf("not supported for object accounts")
+}
+
+// NewTableAccountWithAddress create new object account with the given address.
+func NewTableAccountWithAddress(addr sdk.AccAddress) *TableAccount {
+	return &TableAccount{
+		authtypes.NewBaseAccountWithAddress(addr),
+	}
+}
+
+// SetPubKey - Implements AccountI
+func (ma TableAccount) SetPubKey(pubKey cryptotypes.PubKey) error {
+	return fmt.Errorf("not supported for table accounts")
 }

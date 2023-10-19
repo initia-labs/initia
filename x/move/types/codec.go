@@ -27,6 +27,7 @@ func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	legacy.RegisterAminoMsg(cdc, &MsgUpdateParams{}, "move/MsgUpdateParams")
 
 	cdc.RegisterConcrete(&ObjectAccount{}, "move/ObjectAccount", nil)
+	cdc.RegisterConcrete(&TableAccount{}, "move/TableAccount", nil)
 	cdc.RegisterConcrete(&ExecuteAuthorization{}, "move/ExecuteAuthorization", nil)
 	cdc.RegisterConcrete(&PublishAuthorization{}, "move/PublishAuthorization", nil)
 	cdc.RegisterConcrete(Params{}, "move/Params", nil)
@@ -55,10 +56,12 @@ func RegisterInterfaces(registry codectypes.InterfaceRegistry) {
 	registry.RegisterImplementations(
 		(*authtypes.AccountI)(nil),
 		&ObjectAccount{},
+		&TableAccount{},
 	)
 	registry.RegisterImplementations(
 		(*authtypes.GenesisAccount)(nil),
 		&ObjectAccount{},
+		&TableAccount{},
 	)
 
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)

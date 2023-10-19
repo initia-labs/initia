@@ -19,21 +19,16 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Query_Module_FullMethodName                = "/initia.move.v1.Query/Module"
-	Query_Modules_FullMethodName               = "/initia.move.v1.Query/Modules"
-	Query_Resource_FullMethodName              = "/initia.move.v1.Query/Resource"
-	Query_Resources_FullMethodName             = "/initia.move.v1.Query/Resources"
-	Query_TableEntry_FullMethodName            = "/initia.move.v1.Query/TableEntry"
-	Query_TableEntries_FullMethodName          = "/initia.move.v1.Query/TableEntries"
-	Query_ViewFunction_FullMethodName          = "/initia.move.v1.Query/ViewFunction"
-	Query_ScriptABI_FullMethodName             = "/initia.move.v1.Query/ScriptABI"
-	Query_StructTagByDenom_FullMethodName      = "/initia.move.v1.Query/StructTagByDenom"
-	Query_Denom_FullMethodName                 = "/initia.move.v1.Query/Denom"
-	Query_StructTagByNftClassId_FullMethodName = "/initia.move.v1.Query/StructTagByNftClassId"
-	Query_NftClassId_FullMethodName            = "/initia.move.v1.Query/NftClassId"
-	Query_StructTagBySftClassId_FullMethodName = "/initia.move.v1.Query/StructTagBySftClassId"
-	Query_SftClassId_FullMethodName            = "/initia.move.v1.Query/SftClassId"
-	Query_Params_FullMethodName                = "/initia.move.v1.Query/Params"
+	Query_Module_FullMethodName       = "/initia.move.v1.Query/Module"
+	Query_Modules_FullMethodName      = "/initia.move.v1.Query/Modules"
+	Query_Resource_FullMethodName     = "/initia.move.v1.Query/Resource"
+	Query_Resources_FullMethodName    = "/initia.move.v1.Query/Resources"
+	Query_TableInfo_FullMethodName    = "/initia.move.v1.Query/TableInfo"
+	Query_TableEntry_FullMethodName   = "/initia.move.v1.Query/TableEntry"
+	Query_TableEntries_FullMethodName = "/initia.move.v1.Query/TableEntries"
+	Query_ViewFunction_FullMethodName = "/initia.move.v1.Query/ViewFunction"
+	Query_ScriptABI_FullMethodName    = "/initia.move.v1.Query/ScriptABI"
+	Query_Params_FullMethodName       = "/initia.move.v1.Query/Params"
 )
 
 // QueryClient is the client API for Query service.
@@ -48,24 +43,16 @@ type QueryClient interface {
 	Resource(ctx context.Context, in *QueryResourceRequest, opts ...grpc.CallOption) (*QueryResourceResponse, error)
 	// Resources gets the module infos
 	Resources(ctx context.Context, in *QueryResourcesRequest, opts ...grpc.CallOption) (*QueryResourcesResponse, error)
+	// Query table info of the given address
+	TableInfo(ctx context.Context, in *QueryTableInfoRequest, opts ...grpc.CallOption) (*QueryTableInfoResponse, error)
+	// Query table entry of the given key
 	TableEntry(ctx context.Context, in *QueryTableEntryRequest, opts ...grpc.CallOption) (*QueryTableEntryResponse, error)
+	// Query table entries with pagination
 	TableEntries(ctx context.Context, in *QueryTableEntriesRequest, opts ...grpc.CallOption) (*QueryTableEntriesResponse, error)
 	// ViewFunction execute entry function and return  the function result
 	ViewFunction(ctx context.Context, in *QueryViewFunctionRequest, opts ...grpc.CallOption) (*QueryViewFunctionResponse, error)
 	// ScriptABI decode script bytes into ABI
 	ScriptABI(ctx context.Context, in *QueryScriptABIRequest, opts ...grpc.CallOption) (*QueryScriptABIResponse, error)
-	// StructTagByDenom queries struct tag with denom.
-	StructTagByDenom(ctx context.Context, in *QueryStructTagByDenomRequest, opts ...grpc.CallOption) (*QueryStructTagByDenomResponse, error)
-	// Denom queries denom with struct_tag.
-	Denom(ctx context.Context, in *QueryDenomRequest, opts ...grpc.CallOption) (*QueryDenomResponse, error)
-	// StructTagByNftClassId queries struct tag with nft class id.
-	StructTagByNftClassId(ctx context.Context, in *QueryStructTagByNftClassIdRequest, opts ...grpc.CallOption) (*QueryStructTagByNftClassIdResponse, error)
-	// NftClassId queries nft class id with struct_tag.
-	NftClassId(ctx context.Context, in *QueryNftClassIdRequest, opts ...grpc.CallOption) (*QueryNftClassIdResponse, error)
-	// StructTagBySftClassId queries struct tag with nft class id.
-	StructTagBySftClassId(ctx context.Context, in *QueryStructTagBySftClassIdRequest, opts ...grpc.CallOption) (*QueryStructTagBySftClassIdResponse, error)
-	// SftClassId queries nft class id with struct_tag.
-	SftClassId(ctx context.Context, in *QuerySftClassIdRequest, opts ...grpc.CallOption) (*QuerySftClassIdResponse, error)
 	// Params queries all parameters.
 	Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error)
 }
@@ -114,6 +101,15 @@ func (c *queryClient) Resources(ctx context.Context, in *QueryResourcesRequest, 
 	return out, nil
 }
 
+func (c *queryClient) TableInfo(ctx context.Context, in *QueryTableInfoRequest, opts ...grpc.CallOption) (*QueryTableInfoResponse, error) {
+	out := new(QueryTableInfoResponse)
+	err := c.cc.Invoke(ctx, Query_TableInfo_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *queryClient) TableEntry(ctx context.Context, in *QueryTableEntryRequest, opts ...grpc.CallOption) (*QueryTableEntryResponse, error) {
 	out := new(QueryTableEntryResponse)
 	err := c.cc.Invoke(ctx, Query_TableEntry_FullMethodName, in, out, opts...)
@@ -150,60 +146,6 @@ func (c *queryClient) ScriptABI(ctx context.Context, in *QueryScriptABIRequest, 
 	return out, nil
 }
 
-func (c *queryClient) StructTagByDenom(ctx context.Context, in *QueryStructTagByDenomRequest, opts ...grpc.CallOption) (*QueryStructTagByDenomResponse, error) {
-	out := new(QueryStructTagByDenomResponse)
-	err := c.cc.Invoke(ctx, Query_StructTagByDenom_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *queryClient) Denom(ctx context.Context, in *QueryDenomRequest, opts ...grpc.CallOption) (*QueryDenomResponse, error) {
-	out := new(QueryDenomResponse)
-	err := c.cc.Invoke(ctx, Query_Denom_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *queryClient) StructTagByNftClassId(ctx context.Context, in *QueryStructTagByNftClassIdRequest, opts ...grpc.CallOption) (*QueryStructTagByNftClassIdResponse, error) {
-	out := new(QueryStructTagByNftClassIdResponse)
-	err := c.cc.Invoke(ctx, Query_StructTagByNftClassId_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *queryClient) NftClassId(ctx context.Context, in *QueryNftClassIdRequest, opts ...grpc.CallOption) (*QueryNftClassIdResponse, error) {
-	out := new(QueryNftClassIdResponse)
-	err := c.cc.Invoke(ctx, Query_NftClassId_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *queryClient) StructTagBySftClassId(ctx context.Context, in *QueryStructTagBySftClassIdRequest, opts ...grpc.CallOption) (*QueryStructTagBySftClassIdResponse, error) {
-	out := new(QueryStructTagBySftClassIdResponse)
-	err := c.cc.Invoke(ctx, Query_StructTagBySftClassId_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *queryClient) SftClassId(ctx context.Context, in *QuerySftClassIdRequest, opts ...grpc.CallOption) (*QuerySftClassIdResponse, error) {
-	out := new(QuerySftClassIdResponse)
-	err := c.cc.Invoke(ctx, Query_SftClassId_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *queryClient) Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error) {
 	out := new(QueryParamsResponse)
 	err := c.cc.Invoke(ctx, Query_Params_FullMethodName, in, out, opts...)
@@ -225,24 +167,16 @@ type QueryServer interface {
 	Resource(context.Context, *QueryResourceRequest) (*QueryResourceResponse, error)
 	// Resources gets the module infos
 	Resources(context.Context, *QueryResourcesRequest) (*QueryResourcesResponse, error)
+	// Query table info of the given address
+	TableInfo(context.Context, *QueryTableInfoRequest) (*QueryTableInfoResponse, error)
+	// Query table entry of the given key
 	TableEntry(context.Context, *QueryTableEntryRequest) (*QueryTableEntryResponse, error)
+	// Query table entries with pagination
 	TableEntries(context.Context, *QueryTableEntriesRequest) (*QueryTableEntriesResponse, error)
 	// ViewFunction execute entry function and return  the function result
 	ViewFunction(context.Context, *QueryViewFunctionRequest) (*QueryViewFunctionResponse, error)
 	// ScriptABI decode script bytes into ABI
 	ScriptABI(context.Context, *QueryScriptABIRequest) (*QueryScriptABIResponse, error)
-	// StructTagByDenom queries struct tag with denom.
-	StructTagByDenom(context.Context, *QueryStructTagByDenomRequest) (*QueryStructTagByDenomResponse, error)
-	// Denom queries denom with struct_tag.
-	Denom(context.Context, *QueryDenomRequest) (*QueryDenomResponse, error)
-	// StructTagByNftClassId queries struct tag with nft class id.
-	StructTagByNftClassId(context.Context, *QueryStructTagByNftClassIdRequest) (*QueryStructTagByNftClassIdResponse, error)
-	// NftClassId queries nft class id with struct_tag.
-	NftClassId(context.Context, *QueryNftClassIdRequest) (*QueryNftClassIdResponse, error)
-	// StructTagBySftClassId queries struct tag with nft class id.
-	StructTagBySftClassId(context.Context, *QueryStructTagBySftClassIdRequest) (*QueryStructTagBySftClassIdResponse, error)
-	// SftClassId queries nft class id with struct_tag.
-	SftClassId(context.Context, *QuerySftClassIdRequest) (*QuerySftClassIdResponse, error)
 	// Params queries all parameters.
 	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
 	mustEmbedUnimplementedQueryServer()
@@ -264,6 +198,9 @@ func (UnimplementedQueryServer) Resource(context.Context, *QueryResourceRequest)
 func (UnimplementedQueryServer) Resources(context.Context, *QueryResourcesRequest) (*QueryResourcesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Resources not implemented")
 }
+func (UnimplementedQueryServer) TableInfo(context.Context, *QueryTableInfoRequest) (*QueryTableInfoResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TableInfo not implemented")
+}
 func (UnimplementedQueryServer) TableEntry(context.Context, *QueryTableEntryRequest) (*QueryTableEntryResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TableEntry not implemented")
 }
@@ -275,24 +212,6 @@ func (UnimplementedQueryServer) ViewFunction(context.Context, *QueryViewFunction
 }
 func (UnimplementedQueryServer) ScriptABI(context.Context, *QueryScriptABIRequest) (*QueryScriptABIResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ScriptABI not implemented")
-}
-func (UnimplementedQueryServer) StructTagByDenom(context.Context, *QueryStructTagByDenomRequest) (*QueryStructTagByDenomResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method StructTagByDenom not implemented")
-}
-func (UnimplementedQueryServer) Denom(context.Context, *QueryDenomRequest) (*QueryDenomResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Denom not implemented")
-}
-func (UnimplementedQueryServer) StructTagByNftClassId(context.Context, *QueryStructTagByNftClassIdRequest) (*QueryStructTagByNftClassIdResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method StructTagByNftClassId not implemented")
-}
-func (UnimplementedQueryServer) NftClassId(context.Context, *QueryNftClassIdRequest) (*QueryNftClassIdResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method NftClassId not implemented")
-}
-func (UnimplementedQueryServer) StructTagBySftClassId(context.Context, *QueryStructTagBySftClassIdRequest) (*QueryStructTagBySftClassIdResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method StructTagBySftClassId not implemented")
-}
-func (UnimplementedQueryServer) SftClassId(context.Context, *QuerySftClassIdRequest) (*QuerySftClassIdResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SftClassId not implemented")
 }
 func (UnimplementedQueryServer) Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Params not implemented")
@@ -382,6 +301,24 @@ func _Query_Resources_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_TableInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryTableInfoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).TableInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_TableInfo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).TableInfo(ctx, req.(*QueryTableInfoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Query_TableEntry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryTableEntryRequest)
 	if err := dec(in); err != nil {
@@ -454,114 +391,6 @@ func _Query_ScriptABI_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_StructTagByDenom_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryStructTagByDenomRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(QueryServer).StructTagByDenom(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Query_StructTagByDenom_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).StructTagByDenom(ctx, req.(*QueryStructTagByDenomRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Query_Denom_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryDenomRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(QueryServer).Denom(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Query_Denom_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).Denom(ctx, req.(*QueryDenomRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Query_StructTagByNftClassId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryStructTagByNftClassIdRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(QueryServer).StructTagByNftClassId(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Query_StructTagByNftClassId_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).StructTagByNftClassId(ctx, req.(*QueryStructTagByNftClassIdRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Query_NftClassId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryNftClassIdRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(QueryServer).NftClassId(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Query_NftClassId_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).NftClassId(ctx, req.(*QueryNftClassIdRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Query_StructTagBySftClassId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryStructTagBySftClassIdRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(QueryServer).StructTagBySftClassId(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Query_StructTagBySftClassId_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).StructTagBySftClassId(ctx, req.(*QueryStructTagBySftClassIdRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Query_SftClassId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QuerySftClassIdRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(QueryServer).SftClassId(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Query_SftClassId_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).SftClassId(ctx, req.(*QuerySftClassIdRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Query_Params_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryParamsRequest)
 	if err := dec(in); err != nil {
@@ -604,6 +433,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Query_Resources_Handler,
 		},
 		{
+			MethodName: "TableInfo",
+			Handler:    _Query_TableInfo_Handler,
+		},
+		{
 			MethodName: "TableEntry",
 			Handler:    _Query_TableEntry_Handler,
 		},
@@ -618,30 +451,6 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ScriptABI",
 			Handler:    _Query_ScriptABI_Handler,
-		},
-		{
-			MethodName: "StructTagByDenom",
-			Handler:    _Query_StructTagByDenom_Handler,
-		},
-		{
-			MethodName: "Denom",
-			Handler:    _Query_Denom_Handler,
-		},
-		{
-			MethodName: "StructTagByNftClassId",
-			Handler:    _Query_StructTagByNftClassId_Handler,
-		},
-		{
-			MethodName: "NftClassId",
-			Handler:    _Query_NftClassId_Handler,
-		},
-		{
-			MethodName: "StructTagBySftClassId",
-			Handler:    _Query_StructTagBySftClassId_Handler,
-		},
-		{
-			MethodName: "SftClassId",
-			Handler:    _Query_SftClassId_Handler,
 		},
 		{
 			MethodName: "Params",
