@@ -787,6 +787,8 @@ github.com/initia-labs/initiavm v0.1.2-beta.0.0.20231019024823-916dda7bb1ce h1:7
 github.com/initia-labs/initiavm v0.1.2-beta.0.0.20231019024823-916dda7bb1ce/go.mod h1:aQt4lImZWF9xj7Fm978n0IoeDdKWXTg1CSq6O4WoSD8=
 github.com/initia-labs/initiavm v0.1.2-beta.0.0.20231019031300-756fd01324cf h1:bGeE2LAGSc3omprxgwBQC+t/96/Vp6vPtwcumdYemIo=
 github.com/initia-labs/initiavm v0.1.2-beta.0.0.20231019031300-756fd01324cf/go.mod h1:aQt4lImZWF9xj7Fm978n0IoeDdKWXTg1CSq6O4WoSD8=
+github.com/initia-labs/initiavm v0.1.2-beta.0.0.20231019065621-b22f364a3d0a h1:NWTvNk9Oh9th3Gx4cDz8e07/UFERgcHtf5K4dPUe2Fo=
+github.com/initia-labs/initiavm v0.1.2-beta.0.0.20231019065621-b22f364a3d0a/go.mod h1:aQt4lImZWF9xj7Fm978n0IoeDdKWXTg1CSq6O4WoSD8=
 github.com/jackpal/go-nat-pmp v1.0.2/go.mod h1:QPH045xvCAeXUZOxsnwmrtiCoxIr9eob+4orBN1SBKc=
 github.com/jedisct1/go-minisign v0.0.0-20190909160543-45766022959e/go.mod h1:G1CVv03EnqU1wYL2dFwXxW2An0az9JTl/ZsqXQeBlkU=
 github.com/jessevdk/go-flags v0.0.0-20141203071132-1679536dcc89/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
