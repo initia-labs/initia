@@ -48,7 +48,9 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 		releaseRate := params.ReleaseRate.Sub(params.ReleaseRate.Mul(params.DilutionRate))
 
 		// update store
-		k.SetReleaseRate(ctx, releaseRate)
+		if err := k.SetReleaseRate(ctx, releaseRate); err != nil {
+			panic(err)
+		}
 		k.SetLastDilutionTimestamp(ctx, ctx.BlockTime())
 	}
 

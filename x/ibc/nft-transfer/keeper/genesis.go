@@ -27,7 +27,9 @@ func (k Keeper) InitGenesis(ctx sdk.Context, state types.GenesisState) {
 		}
 	}
 
-	k.SetParams(ctx, state.Params)
+	if err := k.SetParams(ctx, state.Params); err != nil {
+		panic(err)
+	}
 }
 
 // ExportGenesis exports ibc-transfer module's portID and denom trace info into its genesis state.

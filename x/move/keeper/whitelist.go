@@ -123,7 +123,9 @@ func (k Keeper) Whitelist(ctx sdk.Context, msg types.MsgWhitelist) error {
 
 	// register denomLP as staking bond denom
 	bondDenoms = append(bondDenoms, denomLP)
-	k.StakingKeeper.SetBondDenoms(ctx, bondDenoms)
+	if err := k.StakingKeeper.SetBondDenoms(ctx, bondDenoms); err != nil {
+		return err
+	}
 
 	// append denomLP reward weight to distribution keeper
 	rewardWeights = append(rewardWeights, distrtypes.RewardWeight{Denom: denomLP, Weight: msg.RewardWeight})
@@ -213,7 +215,10 @@ func (k Keeper) Delist(ctx sdk.Context, msg types.MsgDelist) error {
 
 	// remove coinLP denom from the staking bond denoms
 	bondDenoms = append(bondDenoms[:bondDenomIndex], bondDenoms[bondDenomIndex+1:]...)
-	k.StakingKeeper.SetBondDenoms(ctx, bondDenoms)
+	err = k.StakingKeeper.SetBondDenoms(ctx, bondDenoms)
+	if err != nil {
+		return err
+	}
 
 	// remove coinLP reward weight from the distribution reward weights
 	rewardWeights = append(rewardWeights[:rewardWeightIndex], rewardWeights[rewardWeightIndex+1:]...)

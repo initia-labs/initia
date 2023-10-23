@@ -78,7 +78,7 @@ func GetDexPairKey(metadata vmtypes.AccountAddress) []byte {
 
 // GetModulePrefix returns the prefix key of an account module store
 func GetModulePrefix(addr vmtypes.AccountAddress) []byte {
-	return append([]byte(addr.Bytes()), ModuleSeparator)
+	return append(addr.Bytes(), ModuleSeparator)
 }
 
 // GetModuleKey returns the key of the published move module
