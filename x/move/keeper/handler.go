@@ -69,6 +69,9 @@ func (k Keeper) PublishModuleBundle(
 	}
 
 	codeBz, err := vmtypes.SerializeBytesVector(moduleCodeArr)
+	if err != nil {
+		return err
+	}
 
 	// ignore staking deltas and events
 	err = k.ExecuteEntryFunction(

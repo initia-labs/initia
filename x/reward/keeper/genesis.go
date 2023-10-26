@@ -8,7 +8,9 @@ import (
 // InitGenesis new mint genesis
 func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) {
 
-	k.SetParams(ctx, data.Params)
+	if err := k.SetParams(ctx, data.Params); err != nil {
+		panic(err)
+	}
 	k.SetLastReleaseTimestamp(ctx, data.LastReleaseTimestamp)
 	k.SetLastDilutionTimestamp(ctx, data.LastDilutionTimestamp)
 

@@ -29,7 +29,9 @@ func (k Keeper) beforeAllocateTokens(ctx sdk.Context) error {
 // bondedVotes is a list of (validator address, validator voted on last block flag) for all
 // validators in the bonded set.
 func (k Keeper) AllocateTokens(ctx sdk.Context, totalPreviousPower int64, bondedVotes []abci.VoteInfo) {
-	k.beforeAllocateTokens(ctx)
+	if err := k.beforeAllocateTokens(ctx); err != nil {
+		panic(err)
+	}
 
 	// fetch and clear the collected fees for distribution, since this is
 	// called in BeginBlock, collected fees will be from the previous block

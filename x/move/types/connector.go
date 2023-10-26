@@ -372,7 +372,7 @@ func ReadStoresFromPool(bz []byte) (vmtypes.AccountAddress, vmtypes.AccountAddre
 	}
 
 	storeB := bz[cursor : cursor+AddressBytesLength]
-	cursor += AddressBytesLength
+	cursor += AddressBytesLength //nolint
 
 	storeBAddr, err := vmtypes.NewAccountAddressFromBytes(storeB)
 	if err != nil {
@@ -493,7 +493,7 @@ func ReadCollectionInfo(bz []byte) (
 	cursor += len
 
 	uri = string(bz[cursor : cursor+uriLen])
-	cursor += uriLen
+	cursor += uriLen //nolint
 
 	return
 }
@@ -527,7 +527,7 @@ func ReadNftInfo(bz []byte) (name, uri, desc string) {
 	cursor += len
 
 	uri = string(bz[cursor : cursor+uriLen])
-	cursor += uriLen
+	cursor += uriLen //nolint
 
 	return
 }

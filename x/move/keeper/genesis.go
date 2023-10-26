@@ -45,7 +45,9 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) ([]abc
 	k.authKeeper.GetModuleAccount(ctx, types.MoveStakingModuleName)
 
 	params := genState.GetParams()
-	k.SetRawParams(ctx, params.ToRaw())
+	if err := k.SetRawParams(ctx, params.ToRaw()); err != nil {
+		return nil, err
+	}
 	k.SetExecutionCounter(ctx, genState.ExecutionCounter)
 
 	if len(genState.GetModules()) == 0 {

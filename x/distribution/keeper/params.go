@@ -56,5 +56,7 @@ func (k Keeper) GetRewardWeights(ctx sdk.Context) []customtypes.RewardWeight {
 func (k Keeper) SetRewardWeights(ctx sdk.Context, rewardWeights []customtypes.RewardWeight) {
 	params := k.GetParams(ctx)
 	params.RewardWeights = rewardWeights
-	k.SetParams(ctx, params)
+	if err := k.SetParams(ctx, params); err != nil {
+		panic(err)
+	}
 }

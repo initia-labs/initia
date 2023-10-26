@@ -34,6 +34,9 @@ type BaseKeeper struct {
 // GetPaginatedTotalSupply queries for the supply, ignoring 0 coins, with a given pagination
 func (k BaseKeeper) GetPaginatedTotalSupply(ctx sdk.Context, pagination *query.PageRequest) (sdk.Coins, *query.PageResponse, error) {
 	issuers, err := k.mk.GetIssuers(ctx)
+	if err != nil {
+		return nil, nil, err
+	}
 
 	supply := sdk.NewCoins()
 

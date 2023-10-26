@@ -307,6 +307,9 @@ func (k DexKeeper) getPoolWeights(
 
 	timestamp := sdk.NewInt(ctx.BlockTime().Unix())
 	weightA, weightB, err := types.ReadWeightsFromDexConfig(timestamp, bz)
+	if err != nil {
+		return math.LegacyDec{}, math.LegacyDec{}, err
+	}
 
 	if ok, err := k.isReverse(ctx, metadataLP); err != nil {
 		return math.LegacyZeroDec(), math.LegacyZeroDec(), err

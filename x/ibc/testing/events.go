@@ -17,8 +17,8 @@ func ParseClientIDFromEvents(events sdk.Events) (string, error) {
 	for _, ev := range events {
 		if ev.Type == clienttypes.EventTypeCreateClient {
 			for _, attr := range ev.Attributes {
-				if string(attr.Key) == clienttypes.AttributeKeyClientID {
-					return string(attr.Value), nil
+				if attr.Key == clienttypes.AttributeKeyClientID {
+					return attr.Value, nil
 				}
 			}
 		}
@@ -33,8 +33,8 @@ func ParseConnectionIDFromEvents(events sdk.Events) (string, error) {
 		if ev.Type == connectiontypes.EventTypeConnectionOpenInit ||
 			ev.Type == connectiontypes.EventTypeConnectionOpenTry {
 			for _, attr := range ev.Attributes {
-				if string(attr.Key) == connectiontypes.AttributeKeyConnectionID {
-					return string(attr.Value), nil
+				if attr.Key == connectiontypes.AttributeKeyConnectionID {
+					return attr.Value, nil
 				}
 			}
 		}
@@ -48,8 +48,8 @@ func ParseChannelIDFromEvents(events sdk.Events) (string, error) {
 	for _, ev := range events {
 		if ev.Type == channeltypes.EventTypeChannelOpenInit || ev.Type == channeltypes.EventTypeChannelOpenTry {
 			for _, attr := range ev.Attributes {
-				if string(attr.Key) == channeltypes.AttributeKeyChannelID {
-					return string(attr.Value), nil
+				if attr.Key == channeltypes.AttributeKeyChannelID {
+					return attr.Value, nil
 				}
 			}
 		}

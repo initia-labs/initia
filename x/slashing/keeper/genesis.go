@@ -16,7 +16,9 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) {
 			if err != nil {
 				panic(err)
 			}
-			k.AddPubkey(ctx, consPk)
+			if err = k.AddPubkey(ctx, consPk); err != nil {
+				panic(err)
+			}
 			return false
 		},
 	)

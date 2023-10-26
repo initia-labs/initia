@@ -181,7 +181,10 @@ func (k MoveBankKeeper) BurnCoins(
 		}
 
 		// send tokens to 0x1
-		k.SendCoin(ctx, accAddr, types.StdAddr, coin.Denom, coin.Amount)
+		err := k.SendCoin(ctx, accAddr, types.StdAddr, coin.Denom, coin.Amount)
+		if err != nil {
+			return err
+		}
 
 		// execute burn
 		metadata, err := types.MetadataAddressFromDenom(coin.Denom)
