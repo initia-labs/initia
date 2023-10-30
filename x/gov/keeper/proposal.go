@@ -3,6 +3,7 @@ package keeper
 import (
 	goerrors "errors"
 	"fmt"
+	"strings"
 
 	"cosmossdk.io/errors"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -36,7 +37,7 @@ func (keeper Keeper) SubmitProposal(ctx sdk.Context, messages []sdk.Msg, metadat
 	// Loop through all messages and confirm that each has a handler and the gov module account
 	// as the only signer
 	for _, msg := range messages {
-		msgsStr += fmt.Sprintf(",%s", sdk.MsgTypeURL(msg))
+		strings.Join([]string{msgsStr, sdk.MsgTypeURL(msg)}, ",")
 
 		// perform a basic validation of the message
 		if err := msg.ValidateBasic(); err != nil {
