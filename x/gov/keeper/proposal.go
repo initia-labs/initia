@@ -3,6 +3,7 @@ package keeper
 import (
 	goerrors "errors"
 	"fmt"
+	"strings"
 
 	"cosmossdk.io/errors"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -30,13 +31,13 @@ func (keeper Keeper) SubmitProposal(ctx sdk.Context, messages []sdk.Msg, metadat
 		return v1.Proposal{}, err
 	}
 
-	// Will hold a comma-separated string of all Msg type URLs.
-	msgsStr := ""
+	// Will hold a string slice of all Msg type URLs.
+	msgs := []string{}
 
 	// Loop through all messages and confirm that each has a handler and the gov module account
 	// as the only signer
 	for _, msg := range messages {
-		msgsStr += fmt.Sprintf(",%s", sdk.MsgTypeURL(msg))
+		msgs = append(msgs, sdk.MsgTypeURL(msg))
 
 		// perform a basic validation of the message
 		if err := msg.ValidateBasic(); err != nil {
@@ -99,7 +100,7 @@ func (keeper Keeper) SubmitProposal(ctx sdk.Context, messages []sdk.Msg, metadat
 		sdk.NewEvent(
 			types.EventTypeSubmitProposal,
 			sdk.NewAttribute(types.AttributeKeyProposalID, fmt.Sprintf("%d", proposalID)),
-			sdk.NewAttribute(types.AttributeKeyProposalMessages, msgsStr),
+			sdk.NewAttribute(types.AttributeKeyProposalMessages, strings.Join(msgs, ",")),
 		),
 	)
 
