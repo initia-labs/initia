@@ -53,7 +53,7 @@ func NewKeeper(
 	// nftTransferKeeper types.NftTransferKeeper,
 	msgRouter types.MessageRouter,
 	moveConfig moveconfig.MoveConfig,
-	bankKeeper types.BankKeeper, // can be nil, if staking not used
+	bankKeeper types.BankKeeper,
 	distrKeeper types.DistributionKeeper, // can be nil, if staking not used
 	stakingKeeper types.StakingKeeper, // can be nil, if staking not used
 	rewardKeeper types.RewardKeeper, // can be nil, if staking not used
