@@ -50,7 +50,6 @@ func NewKeeper(
 	storeKey storetypes.StoreKey,
 	authKeeper types.AccountKeeper,
 	communityPoolKeeper types.CommunityPoolKeeper,
-	// nftTransferKeeper types.NftTransferKeeper,
 	msgRouter types.MessageRouter,
 	moveConfig moveconfig.MoveConfig,
 	bankKeeper types.BankKeeper,
