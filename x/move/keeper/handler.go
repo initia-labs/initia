@@ -73,7 +73,6 @@ func (k Keeper) PublishModuleBundle(
 		return err
 	}
 
-	// ignore staking deltas and events
 	err = k.ExecuteEntryFunction(
 		ctx,
 		sender,
@@ -123,17 +122,19 @@ func (k Keeper) ExecuteEntryFunctionWithMultiSenders(
 	typeArgs []vmtypes.TypeTag,
 	args [][]byte,
 ) error {
-	var gasForRuntime uint64
+	vm := k.moveVM
 	gasMeter := ctx.GasMeter()
+	gasForRuntime := gasMeter.Limit() - gasMeter.GasConsumedToLimit()
+
 	isSimulationOrCheckTx := isSimulationOrCheckTx(ctx)
 	if isSimulationOrCheckTx {
+		vm = k.buildSimulationVM()
+		defer vm.Destroy()
+
 		gasForRuntime = k.config.ContractSimulationGasLimit
-	} else {
-		if gasMeter.Limit() != 0 {
-			gasForRuntime = gasMeter.Limit() - gasMeter.GasConsumedToLimit()
-		} else {
-			gasForRuntime = math.MaxUint64
-		}
+	} else if gasMeter.Limit() == 0 {
+		// infinite gas meter
+		gasForRuntime = math.MaxUint64
 	}
 
 	// delegate gas metering to move vm
@@ -166,7 +167,7 @@ func (k Keeper) ExecuteEntryFunctionWithMultiSenders(
 		k.IncreaseExecutionCounter(ctx),
 	)
 
-	execRes, err := k.moveVM.ExecuteEntryFunction(
+	execRes, err := vm.ExecuteEntryFunction(
 		kvStore,
 		api,
 		env,
@@ -220,17 +221,19 @@ func (k Keeper) ExecuteScriptWithMultiSenders(
 	typeArgs []vmtypes.TypeTag,
 	args [][]byte,
 ) error {
-	var gasForRuntime uint64
+	vm := k.moveVM
 	gasMeter := ctx.GasMeter()
+	gasForRuntime := gasMeter.Limit() - gasMeter.GasConsumedToLimit()
+
 	isSimulationOrCheckTx := isSimulationOrCheckTx(ctx)
 	if isSimulationOrCheckTx {
+		vm = k.buildSimulationVM()
+		defer vm.Destroy()
+
 		gasForRuntime = k.config.ContractSimulationGasLimit
-	} else {
-		if gasMeter.Limit() != 0 {
-			gasForRuntime = gasMeter.Limit() - gasMeter.GasConsumedToLimit()
-		} else {
-			gasForRuntime = math.MaxUint64
-		}
+	} else if gasMeter.Limit() == 0 {
+		// infinite gas meter
+		gasForRuntime = math.MaxUint64
 	}
 
 	// delegate gas metering to move vm
@@ -261,7 +264,7 @@ func (k Keeper) ExecuteScriptWithMultiSenders(
 		k.IncreaseExecutionCounter(ctx),
 	)
 
-	execRes, err := k.moveVM.ExecuteScript(
+	execRes, err := vm.ExecuteScript(
 		kvStore,
 		api,
 		env,
