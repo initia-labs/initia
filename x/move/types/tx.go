@@ -7,7 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/migrations/legacytx"
 )
 
-// staking message types
+// move message types
 const (
 	TypeMsgPublish      = "publish"
 	TypeMsgExecute      = "execute"
