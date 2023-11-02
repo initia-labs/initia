@@ -42,14 +42,6 @@
       }
     },
     {
-      "url": "./tmp-swagger-gen/cosmos/gov/v1beta1/query.swagger.json",
-      "operationIds": {
-        "rename": {
-          "Params": "GovParams"
-        }
-      }
-    },
-    {
       "url": "./tmp-swagger-gen/cosmos/gov/v1/query.swagger.json",
       "operationIds": {
         "rename": {
