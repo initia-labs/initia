@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/initia-labs/initia/x/move/types"
+	vmapi "github.com/initia-labs/initiavm/api"
 )
 
 func GetQueryCmd() *cobra.Command {
@@ -124,7 +125,8 @@ func GetCmdResource() *cobra.Command {
 				return err
 			}
 
-			if err := sdk.ValidateDenom(args[1]); err != nil {
+			_, err = vmapi.ParseStructTag(args[1])
+			if err != nil {
 				return err
 			}
 
