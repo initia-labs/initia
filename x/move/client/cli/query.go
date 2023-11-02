@@ -278,6 +278,8 @@ func GetCmdQueryEntryFunction() *cobra.Command {
 Get an entry function execution result
 
 Supported types : u8, u16, u32, u64, u128, u256, bool, string, address, raw, vector<inner_type>
+string can be quoted with double quotation marks.
+
 Example of args: address:0x1 bool:true u8:0 string:hello vector<u32>:a,b,c,d
 
 Example:
@@ -286,7 +288,7 @@ $ %s query move execute \
 	BasicCoin \
 	getBalance \
 	--type-args '0x1::native_uinit::Coin 0x1::native_uusdc::Coin' \
- 	--args 'u8:0 address:0x1'
+ 	--args 'u8:0 address:0x1 string:"hello world"'
 `, version.AppName, bech32PrefixAccAddr,
 			),
 		),
@@ -321,20 +323,49 @@ $ %s query move execute \
 				flagArgsList = strings.Split(flagArgs, " ")
 			}
 
-			bcsArgs := make([][]byte, len(flagArgsList))
-			for i, arg := range flagArgsList {
-				argSplit := strings.Split(arg, ":")
-				if len(argSplit) != 2 {
-					return fmt.Errorf("invalid argument format: %s", arg)
+			bcsArgs := [][]byte{}
+			strval := ""
+			inConcat := false
+			serializer := NewSerializer()
+			for _, v := range flagArgsList {
+				if !inConcat {
+					arg := strings.Split(v, ":")
+					if len(arg) != 2 || arg[0] == "" || arg[1] == "" {
+						return fmt.Errorf("invalid argument format: %s", arg)
+					}
+
+					if arg[0] == "string" {
+						if arg[1][0] == '"' {
+							arg[1] = arg[1][1:]
+							if arg[1][len(arg[1])-1] == '"' {
+								arg[1] = arg[1][:len(arg[1])-1]
+							} else {
+								strval = arg[1]
+								inConcat = true
+							}
+						}
+					}
+
+					bcsArg, err := BcsSerializeArg(arg[0], arg[1], serializer)
+					if err != nil {
+						return err
+					}
+					bcsArgs = append(bcsArgs, bcsArg)
+				} else {
+					if v[len(v)-1] == '"' {
+						strval += (" " + v[:len(v)-1])
+						inConcat = false
+						bcsArg, err := BcsSerializeArg("string", strval, serializer)
+						if err != nil {
+							return err
+						}
+						bcsArgs = append(bcsArgs, bcsArg)
+						strval = ""
+					} else {
+						strval += (" " + v) // recover space
+					}
 				}
 
-				serializer := NewSerializer()
-				bcsArg, err := BcsSerializeArg(argSplit[0], argSplit[1], serializer)
-				if err != nil {
-					return err
-				}
-
-				bcsArgs[i] = bcsArg
 			}
 
 			queryClient := types.NewQueryClient(clientCtx)
