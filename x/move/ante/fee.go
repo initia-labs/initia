@@ -2,6 +2,7 @@ package ante
 
 import (
 	"cosmossdk.io/errors"
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
@@ -51,40 +52,46 @@ func (fc MempoolFeeChecker) CheckTxFeeWithMinGasPrices(ctx sdk.Context, tx sdk.T
 				// convert baseDenom min gas prices to quote denom prices
 				// and check the paid fee is enough or not.
 				isSufficient := false
+				sumInBaseUnit := math.ZeroInt()
 
 				if fc.keeper != nil {
 					baseDenom := fc.keeper.BaseDenom(ctx)
-					requiredBaseAmount := requiredFees.AmountOf(baseDenom)
-					for _, coin := range feeCoins {
-						if baseDenom == coin.Denom {
-							continue
-						}
+					requiredBaseAmount := requiredFees.AmountOfNoDenomValidation(baseDenom)
 
-						if found, err := fc.keeper.HasDexPair(ctx, coin.Denom); err != nil {
-							return nil, 0, err
-						} else if !found {
-							continue
-						}
+					// If the requiredBaseAmount is zero, it means the operator
+					// do not want to receive base denom fee but want to get other
+					// denom fee.
+					if !requiredBaseAmount.IsZero() {
+						for _, coin := range feeCoins {
+							quotePrice, skip, err := fc.fetchOrSkipPrice(ctx, baseDenom, coin.Denom)
+							if err != nil {
+								return nil, 0, err
+							}
+							if skip {
+								continue
+							}
 
-						quotePrice, err := fc.keeper.GetPoolSpotPrice(ctx, coin.Denom)
-						if err != nil {
-							return nil, 0, err
-						}
+							// sum the converted fee values
+							quoteValueInBaseUnit := quotePrice.MulInt(coin.Amount).TruncateInt()
+							sumInBaseUnit = sumInBaseUnit.Add(quoteValueInBaseUnit)
 
-						if quotePrice.IsZero() {
-							continue
-						}
-
-						quoteValueInBaseUnit := quotePrice.MulInt(coin.Amount).TruncateInt()
-						if quoteValueInBaseUnit.GTE(requiredBaseAmount) {
-							isSufficient = true
-							break
+							// check the sum is greater than the required.
+							if sumInBaseUnit.GTE(requiredBaseAmount) {
+								isSufficient = true
+								break
+							}
 						}
 					}
 				}
 
 				if !isSufficient {
-					return nil, 0, errors.Wrapf(sdkerrors.ErrInsufficientFee, "insufficient fees; got: %s required: %s", feeCoins, requiredFees)
+					return nil, 0, errors.Wrapf(
+						sdkerrors.ErrInsufficientFee,
+						"insufficient fees; got: %s (sum %s), required: %s",
+						feeCoins,
+						sumInBaseUnit,
+						requiredFees,
+					)
 				}
 			}
 		}
@@ -93,4 +100,24 @@ func (fc MempoolFeeChecker) CheckTxFeeWithMinGasPrices(ctx sdk.Context, tx sdk.T
 	// TODO - if we want to use ethereum like priority system,
 	// then we need to compute all dex prices of all fee coins
 	return feeCoins, 1 /* FIFO */, nil
+}
+
+func (fc MempoolFeeChecker) fetchOrSkipPrice(ctx sdk.Context, baseDenom, quoteDenom string) (price sdk.Dec, skip bool, err error) {
+	if quoteDenom == baseDenom {
+		return sdk.OneDec(), false, nil
+	}
+
+	if found, err := fc.keeper.HasDexPair(ctx, quoteDenom); err != nil {
+		return sdk.ZeroDec(), false, err
+	} else if !found {
+		return sdk.ZeroDec(), true, nil
+	}
+
+	if quotePrice, err := fc.keeper.GetPoolSpotPrice(ctx, quoteDenom); err != nil {
+		return sdk.ZeroDec(), false, err
+	} else if quotePrice.IsZero() {
+		return sdk.ZeroDec(), true, nil
+	} else {
+		return quotePrice, false, nil
+	}
 }
