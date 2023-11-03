@@ -400,7 +400,7 @@ func GetCmdQueryParams() *cobra.Command {
 		Args:  cobra.NoArgs,
 		Short: "Query the current move parameters information",
 		Long: strings.TrimSpace(
-			fmt.Sprintf(`Query values set as staking parameters.
+			fmt.Sprintf(`Query values set as move parameters.
 
 Example:
 $ %s query move params
