@@ -31,6 +31,7 @@ func GetQueryCmd() *cobra.Command {
 		GetCmdTableEntry(),
 		GetCmdTableEntries(),
 		GetCmdQueryEntryFunction(),
+		GetCmdQueryParams(),
 	)
 	return queryCmd
 }
@@ -389,5 +390,41 @@ $ %s query move execute \
 	cmd.Flags().AddFlagSet(FlagSetTypeArgs())
 	cmd.Flags().AddFlagSet(FlagSetArgs())
 	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
+// GetCmdQueryParams implements the params query command.
+func GetCmdQueryParams() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "params",
+		Args:  cobra.NoArgs,
+		Short: "Query the current move parameters information",
+		Long: strings.TrimSpace(
+			fmt.Sprintf(`Query values set as staking parameters.
+
+Example:
+$ %s query move params
+`,
+				version.AppName,
+			),
+		),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			queryClient := types.NewQueryClient(clientCtx)
+
+			res, err := queryClient.Params(cmd.Context(), &types.QueryParamsRequest{})
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(&res.Params)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
 	return cmd
 }
