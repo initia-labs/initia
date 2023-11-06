@@ -239,3 +239,60 @@ func DivideUint256String(s string) (uint64, uint64, uint64, uint64, error) {
 	highHigh := n.Rsh(n, 64).Uint64()
 	return highHigh, highLow, high, low, nil
 }
+
+func parseArguments(s string) (tt []string, args []string) {
+	cursor := 0
+
+	var t, a string
+	var typeParsing, quoteParsing bool
+
+	typeParsing = true
+	for len(s) > cursor {
+		c := s[cursor]
+		if c == ':' {
+			typeParsing = false
+
+			cursor++
+			continue
+		} else if quoteParsing {
+			if c == '"' {
+				quoteParsing = false
+
+				cursor++
+				continue
+			}
+		} else {
+			if c == ' ' {
+				typeParsing = true
+
+				tt = append(tt, t)
+				args = append(args, a)
+
+				t = ""
+				a = ""
+
+				cursor++
+				continue
+			} else if c == '"' {
+				typeParsing = false
+				quoteParsing = true
+
+				cursor++
+				continue
+			}
+		}
+
+		if typeParsing {
+			t += string(c)
+		} else {
+			a += string(c)
+		}
+
+		cursor++
+	}
+
+	tt = append(tt, t)
+	args = append(args, a)
+
+	return
+}

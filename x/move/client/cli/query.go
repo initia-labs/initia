@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/initia-labs/initia/x/move/types"
+	vmapi "github.com/initia-labs/initiavm/api"
 )
 
 func GetQueryCmd() *cobra.Command {
@@ -30,6 +31,7 @@ func GetQueryCmd() *cobra.Command {
 		GetCmdTableEntry(),
 		GetCmdTableEntries(),
 		GetCmdQueryEntryFunction(),
+		GetCmdQueryParams(),
 	)
 	return queryCmd
 }
@@ -124,7 +126,8 @@ func GetCmdResource() *cobra.Command {
 				return err
 			}
 
-			if err := sdk.ValidateDenom(args[1]); err != nil {
+			_, err = vmapi.ParseStructTag(args[1])
+			if err != nil {
 				return err
 			}
 
@@ -276,6 +279,7 @@ func GetCmdQueryEntryFunction() *cobra.Command {
 Get an entry function execution result
 
 Supported types : u8, u16, u32, u64, u128, u256, bool, string, address, raw, vector<inner_type>
+
 Example of args: address:0x1 bool:true u8:0 string:hello vector<u32>:a,b,c,d
 
 Example:
@@ -284,7 +288,7 @@ $ %s query move execute \
 	BasicCoin \
 	getBalance \
 	--type-args '0x1::native_uinit::Coin 0x1::native_uusdc::Coin' \
- 	--args 'u8:0 address:0x1'
+ 	--args 'u8:0 address:0x1 string:"hello world"'
 `, version.AppName, bech32PrefixAccAddr,
 			),
 		),
@@ -310,29 +314,25 @@ $ %s query move execute \
 				typeArgs = strings.Split(flagTypeArgs, " ")
 			}
 
-			var flagArgsList []string
 			flagArgs, err := cmd.Flags().GetString(FlagArgs)
 			if err != nil {
 				return err
 			}
-			if flagArgs != "" {
-				flagArgsList = strings.Split(flagArgs, " ")
+
+			argTypes, args := parseArguments(flagArgs)
+			if len(argTypes) != len(args) {
+				return fmt.Errorf("invalid argument format len(types) != len(args)")
 			}
 
-			bcsArgs := make([][]byte, len(flagArgsList))
-			for i, arg := range flagArgsList {
-				argSplit := strings.Split(arg, ":")
-				if len(argSplit) != 2 {
-					return fmt.Errorf("invalid argument format: %s", arg)
-				}
-
-				serializer := NewSerializer()
-				bcsArg, err := BcsSerializeArg(argSplit[0], argSplit[1], serializer)
+			serializer := NewSerializer()
+			bcsArgs := [][]byte{}
+			for i := range argTypes {
+				bcsArg, err := BcsSerializeArg(argTypes[i], args[i], serializer)
 				if err != nil {
 					return err
 				}
 
-				bcsArgs[i] = bcsArg
+				bcsArgs = append(bcsArgs, bcsArg)
 			}
 
 			queryClient := types.NewQueryClient(clientCtx)
@@ -356,5 +356,41 @@ $ %s query move execute \
 	cmd.Flags().AddFlagSet(FlagSetTypeArgs())
 	cmd.Flags().AddFlagSet(FlagSetArgs())
 	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
+// GetCmdQueryParams implements the params query command.
+func GetCmdQueryParams() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "params",
+		Args:  cobra.NoArgs,
+		Short: "Query the current move parameters information",
+		Long: strings.TrimSpace(
+			fmt.Sprintf(`Query values set as move parameters.
+
+Example:
+$ %s query move params
+`,
+				version.AppName,
+			),
+		),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			queryClient := types.NewQueryClient(clientCtx)
+
+			res, err := queryClient.Params(cmd.Context(), &types.QueryParamsRequest{})
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(&res.Params)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
 	return cmd
 }

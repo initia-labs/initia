@@ -117,7 +117,7 @@ $ %s tx move execute \
 	BasicCoin \
 	getBalance \
 	--type-args '0x1::native_uinit::Coin 0x1::native_uusdc::Coin' \
- 	--args 'u8:0 address:0x1'
+ 	--args 'u8:0 address:0x1 string:"hello world"'
 `, version.AppName, bech32PrefixAccAddr,
 			),
 		),
@@ -142,29 +142,25 @@ $ %s tx move execute \
 				typeArgs = strings.Split(flagTypeArgs, " ")
 			}
 
-			var flagArgsList []string
 			flagArgs, err := cmd.Flags().GetString(FlagArgs)
 			if err != nil {
 				return err
 			}
-			if flagArgs != "" {
-				flagArgsList = strings.Split(flagArgs, " ")
+
+			argTypes, args := parseArguments(flagArgs)
+			if len(argTypes) != len(args) {
+				return fmt.Errorf("invalid argument format len(types) != len(args)")
 			}
 
-			bcsArgs := make([][]byte, len(flagArgsList))
-			for i, arg := range flagArgsList {
-				argSplit := strings.Split(arg, ":")
-				if len(argSplit) != 2 {
-					return fmt.Errorf("invalid argument format: %s", arg)
-				}
-
-				serializer := NewSerializer()
-				bcsArg, err := BcsSerializeArg(argSplit[0], argSplit[1], serializer)
+			serializer := NewSerializer()
+			bcsArgs := [][]byte{}
+			for i := range argTypes {
+				bcsArg, err := BcsSerializeArg(argTypes[i], args[i], serializer)
 				if err != nil {
 					return err
 				}
 
-				bcsArgs[i] = bcsArg
+				bcsArgs = append(bcsArgs, bcsArg)
 			}
 
 			msg := types.MsgExecute{
