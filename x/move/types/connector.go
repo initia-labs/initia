@@ -409,8 +409,8 @@ func GetPoolSpotPrice(
 	balanceBase, balanceQuote math.Int,
 	weightBase, weightQuote sdk.Dec,
 ) sdk.Dec {
-	numerator := weightBase.MulInt(balanceQuote)
-	denominator := weightQuote.MulInt(balanceBase)
+	numerator := weightQuote.MulInt(balanceBase)
+	denominator := weightBase.MulInt(balanceQuote)
 
 	return numerator.Quo(denominator)
 }
