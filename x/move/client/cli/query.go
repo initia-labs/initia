@@ -279,7 +279,6 @@ func GetCmdQueryEntryFunction() *cobra.Command {
 Get an entry function execution result
 
 Supported types : u8, u16, u32, u64, u128, u256, bool, string, address, raw, vector<inner_type>
-string can be quoted with double quotation marks.
 
 Example of args: address:0x1 bool:true u8:0 string:hello vector<u32>:a,b,c,d
 
@@ -315,58 +314,25 @@ $ %s query move execute \
 				typeArgs = strings.Split(flagTypeArgs, " ")
 			}
 
-			var flagArgsList []string
 			flagArgs, err := cmd.Flags().GetString(FlagArgs)
 			if err != nil {
 				return err
 			}
-			if flagArgs != "" {
-				flagArgsList = strings.Split(flagArgs, " ")
+
+			argTypes, args := parseArguments(flagArgs)
+			if len(argTypes) != len(args) {
+				return fmt.Errorf("invalid argument format len(types) != len(args)")
 			}
 
-			bcsArgs := [][]byte{}
-			strval := ""
-			inConcat := false
 			serializer := NewSerializer()
-			for _, v := range flagArgsList {
-				if !inConcat {
-					arg := strings.Split(v, ":")
-					if len(arg) != 2 || arg[0] == "" || arg[1] == "" {
-						return fmt.Errorf("invalid argument format: %s", arg)
-					}
-
-					if arg[0] == "string" {
-						if arg[1][0] == '"' {
-							arg[1] = arg[1][1:]
-							if arg[1][len(arg[1])-1] == '"' {
-								arg[1] = arg[1][:len(arg[1])-1]
-							} else {
-								strval = arg[1]
-								inConcat = true
-							}
-						}
-					}
-
-					bcsArg, err := BcsSerializeArg(arg[0], arg[1], serializer)
-					if err != nil {
-						return err
-					}
-					bcsArgs = append(bcsArgs, bcsArg)
-				} else {
-					if v[len(v)-1] == '"' {
-						strval += (" " + v[:len(v)-1])
-						inConcat = false
-						bcsArg, err := BcsSerializeArg("string", strval, serializer)
-						if err != nil {
-							return err
-						}
-						bcsArgs = append(bcsArgs, bcsArg)
-						strval = ""
-					} else {
-						strval += (" " + v) // recover space
-					}
+			bcsArgs := [][]byte{}
+			for i := range argTypes {
+				bcsArg, err := BcsSerializeArg(argTypes[i], args[i], serializer)
+				if err != nil {
+					return err
 				}
 
+				bcsArgs = append(bcsArgs, bcsArg)
 			}
 
 			queryClient := types.NewQueryClient(clientCtx)
