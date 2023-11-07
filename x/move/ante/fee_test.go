@@ -100,10 +100,6 @@ func (suite *AnteTestSuite) TestEnsureMempoolFees() {
 	tx, err := suite.CreateTestTx(privs, accNums, accSeqs, suite.ctx.ChainID())
 	suite.Require().NoError(err)
 
-	suite.txBuilder.SetFeeAmount(atomFeeAmount)
-	tx2, err := suite.CreateTestTx(privs, accNums, accSeqs, suite.ctx.ChainID())
-	suite.Require().NoError(err)
-
 	// Set high gas price so standard test fee fails
 	basePrice := sdk.NewDecCoinFromDec(baseDenom, sdk.NewDec(200).Quo(sdk.NewDec(100000)))
 	highGasPrice := []sdk.DecCoin{basePrice}
@@ -134,7 +130,9 @@ func (suite *AnteTestSuite) TestEnsureMempoolFees() {
 	_, _, err = fc.CheckTxFeeWithMinGasPrices(suite.ctx, tx)
 	suite.Require().Nil(err, "Decorator should not have errored on fee higher than local gasPrice")
 
-	_, _, err = fc.CheckTxFeeWithMinGasPrices(suite.ctx, tx2)
+	suite.txBuilder.SetFeeAmount(atomFeeAmount)
+	suite.Require().Equal(atomFeeAmount, tx.GetFee())
+	_, _, err = fc.CheckTxFeeWithMinGasPrices(suite.ctx, tx)
 	suite.Require().Nil(err, "Decorator should not have errored on fee higher than local gasPrice")
 
 	// set high base_min_gas_price to test should be failed
@@ -145,6 +143,8 @@ func (suite *AnteTestSuite) TestEnsureMempoolFees() {
 		baseMinGasPrice: sdk.NewDec(200).Quo(sdk.NewDec(100000)),
 	})
 
+	suite.txBuilder.SetFeeAmount(feeAmount)
+	suite.Require().Equal(feeAmount, tx.GetFee())
 	_, _, err = fc.CheckTxFeeWithMinGasPrices(suite.ctx, tx)
 	suite.Require().NotNil(err, "Decorator should have errored on too low fee for local gasPrice")
 }
