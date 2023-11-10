@@ -105,7 +105,8 @@ func (suite *AnteTestSuite) TestEnsureMempoolFees() {
 	suite.Require().NoError(err)
 
 	// Set high gas price so standard test fee fails
-	basePrice := sdk.NewDecCoinFromDec(baseDenom, sdk.NewDec(200).Quo(sdk.NewDec(100000)))
+	// gas price = 0.004
+	basePrice := sdk.NewDecCoinFromDec(baseDenom, sdk.NewDecWithPrec(4, 3))
 	highGasPrice := []sdk.DecCoin{basePrice}
 	suite.ctx = suite.ctx.WithMinGasPrices(highGasPrice)
 
@@ -142,7 +143,7 @@ func (suite *AnteTestSuite) TestEnsureMempoolFees() {
 		pools:           dexPools,
 		weights:         dexWeights,
 		baseDenom:       baseDenom,
-		baseMinGasPrice: sdk.NewDec(200).Quo(sdk.NewDec(100000)),
+		baseMinGasPrice: sdk.NewDecWithPrec(4, 3),
 	})
 
 	_, _, err = fc.CheckTxFeeWithMinGasPrices(suite.ctx, tx)

@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 
+	"cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -30,12 +31,12 @@ func Test_GetDexWeight(t *testing.T) {
 func Test_GetPoolSpotPrice(t *testing.T) {
 	price := types.GetPoolSpotPrice(
 		sdk.NewInt(1_000_000),
-		sdk.NewInt(4_000_000),
+		sdk.NewInt(8_000_000),
 		sdk.NewDecWithPrec(2, 1),
 		sdk.NewDecWithPrec(8, 1),
 	)
 
-	require.Equal(t, sdk.OneDec(), price)
+	require.Equal(t, math.LegacyNewDecWithPrec(5, 1), price)
 }
 
 func Test_DeserializeUint128(t *testing.T) {
