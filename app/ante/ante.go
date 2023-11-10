@@ -11,8 +11,8 @@ import (
 
 	moveante "github.com/initia-labs/initia/x/move/ante"
 	movetypes "github.com/initia-labs/initia/x/move/types"
-	builderante "github.com/skip-mev/pob/x/builder/ante"
-	builderkeeper "github.com/skip-mev/pob/x/builder/keeper"
+	auctionante "github.com/skip-mev/block-sdk/x/auction/ante"
+	auctionkeeper "github.com/skip-mev/block-sdk/x/auction/keeper"
 )
 
 // HandlerOptions extends the SDK's AnteHandler options by requiring the IBC
@@ -22,9 +22,9 @@ type HandlerOptions struct {
 	Codec         codec.BinaryCodec
 	MoveKeeper    movetypes.AnteKeeper
 	IBCkeeper     *ibckeeper.Keeper
-	BuilderKeeper builderkeeper.Keeper
+	AuctionKeeper auctionkeeper.Keeper
 	TxEncoder     sdk.TxEncoder
-	Mempool       builderante.Mempool
+	MevLane       auctionante.MEVLane
 }
 
 // NewAnteHandler returns an AnteHandler that checks and increments sequence
@@ -70,7 +70,7 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 		ante.NewSigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
 		ante.NewIncrementSequenceDecorator(options.AccountKeeper),
 		ibcante.NewRedundantRelayDecorator(options.IBCkeeper),
-		builderante.NewBuilderDecorator(options.BuilderKeeper, options.TxEncoder, options.Mempool),
+		auctionante.NewAuctionDecorator(options.AuctionKeeper, options.TxEncoder, options.MevLane),
 	}
 
 	return sdk.ChainAnteDecorators(anteDecorators...), nil
