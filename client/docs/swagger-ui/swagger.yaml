@@ -47055,6 +47055,777 @@ paths:
           format: byte
       tags:
         - Query
+  /opinit/ophost/v1/bridges:
+    get:
+      summary: Bridges queries bridge infos.
+      operationId: Bridges
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              bridges:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    bridge_id:
+                      type: string
+                      format: uint64
+                    bridge_addr:
+                      type: string
+                    bridge_config:
+                      type: object
+                      properties:
+                        challenger:
+                          type: string
+                          description: The address of the challenger.
+                        proposer:
+                          type: string
+                          description: The address of the proposer.
+                        submission_interval:
+                          type: string
+                          description: >-
+                            The time interval at which checkpoints must be
+                            submitted.
+
+                            NOTE: this param is currently not used, but will be
+                            used for challenge in future.
+                        finalization_period:
+                          type: string
+                          description: >-
+                            The minium time duration that must elapse before a
+                            withdrawal can be finalized.
+                        submission_start_time:
+                          type: string
+                          format: date-time
+                          description: >-
+                            The time of the first l2 block recorded.
+
+                            NOTE: this param is currently not used, but will be
+                            used for challenge in future.
+                        metadata:
+                          type: string
+                          format: byte
+                          description: >-
+                            Normally it is IBC channelID for permissioned IBC
+                            relayer.
+                      description: BridgeConfig defines the set of bridge config.
+                  title: >-
+                    QueryBridgeResponse is response type for the Query/Bridge
+                    RPC method
+              pagination:
+                description: pagination defines the pagination in the response.
+                type: object
+                properties:
+                  next_key:
+                    type: string
+                    format: byte
+                    description: |-
+                      next_key is the key to be passed to PageRequest.key to
+                      query the next page most efficiently. It will be empty if
+                      there are no more results.
+                  total:
+                    type: string
+                    format: uint64
+                    title: >-
+                      total is total number of results available if
+                      PageRequest.count_total
+
+                      was set, its value is undefined otherwise
+            title: >-
+              QueryBridgesResponse is response type for the Query/Bridges RPC
+              method
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: pagination.key
+          description: |-
+            key is a value returned in PageResponse.next_key to begin
+            querying the next page most efficiently. Only one of offset or key
+            should be set.
+          in: query
+          required: false
+          type: string
+          format: byte
+        - name: pagination.offset
+          description: >-
+            offset is a numeric offset that can be used when key is unavailable.
+
+            It is less efficient than using key. Only one of offset or key
+            should
+
+            be set.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.limit
+          description: >-
+            limit is the total number of results to be returned in the result
+            page.
+
+            If left empty it will default to a value to be set by each app.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.count_total
+          description: >-
+            count_total is set to true  to indicate that the result set should
+            include
+
+            a count of the total number of items available for pagination in
+            UIs.
+
+            count_total is only respected when offset is used. It is ignored
+            when key
+
+            is set.
+          in: query
+          required: false
+          type: boolean
+        - name: pagination.reverse
+          description: >-
+            reverse is set to true if results are to be returned in the
+            descending order.
+
+
+            Since: cosmos-sdk 0.43
+          in: query
+          required: false
+          type: boolean
+      tags:
+        - Query
+  /opinit/ophost/v1/bridges/{bridge_id}:
+    get:
+      summary: Bridge queries bridge info.
+      operationId: Bridge
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              bridge_id:
+                type: string
+                format: uint64
+              bridge_addr:
+                type: string
+              bridge_config:
+                type: object
+                properties:
+                  challenger:
+                    type: string
+                    description: The address of the challenger.
+                  proposer:
+                    type: string
+                    description: The address of the proposer.
+                  submission_interval:
+                    type: string
+                    description: >-
+                      The time interval at which checkpoints must be submitted.
+
+                      NOTE: this param is currently not used, but will be used
+                      for challenge in future.
+                  finalization_period:
+                    type: string
+                    description: >-
+                      The minium time duration that must elapse before a
+                      withdrawal can be finalized.
+                  submission_start_time:
+                    type: string
+                    format: date-time
+                    description: >-
+                      The time of the first l2 block recorded.
+
+                      NOTE: this param is currently not used, but will be used
+                      for challenge in future.
+                  metadata:
+                    type: string
+                    format: byte
+                    description: Normally it is IBC channelID for permissioned IBC relayer.
+                description: BridgeConfig defines the set of bridge config.
+            title: >-
+              QueryBridgeResponse is response type for the Query/Bridge RPC
+              method
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: bridge_id
+          in: path
+          required: true
+          type: string
+          format: uint64
+      tags:
+        - Query
+  /opinit/ophost/v1/bridges/{bridge_id}/outputs:
+    get:
+      summary: OutputProposals queries all output proposals.
+      operationId: OutputProposals
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              output_proposals:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    bridge_id:
+                      type: string
+                      format: uint64
+                    output_index:
+                      type: string
+                      format: uint64
+                    output_proposal:
+                      type: object
+                      properties:
+                        output_root:
+                          type: string
+                          format: byte
+                          description: Hash of the l2 output.
+                        l1_block_time:
+                          type: string
+                          format: date-time
+                          description: >-
+                            Timestamp of the l1 block that the output root was
+                            submitted in.
+                        l2_block_number:
+                          type: string
+                          format: uint64
+                          description: >-
+                            The l2 block number that the output root was
+                            submitted in.
+                      description: Output is a l2 block submitted by proposer.
+                  title: >-
+                    QueryOutputProposalResponse is response type for the
+                    Query/OutputProposal RPC method
+              pagination:
+                description: pagination defines the pagination in the response.
+                type: object
+                properties:
+                  next_key:
+                    type: string
+                    format: byte
+                    description: |-
+                      next_key is the key to be passed to PageRequest.key to
+                      query the next page most efficiently. It will be empty if
+                      there are no more results.
+                  total:
+                    type: string
+                    format: uint64
+                    title: >-
+                      total is total number of results available if
+                      PageRequest.count_total
+
+                      was set, its value is undefined otherwise
+            title: >-
+              QueryOutputProposalsResponse is response type for the
+              Query/OutputProposals RPC method
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: bridge_id
+          in: path
+          required: true
+          type: string
+          format: uint64
+        - name: output_index
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.key
+          description: |-
+            key is a value returned in PageResponse.next_key to begin
+            querying the next page most efficiently. Only one of offset or key
+            should be set.
+          in: query
+          required: false
+          type: string
+          format: byte
+        - name: pagination.offset
+          description: >-
+            offset is a numeric offset that can be used when key is unavailable.
+
+            It is less efficient than using key. Only one of offset or key
+            should
+
+            be set.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.limit
+          description: >-
+            limit is the total number of results to be returned in the result
+            page.
+
+            If left empty it will default to a value to be set by each app.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.count_total
+          description: >-
+            count_total is set to true  to indicate that the result set should
+            include
+
+            a count of the total number of items available for pagination in
+            UIs.
+
+            count_total is only respected when offset is used. It is ignored
+            when key
+
+            is set.
+          in: query
+          required: false
+          type: boolean
+        - name: pagination.reverse
+          description: >-
+            reverse is set to true if results are to be returned in the
+            descending order.
+
+
+            Since: cosmos-sdk 0.43
+          in: query
+          required: false
+          type: boolean
+      tags:
+        - Query
+  /opinit/ophost/v1/bridges/{bridge_id}/outputs/{output_index}:
+    get:
+      summary: OutputProposal queries output proposal by output index.
+      operationId: OutputProposal
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              bridge_id:
+                type: string
+                format: uint64
+              output_index:
+                type: string
+                format: uint64
+              output_proposal:
+                type: object
+                properties:
+                  output_root:
+                    type: string
+                    format: byte
+                    description: Hash of the l2 output.
+                  l1_block_time:
+                    type: string
+                    format: date-time
+                    description: >-
+                      Timestamp of the l1 block that the output root was
+                      submitted in.
+                  l2_block_number:
+                    type: string
+                    format: uint64
+                    description: The l2 block number that the output root was submitted in.
+                description: Output is a l2 block submitted by proposer.
+            title: >-
+              QueryOutputProposalResponse is response type for the
+              Query/OutputProposal RPC method
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: bridge_id
+          in: path
+          required: true
+          type: string
+          format: uint64
+        - name: output_index
+          in: path
+          required: true
+          type: string
+          format: uint64
+      tags:
+        - Query
+  /opinit/ophost/v1/bridges/{bridge_id}/token_pairs:
+    get:
+      summary: TokenPairs queries all (l1 denom, l2 denom) pair.
+      operationId: TokenPairs
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              token_pairs:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    l1_denom:
+                      type: string
+                    l2_denom:
+                      type: string
+                  title: TokenPair defines l1 and l2 token pair
+              pagination:
+                description: pagination defines the pagination in the response.
+                type: object
+                properties:
+                  next_key:
+                    type: string
+                    format: byte
+                    description: |-
+                      next_key is the key to be passed to PageRequest.key to
+                      query the next page most efficiently. It will be empty if
+                      there are no more results.
+                  total:
+                    type: string
+                    format: uint64
+                    title: >-
+                      total is total number of results available if
+                      PageRequest.count_total
+
+                      was set, its value is undefined otherwise
+            title: >-
+              QueryTokenPairsResponse is response type for the Query/TokenPairs
+              RPC method
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: bridge_id
+          in: path
+          required: true
+          type: string
+          format: uint64
+        - name: pagination.key
+          description: |-
+            key is a value returned in PageResponse.next_key to begin
+            querying the next page most efficiently. Only one of offset or key
+            should be set.
+          in: query
+          required: false
+          type: string
+          format: byte
+        - name: pagination.offset
+          description: >-
+            offset is a numeric offset that can be used when key is unavailable.
+
+            It is less efficient than using key. Only one of offset or key
+            should
+
+            be set.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.limit
+          description: >-
+            limit is the total number of results to be returned in the result
+            page.
+
+            If left empty it will default to a value to be set by each app.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.count_total
+          description: >-
+            count_total is set to true  to indicate that the result set should
+            include
+
+            a count of the total number of items available for pagination in
+            UIs.
+
+            count_total is only respected when offset is used. It is ignored
+            when key
+
+            is set.
+          in: query
+          required: false
+          type: boolean
+        - name: pagination.reverse
+          description: >-
+            reverse is set to true if results are to be returned in the
+            descending order.
+
+
+            Since: cosmos-sdk 0.43
+          in: query
+          required: false
+          type: boolean
+      tags:
+        - Query
+  /opinit/ophost/v1/bridges/{bridge_id}/token_pairs/by_l1_denom:
+    get:
+      summary: TokenPairByL1Denom queries token pair by l1 denom.
+      operationId: TokenPairByL1Denom
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              token_pair:
+                type: object
+                properties:
+                  l1_denom:
+                    type: string
+                  l2_denom:
+                    type: string
+                title: TokenPair defines l1 and l2 token pair
+            title: >-
+              QueryTokenPairByL1DenomResponse is response type for the
+              Query/TokenPairByL1Denom RPC method
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: bridge_id
+          in: path
+          required: true
+          type: string
+          format: uint64
+        - name: l1_denom
+          in: query
+          required: false
+          type: string
+      tags:
+        - Query
+  /opinit/ophost/v1/bridges/{bridge_id}/token_pairs/by_l2_denom:
+    get:
+      summary: TokenPairByL2Denom queries token pair by l2 denom.
+      operationId: TokenPairByL2Denom
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              token_pair:
+                type: object
+                properties:
+                  l1_denom:
+                    type: string
+                  l2_denom:
+                    type: string
+                title: TokenPair defines l1 and l2 token pair
+            title: >-
+              QueryTokenPairByL2DenomResponse is response type for the
+              Query/TokenPairByL2Denom RPC method
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: bridge_id
+          in: path
+          required: true
+          type: string
+          format: uint64
+        - name: l2_denom
+          in: query
+          required: false
+          type: string
+      tags:
+        - Query
+  /opinit/ophost/v1/params:
+    get:
+      summary: Parameters queries the rollup parameters.
+      operationId: OPHostParams
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              params:
+                description: params holds all the parameters of this module.
+                type: object
+                properties:
+                  registration_fee:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    description: The amount to be paid by l2 creator.
+            description: >-
+              QueryParamsResponse is response type for the Query/Params RPC
+              method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      tags:
+        - Query
 definitions:
   cosmos.auth.v1beta1.AddressBytesToStringResponse:
     type: object
@@ -76664,3 +77435,365 @@ definitions:
           a new module has (a) the same public functions (b) for existing resources, no layout change.
       * `immutable`
           Whether the modules in the package are immutable and cannot be upgraded.
+  opinit.ophost.v1.BridgeConfig:
+    type: object
+    properties:
+      challenger:
+        type: string
+        description: The address of the challenger.
+      proposer:
+        type: string
+        description: The address of the proposer.
+      submission_interval:
+        type: string
+        description: >-
+          The time interval at which checkpoints must be submitted.
+
+          NOTE: this param is currently not used, but will be used for challenge
+          in future.
+      finalization_period:
+        type: string
+        description: >-
+          The minium time duration that must elapse before a withdrawal can be
+          finalized.
+      submission_start_time:
+        type: string
+        format: date-time
+        description: >-
+          The time of the first l2 block recorded.
+
+          NOTE: this param is currently not used, but will be used for challenge
+          in future.
+      metadata:
+        type: string
+        format: byte
+        description: Normally it is IBC channelID for permissioned IBC relayer.
+    description: BridgeConfig defines the set of bridge config.
+  opinit.ophost.v1.Output:
+    type: object
+    properties:
+      output_root:
+        type: string
+        format: byte
+        description: Hash of the l2 output.
+      l1_block_time:
+        type: string
+        format: date-time
+        description: Timestamp of the l1 block that the output root was submitted in.
+      l2_block_number:
+        type: string
+        format: uint64
+        description: The l2 block number that the output root was submitted in.
+    description: Output is a l2 block submitted by proposer.
+  opinit.ophost.v1.Params:
+    type: object
+    properties:
+      registration_fee:
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            Coin defines a token with a denomination and an amount.
+
+            NOTE: The amount field is an Int which implements the custom method
+            signatures required by gogoproto.
+        description: The amount to be paid by l2 creator.
+    description: Params defines the set of ophost parameters.
+  opinit.ophost.v1.QueryBridgeResponse:
+    type: object
+    properties:
+      bridge_id:
+        type: string
+        format: uint64
+      bridge_addr:
+        type: string
+      bridge_config:
+        type: object
+        properties:
+          challenger:
+            type: string
+            description: The address of the challenger.
+          proposer:
+            type: string
+            description: The address of the proposer.
+          submission_interval:
+            type: string
+            description: >-
+              The time interval at which checkpoints must be submitted.
+
+              NOTE: this param is currently not used, but will be used for
+              challenge in future.
+          finalization_period:
+            type: string
+            description: >-
+              The minium time duration that must elapse before a withdrawal can
+              be finalized.
+          submission_start_time:
+            type: string
+            format: date-time
+            description: >-
+              The time of the first l2 block recorded.
+
+              NOTE: this param is currently not used, but will be used for
+              challenge in future.
+          metadata:
+            type: string
+            format: byte
+            description: Normally it is IBC channelID for permissioned IBC relayer.
+        description: BridgeConfig defines the set of bridge config.
+    title: QueryBridgeResponse is response type for the Query/Bridge RPC method
+  opinit.ophost.v1.QueryBridgesResponse:
+    type: object
+    properties:
+      bridges:
+        type: array
+        items:
+          type: object
+          properties:
+            bridge_id:
+              type: string
+              format: uint64
+            bridge_addr:
+              type: string
+            bridge_config:
+              type: object
+              properties:
+                challenger:
+                  type: string
+                  description: The address of the challenger.
+                proposer:
+                  type: string
+                  description: The address of the proposer.
+                submission_interval:
+                  type: string
+                  description: >-
+                    The time interval at which checkpoints must be submitted.
+
+                    NOTE: this param is currently not used, but will be used for
+                    challenge in future.
+                finalization_period:
+                  type: string
+                  description: >-
+                    The minium time duration that must elapse before a
+                    withdrawal can be finalized.
+                submission_start_time:
+                  type: string
+                  format: date-time
+                  description: >-
+                    The time of the first l2 block recorded.
+
+                    NOTE: this param is currently not used, but will be used for
+                    challenge in future.
+                metadata:
+                  type: string
+                  format: byte
+                  description: Normally it is IBC channelID for permissioned IBC relayer.
+              description: BridgeConfig defines the set of bridge config.
+          title: QueryBridgeResponse is response type for the Query/Bridge RPC method
+      pagination:
+        description: pagination defines the pagination in the response.
+        type: object
+        properties:
+          next_key:
+            type: string
+            format: byte
+            description: |-
+              next_key is the key to be passed to PageRequest.key to
+              query the next page most efficiently. It will be empty if
+              there are no more results.
+          total:
+            type: string
+            format: uint64
+            title: >-
+              total is total number of results available if
+              PageRequest.count_total
+
+              was set, its value is undefined otherwise
+    title: QueryBridgesResponse is response type for the Query/Bridges RPC method
+  opinit.ophost.v1.QueryOutputProposalResponse:
+    type: object
+    properties:
+      bridge_id:
+        type: string
+        format: uint64
+      output_index:
+        type: string
+        format: uint64
+      output_proposal:
+        type: object
+        properties:
+          output_root:
+            type: string
+            format: byte
+            description: Hash of the l2 output.
+          l1_block_time:
+            type: string
+            format: date-time
+            description: Timestamp of the l1 block that the output root was submitted in.
+          l2_block_number:
+            type: string
+            format: uint64
+            description: The l2 block number that the output root was submitted in.
+        description: Output is a l2 block submitted by proposer.
+    title: >-
+      QueryOutputProposalResponse is response type for the Query/OutputProposal
+      RPC method
+  opinit.ophost.v1.QueryOutputProposalsResponse:
+    type: object
+    properties:
+      output_proposals:
+        type: array
+        items:
+          type: object
+          properties:
+            bridge_id:
+              type: string
+              format: uint64
+            output_index:
+              type: string
+              format: uint64
+            output_proposal:
+              type: object
+              properties:
+                output_root:
+                  type: string
+                  format: byte
+                  description: Hash of the l2 output.
+                l1_block_time:
+                  type: string
+                  format: date-time
+                  description: >-
+                    Timestamp of the l1 block that the output root was submitted
+                    in.
+                l2_block_number:
+                  type: string
+                  format: uint64
+                  description: The l2 block number that the output root was submitted in.
+              description: Output is a l2 block submitted by proposer.
+          title: >-
+            QueryOutputProposalResponse is response type for the
+            Query/OutputProposal RPC method
+      pagination:
+        description: pagination defines the pagination in the response.
+        type: object
+        properties:
+          next_key:
+            type: string
+            format: byte
+            description: |-
+              next_key is the key to be passed to PageRequest.key to
+              query the next page most efficiently. It will be empty if
+              there are no more results.
+          total:
+            type: string
+            format: uint64
+            title: >-
+              total is total number of results available if
+              PageRequest.count_total
+
+              was set, its value is undefined otherwise
+    title: >-
+      QueryOutputProposalsResponse is response type for the
+      Query/OutputProposals RPC method
+  opinit.ophost.v1.QueryParamsResponse:
+    type: object
+    properties:
+      params:
+        description: params holds all the parameters of this module.
+        type: object
+        properties:
+          registration_fee:
+            type: array
+            items:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+            description: The amount to be paid by l2 creator.
+    description: QueryParamsResponse is response type for the Query/Params RPC method.
+  opinit.ophost.v1.QueryTokenPairByL1DenomResponse:
+    type: object
+    properties:
+      token_pair:
+        type: object
+        properties:
+          l1_denom:
+            type: string
+          l2_denom:
+            type: string
+        title: TokenPair defines l1 and l2 token pair
+    title: >-
+      QueryTokenPairByL1DenomResponse is response type for the
+      Query/TokenPairByL1Denom RPC method
+  opinit.ophost.v1.QueryTokenPairByL2DenomResponse:
+    type: object
+    properties:
+      token_pair:
+        type: object
+        properties:
+          l1_denom:
+            type: string
+          l2_denom:
+            type: string
+        title: TokenPair defines l1 and l2 token pair
+    title: >-
+      QueryTokenPairByL2DenomResponse is response type for the
+      Query/TokenPairByL2Denom RPC method
+  opinit.ophost.v1.QueryTokenPairsResponse:
+    type: object
+    properties:
+      token_pairs:
+        type: array
+        items:
+          type: object
+          properties:
+            l1_denom:
+              type: string
+            l2_denom:
+              type: string
+          title: TokenPair defines l1 and l2 token pair
+      pagination:
+        description: pagination defines the pagination in the response.
+        type: object
+        properties:
+          next_key:
+            type: string
+            format: byte
+            description: |-
+              next_key is the key to be passed to PageRequest.key to
+              query the next page most efficiently. It will be empty if
+              there are no more results.
+          total:
+            type: string
+            format: uint64
+            title: >-
+              total is total number of results available if
+              PageRequest.count_total
+
+              was set, its value is undefined otherwise
+    title: >-
+      QueryTokenPairsResponse is response type for the Query/TokenPairs RPC
+      method
+  opinit.ophost.v1.TokenPair:
+    type: object
+    properties:
+      l1_denom:
+        type: string
+      l2_denom:
+        type: string
+    title: TokenPair defines l1 and l2 token pair
