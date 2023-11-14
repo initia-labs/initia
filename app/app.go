@@ -13,7 +13,6 @@ import (
 
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 	reflectionv1 "cosmossdk.io/api/cosmos/reflection/v1"
-	"cosmossdk.io/math"
 
 	dbm "github.com/cometbft/cometbft-db"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -145,16 +144,12 @@ import (
 	"github.com/initia-labs/initia/x/slashing"
 	slashingkeeper "github.com/initia-labs/initia/x/slashing/keeper"
 
-	mevabci "github.com/skip-mev/block-sdk/abci"
-	signer_extraction "github.com/skip-mev/block-sdk/adapters/signer_extraction_adapter"
-	"github.com/skip-mev/block-sdk/block"
-	"github.com/skip-mev/block-sdk/block/base"
-	baselane "github.com/skip-mev/block-sdk/lanes/base"
-	"github.com/skip-mev/block-sdk/lanes/mev"
-	"github.com/skip-mev/block-sdk/x/auction"
-	auctionante "github.com/skip-mev/block-sdk/x/auction/ante"
-	auctionkeeper "github.com/skip-mev/block-sdk/x/auction/keeper"
-	auctiontypes "github.com/skip-mev/block-sdk/x/auction/types"
+	builderabci "github.com/skip-mev/pob/abci"
+	pobabci "github.com/skip-mev/pob/abci"
+	buildermempool "github.com/skip-mev/pob/mempool"
+	"github.com/skip-mev/pob/x/builder"
+	builderkeeper "github.com/skip-mev/pob/x/builder/keeper"
+	buildertypes "github.com/skip-mev/pob/x/builder/types"
 
 	// unnamed import of statik for swagger UI support
 	_ "github.com/initia-labs/initia/client/docs/statik"
@@ -210,7 +205,7 @@ var (
 		router.AppModuleBasic{},
 		ibcperm.AppModuleBasic{},
 		move.AppModuleBasic{},
-		auction.AppModuleBasic{},
+		builder.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -225,9 +220,9 @@ var (
 		govtypes.ModuleName:             {authtypes.Burner},
 		ibctransfertypes.ModuleName:     {authtypes.Minter, authtypes.Burner},
 		movetypes.MoveStakingModuleName: nil,
-		// x/auction's module account must be instantiated upon genesis to accrue auction rewards not
+		// x/builder's module account must be instantiated upon genesis to accrue auction rewards not
 		// distributed to proposers
-		auctiontypes.ModuleName: nil,
+		buildertypes.ModuleName: nil,
 
 		// this is only for testing
 		authtypes.Minter: {authtypes.Minter},
@@ -292,7 +287,7 @@ type InitiaApp struct {
 	RouterKeeper          *routerkeeper.Keeper // Router Keeper must be a pointer in the app, so we can SetTransferKeeper on it correctly
 	IBCPermKeeper         *ibcpermkeeper.Keeper
 	MoveKeeper            *movekeeper.Keeper
-	AuctionKeeper         *auctionkeeper.Keeper // x/builder keeper used to process bids for TOB auctions
+	BuilderKeeper         *builderkeeper.Keeper // x/builder keeper used to process bids for TOB auctions
 
 	// make scoped keepers public for test purposes
 	ScopedIBCKeeper           capabilitykeeper.ScopedKeeper
@@ -309,7 +304,7 @@ type InitiaApp struct {
 	configurator module.Configurator
 
 	// Override of BaseApp's CheckTx
-	checkTxHandler mev.CheckTx
+	checkTxHandler pobabci.CheckTx
 }
 
 // NewInitiaApp returns a reference to an initialized Initia.
@@ -343,7 +338,7 @@ func NewInitiaApp(
 		ibctransfertypes.StoreKey, ibcnfttransfertypes.StoreKey, capabilitytypes.StoreKey,
 		authzkeeper.StoreKey, feegrant.StoreKey, icahosttypes.StoreKey,
 		icacontrollertypes.StoreKey, icaauthtypes.StoreKey, ibcfeetypes.StoreKey,
-		routertypes.StoreKey, ibcpermtypes.StoreKey, movetypes.StoreKey, auctiontypes.StoreKey,
+		routertypes.StoreKey, ibcpermtypes.StoreKey, movetypes.StoreKey, buildertypes.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
@@ -749,15 +744,15 @@ func NewInitiaApp(
 	// x/builder module keeper initialization
 
 	// initialize the keeper
-	auctionKeeper := auctionkeeper.NewKeeperWithRewardsAddressProvider(
+	builderKeeper := builderkeeper.NewKeeperWithRewardsAddressProvider(
 		app.appCodec,
-		app.keys[auctiontypes.StoreKey],
+		app.keys[buildertypes.StoreKey],
 		app.AccountKeeper,
 		app.BankKeeper,
 		NewRewardsAddressProvider(*app.StakingKeeper, *app.DistrKeeper),
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
-	app.AuctionKeeper = &auctionKeeper
+	app.BuilderKeeper = &builderKeeper
 
 	// Register the proposal types
 	// Deprecated: Avoid adding new handlers, instead use the new proposal flow
@@ -811,7 +806,7 @@ func NewInitiaApp(
 		groupmodule.NewAppModule(appCodec, *app.GroupKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		consensus.NewAppModule(appCodec, *app.ConsensusParamsKeeper),
 		move.NewAppModule(app.AccountKeeper, *app.MoveKeeper),
-		auction.NewAppModule(app.appCodec, *app.AuctionKeeper),
+		builder.NewAppModule(app.appCodec, *app.BuilderKeeper),
 		ibctransfer.NewAppModule(*app.TransferKeeper),
 		ibcnfttransfer.NewAppModule(*app.NftTransferKeeper),
 		ica.NewAppModule(app.ICAControllerKeeper, app.ICAHostKeeper),
@@ -853,7 +848,7 @@ func NewInitiaApp(
 		routertypes.ModuleName,
 		ibcpermtypes.ModuleName,
 		consensusparamtypes.ModuleName,
-		auctiontypes.ModuleName,
+		buildertypes.ModuleName,
 	)
 
 	app.mm.SetOrderEndBlockers(
@@ -884,7 +879,7 @@ func NewInitiaApp(
 		routertypes.ModuleName,
 		ibcpermtypes.ModuleName,
 		consensusparamtypes.ModuleName,
-		auctiontypes.ModuleName,
+		buildertypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -921,7 +916,7 @@ func NewInitiaApp(
 		routertypes.ModuleName,
 		ibcpermtypes.ModuleName,
 		consensusparamtypes.ModuleName,
-		auctiontypes.ModuleName,
+		buildertypes.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(app.CrisisKeeper)
@@ -952,58 +947,35 @@ func NewInitiaApp(
 	app.SetEndBlocker(app.EndBlocker)
 
 	// initialize and set the InitiaApp mempool. The current mempool will be the
-	// x/auction module's mempool which will extract the top bid from the current block's auction
+	// x/builder module's mempool which will extract the top bid from the current block's auction
 	// and insert the txs at the top of the block spots.
-	signerExtractor := signer_extraction.NewDefaultAdapter()
-
-	mevConfig := base.LaneConfig{
-		Logger:          app.Logger(),
-		TxEncoder:       app.txConfig.TxEncoder(),
-		TxDecoder:       app.txConfig.TxDecoder(),
-		MaxBlockSpace:   math.LegacyZeroDec(),
-		MaxTxs:          0,
-		SignerExtractor: signerExtractor,
-	}
-	mevLane := mev.NewMEVLane(
-		mevConfig,
-		mev.NewDefaultAuctionFactory(app.txConfig.TxDecoder(), signerExtractor),
-	)
-
-	defaultLaneConfig := base.LaneConfig{
-		Logger:          app.Logger(),
-		TxEncoder:       app.txConfig.TxEncoder(),
-		TxDecoder:       app.txConfig.TxDecoder(),
-		MaxBlockSpace:   math.LegacyZeroDec(),
-		MaxTxs:          0,
-		SignerExtractor: signerExtractor,
-	}
-	defaultLane := baselane.NewDefaultLane(defaultLaneConfig)
-
-	lanes := []block.Lane{mevLane, defaultLane}
-	mempool := block.NewLanedMempool(app.Logger(), true, lanes...)
-	app.SetMempool(mempool)
-
-	anteHandler := app.setAnteHandler(mevLane)
-	for _, lane := range lanes {
-		lane.SetAnteHandler(anteHandler)
-	}
-
-	// override the base-app's ABCI methods (CheckTx, PrepareProposal, ProcessProposal)
-	proposalHandlers := mevabci.NewProposalHandler(
-		app.Logger(),
+	factory := buildermempool.NewDefaultAuctionFactory(app.txConfig.TxDecoder())
+	mempool := buildermempool.NewAuctionMempool(
 		app.txConfig.TxDecoder(),
 		app.txConfig.TxEncoder(),
+		0,
+		factory,
+	)
+	app.SetMempool(mempool)
+	anteHandler := app.setAnteHandler(mempool)
+
+	// override the base-app's ABCI methods (CheckTx, PrepareProposal, ProcessProposal)
+	proposalHandlers := builderabci.NewProposalHandler(
 		mempool,
+		app.Logger(),
+		anteHandler,
+		app.txConfig.TxEncoder(),
+		app.txConfig.TxDecoder(),
 	)
 	// override base-app's ProcessProposal + PrepareProposal
 	app.SetPrepareProposal(proposalHandlers.PrepareProposalHandler())
 	app.SetProcessProposal(proposalHandlers.ProcessProposalHandler())
 
 	// overrde base-app's CheckTx
-	checkTxHandler := mev.NewCheckTxHandler(
+	checkTxHandler := builderabci.NewCheckTxHandler(
 		app.BaseApp,
 		app.txConfig.TxDecoder(),
-		mevLane,
+		mempool,
 		anteHandler,
 		app.ChainID(),
 	)
@@ -1036,11 +1008,11 @@ func (app *InitiaApp) CheckTx(req abci.RequestCheckTx) abci.ResponseCheckTx {
 }
 
 // SetCheckTx sets the checkTxHandler for the app.
-func (app *InitiaApp) SetCheckTx(handler mev.CheckTx) {
+func (app *InitiaApp) SetCheckTx(handler pobabci.CheckTx) {
 	app.checkTxHandler = handler
 }
 
-func (app *InitiaApp) setAnteHandler(mevLane auctionante.MEVLane) sdk.AnteHandler {
+func (app *InitiaApp) setAnteHandler(mempl buildermempool.Mempool) sdk.AnteHandler {
 	anteHandler, err := ante.NewAnteHandler(
 		ante.HandlerOptions{
 			HandlerOptions: cosmosante.HandlerOptions{
@@ -1054,8 +1026,8 @@ func (app *InitiaApp) setAnteHandler(mevLane auctionante.MEVLane) sdk.AnteHandle
 			MoveKeeper:    movekeeper.NewDexKeeper(app.MoveKeeper),
 			Codec:         app.appCodec,
 			TxEncoder:     app.txConfig.TxEncoder(),
-			AuctionKeeper: *app.AuctionKeeper,
-			MevLane:       mevLane,
+			BuilderKeeper: *app.BuilderKeeper,
+			Mempool:       mempl,
 		},
 	)
 	if err != nil {

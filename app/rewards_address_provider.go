@@ -4,10 +4,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	distrkeeper "github.com/initia-labs/initia/x/distribution/keeper"
 	mstakingkeeper "github.com/initia-labs/initia/x/mstaking/keeper"
-	auctiontypes "github.com/skip-mev/block-sdk/x/auction/types"
+	buildertypes "github.com/skip-mev/pob/x/builder/types"
 )
 
-var _ auctiontypes.RewardsAddressProvider = (*RewardsAddressProvider)(nil)
+var _ buildertypes.RewardsAddressProvider = (*RewardsAddressProvider)(nil)
 
 // NewRewardsAddressProvider returns a new RewardsAddressProvider from a staking + distribution keeper
 func NewRewardsAddressProvider(sk mstakingkeeper.Keeper, dk distrkeeper.Keeper) *RewardsAddressProvider {
