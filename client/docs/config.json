@@ -200,7 +200,7 @@
       "url": "./tmp-swagger-gen/initia/distribution/v1/query.swagger.json",
       "operationIds": {
         "rename": {
-          "Params": "CustomParams",
+          "Params": "CustomDistributionParams",
           "DelegationTotalRewards": "CustomDelegationTotalRewards",
           "DelegationRewards": "CustomDelegationRewards",
           "ValidatorCommission": "CustomValidatorCommission",
@@ -215,6 +215,14 @@
         "rename": {
           "Params": "StakingParams",
           "DelegatorValidators": "StakingDelegatorValidators"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/initia/gov/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "CustomGovParams"
         }
       }
     },

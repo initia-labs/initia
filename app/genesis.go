@@ -8,13 +8,13 @@ import (
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-	govtypesv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	icacontrollertypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/types"
 	icagenesistypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/genesis/types"
 	icahosttypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/host/types"
 	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
 
 	customdistrtypes "github.com/initia-labs/initia/x/distribution/types"
+	customgovtypes "github.com/initia-labs/initia/x/gov/types"
 	movetypes "github.com/initia-labs/initia/x/move/types"
 	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
 	rewardtypes "github.com/initia-labs/initia/x/reward/types"
@@ -53,9 +53,10 @@ func (genState GenesisState) ConfigureBondDenom(cdc codec.JSONCodec, bondDenom s
 	crisisGenState.ConstantFee.Denom = bondDenom
 	genState[crisistypes.ModuleName] = cdc.MustMarshalJSON(&crisisGenState)
 
-	var govGenState govtypesv1.GenesisState
+	var govGenState customgovtypes.GenesisState
 	cdc.MustUnmarshalJSON(genState[govtypes.ModuleName], &govGenState)
 	govGenState.Params.MinDeposit[0].Denom = bondDenom
+	govGenState.Params.EmergencyMinDeposit[0].Denom = bondDenom
 	genState[govtypes.ModuleName] = cdc.MustMarshalJSON(&govGenState)
 
 	var rewardGenState rewardtypes.GenesisState

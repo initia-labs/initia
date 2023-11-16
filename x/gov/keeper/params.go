@@ -3,11 +3,11 @@ package keeper
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/gov/types"
-	v1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
+	customtypes "github.com/initia-labs/initia/x/gov/types"
 )
 
 // SetParams sets the gov module's parameters.
-func (k Keeper) SetParams(ctx sdk.Context, params v1.Params) error {
+func (k Keeper) SetParams(ctx sdk.Context, params customtypes.Params) error {
 	store := ctx.KVStore(k.storeKey)
 	bz, err := k.cdc.Marshal(&params)
 	if err != nil {
@@ -19,7 +19,7 @@ func (k Keeper) SetParams(ctx sdk.Context, params v1.Params) error {
 }
 
 // GetParams gets the gov module's parameters.
-func (k Keeper) GetParams(clientCtx sdk.Context) (params v1.Params) {
+func (k Keeper) GetParams(clientCtx sdk.Context) (params customtypes.Params) {
 	store := clientCtx.KVStore(k.storeKey)
 	bz := store.Get(types.ParamsKey)
 	if bz == nil {

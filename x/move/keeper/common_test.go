@@ -54,6 +54,7 @@ import (
 	"github.com/initia-labs/initia/x/evidence"
 	"github.com/initia-labs/initia/x/gov"
 	govkeeper "github.com/initia-labs/initia/x/gov/keeper"
+	customgovtypes "github.com/initia-labs/initia/x/gov/types"
 
 	// nfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 	moveconfig "github.com/initia-labs/initia/x/move/config"
@@ -419,7 +420,7 @@ func _createTestInput(
 	)
 
 	govKeeper.SetProposalID(ctx, govtypesv1.DefaultStartingProposalID)
-	govKeeper.SetParams(ctx, govtypesv1.DefaultParams())
+	govKeeper.SetParams(ctx, customgovtypes.DefaultParams())
 
 	cfg := sdk.GetConfig()
 	cfg.SetAddressVerifier(initiaapp.VerifyAddressLen())

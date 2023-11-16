@@ -3,6 +3,7 @@ package keeper
 import (
 	goerrors "errors"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"cosmossdk.io/errors"
@@ -10,6 +11,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/gov/types"
 	v1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
+
+	customtypes "github.com/initia-labs/initia/x/gov/types"
 )
 
 // SubmitProposal create new proposal given a content
@@ -84,7 +87,7 @@ func (keeper Keeper) SubmitProposal(ctx sdk.Context, messages []sdk.Msg, metadat
 	submitTime := ctx.BlockHeader().Time
 	depositPeriod := keeper.GetParams(ctx).MaxDepositPeriod
 
-	proposal, err := v1.NewProposal(messages, proposalID, submitTime, submitTime.Add(*depositPeriod), metadata, title, summary, proposer)
+	proposal, err := v1.NewProposal(messages, proposalID, submitTime, submitTime.Add(depositPeriod), metadata, title, summary, proposer)
 	if err != nil {
 		return v1.Proposal{}, err
 	}
@@ -250,13 +253,25 @@ func (keeper Keeper) ActivateVotingPeriod(ctx sdk.Context, proposal v1.Proposal)
 	startTime := ctx.BlockHeader().Time
 	proposal.VotingStartTime = &startTime
 	votingPeriod := keeper.GetParams(ctx).VotingPeriod
-	endTime := proposal.VotingStartTime.Add(*votingPeriod)
+	endTime := proposal.VotingStartTime.Add(votingPeriod)
 	proposal.VotingEndTime = &endTime
 	proposal.Status = v1.StatusVotingPeriod
 	keeper.SetProposal(ctx, proposal)
 
 	keeper.RemoveFromInactiveProposalQueue(ctx, proposal.Id, *proposal.DepositEndTime)
 	keeper.InsertActiveProposalQueue(ctx, proposal.Id, *proposal.VotingEndTime)
+
+	// Emergency proposal registration
+	if sdk.NewCoins(proposal.TotalDeposit...).IsAllGTE(keeper.GetParams(ctx).EmergencyMinDeposit) {
+		keeper.InsertEmergencyProposalQueue(ctx, proposal.Id)
+
+		ctx.EventManager().EmitEvent(
+			sdk.NewEvent(
+				customtypes.EventTypeEmergencyProposal,
+				sdk.NewAttribute(customtypes.AttributeKeyProposalID, strconv.FormatUint(proposal.Id, 10)),
+			),
+		)
+	}
 }
 
 func (keeper Keeper) MarshalProposal(proposal v1.Proposal) ([]byte, error) {

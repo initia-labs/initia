@@ -3,6 +3,7 @@ package initia.reward.v1;
 
 import "amino/amino.proto";
 import "gogoproto/gogo.proto";
+import "google/protobuf/duration.proto";
 
 option go_package                      = "github.com/initia-labs/initia/x/reward/types";
 option (gogoproto.equal_all)           = true;
@@ -14,9 +15,10 @@ message Params {
   option (gogoproto.equal)            = true;
   option (gogoproto.goproto_stringer) = false;
 
-  string reward_denom    = 1;
-  uint64 dilution_period = 2;
-  string release_rate    = 3 [
+  string                   reward_denom    = 1;
+  google.protobuf.Duration dilution_period = 2
+      [(gogoproto.stdduration) = true, (gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+  string release_rate = 3 [
     (gogoproto.moretags)   = "yaml:\"release_rate\"",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable)   = false

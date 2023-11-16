@@ -64,7 +64,7 @@ func (k Keeper) WithdrawRewards(ctx sdk.Context, valAddr sdk.ValAddress) (distrt
 		}
 	}
 
-	// send other rewards except mint denom to community pool
+	// send other rewards except reward denom to community pool
 	otherRewards := rewardPools.Sub(pools).Sum()
 	if !otherRewards.IsZero() {
 		err = k.communityPoolKeeper.FundCommunityPool(ctx, otherRewards, delModuleAddr)

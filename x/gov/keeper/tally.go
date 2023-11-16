@@ -13,7 +13,7 @@ import (
 
 // Tally iterates over the votes and updates the tally of a proposal based on the voting power of the
 // voters
-func (keeper Keeper) Tally(ctx sdk.Context, proposal v1.Proposal) (passes bool, burnDeposits bool, tallyResults v1.TallyResult) {
+func (keeper Keeper) Tally(ctx sdk.Context, proposal v1.Proposal) (quorumReached, passed bool, burnDeposits bool, tallyResults v1.TallyResult) {
 	weights := keeper.sk.GetVotingPowerWeights(ctx)
 	results := make(map[v1.VoteOption]sdk.Dec)
 	results[v1.OptionYes] = math.LegacyZeroDec()
@@ -116,30 +116,30 @@ func (keeper Keeper) Tally(ctx sdk.Context, proposal v1.Proposal) (passes bool, 
 	// TODO: Upgrade the spec to cover all of these cases & remove pseudocode.
 	// If there is no staked coins, the proposal fails
 	if stakedVotingPower.IsZero() {
-		return false, false, tallyResults
+		return false, false, false, tallyResults
 	}
 
 	// If there is not enough quorum of votes, the proposal fails
 	percentVoting := totalVotingPower.Quo(math.LegacyNewDecFromInt(stakedVotingPower))
 	if percentVoting.LT(math.LegacyMustNewDecFromStr(params.Quorum)) {
-		return false, true, tallyResults
+		return false, false, true, tallyResults
 	}
 
 	// If no one votes (everyone abstains), proposal fails
 	if totalVotingPower.Sub(results[v1.OptionAbstain]).Equal(math.LegacyZeroDec()) {
-		return false, false, tallyResults
+		return true, false, false, tallyResults
 	}
 
 	// If more than 1/3 of voters veto, proposal fails
 	if results[v1.OptionNoWithVeto].Quo(totalVotingPower).GT(math.LegacyMustNewDecFromStr(params.VetoThreshold)) {
-		return false, true, tallyResults
+		return true, false, true, tallyResults
 	}
 
 	// If more than 1/2 of non-abstaining voters vote Yes, proposal passes
 	if results[v1.OptionYes].Quo(totalVotingPower.Sub(results[v1.OptionAbstain])).GT(math.LegacyMustNewDecFromStr(params.Threshold)) {
-		return true, false, tallyResults
+		return true, true, false, tallyResults
 	}
 
 	// If more than 1/2 of non-abstaining voters vote No, proposal fails
-	return false, false, tallyResults
+	return true, false, false, tallyResults
 }
