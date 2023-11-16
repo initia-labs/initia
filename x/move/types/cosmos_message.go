@@ -7,6 +7,8 @@ import (
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 
+	opchildtypes "github.com/initia-labs/OPinit/x/opchild/types"
+	ophosttypes "github.com/initia-labs/OPinit/x/ophost/types"
 	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
 	vmtypes "github.com/initia-labs/initiavm/types"
 )
@@ -97,6 +99,38 @@ func ConvertToSDKMessage(ctx sdk.Context, k FungibleAssetKeeper, msg vmtypes.Cos
 			)
 
 			return payPacketFeeMsg, nil
+		}
+	case *vmtypes.CosmosMessage__OPinit:
+		switch msg := msg.Value.(type) {
+		case *vmtypes.OPinitMessage__InitiateTokenDeposit:
+			denom, err := DenomFromMetadataAddress(ctx, k, msg.Amount.Metadata)
+			if err != nil {
+				return nil, err
+			}
+
+			depositMsg := ophosttypes.NewMsgInitiateTokenDeposit(
+				ConvertVMAddressToSDKAddress(msg.SenderAddress),
+				msg.BridgeId,
+				ConvertVMAddressToSDKAddress(msg.ToAddress),
+				sdk.NewCoin(denom, sdk.NewIntFromUint64(msg.Amount.Amount)),
+				msg.Data,
+			)
+
+			return depositMsg, nil
+
+		case *vmtypes.OPinitMessage__InitiateTokenWithdrawal: // for l2 (minitia)
+			denom, err := DenomFromMetadataAddress(ctx, k, msg.Amount.Metadata)
+			if err != nil {
+				return nil, err
+			}
+
+			withdrawMsg := opchildtypes.NewMsgInitiateTokenWithdrawal(
+				ConvertVMAddressToSDKAddress(msg.SenderAddress),
+				ConvertVMAddressToSDKAddress(msg.ToAddress),
+				sdk.NewCoin(denom, sdk.NewIntFromUint64(msg.Amount.Amount)),
+			)
+
+			return withdrawMsg, nil
 		}
 	}
 
