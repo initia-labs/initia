@@ -65,6 +65,6 @@ func (q Keeper) LastEmergencyProposalTallyTimestamp(c context.Context, req *cust
 	ctx := sdk.UnwrapSDKContext(c)
 
 	return &customtypes.QueryLastEmergencyProposalTallyTimestampResponse{
-		TallyTime: q.GetLastEmergencyProposalTallyTimestamp(ctx),
+		TallyTimestamp: q.GetLastEmergencyProposalTallyTimestamp(ctx),
 	}, nil
 }
