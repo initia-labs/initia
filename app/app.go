@@ -120,6 +120,7 @@ import (
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 
 	"github.com/initia-labs/initia/app/ante"
+	"github.com/initia-labs/initia/app/hook"
 	authzmodule "github.com/initia-labs/initia/x/authz/module"
 	"github.com/initia-labs/initia/x/bank"
 	bankkeeper "github.com/initia-labs/initia/x/bank/keeper"
@@ -150,6 +151,10 @@ import (
 	"github.com/skip-mev/pob/x/builder"
 	builderkeeper "github.com/skip-mev/pob/x/builder/keeper"
 	buildertypes "github.com/skip-mev/pob/x/builder/types"
+
+	"github.com/initia-labs/OPinit/x/ophost"
+	ophostkeeper "github.com/initia-labs/OPinit/x/ophost/keeper"
+	ophosttypes "github.com/initia-labs/OPinit/x/ophost/types"
 
 	// unnamed import of statik for swagger UI support
 	_ "github.com/initia-labs/initia/client/docs/statik"
@@ -206,6 +211,7 @@ var (
 		ibcperm.AppModuleBasic{},
 		move.AppModuleBasic{},
 		builder.AppModuleBasic{},
+		ophost.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -288,6 +294,7 @@ type InitiaApp struct {
 	IBCPermKeeper         *ibcpermkeeper.Keeper
 	MoveKeeper            *movekeeper.Keeper
 	BuilderKeeper         *builderkeeper.Keeper // x/builder keeper used to process bids for TOB auctions
+	OPHostKeeper          *ophostkeeper.Keeper
 
 	// make scoped keepers public for test purposes
 	ScopedIBCKeeper           capabilitykeeper.ScopedKeeper
@@ -339,6 +346,7 @@ func NewInitiaApp(
 		authzkeeper.StoreKey, feegrant.StoreKey, icahosttypes.StoreKey,
 		icacontrollertypes.StoreKey, icaauthtypes.StoreKey, ibcfeetypes.StoreKey,
 		routertypes.StoreKey, ibcpermtypes.StoreKey, movetypes.StoreKey, buildertypes.StoreKey,
+		ophosttypes.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
@@ -754,6 +762,16 @@ func NewInitiaApp(
 	)
 	app.BuilderKeeper = &builderKeeper
 
+	opHostKeeper := ophostkeeper.NewKeeper(
+		app.appCodec,
+		app.keys[ophosttypes.StoreKey],
+		app.AccountKeeper,
+		app.BankKeeper,
+		ophosttypes.NewBridgeHooks(hook.NewBridgeHook(app.IBCKeeper.ChannelKeeper, app.IBCPermKeeper)),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+	)
+	app.OPHostKeeper = &opHostKeeper
+
 	// Register the proposal types
 	// Deprecated: Avoid adding new handlers, instead use the new proposal flow
 	// by granting the governance module the right to execute the message.
@@ -814,6 +832,7 @@ func NewInitiaApp(
 		ibcfee.NewAppModule(*app.IBCFeeKeeper),
 		router.NewAppModule(app.RouterKeeper),
 		ibcperm.NewAppModule(*app.IBCPermKeeper),
+		ophost.NewAppModule(*app.OPHostKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -849,6 +868,7 @@ func NewInitiaApp(
 		ibcpermtypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		buildertypes.ModuleName,
+		ophosttypes.ModuleName,
 	)
 
 	app.mm.SetOrderEndBlockers(
@@ -880,6 +900,7 @@ func NewInitiaApp(
 		ibcpermtypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		buildertypes.ModuleName,
+		ophosttypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -917,6 +938,7 @@ func NewInitiaApp(
 		ibcpermtypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		buildertypes.ModuleName,
+		ophosttypes.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(app.CrisisKeeper)
