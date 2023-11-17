@@ -118,6 +118,17 @@ func (p Params) ValidateBasic() error {
 		return fmt.Errorf("veto threshold too large: %s", vetoThreshold)
 	}
 
+	minInitialDepositRatio, err := sdk.NewDecFromStr(p.MinInitialDepositRatio)
+	if err != nil {
+		return fmt.Errorf("invalid minInitialDepositRatio string: %w", err)
+	}
+	if minInitialDepositRatio.IsNegative() {
+		return fmt.Errorf("min initial deposit ratio must be zero or positive: %s", minInitialDepositRatio)
+	}
+	if minInitialDepositRatio.GT(math.LegacyOneDec()) {
+		return fmt.Errorf("min initial deposit ratio too large: %s", minInitialDepositRatio)
+	}
+
 	if p.VotingPeriod.Seconds() <= 0 {
 		return fmt.Errorf("voting period must be positive: %s", p.VotingPeriod)
 	}
