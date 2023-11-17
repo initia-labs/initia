@@ -8,10 +8,11 @@ import (
 	v1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 
 	"github.com/initia-labs/initia/x/gov/keeper"
+	customtypes "github.com/initia-labs/initia/x/gov/types"
 )
 
 // InitGenesis - store genesis parameters
-func InitGenesis(ctx sdk.Context, ak types.AccountKeeper, bk types.BankKeeper, k *keeper.Keeper, data *v1.GenesisState) {
+func InitGenesis(ctx sdk.Context, ak types.AccountKeeper, bk types.BankKeeper, k *keeper.Keeper, data *customtypes.GenesisState) {
 	k.SetProposalID(ctx, data.StartingProposalId)
 	if err := k.SetParams(ctx, *data.Params); err != nil {
 		panic(err)
@@ -53,10 +54,12 @@ func InitGenesis(ctx sdk.Context, ak types.AccountKeeper, bk types.BankKeeper, k
 	if !balance.IsEqual(totalDeposits) {
 		panic(fmt.Sprintf("expected module account was %s but we got %s", balance.String(), totalDeposits.String()))
 	}
+
+	k.SetLastEmergencyProposalTallyTimestamp(ctx, data.LastEmergencyProposalTallyTimestamp)
 }
 
 // ExportGenesis - output genesis parameters
-func ExportGenesis(ctx sdk.Context, k *keeper.Keeper) *v1.GenesisState {
+func ExportGenesis(ctx sdk.Context, k *keeper.Keeper) *customtypes.GenesisState {
 	startingProposalID, _ := k.GetProposalID(ctx)
 	proposals := k.GetProposals(ctx)
 	params := k.GetParams(ctx)
@@ -71,11 +74,12 @@ func ExportGenesis(ctx sdk.Context, k *keeper.Keeper) *v1.GenesisState {
 		proposalsVotes = append(proposalsVotes, votes...)
 	}
 
-	return &v1.GenesisState{
-		StartingProposalId: startingProposalID,
-		Deposits:           proposalsDeposits,
-		Votes:              proposalsVotes,
-		Proposals:          proposals,
-		Params:             &params,
+	return &customtypes.GenesisState{
+		StartingProposalId:                  startingProposalID,
+		Deposits:                            proposalsDeposits,
+		Votes:                               proposalsVotes,
+		Proposals:                           proposals,
+		Params:                              &params,
+		LastEmergencyProposalTallyTimestamp: k.GetLastEmergencyProposalTallyTimestamp(ctx),
 	}
 }

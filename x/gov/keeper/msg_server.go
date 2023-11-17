@@ -7,6 +7,8 @@ import (
 
 	"cosmossdk.io/errors"
 	"github.com/armon/go-metrics"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -190,16 +192,7 @@ func (k msgServer) Deposit(goCtx context.Context, msg *v1.MsgDeposit) (*v1.MsgDe
 
 // UpdateParams implements the MsgServer.UpdateParams method.
 func (k msgServer) UpdateParams(goCtx context.Context, msg *v1.MsgUpdateParams) (*v1.MsgUpdateParamsResponse, error) {
-	if k.authority != msg.Authority {
-		return nil, errors.Wrapf(types.ErrInvalidSigner, "invalid authority; expected %s, got %s", k.authority, msg.Authority)
-	}
-
-	ctx := sdk.UnwrapSDKContext(goCtx)
-	if err := k.SetParams(ctx, msg.Params); err != nil {
-		return nil, err
-	}
-
-	return &v1.MsgUpdateParamsResponse{}, nil
+	return nil, status.Errorf(codes.Unimplemented, "not supported")
 }
 
 type legacyMsgServer struct {

@@ -14,8 +14,8 @@ OPINIT_VERSION=$(cat ./go.mod | grep "$OPINIT_URL v" | sed -n -e "s/^.* //p")
 
 mkdir -p ./third_party
 cd third_party
-# git clone -b $COSMOS_SDK_VERSION https://$COSMOS_URL
-# git clone -b $IBC_VERSION https://$IBC_URL
+git clone -b $COSMOS_SDK_VERSION https://$COSMOS_URL
+git clone -b $IBC_VERSION https://$IBC_URL
 git clone -b $OPINIT_VERSION https://$OPINIT_URL
 cd ..
 

@@ -38,7 +38,7 @@ func Test_BeginBlocker(t *testing.T) {
 
 	params.ReleaseEnabled = true
 	params.ReleaseRate = sdk.NewDecWithPrec(7, 2) // 7%
-	params.DilutionPeriod = uint64(time.Hour * 24)
+	params.DilutionPeriod = time.Hour * 24
 	app.RewardKeeper.SetParams(ctx, params)
 
 	app.EndBlock(abci.RequestEndBlock{})
@@ -82,7 +82,7 @@ func Test_BeginBlockerNotEnabled(t *testing.T) {
 
 	params.ReleaseEnabled = false
 	params.ReleaseRate = sdk.NewDecWithPrec(7, 2) // 7%
-	params.DilutionPeriod = uint64(time.Hour * 24)
+	params.DilutionPeriod = time.Hour * 24
 	app.RewardKeeper.SetParams(ctx, params)
 
 	app.EndBlock(abci.RequestEndBlock{})

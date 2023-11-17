@@ -158,7 +158,19 @@ func (q Keeper) Params(c context.Context, req *v1.QueryParamsRequest) (*v1.Query
 	}
 
 	ctx := sdk.UnwrapSDKContext(c)
-	params := q.GetParams(ctx)
+	customParams := q.GetParams(ctx)
+	params := v1.Params{
+		MinDeposit:                 customParams.MinDeposit,
+		MaxDepositPeriod:           &customParams.MaxDepositPeriod,
+		VotingPeriod:               &customParams.VotingPeriod,
+		Quorum:                     customParams.Quorum,
+		Threshold:                  customParams.Threshold,
+		VetoThreshold:              customParams.Threshold,
+		MinInitialDepositRatio:     customParams.MinInitialDepositRatio,
+		BurnVoteQuorum:             customParams.BurnVoteQuorum,
+		BurnProposalDepositPrevote: customParams.BurnProposalDepositPrevote,
+		BurnVoteVeto:               customParams.BurnVoteVeto,
+	}
 
 	response := &v1.QueryParamsResponse{}
 
@@ -275,7 +287,7 @@ func (q Keeper) TallyResult(c context.Context, req *v1.QueryTallyResultRequest) 
 
 	default:
 		// proposal is in voting period
-		_, _, tallyResult = q.Tally(ctx, proposal)
+		_, _, _, tallyResult = q.Tally(ctx, proposal)
 	}
 
 	return &v1.QueryTallyResultResponse{Tally: &tallyResult}, nil

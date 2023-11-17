@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"time"
 
 	"cosmossdk.io/math"
 	"gopkg.in/yaml.v3"
@@ -13,7 +14,7 @@ import (
 
 // Default parameter values
 const (
-	DefaultDilutionPeriod = uint64(365 * 24 * 60 * 60) // a year
+	DefaultDilutionPeriod = time.Hour * 24 * 365 // a year
 	DefaultReleaseEnabled = false
 )
 
@@ -25,7 +26,7 @@ var (
 
 func NewParams(
 	rewardDenom string, releaseRate, dilutionRate math.LegacyDec,
-	dilutionPeriod uint64, releaseEnabled bool,
+	dilutionPeriod time.Duration, releaseEnabled bool,
 ) Params {
 	return Params{
 		RewardDenom:    rewardDenom,
@@ -92,7 +93,7 @@ func validateRewardDenom(i interface{}) error {
 }
 
 func validateDilutionPeriod(i interface{}) error {
-	v, ok := i.(uint64)
+	v, ok := i.(time.Duration)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
