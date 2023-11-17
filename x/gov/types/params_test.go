@@ -22,6 +22,12 @@ func Test_Params(t *testing.T) {
 
 	params.EmergencyMinDeposit = _emergencyMinDeposit
 
+	_emergencyTallyInterval := params.EmergencyTallyInterval
+	params.EmergencyTallyInterval = 0
+	require.Error(t, params.ValidateBasic())
+
+	params.EmergencyTallyInterval = _emergencyTallyInterval
+
 	_minDeposit := params.MinDeposit
 	params.MinDeposit = []sdk.Coin{{
 		Denom:  "foo",
@@ -38,25 +44,41 @@ func Test_Params(t *testing.T) {
 	params.MaxDepositPeriod = _maxDepositPeriod
 
 	_minInitialDepositRatio := params.MinInitialDepositRatio
+	params.MinInitialDepositRatio = "a"
+	require.Error(t, params.ValidateBasic())
 	params.MinInitialDepositRatio = "-1"
+	require.Error(t, params.ValidateBasic())
+	params.MinInitialDepositRatio = "1.1"
 	require.Error(t, params.ValidateBasic())
 
 	params.MinInitialDepositRatio = _minInitialDepositRatio
 
 	_quorum := params.Quorum
+	params.Quorum = "a"
+	require.Error(t, params.ValidateBasic())
 	params.Quorum = "-1"
+	require.Error(t, params.ValidateBasic())
+	params.Quorum = "1.1"
 	require.Error(t, params.ValidateBasic())
 
 	params.Quorum = _quorum
 
 	_threshold := params.Threshold
+	params.Threshold = "a"
+	require.Error(t, params.ValidateBasic())
 	params.Threshold = "-1"
+	require.Error(t, params.ValidateBasic())
+	params.Threshold = "1.1"
 	require.Error(t, params.ValidateBasic())
 
 	params.Threshold = _threshold
 
 	_vetoThreshold := params.VetoThreshold
+	params.VetoThreshold = "a"
+	require.Error(t, params.ValidateBasic())
 	params.VetoThreshold = "-1"
+	require.Error(t, params.ValidateBasic())
+	params.VetoThreshold = "1.1"
 	require.Error(t, params.ValidateBasic())
 
 	params.VetoThreshold = _vetoThreshold
