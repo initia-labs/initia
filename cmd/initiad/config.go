@@ -52,9 +52,14 @@ func initAppConfig() (string, interface{}) {
 func initTendermintConfig() *tmcfg.Config {
 	cfg := tmcfg.DefaultConfig()
 
-	// these values put a higher strain on node memory
-	// cfg.P2P.MaxNumInboundPeers = 100
-	// cfg.P2P.MaxNumOutboundPeers = 40
+	// block time from 5s to 3s
+	cfg.Consensus.TimeoutPropose = cfg.Consensus.TimeoutPropose * 3 / 5
+	cfg.Consensus.TimeoutProposeDelta = cfg.Consensus.TimeoutProposeDelta * 3 / 5
+	cfg.Consensus.TimeoutPrevote = cfg.Consensus.TimeoutPrevote * 3 / 5
+	cfg.Consensus.TimeoutPrevoteDelta = cfg.Consensus.TimeoutPrevoteDelta * 3 / 5
+	cfg.Consensus.TimeoutPrecommit = cfg.Consensus.TimeoutPrecommit * 3 / 5
+	cfg.Consensus.TimeoutPrecommitDelta = cfg.Consensus.TimeoutPrecommitDelta * 3 / 5
+	cfg.Consensus.TimeoutCommit = cfg.Consensus.TimeoutCommit * 3 / 5
 
 	return cfg
 }
