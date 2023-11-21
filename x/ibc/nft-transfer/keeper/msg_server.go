@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"cosmossdk.io/errors"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
@@ -22,8 +23,8 @@ func NewMsgServerImpl(k *Keeper) MsgServer {
 	return MsgServer{k}
 }
 
-// NftTransfer defines a rpc handler method for MsgNftTransfer.
-func (k MsgServer) NftTransfer(goCtx context.Context, msg *types.MsgNftTransfer) (*types.MsgNftTransferResponse, error) {
+// Transfer defines a rpc handler method for MsgTransfer.
+func (k MsgServer) Transfer(goCtx context.Context, msg *types.MsgTransfer) (*types.MsgTransferResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	sender, err := sdk.AccAddressFromBech32(msg.Sender)
@@ -63,7 +64,7 @@ func (k MsgServer) NftTransfer(goCtx context.Context, msg *types.MsgNftTransfer)
 		),
 	})
 
-	return &types.MsgNftTransferResponse{Sequence: sequence}, nil
+	return &types.MsgTransferResponse{Sequence: sequence}, nil
 }
 
 func (ms MsgServer) UpdateParams(context context.Context, req *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {

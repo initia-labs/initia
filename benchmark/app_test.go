@@ -13,13 +13,14 @@ import (
 	"github.com/stretchr/testify/require"
 
 	simappparams "cosmossdk.io/simapp/params"
+	vmtypes "github.com/initia-labs/initiavm/types"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	vmtypes "github.com/initia-labs/initiavm/types"
 
 	"github.com/initia-labs/initia/app"
 )

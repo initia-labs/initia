@@ -66,11 +66,5 @@ func IsMoveClassId(classId string) bool {
 }
 
 func TokenAddressFromTokenId(collectionCreator vmtypes.AccountAddress, collectionName, tokenId string) (vmtypes.AccountAddress, error) {
-	// If a nft is not ibc, then token id == token address
-	if collectionCreator != vmtypes.StdAddress {
-		return vmtypes.NewAccountAddress(tokenId)
-	}
-
-	// Else, collection name + "::" + token id is a seed for object address
-	return NamedObjectAddress(vmtypes.StdAddress, collectionName+"::"+tokenId), nil
+	return NamedObjectAddress(collectionCreator, collectionName+"::"+tokenId), nil
 }

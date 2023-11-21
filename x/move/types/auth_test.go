@@ -7,9 +7,10 @@ import (
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/stretchr/testify/require"
 
+	"github.com/initia-labs/initia/x/move/types"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/initia-labs/initia/x/move/types"
 )
 
 func TestAuthCreateAccountsWithTypes(t *testing.T) {

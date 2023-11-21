@@ -1,9 +1,10 @@
 package config
 
 import (
-	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
+
+	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 )
 
 // DefaultContractQueryGasLimit - default max query gas for external query

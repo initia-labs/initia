@@ -14,20 +14,20 @@ option go_package = "github.com/initia-labs/initia/x/ibc/nft-transfer/types";
 
 // Msg defines the ibc/nft Msg service.
 service Msg {
-  // NftTransfer defines a rpc handler method for MsgNftTransfer.
-  rpc NftTransfer(MsgNftTransfer) returns (MsgNftTransferResponse);
+  // Transfer defines a rpc handler method for MsgTransfer.
+  rpc Transfer(MsgTransfer) returns (MsgTransferResponse);
 
   // UpdateParams defines an operation for updating the x/ibc/nft-transfer module
   // parameters.
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
 }
 
-// MsgNftTransfer defines a msg to transfer non-fungible tokens (i.e NFTs) between
+// MsgTransfer defines a msg to transfer non-fungible tokens (i.e NFTs) between
 // ics721-1 enabled chains. See ICS Spec here:
 // https://github.com/cosmos/ibc/tree/main/spec/app/ics-721-nft-transfer
-message MsgNftTransfer {
+message MsgTransfer {
   option (cosmos.msg.v1.signer) = "sender";
-  option (amino.name)           = "nft-transfer/MsgNftTransfer";
+  option (amino.name)           = "nft-transfer/MsgTransfer";
 
   option (gogoproto.equal)           = false;
   option (gogoproto.goproto_getters) = false;
@@ -55,8 +55,8 @@ message MsgNftTransfer {
   string memo = 9;
 }
 
-// MsgNftTransferResponse defines the Msg/NftTransfer response type.
-message MsgNftTransferResponse {
+// MsgTransferResponse defines the Msg/NftTransfer response type.
+message MsgTransferResponse {
   // sequence number of the nft transfer packet sent
   uint64 sequence = 1;
 }

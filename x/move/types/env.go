@@ -5,6 +5,7 @@ import (
 
 	"cosmossdk.io/math"
 	"github.com/cometbft/cometbft/crypto/tmhash"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	vmtypes "github.com/initia-labs/initiavm/types"

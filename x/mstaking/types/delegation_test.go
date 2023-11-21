@@ -7,9 +7,10 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/initia-labs/initia/x/mstaking/types"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/initia-labs/initia/x/mstaking/types"
 )
 
 func TestDelegationEqual(t *testing.T) {

@@ -10,6 +10,9 @@ import (
 
 	"github.com/spf13/cobra"
 
+	movetypes "github.com/initia-labs/initia/x/move/types"
+	mstaking "github.com/initia-labs/initia/x/mstaking/types"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
@@ -18,8 +21,6 @@ import (
 	authclient "github.com/cosmos/cosmos-sdk/x/auth/client"
 	"github.com/cosmos/cosmos-sdk/x/authz"
 	bank "github.com/cosmos/cosmos-sdk/x/bank/types"
-	movetypes "github.com/initia-labs/initia/x/move/types"
-	mstaking "github.com/initia-labs/initia/x/mstaking/types"
 )
 
 // Flag names and valuesi

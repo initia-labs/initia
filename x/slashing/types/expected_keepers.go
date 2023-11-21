@@ -4,8 +4,9 @@ package types
 
 import (
 	"cosmossdk.io/math"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // StakingKeeper expected staking keeper

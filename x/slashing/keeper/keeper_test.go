@@ -4,10 +4,11 @@ import (
 	"testing"
 	"time"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	staking "github.com/initia-labs/initia/x/mstaking"
 	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
 	"github.com/stretchr/testify/require"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func TestUnJailNotBonded(t *testing.T) {

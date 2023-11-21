@@ -227,89 +227,6 @@ func (m *QueryClassTracesResponse) GetPagination() *query.PageResponse {
 	return nil
 }
 
-// QueryParamsRequest is the request type for the Query/Params RPC method.
-type QueryParamsRequest struct {
-}
-
-func (m *QueryParamsRequest) Reset()         { *m = QueryParamsRequest{} }
-func (m *QueryParamsRequest) String() string { return proto.CompactTextString(m) }
-func (*QueryParamsRequest) ProtoMessage()    {}
-func (*QueryParamsRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5a14f935a5261724, []int{4}
-}
-func (m *QueryParamsRequest) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *QueryParamsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_QueryParamsRequest.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *QueryParamsRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryParamsRequest.Merge(m, src)
-}
-func (m *QueryParamsRequest) XXX_Size() int {
-	return m.Size()
-}
-func (m *QueryParamsRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryParamsRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_QueryParamsRequest proto.InternalMessageInfo
-
-// QueryParamsResponse is the response type for the Query/Params RPC method.
-type QueryParamsResponse struct {
-	// params defines the parameters of the module.
-	Params *Params `protobuf:"bytes,1,opt,name=params,proto3" json:"params,omitempty"`
-}
-
-func (m *QueryParamsResponse) Reset()         { *m = QueryParamsResponse{} }
-func (m *QueryParamsResponse) String() string { return proto.CompactTextString(m) }
-func (*QueryParamsResponse) ProtoMessage()    {}
-func (*QueryParamsResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5a14f935a5261724, []int{5}
-}
-func (m *QueryParamsResponse) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *QueryParamsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_QueryParamsResponse.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *QueryParamsResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryParamsResponse.Merge(m, src)
-}
-func (m *QueryParamsResponse) XXX_Size() int {
-	return m.Size()
-}
-func (m *QueryParamsResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryParamsResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_QueryParamsResponse proto.InternalMessageInfo
-
-func (m *QueryParamsResponse) GetParams() *Params {
-	if m != nil {
-		return m.Params
-	}
-	return nil
-}
-
 // QueryClassHashRequest is the request type for the Query/ClassHash RPC
 // method
 type QueryClassHashRequest struct {
@@ -321,7 +238,7 @@ func (m *QueryClassHashRequest) Reset()         { *m = QueryClassHashRequest{} }
 func (m *QueryClassHashRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryClassHashRequest) ProtoMessage()    {}
 func (*QueryClassHashRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5a14f935a5261724, []int{6}
+	return fileDescriptor_5a14f935a5261724, []int{4}
 }
 func (m *QueryClassHashRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -368,7 +285,7 @@ func (m *QueryClassHashResponse) Reset()         { *m = QueryClassHashResponse{}
 func (m *QueryClassHashResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryClassHashResponse) ProtoMessage()    {}
 func (*QueryClassHashResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5a14f935a5261724, []int{7}
+	return fileDescriptor_5a14f935a5261724, []int{5}
 }
 func (m *QueryClassHashResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -416,7 +333,7 @@ func (m *QueryEscrowAddressRequest) Reset()         { *m = QueryEscrowAddressReq
 func (m *QueryEscrowAddressRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryEscrowAddressRequest) ProtoMessage()    {}
 func (*QueryEscrowAddressRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5a14f935a5261724, []int{8}
+	return fileDescriptor_5a14f935a5261724, []int{6}
 }
 func (m *QueryEscrowAddressRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -469,7 +386,7 @@ func (m *QueryEscrowAddressResponse) Reset()         { *m = QueryEscrowAddressRe
 func (m *QueryEscrowAddressResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryEscrowAddressResponse) ProtoMessage()    {}
 func (*QueryEscrowAddressResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5a14f935a5261724, []int{9}
+	return fileDescriptor_5a14f935a5261724, []int{7}
 }
 func (m *QueryEscrowAddressResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -505,17 +422,100 @@ func (m *QueryEscrowAddressResponse) GetEscrowAddress() string {
 	return ""
 }
 
+// QueryParamsRequest is the request type for the Query/Params RPC method.
+type QueryParamsRequest struct {
+}
+
+func (m *QueryParamsRequest) Reset()         { *m = QueryParamsRequest{} }
+func (m *QueryParamsRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryParamsRequest) ProtoMessage()    {}
+func (*QueryParamsRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_5a14f935a5261724, []int{8}
+}
+func (m *QueryParamsRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryParamsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryParamsRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryParamsRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryParamsRequest.Merge(m, src)
+}
+func (m *QueryParamsRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryParamsRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryParamsRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryParamsRequest proto.InternalMessageInfo
+
+// QueryParamsResponse is the response type for the Query/Params RPC method.
+type QueryParamsResponse struct {
+	// params defines the parameters of the module.
+	Params *Params `protobuf:"bytes,1,opt,name=params,proto3" json:"params,omitempty"`
+}
+
+func (m *QueryParamsResponse) Reset()         { *m = QueryParamsResponse{} }
+func (m *QueryParamsResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryParamsResponse) ProtoMessage()    {}
+func (*QueryParamsResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_5a14f935a5261724, []int{9}
+}
+func (m *QueryParamsResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryParamsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryParamsResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryParamsResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryParamsResponse.Merge(m, src)
+}
+func (m *QueryParamsResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryParamsResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryParamsResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryParamsResponse proto.InternalMessageInfo
+
+func (m *QueryParamsResponse) GetParams() *Params {
+	if m != nil {
+		return m.Params
+	}
+	return nil
+}
+
 func init() {
 	proto.RegisterType((*QueryClassTraceRequest)(nil), "ibc.applications.nft_transfer.v1.QueryClassTraceRequest")
 	proto.RegisterType((*QueryClassTraceResponse)(nil), "ibc.applications.nft_transfer.v1.QueryClassTraceResponse")
 	proto.RegisterType((*QueryClassTracesRequest)(nil), "ibc.applications.nft_transfer.v1.QueryClassTracesRequest")
 	proto.RegisterType((*QueryClassTracesResponse)(nil), "ibc.applications.nft_transfer.v1.QueryClassTracesResponse")
-	proto.RegisterType((*QueryParamsRequest)(nil), "ibc.applications.nft_transfer.v1.QueryParamsRequest")
-	proto.RegisterType((*QueryParamsResponse)(nil), "ibc.applications.nft_transfer.v1.QueryParamsResponse")
 	proto.RegisterType((*QueryClassHashRequest)(nil), "ibc.applications.nft_transfer.v1.QueryClassHashRequest")
 	proto.RegisterType((*QueryClassHashResponse)(nil), "ibc.applications.nft_transfer.v1.QueryClassHashResponse")
 	proto.RegisterType((*QueryEscrowAddressRequest)(nil), "ibc.applications.nft_transfer.v1.QueryEscrowAddressRequest")
 	proto.RegisterType((*QueryEscrowAddressResponse)(nil), "ibc.applications.nft_transfer.v1.QueryEscrowAddressResponse")
+	proto.RegisterType((*QueryParamsRequest)(nil), "ibc.applications.nft_transfer.v1.QueryParamsRequest")
+	proto.RegisterType((*QueryParamsResponse)(nil), "ibc.applications.nft_transfer.v1.QueryParamsResponse")
 }
 
 func init() {
@@ -523,52 +523,52 @@ func init() {
 }
 
 var fileDescriptor_5a14f935a5261724 = []byte{
-	// 717 bytes of a gzipped FileDescriptorProto
+	// 715 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x55, 0xcd, 0x6e, 0xd3, 0x4c,
 	0x14, 0x8d, 0xfb, 0x7d, 0x4d, 0x95, 0x1b, 0xda, 0xc5, 0x50, 0x68, 0xb1, 0x20, 0x8d, 0x2c, 0x51,
 	0x22, 0xd4, 0x78, 0x94, 0x42, 0xa1, 0xfc, 0x2c, 0xa0, 0x15, 0x3f, 0x5d, 0x80, 0x42, 0x40, 0x20,
 	0xb1, 0x89, 0xc6, 0xce, 0xd4, 0xb1, 0x94, 0x7a, 0x5c, 0x8f, 0x5b, 0xa8, 0xa2, 0x6c, 0x78, 0x02,
 	0x24, 0x1e, 0x80, 0x3d, 0x6b, 0x90, 0xfa, 0x00, 0x2c, 0xba, 0xac, 0xc4, 0x86, 0x15, 0xa0, 0x94,
-	0x07, 0x41, 0x9e, 0x99, 0x24, 0xb6, 0x12, 0x48, 0x9d, 0xdd, 0x78, 0xe6, 0x9e, 0x3b, 0xe7, 0x9c,
-	0x7b, 0xef, 0x18, 0x56, 0x5c, 0xcb, 0xc6, 0xc4, 0xf7, 0x5b, 0xae, 0x4d, 0x42, 0x97, 0x79, 0x1c,
+	0x07, 0x41, 0x9e, 0x99, 0x24, 0xb6, 0x12, 0x48, 0x9d, 0xdd, 0x78, 0xe6, 0xde, 0x33, 0xe7, 0xdc,
+	0x7b, 0x8f, 0x07, 0x56, 0x5c, 0xcb, 0xc6, 0xc4, 0xf7, 0x5b, 0xae, 0x4d, 0x42, 0x97, 0x79, 0x1c,
 	0x7b, 0xdb, 0x61, 0x3d, 0x0c, 0x88, 0xc7, 0xb7, 0x69, 0x80, 0xf7, 0x2b, 0x78, 0x77, 0x8f, 0x06,
 	0x07, 0xa6, 0x1f, 0xb0, 0x90, 0xa1, 0xa2, 0x6b, 0xd9, 0x66, 0x3c, 0xda, 0x8c, 0x47, 0x9b, 0xfb,
-	0x15, 0x7d, 0xde, 0x61, 0x0e, 0x13, 0xc1, 0x38, 0x5a, 0x49, 0x9c, 0x7e, 0xd5, 0x66, 0x7c, 0x87,
-	0x71, 0x6c, 0x11, 0x4e, 0x65, 0x42, 0xbc, 0x5f, 0xb1, 0x68, 0x48, 0x2a, 0xd8, 0x27, 0x8e, 0xeb,
-	0x89, 0x64, 0x2a, 0x76, 0x3c, 0xa3, 0xf0, 0xc0, 0xa7, 0x5c, 0x45, 0x5f, 0x74, 0x18, 0x73, 0x5a,
-	0x14, 0x13, 0xdf, 0xc5, 0xc4, 0xf3, 0x58, 0xa8, 0x78, 0x89, 0x53, 0x63, 0x05, 0xce, 0x3f, 0x8b,
-	0x6e, 0xdb, 0x6c, 0x11, 0xce, 0x5f, 0x04, 0xc4, 0xa6, 0x35, 0xba, 0xbb, 0x47, 0x79, 0x88, 0x10,
-	0xfc, 0xdf, 0x24, 0xbc, 0xb9, 0xa8, 0x15, 0xb5, 0x52, 0xae, 0x26, 0xd6, 0x46, 0x13, 0x16, 0x86,
-	0xa2, 0xb9, 0xcf, 0x3c, 0x4e, 0xd1, 0x13, 0xc8, 0xdb, 0xd1, 0x6e, 0xc4, 0xc3, 0xa6, 0x02, 0x95,
-	0x5f, 0x5d, 0x31, 0xc7, 0xd9, 0x61, 0xc6, 0x52, 0x81, 0xdd, 0x5f, 0x1b, 0x64, 0xe8, 0x26, 0xde,
-	0x23, 0xf6, 0x10, 0x60, 0x60, 0x89, 0xba, 0x68, 0xd9, 0x94, 0xfe, 0x99, 0x91, 0x7f, 0xa6, 0x2c,
-	0x88, 0xf2, 0xcf, 0xac, 0x12, 0xa7, 0x27, 0xaa, 0x16, 0x43, 0x1a, 0x5f, 0x35, 0x58, 0x1c, 0xbe,
-	0x43, 0xc9, 0xa9, 0xc3, 0x99, 0x98, 0x1c, 0xbe, 0xa8, 0x15, 0xff, 0x4b, 0xab, 0x67, 0x63, 0xee,
-	0xe8, 0xc7, 0x52, 0xe6, 0xd3, 0xcf, 0xa5, 0xac, 0xca, 0x9d, 0x1f, 0xe8, 0xe3, 0xe8, 0x51, 0x42,
-	0xc5, 0x94, 0x50, 0x71, 0x65, 0xac, 0x0a, 0xc9, 0x2e, 0x21, 0x63, 0x1e, 0x90, 0x50, 0x51, 0x25,
-	0x01, 0xd9, 0xe9, 0x99, 0x64, 0xbc, 0x82, 0xb3, 0x89, 0x5d, 0x25, 0xeb, 0x1e, 0x64, 0x7d, 0xb1,
-	0xa3, 0x7c, 0x2b, 0x8d, 0x17, 0xa4, 0x32, 0x28, 0x9c, 0x51, 0x86, 0x73, 0x03, 0xd3, 0x1e, 0x13,
-	0xde, 0xec, 0x95, 0x65, 0x1e, 0xa6, 0x07, 0xa5, 0xcf, 0xd5, 0xe4, 0x47, 0xb2, 0xbf, 0x64, 0xb8,
-	0xa2, 0x32, 0xaa, 0xbf, 0x9e, 0xc3, 0x05, 0x11, 0xfd, 0x80, 0xdb, 0x01, 0x7b, 0x73, 0xbf, 0xd1,
-	0x08, 0x28, 0xef, 0xd7, 0x7d, 0x01, 0x66, 0x7c, 0x16, 0x84, 0x75, 0xb7, 0xa1, 0x30, 0xd9, 0xe8,
-	0x73, 0xab, 0x81, 0x2e, 0x01, 0xd8, 0x4d, 0xe2, 0x79, 0xb4, 0x15, 0x9d, 0x4d, 0x89, 0xb3, 0x9c,
-	0xda, 0xd9, 0x6a, 0x18, 0x9b, 0xa0, 0x8f, 0x4a, 0xaa, 0x68, 0x5c, 0x86, 0x39, 0x2a, 0x0e, 0xea,
-	0x44, 0x9e, 0xa8, 0xe4, 0xb3, 0x34, 0x1e, 0xbe, 0x7a, 0x38, 0x03, 0xd3, 0x22, 0x0b, 0x3a, 0xd4,
-	0x00, 0x06, 0x45, 0x46, 0xeb, 0xe3, 0x1d, 0x1c, 0x3d, 0x60, 0xfa, 0xad, 0x09, 0x90, 0x92, 0xb4,
-	0xb1, 0xf6, 0xee, 0xdb, 0xef, 0x0f, 0x53, 0x18, 0x95, 0xb1, 0x7a, 0x0a, 0x86, 0x9f, 0x80, 0x78,
-	0xf7, 0xe2, 0x76, 0xe4, 0x6e, 0x07, 0x7d, 0xd6, 0x20, 0x1f, 0x6b, 0x76, 0x94, 0x9e, 0x41, 0xaf,
-	0x18, 0xfa, 0xed, 0x49, 0xa0, 0x8a, 0xbd, 0x29, 0xd8, 0x97, 0xd0, 0xf2, 0xe9, 0xd8, 0xa3, 0x8f,
-	0x1a, 0x64, 0x65, 0x17, 0xa2, 0xeb, 0xa7, 0xbc, 0x36, 0x31, 0x0c, 0xfa, 0x5a, 0x4a, 0x94, 0xe2,
-	0x59, 0x12, 0x3c, 0x0d, 0x54, 0xfc, 0x3b, 0x4f, 0x39, 0x14, 0xe8, 0x8b, 0x06, 0xb9, 0x7e, 0x87,
-	0xa3, 0x9b, 0x69, 0xbc, 0x89, 0x8d, 0x90, 0xbe, 0x9e, 0x1e, 0x98, 0xb6, 0x21, 0xa2, 0x46, 0xe0,
-	0xb8, 0x2d, 0x9c, 0xed, 0xa0, 0xae, 0x06, 0xb3, 0x89, 0xb1, 0x40, 0x77, 0x4e, 0x49, 0x61, 0xd4,
-	0x84, 0xea, 0x77, 0x27, 0x03, 0x2b, 0x0d, 0x2f, 0x85, 0x86, 0x2a, 0x7a, 0xfa, 0x0f, 0x0d, 0x72,
-	0xa8, 0x39, 0x6e, 0x0f, 0x06, 0xbe, 0x83, 0xa3, 0x67, 0x80, 0xe3, 0xb6, 0x7a, 0x1c, 0x3a, 0x38,
-	0x39, 0xcf, 0x1b, 0xd5, 0xa3, 0x6e, 0x41, 0x3b, 0xee, 0x16, 0xb4, 0x5f, 0xdd, 0x82, 0xf6, 0xfe,
-	0xa4, 0x90, 0x39, 0x3e, 0x29, 0x64, 0xbe, 0x9f, 0x14, 0x32, 0xaf, 0x6f, 0x38, 0x6e, 0xd8, 0xdc,
-	0xb3, 0x4c, 0x9b, 0xed, 0x60, 0xd7, 0x73, 0x43, 0x97, 0x94, 0x5b, 0xc4, 0xe2, 0x6a, 0x8d, 0xdf,
-	0x0a, 0x22, 0xde, 0x76, 0x58, 0xee, 0x73, 0x10, 0x3f, 0x56, 0x2b, 0x2b, 0xfe, 0x9d, 0xd7, 0xfe,
-	0x04, 0x00, 0x00, 0xff, 0xff, 0xb6, 0xa3, 0x39, 0x8c, 0x1b, 0x08, 0x00, 0x00,
+	0x15, 0x7d, 0xde, 0x61, 0x0e, 0x13, 0xc1, 0x38, 0x5a, 0xc9, 0x3c, 0xfd, 0xaa, 0xcd, 0xf8, 0x0e,
+	0xe3, 0xd8, 0x22, 0x9c, 0x4a, 0x40, 0xbc, 0x5f, 0xb1, 0x68, 0x48, 0x2a, 0xd8, 0x27, 0x8e, 0xeb,
+	0x09, 0x30, 0x15, 0x3b, 0x9e, 0x51, 0x78, 0xe0, 0x53, 0xae, 0xa2, 0x2f, 0x3a, 0x8c, 0x39, 0x2d,
+	0x8a, 0x89, 0xef, 0x62, 0xe2, 0x79, 0x2c, 0x54, 0xbc, 0xc4, 0xa9, 0xb1, 0x02, 0xe7, 0x9f, 0x45,
+	0xb7, 0x6d, 0xb6, 0x08, 0xe7, 0x2f, 0x02, 0x62, 0xd3, 0x1a, 0xdd, 0xdd, 0xa3, 0x3c, 0x44, 0x08,
+	0xfe, 0x6f, 0x12, 0xde, 0x5c, 0xd4, 0x8a, 0x5a, 0x29, 0x57, 0x13, 0x6b, 0xa3, 0x09, 0x0b, 0x43,
+	0xd1, 0xdc, 0x67, 0x1e, 0xa7, 0xe8, 0x09, 0xe4, 0xed, 0x68, 0x37, 0xe2, 0x61, 0x53, 0x91, 0x95,
+	0x5f, 0x5d, 0x31, 0xc7, 0x95, 0xc3, 0x8c, 0x41, 0x81, 0xdd, 0x5f, 0x1b, 0x64, 0xe8, 0x26, 0xde,
+	0x23, 0xf6, 0x10, 0x60, 0x50, 0x12, 0x75, 0xd1, 0xb2, 0x29, 0xeb, 0x67, 0x46, 0xf5, 0x33, 0x65,
+	0x43, 0x54, 0xfd, 0xcc, 0x2a, 0x71, 0x7a, 0xa2, 0x6a, 0xb1, 0x4c, 0xe3, 0xab, 0x06, 0x8b, 0xc3,
+	0x77, 0x28, 0x39, 0x75, 0x38, 0x13, 0x93, 0xc3, 0x17, 0xb5, 0xe2, 0x7f, 0x69, 0xf5, 0x6c, 0xcc,
+	0x1d, 0xfd, 0x58, 0xca, 0x7c, 0xfa, 0xb9, 0x94, 0x55, 0xd8, 0xf9, 0x81, 0x3e, 0x8e, 0x1e, 0x25,
+	0x54, 0x4c, 0x09, 0x15, 0x57, 0xc6, 0xaa, 0x90, 0xec, 0x12, 0x32, 0xca, 0x70, 0x6e, 0xa0, 0xe2,
+	0x31, 0xe1, 0xcd, 0x5e, 0x9d, 0xe6, 0x61, 0x7a, 0xd0, 0x8b, 0x5c, 0x4d, 0x7e, 0x24, 0x1b, 0x2e,
+	0xc3, 0x95, 0xe4, 0x51, 0x0d, 0x7f, 0x0e, 0x17, 0x44, 0xf4, 0x03, 0x6e, 0x07, 0xec, 0xcd, 0xfd,
+	0x46, 0x23, 0xa0, 0xbc, 0xdf, 0x88, 0x05, 0x98, 0xf1, 0x59, 0x10, 0xd6, 0xdd, 0x86, 0xca, 0xc9,
+	0x46, 0x9f, 0x5b, 0x0d, 0x74, 0x09, 0xc0, 0x6e, 0x12, 0xcf, 0xa3, 0xad, 0xe8, 0x6c, 0x4a, 0x9c,
+	0xe5, 0xd4, 0xce, 0x56, 0xc3, 0xd8, 0x04, 0x7d, 0x14, 0xa8, 0xa2, 0x71, 0x19, 0xe6, 0xa8, 0x38,
+	0xa8, 0x13, 0x79, 0xa2, 0xc0, 0x67, 0x69, 0x3c, 0xdc, 0x98, 0x07, 0x24, 0x40, 0xaa, 0x24, 0x20,
+	0x3b, 0x3d, 0x4a, 0xc6, 0x2b, 0x38, 0x9b, 0xd8, 0x55, 0x98, 0xf7, 0x20, 0xeb, 0x8b, 0x1d, 0x35,
+	0x2e, 0xa5, 0xf1, 0x7d, 0x54, 0x08, 0x2a, 0x6f, 0xf5, 0x70, 0x06, 0xa6, 0x05, 0x32, 0x3a, 0xd4,
+	0x00, 0x06, 0x4d, 0x46, 0xeb, 0xe3, 0xa1, 0x46, 0x1b, 0x4c, 0xbf, 0x35, 0x41, 0xa6, 0xd4, 0x63,
+	0xac, 0xbd, 0xfb, 0xf6, 0xfb, 0xc3, 0x14, 0x46, 0x65, 0xac, 0x7e, 0x05, 0xc3, 0xbf, 0x80, 0xf8,
+	0xf4, 0xe2, 0x76, 0xd4, 0xcc, 0x0e, 0xfa, 0xac, 0x41, 0x3e, 0x36, 0xec, 0x28, 0x3d, 0x83, 0x5e,
+	0xa1, 0xf5, 0xdb, 0x93, 0xa4, 0x2a, 0xf6, 0xa6, 0x60, 0x5f, 0x42, 0xcb, 0xa7, 0x63, 0x8f, 0xbe,
+	0x68, 0x90, 0xeb, 0x8f, 0x2b, 0xba, 0x99, 0xe6, 0xe6, 0x98, 0x1f, 0xf4, 0xf5, 0xf4, 0x89, 0x69,
+	0xcb, 0x1d, 0x95, 0x99, 0xe3, 0xb6, 0xe0, 0xdd, 0x41, 0x5d, 0x0d, 0x66, 0x13, 0x33, 0x8e, 0xee,
+	0x9c, 0x92, 0xc2, 0x28, 0xbb, 0xe9, 0x77, 0x27, 0x4b, 0x56, 0x1a, 0x5e, 0x0a, 0x0d, 0x55, 0xf4,
+	0xf4, 0x1f, 0x1a, 0xa4, 0x43, 0x39, 0x6e, 0x0f, 0xdc, 0xdb, 0xc1, 0x91, 0xa7, 0x39, 0x6e, 0x2b,
+	0xa7, 0x77, 0x70, 0xd2, 0x9c, 0xe8, 0xa3, 0x06, 0x59, 0xe9, 0x15, 0x74, 0xfd, 0x94, 0x04, 0x13,
+	0x96, 0xd5, 0xd7, 0x52, 0x66, 0x29, 0x3d, 0x25, 0xa1, 0xc7, 0x40, 0xc5, 0xbf, 0xeb, 0x91, 0xd6,
+	0xdd, 0xa8, 0x1e, 0x75, 0x0b, 0xda, 0x71, 0xb7, 0xa0, 0xfd, 0xea, 0x16, 0xb4, 0xf7, 0x27, 0x85,
+	0xcc, 0xf1, 0x49, 0x21, 0xf3, 0xfd, 0xa4, 0x90, 0x79, 0x7d, 0xc3, 0x71, 0xc3, 0xe6, 0x9e, 0x65,
+	0xda, 0x6c, 0x07, 0xbb, 0x9e, 0x1b, 0xba, 0xa4, 0xdc, 0x22, 0x16, 0x57, 0x6b, 0xfc, 0x56, 0x40,
+	0x7b, 0xdb, 0x61, 0xb9, 0x8f, 0x2a, 0x1e, 0x56, 0x2b, 0x2b, 0xde, 0xce, 0x6b, 0x7f, 0x02, 0x00,
+	0x00, 0xff, 0xff, 0x16, 0x7f, 0x46, 0x31, 0x1b, 0x08, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -587,12 +587,12 @@ type QueryClient interface {
 	ClassTrace(ctx context.Context, in *QueryClassTraceRequest, opts ...grpc.CallOption) (*QueryClassTraceResponse, error)
 	// ClassTraces queries all denomination traces.
 	ClassTraces(ctx context.Context, in *QueryClassTracesRequest, opts ...grpc.CallOption) (*QueryClassTracesResponse, error)
-	// Params queries all parameters of the ibc-transfer module.
-	Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error)
 	// ClassHash queries a class id hash information.
 	ClassHash(ctx context.Context, in *QueryClassHashRequest, opts ...grpc.CallOption) (*QueryClassHashResponse, error)
 	// EscrowAddress returns the escrow address for a particular port and channel id.
 	EscrowAddress(ctx context.Context, in *QueryEscrowAddressRequest, opts ...grpc.CallOption) (*QueryEscrowAddressResponse, error)
+	// Params queries all parameters of the ibc-transfer module.
+	Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error)
 }
 
 type queryClient struct {
@@ -621,15 +621,6 @@ func (c *queryClient) ClassTraces(ctx context.Context, in *QueryClassTracesReque
 	return out, nil
 }
 
-func (c *queryClient) Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error) {
-	out := new(QueryParamsResponse)
-	err := c.cc.Invoke(ctx, "/ibc.applications.nft_transfer.v1.Query/Params", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *queryClient) ClassHash(ctx context.Context, in *QueryClassHashRequest, opts ...grpc.CallOption) (*QueryClassHashResponse, error) {
 	out := new(QueryClassHashResponse)
 	err := c.cc.Invoke(ctx, "/ibc.applications.nft_transfer.v1.Query/ClassHash", in, out, opts...)
@@ -648,18 +639,27 @@ func (c *queryClient) EscrowAddress(ctx context.Context, in *QueryEscrowAddressR
 	return out, nil
 }
 
+func (c *queryClient) Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error) {
+	out := new(QueryParamsResponse)
+	err := c.cc.Invoke(ctx, "/ibc.applications.nft_transfer.v1.Query/Params", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 type QueryServer interface {
 	// ClassTrace queries a denomination trace information.
 	ClassTrace(context.Context, *QueryClassTraceRequest) (*QueryClassTraceResponse, error)
 	// ClassTraces queries all denomination traces.
 	ClassTraces(context.Context, *QueryClassTracesRequest) (*QueryClassTracesResponse, error)
-	// Params queries all parameters of the ibc-transfer module.
-	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
 	// ClassHash queries a class id hash information.
 	ClassHash(context.Context, *QueryClassHashRequest) (*QueryClassHashResponse, error)
 	// EscrowAddress returns the escrow address for a particular port and channel id.
 	EscrowAddress(context.Context, *QueryEscrowAddressRequest) (*QueryEscrowAddressResponse, error)
+	// Params queries all parameters of the ibc-transfer module.
+	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
 }
 
 // UnimplementedQueryServer can be embedded to have forward compatible implementations.
@@ -672,14 +672,14 @@ func (*UnimplementedQueryServer) ClassTrace(ctx context.Context, req *QueryClass
 func (*UnimplementedQueryServer) ClassTraces(ctx context.Context, req *QueryClassTracesRequest) (*QueryClassTracesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ClassTraces not implemented")
 }
-func (*UnimplementedQueryServer) Params(ctx context.Context, req *QueryParamsRequest) (*QueryParamsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Params not implemented")
-}
 func (*UnimplementedQueryServer) ClassHash(ctx context.Context, req *QueryClassHashRequest) (*QueryClassHashResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ClassHash not implemented")
 }
 func (*UnimplementedQueryServer) EscrowAddress(ctx context.Context, req *QueryEscrowAddressRequest) (*QueryEscrowAddressResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method EscrowAddress not implemented")
+}
+func (*UnimplementedQueryServer) Params(ctx context.Context, req *QueryParamsRequest) (*QueryParamsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Params not implemented")
 }
 
 func RegisterQueryServer(s grpc1.Server, srv QueryServer) {
@@ -722,24 +722,6 @@ func _Query_ClassTraces_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_Params_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryParamsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(QueryServer).Params(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/ibc.applications.nft_transfer.v1.Query/Params",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).Params(ctx, req.(*QueryParamsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Query_ClassHash_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryClassHashRequest)
 	if err := dec(in); err != nil {
@@ -776,6 +758,24 @@ func _Query_EscrowAddress_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_Params_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryParamsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).Params(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ibc.applications.nft_transfer.v1.Query/Params",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).Params(ctx, req.(*QueryParamsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Query_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "ibc.applications.nft_transfer.v1.Query",
 	HandlerType: (*QueryServer)(nil),
@@ -789,16 +789,16 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 			Handler:    _Query_ClassTraces_Handler,
 		},
 		{
-			MethodName: "Params",
-			Handler:    _Query_Params_Handler,
-		},
-		{
 			MethodName: "ClassHash",
 			Handler:    _Query_ClassHash_Handler,
 		},
 		{
 			MethodName: "EscrowAddress",
 			Handler:    _Query_EscrowAddress_Handler,
+		},
+		{
+			MethodName: "Params",
+			Handler:    _Query_Params_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -954,64 +954,6 @@ func (m *QueryClassTracesResponse) MarshalToSizedBuffer(dAtA []byte) (int, error
 	return len(dAtA) - i, nil
 }
 
-func (m *QueryParamsRequest) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *QueryParamsRequest) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *QueryParamsRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	return len(dAtA) - i, nil
-}
-
-func (m *QueryParamsResponse) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *QueryParamsResponse) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *QueryParamsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.Params != nil {
-		{
-			size, err := m.Params.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintQuery(dAtA, i, uint64(size))
-		}
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
 func (m *QueryClassHashRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -1139,6 +1081,64 @@ func (m *QueryEscrowAddressResponse) MarshalToSizedBuffer(dAtA []byte) (int, err
 	return len(dAtA) - i, nil
 }
 
+func (m *QueryParamsRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryParamsRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryParamsRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryParamsResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryParamsResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryParamsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Params != nil {
+		{
+			size, err := m.Params.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintQuery(dAtA []byte, offset int, v uint64) int {
 	offset -= sovQuery(v)
 	base := offset
@@ -1208,28 +1208,6 @@ func (m *QueryClassTracesResponse) Size() (n int) {
 	return n
 }
 
-func (m *QueryParamsRequest) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	return n
-}
-
-func (m *QueryParamsResponse) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.Params != nil {
-		l = m.Params.Size()
-		n += 1 + l + sovQuery(uint64(l))
-	}
-	return n
-}
-
 func (m *QueryClassHashRequest) Size() (n int) {
 	if m == nil {
 		return 0
@@ -1281,6 +1259,28 @@ func (m *QueryEscrowAddressResponse) Size() (n int) {
 	_ = l
 	l = len(m.EscrowAddress)
 	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryParamsRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *QueryParamsResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Params != nil {
+		l = m.Params.Size()
 		n += 1 + l + sovQuery(uint64(l))
 	}
 	return n
@@ -1666,142 +1666,6 @@ func (m *QueryClassTracesResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *QueryParamsRequest) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowQuery
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: QueryParamsRequest: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryParamsRequest: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		default:
-			iNdEx = preIndex
-			skippy, err := skipQuery(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthQuery
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *QueryParamsResponse) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowQuery
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: QueryParamsResponse: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryParamsResponse: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Params", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQuery
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthQuery
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthQuery
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.Params == nil {
-				m.Params = &Params{}
-			}
-			if err := m.Params.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipQuery(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthQuery
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
 func (m *QueryClassHashRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2140,6 +2004,142 @@ func (m *QueryEscrowAddressResponse) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.EscrowAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryParamsRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryParamsRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryParamsRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryParamsResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryParamsResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryParamsResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Params", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Params == nil {
+				m.Params = &Params{}
+			}
+			if err := m.Params.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

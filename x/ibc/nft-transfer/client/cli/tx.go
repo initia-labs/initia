@@ -6,11 +6,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/spf13/cobra"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/cosmos/cosmos-sdk/version"
-	"github.com/spf13/cobra"
 
 	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	channelutils "github.com/cosmos/ibc-go/v7/modules/core/04-channel/client/utils"
@@ -25,7 +26,7 @@ const (
 	flagMemo                   = "memo"
 )
 
-// NewNftTransferTxCmd returns the command to create a NewMsgNftTransfer transaction
+// NewNftTransferTxCmd returns the command to create a NewMsgTransfer transaction
 func NewNftTransferTxCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "nft-transfer [src-port] [src-channel] [receiver] [class-id] [token-id],...[token-id]",
@@ -113,10 +114,9 @@ corresponding to the counterpartychannel. Any timeout set to 0 is disabled.`),
 				}
 			}
 
-			msg := types.NewMsgNftTransfer(
-				srcPort, srcChannel, classId, tokenIds, sender, receiver, timeoutHeight, timeoutTimestamp,
+			msg := types.NewMsgTransfer(
+				srcPort, srcChannel, classId, tokenIds, sender, receiver, timeoutHeight, timeoutTimestamp, memo,
 			)
-			msg.Memo = memo
 
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},

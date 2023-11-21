@@ -1,9 +1,10 @@
 package keeper_test
 
 import (
-	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	host "github.com/cosmos/ibc-go/v7/modules/core/24-host"
+
+	sdktypes "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 	ibctesting "github.com/initia-labs/initia/x/ibc/testing"
@@ -29,9 +30,6 @@ func (suite *KeeperTestSuite) CreateNftClass(
 	descBz, err := vmtypes.SerializeString(desc)
 	suite.Require().NoError(err)
 
-	royaltyBz, err := vmtypes.SerializeUint128(0, 0)
-	suite.Require().NoError(err)
-
 	ctx := endpoint.Chain.GetContext()
 	err = nftKeeper.ExecuteEntryFunction(
 		ctx,
@@ -40,7 +38,7 @@ func (suite *KeeperTestSuite) CreateNftClass(
 		movetypes.MoveModuleNameSimpleNft,
 		movetypes.FunctionNameSimpleNftInitialize,
 		[]vmtypes.TypeTag{},
-		[][]byte{descBz, {0}, nameBz, uriBz, {0}, {0}, {0}, {0}, {0}, {0}, {0}, royaltyBz},
+		[][]byte{descBz, {0}, nameBz, uriBz, {0}, {0}, {0}, {0}, {0}, {0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
 	)
 	suite.Require().NoError(err, "MakeCollection error on chain")
 
@@ -54,12 +52,12 @@ func (suite *KeeperTestSuite) CreateNftClass(
 func (suite *KeeperTestSuite) MintNft(
 	endpoint *ibctesting.Endpoint,
 	receiver sdktypes.AccAddress,
-	classId, className, tokenName, tokenUri, tokenData string,
-) string {
+	classId, className, tokenId, tokenUri, tokenData string,
+) {
 	classNameBz, err := vmtypes.SerializeString(className)
 	suite.Require().NoError(err)
 
-	nameBz, err := vmtypes.SerializeString(tokenName)
+	idBz, err := vmtypes.SerializeString(tokenId)
 	suite.Require().NoError(err)
 
 	uriBz, err := vmtypes.SerializeString(tokenUri)
@@ -80,11 +78,9 @@ func (suite *KeeperTestSuite) MintNft(
 		movetypes.MoveModuleNameSimpleNft,
 		movetypes.FunctionNameSimpleNftMint,
 		[]vmtypes.TypeTag{},
-		[][]byte{classNameBz, dataBz, nameBz, uriBz, {0}, {0}, {0}, {1}, append([]byte{1}, receiverAddr[:]...)},
+		[][]byte{classNameBz, dataBz, idBz, uriBz, {0}, {0}, {0}, append([]byte{1}, receiverAddr[:]...)},
 	)
 	suite.Require().NoError(err, "MakeCollection error on chain")
-
-	return movetypes.NamedObjectAddress(vmtypes.TestAddress, className+"::"+tokenName).CanonicalString()
 }
 
 func (suite *KeeperTestSuite) ConfirmClassId(endpoint *ibctesting.Endpoint, classId, targetClassId string) {
@@ -108,12 +104,11 @@ func (suite *KeeperTestSuite) TestSendAndReceive() {
 	classUri := "uri"
 	className := "name"
 	classSymbol := "symbol"
-	nftName := "kitty"
+	nftId := "kitty"
 	nftUri := "kitty_uri"
 	nftData := "kitty_data"
 
 	var targetClassId string
-	var nftId string
 	var packet channeltypes.Packet
 
 	// WARNING : be careful not to be confused with endpoint names
@@ -130,7 +125,7 @@ func (suite *KeeperTestSuite) TestSendAndReceive() {
 			receiver := pathA2B.EndpointB.Chain.SenderAccount.GetAddress()
 
 			classId = suite.CreateNftClass(pathA2B.EndpointA, className, classUri, classSymbol)
-			nftId = suite.MintNft(pathA2B.EndpointA, sender, classId, className, nftName, nftUri, nftData)
+			suite.MintNft(pathA2B.EndpointA, sender, classId, className, nftId, nftUri, nftData)
 
 			packet = suite.transferNft(
 				pathA2B.EndpointA,
@@ -235,7 +230,7 @@ func (suite *KeeperTestSuite) transferNft(
 	classId, nftId string,
 	sender, receiver string,
 ) channeltypes.Packet {
-	msgTransfer := types.NewMsgNftTransfer(
+	msgTransfer := types.NewMsgTransfer(
 		fromEndpoint.ChannelConfig.PortID,
 		fromEndpoint.ChannelID,
 		classId,
@@ -244,6 +239,7 @@ func (suite *KeeperTestSuite) transferNft(
 		receiver,
 		toEndpoint.Chain.GetTimeoutHeight(),
 		0,
+		"",
 	)
 
 	res, err := fromEndpoint.Chain.SendMsgs(msgTransfer)

@@ -1,9 +1,10 @@
 package keeper
 
 import (
+	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/distribution/types"
-	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
 )
 
 // Wrapper struct

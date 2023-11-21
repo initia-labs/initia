@@ -10,14 +10,15 @@ import (
 
 	abci "github.com/cometbft/cometbft/abci/types"
 
+	"github.com/initia-labs/initia/x/intertx/client/cli"
+	"github.com/initia-labs/initia/x/intertx/keeper"
+	"github.com/initia-labs/initia/x/intertx/types"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	"github.com/initia-labs/initia/x/intertx/client/cli"
-	"github.com/initia-labs/initia/x/intertx/keeper"
-	"github.com/initia-labs/initia/x/intertx/types"
 )
 
 var (

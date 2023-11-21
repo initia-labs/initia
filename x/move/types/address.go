@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"strings"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	vmtypes "github.com/initia-labs/initiavm/types"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // AccAddressFromString return sdk.AccAddress from the bech32 encoded string address

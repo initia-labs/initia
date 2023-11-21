@@ -3,8 +3,9 @@ package keeper_test
 import (
 	"testing"
 
-	cosmostypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/stretchr/testify/require"
+
+	cosmostypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
 func Test_HistoricalInfo(t *testing.T) {

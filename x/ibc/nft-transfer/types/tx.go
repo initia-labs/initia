@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"cosmossdk.io/errors"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/migrations/legacytx"
@@ -14,26 +15,27 @@ import (
 
 // msg types
 const (
-	TypeMsgNftTransfer  = "nft_transfer"
+	TypeMsgTransfer     = "nft_transfer"
 	TypeMsgUpdateParams = "update_params"
 )
 
 var (
-	_ sdk.Msg = &MsgNftTransfer{}
+	_ sdk.Msg = &MsgTransfer{}
 	_ sdk.Msg = &MsgUpdateParams{}
 
-	_ legacytx.LegacyMsg = &MsgNftTransfer{}
+	_ legacytx.LegacyMsg = &MsgTransfer{}
 	_ legacytx.LegacyMsg = &MsgUpdateParams{}
 )
 
-// NewMsgNftTransfer creates a new MsgNftTransfer instance
-func NewMsgNftTransfer(
+// NewMsgTransfer creates a new MsgTransfer instance
+func NewMsgTransfer(
 	sourcePort, sourceChannel string,
 	classId string, tokenIds []string,
 	sender, receiver string,
 	timeoutHeight clienttypes.Height, timeoutTimestamp uint64,
-) *MsgNftTransfer {
-	return &MsgNftTransfer{
+	memo string,
+) *MsgTransfer {
+	return &MsgTransfer{
 		SourcePort:       sourcePort,
 		SourceChannel:    sourceChannel,
 		ClassId:          classId,
@@ -42,24 +44,25 @@ func NewMsgNftTransfer(
 		Receiver:         receiver,
 		TimeoutHeight:    timeoutHeight,
 		TimeoutTimestamp: timeoutTimestamp,
+		Memo:             memo,
 	}
 }
 
 // Route implements sdk.Msg
-func (MsgNftTransfer) Route() string {
+func (MsgTransfer) Route() string {
 	return RouterKey
 }
 
 // Type implements sdk.Msg
-func (MsgNftTransfer) Type() string {
-	return TypeMsgNftTransfer
+func (MsgTransfer) Type() string {
+	return TypeMsgTransfer
 }
 
-// ValidateBasic performs a basic check of the MsgNftTransfer fields.
+// ValidateBasic performs a basic check of the MsgTransfer fields.
 // NOTE: timeout height or timestamp values can be 0 to disable the timeout.
 // NOTE: The recipient addresses format is not validated as the format defined by
 // the chain is not known to IBC.
-func (msg MsgNftTransfer) ValidateBasic() error {
+func (msg MsgTransfer) ValidateBasic() error {
 	if err := host.PortIdentifierValidator(msg.SourcePort); err != nil {
 		return errors.Wrap(err, "invalid source port ID")
 	}
@@ -90,12 +93,12 @@ func (msg MsgNftTransfer) ValidateBasic() error {
 }
 
 // GetSignBytes implements sdk.Msg.
-func (msg MsgNftTransfer) GetSignBytes() []byte {
+func (msg MsgTransfer) GetSignBytes() []byte {
 	return sdk.MustSortJSON(amino.MustMarshalJSON(&msg))
 }
 
 // GetSigners implements sdk.Msg
-func (msg MsgNftTransfer) GetSigners() []sdk.AccAddress {
+func (msg MsgTransfer) GetSigners() []sdk.AccAddress {
 	signer, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		panic(err)

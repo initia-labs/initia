@@ -1,10 +1,11 @@
 package app
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	distrkeeper "github.com/initia-labs/initia/x/distribution/keeper"
 	mstakingkeeper "github.com/initia-labs/initia/x/mstaking/keeper"
 	buildertypes "github.com/skip-mev/pob/x/builder/types"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 var _ buildertypes.RewardsAddressProvider = (*RewardsAddressProvider)(nil)

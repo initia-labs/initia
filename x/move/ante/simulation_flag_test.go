@@ -6,8 +6,9 @@ import (
 
 	"github.com/initia-labs/initia/x/move/ante"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func TestSimulationFlagDecorator(t *testing.T) {

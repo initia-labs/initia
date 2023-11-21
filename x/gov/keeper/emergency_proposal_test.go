@@ -4,8 +4,9 @@ import (
 	"testing"
 	"time"
 
-	v1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	"github.com/stretchr/testify/require"
+
+	v1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 )
 
 func Test_InsertEmergencyProposalQueue(t *testing.T) {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	tmcfg "github.com/cometbft/cometbft/config"
+
 	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
 
 	initiaapp "github.com/initia-labs/initia/app"

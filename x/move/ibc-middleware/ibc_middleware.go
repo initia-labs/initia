@@ -6,10 +6,12 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 
+	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 	porttypes "github.com/cosmos/ibc-go/v7/modules/core/05-port/types"
 	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
+	nfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 
 	movekeeper "github.com/initia-labs/initia/x/move/keeper"
 	movetypes "github.com/initia-labs/initia/x/move/types"
@@ -153,12 +155,69 @@ func (im IBCMiddleware) OnRecvPacket(
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) ibcexported.Acknowledgement {
-	isIcs20, data := isIcs20Packet(packet)
-	if !isIcs20 {
-		return im.app.OnRecvPacket(ctx, packet, relayer)
+	isIcs20, ics20Data := isIcs20Packet(packet)
+	if isIcs20 {
+		return im.handleIcs20Packet(ctx, packet, relayer, ics20Data)
 	}
 
-	// Validate the memo
+	isIcs721, ics721Data := isIcs721Packet(packet)
+	if isIcs721 {
+		return im.handleIcs721Packet(ctx, packet, relayer, ics721Data)
+	}
+
+	return im.app.OnRecvPacket(ctx, packet, relayer)
+
+}
+
+func (im IBCMiddleware) handleIcs20Packet(
+	ctx sdk.Context,
+	packet channeltypes.Packet,
+	relayer sdk.AccAddress,
+	data transfertypes.FungibleTokenPacketData,
+) ibcexported.Acknowledgement {
+	isMoveRouted, msg, err := validateAndParseMemo(data.GetMemo(), data.Receiver)
+	if !isMoveRouted {
+		return im.app.OnRecvPacket(ctx, packet, relayer)
+	} else if err != nil {
+		return newEmitErrorAcknowledgement(ctx, err)
+	}
+
+	// Calculate the receiver / contract caller based on the packet's channel and sender
+	intermediateSender := deriveIntermediateSender(packet.GetDestChannel(), data.GetSender())
+
+	// The funds sent on this packet need to be transferred to the intermediary account for the sender.
+	// For this, we override the ICS20 packet's Receiver (essentially hijacking the funds to this new address)
+	// and execute the underlying OnRecvPacket() call (which should eventually land on the transfer app's
+	// relay.go and send the funds to the intermediary account.
+	//
+	// If that succeeds, we make the contract call
+	data.Receiver = intermediateSender
+	bz, err := json.Marshal(data)
+	if err != nil {
+		return newEmitErrorAcknowledgement(ctx, err)
+	}
+	packet.Data = bz
+
+	ack := im.app.OnRecvPacket(ctx, packet, relayer)
+	if !ack.Success() {
+		return ack
+	}
+
+	msg.Sender = intermediateSender
+	_, err = im.execMsg(ctx, &msg)
+	if err != nil {
+		return newEmitErrorAcknowledgement(ctx, err)
+	}
+
+	return ack
+}
+
+func (im IBCMiddleware) handleIcs721Packet(
+	ctx sdk.Context,
+	packet channeltypes.Packet,
+	relayer sdk.AccAddress,
+	data nfttransfertypes.NonFungibleTokenPacketData,
+) ibcexported.Acknowledgement {
 	isMoveRouted, msg, err := validateAndParseMemo(data.GetMemo(), data.Receiver)
 	if !isMoveRouted {
 		return im.app.OnRecvPacket(ctx, packet, relayer)
