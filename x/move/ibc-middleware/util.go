@@ -5,12 +5,14 @@ import (
 	"fmt"
 
 	"cosmossdk.io/errors"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/address"
 
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
 
+	nfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 	movetypes "github.com/initia-labs/initia/x/move/types"
 )
 
@@ -26,6 +28,14 @@ func deriveIntermediateSender(channel, originalSender string) string {
 
 func isIcs20Packet(packet channeltypes.Packet) (isIcs20 bool, ics20data transfertypes.FungibleTokenPacketData) {
 	var data transfertypes.FungibleTokenPacketData
+	if err := json.Unmarshal(packet.GetData(), &data); err != nil {
+		return false, data
+	}
+	return true, data
+}
+
+func isIcs721Packet(packet channeltypes.Packet) (isIcs721 bool, ics721data nfttransfertypes.NonFungibleTokenPacketData) {
+	var data nfttransfertypes.NonFungibleTokenPacketData
 	if err := json.Unmarshal(packet.GetData(), &data); err != nil {
 		return false, data
 	}

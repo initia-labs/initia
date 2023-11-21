@@ -6,6 +6,7 @@ import (
 
 	"cosmossdk.io/errors"
 	abci "github.com/cometbft/cometbft/abci/types"
+
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	store "github.com/cosmos/cosmos-sdk/store/types"
 

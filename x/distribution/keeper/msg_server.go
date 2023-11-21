@@ -9,6 +9,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"cosmossdk.io/errors"
+
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 

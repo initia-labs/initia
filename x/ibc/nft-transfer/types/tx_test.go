@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/stretchr/testify/require"
 
 	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
 )
@@ -41,50 +42,50 @@ var (
 	timeoutHeight = clienttypes.NewHeight(0, 10)
 )
 
-// TestMsgNftTransferRoute tests Route for MsgNftTransfer
-func TestMsgNftTransferRoute(t *testing.T) {
-	msg := NewMsgNftTransfer(validPort, validChannel, validClassId, validTokenIds, addr1, addr2, timeoutHeight, 0)
+// TestMsgTransferRoute tests Route for MsgTransfer
+func TestMsgTransferRoute(t *testing.T) {
+	msg := NewMsgTransfer(validPort, validChannel, validClassId, validTokenIds, addr1, addr2, timeoutHeight, 0, "")
 
 	require.Equal(t, RouterKey, msg.Route())
 }
 
-// TestMsgNftTransferType tests Type for MsgNftTransfer
-func TestMsgNftTransferType(t *testing.T) {
-	msg := NewMsgNftTransfer(validPort, validChannel, validClassId, validTokenIds, addr1, addr2, timeoutHeight, 0)
+// TestMsgTransferType tests Type for MsgTransfer
+func TestMsgTransferType(t *testing.T) {
+	msg := NewMsgTransfer(validPort, validChannel, validClassId, validTokenIds, addr1, addr2, timeoutHeight, 0, "")
 
 	require.Equal(t, "nft_transfer", msg.Type())
 }
 
-func TestMsgNftTransferGetSignBytes(t *testing.T) {
-	msg := NewMsgNftTransfer(validPort, validChannel, validClassId, validTokenIds, addr1, addr2, timeoutHeight, 0)
-	expected := fmt.Sprintf(`{"type":"nft-transfer/MsgNftTransfer","value":{"class_id":"%s","receiver":"%s","sender":"%s","source_channel":"testchannel","source_port":"testportid","timeout_height":{"revision_height":"10"},"token_ids":["1","2","3"]}}`, validClassId, addr2, addr1)
+func TestMsgTransferGetSignBytes(t *testing.T) {
+	msg := NewMsgTransfer(validPort, validChannel, validClassId, validTokenIds, addr1, addr2, timeoutHeight, 0, "")
+	expected := fmt.Sprintf(`{"type":"nft-transfer/MsgTransfer","value":{"class_id":"%s","receiver":"%s","sender":"%s","source_channel":"testchannel","source_port":"testportid","timeout_height":{"revision_height":"10"},"token_ids":["1","2","3"]}}`, validClassId, addr2, addr1)
 	require.NotPanics(t, func() {
 		res := msg.GetSignBytes()
 		require.Equal(t, expected, string(res))
 	})
 }
 
-// TestMsgNftTransferValidation tests ValidateBasic for MsgNftTransfer
-func TestMsgNftTransferValidation(t *testing.T) {
+// TestMsgTransferValidation tests ValidateBasic for MsgTransfer
+func TestMsgTransferValidation(t *testing.T) {
 	testCases := []struct {
 		name    string
-		msg     *MsgNftTransfer
+		msg     *MsgTransfer
 		expPass bool
 	}{
-		{"valid msg with base denom", NewMsgNftTransfer(validPort, validChannel, validClassId, validTokenIds, addr1, addr2, timeoutHeight, 0), true},
-		{"valid msg with trace hash", NewMsgNftTransfer(validPort, validChannel, ibcClassId, validTokenIds, addr1, addr2, timeoutHeight, 0), true},
-		{"invalid ibc denom", NewMsgNftTransfer(validPort, validChannel, invalidIBCClassId, validTokenIds, addr1, addr2, timeoutHeight, 0), false},
-		{"too short port id", NewMsgNftTransfer(invalidShortPort, validChannel, validClassId, validTokenIds, addr1, addr2, timeoutHeight, 0), false},
-		{"too long port id", NewMsgNftTransfer(invalidLongPort, validChannel, validClassId, validTokenIds, addr1, addr2, timeoutHeight, 0), false},
-		{"port id contains non-alpha", NewMsgNftTransfer(invalidPort, validChannel, validClassId, validTokenIds, addr1, addr2, timeoutHeight, 0), false},
-		{"too short channel id", NewMsgNftTransfer(validPort, invalidShortChannel, validClassId, validTokenIds, addr1, addr2, timeoutHeight, 0), false},
-		{"too long channel id", NewMsgNftTransfer(validPort, invalidLongChannel, validClassId, validTokenIds, addr1, addr2, timeoutHeight, 0), false},
-		{"channel id contains non-alpha", NewMsgNftTransfer(validPort, invalidChannel, validClassId, validTokenIds, addr1, addr2, timeoutHeight, 0), false},
-		{"empty class id", NewMsgNftTransfer(validPort, validChannel, emptyClassId, validTokenIds, addr1, addr2, timeoutHeight, 0), false},
-		{"empty token ids", NewMsgNftTransfer(validPort, validChannel, validClassId, emptyTokenIds, addr1, addr2, timeoutHeight, 0), false},
-		{"empty token ids 2", NewMsgNftTransfer(validPort, validChannel, validClassId, emptyTokenIds2, addr1, addr2, timeoutHeight, 0), false},
-		{"missing sender address", NewMsgNftTransfer(validPort, validChannel, validClassId, validTokenIds, emptyAddr, addr2, timeoutHeight, 0), false},
-		{"missing recipient address", NewMsgNftTransfer(validPort, validChannel, validClassId, validTokenIds, addr1, "", timeoutHeight, 0), false},
+		{"valid msg with base denom", NewMsgTransfer(validPort, validChannel, validClassId, validTokenIds, addr1, addr2, timeoutHeight, 0, ""), true},
+		{"valid msg with trace hash", NewMsgTransfer(validPort, validChannel, ibcClassId, validTokenIds, addr1, addr2, timeoutHeight, 0, ""), true},
+		{"invalid ibc denom", NewMsgTransfer(validPort, validChannel, invalidIBCClassId, validTokenIds, addr1, addr2, timeoutHeight, 0, ""), false},
+		{"too short port id", NewMsgTransfer(invalidShortPort, validChannel, validClassId, validTokenIds, addr1, addr2, timeoutHeight, 0, ""), false},
+		{"too long port id", NewMsgTransfer(invalidLongPort, validChannel, validClassId, validTokenIds, addr1, addr2, timeoutHeight, 0, ""), false},
+		{"port id contains non-alpha", NewMsgTransfer(invalidPort, validChannel, validClassId, validTokenIds, addr1, addr2, timeoutHeight, 0, ""), false},
+		{"too short channel id", NewMsgTransfer(validPort, invalidShortChannel, validClassId, validTokenIds, addr1, addr2, timeoutHeight, 0, ""), false},
+		{"too long channel id", NewMsgTransfer(validPort, invalidLongChannel, validClassId, validTokenIds, addr1, addr2, timeoutHeight, 0, ""), false},
+		{"channel id contains non-alpha", NewMsgTransfer(validPort, invalidChannel, validClassId, validTokenIds, addr1, addr2, timeoutHeight, 0, ""), false},
+		{"empty class id", NewMsgTransfer(validPort, validChannel, emptyClassId, validTokenIds, addr1, addr2, timeoutHeight, 0, ""), false},
+		{"empty token ids", NewMsgTransfer(validPort, validChannel, validClassId, emptyTokenIds, addr1, addr2, timeoutHeight, 0, ""), false},
+		{"empty token ids 2", NewMsgTransfer(validPort, validChannel, validClassId, emptyTokenIds2, addr1, addr2, timeoutHeight, 0, ""), false},
+		{"missing sender address", NewMsgTransfer(validPort, validChannel, validClassId, validTokenIds, emptyAddr, addr2, timeoutHeight, 0, ""), false},
+		{"missing recipient address", NewMsgTransfer(validPort, validChannel, validClassId, validTokenIds, addr1, "", timeoutHeight, 0, ""), false},
 	}
 
 	for i, tc := range testCases {
@@ -97,11 +98,11 @@ func TestMsgNftTransferValidation(t *testing.T) {
 	}
 }
 
-// TestMsgNftTransferGetSigners tests GetSigners for MsgNftTransfer
-func TestMsgNftTransferGetSigners(t *testing.T) {
+// TestMsgTransferGetSigners tests GetSigners for MsgTransfer
+func TestMsgTransferGetSigners(t *testing.T) {
 	addr := sdk.AccAddress(secp256k1.GenPrivKey().PubKey().Address())
 
-	msg := NewMsgNftTransfer(validPort, validChannel, validClassId, validTokenIds, addr.String(), addr2, timeoutHeight, 0)
+	msg := NewMsgTransfer(validPort, validChannel, validClassId, validTokenIds, addr.String(), addr2, timeoutHeight, 0, "")
 	res := msg.GetSigners()
 
 	require.Equal(t, []sdk.AccAddress{addr}, res)

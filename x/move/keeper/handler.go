@@ -361,7 +361,7 @@ func (k Keeper) handleExecuteResponse(
 // DispatchMessages run the given cosmos messages and emit events
 func (k Keeper) DispatchMessages(ctx sdk.Context, messages []vmtypes.CosmosMessage) error {
 	for _, message := range messages {
-		msg, err := types.ConvertToSDKMessage(ctx, NewMoveBankKeeper(&k), message)
+		msg, err := types.ConvertToSDKMessage(ctx, NewMoveBankKeeper(&k), NewNftKeeper(&k), message)
 		if err != nil {
 			return err
 		}

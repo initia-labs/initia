@@ -6,6 +6,7 @@ import (
 	"github.com/armon/go-metrics"
 
 	"cosmossdk.io/errors"
+
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -30,7 +31,7 @@ import (
 // sent the original nft, will un-escrow the non fungible token and send
 // it to the receiving address.
 //
-// Note: An IBC Nft Transfer must be initiated using a MsgNftTransfer via the Transfer rpc handler
+// Note: An IBC Nft Transfer must be initiated using a MsgTransfer via the Transfer rpc handler
 //
 // A sending chain may be acting as a source or sink zone. When a chain is sending
 // tokens across a port and channel which are not equal to the last prefixed port and

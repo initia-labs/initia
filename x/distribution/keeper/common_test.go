@@ -12,6 +12,9 @@ import (
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	"github.com/cometbft/cometbft/libs/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
+	"github.com/stretchr/testify/require"
+
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
@@ -39,8 +42,6 @@ import (
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
-	"github.com/stretchr/testify/require"
 
 	initiaapp "github.com/initia-labs/initia/app"
 	initiaappparams "github.com/initia-labs/initia/app/params"
@@ -327,10 +328,6 @@ func _createTestInput(
 
 	accountKeeper.GetModuleAccount(ctx, movetypes.MoveStakingModuleName)
 
-	// nftTransferKeeper := TestIBCNftTransferKeeper{
-	// 	classTraces: make(map[string]string),
-	// }
-
 	*moveKeeper = movekeeper.NewKeeper(
 		appCodec,
 		keys[movetypes.StoreKey],
@@ -505,26 +502,6 @@ func (router TestMsgRouter) Handler(msg sdk.Msg) baseapp.MsgServiceHandler {
 }
 
 // test Keeper
-
-// type TestIBCNftTransferKeeper struct {
-// 	classTraces map[string]string
-// }
-
-// func (k TestIBCNftTransferKeeper) GetClassTrace(ctx sdk.Context, classTraceHash tmbytes.HexBytes) (nfttransfertypes.ClassTrace, bool) {
-// 	trace, found := k.classTraces[classTraceHash.String()]
-// 	if !found {
-// 		return nfttransfertypes.ClassTrace{}, false
-// 	}
-
-// 	return nfttransfertypes.ClassTrace{
-// 		Path:        "",
-// 		BaseClassId: trace,
-// 	}, true
-// }
-
-// func (k TestIBCNftTransferKeeper) SetClassTrace(ctx sdk.Context, classTrace nfttransfertypes.ClassTrace) {
-// 	k.classTraces[classTrace.Hash().String()] = classTrace.BaseClassId
-// }
 
 type TestDexKeeper struct {
 	prices     map[string]sdk.Dec

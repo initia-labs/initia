@@ -10,6 +10,8 @@ import (
 	"github.com/spf13/cobra"
 
 	"cosmossdk.io/errors"
+	"github.com/initia-labs/initia/x/authz/client/cli"
+
 	sdkclient "github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -17,7 +19,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/authz"
 	"github.com/cosmos/cosmos-sdk/x/authz/keeper"
-	"github.com/initia-labs/initia/x/authz/client/cli"
 )
 
 const ConsensusVersion = 1

@@ -7,8 +7,9 @@ import (
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/stretchr/testify/require"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	movetypes "github.com/initia-labs/initia/x/move/types"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func TestAuthzPublishAuthorization(t *testing.T) {

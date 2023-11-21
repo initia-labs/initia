@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"cosmossdk.io/errors"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/gov/types"

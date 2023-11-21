@@ -1,11 +1,13 @@
 package types
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	ibcfeetypes "github.com/cosmos/ibc-go/v7/modules/apps/29-fee/types"
 	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
+	nfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 
 	opchildtypes "github.com/initia-labs/OPinit/x/opchild/types"
 	ophosttypes "github.com/initia-labs/OPinit/x/ophost/types"
@@ -14,7 +16,12 @@ import (
 )
 
 // ConvertToSDKMessage convert vm CosmosMessage to sdk.Msg
-func ConvertToSDKMessage(ctx sdk.Context, k FungibleAssetKeeper, msg vmtypes.CosmosMessage) (sdk.Msg, error) {
+func ConvertToSDKMessage(
+	ctx sdk.Context,
+	fk FungibleAssetKeeper,
+	ck CollectionKeeper,
+	msg vmtypes.CosmosMessage,
+) (sdk.Msg, error) {
 	switch msg := msg.(type) {
 	case *vmtypes.CosmosMessage__Staking:
 		switch msg := msg.Value.(type) {
@@ -24,7 +31,7 @@ func ConvertToSDKMessage(ctx sdk.Context, k FungibleAssetKeeper, msg vmtypes.Cos
 				return nil, err
 			}
 
-			denom, err := DenomFromMetadataAddress(ctx, k, msg.Amount.Metadata)
+			denom, err := DenomFromMetadataAddress(ctx, fk, msg.Amount.Metadata)
 			if err != nil {
 				return nil, err
 			}
@@ -38,7 +45,7 @@ func ConvertToSDKMessage(ctx sdk.Context, k FungibleAssetKeeper, msg vmtypes.Cos
 	case *vmtypes.CosmosMessage__Distribution:
 		switch msg := msg.Value.(type) {
 		case *vmtypes.DistributionMessage__FundCommunityPool:
-			denom, err := DenomFromMetadataAddress(ctx, k, msg.Amount.Metadata)
+			denom, err := DenomFromMetadataAddress(ctx, fk, msg.Amount.Metadata)
 			if err != nil {
 				return nil, err
 			}
@@ -53,7 +60,7 @@ func ConvertToSDKMessage(ctx sdk.Context, k FungibleAssetKeeper, msg vmtypes.Cos
 	case *vmtypes.CosmosMessage__Ibc:
 		switch msg := msg.Value.(type) {
 		case *vmtypes.IBCMessage__Transfer:
-			denom, err := DenomFromMetadataAddress(ctx, k, msg.Token.Metadata)
+			denom, err := DenomFromMetadataAddress(ctx, fk, msg.Token.Metadata)
 			if err != nil {
 				return nil, err
 			}
@@ -70,18 +77,37 @@ func ConvertToSDKMessage(ctx sdk.Context, k FungibleAssetKeeper, msg vmtypes.Cos
 			)
 
 			return transferMsg, nil
+		case *vmtypes.IBCMessage__NftTransfer:
+			classId, err := ClassIdFromCollectionAddress(ctx, ck, msg.Collection)
+			if err != nil {
+				return nil, err
+			}
+
+			nftTransferMsg := nfttransfertypes.NewMsgTransfer(
+				msg.SourcePort,
+				msg.SourceChannel,
+				classId,
+				msg.TokenIds,
+				ConvertVMAddressToSDKAddress(msg.Sender).String(),
+				msg.Receiver,
+				clienttypes.NewHeight(msg.TimeoutHeight.RevisionNumber, msg.TimeoutHeight.RevisionHeight),
+				msg.TimeoutTimestamp,
+				msg.Memo,
+			)
+
+			return nftTransferMsg, nil
 		case *vmtypes.IBCMessage__PayFee:
-			recvFeeDenom, err := DenomFromMetadataAddress(ctx, k, msg.Fee.RecvFee.Metadata)
+			recvFeeDenom, err := DenomFromMetadataAddress(ctx, fk, msg.Fee.RecvFee.Metadata)
 			if err != nil {
 				return nil, err
 			}
 
-			ackFeeDenom, err := DenomFromMetadataAddress(ctx, k, msg.Fee.AckFee.Metadata)
+			ackFeeDenom, err := DenomFromMetadataAddress(ctx, fk, msg.Fee.AckFee.Metadata)
 			if err != nil {
 				return nil, err
 			}
 
-			timeoutFeeDenom, err := DenomFromMetadataAddress(ctx, k, msg.Fee.TimeoutFee.Metadata)
+			timeoutFeeDenom, err := DenomFromMetadataAddress(ctx, fk, msg.Fee.TimeoutFee.Metadata)
 			if err != nil {
 				return nil, err
 			}
@@ -103,7 +129,7 @@ func ConvertToSDKMessage(ctx sdk.Context, k FungibleAssetKeeper, msg vmtypes.Cos
 	case *vmtypes.CosmosMessage__OPinit:
 		switch msg := msg.Value.(type) {
 		case *vmtypes.OPinitMessage__InitiateTokenDeposit:
-			denom, err := DenomFromMetadataAddress(ctx, k, msg.Amount.Metadata)
+			denom, err := DenomFromMetadataAddress(ctx, fk, msg.Amount.Metadata)
 			if err != nil {
 				return nil, err
 			}
@@ -119,7 +145,7 @@ func ConvertToSDKMessage(ctx sdk.Context, k FungibleAssetKeeper, msg vmtypes.Cos
 			return depositMsg, nil
 
 		case *vmtypes.OPinitMessage__InitiateTokenWithdrawal: // for l2 (minitia)
-			denom, err := DenomFromMetadataAddress(ctx, k, msg.Amount.Metadata)
+			denom, err := DenomFromMetadataAddress(ctx, fk, msg.Amount.Metadata)
 			if err != nil {
 				return nil, err
 			}

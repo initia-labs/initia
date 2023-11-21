@@ -1,9 +1,10 @@
 package keeper
 
 import (
+	customtypes "github.com/initia-labs/initia/x/gov/types"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/gov/types"
-	customtypes "github.com/initia-labs/initia/x/gov/types"
 )
 
 // SetParams sets the gov module's parameters.

@@ -6,8 +6,9 @@ import (
 
 	gogotypes "github.com/cosmos/gogoproto/types"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/initia-labs/initia/x/mstaking/types"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // get a single validator

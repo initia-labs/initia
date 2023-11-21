@@ -5,10 +5,11 @@ import (
 
 	"github.com/cometbft/cometbft/libs/log"
 
+	"github.com/initia-labs/initia/x/mstaking/types"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/initia-labs/initia/x/mstaking/types"
 )
 
 // Implements ValidatorSet interface

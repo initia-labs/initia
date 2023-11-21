@@ -21,11 +21,6 @@ service Query {
     option (google.api.http).get = "/ibc/apps/nft_transfer/v1/class_traces";
   }
 
-  // Params queries all parameters of the ibc-transfer module.
-  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
-    option (google.api.http).get = "/ibc/apps/nft_transfer/v1/params";
-  }
-
   // ClassHash queries a class id hash information.
   rpc ClassHash(QueryClassHashRequest) returns (QueryClassHashResponse) {
     option (google.api.http).get = "/ibc/apps/nft_transfer/v1/class_hashs/{trace}";
@@ -34,6 +29,11 @@ service Query {
   // EscrowAddress returns the escrow address for a particular port and channel id.
   rpc EscrowAddress(QueryEscrowAddressRequest) returns (QueryEscrowAddressResponse) {
     option (google.api.http).get = "/ibc/apps/nft_transfer/v1/channels/{channel_id}/ports/{port_id}/escrow_address";
+  }
+
+  // Params queries all parameters of the ibc-transfer module.
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/ibc/apps/nft_transfer/v1/params";
   }
 }
 
@@ -67,15 +67,6 @@ message QueryClassTracesResponse {
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
-// QueryParamsRequest is the request type for the Query/Params RPC method.
-message QueryParamsRequest {}
-
-// QueryParamsResponse is the response type for the Query/Params RPC method.
-message QueryParamsResponse {
-  // params defines the parameters of the module.
-  Params params = 1;
-}
-
 // QueryClassHashRequest is the request type for the Query/ClassHash RPC
 // method
 message QueryClassHashRequest {
@@ -102,4 +93,13 @@ message QueryEscrowAddressRequest {
 message QueryEscrowAddressResponse {
   // the escrow account address
   string escrow_address = 1;
+}
+
+// QueryParamsRequest is the request type for the Query/Params RPC method.
+message QueryParamsRequest {}
+
+// QueryParamsResponse is the response type for the Query/Params RPC method.
+message QueryParamsResponse {
+  // params defines the parameters of the module.
+  Params params = 1;
 }

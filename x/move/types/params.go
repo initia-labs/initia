@@ -5,8 +5,9 @@ import (
 
 	"github.com/pkg/errors"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"gopkg.in/yaml.v3"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // Default parameter values

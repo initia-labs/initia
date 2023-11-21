@@ -12,6 +12,7 @@ import (
 	tmstrings "github.com/cometbft/cometbft/libs/strings"
 
 	"cosmossdk.io/errors"
+
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"

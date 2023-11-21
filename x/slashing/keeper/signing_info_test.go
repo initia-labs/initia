@@ -4,9 +4,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/slashing/types"
-	"github.com/stretchr/testify/require"
 )
 
 func TestGetSetValidatorSigningInfo(t *testing.T) {

@@ -6,6 +6,7 @@ import (
 	"github.com/initia-labs/initia/x/reward/types"
 
 	"cosmossdk.io/errors"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 )

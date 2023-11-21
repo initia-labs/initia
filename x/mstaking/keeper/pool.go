@@ -1,9 +1,10 @@
 package keeper
 
 import (
+	"github.com/initia-labs/initia/x/mstaking/types"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/initia-labs/initia/x/mstaking/types"
 )
 
 // GetBondedPool returns the bonded tokens pool's module account

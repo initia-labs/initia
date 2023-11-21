@@ -4,8 +4,9 @@ import (
 	"encoding/hex"
 	"strings"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"golang.org/x/crypto/sha3"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	vmtypes "github.com/initia-labs/initiavm/types"
 )
