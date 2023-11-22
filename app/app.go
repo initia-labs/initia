@@ -123,7 +123,7 @@ import (
 	appante "github.com/initia-labs/initia/app/ante"
 	apphook "github.com/initia-labs/initia/app/hook"
 	applanes "github.com/initia-labs/initia/app/lanes"
-	initiatx "github.com/initia-labs/initia/tx"
+	initiaservice "github.com/initia-labs/initia/service"
 	authzmodule "github.com/initia-labs/initia/x/authz/module"
 	"github.com/initia-labs/initia/x/bank"
 	bankkeeper "github.com/initia-labs/initia/x/bank/keeper"
@@ -1242,7 +1242,7 @@ func (app *InitiaApp) Simulate(txBytes []byte) (sdk.GasInfo, *sdk.Result, error)
 
 // RegisterTxService implements the Application.RegisterTxService method.
 func (app *InitiaApp) RegisterTxService(clientCtx client.Context) {
-	initiatx.RegisterTxService(
+	initiaservice.RegisterTxService(
 		app.BaseApp.GRPCQueryRouter(), clientCtx,
 		authtx.NewTxServer(clientCtx, app.Simulate, app.interfaceRegistry),
 	)
@@ -1250,11 +1250,9 @@ func (app *InitiaApp) RegisterTxService(clientCtx client.Context) {
 
 // RegisterTendermintService implements the Application.RegisterTendermintService method.
 func (app *InitiaApp) RegisterTendermintService(clientCtx client.Context) {
-	tmservice.RegisterTendermintService(
-		clientCtx,
+	initiaservice.RegisterTendermintService(
 		app.BaseApp.GRPCQueryRouter(),
-		app.interfaceRegistry,
-		app.Query,
+		tmservice.NewQueryServer(clientCtx, app.interfaceRegistry, app.Query),
 	)
 }
 
