@@ -13,6 +13,7 @@ import (
 
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 	reflectionv1 "cosmossdk.io/api/cosmos/reflection/v1"
+	"cosmossdk.io/math"
 
 	dbm "github.com/cometbft/cometbft-db"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -119,8 +120,10 @@ import (
 
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 
-	"github.com/initia-labs/initia/app/ante"
-	"github.com/initia-labs/initia/app/hook"
+	appante "github.com/initia-labs/initia/app/ante"
+	apphook "github.com/initia-labs/initia/app/hook"
+	applanes "github.com/initia-labs/initia/app/lanes"
+	initiatx "github.com/initia-labs/initia/tx"
 	authzmodule "github.com/initia-labs/initia/x/authz/module"
 	"github.com/initia-labs/initia/x/bank"
 	bankkeeper "github.com/initia-labs/initia/x/bank/keeper"
@@ -145,12 +148,17 @@ import (
 	"github.com/initia-labs/initia/x/slashing"
 	slashingkeeper "github.com/initia-labs/initia/x/slashing/keeper"
 
-	builderabci "github.com/skip-mev/pob/abci"
-	pobabci "github.com/skip-mev/pob/abci"
-	buildermempool "github.com/skip-mev/pob/mempool"
-	"github.com/skip-mev/pob/x/builder"
-	builderkeeper "github.com/skip-mev/pob/x/builder/keeper"
-	buildertypes "github.com/skip-mev/pob/x/builder/types"
+	blockabci "github.com/skip-mev/block-sdk/abci"
+	signer_extraction "github.com/skip-mev/block-sdk/adapters/signer_extraction_adapter"
+	"github.com/skip-mev/block-sdk/block"
+	blockbase "github.com/skip-mev/block-sdk/block/base"
+	baselane "github.com/skip-mev/block-sdk/lanes/base"
+	freelane "github.com/skip-mev/block-sdk/lanes/free"
+	"github.com/skip-mev/block-sdk/lanes/mev"
+	"github.com/skip-mev/block-sdk/x/auction"
+	auctionante "github.com/skip-mev/block-sdk/x/auction/ante"
+	auctionkeeper "github.com/skip-mev/block-sdk/x/auction/keeper"
+	auctiontypes "github.com/skip-mev/block-sdk/x/auction/types"
 
 	"github.com/initia-labs/OPinit/x/ophost"
 	ophostkeeper "github.com/initia-labs/OPinit/x/ophost/keeper"
@@ -210,7 +218,7 @@ var (
 		router.AppModuleBasic{},
 		ibcperm.AppModuleBasic{},
 		move.AppModuleBasic{},
-		builder.AppModuleBasic{},
+		auction.AppModuleBasic{},
 		ophost.AppModuleBasic{},
 	)
 
@@ -226,9 +234,9 @@ var (
 		govtypes.ModuleName:             {authtypes.Burner},
 		ibctransfertypes.ModuleName:     {authtypes.Minter, authtypes.Burner},
 		movetypes.MoveStakingModuleName: nil,
-		// x/builder's module account must be instantiated upon genesis to accrue auction rewards not
+		// x/auction's module account must be instantiated upon genesis to accrue auction rewards not
 		// distributed to proposers
-		buildertypes.ModuleName: nil,
+		auctiontypes.ModuleName: nil,
 
 		// this is only for testing
 		authtypes.Minter: {authtypes.Minter},
@@ -293,7 +301,7 @@ type InitiaApp struct {
 	RouterKeeper          *routerkeeper.Keeper // Router Keeper must be a pointer in the app, so we can SetTransferKeeper on it correctly
 	IBCPermKeeper         *ibcpermkeeper.Keeper
 	MoveKeeper            *movekeeper.Keeper
-	BuilderKeeper         *builderkeeper.Keeper // x/builder keeper used to process bids for TOB auctions
+	AuctionKeeper         *auctionkeeper.Keeper // x/auction keeper used to process bids for TOB auctions
 	OPHostKeeper          *ophostkeeper.Keeper
 
 	// make scoped keepers public for test purposes
@@ -311,7 +319,7 @@ type InitiaApp struct {
 	configurator module.Configurator
 
 	// Override of BaseApp's CheckTx
-	checkTxHandler pobabci.CheckTx
+	checkTxHandler mev.CheckTx
 }
 
 // NewInitiaApp returns a reference to an initialized Initia.
@@ -345,7 +353,7 @@ func NewInitiaApp(
 		ibctransfertypes.StoreKey, ibcnfttransfertypes.StoreKey, capabilitytypes.StoreKey,
 		authzkeeper.StoreKey, feegrant.StoreKey, icahosttypes.StoreKey,
 		icacontrollertypes.StoreKey, icaauthtypes.StoreKey, ibcfeetypes.StoreKey,
-		routertypes.StoreKey, ibcpermtypes.StoreKey, movetypes.StoreKey, buildertypes.StoreKey,
+		routertypes.StoreKey, ibcpermtypes.StoreKey, movetypes.StoreKey, auctiontypes.StoreKey,
 		ophosttypes.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -749,25 +757,25 @@ func NewInitiaApp(
 		),
 	)
 
-	// x/builder module keeper initialization
+	// x/auction module keeper initialization
 
 	// initialize the keeper
-	builderKeeper := builderkeeper.NewKeeperWithRewardsAddressProvider(
+	auctionKeeper := auctionkeeper.NewKeeperWithRewardsAddressProvider(
 		app.appCodec,
-		app.keys[buildertypes.StoreKey],
+		app.keys[auctiontypes.StoreKey],
 		app.AccountKeeper,
 		app.BankKeeper,
-		NewRewardsAddressProvider(*app.StakingKeeper, *app.DistrKeeper),
+		applanes.NewRewardsAddressProvider(*app.StakingKeeper, *app.DistrKeeper),
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
-	app.BuilderKeeper = &builderKeeper
+	app.AuctionKeeper = &auctionKeeper
 
 	opHostKeeper := ophostkeeper.NewKeeper(
 		app.appCodec,
 		app.keys[ophosttypes.StoreKey],
 		app.AccountKeeper,
 		app.BankKeeper,
-		ophosttypes.NewBridgeHooks(hook.NewBridgeHook(app.IBCKeeper.ChannelKeeper, app.IBCPermKeeper)),
+		ophosttypes.NewBridgeHooks(apphook.NewBridgeHook(app.IBCKeeper.ChannelKeeper, app.IBCPermKeeper)),
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 	app.OPHostKeeper = &opHostKeeper
@@ -824,7 +832,7 @@ func NewInitiaApp(
 		groupmodule.NewAppModule(appCodec, *app.GroupKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		consensus.NewAppModule(appCodec, *app.ConsensusParamsKeeper),
 		move.NewAppModule(app.AccountKeeper, *app.MoveKeeper),
-		builder.NewAppModule(app.appCodec, *app.BuilderKeeper),
+		auction.NewAppModule(app.appCodec, *app.AuctionKeeper),
 		ibctransfer.NewAppModule(*app.TransferKeeper),
 		ibcnfttransfer.NewAppModule(*app.NftTransferKeeper),
 		ica.NewAppModule(app.ICAControllerKeeper, app.ICAHostKeeper),
@@ -867,7 +875,7 @@ func NewInitiaApp(
 		routertypes.ModuleName,
 		ibcpermtypes.ModuleName,
 		consensusparamtypes.ModuleName,
-		buildertypes.ModuleName,
+		auctiontypes.ModuleName,
 		ophosttypes.ModuleName,
 	)
 
@@ -899,7 +907,7 @@ func NewInitiaApp(
 		routertypes.ModuleName,
 		ibcpermtypes.ModuleName,
 		consensusparamtypes.ModuleName,
-		buildertypes.ModuleName,
+		auctiontypes.ModuleName,
 		ophosttypes.ModuleName,
 	)
 
@@ -937,7 +945,7 @@ func NewInitiaApp(
 		routertypes.ModuleName,
 		ibcpermtypes.ModuleName,
 		consensusparamtypes.ModuleName,
-		buildertypes.ModuleName,
+		auctiontypes.ModuleName,
 		ophosttypes.ModuleName,
 	)
 
@@ -969,35 +977,74 @@ func NewInitiaApp(
 	app.SetEndBlocker(app.EndBlocker)
 
 	// initialize and set the InitiaApp mempool. The current mempool will be the
-	// x/builder module's mempool which will extract the top bid from the current block's auction
+	// x/auction module's mempool which will extract the top bid from the current block's auction
 	// and insert the txs at the top of the block spots.
-	factory := buildermempool.NewDefaultAuctionFactory(app.txConfig.TxDecoder())
-	mempool := buildermempool.NewAuctionMempool(
-		app.txConfig.TxDecoder(),
-		app.txConfig.TxEncoder(),
-		0,
-		factory,
+	signerExtractor := signer_extraction.NewDefaultAdapter()
+
+	mevConfig := blockbase.LaneConfig{
+		Logger:          app.Logger(),
+		TxEncoder:       app.txConfig.TxEncoder(),
+		TxDecoder:       app.txConfig.TxDecoder(),
+		MaxBlockSpace:   math.LegacyZeroDec(),
+		MaxTxs:          100,
+		SignerExtractor: signerExtractor,
+	}
+	mevLane := mev.NewMEVLane(
+		mevConfig,
+		mev.NewDefaultAuctionFactory(app.txConfig.TxDecoder(), signerExtractor),
 	)
+
+	freeConfig := blockbase.LaneConfig{
+		Logger:          app.Logger(),
+		TxEncoder:       app.txConfig.TxEncoder(),
+		TxDecoder:       app.txConfig.TxDecoder(),
+		MaxBlockSpace:   math.LegacyZeroDec(),
+		MaxTxs:          10,
+		SignerExtractor: signerExtractor,
+	}
+
+	freeLane := freelane.NewFreeLane(
+		freeConfig,
+		blockbase.DefaultTxPriority(),
+		applanes.FreeLaneMatchHandler(),
+	)
+
+	defaultLaneConfig := blockbase.LaneConfig{
+		Logger:          app.Logger(),
+		TxEncoder:       app.txConfig.TxEncoder(),
+		TxDecoder:       app.txConfig.TxDecoder(),
+		MaxBlockSpace:   math.LegacyZeroDec(),
+		MaxTxs:          0,
+		SignerExtractor: signerExtractor,
+	}
+	defaultLane := baselane.NewDefaultLane(defaultLaneConfig)
+
+	lanes := []block.Lane{mevLane, freeLane, defaultLane}
+	mempool := block.NewLanedMempool(app.Logger(), true, lanes...)
 	app.SetMempool(mempool)
-	anteHandler := app.setAnteHandler(mempool)
+
+	anteHandler := app.setAnteHandler(mevLane, freeLane)
+	for _, lane := range lanes {
+		lane.SetAnteHandler(anteHandler)
+	}
 
 	// override the base-app's ABCI methods (CheckTx, PrepareProposal, ProcessProposal)
-	proposalHandlers := builderabci.NewProposalHandler(
-		mempool,
+	proposalHandlers := blockabci.NewProposalHandler(
 		app.Logger(),
-		anteHandler,
-		app.txConfig.TxEncoder(),
 		app.txConfig.TxDecoder(),
+		app.txConfig.TxEncoder(),
+		mempool,
 	)
+
 	// override base-app's ProcessProposal + PrepareProposal
 	app.SetPrepareProposal(proposalHandlers.PrepareProposalHandler())
 	app.SetProcessProposal(proposalHandlers.ProcessProposalHandler())
 
 	// overrde base-app's CheckTx
-	checkTxHandler := builderabci.NewCheckTxHandler(
+	checkTxHandler := mev.NewCheckTxHandler(
 		app.BaseApp,
 		app.txConfig.TxDecoder(),
-		mempool,
+		mevLane,
 		anteHandler,
 		app.ChainID(),
 	)
@@ -1030,13 +1077,16 @@ func (app *InitiaApp) CheckTx(req abci.RequestCheckTx) abci.ResponseCheckTx {
 }
 
 // SetCheckTx sets the checkTxHandler for the app.
-func (app *InitiaApp) SetCheckTx(handler pobabci.CheckTx) {
+func (app *InitiaApp) SetCheckTx(handler mev.CheckTx) {
 	app.checkTxHandler = handler
 }
 
-func (app *InitiaApp) setAnteHandler(mempl buildermempool.Mempool) sdk.AnteHandler {
-	anteHandler, err := ante.NewAnteHandler(
-		ante.HandlerOptions{
+func (app *InitiaApp) setAnteHandler(
+	mevLane auctionante.MEVLane,
+	freeLane block.Lane,
+) sdk.AnteHandler {
+	anteHandler, err := appante.NewAnteHandler(
+		appante.HandlerOptions{
 			HandlerOptions: cosmosante.HandlerOptions{
 				AccountKeeper:   app.AccountKeeper,
 				BankKeeper:      app.BankKeeper,
@@ -1048,8 +1098,9 @@ func (app *InitiaApp) setAnteHandler(mempl buildermempool.Mempool) sdk.AnteHandl
 			MoveKeeper:    movekeeper.NewDexKeeper(app.MoveKeeper),
 			Codec:         app.appCodec,
 			TxEncoder:     app.txConfig.TxEncoder(),
-			BuilderKeeper: *app.BuilderKeeper,
-			Mempool:       mempl,
+			AuctionKeeper: *app.AuctionKeeper,
+			MevLane:       mevLane,
+			FreeLane:      freeLane,
 		},
 	)
 	if err != nil {
@@ -1191,7 +1242,10 @@ func (app *InitiaApp) Simulate(txBytes []byte) (sdk.GasInfo, *sdk.Result, error)
 
 // RegisterTxService implements the Application.RegisterTxService method.
 func (app *InitiaApp) RegisterTxService(clientCtx client.Context) {
-	authtx.RegisterTxService(app.BaseApp.GRPCQueryRouter(), clientCtx, app.Simulate, app.interfaceRegistry)
+	initiatx.RegisterTxService(
+		app.BaseApp.GRPCQueryRouter(), clientCtx,
+		authtx.NewTxServer(clientCtx, app.Simulate, app.interfaceRegistry),
+	)
 }
 
 // RegisterTendermintService implements the Application.RegisterTendermintService method.

@@ -19,7 +19,8 @@ import (
 	movetypes "github.com/initia-labs/initia/x/move/types"
 	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
 	rewardtypes "github.com/initia-labs/initia/x/reward/types"
-	buildertypes "github.com/skip-mev/pob/x/builder/types"
+
+	auctiontypes "github.com/skip-mev/block-sdk/x/auction/types"
 )
 
 // GenesisState - The genesis state of the blockchain is represented here as a map of raw json
@@ -70,12 +71,12 @@ func (genState GenesisState) ConfigureBondDenom(cdc codec.JSONCodec, bondDenom s
 	moveGenState.Params.BaseDenom = bondDenom
 	genState[movetypes.ModuleName] = cdc.MustMarshalJSON(&moveGenState)
 
-	// Builder module genesis-state bond denom configuration
-	var builderGenState buildertypes.GenesisState
-	cdc.MustUnmarshalJSON(genState[buildertypes.ModuleName], &builderGenState)
-	builderGenState.Params.ReserveFee.Denom = bondDenom
-	builderGenState.Params.MinBidIncrement.Denom = bondDenom
-	genState[buildertypes.ModuleName] = cdc.MustMarshalJSON(&builderGenState)
+	// Auction module genesis-state bond denom configuration
+	var auctionGenState auctiontypes.GenesisState
+	cdc.MustUnmarshalJSON(genState[auctiontypes.ModuleName], &auctionGenState)
+	auctionGenState.Params.ReserveFee.Denom = bondDenom
+	auctionGenState.Params.MinBidIncrement.Denom = bondDenom
+	genState[auctiontypes.ModuleName] = cdc.MustMarshalJSON(&auctionGenState)
 
 	return genState
 }
