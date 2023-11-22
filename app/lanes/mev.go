@@ -1,14 +1,14 @@
-package app
+package lanes
 
 import (
 	distrkeeper "github.com/initia-labs/initia/x/distribution/keeper"
 	mstakingkeeper "github.com/initia-labs/initia/x/mstaking/keeper"
-	buildertypes "github.com/skip-mev/pob/x/builder/types"
+	auctiontypes "github.com/skip-mev/block-sdk/x/auction/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-var _ buildertypes.RewardsAddressProvider = (*RewardsAddressProvider)(nil)
+var _ auctiontypes.RewardsAddressProvider = (*RewardsAddressProvider)(nil)
 
 // NewRewardsAddressProvider returns a new RewardsAddressProvider from a staking + distribution keeper
 func NewRewardsAddressProvider(sk mstakingkeeper.Keeper, dk distrkeeper.Keeper) *RewardsAddressProvider {
@@ -18,7 +18,7 @@ func NewRewardsAddressProvider(sk mstakingkeeper.Keeper, dk distrkeeper.Keeper) 
 	}
 }
 
-// RewardsAddressProvider implements the x/builder's RewardsAddressProvider interface. It is used
+// RewardsAddressProvider implements the x/auction's RewardsAddressProvider interface. It is used
 // to determine the address to which the rewards from the most recent block's auction are sent.
 type RewardsAddressProvider struct {
 	sk mstakingkeeper.Keeper
