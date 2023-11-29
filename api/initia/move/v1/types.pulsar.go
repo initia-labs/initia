@@ -16,7 +16,6 @@ import (
 
 var (
 	md_Params                               protoreflect.MessageDescriptor
-	fd_Params_max_module_size               protoreflect.FieldDescriptor
 	fd_Params_base_denom                    protoreflect.FieldDescriptor
 	fd_Params_base_min_gas_price            protoreflect.FieldDescriptor
 	fd_Params_arbitrary_enabled             protoreflect.FieldDescriptor
@@ -26,7 +25,6 @@ var (
 func init() {
 	file_initia_move_v1_types_proto_init()
 	md_Params = File_initia_move_v1_types_proto.Messages().ByName("Params")
-	fd_Params_max_module_size = md_Params.Fields().ByName("max_module_size")
 	fd_Params_base_denom = md_Params.Fields().ByName("base_denom")
 	fd_Params_base_min_gas_price = md_Params.Fields().ByName("base_min_gas_price")
 	fd_Params_arbitrary_enabled = md_Params.Fields().ByName("arbitrary_enabled")
@@ -98,12 +96,6 @@ func (x *fastReflection_Params) Interface() protoreflect.ProtoMessage {
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
 func (x *fastReflection_Params) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
-	if x.MaxModuleSize != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.MaxModuleSize)
-		if !f(fd_Params_max_module_size, value) {
-			return
-		}
-	}
 	if x.BaseDenom != "" {
 		value := protoreflect.ValueOfString(x.BaseDenom)
 		if !f(fd_Params_base_denom, value) {
@@ -143,8 +135,6 @@ func (x *fastReflection_Params) Range(f func(protoreflect.FieldDescriptor, proto
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_Params) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "initia.move.v1.Params.max_module_size":
-		return x.MaxModuleSize != uint64(0)
 	case "initia.move.v1.Params.base_denom":
 		return x.BaseDenom != ""
 	case "initia.move.v1.Params.base_min_gas_price":
@@ -169,8 +159,6 @@ func (x *fastReflection_Params) Has(fd protoreflect.FieldDescriptor) bool {
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_Params) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "initia.move.v1.Params.max_module_size":
-		x.MaxModuleSize = uint64(0)
 	case "initia.move.v1.Params.base_denom":
 		x.BaseDenom = ""
 	case "initia.move.v1.Params.base_min_gas_price":
@@ -195,9 +183,6 @@ func (x *fastReflection_Params) Clear(fd protoreflect.FieldDescriptor) {
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_Params) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "initia.move.v1.Params.max_module_size":
-		value := x.MaxModuleSize
-		return protoreflect.ValueOfUint64(value)
 	case "initia.move.v1.Params.base_denom":
 		value := x.BaseDenom
 		return protoreflect.ValueOfString(value)
@@ -230,8 +215,6 @@ func (x *fastReflection_Params) Get(descriptor protoreflect.FieldDescriptor) pro
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_Params) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "initia.move.v1.Params.max_module_size":
-		x.MaxModuleSize = value.Uint()
 	case "initia.move.v1.Params.base_denom":
 		x.BaseDenom = value.Interface().(string)
 	case "initia.move.v1.Params.base_min_gas_price":
@@ -260,8 +243,6 @@ func (x *fastReflection_Params) Set(fd protoreflect.FieldDescriptor, value proto
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_Params) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "initia.move.v1.Params.max_module_size":
-		panic(fmt.Errorf("field max_module_size of message initia.move.v1.Params is not mutable"))
 	case "initia.move.v1.Params.base_denom":
 		panic(fmt.Errorf("field base_denom of message initia.move.v1.Params is not mutable"))
 	case "initia.move.v1.Params.base_min_gas_price":
@@ -283,8 +264,6 @@ func (x *fastReflection_Params) Mutable(fd protoreflect.FieldDescriptor) protore
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_Params) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "initia.move.v1.Params.max_module_size":
-		return protoreflect.ValueOfUint64(uint64(0))
 	case "initia.move.v1.Params.base_denom":
 		return protoreflect.ValueOfString("")
 	case "initia.move.v1.Params.base_min_gas_price":
@@ -362,9 +341,6 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		var n int
 		var l int
 		_ = l
-		if x.MaxModuleSize != 0 {
-			n += 1 + runtime.Sov(uint64(x.MaxModuleSize))
-		}
 		l = len(x.BaseDenom)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
@@ -414,7 +390,7 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 			copy(dAtA[i:], x.ContractSharedRevenueRatio)
 			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.ContractSharedRevenueRatio)))
 			i--
-			dAtA[i] = 0x2a
+			dAtA[i] = 0x22
 		}
 		if x.ArbitraryEnabled {
 			i--
@@ -424,26 +400,21 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 				dAtA[i] = 0
 			}
 			i--
-			dAtA[i] = 0x20
+			dAtA[i] = 0x18
 		}
 		if len(x.BaseMinGasPrice) > 0 {
 			i -= len(x.BaseMinGasPrice)
 			copy(dAtA[i:], x.BaseMinGasPrice)
 			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.BaseMinGasPrice)))
 			i--
-			dAtA[i] = 0x1a
+			dAtA[i] = 0x12
 		}
 		if len(x.BaseDenom) > 0 {
 			i -= len(x.BaseDenom)
 			copy(dAtA[i:], x.BaseDenom)
 			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.BaseDenom)))
 			i--
-			dAtA[i] = 0x12
-		}
-		if x.MaxModuleSize != 0 {
-			i = runtime.EncodeVarint(dAtA, i, uint64(x.MaxModuleSize))
-			i--
-			dAtA[i] = 0x8
+			dAtA[i] = 0xa
 		}
 		if input.Buf != nil {
 			input.Buf = append(input.Buf, dAtA...)
@@ -495,25 +466,6 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 			}
 			switch fieldNum {
 			case 1:
-				if wireType != 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field MaxModuleSize", wireType)
-				}
-				x.MaxModuleSize = 0
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					x.MaxModuleSize |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-			case 2:
 				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field BaseDenom", wireType)
 				}
@@ -545,7 +497,7 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 				}
 				x.BaseDenom = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
-			case 3:
+			case 2:
 				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field BaseMinGasPrice", wireType)
 				}
@@ -577,7 +529,7 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 				}
 				x.BaseMinGasPrice = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
-			case 4:
+			case 3:
 				if wireType != 0 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field ArbitraryEnabled", wireType)
 				}
@@ -597,7 +549,7 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 					}
 				}
 				x.ArbitraryEnabled = bool(v != 0)
-			case 5:
+			case 4:
 				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field ContractSharedRevenueRatio", wireType)
 				}
@@ -666,7 +618,6 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 
 var (
 	md_RawParams                               protoreflect.MessageDescriptor
-	fd_RawParams_max_module_size               protoreflect.FieldDescriptor
 	fd_RawParams_base_denom                    protoreflect.FieldDescriptor
 	fd_RawParams_base_min_gas_price            protoreflect.FieldDescriptor
 	fd_RawParams_contract_shared_revenue_ratio protoreflect.FieldDescriptor
@@ -675,7 +626,6 @@ var (
 func init() {
 	file_initia_move_v1_types_proto_init()
 	md_RawParams = File_initia_move_v1_types_proto.Messages().ByName("RawParams")
-	fd_RawParams_max_module_size = md_RawParams.Fields().ByName("max_module_size")
 	fd_RawParams_base_denom = md_RawParams.Fields().ByName("base_denom")
 	fd_RawParams_base_min_gas_price = md_RawParams.Fields().ByName("base_min_gas_price")
 	fd_RawParams_contract_shared_revenue_ratio = md_RawParams.Fields().ByName("contract_shared_revenue_ratio")
@@ -746,12 +696,6 @@ func (x *fastReflection_RawParams) Interface() protoreflect.ProtoMessage {
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
 func (x *fastReflection_RawParams) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
-	if x.MaxModuleSize != uint64(0) {
-		value := protoreflect.ValueOfUint64(x.MaxModuleSize)
-		if !f(fd_RawParams_max_module_size, value) {
-			return
-		}
-	}
 	if x.BaseDenom != "" {
 		value := protoreflect.ValueOfString(x.BaseDenom)
 		if !f(fd_RawParams_base_denom, value) {
@@ -785,8 +729,6 @@ func (x *fastReflection_RawParams) Range(f func(protoreflect.FieldDescriptor, pr
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_RawParams) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "initia.move.v1.RawParams.max_module_size":
-		return x.MaxModuleSize != uint64(0)
 	case "initia.move.v1.RawParams.base_denom":
 		return x.BaseDenom != ""
 	case "initia.move.v1.RawParams.base_min_gas_price":
@@ -809,8 +751,6 @@ func (x *fastReflection_RawParams) Has(fd protoreflect.FieldDescriptor) bool {
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_RawParams) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "initia.move.v1.RawParams.max_module_size":
-		x.MaxModuleSize = uint64(0)
 	case "initia.move.v1.RawParams.base_denom":
 		x.BaseDenom = ""
 	case "initia.move.v1.RawParams.base_min_gas_price":
@@ -833,9 +773,6 @@ func (x *fastReflection_RawParams) Clear(fd protoreflect.FieldDescriptor) {
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_RawParams) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "initia.move.v1.RawParams.max_module_size":
-		value := x.MaxModuleSize
-		return protoreflect.ValueOfUint64(value)
 	case "initia.move.v1.RawParams.base_denom":
 		value := x.BaseDenom
 		return protoreflect.ValueOfString(value)
@@ -865,8 +802,6 @@ func (x *fastReflection_RawParams) Get(descriptor protoreflect.FieldDescriptor) 
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_RawParams) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "initia.move.v1.RawParams.max_module_size":
-		x.MaxModuleSize = value.Uint()
 	case "initia.move.v1.RawParams.base_denom":
 		x.BaseDenom = value.Interface().(string)
 	case "initia.move.v1.RawParams.base_min_gas_price":
@@ -893,8 +828,6 @@ func (x *fastReflection_RawParams) Set(fd protoreflect.FieldDescriptor, value pr
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_RawParams) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "initia.move.v1.RawParams.max_module_size":
-		panic(fmt.Errorf("field max_module_size of message initia.move.v1.RawParams is not mutable"))
 	case "initia.move.v1.RawParams.base_denom":
 		panic(fmt.Errorf("field base_denom of message initia.move.v1.RawParams is not mutable"))
 	case "initia.move.v1.RawParams.base_min_gas_price":
@@ -914,8 +847,6 @@ func (x *fastReflection_RawParams) Mutable(fd protoreflect.FieldDescriptor) prot
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_RawParams) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "initia.move.v1.RawParams.max_module_size":
-		return protoreflect.ValueOfUint64(uint64(0))
 	case "initia.move.v1.RawParams.base_denom":
 		return protoreflect.ValueOfString("")
 	case "initia.move.v1.RawParams.base_min_gas_price":
@@ -991,9 +922,6 @@ func (x *fastReflection_RawParams) ProtoMethods() *protoiface.Methods {
 		var n int
 		var l int
 		_ = l
-		if x.MaxModuleSize != 0 {
-			n += 1 + runtime.Sov(uint64(x.MaxModuleSize))
-		}
 		l = len(x.BaseDenom)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
@@ -1040,26 +968,21 @@ func (x *fastReflection_RawParams) ProtoMethods() *protoiface.Methods {
 			copy(dAtA[i:], x.ContractSharedRevenueRatio)
 			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.ContractSharedRevenueRatio)))
 			i--
-			dAtA[i] = 0x2a
+			dAtA[i] = 0x1a
 		}
 		if len(x.BaseMinGasPrice) > 0 {
 			i -= len(x.BaseMinGasPrice)
 			copy(dAtA[i:], x.BaseMinGasPrice)
 			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.BaseMinGasPrice)))
 			i--
-			dAtA[i] = 0x1a
+			dAtA[i] = 0x12
 		}
 		if len(x.BaseDenom) > 0 {
 			i -= len(x.BaseDenom)
 			copy(dAtA[i:], x.BaseDenom)
 			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.BaseDenom)))
 			i--
-			dAtA[i] = 0x12
-		}
-		if x.MaxModuleSize != 0 {
-			i = runtime.EncodeVarint(dAtA, i, uint64(x.MaxModuleSize))
-			i--
-			dAtA[i] = 0x8
+			dAtA[i] = 0xa
 		}
 		if input.Buf != nil {
 			input.Buf = append(input.Buf, dAtA...)
@@ -1111,25 +1034,6 @@ func (x *fastReflection_RawParams) ProtoMethods() *protoiface.Methods {
 			}
 			switch fieldNum {
 			case 1:
-				if wireType != 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field MaxModuleSize", wireType)
-				}
-				x.MaxModuleSize = 0
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					x.MaxModuleSize |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-			case 2:
 				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field BaseDenom", wireType)
 				}
@@ -1161,7 +1065,7 @@ func (x *fastReflection_RawParams) ProtoMethods() *protoiface.Methods {
 				}
 				x.BaseDenom = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
-			case 3:
+			case 2:
 				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field BaseMinGasPrice", wireType)
 				}
@@ -1193,7 +1097,7 @@ func (x *fastReflection_RawParams) ProtoMethods() *protoiface.Methods {
 				}
 				x.BaseMinGasPrice = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
-			case 5:
+			case 3:
 				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field ContractSharedRevenueRatio", wireType)
 				}
@@ -5339,12 +5243,11 @@ type Params struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	MaxModuleSize    uint64 `protobuf:"varint,1,opt,name=max_module_size,json=maxModuleSize,proto3" json:"max_module_size,omitempty"`
-	BaseDenom        string `protobuf:"bytes,2,opt,name=base_denom,json=baseDenom,proto3" json:"base_denom,omitempty"`
-	BaseMinGasPrice  string `protobuf:"bytes,3,opt,name=base_min_gas_price,json=baseMinGasPrice,proto3" json:"base_min_gas_price,omitempty"`
-	ArbitraryEnabled bool   `protobuf:"varint,4,opt,name=arbitrary_enabled,json=arbitraryEnabled,proto3" json:"arbitrary_enabled,omitempty"`
+	BaseDenom        string `protobuf:"bytes,1,opt,name=base_denom,json=baseDenom,proto3" json:"base_denom,omitempty"`
+	BaseMinGasPrice  string `protobuf:"bytes,2,opt,name=base_min_gas_price,json=baseMinGasPrice,proto3" json:"base_min_gas_price,omitempty"`
+	ArbitraryEnabled bool   `protobuf:"varint,3,opt,name=arbitrary_enabled,json=arbitraryEnabled,proto3" json:"arbitrary_enabled,omitempty"`
 	// CSR: Percentage of fees distributed to developers
-	ContractSharedRevenueRatio string `protobuf:"bytes,5,opt,name=contract_shared_revenue_ratio,json=contractSharedRevenueRatio,proto3" json:"contract_shared_revenue_ratio,omitempty"`
+	ContractSharedRevenueRatio string `protobuf:"bytes,4,opt,name=contract_shared_revenue_ratio,json=contractSharedRevenueRatio,proto3" json:"contract_shared_revenue_ratio,omitempty"`
 }
 
 func (x *Params) Reset() {
@@ -5365,13 +5268,6 @@ func (*Params) ProtoMessage() {}
 // Deprecated: Use Params.ProtoReflect.Descriptor instead.
 func (*Params) Descriptor() ([]byte, []int) {
 	return file_initia_move_v1_types_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *Params) GetMaxModuleSize() uint64 {
-	if x != nil {
-		return x.MaxModuleSize
-	}
-	return 0
 }
 
 func (x *Params) GetBaseDenom() string {
@@ -5408,11 +5304,10 @@ type RawParams struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	MaxModuleSize   uint64 `protobuf:"varint,1,opt,name=max_module_size,json=maxModuleSize,proto3" json:"max_module_size,omitempty"`
-	BaseDenom       string `protobuf:"bytes,2,opt,name=base_denom,json=baseDenom,proto3" json:"base_denom,omitempty"`
-	BaseMinGasPrice string `protobuf:"bytes,3,opt,name=base_min_gas_price,json=baseMinGasPrice,proto3" json:"base_min_gas_price,omitempty"`
+	BaseDenom       string `protobuf:"bytes,1,opt,name=base_denom,json=baseDenom,proto3" json:"base_denom,omitempty"`
+	BaseMinGasPrice string `protobuf:"bytes,2,opt,name=base_min_gas_price,json=baseMinGasPrice,proto3" json:"base_min_gas_price,omitempty"`
 	// CSR: Percentage of fees distributed to developers
-	ContractSharedRevenueRatio string `protobuf:"bytes,5,opt,name=contract_shared_revenue_ratio,json=contractSharedRevenueRatio,proto3" json:"contract_shared_revenue_ratio,omitempty"`
+	ContractSharedRevenueRatio string `protobuf:"bytes,3,opt,name=contract_shared_revenue_ratio,json=contractSharedRevenueRatio,proto3" json:"contract_shared_revenue_ratio,omitempty"`
 }
 
 func (x *RawParams) Reset() {
@@ -5433,13 +5328,6 @@ func (*RawParams) ProtoMessage() {}
 // Deprecated: Use RawParams.ProtoReflect.Descriptor instead.
 func (*RawParams) Descriptor() ([]byte, []int) {
 	return file_initia_move_v1_types_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *RawParams) GetMaxModuleSize() uint64 {
-	if x != nil {
-		return x.MaxModuleSize
-	}
-	return 0
 }
 
 func (x *RawParams) GetBaseDenom() string {
@@ -5857,41 +5745,36 @@ var file_initia_move_v1_types_proto_rawDesc = []byte{
 	0x69, 0x74, 0x69, 0x61, 0x2e, 0x6d, 0x6f, 0x76, 0x65, 0x2e, 0x76, 0x31, 0x1a, 0x11, 0x61, 0x6d,
 	0x69, 0x6e, 0x6f, 0x2f, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a,
 	0x14, 0x67, 0x6f, 0x67, 0x6f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xb6, 0x03, 0x0a, 0x06, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73,
-	0x12, 0x26, 0x0a, 0x0f, 0x6d, 0x61, 0x78, 0x5f, 0x6d, 0x6f, 0x64, 0x75, 0x6c, 0x65, 0x5f, 0x73,
-	0x69, 0x7a, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0d, 0x6d, 0x61, 0x78, 0x4d, 0x6f,
-	0x64, 0x75, 0x6c, 0x65, 0x53, 0x69, 0x7a, 0x65, 0x12, 0x1d, 0x0a, 0x0a, 0x62, 0x61, 0x73, 0x65,
-	0x5f, 0x64, 0x65, 0x6e, 0x6f, 0x6d, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x62, 0x61,
-	0x73, 0x65, 0x44, 0x65, 0x6e, 0x6f, 0x6d, 0x12, 0x7d, 0x0a, 0x12, 0x62, 0x61, 0x73, 0x65, 0x5f,
-	0x6d, 0x69, 0x6e, 0x5f, 0x67, 0x61, 0x73, 0x5f, 0x70, 0x72, 0x69, 0x63, 0x65, 0x18, 0x03, 0x20,
-	0x01, 0x28, 0x09, 0x42, 0x50, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x26, 0x67, 0x69, 0x74,
-	0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2f, 0x63,
-	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2d, 0x73, 0x64, 0x6b, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x2e,
-	0x44, 0x65, 0x63, 0xf2, 0xde, 0x1f, 0x19, 0x79, 0x61, 0x6d, 0x6c, 0x3a, 0x22, 0x62, 0x61, 0x73,
-	0x65, 0x5f, 0x6d, 0x69, 0x6e, 0x5f, 0x67, 0x61, 0x73, 0x5f, 0x70, 0x72, 0x69, 0x63, 0x65, 0x22,
-	0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x0f, 0x62, 0x61, 0x73, 0x65, 0x4d, 0x69, 0x6e, 0x47, 0x61,
-	0x73, 0x50, 0x72, 0x69, 0x63, 0x65, 0x12, 0x2b, 0x0a, 0x11, 0x61, 0x72, 0x62, 0x69, 0x74, 0x72,
-	0x61, 0x72, 0x79, 0x5f, 0x65, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28,
-	0x08, 0x52, 0x10, 0x61, 0x72, 0x62, 0x69, 0x74, 0x72, 0x61, 0x72, 0x79, 0x45, 0x6e, 0x61, 0x62,
-	0x6c, 0x65, 0x64, 0x12, 0x9e, 0x01, 0x0a, 0x1d, 0x63, 0x6f, 0x6e, 0x74, 0x72, 0x61, 0x63, 0x74,
-	0x5f, 0x73, 0x68, 0x61, 0x72, 0x65, 0x64, 0x5f, 0x72, 0x65, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x5f,
-	0x72, 0x61, 0x74, 0x69, 0x6f, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x42, 0x5b, 0xc8, 0xde, 0x1f,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x8e, 0x03, 0x0a, 0x06, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73,
+	0x12, 0x1d, 0x0a, 0x0a, 0x62, 0x61, 0x73, 0x65, 0x5f, 0x64, 0x65, 0x6e, 0x6f, 0x6d, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x62, 0x61, 0x73, 0x65, 0x44, 0x65, 0x6e, 0x6f, 0x6d, 0x12,
+	0x7d, 0x0a, 0x12, 0x62, 0x61, 0x73, 0x65, 0x5f, 0x6d, 0x69, 0x6e, 0x5f, 0x67, 0x61, 0x73, 0x5f,
+	0x70, 0x72, 0x69, 0x63, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x42, 0x50, 0xc8, 0xde, 0x1f,
 	0x00, 0xda, 0xde, 0x1f, 0x26, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f,
 	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2d, 0x73, 0x64,
-	0x6b, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x2e, 0x44, 0x65, 0x63, 0xf2, 0xde, 0x1f, 0x24, 0x79,
-	0x61, 0x6d, 0x6c, 0x3a, 0x22, 0x63, 0x6f, 0x6e, 0x74, 0x72, 0x61, 0x63, 0x74, 0x5f, 0x73, 0x68,
-	0x61, 0x72, 0x65, 0x64, 0x5f, 0x72, 0x65, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x5f, 0x72, 0x61, 0x74,
-	0x69, 0x6f, 0x22, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x1a, 0x63, 0x6f, 0x6e, 0x74, 0x72, 0x61,
-	0x63, 0x74, 0x53, 0x68, 0x61, 0x72, 0x65, 0x64, 0x52, 0x65, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x52,
-	0x61, 0x74, 0x69, 0x6f, 0x3a, 0x18, 0x98, 0xa0, 0x1f, 0x00, 0xe8, 0xa0, 0x1f, 0x01, 0x8a, 0xe7,
-	0xb0, 0x2a, 0x0b, 0x6d, 0x6f, 0x76, 0x65, 0x2f, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x22, 0xf2,
-	0x02, 0x0a, 0x09, 0x52, 0x61, 0x77, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x12, 0x26, 0x0a, 0x0f,
-	0x6d, 0x61, 0x78, 0x5f, 0x6d, 0x6f, 0x64, 0x75, 0x6c, 0x65, 0x5f, 0x73, 0x69, 0x7a, 0x65, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0d, 0x6d, 0x61, 0x78, 0x4d, 0x6f, 0x64, 0x75, 0x6c, 0x65,
-	0x53, 0x69, 0x7a, 0x65, 0x12, 0x1d, 0x0a, 0x0a, 0x62, 0x61, 0x73, 0x65, 0x5f, 0x64, 0x65, 0x6e,
-	0x6f, 0x6d, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x62, 0x61, 0x73, 0x65, 0x44, 0x65,
+	0x6b, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x2e, 0x44, 0x65, 0x63, 0xf2, 0xde, 0x1f, 0x19, 0x79,
+	0x61, 0x6d, 0x6c, 0x3a, 0x22, 0x62, 0x61, 0x73, 0x65, 0x5f, 0x6d, 0x69, 0x6e, 0x5f, 0x67, 0x61,
+	0x73, 0x5f, 0x70, 0x72, 0x69, 0x63, 0x65, 0x22, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x0f, 0x62,
+	0x61, 0x73, 0x65, 0x4d, 0x69, 0x6e, 0x47, 0x61, 0x73, 0x50, 0x72, 0x69, 0x63, 0x65, 0x12, 0x2b,
+	0x0a, 0x11, 0x61, 0x72, 0x62, 0x69, 0x74, 0x72, 0x61, 0x72, 0x79, 0x5f, 0x65, 0x6e, 0x61, 0x62,
+	0x6c, 0x65, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x08, 0x52, 0x10, 0x61, 0x72, 0x62, 0x69, 0x74,
+	0x72, 0x61, 0x72, 0x79, 0x45, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x64, 0x12, 0x9e, 0x01, 0x0a, 0x1d,
+	0x63, 0x6f, 0x6e, 0x74, 0x72, 0x61, 0x63, 0x74, 0x5f, 0x73, 0x68, 0x61, 0x72, 0x65, 0x64, 0x5f,
+	0x72, 0x65, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x5f, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x18, 0x04, 0x20,
+	0x01, 0x28, 0x09, 0x42, 0x5b, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x26, 0x67, 0x69, 0x74,
+	0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2f, 0x63,
+	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2d, 0x73, 0x64, 0x6b, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x2e,
+	0x44, 0x65, 0x63, 0xf2, 0xde, 0x1f, 0x24, 0x79, 0x61, 0x6d, 0x6c, 0x3a, 0x22, 0x63, 0x6f, 0x6e,
+	0x74, 0x72, 0x61, 0x63, 0x74, 0x5f, 0x73, 0x68, 0x61, 0x72, 0x65, 0x64, 0x5f, 0x72, 0x65, 0x76,
+	0x65, 0x6e, 0x75, 0x65, 0x5f, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x22, 0xa8, 0xe7, 0xb0, 0x2a, 0x01,
+	0x52, 0x1a, 0x63, 0x6f, 0x6e, 0x74, 0x72, 0x61, 0x63, 0x74, 0x53, 0x68, 0x61, 0x72, 0x65, 0x64,
+	0x52, 0x65, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x52, 0x61, 0x74, 0x69, 0x6f, 0x3a, 0x18, 0x98, 0xa0,
+	0x1f, 0x00, 0xe8, 0xa0, 0x1f, 0x01, 0x8a, 0xe7, 0xb0, 0x2a, 0x0b, 0x6d, 0x6f, 0x76, 0x65, 0x2f,
+	0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x22, 0xca, 0x02, 0x0a, 0x09, 0x52, 0x61, 0x77, 0x50, 0x61,
+	0x72, 0x61, 0x6d, 0x73, 0x12, 0x1d, 0x0a, 0x0a, 0x62, 0x61, 0x73, 0x65, 0x5f, 0x64, 0x65, 0x6e,
+	0x6f, 0x6d, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x62, 0x61, 0x73, 0x65, 0x44, 0x65,
 	0x6e, 0x6f, 0x6d, 0x12, 0x7d, 0x0a, 0x12, 0x62, 0x61, 0x73, 0x65, 0x5f, 0x6d, 0x69, 0x6e, 0x5f,
-	0x67, 0x61, 0x73, 0x5f, 0x70, 0x72, 0x69, 0x63, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x42,
+	0x67, 0x61, 0x73, 0x5f, 0x70, 0x72, 0x69, 0x63, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x42,
 	0x50, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x26, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e,
 	0x63, 0x6f, 0x6d, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f,
 	0x73, 0x2d, 0x73, 0x64, 0x6b, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x2e, 0x44, 0x65, 0x63, 0xf2,
@@ -5900,7 +5783,7 @@ var file_initia_move_v1_types_proto_rawDesc = []byte{
 	0x01, 0x52, 0x0f, 0x62, 0x61, 0x73, 0x65, 0x4d, 0x69, 0x6e, 0x47, 0x61, 0x73, 0x50, 0x72, 0x69,
 	0x63, 0x65, 0x12, 0x9e, 0x01, 0x0a, 0x1d, 0x63, 0x6f, 0x6e, 0x74, 0x72, 0x61, 0x63, 0x74, 0x5f,
 	0x73, 0x68, 0x61, 0x72, 0x65, 0x64, 0x5f, 0x72, 0x65, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x5f, 0x72,
-	0x61, 0x74, 0x69, 0x6f, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x42, 0x5b, 0xc8, 0xde, 0x1f, 0x00,
+	0x61, 0x74, 0x69, 0x6f, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x42, 0x5b, 0xc8, 0xde, 0x1f, 0x00,
 	0xda, 0xde, 0x1f, 0x26, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x63,
 	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2d, 0x73, 0x64, 0x6b,
 	0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x2e, 0x44, 0x65, 0x63, 0xf2, 0xde, 0x1f, 0x24, 0x79, 0x61,

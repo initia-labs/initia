@@ -14,18 +14,17 @@ message Params {
   option (gogoproto.equal)            = true;
   option (gogoproto.goproto_stringer) = false;
 
-  uint64 max_module_size    = 1;
-  string base_denom         = 2;
-  string base_min_gas_price = 3 [
+  string base_denom         = 1;
+  string base_min_gas_price = 2 [
     (gogoproto.moretags)   = "yaml:\"base_min_gas_price\"",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable)   = false,
     (amino.dont_omitempty) = true
   ];
-  bool arbitrary_enabled = 4;
+  bool arbitrary_enabled = 3;
 
   // CSR: Percentage of fees distributed to developers
-  string contract_shared_revenue_ratio = 5 [
+  string contract_shared_revenue_ratio = 4 [
     (gogoproto.moretags)   = "yaml:\"contract_shared_revenue_ratio\"",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable)   = false,
@@ -35,9 +34,8 @@ message Params {
 
 // RawParams defines the raw params to store.
 message RawParams {
-  uint64 max_module_size    = 1;
-  string base_denom         = 2;
-  string base_min_gas_price = 3 [
+  string base_denom         = 1;
+  string base_min_gas_price = 2 [
     (gogoproto.moretags)   = "yaml:\"base_min_gas_price\"",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable)   = false,
@@ -45,7 +43,7 @@ message RawParams {
   ];
 
   // CSR: Percentage of fees distributed to developers
-  string contract_shared_revenue_ratio = 5 [
+  string contract_shared_revenue_ratio = 3 [
     (gogoproto.moretags)   = "yaml:\"contract_shared_revenue_ratio\"",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable)   = false,
