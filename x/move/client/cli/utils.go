@@ -85,7 +85,7 @@ func BcsSerializeArg(argType string, arg string, s serde.Serializer) ([]byte, er
 			return nil, err
 		}
 		return vmtypes.SerializeBytes(decoded)
-	case "address":
+	case "address", "object":
 		accAddr, err := types.AccAddressFromString(arg)
 		if err != nil {
 			return nil, err
@@ -167,7 +167,7 @@ func BcsSerializeArg(argType string, arg string, s serde.Serializer) ([]byte, er
 		return s.GetBytes(), nil
 	default:
 		if vectorRegex.MatchString(argType) {
-			vecType := getVectorType(argType)
+			vecType := getInnerType(argType)
 			items := strings.Split(arg, ",")
 			if err := s.SerializeLen(uint64(len(items))); err != nil {
 				return nil, err
@@ -179,6 +179,23 @@ func BcsSerializeArg(argType string, arg string, s serde.Serializer) ([]byte, er
 				}
 			}
 			return s.GetBytes(), nil
+		} else if optionRegex.MatchString(argType) {
+			optionType := getInnerType(argType)
+			if arg == "null" {
+				if err := s.SerializeLen(0); err != nil {
+					return nil, err
+				}
+				return s.GetBytes(), nil
+			}
+			if err := s.SerializeLen(1); err != nil {
+				return nil, err
+			}
+			_, err := BcsSerializeArg(optionType, arg, s)
+			if err != nil {
+				return nil, err
+			}
+
+			return s.GetBytes(), nil
 		} else {
 			return nil, errors.New("unsupported type arg")
 		}
@@ -186,10 +203,11 @@ func BcsSerializeArg(argType string, arg string, s serde.Serializer) ([]byte, er
 }
 
 var vectorRegex = regexp.MustCompile(`^vector<(.*)>$`)
+var optionRegex = regexp.MustCompile(`^option<(.*)>$`)
 
-func getVectorType(vector string) string {
+func getInnerType(arg string) string {
 	re := regexp.MustCompile(`<(.*)>`)
-	return re.FindStringSubmatch(vector)[1]
+	return re.FindStringSubmatch(arg)[1]
 }
 
 func DivideUint128String(s string) (uint64, uint64, error) {

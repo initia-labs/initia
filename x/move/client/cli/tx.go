@@ -148,15 +148,15 @@ $ %s tx move execute \
 				return err
 			}
 
-			argTypes, args := parseArguments(flagArgs)
-			if len(argTypes) != len(args) {
-				return fmt.Errorf("invalid argument format len(types) != len(args)")
+			moveArgTypes, moveArgs := parseArguments(flagArgs)
+			if len(moveArgTypes) != len(moveArgs) {
+				return fmt.Errorf("invalid argument format len(moveArgTypes) != len(moveArgs)")
 			}
 
-			serializer := NewSerializer()
 			bcsArgs := [][]byte{}
-			for i := range argTypes {
-				bcsArg, err := BcsSerializeArg(argTypes[i], args[i], serializer)
+			for i := range moveArgTypes {
+				serializer := NewSerializer()
+				bcsArg, err := BcsSerializeArg(moveArgTypes[i], moveArgs[i], serializer)
 				if err != nil {
 					return err
 				}
