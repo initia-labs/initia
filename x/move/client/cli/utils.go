@@ -66,12 +66,7 @@ func asciiDecodeString(s string) ([]byte, error) {
 
 func BcsSerializeArg(argType string, arg string, s serde.Serializer) ([]byte, error) {
 	if arg == "" {
-		err := s.SerializeBytes([]byte(arg))
-		if err != nil {
-			return nil, err
-		}
-
-		return s.GetBytes(), nil
+		return vmtypes.SerializeBytes([]byte(arg))
 	}
 	switch argType {
 	case "raw_hex":
@@ -91,23 +86,19 @@ func BcsSerializeArg(argType string, arg string, s serde.Serializer) ([]byte, er
 		if err != nil {
 			return nil, err
 		}
-		return accAddr.BcsSerialize();
+		return accAddr.BcsSerialize()
 
 	case "string":
-		if err := s.SerializeStr(arg); err != nil {
-			return nil, err
-		}
-		return s.GetBytes(), nil
+		return vmtypes.SerializeString(arg)
 
 	case "bool":
 		if arg == "true" || arg == "True" {
-			_ = s.SerializeBool(true)
+			return vmtypes.SerializeBool(true)
 		} else if arg == "false" || arg == "False" {
-			_ = s.SerializeBool(false)
+			return vmtypes.SerializeBool(false)
 		} else {
 			return nil, errors.New("unsupported bool value")
 		}
-		return s.GetBytes(), nil
 
 	case "u8", "u16", "u32", "u64":
 		bitSize, _ := strconv.Atoi(strings.TrimPrefix(argType, "u"))
@@ -188,7 +179,7 @@ func BcsSerializeArg(argType string, arg string, s serde.Serializer) ([]byte, er
 		if err != nil {
 			return nil, err
 		}
-		denominator := new(big.Int);
+		denominator := new(big.Int)
 		denominator.SetString("18446744073709551616", 10)
 		decstr := dec.MulInt(sdkmath.NewIntFromBigInt(denominator)).TruncateInt().String()
 		return BcsSerializeArg("u128", decstr, s)
@@ -196,6 +187,7 @@ func BcsSerializeArg(argType string, arg string, s serde.Serializer) ([]byte, er
 		if vectorRegex.MatchString(argType) {
 			vecType := getInnerType(argType)
 			items := strings.Split(arg, ",")
+
 			if err := s.SerializeLen(uint64(len(items))); err != nil {
 				return nil, err
 			}

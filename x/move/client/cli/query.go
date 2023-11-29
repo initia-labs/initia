@@ -286,8 +286,8 @@ Example of args: address:0x1 bool:true u8:0 string:hello vector<u32>:a,b,c,d
 Example:
 $ %s query move execute \
     %s1lwjmdnks33xwnmfayc64ycprww49n33mtm92ne \
-	BasicCoin \
-	getBalance \
+	ManagedCoin \
+	get_balance \
 	--type-args '0x1::native_uinit::Coin 0x1::native_uusdc::Coin' \
  	--args 'u8:0 address:0x1 string:"hello world"'
 `, version.AppName, bech32PrefixAccAddr,
@@ -320,15 +320,15 @@ $ %s query move execute \
 				return err
 			}
 
-			argTypes, args := parseArguments(flagArgs)
-			if len(argTypes) != len(args) {
+			argTypes, argStrs := parseArguments(flagArgs)
+			if len(argTypes) != len(argStrs) {
 				return fmt.Errorf("invalid argument format len(types) != len(args)")
 			}
 
 			serializer := NewSerializer()
 			bcsArgs := [][]byte{}
 			for i := range argTypes {
-				bcsArg, err := BcsSerializeArg(argTypes[i], args[i], serializer)
+				bcsArg, err := BcsSerializeArg(argTypes[i], argStrs[i], serializer)
 				if err != nil {
 					return err
 				}
