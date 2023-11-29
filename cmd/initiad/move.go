@@ -85,7 +85,7 @@ const (
 	defaultInstallDir  = "."
 )
 
-func moveCommand() *cobra.Command {
+func MoveCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:                        "move",
 		Short:                      "move subcommands",
