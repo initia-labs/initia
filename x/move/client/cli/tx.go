@@ -109,7 +109,8 @@ func ExecuteCmd() *cobra.Command {
 			fmt.Sprintf(`
 Execute an entry function of a published module
 
-Supported types : u8, u16, u32, u64, u128, u256, bool, string, address, raw, vector<inner_type>
+Supported types : u8, u16, u32, u64, u128, u256, bool, string, address, raw_hex, raw_base64,
+	vector<inner_type>, option<inner_type>, decimal128, decimal256, fixed_point32, fixed_point64
 Example of args: address:0x1 bool:true u8:0 string:hello vector<u32>:a,b,c,d
 
 Example:
@@ -148,15 +149,15 @@ $ %s tx move execute \
 				return err
 			}
 
-			argTypes, args := parseArguments(flagArgs)
-			if len(argTypes) != len(args) {
-				return fmt.Errorf("invalid argument format len(types) != len(args)")
+			moveArgTypes, moveArgs := parseArguments(flagArgs)
+			if len(moveArgTypes) != len(moveArgs) {
+				return fmt.Errorf("invalid argument format len(moveArgTypes) != len(moveArgs)")
 			}
 
-			serializer := NewSerializer()
 			bcsArgs := [][]byte{}
-			for i := range argTypes {
-				bcsArg, err := BcsSerializeArg(argTypes[i], args[i], serializer)
+			for i := range moveArgTypes {
+				serializer := NewSerializer()
+				bcsArg, err := BcsSerializeArg(moveArgTypes[i], moveArgs[i], serializer)
 				if err != nil {
 					return err
 				}
@@ -196,7 +197,8 @@ func ScriptCmd() *cobra.Command {
 			fmt.Sprintf(`
 Execute a given script
 
-Supported types : u8, u16, u32, u64, u128, u256, bool, string, address, raw, vector<inner_type>
+Supported types : u8, u16, u32, u64, u128, u256, bool, string, address, raw_hex, raw_base64,
+	vector<inner_type>, option<inner_type>, decimal128, decimal256, fixed_point32, fixed_point64
 Example of args: address:0x1 bool:true u8:0 string:hello vector<u32>:a,b,c,d
 
 Example:

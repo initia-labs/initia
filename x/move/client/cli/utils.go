@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	sdkmath "cosmossdk.io/math"
 	"github.com/initia-labs/initia/x/move/types"
 	vmtypes "github.com/initia-labs/initiavm/types"
 	"github.com/novifinancial/serde-reflection/serde-generate/runtime/golang/bcs"
@@ -85,16 +86,12 @@ func BcsSerializeArg(argType string, arg string, s serde.Serializer) ([]byte, er
 			return nil, err
 		}
 		return vmtypes.SerializeBytes(decoded)
-	case "address":
+	case "address", "object":
 		accAddr, err := types.AccAddressFromString(arg)
 		if err != nil {
 			return nil, err
 		}
-
-		if err := accAddr.Serialize(s); err != nil {
-			return nil, err
-		}
-		return s.GetBytes(), nil
+		return accAddr.BcsSerialize();
 
 	case "string":
 		if err := s.SerializeStr(arg); err != nil {
@@ -165,9 +162,39 @@ func BcsSerializeArg(argType string, arg string, s serde.Serializer) ([]byte, er
 			High: highHigh,
 		})
 		return s.GetBytes(), nil
+	case "decimal128":
+		dec, err := sdkmath.LegacyNewDecFromStr(arg)
+		if err != nil {
+			return nil, err
+		}
+		decstr := dec.MulInt64(1000000000000000000).TruncateInt().String()
+		return BcsSerializeArg("u128", decstr, s)
+	case "decimal256":
+		dec, err := sdkmath.LegacyNewDecFromStr(arg)
+		if err != nil {
+			return nil, err
+		}
+		decstr := dec.MulInt64(1000000000000000000).TruncateInt().String()
+		return BcsSerializeArg("u256", decstr, s)
+	case "fixed_point32":
+		dec, err := sdkmath.LegacyNewDecFromStr(arg)
+		if err != nil {
+			return nil, err
+		}
+		decstr := dec.MulInt64(4294967296).TruncateInt().String()
+		return BcsSerializeArg("u64", decstr, s)
+	case "fixed_point64":
+		dec, err := sdkmath.LegacyNewDecFromStr(arg)
+		if err != nil {
+			return nil, err
+		}
+		denominator := new(big.Int);
+		denominator.SetString("18446744073709551616", 10)
+		decstr := dec.MulInt(sdkmath.NewIntFromBigInt(denominator)).TruncateInt().String()
+		return BcsSerializeArg("u128", decstr, s)
 	default:
 		if vectorRegex.MatchString(argType) {
-			vecType := getVectorType(argType)
+			vecType := getInnerType(argType)
 			items := strings.Split(arg, ",")
 			if err := s.SerializeLen(uint64(len(items))); err != nil {
 				return nil, err
@@ -179,6 +206,23 @@ func BcsSerializeArg(argType string, arg string, s serde.Serializer) ([]byte, er
 				}
 			}
 			return s.GetBytes(), nil
+		} else if optionRegex.MatchString(argType) {
+			optionType := getInnerType(argType)
+			if arg == "null" {
+				if err := s.SerializeLen(0); err != nil {
+					return nil, err
+				}
+				return s.GetBytes(), nil
+			}
+			if err := s.SerializeLen(1); err != nil {
+				return nil, err
+			}
+			_, err := BcsSerializeArg(optionType, arg, s)
+			if err != nil {
+				return nil, err
+			}
+
+			return s.GetBytes(), nil
 		} else {
 			return nil, errors.New("unsupported type arg")
 		}
@@ -186,10 +230,11 @@ func BcsSerializeArg(argType string, arg string, s serde.Serializer) ([]byte, er
 }
 
 var vectorRegex = regexp.MustCompile(`^vector<(.*)>$`)
+var optionRegex = regexp.MustCompile(`^option<(.*)>$`)
 
-func getVectorType(vector string) string {
+func getInnerType(arg string) string {
 	re := regexp.MustCompile(`<(.*)>`)
-	return re.FindStringSubmatch(vector)[1]
+	return re.FindStringSubmatch(arg)[1]
 }
 
 func DivideUint128String(s string) (uint64, uint64, error) {
