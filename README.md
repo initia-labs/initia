@@ -1,6 +1,6 @@
 # Initia
 
-[![codecov](https://codecov.io/gh/initia-labs/initia/branch/main/graph/badge.svg?token=oLMvSHOlNt)](https://codecov.io/gh/initia-labs/initia)
+[![codecov](https://codecov.io/gh/initia-labs/initia/graph/badge.svg?token=CQ8FELH3BU)](https://codecov.io/gh/initia-labs/initia)
 [![Go Report Card](https://goreportcard.com/badge/github.com/initia-labs/initia)](https://goreportcard.com/report/github.com/initia-labs/initia)
 
 This repository hosts `initiad`, the first implementation of a cosmos zone with move smart contracts enabled.
