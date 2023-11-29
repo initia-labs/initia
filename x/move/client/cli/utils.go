@@ -91,13 +91,7 @@ func BcsSerializeArg(argType string, arg string, s serde.Serializer) ([]byte, er
 		if err != nil {
 			return nil, err
 		}
-
-		bcsBytes, err := accAddr.BcsSerialize();
-
-		if err != nil {
-			return nil, err
-		}
-		return bcsBytes, nil
+		return accAddr.BcsSerialize();
 
 	case "string":
 		if err := s.SerializeStr(arg); err != nil {
