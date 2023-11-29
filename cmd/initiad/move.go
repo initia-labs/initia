@@ -76,9 +76,8 @@ const (
 	// verify options
 	flagVerify = "verify"
 	// coverage options
-	flagModuleName = "module-name"
-	flagFunctions  = "functions"
-	flagOutputCSV  = "output-csv"
+	flagFunctions = "functions"
+	flagOutputCSV = "output-csv"
 )
 
 const (
