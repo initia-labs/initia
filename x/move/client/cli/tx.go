@@ -109,7 +109,8 @@ func ExecuteCmd() *cobra.Command {
 			fmt.Sprintf(`
 Execute an entry function of a published module
 
-Supported types : u8, u16, u32, u64, u128, u256, bool, string, address, raw, vector<inner_type>
+Supported types : u8, u16, u32, u64, u128, u256, bool, string, address, raw_hex, raw_base64,
+	vector<inner_type>, option<inner_type>, decimal128, decimal256, fixed_point32, fixed_point64
 Example of args: address:0x1 bool:true u8:0 string:hello vector<u32>:a,b,c,d
 
 Example:
@@ -196,7 +197,8 @@ func ScriptCmd() *cobra.Command {
 			fmt.Sprintf(`
 Execute a given script
 
-Supported types : u8, u16, u32, u64, u128, u256, bool, string, address, raw, vector<inner_type>
+Supported types : u8, u16, u32, u64, u128, u256, bool, string, address, raw_hex, raw_base64,
+	vector<inner_type>, option<inner_type>, decimal128, decimal256, fixed_point32, fixed_point64
 Example of args: address:0x1 bool:true u8:0 string:hello vector<u32>:a,b,c,d
 
 Example:
