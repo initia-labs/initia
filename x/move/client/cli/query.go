@@ -273,18 +273,18 @@ func GetCmdTableEntries() *cobra.Command {
 func GetCmdQueryEntryFunction() *cobra.Command {
 	bech32PrefixAccAddr := sdk.GetConfig().GetBech32AccountAddrPrefix()
 	cmd := &cobra.Command{
-		Use:   "execute [module owner] [module name] [function name]",
-		Short: "Get entry function execution result",
+		Use:   "view [module owner] [module name] [function name]",
+		Short: "Get view function execution result",
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`
-Get an entry function execution result
+Get an view function execution result
 
-Supported types : u8, u16, u32, u64, u128, u256, bool, string, address, raw, vector<inner_type>
-
+Supported types : u8, u16, u32, u64, u128, u256, bool, string, address, raw_hex, raw_base64,
+	vector<inner_type>, option<inner_type>, decimal128, decimal256, fixed_point32, fixed_point64
 Example of args: address:0x1 bool:true u8:0 string:hello vector<u32>:a,b,c,d
 
 Example:
-$ %s query move execute \
+$ %s query move view \
     %s1lwjmdnks33xwnmfayc64ycprww49n33mtm92ne \
 	ManagedCoin \
 	get_balance \
@@ -320,15 +320,15 @@ $ %s query move execute \
 				return err
 			}
 
-			argTypes, argStrs := parseArguments(flagArgs)
-			if len(argTypes) != len(argStrs) {
+			moveArgTypes, moveArgs := parseArguments(flagArgs)
+			if len(moveArgTypes) != len(moveArgs) {
 				return fmt.Errorf("invalid argument format len(types) != len(args)")
 			}
 
-			serializer := NewSerializer()
 			bcsArgs := [][]byte{}
-			for i := range argTypes {
-				bcsArg, err := BcsSerializeArg(argTypes[i], argStrs[i], serializer)
+			for i := range moveArgTypes {
+				serializer := NewSerializer()
+				bcsArg, err := BcsSerializeArg(moveArgTypes[i], moveArgs[i], serializer)
 				if err != nil {
 					return err
 				}

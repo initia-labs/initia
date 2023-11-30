@@ -13,7 +13,6 @@ import (
 // Default parameter values
 const (
 	DefaultBaseDenom        = "uinit"
-	DefaultMaxModuleSize    = uint64(10 * 1024) // 10KB
 	DefaultArbitraryEnabled = true
 )
 
@@ -32,7 +31,6 @@ const (
 // DefaultParams returns default move parameters
 func DefaultParams() Params {
 	return Params{
-		MaxModuleSize:              DefaultMaxModuleSize,
 		BaseDenom:                  DefaultBaseDenom,
 		BaseMinGasPrice:            DefaultBaseMinGasPrice,
 		ArbitraryEnabled:           DefaultArbitraryEnabled,
@@ -50,10 +48,6 @@ func (p Params) String() string {
 
 // Validate performs basic validation on move parameters
 func (p Params) Validate() error {
-	if err := validateMaxModuleSize(p.MaxModuleSize); err != nil {
-		return errors.Wrap(err, "invalid module size")
-	}
-
 	if err := validateBaseDenom(p.BaseDenom); err != nil {
 		return errors.Wrap(err, "invalid base_denom")
 	}
@@ -76,7 +70,6 @@ func (p Params) Validate() error {
 // ToRaw return RawParams from the Params
 func (p Params) ToRaw() RawParams {
 	return RawParams{
-		MaxModuleSize:              p.MaxModuleSize,
 		BaseDenom:                  p.BaseDenom,
 		BaseMinGasPrice:            p.BaseMinGasPrice,
 		ContractSharedRevenueRatio: p.ContractSharedRevenueRatio,
@@ -86,7 +79,6 @@ func (p Params) ToRaw() RawParams {
 // ToParams return Params from the RawParams
 func (p RawParams) ToParams(allowArbitrary bool) Params {
 	return Params{
-		MaxModuleSize:              p.MaxModuleSize,
 		BaseDenom:                  p.BaseDenom,
 		BaseMinGasPrice:            p.BaseMinGasPrice,
 		ArbitraryEnabled:           allowArbitrary,
@@ -115,23 +107,6 @@ func validateBaseMinGasPrice(i interface{}) error {
 
 	if v.IsNegative() {
 		return fmt.Errorf("base_min_gas_price must be non-negative value: %v", v)
-	}
-
-	return nil
-}
-
-func validateMaxModuleSize(i interface{}) error {
-	v, ok := i.(uint64)
-	if !ok {
-		return fmt.Errorf("invalid parameter type: %T", i)
-	}
-
-	if v < 1024 {
-		return fmt.Errorf("MaxModuleSize should be bigger than 1KB")
-	}
-
-	if v > 1024*1024 {
-		return fmt.Errorf("MaxModuleSize should be smaller than 1MB")
 	}
 
 	return nil

@@ -24,10 +24,12 @@ message Params {
 
   // Maximum period for Atom holders to deposit on a proposal. Initial value: 2
   // months.
-  google.protobuf.Duration max_deposit_period = 2 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true, (gogoproto.stdduration) = true];
+  google.protobuf.Duration max_deposit_period = 2
+      [(gogoproto.nullable) = false, (amino.dont_omitempty) = true, (gogoproto.stdduration) = true];
 
   // Duration of the voting period.
-  google.protobuf.Duration voting_period = 3 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true, (gogoproto.stdduration) = true];
+  google.protobuf.Duration voting_period = 3
+      [(gogoproto.nullable) = false, (amino.dont_omitempty) = true, (gogoproto.stdduration) = true];
 
   //  Minimum percentage of total stake needed to vote for a result to be
   //  considered valid.
@@ -57,5 +59,6 @@ message Params {
       [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
 
   // Tally interval for emergency proposal.
-  google.protobuf.Duration emergency_tally_interval = 17 [(gogoproto.stdduration) = true, (gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+  google.protobuf.Duration emergency_tally_interval = 17
+      [(gogoproto.stdduration) = true, (gogoproto.nullable) = false, (amino.dont_omitempty) = true];
 }
