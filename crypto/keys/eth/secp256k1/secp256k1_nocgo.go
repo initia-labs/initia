@@ -6,9 +6,20 @@ package secp256k1
 import (
 	secp256k1 "github.com/btcsuite/btcd/btcec/v2"
 	"github.com/btcsuite/btcd/btcec/v2/ecdsa"
-
-	"github.com/cometbft/cometbft/crypto"
 )
+
+// Sign creates an ECDSA signature on curve Secp256k1, using SHA256 on the msg.
+// The returned signature will be of the form R || S (in lower-S form).
+func (privKey *PrivKey) Sign(msg []byte) ([]byte, error) {
+	priv, _ := secp256k1.PrivKeyFromBytes(privKey.Key)
+	sig, err := ecdsa.SignCompact(priv, Keccak256(msg), false)
+	if err != nil {
+		return nil, err
+	}
+
+	// remove the first byte which is compactSigRecoveryCode
+	return sig[1:], nil
+}
 
 // VerifyBytes verifies a signature of the form R || S.
 // It rejects signatures which are not in lower-S form.
@@ -33,7 +44,8 @@ func (pubKey *PubKey) VerifySignature(msg []byte, sigStr []byte) bool {
 	if !signature.IsEqual(modifiedSignature) {
 		return false
 	}
-	return signature.Verify(crypto.Sha256(msg), pub)
+
+	return signature.Verify(Keccak256(msg), pub)
 }
 
 // Read Signature struct from R || S. Caller needs to ensure

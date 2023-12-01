@@ -34,7 +34,7 @@ func TestPrivKeySecp256k1SignVerify(t *testing.T) {
 			require.NoError(t, err)
 			require.NotNil(t, got)
 
-			pub := &PubKey{Key: tt.privKey.PubKey().Bytes()}
+			pub := tt.privKey.PubKey()
 			assert.Equal(t, tt.wantVerifyPasses, pub.VerifySignature(msg, got))
 		})
 	}

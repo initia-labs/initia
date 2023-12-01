@@ -24,6 +24,7 @@ func MakeEncodingConfig() params.EncodingConfig {
 		// authz module use this codec to get signbytes.
 		// authz MsgExec can execute all message types,
 		// so legacy.Cdc need to register all amino messages to get proper signature
+		cryptocodec.RegisterCrypto(legacy.Cdc)
 		ModuleBasics.RegisterLegacyAminoCodec(legacy.Cdc)
 		legacyCodecRegistered = true
 	}

@@ -8,8 +8,6 @@ import (
 
 	secp256k1 "github.com/btcsuite/btcd/btcec/v2"
 	"github.com/stretchr/testify/require"
-
-	cosmoskey "github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 )
 
 // Ensure that signature verification works, and that
@@ -18,7 +16,7 @@ import (
 func TestSignatureVerificationAndRejectUpperS(t *testing.T) {
 	msg := []byte("We have lingered long enough on the shores of the cosmic ocean.")
 	for i := 0; i < 500; i++ {
-		priv := cosmoskey.GenPrivKey()
+		priv := GenPrivKey()
 		sigStr, err := priv.Sign(msg)
 		require.NoError(t, err)
 		var r secp256k1.ModNScalar
@@ -27,7 +25,7 @@ func TestSignatureVerificationAndRejectUpperS(t *testing.T) {
 		s.SetByteSlice(sigStr[32:64])
 		require.False(t, s.IsOverHalfOrder())
 
-		pub := &PubKey{Key: priv.PubKey().Bytes()}
+		pub := priv.PubKey()
 		require.True(t, pub.VerifySignature(msg, sigStr))
 
 		// malleate:

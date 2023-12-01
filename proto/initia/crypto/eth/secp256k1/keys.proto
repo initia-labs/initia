@@ -28,3 +28,12 @@ message PubKey {
 
   bytes key = 1;
 }
+
+// PrivKey defines a eth_secp256k1 private key.
+message PrivKey {
+  option (amino.name)             = "initia/PrivKeyEthSecp256k1";
+  option (amino.message_encoding) = "key_field";
+
+  bytes key = 1;
+}
+

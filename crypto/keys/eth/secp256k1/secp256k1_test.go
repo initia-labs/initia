@@ -10,15 +10,15 @@ import (
 	btcSecp256k1 "github.com/btcsuite/btcd/btcec/v2"
 	btcecdsa "github.com/btcsuite/btcd/btcec/v2/ecdsa"
 	"github.com/cometbft/cometbft/crypto"
+	tmsecp256k1 "github.com/cometbft/cometbft/crypto/secp256k1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
-	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 
-	ethsecp256k1 "github.com/initia-labs/initia/crypto/keys/eth/secp256k1"
+	"github.com/initia-labs/initia/crypto/keys/eth/secp256k1"
 )
 
 type keyData struct {
@@ -44,17 +44,18 @@ func TestPubKeySecp256k1Address(t *testing.T) {
 
 		priv := secp256k1.PrivKey{Key: privB}
 
-		pubKey := &ethsecp256k1.PubKey{Key: priv.PubKey().Bytes()}
+		pubKey := priv.PubKey()
+		pubT, _ := pubKey.(*secp256k1.PubKey)
 
 		addr := pubKey.Address()
-		assert.Equal(t, pubKey, &ethsecp256k1.PubKey{Key: pubB}, "Expected pub keys to match")
+		assert.Equal(t, pubT, &secp256k1.PubKey{Key: pubB}, "Expected pub keys to match")
 		assert.Equal(t, addr, addrB, "Expected addresses to match")
 	}
 }
 
 func TestSignAndValidateSecp256k1(t *testing.T) {
 	privKey := secp256k1.GenPrivKey()
-	pubKey := &ethsecp256k1.PubKey{Key: privKey.PubKey().Bytes()}
+	pubKey := privKey.PubKey()
 
 	msg := crypto.CRandBytes(1000)
 	sig, err := privKey.Sign(msg)
@@ -110,8 +111,38 @@ func TestSecp256k1LoadPrivkeyAndSerializeIsIdentity(t *testing.T) {
 	}
 }
 
+func TestGenPrivKeyFromSecret(t *testing.T) {
+	// curve oder N
+	N := btcSecp256k1.S256().N
+	tests := []struct {
+		name   string
+		secret []byte
+	}{
+		{"empty secret", []byte{}},
+		{
+			"some long secret",
+			[]byte("We live in a society exquisitely dependent on science and technology, " +
+				"in which hardly anyone knows anything about science and technology."),
+		},
+		{"another seed used in cosmos tests #1", []byte{0}},
+		{"another seed used in cosmos tests #2", []byte("mySecret")},
+		{"another seed used in cosmos tests #3", []byte("")},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			gotPrivKey := secp256k1.GenPrivKeyFromSecret(tt.secret)
+			require.NotNil(t, gotPrivKey)
+			// interpret as a big.Int and make sure it is a valid field element:
+			fe := new(big.Int).SetBytes(gotPrivKey.Key[:])
+			require.True(t, fe.Cmp(N) < 0)
+			require.True(t, fe.Sign() > 0)
+		})
+	}
+}
+
 func TestPubKeyEquals(t *testing.T) {
-	secp256K1PubKey := &ethsecp256k1.PubKey{Key: secp256k1.GenPrivKey().PubKey().Bytes()}
+	secp256K1PubKey := secp256k1.GenPrivKey().PubKey().(*secp256k1.PubKey)
 
 	testCases := []struct {
 		msg      string
@@ -122,13 +153,13 @@ func TestPubKeyEquals(t *testing.T) {
 		{
 			"different bytes",
 			secp256K1PubKey,
-			&ethsecp256k1.PubKey{Key: secp256k1.GenPrivKey().PubKey().Bytes()},
+			secp256k1.GenPrivKey().PubKey(),
 			false,
 		},
 		{
 			"equals",
 			secp256K1PubKey,
-			&ethsecp256k1.PubKey{
+			&secp256k1.PubKey{
 				Key: secp256K1PubKey.Key,
 			},
 			true,
@@ -149,10 +180,49 @@ func TestPubKeyEquals(t *testing.T) {
 	}
 }
 
+func TestPrivKeyEquals(t *testing.T) {
+	secp256K1PrivKey := secp256k1.GenPrivKey()
+
+	testCases := []struct {
+		msg      string
+		privKey  cryptotypes.PrivKey
+		other    cryptotypes.PrivKey
+		expectEq bool
+	}{
+		{
+			"different bytes",
+			secp256K1PrivKey,
+			secp256k1.GenPrivKey(),
+			false,
+		},
+		{
+			"equals",
+			secp256K1PrivKey,
+			&secp256k1.PrivKey{
+				Key: secp256K1PrivKey.Key,
+			},
+			true,
+		},
+		{
+			"different types",
+			secp256K1PrivKey,
+			ed25519.GenPrivKey(),
+			false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.msg, func(t *testing.T) {
+			eq := tc.privKey.Equals(tc.other)
+			require.Equal(t, eq, tc.expectEq)
+		})
+	}
+}
+
 func TestMarshalAmino(t *testing.T) {
 	aminoCdc := codec.NewLegacyAmino()
 	privKey := secp256k1.GenPrivKey()
-	pubKey := &ethsecp256k1.PubKey{Key: privKey.PubKey().Bytes()}
+	pubKey := privKey.PubKey().(*secp256k1.PubKey)
 
 	testCases := []struct {
 		desc      string
@@ -171,7 +241,7 @@ func TestMarshalAmino(t *testing.T) {
 		{
 			"secp256k1 public key",
 			pubKey,
-			&ethsecp256k1.PubKey{},
+			&secp256k1.PubKey{},
 			append([]byte{33}, pubKey.Bytes()...), // Length-prefixed.
 			"\"" + base64.StdEncoding.EncodeToString(pubKey.Bytes()) + "\"",
 		},
@@ -198,6 +268,59 @@ func TestMarshalAmino(t *testing.T) {
 			require.NoError(t, err)
 
 			require.Equal(t, tc.msg, tc.typ)
+		})
+	}
+}
+
+func TestMarshalAmino_BackwardsCompatibility(t *testing.T) {
+	aminoCdc := codec.NewLegacyAmino()
+	// Create Tendermint keys.
+	tmPrivKey := tmsecp256k1.GenPrivKey()
+	tmPubKey := tmPrivKey.PubKey()
+	// Create our own keys, with the same private key as Tendermint's.
+	privKey := &secp256k1.PrivKey{Key: []byte(tmPrivKey)}
+	pubKey := privKey.PubKey().(*secp256k1.PubKey)
+
+	testCases := []struct {
+		desc      string
+		tmKey     interface{}
+		ourKey    interface{}
+		marshalFn func(o interface{}) ([]byte, error)
+	}{
+		{
+			"secp256k1 private key, binary",
+			tmPrivKey,
+			privKey,
+			aminoCdc.Marshal,
+		},
+		{
+			"secp256k1 private key, JSON",
+			tmPrivKey,
+			privKey,
+			aminoCdc.MarshalJSON,
+		},
+		{
+			"secp256k1 public key, binary",
+			tmPubKey,
+			pubKey,
+			aminoCdc.Marshal,
+		},
+		{
+			"secp256k1 public key, JSON",
+			tmPubKey,
+			pubKey,
+			aminoCdc.MarshalJSON,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.desc, func(t *testing.T) {
+			// Make sure Amino encoding override is not breaking backwards compatibility.
+			bz1, err := tc.marshalFn(tc.tmKey)
+			require.NoError(t, err)
+			bz2, err := tc.marshalFn(tc.ourKey)
+			require.NoError(t, err)
+			require.Equal(t, bz1, bz2)
 		})
 	}
 }
