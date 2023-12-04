@@ -295,6 +295,10 @@ func DivideUint256String(s string) (uint64, uint64, uint64, uint64, error) {
 }
 
 func parseArguments(s string) (tt []string, args []string) {
+	if len(s) == 0 {
+		return
+	}
+
 	cursor := 0
 
 	var t, a string
