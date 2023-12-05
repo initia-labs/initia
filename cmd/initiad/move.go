@@ -19,6 +19,7 @@ import (
 	"github.com/initia-labs/initiavm/types/compiler"
 	buildtypes "github.com/initia-labs/initiavm/types/compiler/build"
 	coveragetypes "github.com/initia-labs/initiavm/types/compiler/coverage"
+	docgentypes "github.com/initia-labs/initiavm/types/compiler/docgen"
 	provetypes "github.com/initia-labs/initiavm/types/compiler/prove"
 	testtypes "github.com/initia-labs/initiavm/types/compiler/test"
 	"github.com/pelletier/go-toml"
@@ -78,6 +79,14 @@ const (
 	// coverage options
 	flagFunctions = "functions"
 	flagOutputCSV = "output-csv"
+	// docgen
+	flagIncludeImpl         = "include-impl"
+	flagIncludeSpecs        = "include-specs"
+	flagSpecsInlined        = "specs-inlined"
+	flagIncludeDepDiagram   = "include-dep-diagram"
+	flagCollapsedSections   = "collapsed-sections"
+	flagLandingPageTemplate = "landing-page-template"
+	flagReferencesFile      = "references-file"
 )
 
 const (
@@ -102,6 +111,7 @@ func MoveCommand() *cobra.Command {
 		moveDeployCmd(),
 		moveProveCmd(),
 		moveVerifyCmd(),
+		moveDocgenCmd(),
 	)
 
 	coverageCmd := &cobra.Command{
@@ -488,6 +498,37 @@ func moveVerifyCmd() *cobra.Command {
 	return cmd
 }
 
+func moveDocgenCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "document [flags]",
+		Short: "Generate documents of a move package",
+		Long:  "Generate documents of a move package. The provided path must specify the path of move package to generate docs",
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			arg, err := getInitiaCompilerArgument(cmd)
+			if err != nil {
+				return err
+			}
+			dgc, err := getDocgenConfig(cmd)
+			if err != nil {
+				return err
+			}
+
+			_, err = api.Docgen(*arg, *dgc)
+			if err != nil {
+				return err
+			}
+
+			return nil
+		},
+	}
+
+	addMoveBuildFlags(cmd)
+	addMoveDocgenFlags(cmd)
+
+	return cmd
+}
+
 func addMoveBuildFlags(cmd *cobra.Command) {
 	cmd.Flags().StringP(flagPackagePath, flagPackagePathShorthand, defaultPackagePath, "Path to a package which the command should be run with respect to")
 	cmd.Flags().Bool(flagGenerateABI, false, "Generate ABIs for packages")
@@ -543,6 +584,16 @@ func addMoveProveFlags(cmd *cobra.Command) {
 	cmd.Flags().Bool(flagStableTestOutput, false, "Whether output for e.g. diagnosis shall be stable/redacted so it can be used in test output")
 	cmd.Flags().Bool(flagDump, false, "Whether to dump intermediate step results to files")
 	cmd.Flags().StringP(flagVerbosity, flagVerboseShorthand, "", "Verbosity level")
+}
+
+func addMoveDocgenFlags(cmd *cobra.Command) {
+	cmd.Flags().Bool(flagIncludeImpl, false, "Whether to include private declarations and implementations into the generated documentation.")
+	cmd.Flags().Bool(flagIncludeSpecs, false, "Whether to include specifications in the generated documentation.")
+	cmd.Flags().Bool(flagSpecsInlined, false, "Whether specifications should be put side-by-side with declarations or into a separate section.")
+	cmd.Flags().Bool(flagIncludeDepDiagram, false, "Whether to include a dependency diagram.")
+	cmd.Flags().Bool(flagCollapsedSections, false, "Whether details should be put into collapsed sections. This is not supported by all markdown, but the github dialect.")
+	cmd.Flags().String(flagLandingPageTemplate, "", "Package-relative path to an optional markdown template which is a used to create a landing page.")
+	cmd.Flags().String(flagReferencesFile, "", "Package-relative path to a file whose content is added to each generated markdown file.")
 }
 
 func getInitiaCompilerArgument(cmd *cobra.Command) (*compiler.InitiaCompilerArgument, error) {
@@ -713,4 +764,40 @@ func getProveConfig(cmd *cobra.Command) (*provetypes.ProveConfig, error) {
 
 	pc := provetypes.NewProveConfig(options...)
 	return &pc, nil
+}
+
+func getDocgenConfig(cmd *cobra.Command) (*docgentypes.DocgenConfig, error) {
+	options := []func(*docgentypes.DocgenConfig){}
+
+	boolFlags := map[string]func(*docgentypes.DocgenConfig){}
+	boolFlags[flagIncludeImpl] = docgentypes.WithIncludeImpl()
+	boolFlags[flagIncludeSpecs] = docgentypes.WithIncludeSpecs()
+	boolFlags[flagSpecsInlined] = docgentypes.WithSpecsInlined()
+	boolFlags[flagIncludeDepDiagram] = docgentypes.WithIncludeDepDiagram()
+	boolFlags[flagCollapsedSections] = docgentypes.WithCollapsedSections()
+
+	for fn, opt := range boolFlags {
+		flag, err := cmd.Flags().GetBool(fn)
+		if err != nil {
+			return nil, err
+		}
+		if flag {
+			options = append(options, opt)
+		}
+	}
+
+	if landingPageTemplate, err := cmd.Flags().GetString(flagLandingPageTemplate); err != nil {
+		return nil, err
+	} else if landingPageTemplate != "" {
+		options = append(options, docgentypes.WithLandingPageTemplate(landingPageTemplate))
+	}
+
+	if referencesFile, err := cmd.Flags().GetString(flagReferencesFile); err != nil {
+		return nil, err
+	} else if referencesFile != "" {
+		options = append(options, docgentypes.WithReferencesFile(referencesFile))
+	}
+
+	dgc := docgentypes.NewDocgenConfig(options...)
+	return &dgc, nil
 }
