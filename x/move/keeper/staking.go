@@ -161,15 +161,20 @@ func (k Keeper) ApplyStakingDeltas(
 	ctx sdk.Context,
 	stakingDeltas []vmtypes.StakingDelta,
 ) error {
+	// keep the array to avoid map iteration.
+	delegationValAddrs := []string{}
+	undelegationValAddrs := []string{}
 	delegations := make(map[string]sdk.Coins)
 	undelegations := make(map[string]sdk.DecCoins)
 	for _, delta := range stakingDeltas {
 		valAddrStr := string(delta.Validator)
 		if _, found := delegations[valAddrStr]; !found {
 			delegations[valAddrStr] = sdk.NewCoins()
+			delegationValAddrs = append(delegationValAddrs, valAddrStr)
 		}
 		if _, found := undelegations[valAddrStr]; !found {
 			undelegations[valAddrStr] = sdk.NewDecCoins()
+			undelegationValAddrs = append(undelegationValAddrs, valAddrStr)
 		}
 
 		denom, err := types.DenomFromMetadataAddress(ctx, NewMoveBankKeeper(&k), delta.Metadata)
@@ -188,7 +193,8 @@ func (k Keeper) ApplyStakingDeltas(
 		}
 	}
 
-	for valAddrStr, delegationCoins := range delegations {
+	for _, valAddrStr := range delegationValAddrs {
+		delegationCoins := delegations[valAddrStr]
 		if !delegationCoins.IsZero() {
 			valAddr, err := sdk.ValAddressFromBech32(valAddrStr)
 			if err != nil {
@@ -202,9 +208,12 @@ func (k Keeper) ApplyStakingDeltas(
 		}
 	}
 
+	// keep denoms array to avoid map iteration.
+	denoms := []string{}
 	amountVecMap := make(map[string][]uint64)
 	valAddrVecMap := make(map[string][][]byte)
-	for valAddrStr, undelegationShares := range undelegations {
+	for _, valAddrStr := range undelegationValAddrs {
+		undelegationShares := undelegations[valAddrStr]
 		if !undelegationShares.IsZero() {
 			valAddr, err := sdk.ValAddressFromBech32(valAddrStr)
 			if err != nil {
@@ -222,13 +231,19 @@ func (k Keeper) ApplyStakingDeltas(
 					continue
 				}
 
+				if _, found := amountVecMap[amount.Denom]; !found {
+					denoms = append(denoms, amount.Denom)
+					amountVecMap[amount.Denom] = []uint64{}
+					valAddrVecMap[amount.Denom] = [][]byte{}
+				}
+
 				amountVecMap[amount.Denom] = append(amountVecMap[amount.Denom], amount.Amount.Uint64())
 				valAddrVecMap[amount.Denom] = append(valAddrVecMap[amount.Denom], []byte(valAddrStr))
 			}
 		}
 	}
 
-	for unbondingDenom := range amountVecMap {
+	for _, unbondingDenom := range denoms {
 		err := k.DepositUnbondingCoins(ctx, unbondingDenom, amountVecMap[unbondingDenom], valAddrVecMap[unbondingDenom])
 		if err != nil {
 			return err

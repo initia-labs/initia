@@ -31,7 +31,7 @@ func TestLoadRewardWeights(t *testing.T) {
 	}
 	input.DistKeeper.SetRewardWeights(ctx, weights)
 
-	loadedWeights, sum := input.DistKeeper.LoadRewardWeights(ctx)
+	_, loadedWeights, sum := input.DistKeeper.LoadRewardWeights(ctx)
 	require.Equal(t, sdk.NewDecWithPrec(3, 1), loadedWeights["aaa"])
 	require.Equal(t, sdk.NewDecWithPrec(4, 1), loadedWeights["bar"])
 	require.Equal(t, sdk.NewDecWithPrec(3, 1), loadedWeights["foo"])
@@ -90,14 +90,25 @@ func TestLoadBondedTokens(t *testing.T) {
 		},
 	}
 
-	rewardWeight, _ := input.DistKeeper.LoadRewardWeights(ctx)
+	_, rewardWeight, _ := input.DistKeeper.LoadRewardWeights(ctx)
 	validators, bondedTokens, bondedTokensSum := input.DistKeeper.LoadBondedTokens(ctx, votes, rewardWeight)
 	require.Equal(t, validator1, validators[string(valConsPk1.Address())])
 	require.Equal(t, validator2, validators[string(valConsPk2.Address())])
-	require.Equal(t, sdk.NewInt(3_000_000), bondedTokens["foo"][string(valConsPk1.Address())])
-	require.Equal(t, sdk.NewInt(5_000_000), bondedTokens["foo"][string(valConsPk2.Address())])
-	require.Equal(t, sdk.NewInt(5_000_000), bondedTokens["bar"][string(valConsPk1.Address())])
-	require.Equal(t, sdk.NewInt(3_000_000), bondedTokens["bar"][string(valConsPk2.Address())])
+	for _, val := range bondedTokens["foo"] {
+		if val.ValAddr == string(valConsPk1.Address()) {
+			require.Equal(t, sdk.NewInt(3_000_000), val.Amount)
+		} else {
+			sdk.NewInt(5_000_000)
+		}
+	}
+
+	for _, val := range bondedTokens["bar"] {
+		if val.ValAddr == string(valConsPk1.Address()) {
+			require.Equal(t, sdk.NewInt(5_000_000), val.Amount)
+		} else {
+			sdk.NewInt(3_000_000)
+		}
+	}
 	require.Equal(t, sdk.NewInt(8_000_000), bondedTokensSum["foo"])
 	require.Equal(t, sdk.NewInt(8_000_000), bondedTokensSum["bar"])
 }
