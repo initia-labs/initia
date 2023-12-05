@@ -12,7 +12,6 @@ import (
 
 	sdkmath "cosmossdk.io/math"
 	"github.com/initia-labs/initia/x/move/types"
-	vmtypes "github.com/initia-labs/initiavm/types"
 	"github.com/novifinancial/serde-reflection/serde-generate/runtime/golang/bcs"
 	"github.com/novifinancial/serde-reflection/serde-generate/runtime/golang/serde"
 	flag "github.com/spf13/pflag"
@@ -67,11 +66,7 @@ func asciiDecodeString(s string) ([]byte, error) {
 func BcsSerializeArg(argType string, arg string, s serde.Serializer) ([]byte, error) {
 	if arg == "" {
 		err := s.SerializeBytes([]byte(arg))
-		if err != nil {
-			return nil, err
-		}
-
-		return s.GetBytes(), nil
+		return s.GetBytes(), err
 	}
 	switch argType {
 	case "raw_hex":
@@ -79,44 +74,49 @@ func BcsSerializeArg(argType string, arg string, s serde.Serializer) ([]byte, er
 		if err != nil {
 			return nil, err
 		}
-		return vmtypes.SerializeBytes(decoded)
+
+		err = s.SerializeBytes(decoded)
+		return s.GetBytes(), err
 	case "raw_base64":
 		decoded, err := base64.StdEncoding.DecodeString(arg)
 		if err != nil {
 			return nil, err
 		}
-		return vmtypes.SerializeBytes(decoded)
+
+		err = s.SerializeBytes(decoded)
+		return s.GetBytes(), err
 	case "address", "object":
 		accAddr, err := types.AccAddressFromString(arg)
 		if err != nil {
 			return nil, err
 		}
+
 		err = s.IncreaseContainerDepth()
 		if err != nil {
 			return nil, err
 		}
-		for _, item := range(accAddr) {
-			if err := s.SerializeU8(item); err != nil { return nil, err }
+		for _, item := range accAddr {
+			if err := s.SerializeU8(item); err != nil {
+				return nil, err
+			}
 		}
 		s.DecreaseContainerDepth()
 
 		return s.GetBytes(), nil
-
 	case "string":
-		if err := s.SerializeStr(arg); err != nil {
-			return nil, err
-		}
-		return s.GetBytes(), nil
+		err := s.SerializeBytes([]byte(arg))
+		return s.GetBytes(), err
 
 	case "bool":
 		if arg == "true" || arg == "True" {
-			_ = s.SerializeBool(true)
+			err := s.SerializeBool(true)
+			return s.GetBytes(), err
 		} else if arg == "false" || arg == "False" {
-			_ = s.SerializeBool(false)
+			err := s.SerializeBool(false)
+			return s.GetBytes(), err
 		} else {
 			return nil, errors.New("unsupported bool value")
 		}
-		return s.GetBytes(), nil
 
 	case "u8", "u16", "u32", "u64":
 		bitSize, _ := strconv.Atoi(strings.TrimPrefix(argType, "u"))
@@ -197,7 +197,7 @@ func BcsSerializeArg(argType string, arg string, s serde.Serializer) ([]byte, er
 		if err != nil {
 			return nil, err
 		}
-		denominator := new(big.Int);
+		denominator := new(big.Int)
 		denominator.SetString("18446744073709551616", 10)
 		decstr := dec.MulInt(sdkmath.NewIntFromBigInt(denominator)).TruncateInt().String()
 		return BcsSerializeArg("u128", decstr, s)
@@ -205,6 +205,7 @@ func BcsSerializeArg(argType string, arg string, s serde.Serializer) ([]byte, er
 		if vectorRegex.MatchString(argType) {
 			vecType := getInnerType(argType)
 			items := strings.Split(arg, ",")
+
 			if err := s.SerializeLen(uint64(len(items))); err != nil {
 				return nil, err
 			}

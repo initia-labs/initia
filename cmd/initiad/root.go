@@ -153,7 +153,7 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 	rootCmd.AddCommand(rosettaCmd.RosettaCommand(encodingConfig.InterfaceRegistry, encodingConfig.Marshaler))
 
 	// add move commands
-	rootCmd.AddCommand(moveCommand())
+	rootCmd.AddCommand(MoveCommand())
 }
 
 func addModuleInitFlags(startCmd *cobra.Command) {

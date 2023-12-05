@@ -286,8 +286,8 @@ Example of args: address:0x1 bool:true u8:0 string:hello vector<u32>:a,b,c,d
 Example:
 $ %s query move view \
     %s1lwjmdnks33xwnmfayc64ycprww49n33mtm92ne \
-	BasicCoin \
-	getBalance \
+	ManagedCoin \
+	get_balance \
 	--type-args '0x1::native_uinit::Coin 0x1::native_uusdc::Coin' \
  	--args 'u8:0 address:0x1 string:"hello world"'
 `, version.AppName, bech32PrefixAccAddr,
