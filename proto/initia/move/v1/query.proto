@@ -40,7 +40,7 @@ service Query {
 
   // Query table entry of the given key
   rpc TableEntry(QueryTableEntryRequest) returns (QueryTableEntryResponse) {
-    option (google.api.http).get = "/initia/move/v1/tables/{address}/entries/{key_bytes}";
+    option (google.api.http).get = "/initia/move/v1/tables/{address}/entries/by_key_bytes";
   }
 
   // Query table entries with pagination
