@@ -60,20 +60,23 @@ func (k Keeper) AllocateTokens(ctx sdk.Context, totalPreviousPower int64, bonded
 	communityTax := k.GetCommunityTax(ctx)
 	voteMultiplier := sdk.OneDec().Sub(communityTax)
 
-	rewardWeights, weightsSum := k.LoadRewardWeights(ctx)
-	validators, bondedTokens, bondedTokensSum := k.LoadBondedTokens(ctx, bondedVotes, rewardWeights)
+	// map iteration not guarantee the ordering,
+	// so we have to use array for iteration.
+	rewardWeights, rewardWeightMap, weightsSum := k.LoadRewardWeights(ctx)
+	validators, bondedTokens, bondedTokensSum := k.LoadBondedTokens(ctx, bondedVotes, rewardWeightMap)
 
 	// allocate rewards proportionally to reward power
-	for rewardDenom, rewardWeight := range rewardWeights {
-		poolFraction := rewardWeight.Quo(weightsSum)
+	for _, rewardWeight := range rewardWeights {
+		poolFraction := rewardWeight.Weight.Quo(weightsSum)
 		poolReward := feesCollected.MulDecTruncate(voteMultiplier).MulDecTruncate(poolFraction)
 
-		poolDenom := rewardDenom
+		poolDenom := rewardWeight.Denom
 		poolSize := bondedTokensSum[poolDenom]
-		for valAddr, amount := range bondedTokens[poolDenom] {
-			validator := validators[valAddr]
 
-			amountFraction := math.LegacyNewDecFromInt(amount).QuoInt(poolSize)
+		for _, bondedTokens := range bondedTokens[poolDenom] {
+			validator := validators[bondedTokens.ValAddr]
+
+			amountFraction := math.LegacyNewDecFromInt(bondedTokens.Amount).QuoInt(poolSize)
 			reward := poolReward.MulDecTruncate(amountFraction)
 
 			k.AllocateTokensToValidatorPool(ctx, validator, poolDenom, reward)
@@ -88,7 +91,7 @@ func (k Keeper) AllocateTokens(ctx sdk.Context, totalPreviousPower int64, bonded
 
 // LoadRewardWeights load reward weights with its sum
 func (k Keeper) LoadRewardWeights(ctx sdk.Context) (
-	map[string]sdk.Dec, sdk.Dec,
+	[]customtypes.RewardWeight, map[string]sdk.Dec, sdk.Dec,
 ) {
 	rewardWeights := k.GetRewardWeights(ctx)
 
@@ -100,18 +103,23 @@ func (k Keeper) LoadRewardWeights(ctx sdk.Context) (
 		weightsMap[rewardWeight.Denom] = rewardWeight.Weight
 	}
 
-	return weightsMap, weightsSum
+	return rewardWeights, weightsMap, weightsSum
+}
+
+type validatorBondedToken struct {
+	ValAddr string
+	Amount  math.Int
 }
 
 // LoadBondedTokens build denom:(validator:amount) map
 func (k Keeper) LoadBondedTokens(ctx sdk.Context, bondedVotes []abci.VoteInfo, rewardWeights map[string]sdk.Dec) (
-	map[string]stakingtypes.ValidatorI, map[string]map[string]math.Int, map[string]math.Int,
+	map[string]stakingtypes.ValidatorI, map[string][]validatorBondedToken, map[string]math.Int,
 ) {
 	numOfValidators := len(bondedVotes)
 	numOfDenoms := len(rewardWeights)
 
 	validators := make(map[string]stakingtypes.ValidatorI, numOfValidators)
-	bondedTokens := make(map[string]map[string]math.Int, numOfDenoms)
+	bondedTokens := make(map[string][]validatorBondedToken, numOfDenoms)
 	bondedTokensSum := make(map[string]math.Int, numOfDenoms)
 
 	for _, vote := range bondedVotes {
@@ -127,13 +135,16 @@ func (k Keeper) LoadBondedTokens(ctx sdk.Context, bondedVotes []abci.VoteInfo, r
 			}
 
 			if _, found := bondedTokens[token.Denom]; !found {
-				bondedTokens[token.Denom] = make(map[string]math.Int, numOfValidators)
+				bondedTokens[token.Denom] = make([]validatorBondedToken, 0, numOfValidators)
 			}
 			if _, found := bondedTokensSum[token.Denom]; !found {
 				bondedTokensSum[token.Denom] = sdk.ZeroInt()
 			}
 
-			bondedTokens[token.Denom][valAddr] = token.Amount
+			bondedTokens[token.Denom] = append(bondedTokens[token.Denom], validatorBondedToken{
+				ValAddr: valAddr,
+				Amount:  token.Amount,
+			})
 			bondedTokensSum[token.Denom] = bondedTokensSum[token.Denom].Add(token.Amount)
 		}
 	}
