@@ -1015,10 +1015,7 @@ func NewInitiaApp(
 		MaxTxs:          0,
 		SignerExtractor: signerExtractor,
 	}
-	priorityLane := applanes.NewPriorityLane(
-		priorityLaneConfig,
-		movekeeper.NewDexKeeper(app.MoveKeeper),
-	)
+	priorityLane := applanes.NewPriorityLane(priorityLaneConfig)
 
 	lanes := []block.Lane{mevLane, freeLane, priorityLane}
 	mempool := block.NewLanedMempool(app.Logger(), true, lanes...)

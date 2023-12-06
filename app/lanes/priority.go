@@ -8,8 +8,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkmempool "github.com/cosmos/cosmos-sdk/types/mempool"
 
-	movetypes "github.com/initia-labs/initia/x/move/types"
-
 	signer_extraction "github.com/skip-mev/block-sdk/adapters/signer_extraction_adapter"
 	"github.com/skip-mev/block-sdk/block"
 	blockbase "github.com/skip-mev/block-sdk/block/base"
@@ -33,7 +31,7 @@ type PriorityLane struct {
 }
 
 // NewPriorityLane returns a new default lane.
-func NewPriorityLane(cfg blockbase.LaneConfig, moveKeeper movetypes.AnteKeeper) *PriorityLane {
+func NewPriorityLane(cfg blockbase.LaneConfig) *PriorityLane {
 	lane := blockbase.NewBaseLane(
 		cfg,
 		LaneName,
