@@ -2,7 +2,6 @@ package ante
 
 import (
 	"cosmossdk.io/errors"
-	"cosmossdk.io/math"
 	ibcante "github.com/cosmos/ibc-go/v7/modules/core/ante"
 	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
 
@@ -70,19 +69,7 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 			return nil, 0, errors.Wrap(sdkerrors.ErrTxDecode, "Tx must be a FeeTx")
 		}
 
-		// priority calculated based on the fee value
-		feeValueInBaseUnit := math.OneInt()
-		for _, coin := range feeTx.GetFee() {
-			quotePrice, err := options.MoveKeeper.GetPoolSpotPrice(ctx, coin.Denom)
-			if err != nil {
-				return nil, 1, err
-			}
-
-			quoteValueInBaseUnit := quotePrice.MulInt(coin.Amount).TruncateInt()
-			feeValueInBaseUnit = feeValueInBaseUnit.Add(quoteValueInBaseUnit)
-		}
-
-		return feeTx.GetFee(), feeValueInBaseUnit.Int64(), nil
+		return feeTx.GetFee(), 1 /* FIFO */, nil
 	}
 
 	anteDecorators := []sdk.AnteDecorator{
