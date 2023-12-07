@@ -64,7 +64,7 @@ func TestSignAndValidateSecp256k1(t *testing.T) {
 
 	// ----
 	// Test cross packages verification
-	msgHash := crypto.Sha256(msg)
+	msgHash := secp256k1.Keccak256(msg)
 	btcPrivKey, btcPubKey := btcSecp256k1.PrivKeyFromBytes(privKey.Key)
 	// This fails: malformed signature: no header magic
 	//   btcSig, err := secp256k1.ParseSignature(sig, secp256k1.S256())
