@@ -47792,9 +47792,6 @@ paths:
                 description: params defines the parameters of the module.
                 type: object
                 properties:
-                  max_module_size:
-                    type: string
-                    format: uint64
                   base_denom:
                     type: string
                   base_min_gas_price:
@@ -48080,7 +48077,7 @@ paths:
           type: boolean
       tags:
         - Query
-  /initia/move/v1/tables/{address}/entries/{key_bytes}:
+  /initia/move/v1/tables/{address}/entries/by_key_bytes:
     get:
       summary: Query table entry of the given key
       operationId: TableEntry
@@ -48142,9 +48139,9 @@ paths:
           required: true
           type: string
         - name: key_bytes
-          description: a key of the table entry
-          in: path
-          required: true
+          description: a key of the table entry.
+          in: query
+          required: false
           type: string
           format: byte
       tags:
@@ -78616,9 +78613,6 @@ definitions:
   initia.move.v1.Params:
     type: object
     properties:
-      max_module_size:
-        type: string
-        format: uint64
       base_denom:
         type: string
       base_min_gas_price:
@@ -78737,9 +78731,6 @@ definitions:
         description: params defines the parameters of the module.
         type: object
         properties:
-          max_module_size:
-            type: string
-            format: uint64
           base_denom:
             type: string
           base_min_gas_price:

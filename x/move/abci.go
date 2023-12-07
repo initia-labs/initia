@@ -23,7 +23,9 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 
 	// get rewards from active validators
 	activeValidators := k.StakingKeeper.GetBondedValidatorsByPower(ctx)
+	rewardDenom := k.RewardKeeper.GetParams(ctx).RewardDenom
 
+	denoms := []string{}
 	rewardVecMap := make(map[string][]uint64)
 	valAddrVecMap := make(map[string][][]byte)
 	for _, activeValidator := range activeValidators {
@@ -37,11 +39,11 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 		for _, pool := range rewardPools {
 			poolDenom := pool.Denom
 			if _, found := rewardVecMap[poolDenom]; !found {
+				denoms = append(denoms, poolDenom)
 				rewardVecMap[poolDenom] = make([]uint64, 0, len(activeValidators))
 				valAddrVecMap[poolDenom] = make([][]byte, 0, len(activeValidators))
 			}
 
-			rewardDenom := k.RewardKeeper.GetParams(ctx).RewardDenom
 			rewardAmount := pool.Coins.AmountOf(rewardDenom)
 			if rewardAmount.IsZero() {
 				continue
@@ -52,7 +54,7 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 		}
 	}
 
-	for poolDenom := range rewardVecMap {
+	for _, poolDenom := range denoms {
 		rewardArg, err := vmtypes.SerializeUint64Vector(rewardVecMap[poolDenom])
 		if err != nil {
 			panic(err)

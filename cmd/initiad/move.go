@@ -18,6 +18,8 @@ import (
 	"github.com/initia-labs/initiavm/api"
 	"github.com/initia-labs/initiavm/types/compiler"
 	buildtypes "github.com/initia-labs/initiavm/types/compiler/build"
+	coveragetypes "github.com/initia-labs/initiavm/types/compiler/coverage"
+	docgentypes "github.com/initia-labs/initiavm/types/compiler/docgen"
 	provetypes "github.com/initia-labs/initiavm/types/compiler/prove"
 	testtypes "github.com/initia-labs/initiavm/types/compiler/test"
 	"github.com/pelletier/go-toml"
@@ -74,6 +76,17 @@ const (
 	flagVerbosity           = "verbosity"
 	// verify options
 	flagVerify = "verify"
+	// coverage options
+	flagFunctions = "functions"
+	flagOutputCSV = "output-csv"
+	// docgen
+	flagIncludeImpl         = "include-impl"
+	flagIncludeSpecs        = "include-specs"
+	flagSpecsInlined        = "specs-inlined"
+	flagIncludeDepDiagram   = "include-dep-diagram"
+	flagCollapsedSections   = "collapsed-sections"
+	flagLandingPageTemplate = "landing-page-template"
+	flagReferencesFile      = "references-file"
 )
 
 const (
@@ -81,7 +94,7 @@ const (
 	defaultInstallDir  = "."
 )
 
-func moveCommand() *cobra.Command {
+func MoveCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:                        "move",
 		Short:                      "move subcommands",
@@ -98,7 +111,23 @@ func moveCommand() *cobra.Command {
 		moveDeployCmd(),
 		moveProveCmd(),
 		moveVerifyCmd(),
+		moveDocgenCmd(),
 	)
+
+	coverageCmd := &cobra.Command{
+		Use:                        "coverage",
+		Short:                      "coverage subcommands",
+		DisableFlagParsing:         true,
+		SuggestionsMinimumDistance: 2,
+		RunE:                       client.ValidateCmd,
+	}
+	coverageCmd.AddCommand(
+		moveCoverageSummaryCmd(),
+		moveCoverageSourceCmd(),
+		moveCoverageBytecodeCmd(),
+	)
+
+	cmd.AddCommand(coverageCmd)
 
 	//initiaapp.ModuleBasics.AddQueryCommands(cmd)
 	cmd.PersistentFlags().String(flags.FlagChainID, "", "The network chain ID")
@@ -158,6 +187,91 @@ func moveTestCmd() *cobra.Command {
 
 	addMoveBuildFlags(cmd)
 	addMoveTestFlags(cmd)
+
+	return cmd
+}
+
+func moveCoverageSummaryCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "summary [flags]",
+		Short: "Display a coverage summary for all modules in this package",
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			arg, err := getInitiaCompilerArgument(cmd)
+			if err != nil {
+				return err
+			}
+
+			config, err := getCoverageSummaryConfig(cmd)
+			if err != nil {
+				return err
+			}
+
+			_, err = api.CoverageSummary(*arg, *config)
+			if err != nil {
+				return err
+			}
+
+			return nil
+		},
+	}
+
+	addMoveBuildFlags(cmd)
+	addMoveCoverageSummaryFlags(cmd)
+
+	return cmd
+}
+
+func moveCoverageSourceCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "source [module-name] [flags]",
+		Short: "Display coverage information about the module against source code",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			arg, err := getInitiaCompilerArgument(cmd)
+			if err != nil {
+				return err
+			}
+
+			_, err = api.CoverageSource(*arg, coveragetypes.CoverageSourceConfig{
+				ModuleName: args[0],
+			})
+			if err != nil {
+				return err
+			}
+
+			return nil
+		},
+	}
+
+	addMoveBuildFlags(cmd)
+
+	return cmd
+}
+
+func moveCoverageBytecodeCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "bytecode [module-name] [flags]",
+		Short: "Display coverage information about the module against disassembled bytecode",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			arg, err := getInitiaCompilerArgument(cmd)
+			if err != nil {
+				return err
+			}
+
+			_, err = api.CoverageBytecode(*arg, coveragetypes.CoverageBytecodeConfig{
+				ModuleName: args[0],
+			})
+			if err != nil {
+				return err
+			}
+
+			return nil
+		},
+	}
+
+	addMoveBuildFlags(cmd)
 
 	return cmd
 }
@@ -384,6 +498,37 @@ func moveVerifyCmd() *cobra.Command {
 	return cmd
 }
 
+func moveDocgenCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "document [flags]",
+		Short: "Generate documents of a move package",
+		Long:  "Generate documents of a move package. The provided path must specify the path of move package to generate docs",
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			arg, err := getInitiaCompilerArgument(cmd)
+			if err != nil {
+				return err
+			}
+			dgc, err := getDocgenConfig(cmd)
+			if err != nil {
+				return err
+			}
+
+			_, err = api.Docgen(*arg, *dgc)
+			if err != nil {
+				return err
+			}
+
+			return nil
+		},
+	}
+
+	addMoveBuildFlags(cmd)
+	addMoveDocgenFlags(cmd)
+
+	return cmd
+}
+
 func addMoveBuildFlags(cmd *cobra.Command) {
 	cmd.Flags().StringP(flagPackagePath, flagPackagePathShorthand, defaultPackagePath, "Path to a package which the command should be run with respect to")
 	cmd.Flags().Bool(flagGenerateABI, false, "Generate ABIs for packages")
@@ -408,11 +553,13 @@ func addMoveTestFlags(cmd *cobra.Command) {
 	cmd.Flags().StringP(flagFilter, flagFilterShorthand, "", `A filter string to determine which unit tests to run. A unit test will be run only if it
 contains this string in its fully qualified (<addr>::<module_name>::<fn_name>) name`)
 	cmd.Flags().Bool(flagReportStorageOnError, false, "Show the storage state at the end of execution of a failing test")
-	cmd.Flags().Uint64P(flagGasLimit, flagGasLimitShorthand, testtypes.DefaultGasLimit, "Bound the number of instructions that can be executed by any one test")
 	cmd.Flags().Bool(flagIgnoreCompileWarnings, false, "Ignore compiler's warning, and continue run tests")
-	cmd.Flags().BoolP(flagList, flagListShorthand, false, "List all tests")
 	cmd.Flags().BoolP(flagReportStatistics, flagReportStatisticsShorthand, false, "Report test statistics at the end of testing")
-	cmd.Flags().UintP(flagNumThreads, flagNumThreadsShorthand, testtypes.DefaultNumThreads, "Number of threads to use for running tests")
+}
+
+func addMoveCoverageSummaryFlags(cmd *cobra.Command) {
+	cmd.Flags().Bool(flagFunctions, true, "Whether function coverage summaries should be displayed")
+	cmd.Flags().Bool(flagOutputCSV, true, "Output CSV data of coverage")
 }
 
 func addMoveCleanFlags(cmd *cobra.Command) {
@@ -437,6 +584,16 @@ func addMoveProveFlags(cmd *cobra.Command) {
 	cmd.Flags().Bool(flagStableTestOutput, false, "Whether output for e.g. diagnosis shall be stable/redacted so it can be used in test output")
 	cmd.Flags().Bool(flagDump, false, "Whether to dump intermediate step results to files")
 	cmd.Flags().StringP(flagVerbosity, flagVerboseShorthand, "", "Verbosity level")
+}
+
+func addMoveDocgenFlags(cmd *cobra.Command) {
+	cmd.Flags().Bool(flagIncludeImpl, false, "Whether to include private declarations and implementations into the generated documentation.")
+	cmd.Flags().Bool(flagIncludeSpecs, false, "Whether to include specifications in the generated documentation.")
+	cmd.Flags().Bool(flagSpecsInlined, false, "Whether specifications should be put side-by-side with declarations or into a separate section.")
+	cmd.Flags().Bool(flagIncludeDepDiagram, false, "Whether to include a dependency diagram.")
+	cmd.Flags().Bool(flagCollapsedSections, false, "Whether details should be put into collapsed sections. This is not supported by all markdown, but the github dialect.")
+	cmd.Flags().String(flagLandingPageTemplate, "", "Package-relative path to an optional markdown template which is a used to create a landing page.")
+	cmd.Flags().String(flagReferencesFile, "", "Package-relative path to a file whose content is added to each generated markdown file.")
 }
 
 func getInitiaCompilerArgument(cmd *cobra.Command) (*compiler.InitiaCompilerArgument, error) {
@@ -509,8 +666,6 @@ func getTestConfig(cmd *cobra.Command) (*testtypes.TestConfig, error) {
 	boolFlags[flagReportStatistics] = testtypes.WithReportStatistics()
 	boolFlags[flagReportStorageOnError] = testtypes.WithReportStorageOnError()
 	boolFlags[flagIgnoreCompileWarnings] = testtypes.WithIgnoreCompileWarnings()
-	boolFlags[flagList] = testtypes.WithList()
-	boolFlags[flagVerbose] = testtypes.WithVerboseTestConfig()
 
 	for fn, opt := range boolFlags {
 		flag, err := cmd.Flags().GetBool(fn)
@@ -530,24 +685,23 @@ func getTestConfig(cmd *cobra.Command) (*testtypes.TestConfig, error) {
 		options = append(options, testtypes.WithFilter(filter))
 	}
 
-	gasLimit, err := cmd.Flags().GetUint64(flagGasLimit)
-	if err != nil {
-		return nil, err
-	}
-	if filter != "" {
-		options = append(options, testtypes.WithGasLimit(gasLimit))
-	}
-
-	n, err := cmd.Flags().GetUint(flagNumThreads)
-	if err != nil {
-		return nil, err
-	}
-	if filter != "" {
-		options = append(options, testtypes.WithNumThreads(n))
-	}
-
 	tc := testtypes.NewTestConfig(options...)
 	return &tc, nil
+}
+
+func getCoverageSummaryConfig(cmd *cobra.Command) (*coveragetypes.CoverageSummaryConfig, error) {
+	functions, err := cmd.Flags().GetBool(flagFunctions)
+	if err != nil {
+		return nil, err
+	}
+	outputCSV, err := cmd.Flags().GetBool(flagOutputCSV)
+	if err != nil {
+		return nil, err
+	}
+	return &coveragetypes.CoverageSummaryConfig{
+		Functions: functions,
+		OutputCSV: outputCSV,
+	}, nil
 }
 
 func getProveConfig(cmd *cobra.Command) (*provetypes.ProveConfig, error) {
@@ -610,4 +764,40 @@ func getProveConfig(cmd *cobra.Command) (*provetypes.ProveConfig, error) {
 
 	pc := provetypes.NewProveConfig(options...)
 	return &pc, nil
+}
+
+func getDocgenConfig(cmd *cobra.Command) (*docgentypes.DocgenConfig, error) {
+	options := []func(*docgentypes.DocgenConfig){}
+
+	boolFlags := map[string]func(*docgentypes.DocgenConfig){}
+	boolFlags[flagIncludeImpl] = docgentypes.WithIncludeImpl()
+	boolFlags[flagIncludeSpecs] = docgentypes.WithIncludeSpecs()
+	boolFlags[flagSpecsInlined] = docgentypes.WithSpecsInlined()
+	boolFlags[flagIncludeDepDiagram] = docgentypes.WithIncludeDepDiagram()
+	boolFlags[flagCollapsedSections] = docgentypes.WithCollapsedSections()
+
+	for fn, opt := range boolFlags {
+		flag, err := cmd.Flags().GetBool(fn)
+		if err != nil {
+			return nil, err
+		}
+		if flag {
+			options = append(options, opt)
+		}
+	}
+
+	if landingPageTemplate, err := cmd.Flags().GetString(flagLandingPageTemplate); err != nil {
+		return nil, err
+	} else if landingPageTemplate != "" {
+		options = append(options, docgentypes.WithLandingPageTemplate(landingPageTemplate))
+	}
+
+	if referencesFile, err := cmd.Flags().GetString(flagReferencesFile); err != nil {
+		return nil, err
+	} else if referencesFile != "" {
+		options = append(options, docgentypes.WithReferencesFile(referencesFile))
+	}
+
+	dgc := docgentypes.NewDocgenConfig(options...)
+	return &dgc, nil
 }
