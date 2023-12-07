@@ -1091,7 +1091,6 @@ func (app *InitiaApp) setAnteHandler(
 				BankKeeper:      app.BankKeeper,
 				FeegrantKeeper:  app.FeeGrantKeeper,
 				SignModeHandler: app.txConfig.SignModeHandler(),
-				SigGasConsumer:  cosmosante.DefaultSigVerificationGasConsumer,
 			},
 			IBCkeeper:     app.IBCKeeper,
 			MoveKeeper:    movekeeper.NewDexKeeper(app.MoveKeeper),

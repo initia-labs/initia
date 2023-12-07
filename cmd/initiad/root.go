@@ -20,6 +20,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/keys"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
+	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/server"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -31,6 +32,7 @@ import (
 
 	initiaapp "github.com/initia-labs/initia/app"
 	"github.com/initia-labs/initia/app/params"
+	initiahd "github.com/initia-labs/initia/crypto/hd"
 	genutilcli "github.com/initia-labs/initia/x/genutil/client/cli"
 	moveconfig "github.com/initia-labs/initia/x/move/config"
 )
@@ -77,7 +79,10 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		WithInput(os.Stdin).
 		WithAccountRetriever(types.AccountRetriever{}).
 		WithHomeDir(initiaapp.DefaultNodeHome).
-		WithViper(initiaapp.EnvPrefix)
+		WithViper(initiaapp.EnvPrefix).
+		WithKeyringOptions(func(options *keyring.Options) {
+			options.SupportedAlgos = append(options.SupportedAlgos, initiahd.EthSecp256k1)
+		})
 
 	rootCmd := &cobra.Command{
 		Use:   basename,

@@ -782,8 +782,8 @@ github.com/influxdata/tdigest v0.0.0-20181121200506-bf2b5ad3c0a9/go.mod h1:Js0mq
 github.com/influxdata/usage-client v0.0.0-20160829180054-6d3895376368/go.mod h1:Wbbw6tYNvwa5dlB6304Sd+82Z3f7PmVZHVKU637d4po=
 github.com/initia-labs/OPinit v0.1.0-beta.2 h1:JTtgkPWg/11FrWqnNx6Wl/DBMafco++6oXLHJLh6D/g=
 github.com/initia-labs/OPinit v0.1.0-beta.2/go.mod h1:MPnFU2x4xzeT3L8K3lc0wkOl09o/oekEabPHIwWdqJg=
-github.com/initia-labs/cosmos-sdk v0.47.7-0.20231123105913-ebb56e6fbd16 h1:QoF6V/9XvEuaThvP/jM0MvHlwVe3kn9/hvTPMXH/1ro=
-github.com/initia-labs/cosmos-sdk v0.47.7-0.20231123105913-ebb56e6fbd16/go.mod h1:xTc1chW8HyUWCfrgGbjS5jNu9RzlPVrBNfbL9RmZUio=
+github.com/initia-labs/cosmos-sdk v0.47.7-0.20231207065559-392af573c249 h1:AnU82xX2xIgZ4BByarNHtAna8EJy86RvHnz044Si0Pc=
+github.com/initia-labs/cosmos-sdk v0.47.7-0.20231207065559-392af573c249/go.mod h1:xTc1chW8HyUWCfrgGbjS5jNu9RzlPVrBNfbL9RmZUio=
 github.com/initia-labs/initiavm v0.1.2-beta.4 h1:RTBJ2hl8DSwLTi7rWx15beslfaqLm/bnEzaEFxsuGZ8=
 github.com/initia-labs/initiavm v0.1.2-beta.4/go.mod h1:aQt4lImZWF9xj7Fm978n0IoeDdKWXTg1CSq6O4WoSD8=
 github.com/jackpal/go-nat-pmp v1.0.2/go.mod h1:QPH045xvCAeXUZOxsnwmrtiCoxIr9eob+4orBN1SBKc=
