@@ -151,7 +151,6 @@ import (
 	signer_extraction "github.com/skip-mev/block-sdk/adapters/signer_extraction_adapter"
 	"github.com/skip-mev/block-sdk/block"
 	blockbase "github.com/skip-mev/block-sdk/block/base"
-	baselane "github.com/skip-mev/block-sdk/lanes/base"
 	freelane "github.com/skip-mev/block-sdk/lanes/free"
 	"github.com/skip-mev/block-sdk/lanes/mev"
 	"github.com/skip-mev/block-sdk/x/auction"
@@ -1008,7 +1007,7 @@ func NewInitiaApp(
 		applanes.FreeLaneMatchHandler(),
 	)
 
-	defaultLaneConfig := blockbase.LaneConfig{
+	priorityLaneConfig := blockbase.LaneConfig{
 		Logger:          app.Logger(),
 		TxEncoder:       app.txConfig.TxEncoder(),
 		TxDecoder:       app.txConfig.TxDecoder(),
@@ -1016,9 +1015,9 @@ func NewInitiaApp(
 		MaxTxs:          0,
 		SignerExtractor: signerExtractor,
 	}
-	defaultLane := baselane.NewDefaultLane(defaultLaneConfig)
+	priorityLane := applanes.NewPriorityLane(priorityLaneConfig)
 
-	lanes := []block.Lane{mevLane, freeLane, defaultLane}
+	lanes := []block.Lane{mevLane, freeLane, priorityLane}
 	mempool := block.NewLanedMempool(app.Logger(), true, lanes...)
 	app.SetMempool(mempool)
 
