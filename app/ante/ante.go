@@ -49,7 +49,7 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 
 	sigGasConsumer := options.SigGasConsumer
 	if sigGasConsumer == nil {
-		sigGasConsumer = DefaultSigVerificationGasConsumer
+		sigGasConsumer = ante.DefaultSigVerificationGasConsumer
 	}
 
 	txFeeChecker := options.TxFeeChecker
