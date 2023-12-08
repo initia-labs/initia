@@ -987,9 +987,11 @@ func NewInitiaApp(
 		MaxTxs:          100,
 		SignerExtractor: signerExtractor,
 	}
+	factor := mev.NewDefaultAuctionFactory(app.txConfig.TxDecoder(), signerExtractor)
 	mevLane := mev.NewMEVLane(
 		mevConfig,
-		mev.NewDefaultAuctionFactory(app.txConfig.TxDecoder(), signerExtractor),
+		factor,
+		factor.MatchHandler(),
 	)
 
 	freeConfig := blockbase.LaneConfig{
@@ -1018,13 +1020,12 @@ func NewInitiaApp(
 	priorityLane := applanes.NewPriorityLane(priorityLaneConfig)
 
 	lanes := []block.Lane{mevLane, freeLane, priorityLane}
-	mempool := block.NewLanedMempool(app.Logger(), true, lanes...)
-	app.SetMempool(mempool)
-
-	anteHandler := app.setAnteHandler(mevLane, freeLane)
-	for _, lane := range lanes {
-		lane.SetAnteHandler(anteHandler)
+	mempool, err := block.NewLanedMempool(app.Logger(), lanes)
+	if err != nil {
+		panic(err)
 	}
+	app.SetMempool(mempool)
+	anteHandler := app.setAnteHandler(mevLane, freeLane)
 
 	// override the base-app's ABCI methods (CheckTx, PrepareProposal, ProcessProposal)
 	proposalHandlers := blockabci.NewProposalHandler(

@@ -32,12 +32,14 @@ type PriorityLane struct {
 
 // NewPriorityLane returns a new default lane.
 func NewPriorityLane(cfg blockbase.LaneConfig) *PriorityLane {
-	lane := blockbase.NewBaseLane(
+	lane, err := blockbase.NewBaseLane(
 		cfg,
 		LaneName,
-		NewMempool(blockbase.NewDefaultTxPriority(), cfg.SignerExtractor, cfg.MaxTxs),
-		blockbase.DefaultMatchHandler(),
 	)
+	if err != nil {
+		panic(err)
+	}
+	lane.LaneMempool = NewMempool(blockbase.NewDefaultTxPriority(), cfg.SignerExtractor, cfg.MaxTxs)
 
 	if err := lane.ValidateBasic(); err != nil {
 		panic(err)
@@ -86,6 +88,11 @@ func NewMempool[C comparable](txPriority blockbase.TxPriority[C], extractor sign
 		extractor: extractor,
 		txCache:   make(map[txKey]struct{}),
 	}
+}
+
+// Priority returns the priority of the transaction.
+func (cm *Mempool[C]) Priority(ctx sdk.Context, tx sdk.Tx) any {
+	return 1
 }
 
 // CountTx returns the number of transactions in the mempool.
