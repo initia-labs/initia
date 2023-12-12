@@ -53,7 +53,6 @@ func GetDelegatorModuleAddress(val sdk.ValAddress) sdk.AccAddress {
 // 0x1 address
 var StdAddr = sdk.AccAddress(vmtypes.StdAddress[:])
 
-// 0x2 address
 var TestAddr = sdk.AccAddress(vmtypes.TestAddress[:])
 
 // Keys for move store

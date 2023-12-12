@@ -13,6 +13,7 @@ type VMEngine interface {
 		env vmtypes.Env,
 		moduleBundle vmtypes.ModuleBundle,
 		allowArbitrary bool,
+		allowedPublishers []vmtypes.AccountAddress,
 	) error
 	Destroy()
 	ExecuteViewFunction(
@@ -27,7 +28,7 @@ type VMEngine interface {
 		goApi api.GoAPI,
 		env vmtypes.Env,
 		gasLimit uint64,
-		senders [][]byte,
+		senders []vmtypes.AccountAddress,
 		payload vmtypes.EntryFunction,
 	) (vmtypes.ExecutionResult, error)
 	ExecuteScript(
@@ -35,7 +36,7 @@ type VMEngine interface {
 		goApi api.GoAPI,
 		env vmtypes.Env,
 		gasLimit uint64,
-		senders [][]byte,
+		senders []vmtypes.AccountAddress,
 		payload vmtypes.Script,
 	) (vmtypes.ExecutionResult, error)
 	MarkLoaderCacheAsInvalid() error

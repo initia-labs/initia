@@ -4,6 +4,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/initia-labs/initia/x/move/types"
+	vmtypes "github.com/initia-labs/initiavm/types"
 )
 
 // BaseDenom - base denom of native move dex
@@ -21,9 +22,19 @@ func (k Keeper) ArbitraryEnabled(ctx sdk.Context) (bool, error) {
 	return NewCodeKeeper(&k).GetAllowArbitrary(ctx)
 }
 
+// AllowedPublishers - allowed publishers
+func (k Keeper) AllowedPublishers(ctx sdk.Context) ([]vmtypes.AccountAddress, error) {
+	return NewCodeKeeper(&k).GetAllowedPublishers(ctx)
+}
+
 // SetArbitraryEnabled - update arbitrary enabled flag
 func (k Keeper) SetArbitraryEnabled(ctx sdk.Context, arbitraryEnabled bool) error {
 	return NewCodeKeeper(&k).SetAllowArbitrary(ctx, arbitraryEnabled)
+}
+
+// SetAllowedPublishers - update allowed publishers
+func (k Keeper) SetAllowedPublishers(ctx sdk.Context, allowedPublishers []vmtypes.AccountAddress) error {
+	return NewCodeKeeper(&k).SetAllowedPublishers(ctx, allowedPublishers)
 }
 
 // ContractSharedRevenueRatio - percentage of fees distributed to developers
@@ -55,12 +66,17 @@ func (k Keeper) GetParams(ctx sdk.Context) types.Params {
 	rawParams := types.RawParams{}
 	k.cdc.MustUnmarshal(bz, &rawParams)
 
-	allow, err := NewCodeKeeper(&k).GetAllowArbitrary(ctx)
+	allowArbitrary, allowedPublishers, err := NewCodeKeeper(&k).GetParams(ctx)
 	if err != nil {
 		panic(err)
 	}
 
-	return rawParams.ToParams(allow)
+	_allowedPublishers := make([]string, len(allowedPublishers))
+	for i, addr := range allowedPublishers {
+		_allowedPublishers[i] = addr.String()
+	}
+
+	return rawParams.ToParams(allowArbitrary, _allowedPublishers)
 }
 
 // SetRawParams stores raw params to store.

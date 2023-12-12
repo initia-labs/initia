@@ -67,8 +67,6 @@ func (k DexKeeper) deleteDexPair(
 ) {
 	kvStore := ctx.KVStore(k.storeKey)
 	kvStore.Delete(types.GetDexPairKey(metadataQuote))
-
-	return
 }
 
 // HasDexPair check whether types.DexPair exists or not with

@@ -94,7 +94,7 @@ func (ms MsgServer) Script(context context.Context, req *types.MsgScript) (*type
 	defer telemetry.MeasureSince(time.Now(), "move", "msg", "script")
 	ctx := sdk.UnwrapSDKContext(context)
 
-	sender, err := sdk.AccAddressFromBech32(req.Sender)
+	sender, err := types.AccAddressFromString(req.Sender)
 	if err != nil {
 		return nil, err
 	}
@@ -199,7 +199,7 @@ func (ms MsgServer) GovScript(context context.Context, req *types.MsgGovScript) 
 
 	ctx := sdk.UnwrapSDKContext(context)
 
-	sender, err := sdk.AccAddressFromBech32(req.Sender)
+	sender, err := types.AccAddressFromString(req.Sender)
 	if err != nil {
 		return nil, err
 	}

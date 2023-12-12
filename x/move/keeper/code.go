@@ -16,6 +16,21 @@ func NewCodeKeeper(k *Keeper) CodeKeeper {
 	return CodeKeeper{k}
 }
 
+// Load the code params from the move store
+func (k CodeKeeper) GetParams(ctx sdk.Context) (bool, []vmtypes.AccountAddress, error) {
+	bz, err := k.GetResourceBytes(ctx, vmtypes.StdAddress, vmtypes.StructTag{
+		Address:  vmtypes.StdAddress,
+		Module:   vmtypes.Identifier(types.MoveModuleNameCode),
+		Name:     vmtypes.Identifier(types.ResourceNameModuleStore),
+		TypeArgs: []vmtypes.TypeTag{},
+	})
+	if err != nil {
+		return false, nil, err
+	}
+
+	return types.ReadCodeModuleStore(bz)
+}
+
 // Load the allow_arbitrary flag from the move store
 func (k CodeKeeper) GetAllowArbitrary(ctx sdk.Context) (bool, error) {
 	bz, err := k.GetResourceBytes(ctx, vmtypes.StdAddress, vmtypes.StructTag{
@@ -28,7 +43,7 @@ func (k CodeKeeper) GetAllowArbitrary(ctx sdk.Context) (bool, error) {
 		return false, err
 	}
 
-	return vmtypes.NewDeserializer(bz).DeserializeBool()
+	return vmtypes.NewDeserializer(bz[:1]).DeserializeBool()
 }
 
 // Store the allow_arbitrary flag to move store.
@@ -47,6 +62,42 @@ func (k CodeKeeper) SetAllowArbitrary(ctx sdk.Context, allow bool) error {
 		[]vmtypes.TypeTag{},
 		[][]byte{
 			ser.GetBytes(),
+		},
+	)
+}
+
+// Load the allowed_publishers from the move store
+func (k CodeKeeper) GetAllowedPublishers(ctx sdk.Context) ([]vmtypes.AccountAddress, error) {
+	bz, err := k.GetResourceBytes(ctx, vmtypes.StdAddress, vmtypes.StructTag{
+		Address:  vmtypes.StdAddress,
+		Module:   vmtypes.Identifier(types.MoveModuleNameCode),
+		Name:     vmtypes.Identifier(types.ResourceNameModuleStore),
+		TypeArgs: []vmtypes.TypeTag{},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	_, allowedPublishers, err := types.ReadCodeModuleStore(bz)
+	return allowedPublishers, err
+}
+
+// Store the allowed_publishers to move store.
+func (k CodeKeeper) SetAllowedPublishers(ctx sdk.Context, allowedPublishers []vmtypes.AccountAddress) error {
+	bz, err := vmtypes.SerializeAddressVector(allowedPublishers)
+	if err != nil {
+		return err
+	}
+
+	return k.ExecuteEntryFunction(
+		ctx,
+		vmtypes.StdAddress,
+		vmtypes.StdAddress,
+		types.MoveModuleNameCode,
+		types.FunctionNameCodeSetAllowedPublishers,
+		[]vmtypes.TypeTag{},
+		[][]byte{
+			bz,
 		},
 	)
 }

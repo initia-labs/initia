@@ -154,10 +154,8 @@ func (k Keeper) ExecuteEntryFunctionWithMultiSenders(
 	}
 
 	sendersStr := make([]string, len(senders))
-	signers := make([][]byte, len(senders))
-	for i, signer := range senders {
-		signers[i] = signer[:]
-		sendersStr[i] = signer.String()
+	for i, sender := range senders {
+		sendersStr[i] = sender.String()
 	}
 
 	api := NewApi(k, ctx)
@@ -172,7 +170,7 @@ func (k Keeper) ExecuteEntryFunctionWithMultiSenders(
 		api,
 		env,
 		gasForRuntime,
-		signers,
+		senders,
 		payload,
 	)
 
@@ -200,14 +198,14 @@ func (k Keeper) ExecuteEntryFunctionWithMultiSenders(
 
 func (k Keeper) ExecuteScript(
 	ctx sdk.Context,
-	sender sdk.AccAddress,
+	sender vmtypes.AccountAddress,
 	byteCodes []byte,
 	typeArgs []vmtypes.TypeTag,
 	args [][]byte,
 ) error {
 	return k.ExecuteScriptWithMultiSenders(
 		ctx,
-		[]sdk.AccAddress{sender},
+		[]vmtypes.AccountAddress{sender},
 		byteCodes,
 		typeArgs,
 		args,
@@ -216,7 +214,7 @@ func (k Keeper) ExecuteScript(
 
 func (k Keeper) ExecuteScriptWithMultiSenders(
 	ctx sdk.Context,
-	senders []sdk.AccAddress,
+	senders []vmtypes.AccountAddress,
 	byteCodes []byte,
 	typeArgs []vmtypes.TypeTag,
 	args [][]byte,
@@ -251,10 +249,8 @@ func (k Keeper) ExecuteScriptWithMultiSenders(
 	}
 
 	sendersStr := make([]string, len(senders))
-	signers := make([][]byte, len(senders))
-	for i, signer := range senders {
-		signers[i] = signer
-		sendersStr[i] = signer.String()
+	for i, sender := range senders {
+		sendersStr[i] = sender.String()
 	}
 
 	api := NewApi(k, ctx)
@@ -269,7 +265,7 @@ func (k Keeper) ExecuteScriptWithMultiSenders(
 		api,
 		env,
 		gasForRuntime,
-		signers,
+		senders,
 		payload,
 	)
 

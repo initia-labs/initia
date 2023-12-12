@@ -33,6 +33,7 @@ func Test_GetBalance(t *testing.T) {
 	require.NoError(t, err)
 
 	amount, err = moveBankKeeper.GetBalance(ctx, twoAddr, bondDenom)
+	require.NoError(t, err)
 	require.Equal(t, mintAmount, amount)
 }
 
@@ -51,6 +52,8 @@ func Test_AccountCoinStore(t *testing.T) {
 	require.NoError(t, err)
 
 	coinStore, err := moveBankKeeper.GetUserStores(ctx, twoAddr)
+	require.NoError(t, err)
+
 	iter := coinStore.Iterator(nil, nil)
 	defer iter.Close()
 
@@ -63,6 +66,8 @@ func Test_AccountCoinStore(t *testing.T) {
 
 		value := iter.Value()
 		storeAddr, err := vmtypes.NewAccountAddressFromBytes(value)
+		require.NoError(t, err)
+
 		mt, amount, err := moveBankKeeper.Balance(ctx, storeAddr)
 		require.NoError(t, err)
 		require.Equal(t, sdk.NewInt(1), amount)
@@ -87,6 +92,8 @@ func Test_AccountCoinStore(t *testing.T) {
 
 		value := iter2.Value()
 		storeAddr, err := vmtypes.NewAccountAddressFromBytes(value)
+		require.NoError(t, err)
+
 		mt, amount, err := moveBankKeeper.Balance(ctx, storeAddr)
 		require.NoError(t, err)
 		require.Equal(t, sdk.NewInt(mintAmount+1), amount)
@@ -145,6 +152,8 @@ func Test_GetIssuers(t *testing.T) {
 	}
 
 	issuers, err := moveBankKeeper.GetIssuers(ctx)
+	require.NoError(t, err)
+
 	iter := issuers.Iterator(nil, nil)
 	defer iter.Close()
 
