@@ -98,23 +98,10 @@ func jsonStringHasKey(memo, key string) (found bool, jsonObject map[string]inter
 
 // newEmitErrorAcknowledgement creates a new error acknowledgement after having emitted an event with the
 // details of the error.
-func newEmitErrorAcknowledgement(ctx sdk.Context, err error, errorContexts ...string) channeltypes.Acknowledgement {
-	attributes := make([]sdk.Attribute, len(errorContexts)+1)
-	attributes[0] = sdk.NewAttribute("error", err.Error())
-	for i, s := range errorContexts {
-		attributes[i+1] = sdk.NewAttribute("error-context", s)
-	}
-
-	ctx.EventManager().EmitEvents(sdk.Events{
-		sdk.NewEvent(
-			"ibc-acknowledgement-error",
-			attributes...,
-		),
-	})
-
+func newEmitErrorAcknowledgement(ctx sdk.Context, err error) channeltypes.Acknowledgement {
 	return channeltypes.Acknowledgement{
 		Response: &channeltypes.Acknowledgement_Error{
-			Error: fmt.Sprintf("move hook error: %s", err.Error()),
+			Error: fmt.Sprintf("ibc move hook error: %s", err.Error()),
 		},
 	}
 }
