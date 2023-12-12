@@ -63,9 +63,10 @@ const (
 	FunctionNameObjectTransfer = "transfer"
 
 	// function names for code
-	FunctionNameCodePublish           = "publish"
-	FunctionNameCodeInitGenesis       = "init_genesis"
-	FunctionNameCodeSetAllowArbitrary = "set_allow_arbitrary"
+	FunctionNameCodePublish              = "publish"
+	FunctionNameCodeInitGenesis          = "init_genesis"
+	FunctionNameCodeSetAllowArbitrary    = "set_allow_arbitrary"
+	FunctionNameCodeSetAllowedPublishers = "set_allowed_publishers"
 
 	// resource names
 	ResourceNameFungibleStore = "FungibleStore"
@@ -547,6 +548,29 @@ func ReadStakingStatesTableHandleFromModuleStore(bz []byte) (vmtypes.AccountAddr
 	cursor := int(0)
 
 	return ReadTableHandleFromTable(bz[cursor : cursor+AddressBytesLength+8])
+}
+
+func ReadCodeModuleStore(bz []byte) (bool, []vmtypes.AccountAddress, error) {
+	cursor := int(0)
+
+	allowArbitrary := bz[cursor] == 1
+	cursor += 1
+
+	addrsLen, len := readULEB128(bz[cursor:])
+	cursor += len
+
+	allowedPublishers := make([]vmtypes.AccountAddress, addrsLen)
+	for i := 0; i < addrsLen; i++ {
+		var err error
+		allowedPublishers[i], err = vmtypes.NewAccountAddressFromBytes(bz[cursor : cursor+AddressBytesLength])
+		if err != nil {
+			return false, nil, err
+		}
+
+		cursor += AddressBytesLength
+	}
+
+	return allowArbitrary, allowedPublishers, nil
 }
 
 // readULEB128 converts a uleb128-encoded byte array into an int.

@@ -1,7 +1,6 @@
 package keeper_test
 
 import (
-	"encoding/hex"
 	"fmt"
 	"testing"
 
@@ -44,6 +43,24 @@ func TestPublishModuleBundle_ArbitraryNotEnabled(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestPublishModuleBundle_AllowedPublishers(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+
+	// limit only vmtypes.StdAddr can publish the code.
+	err := input.MoveKeeper.SetAllowedPublishers(ctx, []vmtypes.AccountAddress{vmtypes.StdAddress})
+	require.NoError(t, err)
+
+	err = input.MoveKeeper.PublishModuleBundle(ctx, vmtypes.TestAddress, vmtypes.NewModuleBundle(vmtypes.NewModule(tableGeneratorModule)), types.UpgradePolicy_COMPATIBLE)
+	require.Error(t, err)
+
+	// add vmtypes.TestAddr to the allowed list
+	err = input.MoveKeeper.SetAllowedPublishers(ctx, []vmtypes.AccountAddress{vmtypes.StdAddress, vmtypes.TestAddress})
+	require.NoError(t, err)
+
+	err = input.MoveKeeper.PublishModuleBundle(ctx, vmtypes.TestAddress, vmtypes.NewModuleBundle(vmtypes.NewModule(tableGeneratorModule)), types.UpgradePolicy_COMPATIBLE)
+	require.NoError(t, err)
+}
+
 func TestExecuteEntryFunction(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
@@ -68,11 +85,7 @@ func TestExecuteEntryFunction(t *testing.T) {
 func TestExecuteScript(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
-	bz, err := hex.DecodeString("0000000000000000000000000000000000000002")
-	require.NoError(t, err)
-	twoAddr := sdk.AccAddress(bz)
-
-	err = input.MoveKeeper.ExecuteScript(ctx, twoAddr,
+	err := input.MoveKeeper.ExecuteScript(ctx, vmtypes.TestAddress,
 		basicCoinMintScript,
 		[]vmtypes.TypeTag{MustConvertStringToTypeTag("0x1::BasicCoin::Initia"), MustConvertStringToTypeTag("bool")},
 		[][]byte{},
@@ -126,6 +139,7 @@ func TestDispatchFundCommunityPoolMessage(t *testing.T) {
 
 	depositor := addrs[0]
 	depositorAddr, err := vmtypes.NewAccountAddressFromBytes(addrs[0])
+	require.NoError(t, err)
 	denom := bondDenom
 	amount := sdk.NewInt(100)
 
@@ -158,6 +172,7 @@ func TestDispatchTransferMessage(t *testing.T) {
 
 	sender := addrs[0]
 	senderAddr, err := vmtypes.NewAccountAddressFromBytes(addrs[0])
+	require.NoError(t, err)
 	receiver := valAddrs[0]
 	denom := bondDenom
 	amount := sdk.NewInt(100)
@@ -232,6 +247,7 @@ func TestDispatchPayFeeMessage(t *testing.T) {
 
 	sender := addrs[0]
 	senderAddr, err := vmtypes.NewAccountAddressFromBytes(addrs[0])
+	require.NoError(t, err)
 	recvFeeDenom := testDenoms[0]
 	recvFeeAmount := sdk.NewInt(100)
 	ackFeeDenom := testDenoms[1]

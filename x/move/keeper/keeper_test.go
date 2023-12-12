@@ -58,6 +58,7 @@ func TestGetAndSetResource(t *testing.T) {
 
 	testDenom := testDenoms[0]
 	testDenomMetadata, err := types.MetadataAddressFromDenom(testDenom)
+	require.NoError(t, err)
 
 	structTagStr := "0x1::fungible_asset::FungibleStore"
 	structTag, err := vmapi.ParseStructTag(structTagStr)

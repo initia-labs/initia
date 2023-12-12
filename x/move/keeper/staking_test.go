@@ -305,6 +305,7 @@ func TestApplyStakingDeltas(t *testing.T) {
 	require.Equal(t, unbondingShare, sdk.NewInt(25_000_000))
 
 	_, unbondingAmount, err := keeper.NewMoveBankKeeper(&input.MoveKeeper).Balance(ctx, unbondingCoinStore)
+	require.NoError(t, err)
 	require.Equal(t, unbondingAmount, sdk.NewInt(25_000_000))
 }
 
@@ -410,6 +411,7 @@ func Test_SlashUnbondingDelegations(t *testing.T) {
 	require.NoError(t, err)
 
 	_, unbondingAmount, err := keeper.NewMoveBankKeeper(&input.MoveKeeper).Balance(ctx, unbondingCoinStore)
+	require.NoError(t, err)
 	require.Equal(t, unbondingAmount, sdk.NewInt(23_750_000))
 	require.Equal(t, unbondingShare, sdk.NewInt(25_000_000))
 }

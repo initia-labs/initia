@@ -24,6 +24,11 @@ func TestParams(t *testing.T) {
 	p3.BaseMinGasPrice = sdk.OneDec().Neg()
 	err = p3.Validate()
 	require.Error(t, err)
+
+	p4 := DefaultParams()
+	p4.AllowedPublishers = []string{"abc"}
+	err = p4.Validate()
+	require.Error(t, err)
 }
 
 func TestRawParams(t *testing.T) {
@@ -36,7 +41,7 @@ func TestRawParams(t *testing.T) {
 	require.NoError(t, p1.Validate())
 
 	rp := p1.ToRaw()
-	p2 := rp.ToParams(p1.ArbitraryEnabled)
+	p2 := rp.ToParams(p1.ArbitraryEnabled, p1.AllowedPublishers)
 	require.NoError(t, p2.Validate())
 	require.Equal(t, p1, p2)
 }

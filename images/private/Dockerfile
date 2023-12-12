@@ -2,7 +2,7 @@ FROM golang:1.19.1-alpine3.16 AS go-builder
 #ARG arch=x86_64
 
 # See https://github.com/initia-labs/initiavm/releases
-ARG LIBINITIAVM_VERSION=v0.1.2-beta.4
+ARG LIBINITIAVM_VERSION=v0.1.2-beta.5
 
 # this comes from standard alpine nightly file
 #  https://github.com/rust-lang/docker-rust-nightly/blob/master/alpine3.12/Dockerfile

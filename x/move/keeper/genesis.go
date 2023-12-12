@@ -15,6 +15,7 @@ func (k Keeper) Initialize(
 	ctx sdk.Context,
 	moduleBytes [][]byte,
 	allowArbitrary bool,
+	allowedPublishers []string,
 ) error {
 	ctx = ctx.WithTxBytes(make([]byte, 32))
 
@@ -30,10 +31,20 @@ func (k Keeper) Initialize(
 		modules[i] = vmtypes.NewModule(moduleBz)
 	}
 
+	_allowedPublishers := make([]vmtypes.AccountAddress, len(allowedPublishers))
+	for i, addr := range allowedPublishers {
+		addr, err := types.AccAddressFromString(addr)
+		if err != nil {
+			return err
+		}
+
+		_allowedPublishers[i] = addr
+	}
+
 	// The default upgrade policy is compatible when it's not set,
 	// so skip the registration at initialize.
 	kvStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.PrefixKeyVMStore)
-	if err := k.moveVM.Initialize(kvStore, api, env, vmtypes.NewModuleBundle(modules...), allowArbitrary); err != nil {
+	if err := k.moveVM.Initialize(kvStore, api, env, vmtypes.NewModuleBundle(modules...), allowArbitrary, _allowedPublishers); err != nil {
 		return err
 	}
 
@@ -51,7 +62,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) ([]abc
 	k.SetExecutionCounter(ctx, genState.ExecutionCounter)
 
 	if len(genState.GetModules()) == 0 {
-		if err := k.Initialize(ctx, genState.GetStdlibs(), params.ArbitraryEnabled); err != nil {
+		if err := k.Initialize(ctx, genState.GetStdlibs(), params.ArbitraryEnabled, params.AllowedPublishers); err != nil {
 			return nil, err
 		}
 	}

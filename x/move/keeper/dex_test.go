@@ -244,7 +244,9 @@ func TestDexPair(t *testing.T) {
 	require.False(t, found)
 
 	metadataQuote, err := types.MetadataAddressFromDenom(denom)
+	require.NoError(t, err)
 	metadataLP, err := types.MetadataAddressFromDenom(denomLP)
+	require.NoError(t, err)
 
 	// invalid metadata
 	dexPair := types.DexPair{

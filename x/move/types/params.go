@@ -35,6 +35,7 @@ func DefaultParams() Params {
 		BaseMinGasPrice:            DefaultBaseMinGasPrice,
 		ArbitraryEnabled:           DefaultArbitraryEnabled,
 		ContractSharedRevenueRatio: DefaultContractSharedRevenueRatio,
+		AllowedPublishers:          nil,
 	}
 }
 
@@ -64,6 +65,10 @@ func (p Params) Validate() error {
 		return errors.Wrap(err, "invalid shared_revenue_ratio")
 	}
 
+	if err := validateAllowedPublishers(p.AllowedPublishers); err != nil {
+		return errors.Wrap(err, "invalid allowed_publishers")
+	}
+
 	return nil
 }
 
@@ -77,12 +82,13 @@ func (p Params) ToRaw() RawParams {
 }
 
 // ToParams return Params from the RawParams
-func (p RawParams) ToParams(allowArbitrary bool) Params {
+func (p RawParams) ToParams(allowArbitrary bool, allowedPublishers []string) Params {
 	return Params{
 		BaseDenom:                  p.BaseDenom,
 		BaseMinGasPrice:            p.BaseMinGasPrice,
 		ArbitraryEnabled:           allowArbitrary,
 		ContractSharedRevenueRatio: p.ContractSharedRevenueRatio,
+		AllowedPublishers:          allowedPublishers,
 	}
 }
 
@@ -133,6 +139,21 @@ func validateContractSharedRatio(i interface{}) error {
 
 	if v.GT(sdk.OneDec()) {
 		return fmt.Errorf("contract_share_ratio must be smaller than or equal to one: %v", v)
+	}
+
+	return nil
+}
+
+func validateAllowedPublishers(i interface{}) error {
+	allowedPublishers, ok := i.([]string)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+
+	for _, addr := range allowedPublishers {
+		if _, err := AccAddressFromString(addr); err != nil {
+			return err
+		}
 	}
 
 	return nil
