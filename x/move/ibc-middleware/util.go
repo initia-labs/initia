@@ -112,5 +112,9 @@ func newEmitErrorAcknowledgement(ctx sdk.Context, err error, errorContexts ...st
 		),
 	})
 
-	return channeltypes.NewErrorAcknowledgement(err)
+	return channeltypes.Acknowledgement{
+		Response: &channeltypes.Acknowledgement_Error{
+			Error: fmt.Sprintf("move hook error: %s", err.Error()),
+		},
+	}
 }
