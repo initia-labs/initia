@@ -265,8 +265,6 @@ type InitiaApp struct {
 	txConfig          client.TxConfig
 	interfaceRegistry types.InterfaceRegistry
 
-	invCheckPeriod uint
-
 	// keys to access the substores
 	keys    map[string]*storetypes.KVStoreKey
 	tkeys   map[string]*storetypes.TransientStoreKey
@@ -638,11 +636,21 @@ func NewInitiaApp(
 			authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		)
 		nftTransferIBCModule := ibcnfttransfer.NewIBCModule(*app.NftTransferKeeper)
+
+		// create move middleware for nft-transfer
+		moveMiddleware := moveibcmiddleware.NewIBCMiddleware(
+			// receive: move -> nft-transfer
+			nftTransferIBCModule,
+			// ics4wrapper: not used
+			nil,
+			moveKeeper,
+		)
+
 		nftTransferStack = ibcperm.NewIBCMiddleware(
 			// receive: perm -> fee -> nft transfer
 			ibcfee.NewIBCMiddleware(
-				// receive: channel -> fee -> nft transfer
-				nftTransferIBCModule,
+				// receive: channel -> fee -> move -> nft transfer
+				moveMiddleware,
 				*app.IBCFeeKeeper,
 			),
 			// ics4wrapper: not used
