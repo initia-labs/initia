@@ -151,7 +151,6 @@ import (
 	signer_extraction "github.com/skip-mev/block-sdk/adapters/signer_extraction_adapter"
 	"github.com/skip-mev/block-sdk/block"
 	blockbase "github.com/skip-mev/block-sdk/block/base"
-	freelane "github.com/skip-mev/block-sdk/lanes/free"
 	"github.com/skip-mev/block-sdk/lanes/mev"
 	"github.com/skip-mev/block-sdk/x/auction"
 	auctionante "github.com/skip-mev/block-sdk/x/auction/ante"
@@ -1002,12 +1001,7 @@ func NewInitiaApp(
 		MaxTxs:          10,
 		SignerExtractor: signerExtractor,
 	}
-
-	freeLane := freelane.NewFreeLane(
-		freeConfig,
-		blockbase.DefaultTxPriority(),
-		applanes.FreeLaneMatchHandler(),
-	)
+	freeLane := applanes.NewFreeLane(freeConfig, applanes.FreeLaneMatchHandler())
 
 	priorityLaneConfig := blockbase.LaneConfig{
 		Logger:          app.Logger(),
