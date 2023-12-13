@@ -188,7 +188,7 @@ replace (
 	// use cosmos fork of keyring
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
 
-	github.com/cosmos/cosmos-sdk => github.com/initia-labs/cosmos-sdk v0.47.7-0.20231208103644-7bba6b092b8c
+	github.com/cosmos/cosmos-sdk => github.com/initia-labs/cosmos-sdk v0.47.7-0.20231213125951-c5b3cad09ed3
 
 	// dgrijalva/jwt-go is deprecated and doesn't receive security updates.
 	// TODO: remove it: https://github.com/cosmos/cosmos-sdk/issues/13134
