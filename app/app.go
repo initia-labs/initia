@@ -265,8 +265,6 @@ type InitiaApp struct {
 	txConfig          client.TxConfig
 	interfaceRegistry types.InterfaceRegistry
 
-	invCheckPeriod uint
-
 	// keys to access the substores
 	keys    map[string]*storetypes.KVStoreKey
 	tkeys   map[string]*storetypes.TransientStoreKey
@@ -547,18 +545,13 @@ func NewInitiaApp(
 
 	var transferStack porttypes.IBCModule
 	{
-		routerMiddleware := &router.IBCMiddleware{}
-		moveMiddleware := &moveibcmiddleware.IBCMiddleware{}
-		feeMiddleware := &ibcfee.IBCMiddleware{}
-		permMiddleware := &ibcperm.IBCMiddleware{}
-
 		// Create Transfer Keepers
 		transferKeeper := ibctransferkeeper.NewKeeper(
 			appCodec,
 			keys[ibctransfertypes.StoreKey],
 			app.GetSubspace(ibctransfertypes.ModuleName),
 			// ics4wrapper: transfer -> router
-			routerMiddleware,
+			app.RouterKeeper,
 			app.IBCKeeper.ChannelKeeper,
 			&app.IBCKeeper.PortKeeper,
 			app.AccountKeeper,
@@ -567,9 +560,6 @@ func NewInitiaApp(
 		)
 		app.TransferKeeper = &transferKeeper
 		transferIBCModule := ibctransfer.NewIBCModule(*app.TransferKeeper)
-
-		// channel -> perm -> ibcfee -> move -> router -> transfer
-		transferStack = permMiddleware
 
 		// setup package forward module for multi-hop forwarding
 		app.RouterKeeper = routerkeeper.NewKeeper(
@@ -580,9 +570,9 @@ func NewInitiaApp(
 			app.DistrKeeper,
 			app.BankKeeper,
 			// ics4wrapper: transfer -> router -> fee
-			feeMiddleware,
+			app.IBCFeeKeeper,
 		)
-		*routerMiddleware = router.NewIBCMiddleware(
+		routerMiddleware := router.NewIBCMiddleware(
 			// receive: router -> transfer
 			transferIBCModule,
 			app.RouterKeeper,
@@ -592,7 +582,7 @@ func NewInitiaApp(
 		)
 
 		// create move middleware for transfer
-		*moveMiddleware = moveibcmiddleware.NewIBCMiddleware(
+		moveMiddleware := moveibcmiddleware.NewIBCMiddleware(
 			// receive: move -> router -> transfer
 			routerMiddleware,
 			// ics4wrapper: not used
@@ -601,7 +591,7 @@ func NewInitiaApp(
 		)
 
 		// create ibcfee middleware for transfer
-		*feeMiddleware = ibcfee.NewIBCMiddleware(
+		feeMiddleware := ibcfee.NewIBCMiddleware(
 			// receive: fee -> move -> router -> transfer
 			moveMiddleware,
 			// ics4wrapper: transfer -> router -> fee -> channel
@@ -609,7 +599,7 @@ func NewInitiaApp(
 		)
 
 		// create perm middleware for transfer
-		*permMiddleware = ibcperm.NewIBCMiddleware(
+		transferStack = ibcperm.NewIBCMiddleware(
 			// receive: perm -> fee -> move -> router -> transfer
 			feeMiddleware,
 			// ics4wrapper: not used
@@ -638,11 +628,21 @@ func NewInitiaApp(
 			authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		)
 		nftTransferIBCModule := ibcnfttransfer.NewIBCModule(*app.NftTransferKeeper)
+
+		// create move middleware for nft-transfer
+		moveMiddleware := moveibcmiddleware.NewIBCMiddleware(
+			// receive: move -> nft-transfer
+			nftTransferIBCModule,
+			// ics4wrapper: not used
+			nil,
+			moveKeeper,
+		)
+
 		nftTransferStack = ibcperm.NewIBCMiddleware(
 			// receive: perm -> fee -> nft transfer
 			ibcfee.NewIBCMiddleware(
-				// receive: channel -> fee -> nft transfer
-				nftTransferIBCModule,
+				// receive: channel -> fee -> move -> nft transfer
+				moveMiddleware,
 				*app.IBCFeeKeeper,
 			),
 			// ics4wrapper: not used
