@@ -1,4 +1,4 @@
-package main
+package movecmd
 
 import (
 	"archive/zip"

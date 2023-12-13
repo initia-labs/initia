@@ -317,7 +317,7 @@ func ReadWeightsFromDexConfig(timestamp math.Int, bz []byte) (sdk.Dec, sdk.Dec, 
 	cursor := int(0)
 
 	// read extend_ref
-	cursor += AddressBytesLength
+	cursor += AddressBytesLength + 8
 
 	// before weights
 	weightCoinABefore, err := DeserializeDecimal(bz[cursor : cursor+16])
@@ -442,10 +442,10 @@ func ReadUnbondingInfosFromStakingState(bz []byte) (unbondingShare math.Int, unb
 	cursor += 16
 
 	// read reward_coin_store_ref(ExtendRef)
-	cursor += AddressBytesLength
+	cursor += AddressBytesLength + 8
 
 	// read unbonding_coin_store_ref(ExtendRef)
-	cursor += AddressBytesLength
+	cursor += AddressBytesLength + 8
 
 	// read reward_coin_store
 	cursor += AddressBytesLength

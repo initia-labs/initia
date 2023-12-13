@@ -31,6 +31,7 @@ import (
 
 	initiaapp "github.com/initia-labs/initia/app"
 	"github.com/initia-labs/initia/app/params"
+	movecmd "github.com/initia-labs/initia/cmd/move"
 	genutilcli "github.com/initia-labs/initia/x/genutil/client/cli"
 	moveconfig "github.com/initia-labs/initia/x/move/config"
 )
@@ -150,7 +151,7 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 	rootCmd.AddCommand(rosettaCmd.RosettaCommand(encodingConfig.InterfaceRegistry, encodingConfig.Marshaler))
 
 	// add move commands
-	rootCmd.AddCommand(MoveCommand())
+	rootCmd.AddCommand(movecmd.MoveCommand())
 }
 
 func addModuleInitFlags(startCmd *cobra.Command) {

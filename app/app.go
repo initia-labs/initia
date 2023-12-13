@@ -151,7 +151,7 @@ import (
 	signer_extraction "github.com/skip-mev/block-sdk/adapters/signer_extraction_adapter"
 	"github.com/skip-mev/block-sdk/block"
 	blockbase "github.com/skip-mev/block-sdk/block/base"
-	"github.com/skip-mev/block-sdk/lanes/mev"
+	mevlane "github.com/skip-mev/block-sdk/lanes/mev"
 	"github.com/skip-mev/block-sdk/x/auction"
 	auctionante "github.com/skip-mev/block-sdk/x/auction/ante"
 	auctionkeeper "github.com/skip-mev/block-sdk/x/auction/keeper"
@@ -314,7 +314,7 @@ type InitiaApp struct {
 	configurator module.Configurator
 
 	// Override of BaseApp's CheckTx
-	checkTxHandler mev.CheckTx
+	checkTxHandler mevlane.CheckTx
 }
 
 // NewInitiaApp returns a reference to an initialized Initia.
@@ -986,8 +986,8 @@ func NewInitiaApp(
 		MaxTxs:          100,
 		SignerExtractor: signerExtractor,
 	}
-	factor := mev.NewDefaultAuctionFactory(app.txConfig.TxDecoder(), signerExtractor)
-	mevLane := mev.NewMEVLane(
+	factor := mevlane.NewDefaultAuctionFactory(app.txConfig.TxDecoder(), signerExtractor)
+	mevLane := mevlane.NewMEVLane(
 		mevConfig,
 		factor,
 		factor.MatchHandler(),
@@ -1003,7 +1003,7 @@ func NewInitiaApp(
 	}
 	freeLane := applanes.NewFreeLane(freeConfig, applanes.FreeLaneMatchHandler())
 
-	priorityLaneConfig := blockbase.LaneConfig{
+	defaultLaneConfig := blockbase.LaneConfig{
 		Logger:          app.Logger(),
 		TxEncoder:       app.txConfig.TxEncoder(),
 		TxDecoder:       app.txConfig.TxDecoder(),
@@ -1011,13 +1011,14 @@ func NewInitiaApp(
 		MaxTxs:          0,
 		SignerExtractor: signerExtractor,
 	}
-	priorityLane := applanes.NewPriorityLane(priorityLaneConfig)
+	defaultLane := applanes.NewDefaultLane(defaultLaneConfig)
 
-	lanes := []block.Lane{mevLane, freeLane, priorityLane}
+	lanes := []block.Lane{mevLane, freeLane, defaultLane}
 	mempool, err := block.NewLanedMempool(app.Logger(), lanes)
 	if err != nil {
 		panic(err)
 	}
+
 	app.SetMempool(mempool)
 	anteHandler := app.setAnteHandler(mevLane, freeLane)
 
@@ -1034,7 +1035,7 @@ func NewInitiaApp(
 	app.SetProcessProposal(proposalHandlers.ProcessProposalHandler())
 
 	// overrde base-app's CheckTx
-	checkTxHandler := mev.NewCheckTxHandler(
+	checkTxHandler := mevlane.NewCheckTxHandler(
 		app.BaseApp,
 		app.txConfig.TxDecoder(),
 		mevLane,
@@ -1070,7 +1071,7 @@ func (app *InitiaApp) CheckTx(req abci.RequestCheckTx) abci.ResponseCheckTx {
 }
 
 // SetCheckTx sets the checkTxHandler for the app.
-func (app *InitiaApp) SetCheckTx(handler mev.CheckTx) {
+func (app *InitiaApp) SetCheckTx(handler mevlane.CheckTx) {
 	app.checkTxHandler = handler
 }
 

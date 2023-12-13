@@ -787,7 +787,7 @@ github.com/initia-labs/OPinit v0.1.0-beta.3 h1:DY/ItJTUAujNhqrzjgAFFzSLn/IGrIN1F
 github.com/initia-labs/OPinit v0.1.0-beta.3/go.mod h1:MPnFU2x4xzeT3L8K3lc0wkOl09o/oekEabPHIwWdqJg=
 github.com/initia-labs/cosmos-sdk v0.47.7-0.20231208103644-7bba6b092b8c h1:XdQVkEp/PoWGz/ykzQmiKmBK50X8+ToV/briOTz2vT0=
 github.com/initia-labs/cosmos-sdk v0.47.7-0.20231208103644-7bba6b092b8c/go.mod h1:fIhY9qlXZNvlWz8lAB2YcSRf2dCAi8VEJrq5GY/v2yE=
-github.com/initia-labs/initiavm v0.1.2-beta.5 h1:/pmtEdgSfNBhuifpQ4VEc/GxBhJCZ8LxzAAhPmnUTT0=
+github.com/initia-labs/initiavm v0.1.2-beta.5 h1:JkXXeTY/d6Ftikbu22WrIAkimy+Yg4Ye6Fvcd5ism4U=
 github.com/initia-labs/initiavm v0.1.2-beta.5/go.mod h1:aQt4lImZWF9xj7Fm978n0IoeDdKWXTg1CSq6O4WoSD8=
 github.com/jackpal/go-nat-pmp v1.0.2/go.mod h1:QPH045xvCAeXUZOxsnwmrtiCoxIr9eob+4orBN1SBKc=
 github.com/jedisct1/go-minisign v0.0.0-20190909160543-45766022959e/go.mod h1:G1CVv03EnqU1wYL2dFwXxW2An0az9JTl/ZsqXQeBlkU=
