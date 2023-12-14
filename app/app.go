@@ -998,7 +998,7 @@ func NewInitiaApp(
 		TxEncoder:       app.txConfig.TxEncoder(),
 		TxDecoder:       app.txConfig.TxDecoder(),
 		MaxBlockSpace:   math.LegacyZeroDec(),
-		MaxTxs:          10,
+		MaxTxs:          100,
 		SignerExtractor: signerExtractor,
 	}
 	freeLane := applanes.NewFreeLane(freeConfig, applanes.FreeLaneMatchHandler())
