@@ -3,6 +3,7 @@ package ibc_middleware
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"cosmossdk.io/errors"
 
@@ -26,17 +27,21 @@ func deriveIntermediateSender(channel, originalSender string) string {
 	return senderAddr.String()
 }
 
-func isIcs20Packet(packet channeltypes.Packet) (isIcs20 bool, ics20data transfertypes.FungibleTokenPacketData) {
+func isIcs20Packet(packetData []byte) (isIcs20 bool, ics20data transfertypes.FungibleTokenPacketData) {
 	var data transfertypes.FungibleTokenPacketData
-	if err := json.Unmarshal(packet.GetData(), &data); err != nil {
+	decoder := json.NewDecoder(strings.NewReader(string(packetData)))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&data); err != nil {
 		return false, data
 	}
 	return true, data
 }
 
-func isIcs721Packet(packet channeltypes.Packet) (isIcs721 bool, ics721data nfttransfertypes.NonFungibleTokenPacketData) {
+func isIcs721Packet(packetData []byte) (isIcs721 bool, ics721data nfttransfertypes.NonFungibleTokenPacketData) {
 	var data nfttransfertypes.NonFungibleTokenPacketData
-	if err := json.Unmarshal(packet.GetData(), &data); err != nil {
+	decoder := json.NewDecoder(strings.NewReader(string(packetData)))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&data); err != nil {
 		return false, data
 	}
 	return true, data
