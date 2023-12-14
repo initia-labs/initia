@@ -39,15 +39,21 @@ func NewFreeLane(
 	cfg blockbase.LaneConfig,
 	matchFn blockbase.MatchHandler,
 ) block.Lane {
-	lane, err := blockbase.NewBaseLane(
+	lane := &blockbase.BaseLane{}
+	proposalHandler := NewDefaultProposalHandler(lane)
+
+	_lane, err := blockbase.NewBaseLane(
 		cfg,
 		FreeLaneName,
 		blockbase.WithMatchHandler(matchFn),
 		blockbase.WithMempool(NewMempool(blockbase.NewDefaultTxPriority(), cfg.SignerExtractor, cfg.MaxTxs)),
+		blockbase.WithPrepareLaneHandler(proposalHandler.PrepareLaneHandler()),
+		blockbase.WithProcessLaneHandler(proposalHandler.ProcessLaneHandler()),
 	)
 	if err != nil {
 		panic(err)
 	}
 
+	*lane = *_lane
 	return lane
 }

@@ -17,14 +17,20 @@ const (
 // CometBFT/Tendermint consensus engine builds and verifies blocks pre SDK version
 // 0.47.0.
 func NewDefaultLane(cfg blockbase.LaneConfig) block.Lane {
-	lane, err := blockbase.NewBaseLane(
+	lane := &blockbase.BaseLane{}
+	proposalHandler := NewDefaultProposalHandler(lane)
+
+	_lane, err := blockbase.NewBaseLane(
 		cfg,
 		DefaultName,
 		blockbase.WithMempool(NewMempool(blockbase.NewDefaultTxPriority(), cfg.SignerExtractor, cfg.MaxTxs)),
+		blockbase.WithPrepareLaneHandler(proposalHandler.PrepareLaneHandler()),
+		blockbase.WithProcessLaneHandler(proposalHandler.ProcessLaneHandler()),
 	)
 	if err != nil {
 		panic(err)
 	}
 
+	*lane = *_lane
 	return lane
 }
