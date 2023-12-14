@@ -155,12 +155,12 @@ func (im IBCMiddleware) OnRecvPacket(
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) ibcexported.Acknowledgement {
-	isIcs20, ics20Data := isIcs20Packet(packet)
+	isIcs20, ics20Data := isIcs20Packet(packet.GetData())
 	if isIcs20 {
 		return im.handleIcs20Packet(ctx, packet, relayer, ics20Data)
 	}
 
-	isIcs721, ics721Data := isIcs721Packet(packet)
+	isIcs721, ics721Data := isIcs721Packet(packet.GetData())
 	if isIcs721 {
 		return im.handleIcs721Packet(ctx, packet, relayer, ics721Data)
 	}

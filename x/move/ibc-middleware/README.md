@@ -19,21 +19,21 @@ The move `MsgExecute` is defined [here](https://github.com/initia-labs/initia/bl
 
 ```go
 type MsgExecute struct {
-	// Sender is the that actor that signed the messages
-	Sender string `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
-	// ModuleAddress is the address of the module deployer
-	ModuleAddress string `protobuf:"bytes,2,opt,name=module_address,json=moduleAddress,proto3" json:"module_address,omitempty"`
-	// ModuleName is the name of module to execute
-	ModuleName string `protobuf:"bytes,3,opt,name=module_name,json=moduleName,proto3" json:"module_name,omitempty"`
-	// FunctionName is the name of a function to execute
-	FunctionName string `protobuf:"bytes,4,opt,name=function_name,json=functionName,proto3" json:"function_name,omitempty"`
-	// TypeArgs is the type arguments of a function to execute
-	// ex) "0x1::BasicCoin::Initia", "bool", "u8", "u64"
-	TypeArgs []string `protobuf:"bytes,5,rep,name=type_args,json=typeArgs,proto3" json:"type_args,omitempty"`
-	// Args is the arguments of a function to execute
-	// - number: little endian
-	// - string: base64 bytes
-	Args [][]byte `protobuf:"bytes,6,rep,name=args,proto3" json:"args,omitempty"`
+ // Sender is the that actor that signed the messages
+ Sender string `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
+ // ModuleAddress is the address of the module deployer
+ ModuleAddress string `protobuf:"bytes,2,opt,name=module_address,json=moduleAddress,proto3" json:"module_address,omitempty"`
+ // ModuleName is the name of module to execute
+ ModuleName string `protobuf:"bytes,3,opt,name=module_name,json=moduleName,proto3" json:"module_name,omitempty"`
+ // FunctionName is the name of a function to execute
+ FunctionName string `protobuf:"bytes,4,opt,name=function_name,json=functionName,proto3" json:"function_name,omitempty"`
+ // TypeArgs is the type arguments of a function to execute
+ // ex) "0x1::BasicCoin::Initia", "bool", "u8", "u64"
+ TypeArgs []string `protobuf:"bytes,5,rep,name=type_args,json=typeArgs,proto3" json:"type_args,omitempty"`
+ // Args is the arguments of a function to execute
+ // - number: little endian
+ // - string: base64 bytes
+ Args [][]byte `protobuf:"bytes,6,rep,name=args,proto3" json:"args,omitempty"`
 }
 ```
 
@@ -53,21 +53,21 @@ So our constructed move message that we execute will look like:
 
 ```go
 msg := MsgExecuteContract{
-	// Sender is the that actor that signed the messages
-	Sender: "init1-hash-of-channel-and-sender",
-	// ModuleAddress is the address of the module deployer
-	ModuleAddress: packet.data.memo["move"]["module_address"],
+ // Sender is the that actor that signed the messages
+ Sender: "init1-hash-of-channel-and-sender",
+ // ModuleAddress is the address of the module deployer
+ ModuleAddress: packet.data.memo["move"]["module_address"],
     // ModuleName is the name of module to execute
-	ModuleName: packet.data.memo["move"]["module_name"],
+ ModuleName: packet.data.memo["move"]["module_name"],
     // FunctionName is the name of a function to execute
-	FunctionName: packet.data.memo["move"]["function_name"],
-	// TypeArgs is the type arguments of a function to execute
-	// ex) "0x1::BasicCoin::Initia", "bool", "u8", "u64"
-	TypeArgs: packet.data.memo["move"]["type_args"],
-	// Args is the arguments of a function to execute
-	// - number: little endian
-	// - string: base64 bytes
-	Args: packet.data.memo["move"]["args"]}
+ FunctionName: packet.data.memo["move"]["function_name"],
+ // TypeArgs is the type arguments of a function to execute
+ // ex) "0x1::BasicCoin::Initia", "bool", "u8", "u64"
+ TypeArgs: packet.data.memo["move"]["type_args"],
+ // Args is the arguments of a function to execute
+ // - number: little endian
+ // - string: base64 bytes
+ Args: packet.data.memo["move"]["args"]}
 ```
 
 ### ICS20 packet structure
@@ -132,6 +132,6 @@ In move hooks, post packet execution:
 - if move message has error, return ErrAck
 - otherwise continue through middleware
 
-# Testing strategy
+### Testing strategy
 
 See go tests.
