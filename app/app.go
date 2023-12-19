@@ -544,6 +544,8 @@ func NewInitiaApp(
 
 	var transferStack porttypes.IBCModule
 	{
+		app.RouterKeeper = &routerkeeper.Keeper{}
+
 		// Create Transfer Keepers
 		transferKeeper := ibctransferkeeper.NewKeeper(
 			appCodec,
@@ -561,7 +563,7 @@ func NewInitiaApp(
 		transferIBCModule := ibctransfer.NewIBCModule(*app.TransferKeeper)
 
 		// setup package forward module for multi-hop forwarding
-		app.RouterKeeper = routerkeeper.NewKeeper(
+		*app.RouterKeeper = *routerkeeper.NewKeeper(
 			appCodec, keys[routertypes.StoreKey],
 			app.GetSubspace(routertypes.ModuleName),
 			app.TransferKeeper,
