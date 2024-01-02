@@ -3,6 +3,7 @@ package keeper_test
 import (
 	"testing"
 
+	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/testutil/testdata"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
@@ -29,7 +30,7 @@ func TestQueryBalance(t *testing.T) {
 	require.NotNil(t, res)
 	require.True(t, res.Balance.IsZero())
 
-	origCoins := sdk.NewCoins(sdk.NewCoin(testDenom, sdk.NewInt(50)), sdk.NewCoin(bondDenom, sdk.NewInt(30)))
+	origCoins := sdk.NewCoins(sdk.NewCoin(testDenom, math.NewInt(50)), sdk.NewCoin(bondDenom, math.NewInt(30)))
 	acc := input.AccountKeeper.NewAccountWithAddress(ctx, addr)
 
 	input.AccountKeeper.SetAccount(ctx, acc)
@@ -38,7 +39,7 @@ func TestQueryBalance(t *testing.T) {
 	res, err = input.BankKeeper.Balance(sdk.WrapSDKContext(ctx), req)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-	require.True(t, res.Balance.IsEqual(sdk.NewCoin(testDenom, sdk.NewInt(50))))
+	require.True(t, res.Balance.IsEqual(sdk.NewCoin(testDenom, math.NewInt(50))))
 }
 
 func TestQueryAllBalances(t *testing.T) {
@@ -59,8 +60,8 @@ func TestQueryAllBalances(t *testing.T) {
 	require.True(t, res.Balances.IsZero())
 
 	testDenom := testDenoms[0]
-	rewardCoin := sdk.NewCoin(testDenom, sdk.NewInt(50))
-	bondCoin := sdk.NewCoin(bondDenom, sdk.NewInt(30))
+	rewardCoin := sdk.NewCoin(testDenom, math.NewInt(50))
+	bondCoin := sdk.NewCoin(bondDenom, math.NewInt(30))
 
 	origCoins := sdk.NewCoins(rewardCoin, bondCoin)
 	acc := input.AccountKeeper.NewAccountWithAddress(ctx, addr)

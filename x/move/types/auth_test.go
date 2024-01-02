@@ -4,21 +4,21 @@ import (
 	"reflect"
 	"testing"
 
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/stretchr/testify/require"
 
 	"github.com/initia-labs/initia/x/move/types"
 
+	storetypes "cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )
 
 func TestAuthCreateAccountsWithTypes(t *testing.T) {
 	app := createApp(t)
-	ctx := app.BaseApp.NewContext(false, tmproto.Header{}).WithGasMeter(sdk.NewInfiniteGasMeter())
+	ctx := app.BaseApp.NewContext(false).WithGasMeter(storetypes.NewInfiniteGasMeter())
 	testCases := []struct {
 		msg           string
-		accI          authtypes.AccountI
+		accI          sdk.AccountI
 		accountNumber uint64
 		expectErr     bool
 	}{

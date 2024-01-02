@@ -202,7 +202,7 @@ message MsgWhitelist {
   string metadata_lp = 2 [(gogoproto.customname) = "MetadataLP"];
   // RewardWeight is registered to distribution's Params
   string reward_weight = 3
-      [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec", (gogoproto.nullable) = false];
+      [(gogoproto.customtype) = "cosmossdk.io/math.LegacyDec", (gogoproto.nullable) = false];
 }
 
 // MsgWhitelistResponse returns result data.

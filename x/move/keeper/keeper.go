@@ -1,15 +1,15 @@
 package keeper
 
 import (
-	"github.com/cometbft/cometbft/libs/log"
+	"context"
+	"errors"
 
-	"cosmossdk.io/math"
-
+	"cosmossdk.io/collections"
+	corestoretypes "cosmossdk.io/core/store"
+	"cosmossdk.io/log"
+	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/store/prefix"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	moveconfig "github.com/initia-labs/initia/x/move/config"
 	"github.com/initia-labs/initia/x/move/types"
@@ -20,8 +20,8 @@ import (
 )
 
 type Keeper struct {
-	cdc      codec.Codec
-	storeKey storetypes.StoreKey
+	cdc          codec.Codec
+	storeService corestoretypes.KVStoreService
 
 	// used only for staking feature
 	bankKeeper    types.BankKeeper
@@ -32,25 +32,32 @@ type Keeper struct {
 	// required keepers
 	authKeeper          types.AccountKeeper
 	communityPoolKeeper types.CommunityPoolKeeper
-	// nftTransferKeeper   types.NftTransferKeeper
-	msgRouter types.MessageRouter
+
+	// Msg server router
+	msgRouter baseapp.MessageRouter
 
 	config moveconfig.MoveConfig
 
 	// moveVM instance
-	moveVM       types.VMEngine
-	abciListener *ABCIListener
+	moveVM      types.VMEngine
+	postHandler *PostHandler
 
 	feeCollector string
 	authority    string
+
+	Schema           collections.Schema
+	ExecutionCounter collections.Sequence
+	Params           collections.Item[types.Params]
+	DexPairs         collections.Map[[]byte, types.DexPair]
+	VMStore          collections.Map[[]byte, []byte]
 }
 
 func NewKeeper(
 	cdc codec.Codec,
-	storeKey storetypes.StoreKey,
+	storeService corestoretypes.KVStoreService,
 	authKeeper types.AccountKeeper,
 	communityPoolKeeper types.CommunityPoolKeeper,
-	msgRouter types.MessageRouter,
+	msgRouter baseapp.MessageRouter,
 	moveConfig moveconfig.MoveConfig,
 	bankKeeper types.BankKeeper,
 	distrKeeper types.DistributionKeeper, // can be nil, if staking not used
@@ -58,7 +65,7 @@ func NewKeeper(
 	rewardKeeper types.RewardKeeper, // can be nil, if staking not used
 	feeCollector string,
 	authority string,
-) Keeper {
+) *Keeper {
 	// ensure that authority is a valid AccAddress
 	if _, err := sdk.AccAddressFromBech32(authority); err != nil {
 		panic("authority is not a valid acc address")
@@ -73,24 +80,36 @@ func NewKeeper(
 	}
 
 	moveVM := vm.NewVM()
-	abciListener := newABCIListener(&moveVM)
-	return Keeper{
+	postHandler := newPostHandler(&moveVM)
+
+	sb := collections.NewSchemaBuilder(storeService)
+	k := &Keeper{
 		cdc:                 cdc,
-		storeKey:            storeKey,
+		storeService:        storeService,
 		authKeeper:          authKeeper,
 		communityPoolKeeper: communityPoolKeeper,
-		// nftTransferKeeper:   nftTransferKeeper,
-		msgRouter:     msgRouter,
-		config:        moveConfig,
-		moveVM:        &moveVM,
-		abciListener:  &abciListener,
-		bankKeeper:    bankKeeper,
-		distrKeeper:   distrKeeper,
-		StakingKeeper: stakingKeeper,
-		RewardKeeper:  rewardKeeper,
-		feeCollector:  feeCollector,
-		authority:     authority,
+		msgRouter:           msgRouter,
+		config:              moveConfig,
+		moveVM:              &moveVM,
+		postHandler:         &postHandler,
+		bankKeeper:          bankKeeper,
+		distrKeeper:         distrKeeper,
+		StakingKeeper:       stakingKeeper,
+		RewardKeeper:        rewardKeeper,
+		feeCollector:        feeCollector,
+		authority:           authority,
+
+		ExecutionCounter: collections.NewSequence(sb, types.ExecutionCounterKey, "execution_counter"),
+		Params:           collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
+		DexPairs:         collections.NewMap(sb, types.DexPairPrefix, "dex_pairs", collections.BytesKey, codec.CollValue[types.DexPair](cdc)),
+		VMStore:          collections.NewMap(sb, types.VMStorePrefix, "vm_store", collections.BytesKey, collections.BytesValue),
 	}
+	schema, err := sb.Build()
+	if err != nil {
+		panic(err)
+	}
+	k.Schema = schema
+	return k
 }
 
 // GetAuthority returns the x/move module's authority.
@@ -99,13 +118,14 @@ func (ak Keeper) GetAuthority() string {
 }
 
 // Logger returns a module-specific logger.
-func (k Keeper) Logger(ctx sdk.Context) log.Logger {
-	return ctx.Logger().With("module", "x/"+types.ModuleName)
+func (k Keeper) Logger(ctx context.Context) log.Logger {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	return sdkCtx.Logger().With("module", "x/"+types.ModuleName)
 }
 
-// GetABCIListener return ABCIListener pointer
-func (k Keeper) GetABCIListener() *ABCIListener {
-	return k.abciListener
+// GetPostHandler return PostHandler pointer
+func (k Keeper) GetPostHandler() sdk.PostHandler {
+	return k.postHandler.PostHandle
 }
 
 // Build simulation vm to avoid moveVM loader cache corruption.
@@ -118,87 +138,48 @@ func (k Keeper) buildSimulationVM() types.VMEngine {
 
 // GetExecutionCounter get execution counter for genesis
 func (k Keeper) GetExecutionCounter(
-	ctx sdk.Context,
-) math.Int {
-	kvStore := ctx.KVStore(k.storeKey)
-	bz := kvStore.Get(types.KeyExecutionCounter)
-
-	counter := sdk.IntProto{Int: sdk.ZeroInt()}
-	if len(bz) != 0 {
-		k.cdc.MustUnmarshal(bz, &counter)
+	ctx context.Context,
+) (uint64, error) {
+	counter, err := k.ExecutionCounter.Peek(ctx)
+	if err != nil && errors.Is(err, collections.ErrNotFound) {
+		return 0, nil
+	} else if err != nil {
+		return 0, err
 	}
 
-	return counter.Int
-}
-
-// SetExecutionCounter set execution counter for genesis
-func (k Keeper) SetExecutionCounter(
-	ctx sdk.Context,
-	counter math.Int,
-) {
-	kvStore := ctx.KVStore(k.storeKey)
-	kvStore.Set(types.KeyExecutionCounter, k.cdc.MustMarshal(&sdk.IntProto{Int: counter}))
-}
-
-// IncreaseExecutionCounter increase execution counter by one
-func (k Keeper) IncreaseExecutionCounter(
-	ctx sdk.Context,
-) math.Int {
-	kvStore := ctx.KVStore(k.storeKey)
-	bz := kvStore.Get(types.KeyExecutionCounter)
-
-	counter := sdk.IntProto{Int: sdk.ZeroInt()}
-	if len(bz) != 0 {
-		k.cdc.MustUnmarshal(bz, &counter)
-	}
-
-	resCounter := counter.Int
-	kvStore.Set(
-		types.KeyExecutionCounter,
-		k.cdc.MustMarshal(
-			&sdk.IntProto{
-				Int: resCounter.Add(sdk.OneInt()),
-			},
-		),
-	)
-
-	return resCounter
+	return counter, nil
 }
 
 // SetModule store Module bytes
 // This function should be used only when InitGenesis
 func (k Keeper) SetModule(
-	ctx sdk.Context,
+	ctx context.Context,
 	addr vmtypes.AccountAddress,
 	moduleName string,
 	moduleBytes []byte,
 ) error {
-	kvStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.PrefixKeyVMStore)
 	bz, err := types.GetModuleKey(addr, moduleName)
 	if err != nil {
 		return err
 	}
 
-	kvStore.Set(bz, moduleBytes)
-
-	return nil
+	return k.VMStore.Set(ctx, bz, moduleBytes)
 }
 
 // GetModule return Module of the given account address and name
 func (k Keeper) GetModule(
-	ctx sdk.Context,
+	ctx context.Context,
 	addr vmtypes.AccountAddress,
 	moduleName string,
 ) (types.Module, error) {
-	kvStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.PrefixKeyVMStore)
 	bz, err := types.GetModuleKey(addr, moduleName)
 	if err != nil {
 		return types.Module{}, err
 	}
 
-	moduleBytes := kvStore.Get(bz)
-	if len(moduleBytes) == 0 {
-		return types.Module{}, sdkerrors.ErrNotFound
+	moduleBytes, err := k.VMStore.Get(ctx, bz)
+	if err != nil {
+		return types.Module{}, err
 	}
 
 	bz, err = k.DecodeModuleBytes(moduleBytes)
@@ -222,87 +203,76 @@ func (k Keeper) GetModule(
 
 // HasModule return boolean of whether module exists or not
 func (k Keeper) HasModule(
-	ctx sdk.Context,
+	ctx context.Context,
 	addr vmtypes.AccountAddress,
 	moduleName string,
 ) (bool, error) {
-	kvStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.PrefixKeyVMStore)
 	bz, err := types.GetModuleKey(addr, moduleName)
 	if err != nil {
 		return false, err
 	}
 
-	return kvStore.Has(bz), nil
+	return k.VMStore.Has(ctx, bz)
 }
 
 // SetResource store Resource bytes
 // This function should be used only when InitGenesis
 func (k Keeper) SetResource(
-	ctx sdk.Context,
+	ctx context.Context,
 	addr vmtypes.AccountAddress,
 	structTag vmtypes.StructTag,
 	resourceBytes []byte,
 ) error {
-	kvStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.PrefixKeyVMStore)
 	bz, err := types.GetResourceKey(addr, structTag)
 	if err != nil {
 		return err
 	}
 
-	kvStore.Set(bz, resourceBytes)
-	return nil
+	return k.VMStore.Set(ctx, bz, resourceBytes)
 }
 
 // HasResource return boolean wether the store contains a data with the resource key
 func (k Keeper) HasResource(
-	ctx sdk.Context,
+	ctx context.Context,
 	addr vmtypes.AccountAddress,
 	structTag vmtypes.StructTag,
 ) (bool, error) {
-	kvStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.PrefixKeyVMStore)
 	keyBz, err := types.GetResourceKey(addr, structTag)
 	if err != nil {
 		return false, err
 	}
 
-	return kvStore.Has(keyBz), nil
+	return k.VMStore.Has(ctx, keyBz)
 }
 
 // GetResourceBytes return Resource bytes of the given account address and struct tag
 func (k Keeper) GetResourceBytes(
-	ctx sdk.Context,
+	ctx context.Context,
 	addr vmtypes.AccountAddress,
 	structTag vmtypes.StructTag,
 ) ([]byte, error) {
-	kvStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.PrefixKeyVMStore)
 	keyBz, err := types.GetResourceKey(addr, structTag)
 	if err != nil {
 		return nil, err
 	}
 
-	resourceBytes := kvStore.Get(keyBz)
-	if len(resourceBytes) == 0 {
-		return nil, sdkerrors.ErrNotFound
-	}
-
-	return resourceBytes, nil
+	return k.VMStore.Get(ctx, keyBz)
 }
 
 // GetResource return Resource of the given account address and struct tag
 func (k Keeper) GetResource(
-	ctx sdk.Context,
+	ctx context.Context,
 	addr vmtypes.AccountAddress,
 	structTag vmtypes.StructTag,
 ) (types.Resource, error) {
-	kvStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.PrefixKeyVMStore)
 	keyBz, err := types.GetResourceKey(addr, structTag)
 	if err != nil {
 		return types.Resource{}, err
 	}
 
-	resourceBytes := kvStore.Get(keyBz)
-	if len(resourceBytes) == 0 {
-		return types.Resource{}, sdkerrors.ErrNotFound
+	resourceBytes, err := k.VMStore.Get(ctx, keyBz)
+	if err != nil {
+		return types.Resource{}, err
 	}
 
 	bz, err := k.DecodeMoveResource(ctx, structTag, resourceBytes)
@@ -325,22 +295,21 @@ func (k Keeper) GetResource(
 
 // HasTableInfo return existence of table info
 func (k Keeper) HasTableInfo(
-	ctx sdk.Context,
+	ctx context.Context,
 	tableAddr vmtypes.AccountAddress,
-) bool {
-	kvStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.PrefixKeyVMStore)
-	return kvStore.Has(types.GetTableInfoKey(tableAddr))
+) (bool, error) {
+	keyBz := types.GetTableInfoKey(tableAddr)
+	return k.VMStore.Has(ctx, keyBz)
 }
 
 // GetTableInfo return table entry
 func (k Keeper) GetTableInfo(
-	ctx sdk.Context,
+	ctx context.Context,
 	tableAddr vmtypes.AccountAddress,
 ) (types.TableInfo, error) {
-	kvStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.PrefixKeyVMStore)
-	bz := kvStore.Get(types.GetTableInfoKey(tableAddr))
-	if bz == nil {
-		return types.TableInfo{}, sdkerrors.ErrNotFound
+	bz, err := k.VMStore.Get(ctx, types.GetTableInfoKey(tableAddr))
+	if err == nil {
+		return types.TableInfo{}, err
 	}
 
 	tableInfo, err := vmtypes.BcsDeserializeTableInfo(bz)
@@ -367,10 +336,10 @@ func (k Keeper) GetTableInfo(
 
 // SetTableInfo store table info data
 func (k Keeper) SetTableInfo(
-	ctx sdk.Context,
+	ctx context.Context,
 	tableInfo types.TableInfo,
 ) error {
-	tableAddr, err := types.AccAddressFromString(tableInfo.Address)
+	tableAddr, err := types.AccAddressFromString(k.authKeeper.AddressCodec(), tableInfo.Address)
 	if err != nil {
 		return err
 	}
@@ -394,25 +363,21 @@ func (k Keeper) SetTableInfo(
 		return err
 	}
 
-	kvStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.PrefixKeyVMStore)
-	kvStore.Set(types.GetTableInfoKey(tableAddr), infoBz)
-
-	return nil
+	return k.VMStore.Set(ctx, types.GetTableInfoKey(tableAddr), infoBz)
 }
 
 // HasTableEntry return existence of table entry
 func (k Keeper) HasTableEntry(
-	ctx sdk.Context,
+	ctx context.Context,
 	tableAddr vmtypes.AccountAddress,
 	key []byte,
-) bool {
-	kvStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.PrefixKeyVMStore)
-	return kvStore.Has(types.GetTableEntryKey(tableAddr, key))
+) (bool, error) {
+	return k.VMStore.Has(ctx, types.GetTableEntryKey(tableAddr, key))
 }
 
 // GetTableEntry return table entry
 func (k Keeper) GetTableEntry(
-	ctx sdk.Context,
+	ctx context.Context,
 	tableAddr vmtypes.AccountAddress,
 	keyBz []byte,
 ) (types.TableEntry, error) {
@@ -421,10 +386,9 @@ func (k Keeper) GetTableEntry(
 		return types.TableEntry{}, err
 	}
 
-	kvStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.PrefixKeyVMStore)
-	valueBz := kvStore.Get(types.GetTableEntryKey(tableAddr, keyBz))
-	if valueBz == nil {
-		return types.TableEntry{}, sdkerrors.ErrNotFound
+	valueBz, err := k.VMStore.Get(ctx, types.GetTableEntryKey(tableAddr, keyBz))
+	if err != nil {
+		return types.TableEntry{}, err
 	}
 
 	keyTypeTag, err := vmapi.TypeTagFromString(info.KeyType)
@@ -437,12 +401,13 @@ func (k Keeper) GetTableEntry(
 		return types.TableEntry{}, err
 	}
 
-	keyStr, err := vmapi.DecodeMoveValue(kvStore, keyTypeTag, keyBz)
+	vmStore := types.NewVMStore(ctx, k.VMStore)
+	keyStr, err := vmapi.DecodeMoveValue(vmStore, keyTypeTag, keyBz)
 	if err != nil {
 		return types.TableEntry{}, err
 	}
 
-	valueStr, err := vmapi.DecodeMoveValue(kvStore, valueTypeTag, valueBz)
+	valueStr, err := vmapi.DecodeMoveValue(vmStore, valueTypeTag, valueBz)
 	if err != nil {
 		return types.TableEntry{}, err
 	}
@@ -459,14 +424,13 @@ func (k Keeper) GetTableEntry(
 // GetTableEntryBytes return a raw table entry without decoding the
 // key and value.
 func (k Keeper) GetTableEntryBytes(
-	ctx sdk.Context,
+	ctx context.Context,
 	tableAddr vmtypes.AccountAddress,
 	key []byte,
 ) (types.TableEntry, error) {
-	kvStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.PrefixKeyVMStore)
-	bz := kvStore.Get(types.GetTableEntryKey(tableAddr, key))
-	if bz == nil {
-		return types.TableEntry{}, sdkerrors.ErrNotFound
+	bz, err := k.VMStore.Get(ctx, types.GetTableEntryKey(tableAddr, key))
+	if err != nil {
+		return types.TableEntry{}, err
 	}
 
 	return types.TableEntry{
@@ -478,36 +442,27 @@ func (k Keeper) GetTableEntryBytes(
 
 // SetTableEntry store table entry data
 func (k Keeper) SetTableEntry(
-	ctx sdk.Context,
+	ctx context.Context,
 	tableEntry types.TableEntry,
 ) error {
-	tableAddr, err := types.AccAddressFromString(tableEntry.Address)
+	tableAddr, err := types.AccAddressFromString(k.authKeeper.AddressCodec(), tableEntry.Address)
 	if err != nil {
 		return err
 	}
 
-	kvStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.PrefixKeyVMStore)
-	kvStore.Set(types.GetTableEntryKey(tableAddr, tableEntry.KeyBytes), tableEntry.ValueBytes)
-	return nil
+	return k.VMStore.Set(ctx, types.GetTableEntryKey(tableAddr, tableEntry.KeyBytes), tableEntry.ValueBytes)
 }
 
 // IterateVMStore iterate VMStore store for genesis export
-func (k Keeper) IterateVMStore(ctx sdk.Context, cb func(*types.Module, *types.Resource, *types.TableInfo, *types.TableEntry)) {
-	kvStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.PrefixKeyVMStore)
-	iter := kvStore.Iterator(nil, nil)
-	defer iter.Close()
-
-	for ; iter.Valid(); iter.Next() {
-		key := iter.Key()
-		value := iter.Value()
-
+func (k Keeper) IterateVMStore(ctx context.Context, cb func(*types.Module, *types.Resource, *types.TableInfo, *types.TableEntry)) error {
+	err := k.VMStore.Walk(ctx, nil, func(key, value []byte) (stop bool, err error) {
 		cursor := types.AddressBytesLength
 		addrBytes := key[:cursor]
 		separator := key[cursor]
 
 		vmAddr, err := vmtypes.NewAccountAddressFromBytes(addrBytes)
 		if err != nil {
-			panic(err)
+			return true, err
 		}
 
 		cursor += 1
@@ -515,12 +470,12 @@ func (k Keeper) IterateVMStore(ctx sdk.Context, cb func(*types.Module, *types.Re
 			// Module
 			moduleName, err := vmtypes.BcsDeserializeIdentifier(key[cursor:])
 			if err != nil {
-				panic(err)
+				return true, err
 			}
 
 			policy, err := NewCodeKeeper(&k).GetUpgradePolicy(ctx, vmAddr, string(moduleName))
 			if err != nil {
-				panic(err)
+				return true, err
 			}
 
 			cb(&types.Module{
@@ -533,12 +488,12 @@ func (k Keeper) IterateVMStore(ctx sdk.Context, cb func(*types.Module, *types.Re
 			// Resource
 			structTag, err := vmtypes.BcsDeserializeStructTag(key[cursor:])
 			if err != nil {
-				panic(err)
+				return true, err
 			}
 
 			structTagStr, err := vmapi.StringifyStructTag(structTag)
 			if err != nil {
-				panic(err)
+				return true, err
 			}
 
 			cb(nil, &types.Resource{
@@ -550,17 +505,17 @@ func (k Keeper) IterateVMStore(ctx sdk.Context, cb func(*types.Module, *types.Re
 			// Table Info
 			tableInfo, err := vmtypes.BcsDeserializeTableInfo(value)
 			if err != nil {
-				panic(err)
+				return true, err
 			}
 
 			keyType, err := vmapi.StringifyTypeTag(tableInfo.KeyType)
 			if err != nil {
-				panic(err)
+				return true, err
 			}
 
 			valueType, err := vmapi.StringifyTypeTag(tableInfo.ValueType)
 			if err != nil {
-				panic(err)
+				return true, err
 			}
 
 			cb(nil, nil, &types.TableInfo{
@@ -576,13 +531,17 @@ func (k Keeper) IterateVMStore(ctx sdk.Context, cb func(*types.Module, *types.Re
 				ValueBytes: value,
 			})
 		} else {
-			panic("unknown prefix")
+			return true, errors.New("unknown prefix")
 		}
-	}
+
+		return false, nil
+	})
+
+	return err
 }
 
 func (k Keeper) ExecuteViewFunction(
-	ctx sdk.Context,
+	ctx context.Context,
 	moduleAddr vmtypes.AccountAddress,
 	moduleName string,
 	functionName string,
@@ -599,15 +558,20 @@ func (k Keeper) ExecuteViewFunction(
 		return "", err
 	} else {
 
+		executionCounter, err := k.ExecutionCounter.Next(ctx)
+		if err != nil {
+			return "", err
+		}
+
 		api := NewApi(k, ctx)
 		env := types.NewEnv(
 			ctx,
 			types.NextAccountNumber(ctx, k.authKeeper),
-			k.IncreaseExecutionCounter(ctx),
+			executionCounter,
 		)
 
 		return k.moveVM.ExecuteViewFunction(
-			prefix.NewStore(ctx.KVStore(k.storeKey), types.PrefixKeyVMStore),
+			types.NewVMStore(ctx, k.VMStore),
 			api,
 			env,
 			k.config.ContractQueryGasLimit,
@@ -619,12 +583,12 @@ func (k Keeper) ExecuteViewFunction(
 // DecodeMoveResource decode raw move resource bytes
 // into `MoveResource` json string
 func (k Keeper) DecodeMoveResource(
-	ctx sdk.Context,
+	ctx context.Context,
 	structTag vmtypes.StructTag,
 	resourceBytes []byte,
 ) ([]byte, error) {
 	return vmapi.DecodeMoveResource(
-		prefix.NewStore(ctx.KVStore(k.storeKey), types.PrefixKeyVMStore),
+		types.NewVMStore(ctx, k.VMStore),
 		structTag,
 		resourceBytes,
 	)

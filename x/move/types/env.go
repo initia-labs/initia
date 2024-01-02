@@ -2,35 +2,32 @@ package types
 
 import (
 	"bytes"
+	context "context"
+	"encoding/binary"
 
-	"cosmossdk.io/math"
 	"github.com/cometbft/cometbft/crypto/tmhash"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	vmtypes "github.com/initia-labs/initiavm/types"
 )
 
-func NewEnv(ctx sdk.Context, nextAccountNumber uint64, executionCounter math.Int) vmtypes.Env {
-	txBytes := ctx.TxBytes()
+func NewEnv(ctx context.Context, nextAccountNumber uint64, executionCounter uint64) vmtypes.Env {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	txBytes := sdkCtx.TxBytes()
 	if len(txBytes) == 0 {
 		txBytes = bytes.Repeat([]byte{0}, 32)
 	}
 
-	counterBz, err := executionCounter.Marshal()
-	if err != nil {
-		panic(err)
-	}
-
 	var txHash [32]uint8
-	copy(txHash[:], tmhash.Sum(ctx.TxBytes()))
+	copy(txHash[:], tmhash.Sum(txBytes))
 
 	var sessionID [32]uint8
-	copy(sessionID[:], tmhash.Sum(append(txBytes, counterBz...)))
+	counterBz := binary.BigEndian.AppendUint64([]byte{}, executionCounter)
+	copy(sessionID[:], tmhash.Sum(append(txBytes, counterBz[:]...)))
 
 	return vmtypes.Env{
-		BlockHeight:       uint64(ctx.BlockHeader().Height),
-		BlockTimestamp:    uint64(ctx.BlockHeader().Time.Unix()),
+		BlockHeight:       uint64(sdkCtx.BlockHeader().Height),
+		BlockTimestamp:    uint64(sdkCtx.BlockHeader().Time.Unix()),
 		NextAccountNumber: nextAccountNumber,
 		TxHash:            txHash,
 		SessionId:         sessionID,
@@ -40,7 +37,8 @@ func NewEnv(ctx sdk.Context, nextAccountNumber uint64, executionCounter math.Int
 // NOTE: This is hack of store operation.
 // We do not want to increase account number, so make cache context
 // and drop write() to fetch next account number without update.
-func NextAccountNumber(ctx sdk.Context, accKeeper AccountKeeper) uint64 {
-	tmpCtx, _ := ctx.CacheContext()
+func NextAccountNumber(ctx context.Context, accKeeper AccountKeeper) uint64 {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	tmpCtx, _ := sdkCtx.CacheContext()
 	return accKeeper.NextAccountNumber(tmpCtx)
 }

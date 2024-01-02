@@ -6,44 +6,52 @@ import (
 	"testing"
 	"time"
 
-	"cosmossdk.io/math"
+	"github.com/cosmos/gogoproto/proto"
 
-	dbm "github.com/cometbft/cometbft-db"
 	"github.com/cometbft/cometbft/crypto"
 	"github.com/cometbft/cometbft/crypto/ed25519"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
-	"github.com/cometbft/cometbft/libs/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 
-	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
+	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+
+	"cosmossdk.io/log"
+	"cosmossdk.io/math"
+	"cosmossdk.io/store"
+	"cosmossdk.io/store/metrics"
+	storetypes "cosmossdk.io/store/types"
+	evidencetypes "cosmossdk.io/x/evidence/types"
+	"cosmossdk.io/x/feegrant"
+	"cosmossdk.io/x/tx/signing"
+	"cosmossdk.io/x/upgrade"
+	upgradetypes "cosmossdk.io/x/upgrade/types"
+	dbm "github.com/cosmos/cosmos-db"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
+	codecaddress "github.com/cosmos/cosmos-sdk/codec/address"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
+	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/std"
-	"github.com/cosmos/cosmos-sdk/store"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	testutilsims "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/auth"
+	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
+	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/cosmos/cosmos-sdk/x/capability"
-	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
-	evidencetypes "github.com/cosmos/cosmos-sdk/x/evidence/types"
-	"github.com/cosmos/cosmos-sdk/x/feegrant"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	govtypesv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
-	"github.com/cosmos/cosmos-sdk/x/upgrade"
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+	"github.com/cosmos/ibc-go/modules/capability"
 
 	"github.com/stretchr/testify/require"
 
@@ -57,6 +65,7 @@ import (
 	"github.com/initia-labs/initia/x/gov"
 	govkeeper "github.com/initia-labs/initia/x/gov/keeper"
 	customgovtypes "github.com/initia-labs/initia/x/gov/types"
+	"github.com/initia-labs/initia/x/move"
 	moveconfig "github.com/initia-labs/initia/x/move/config"
 	movekeeper "github.com/initia-labs/initia/x/move/keeper"
 	movetypes "github.com/initia-labs/initia/x/move/types"
@@ -83,13 +92,14 @@ var ModuleBasics = module.NewBasicManager(
 	slashing.AppModuleBasic{},
 	upgrade.AppModuleBasic{},
 	evidence.AppModuleBasic{},
+	move.AppModuleBasic{},
 )
 
 // Bond denom should be set for staking test
 const bondDenom = initiaapp.BondDenom
 
 var (
-	initiaSupply = sdk.NewInt(100_000_000_000)
+	initiaSupply = math.NewInt(100_000_000_000)
 
 	testDenoms = []string{
 		"test1",
@@ -105,21 +115,33 @@ func MakeTestCodec(t testing.TB) codec.Codec {
 }
 
 func MakeEncodingConfig(_ testing.TB) initiaappparams.EncodingConfig {
-	encodingConfig := initiaappparams.MakeEncodingConfig()
-	amino := encodingConfig.Amino
-	interfaceRegistry := encodingConfig.InterfaceRegistry
+	interfaceRegistry, _ := codectypes.NewInterfaceRegistryWithOptions(codectypes.InterfaceRegistryOptions{
+		ProtoFiles: proto.HybridResolver,
+		SigningOptions: signing.Options{
+			AddressCodec:          codecaddress.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix()),
+			ValidatorAddressCodec: codecaddress.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix()),
+		},
+	})
+	appCodec := codec.NewProtoCodec(interfaceRegistry)
+	legacyAmino := codec.NewLegacyAmino()
+	txConfig := tx.NewTxConfig(appCodec, tx.DefaultSignModes)
 
 	std.RegisterInterfaces(interfaceRegistry)
-	std.RegisterLegacyAminoCodec(amino)
+	std.RegisterLegacyAminoCodec(legacyAmino)
 
-	ModuleBasics.RegisterLegacyAminoCodec(amino)
+	ModuleBasics.RegisterLegacyAminoCodec(legacyAmino)
 	ModuleBasics.RegisterInterfaces(interfaceRegistry)
 
 	// add initiad types
 	movetypes.RegisterInterfaces(interfaceRegistry)
-	movetypes.RegisterLegacyAminoCodec(amino)
+	movetypes.RegisterLegacyAminoCodec(legacyAmino)
 
-	return encodingConfig
+	return initiaappparams.EncodingConfig{
+		InterfaceRegistry: interfaceRegistry,
+		Marshaler:         appCodec,
+		TxConfig:          txConfig,
+		Amino:             legacyAmino,
+	}
 }
 
 func initialTotalSupply() sdk.Coins {
@@ -200,7 +222,7 @@ type TestKeepers struct {
 	MoveKeeper     movekeeper.Keeper
 	EncodingConfig initiaappparams.EncodingConfig
 	Faucet         *TestFaucet
-	MultiStore     sdk.CommitMultiStore
+	MultiStore     storetypes.CommitMultiStore
 }
 
 // createDefaultTestInput common settings for createTestInput
@@ -236,18 +258,17 @@ func _createTestInput(
 	moveConfig moveconfig.MoveConfig,
 	db dbm.DB,
 ) (sdk.Context, TestKeepers) {
-	keys := sdk.NewKVStoreKeys(
+	keys := storetypes.NewKVStoreKeys(
 		authtypes.StoreKey, banktypes.StoreKey, stakingtypes.StoreKey,
 		rewardtypes.StoreKey, distributiontypes.StoreKey, slashingtypes.StoreKey,
 		govtypes.StoreKey, upgradetypes.StoreKey, evidencetypes.StoreKey,
-		capabilitytypes.StoreKey, feegrant.StoreKey, authzkeeper.StoreKey,
-		movetypes.StoreKey,
+		feegrant.StoreKey, authzkeeper.StoreKey, movetypes.StoreKey,
 	)
-	ms := store.NewCommitMultiStore(db)
+	ms := store.NewCommitMultiStore(db, log.NewNopLogger(), metrics.NewNoOpMetrics())
 	for _, v := range keys {
 		ms.MountStoreWithDB(v, storetypes.StoreTypeIAVL, db)
 	}
-	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
+	memKeys := storetypes.NewMemoryStoreKeys()
 	for _, v := range memKeys {
 		ms.MountStoreWithDB(v, storetypes.StoreTypeMemory, db)
 	}
@@ -277,9 +298,10 @@ func _createTestInput(
 	}
 	accountKeeper := authkeeper.NewAccountKeeper(
 		appCodec,
-		keys[authtypes.StoreKey],   // target store
-		authtypes.ProtoBaseAccount, // prototype
+		runtime.NewKVStoreService(keys[authtypes.StoreKey]), // target store
+		authtypes.ProtoBaseAccount,                          // prototype
 		maccPerms,
+		authcodec.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix()),
 		sdk.GetConfig().GetBech32AccountAddrPrefix(),
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
@@ -333,7 +355,7 @@ func _createTestInput(
 	)
 	distrParams := customdistrtypes.DefaultParams()
 	distrParams.RewardWeights = []customdistrtypes.RewardWeight{
-		{Denom: bondDenom, Weight: sdk.OneDec()},
+		{Denom: bondDenom, Weight: math.LegacyOneDec()},
 	}
 	distKeeper.SetParams(ctx, distrParams)
 
@@ -440,10 +462,10 @@ func createValidatorWithBalance(
 	accAddr := sdk.AccAddress(sdk.AccAddress(pubKey.Address()))
 	valAddr := sdk.ValAddress(sdk.AccAddress(pubKey.Address()))
 
-	input.Faucet.Fund(ctx, accAddr, sdk.NewCoin(bondDenom, sdk.NewInt(balance)))
+	input.Faucet.Fund(ctx, accAddr, sdk.NewCoin(bondDenom, math.NewInt(balance)))
 
 	sh := staking.NewHandler(input.StakingKeeper)
-	_, err := sh(ctx, newTestMsgCreateValidator(valAddr, valPubKey, sdk.NewInt(delBalance)))
+	_, err := sh(ctx, newTestMsgCreateValidator(valAddr, valPubKey, math.NewInt(delBalance)))
 	if err != nil {
 		panic(err)
 	}
@@ -470,10 +492,10 @@ func createValidatorWithBalanceAndGetPk(
 	accAddr := sdk.AccAddress(sdk.AccAddress(pubKey.Address()))
 	valAddr := sdk.ValAddress(sdk.AccAddress(pubKey.Address()))
 
-	input.Faucet.Fund(ctx, accAddr, sdk.NewCoin(bondDenom, sdk.NewInt(balance)))
+	input.Faucet.Fund(ctx, accAddr, sdk.NewCoin(bondDenom, math.NewInt(balance)))
 
 	sh := staking.NewHandler(input.StakingKeeper)
-	_, err := sh(ctx, newTestMsgCreateValidator(valAddr, valPubKey, sdk.NewInt(delBalance)))
+	_, err := sh(ctx, newTestMsgCreateValidator(valAddr, valPubKey, math.NewInt(delBalance)))
 	if err != nil {
 		panic(err)
 	}
@@ -489,7 +511,7 @@ func createValidatorWithBalanceAndGetPk(
 
 // newTestMsgCreateValidator test msg creator
 func newTestMsgCreateValidator(address sdk.ValAddress, pubKey cryptotypes.PubKey, amt math.Int) *stakingtypes.MsgCreateValidator {
-	commission := stakingtypes.NewCommissionRates(sdk.NewDecWithPrec(5, 1), sdk.NewDecWithPrec(5, 1), sdk.NewDec(0))
+	commission := stakingtypes.NewCommissionRates(math.LegacyNewDecWithPrec(5, 1), math.LegacyNewDecWithPrec(5, 1), math.LegacyNewDec(0))
 	msg, _ := stakingtypes.NewMsgCreateValidator(
 		address, pubKey, sdk.NewCoins(sdk.NewCoin(bondDenom, amt)),
 		stakingtypes.Description{}, commission,

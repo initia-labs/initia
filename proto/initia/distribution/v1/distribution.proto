@@ -16,7 +16,7 @@ message Params {
 
   string community_tax = 1 [
     (gogoproto.moretags)   = "yaml:\"community_tax\"",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable)   = false
   ];
   bool                  withdraw_addr_enabled = 2 [(gogoproto.moretags) = "yaml:\"withdraw_addr_enabled\""];
@@ -30,7 +30,7 @@ message RewardWeight {
   string denom  = 1 [(gogoproto.moretags) = "yaml:\"denom\""];
   string weight = 2 [
     (gogoproto.moretags)   = "yaml:\"weight\"",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable)   = false
   ];
 }

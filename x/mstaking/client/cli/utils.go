@@ -3,9 +3,8 @@ package cli
 import (
 	"errors"
 
+	"cosmossdk.io/math"
 	"github.com/initia-labs/initia/x/mstaking/types"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func buildCommissionRates(rateStr, maxRateStr, maxChangeRateStr string) (commission types.CommissionRates, err error) {
@@ -13,17 +12,17 @@ func buildCommissionRates(rateStr, maxRateStr, maxChangeRateStr string) (commiss
 		return commission, errors.New("must specify all validator commission parameters")
 	}
 
-	rate, err := sdk.NewDecFromStr(rateStr)
+	rate, err := math.LegacyNewDecFromStr(rateStr)
 	if err != nil {
 		return commission, err
 	}
 
-	maxRate, err := sdk.NewDecFromStr(maxRateStr)
+	maxRate, err := math.LegacyNewDecFromStr(maxRateStr)
 	if err != nil {
 		return commission, err
 	}
 
-	maxChangeRate, err := sdk.NewDecFromStr(maxChangeRateStr)
+	maxChangeRate, err := math.LegacyNewDecFromStr(maxChangeRateStr)
 	if err != nil {
 		return commission, err
 	}

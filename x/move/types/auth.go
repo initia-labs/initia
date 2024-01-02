@@ -9,9 +9,9 @@ import (
 )
 
 var (
-	_ authtypes.AccountI       = (*ObjectAccount)(nil)
+	_ sdk.AccountI             = (*ObjectAccount)(nil)
 	_ authtypes.GenesisAccount = (*ObjectAccount)(nil)
-	_ authtypes.AccountI       = (*TableAccount)(nil)
+	_ sdk.AccountI             = (*TableAccount)(nil)
 	_ authtypes.GenesisAccount = (*TableAccount)(nil)
 )
 

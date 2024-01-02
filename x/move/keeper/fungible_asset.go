@@ -1,7 +1,8 @@
 package keeper
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"context"
+
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	"cosmossdk.io/math"
@@ -11,7 +12,7 @@ import (
 
 var _ types.FungibleAssetKeeper = MoveBankKeeper{}
 
-func (k MoveBankKeeper) Balance(ctx sdk.Context, store vmtypes.AccountAddress) (vmtypes.AccountAddress, math.Int, error) {
+func (k MoveBankKeeper) Balance(ctx context.Context, store vmtypes.AccountAddress) (vmtypes.AccountAddress, math.Int, error) {
 	bz, err := k.GetResourceBytes(ctx, store, vmtypes.StructTag{
 		Address:  vmtypes.StdAddress,
 		Module:   types.MoveModuleNameFungibleAsset,
@@ -19,16 +20,16 @@ func (k MoveBankKeeper) Balance(ctx sdk.Context, store vmtypes.AccountAddress) (
 		TypeArgs: []vmtypes.TypeTag{},
 	})
 	if err == sdkerrors.ErrNotFound {
-		return vmtypes.AccountAddress{}, sdk.ZeroInt(), nil
+		return vmtypes.AccountAddress{}, math.ZeroInt(), nil
 	}
 	if err != nil {
-		return vmtypes.AccountAddress{}, sdk.ZeroInt(), err
+		return vmtypes.AccountAddress{}, math.ZeroInt(), err
 	}
 
 	return types.ReadBalanceFromFungibleStore(bz)
 }
 
-func (k MoveBankKeeper) Issuer(ctx sdk.Context, metadata vmtypes.AccountAddress) (vmtypes.AccountAddress, error) {
+func (k MoveBankKeeper) Issuer(ctx context.Context, metadata vmtypes.AccountAddress) (vmtypes.AccountAddress, error) {
 	bz, err := k.GetResourceBytes(ctx, vmtypes.StdAddress, vmtypes.StructTag{
 		Address:  vmtypes.StdAddress,
 		Module:   types.MoveModuleNamePrimaryFungibleStore,
@@ -52,7 +53,7 @@ func (k MoveBankKeeper) Issuer(ctx sdk.Context, metadata vmtypes.AccountAddress)
 	return vmtypes.NewAccountAddressFromBytes(tableEntry.ValueBytes)
 }
 
-func (k MoveBankKeeper) Symbol(ctx sdk.Context, metadata vmtypes.AccountAddress) (string, error) {
+func (k MoveBankKeeper) Symbol(ctx context.Context, metadata vmtypes.AccountAddress) (string, error) {
 	if bz, err := k.GetResourceBytes(ctx, metadata, vmtypes.StructTag{
 		Address:  vmtypes.StdAddress,
 		Module:   types.MoveModuleNameFungibleAsset,

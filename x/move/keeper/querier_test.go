@@ -3,6 +3,7 @@ package keeper_test
 import (
 	"testing"
 
+	"cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -19,7 +20,7 @@ func TestViewFunction(t *testing.T) {
 	input.Faucet.Fund(
 		ctx,
 		types.TestAddr,
-		sdk.NewCoin(bondDenom, sdk.NewInt(1000000)),
+		sdk.NewCoin(bondDenom, math.NewInt(1000000)),
 	)
 
 	argBz, err := vmtypes.SerializeUint64(100)
@@ -99,7 +100,7 @@ func TestModules(t *testing.T) {
 func TestResources(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
-	input.Faucet.Fund(ctx, types.TestAddr, sdk.NewCoin(bondDenom, sdk.NewInt(1000000)))
+	input.Faucet.Fund(ctx, types.TestAddr, sdk.NewCoin(bondDenom, math.NewInt(1000000)))
 
 	argBz, err := vmtypes.SerializeUint64(100)
 	require.NoError(t, err)

@@ -1,6 +1,9 @@
 package keeper
 
 import (
+	"context"
+
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
@@ -13,10 +16,10 @@ var _ vmapi.GoAPI = &GoApi{}
 
 type GoApi struct {
 	Keeper
-	ctx sdk.Context
+	ctx context.Context
 }
 
-func NewApi(k Keeper, ctx sdk.Context) GoApi {
+func NewApi(k Keeper, ctx context.Context) GoApi {
 	return GoApi{k, ctx}
 }
 
@@ -36,8 +39,10 @@ func (api GoApi) GetAccountInfo(addr vmtypes.AccountAddress) (bool /* found */, 
 		case *authtypes.ModuleAccount:
 			accType = vmtypes.AccountType_Module
 		default:
+			// TODO - panic to error
 			panic("unknown account type")
 		}
+
 		return true, acc.GetAccountNumber(), acc.GetSequence(), accType
 	}
 
@@ -56,7 +61,7 @@ func (api GoApi) AmountToShare(valBz []byte, metadata vmtypes.AccountAddress, am
 		return 0, err
 	}
 
-	share, err := api.Keeper.AmountToShare(api.ctx, valAddr, sdk.NewCoin(denom, sdk.NewIntFromUint64(amount)))
+	share, err := api.Keeper.AmountToShare(api.ctx, valAddr, sdk.NewCoin(denom, math.NewIntFromUint64(amount)))
 	return share.Uint64(), err
 }
 
@@ -72,11 +77,19 @@ func (api GoApi) ShareToAmount(valBz []byte, metadata vmtypes.AccountAddress, sh
 		return 0, err
 	}
 
-	amount, err := api.Keeper.ShareToAmount(api.ctx, valAddr, sdk.NewDecCoin(denom, sdk.NewIntFromUint64(share)))
+	amount, err := api.Keeper.ShareToAmount(api.ctx, valAddr, sdk.NewDecCoin(denom, math.NewIntFromUint64(share)))
 	return amount.Uint64(), err
 }
 
 // UnbondTimestamp return staking unbond time
 func (api GoApi) UnbondTimestamp() uint64 {
-	return uint64(api.ctx.BlockTime().Unix()) + uint64(api.StakingKeeper.UnbondingTime(api.ctx))
+	unbondingTime, err := api.StakingKeeper.UnbondingTime(api.ctx)
+
+	// TODO - panic to error
+	if err != nil {
+		panic(err)
+	}
+
+	sdkCtx := sdk.UnwrapSDKContext(api.ctx)
+	return uint64(sdkCtx.BlockTime().Unix()) + uint64(unbondingTime)
 }

@@ -1,43 +1,44 @@
 package keeper
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"context"
+
+	"cosmossdk.io/math"
 
 	"github.com/initia-labs/initia/x/reward/types"
 )
 
 // SetReleaseRate update release rate params
-func (k Keeper) SetReleaseRate(ctx sdk.Context, rate sdk.Dec) error {
-	params := k.GetParams(ctx)
+func (k Keeper) SetReleaseRate(ctx context.Context, rate math.LegacyDec) error {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return err
+	}
+
 	params.ReleaseRate = rate
 	return k.SetParams(ctx, params)
 }
 
 // GetReleaseRate return release rate params
-func (k Keeper) GetReleaseRate(ctx sdk.Context) sdk.Dec {
-	return k.GetParams(ctx).ReleaseRate
+func (k Keeper) GetReleaseRate(ctx context.Context) (math.LegacyDec, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return math.LegacyZeroDec(), err
+	}
+
+	return params.ReleaseRate, nil
 }
 
 // GetParams returns the current x/slashing module parameters.
-func (k Keeper) GetParams(ctx sdk.Context) (params types.Params) {
-	store := ctx.KVStore(k.storeKey)
-	bz := store.Get(types.ParamsKey)
-	if bz == nil {
-		return params
-	}
-	k.cdc.MustUnmarshal(bz, &params)
-	return params
+func (k Keeper) GetParams(ctx context.Context) (types.Params, error) {
+	return k.Params.Get(ctx)
 }
 
 // SetParams sets the x/slashing module parameters.
-func (k Keeper) SetParams(ctx sdk.Context, params types.Params) error {
+func (k Keeper) SetParams(ctx context.Context, params types.Params) error {
 	if err := params.Validate(); err != nil {
 		return err
 	}
 
-	store := ctx.KVStore(k.storeKey)
-	bz := k.cdc.MustMarshal(&params)
-	store.Set(types.ParamsKey, bz)
-
-	return nil
+	return k.Params.Set(ctx, params)
 }

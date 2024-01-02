@@ -1,14 +1,13 @@
 package types
 
 import (
+	"cosmossdk.io/core/address"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/cosmos/cosmos-sdk/x/auth/migrations/legacytx"
 )
 
 var (
-	_ sdk.Msg            = &MsgUpdateParams{}
-	_ legacytx.LegacyMsg = &MsgUpdateParams{}
+	_ sdk.Msg = &MsgUpdateParams{}
 )
 
 const (
@@ -17,28 +16,17 @@ const (
 
 /* MsgUpdateParams */
 
-// Route implements the sdk.Msg interface.
-func (msg MsgUpdateParams) Route() string { return RouterKey }
-
-// Type implements the sdk.Msg interface.
-func (msg MsgUpdateParams) Type() string { return TypeMsgUpdateParams }
-
-// GetSignBytes implements the sdk.Msg interface.
-func (msg MsgUpdateParams) GetSignBytes() []byte {
-	bz := ModuleCdc.MustMarshalJSON(&msg)
-	return sdk.MustSortJSON(bz)
+// NewMsgUpdateParams returns a new MsgUpdateParams instance
+func NewMsgUpdateParams(authority string, params Params) *MsgUpdateParams {
+	return &MsgUpdateParams{
+		Authority: authority,
+		Params:    params,
+	}
 }
 
-// GetSigners returns the signer addresses that are expected to sign the result
-// of GetSignBytes.
-func (msg MsgUpdateParams) GetSigners() []sdk.AccAddress {
-	authority, _ := sdk.AccAddressFromBech32(msg.Authority)
-	return []sdk.AccAddress{authority}
-}
-
-// ValidateBasic performs basic MsgUpdateParams message validation.
-func (msg MsgUpdateParams) ValidateBasic() error {
-	if _, err := sdk.AccAddressFromBech32(msg.Authority); err != nil {
+// Validate performs basic MsgUpdateParams message validation.
+func (msg MsgUpdateParams) Validate(accCodec address.Codec) error {
+	if _, err := accCodec.StringToBytes(msg.Authority); err != nil {
 		return sdkerrors.ErrInvalidAddress.Wrapf("invalid authority address: %s", err)
 	}
 

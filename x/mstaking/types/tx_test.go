@@ -6,14 +6,15 @@ import (
 	"cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
 
-	"github.com/initia-labs/initia/x/mstaking/types"
-
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
+
+	"github.com/initia-labs/initia/x/mstaking/types"
 )
 
 var (
@@ -38,8 +39,12 @@ func TestMsgDecode(t *testing.T) {
 
 	// now let's try to serialize the whole message
 
+	valAddrCodec := authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix())
+	valAddr1Str, err := valAddrCodec.BytesToString(valAddr1)
+	require.NoError(t, err)
+
 	commission1 := types.NewCommissionRates(math.LegacyZeroDec(), math.LegacyZeroDec(), math.LegacyZeroDec())
-	msg, err := types.NewMsgCreateValidator(valAddr1, pk1, coinPos, types.Description{}, commission1)
+	msg, err := types.NewMsgCreateValidator(valAddr1Str, pk1, coinPos, types.Description{}, commission1)
 	require.NoError(t, err)
 	msgSerialized, err := cdc.MarshalInterface(msg)
 	require.NoError(t, err)
@@ -49,14 +54,14 @@ func TestMsgDecode(t *testing.T) {
 	require.NoError(t, err)
 	msg2, ok := msgUnmarshaled.(*types.MsgCreateValidator)
 	require.True(t, ok)
-	require.True(t, msg.Amount.IsEqual(msg2.Amount))
+	require.True(t, msg.Amount.Equal(msg2.Amount))
 	require.True(t, msg.Pubkey.Equal(msg2.Pubkey))
 }
 
-// test ValidateBasic for MsgCreateValidator
+// test Validate for MsgCreateValidator
 func TestMsgCreateValidator(t *testing.T) {
 	commission1 := types.NewCommissionRates(math.LegacyZeroDec(), math.LegacyZeroDec(), math.LegacyZeroDec())
-	commission2 := types.NewCommissionRates(sdk.NewDec(5), sdk.NewDec(5), sdk.NewDec(5))
+	commission2 := types.NewCommissionRates(math.LegacyNewDec(5), math.LegacyNewDec(5), math.LegacyNewDec(5))
 
 	tests := []struct {
 		name, moniker, identity, website, securityContact, details string
@@ -75,19 +80,25 @@ func TestMsgCreateValidator(t *testing.T) {
 		{"nil bond", "a", "b", "c", "d", "e", commission2, valAddr1, pk1, sdk.Coins{}, false},
 	}
 
+	valAddrCodec := authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix())
+
 	for _, tc := range tests {
 		description := types.NewDescription(tc.moniker, tc.identity, tc.website, tc.securityContact, tc.details)
-		msg, err := types.NewMsgCreateValidator(tc.validatorAddr, tc.pubkey, tc.bond, description, tc.CommissionRates)
+
+		valAddrStr, err := valAddrCodec.BytesToString(tc.validatorAddr)
+		require.NoError(t, err)
+
+		msg, err := types.NewMsgCreateValidator(valAddrStr, tc.pubkey, tc.bond, description, tc.CommissionRates)
 		require.NoError(t, err)
 		if tc.expectPass {
-			require.Nil(t, msg.ValidateBasic(), "test: %v", tc.name)
+			require.Nil(t, msg.Validate(valAddrCodec), "test: %v", tc.name)
 		} else {
-			require.NotNil(t, msg.ValidateBasic(), "test: %v", tc.name)
+			require.NotNil(t, msg.Validate(valAddrCodec), "test: %v", tc.name)
 		}
 	}
 }
 
-// test ValidateBasic for MsgEditValidator
+// test Validate for MsgEditValidator
 func TestMsgEditValidator(t *testing.T) {
 	tests := []struct {
 		name, moniker, identity, website, securityContact, details string
@@ -100,20 +111,25 @@ func TestMsgEditValidator(t *testing.T) {
 		{"empty address", "a", "b", "c", "d", "e", emptyAddr, false},
 	}
 
+	valAddrCodec := authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix())
+
 	for _, tc := range tests {
 		description := types.NewDescription(tc.moniker, tc.identity, tc.website, tc.securityContact, tc.details)
 		newRate := math.LegacyZeroDec()
 
-		msg := types.NewMsgEditValidator(tc.validatorAddr, description, &newRate)
+		valAddrStr, err := valAddrCodec.BytesToString(tc.validatorAddr)
+		require.NoError(t, err)
+
+		msg := types.NewMsgEditValidator(valAddrStr, description, &newRate)
 		if tc.expectPass {
-			require.Nil(t, msg.ValidateBasic(), "test: %v", tc.name)
+			require.Nil(t, msg.Validate(valAddrCodec), "test: %v", tc.name)
 		} else {
-			require.NotNil(t, msg.ValidateBasic(), "test: %v", tc.name)
+			require.NotNil(t, msg.Validate(valAddrCodec), "test: %v", tc.name)
 		}
 	}
 }
 
-// test ValidateBasic for MsgDelegate
+// test Validate for MsgDelegate
 func TestMsgDelegate(t *testing.T) {
 	tests := []struct {
 		name          string
@@ -130,17 +146,25 @@ func TestMsgDelegate(t *testing.T) {
 		{"nil bold", sdk.AccAddress(valAddr1), valAddr2, sdk.Coins{}, false},
 	}
 
+	accAddrCodec := authcodec.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix())
+	valAddrCodec := authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix())
+
 	for _, tc := range tests {
-		msg := types.NewMsgDelegate(tc.delegatorAddr, tc.validatorAddr, tc.bond)
+		delAddrStr, err := accAddrCodec.BytesToString(tc.delegatorAddr)
+		require.NoError(t, err)
+		valAddrStr, err := valAddrCodec.BytesToString(tc.validatorAddr)
+		require.NoError(t, err)
+
+		msg := types.NewMsgDelegate(delAddrStr, valAddrStr, tc.bond)
 		if tc.expectPass {
-			require.Nil(t, msg.ValidateBasic(), "test: %v", tc.name)
+			require.Nil(t, msg.Validate(accAddrCodec, valAddrCodec), "test: %v", tc.name)
 		} else {
-			require.NotNil(t, msg.ValidateBasic(), "test: %v", tc.name)
+			require.NotNil(t, msg.Validate(accAddrCodec, valAddrCodec), "test: %v", tc.name)
 		}
 	}
 }
 
-// test ValidateBasic for MsgUnbond
+// test Validate for MsgUnbond
 func TestMsgBeginRedelegate(t *testing.T) {
 	tests := []struct {
 		name             string
@@ -158,17 +182,27 @@ func TestMsgBeginRedelegate(t *testing.T) {
 		{"empty destination validator", sdk.AccAddress(valAddr1), valAddr2, emptyAddr, sdk.NewCoins(sdk.NewInt64Coin(sdk.DefaultBondDenom, 1)), false},
 	}
 
+	accAddrCodec := authcodec.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix())
+	valAddrCodec := authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix())
+
 	for _, tc := range tests {
-		msg := types.NewMsgBeginRedelegate(tc.delegatorAddr, tc.validatorSrcAddr, tc.validatorDstAddr, tc.amount)
+		delAddrStr, err := accAddrCodec.BytesToString(tc.delegatorAddr)
+		require.NoError(t, err)
+		srcValAddrStr, err := valAddrCodec.BytesToString(tc.validatorSrcAddr)
+		require.NoError(t, err)
+		dstValAddrStr, err := valAddrCodec.BytesToString(tc.validatorDstAddr)
+		require.NoError(t, err)
+
+		msg := types.NewMsgBeginRedelegate(delAddrStr, srcValAddrStr, dstValAddrStr, tc.amount)
 		if tc.expectPass {
-			require.Nil(t, msg.ValidateBasic(), "test: %v", tc.name)
+			require.Nil(t, msg.Validate(accAddrCodec, valAddrCodec), "test: %v", tc.name)
 		} else {
-			require.NotNil(t, msg.ValidateBasic(), "test: %v", tc.name)
+			require.NotNil(t, msg.Validate(accAddrCodec, valAddrCodec), "test: %v", tc.name)
 		}
 	}
 }
 
-// test ValidateBasic for MsgUnbond
+// test Validate for MsgUnbond
 func TestMsgUndelegate(t *testing.T) {
 	tests := []struct {
 		name          string
@@ -184,12 +218,20 @@ func TestMsgUndelegate(t *testing.T) {
 		{"empty validator", sdk.AccAddress(valAddr1), emptyAddr, sdk.NewCoins(sdk.NewInt64Coin(sdk.DefaultBondDenom, 1)), false},
 	}
 
+	accAddrCodec := authcodec.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix())
+	valAddrCodec := authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix())
+
 	for _, tc := range tests {
-		msg := types.NewMsgUndelegate(tc.delegatorAddr, tc.validatorAddr, tc.amount)
+		delAddrStr, err := accAddrCodec.BytesToString(tc.delegatorAddr)
+		require.NoError(t, err)
+		valAddrStr, err := valAddrCodec.BytesToString(tc.validatorAddr)
+		require.NoError(t, err)
+
+		msg := types.NewMsgUndelegate(delAddrStr, valAddrStr, tc.amount)
 		if tc.expectPass {
-			require.Nil(t, msg.ValidateBasic(), "test: %v", tc.name)
+			require.Nil(t, msg.Validate(accAddrCodec, valAddrCodec), "test: %v", tc.name)
 		} else {
-			require.NotNil(t, msg.ValidateBasic(), "test: %v", tc.name)
+			require.NotNil(t, msg.Validate(accAddrCodec, valAddrCodec), "test: %v", tc.name)
 		}
 	}
 }

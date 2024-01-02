@@ -2,13 +2,12 @@
 version: v1
 name: buf.build/initia-labs/initia
 deps:
-  - buf.build/cosmos/cosmos-sdk
-  - buf.build/cosmos/cosmos-proto
-  - buf.build/cosmos/gogo-proto
-  - buf.build/googleapis/googleapis
-  - buf.build/cosmos/ics23
-  - buf.build/cosmos/ibc
-
+  - buf.build/cosmos/cosmos-sdk:v0.50.0
+  - buf.build/cosmos/cosmos-proto:1935555c206d4afb9e94615dfd0fad31
+  - buf.build/cosmos/gogo-proto:5e5b9fdd01804356895f8f79a6f1ddc1
+  - buf.build/googleapis/googleapis:cc916c31859748a68fd229a3c8d7a2e8
+  - buf.build/cosmos/ics23:b1abd8678aab07165efd453c96796a179eb3131f
+  - buf.build/cosmos/ibc:cc1d31ac98a0477580379346dab8e87b
 breaking:
   use:
     - FILE

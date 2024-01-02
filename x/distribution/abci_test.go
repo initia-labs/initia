@@ -3,6 +3,7 @@ package distribution_test
 import (
 	"testing"
 
+	"cosmossdk.io/math"
 	abci "github.com/cometbft/cometbft/abci/types"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/stretchr/testify/require"
@@ -51,6 +52,6 @@ func Test_BeginBlocker(t *testing.T) {
 	rewards := app.DistrKeeper.GetValidatorOutstandingRewards(ctx, sdk.ValAddress(addr1))
 
 	// exclude community tax
-	expectedRewards := sdk.NewDecCoinsFromCoins(genCoins...).MulDec(sdk.OneDec().Sub(app.DistrKeeper.GetCommunityTax(ctx)))
+	expectedRewards := sdk.NewDecCoinsFromCoins(genCoins...).MulDec(math.LegacyOneDec().Sub(app.DistrKeeper.GetCommunityTax(ctx)))
 	require.Equal(t, expectedRewards, rewards.Rewards.Sum())
 }

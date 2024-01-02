@@ -3,6 +3,7 @@ package types_test
 import (
 	"testing"
 
+	"cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
 
 	"github.com/initia-labs/initia/x/gov/types"
@@ -17,7 +18,7 @@ func Test_Params(t *testing.T) {
 	_emergencyMinDeposit := params.EmergencyMinDeposit
 	params.EmergencyMinDeposit = []sdk.Coin{{
 		Denom:  "foo",
-		Amount: sdk.NewInt(-1),
+		Amount: math.NewInt(-1),
 	}}
 	require.Error(t, params.ValidateBasic())
 
@@ -32,7 +33,7 @@ func Test_Params(t *testing.T) {
 	_minDeposit := params.MinDeposit
 	params.MinDeposit = []sdk.Coin{{
 		Denom:  "foo",
-		Amount: sdk.NewInt(-1),
+		Amount: math.NewInt(-1),
 	}}
 	require.Error(t, params.ValidateBasic())
 

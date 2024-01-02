@@ -24,20 +24,24 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) {
 	)
 
 	for _, info := range data.SigningInfos {
-		address, err := sdk.ConsAddressFromBech32(info.Address)
+		address, err := k.sk.ConsensusAddressCodec().StringToBytes(info.Address)
 		if err != nil {
 			panic(err)
 		}
+
 		k.SetValidatorSigningInfo(ctx, address, info.ValidatorSigningInfo)
 	}
 
 	for _, array := range data.MissedBlocks {
-		address, err := sdk.ConsAddressFromBech32(array.Address)
+		address, err := k.sk.ConsensusAddressCodec().StringToBytes(array.Address)
 		if err != nil {
 			panic(err)
 		}
+
 		for _, missed := range array.MissedBlocks {
-			k.SetValidatorMissedBlockBitArray(ctx, address, missed.Index, missed.Missed)
+			if err := k.SetMissedBlockBitmapValue(ctx, address, missed.Index, missed.Missed); err != nil {
+				panic(err)
+			}
 		}
 	}
 
@@ -49,18 +53,24 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) {
 // ExportGenesis writes the current store values
 // to a genesis file, which can be imported again
 // with InitGenesis
-func (keeper Keeper) ExportGenesis(ctx sdk.Context) (data *types.GenesisState) {
-	params := keeper.GetParams(ctx)
+func (k Keeper) ExportGenesis(ctx sdk.Context) (data *types.GenesisState) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		panic(err)
+	}
 	signingInfos := make([]types.SigningInfo, 0)
 	missedBlocks := make([]types.ValidatorMissedBlocks, 0)
-	keeper.IterateValidatorSigningInfos(ctx, func(address sdk.ConsAddress, info types.ValidatorSigningInfo) (stop bool) {
+	k.IterateValidatorSigningInfos(ctx, func(address sdk.ConsAddress, info types.ValidatorSigningInfo) (stop bool) {
 		bechAddr := address.String()
 		signingInfos = append(signingInfos, types.SigningInfo{
 			Address:              bechAddr,
 			ValidatorSigningInfo: info,
 		})
 
-		localMissedBlocks := keeper.GetValidatorMissedBlocks(ctx, address)
+		localMissedBlocks, err := k.GetValidatorMissedBlocks(ctx, address)
+		if err != nil {
+			panic(err)
+		}
 
 		missedBlocks = append(missedBlocks, types.ValidatorMissedBlocks{
 			Address:      bechAddr,

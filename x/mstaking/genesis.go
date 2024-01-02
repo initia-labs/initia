@@ -14,14 +14,14 @@ import (
 
 // WriteValidators returns a slice of bonded genesis validators.
 func WriteValidators(ctx sdk.Context, keeper keeper.Keeper) (vals []tmtypes.GenesisValidator, err error) {
-	keeper.IterateLastValidators(ctx, func(_ int64, validator types.ValidatorI) (stop bool) {
+	err = keeper.IterateLastValidators(ctx, func(validator types.ValidatorI) (stop bool, err error) {
 		pk, err := validator.ConsPubKey()
 		if err != nil {
-			return true
+			return true, err
 		}
 		tmPk, err := cryptocodec.ToTmPubKeyInterface(pk)
 		if err != nil {
-			return true
+			return true, err
 		}
 
 		vals = append(vals, tmtypes.GenesisValidator{
@@ -31,7 +31,7 @@ func WriteValidators(ctx sdk.Context, keeper keeper.Keeper) (vals []tmtypes.Gene
 			Name:    validator.GetMoniker(),
 		})
 
-		return false
+		return false, nil
 	})
 
 	return

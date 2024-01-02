@@ -1,6 +1,9 @@
 package types
 
 import (
+	"context"
+	fmt "fmt"
+
 	"cosmossdk.io/errors"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -18,12 +21,7 @@ var (
 )
 
 // NewStakeAuthorization creates a new StakeAuthorization object.
-func NewStakeAuthorization(allowed []sdk.ValAddress, denied []sdk.ValAddress, authzType AuthorizationType, amount sdk.Coins) (*StakeAuthorization, error) {
-	allowedValidators, deniedValidators, err := validateAndBech32fy(allowed, denied)
-	if err != nil {
-		return nil, err
-	}
-
+func NewStakeAuthorization(allowedValidators []string, deniedValidators []string, authzType AuthorizationType, amount sdk.Coins) (*StakeAuthorization, error) {
 	a := StakeAuthorization{}
 	if allowedValidators != nil {
 		a.Validators = &StakeAuthorization_AllowList{AllowList: &StakeAuthorization_Validators{Address: allowedValidators}}
@@ -60,7 +58,7 @@ func (a StakeAuthorization) ValidateBasic() error {
 }
 
 // Accept implements Authorization.Accept.
-func (a StakeAuthorization) Accept(ctx sdk.Context, msg sdk.Msg) (authz.AcceptResponse, error) {
+func (a StakeAuthorization) Accept(ctx context.Context, msg sdk.Msg) (authz.AcceptResponse, error) {
 	var validatorAddress string
 	var amount sdk.Coins
 
@@ -80,8 +78,9 @@ func (a StakeAuthorization) Accept(ctx sdk.Context, msg sdk.Msg) (authz.AcceptRe
 
 	isValidatorExists := false
 	allowedList := a.GetAllowList().GetAddress()
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	for _, validator := range allowedList {
-		ctx.GasMeter().ConsumeGas(gasCostPerIteration, "stake authorization")
+		sdkCtx.GasMeter().ConsumeGas(gasCostPerIteration, "stake authorization")
 		if validator == validatorAddress {
 			isValidatorExists = true
 			break
@@ -90,52 +89,44 @@ func (a StakeAuthorization) Accept(ctx sdk.Context, msg sdk.Msg) (authz.AcceptRe
 
 	denyList := a.GetDenyList().GetAddress()
 	for _, validator := range denyList {
-		ctx.GasMeter().ConsumeGas(gasCostPerIteration, "stake authorization")
+		sdkCtx.GasMeter().ConsumeGas(gasCostPerIteration, "stake authorization")
 		if validator == validatorAddress {
 			return authz.AcceptResponse{}, sdkerrors.ErrUnauthorized.Wrapf(" cannot delegate/undelegate to %s validator", validator)
 		}
 	}
 
-	if !isValidatorExists {
+	if isValidatorExists {
 		return authz.AcceptResponse{}, sdkerrors.ErrUnauthorized.Wrapf("cannot delegate/undelegate to %s validator", validatorAddress)
 	}
 
 	if a.MaxTokens == nil {
-		return authz.AcceptResponse{Accept: true, Delete: false,
-			Updated: &StakeAuthorization{Validators: a.GetValidators(), AuthorizationType: a.GetAuthorizationType()}}, nil
+		return authz.AcceptResponse{
+			Accept: true, Delete: false,
+			Updated: &StakeAuthorization{
+				Validators:        a.GetValidators(),
+				AuthorizationType: a.GetAuthorizationType(),
+			},
+		}, nil
 	}
 
-	limitLeft := a.MaxTokens.Sub(amount...)
+	limitLeft, ok := a.MaxTokens.SafeSub(amount...)
+	if !ok {
+		return authz.AcceptResponse{}, fmt.Errorf("negative coins: %s", limitLeft)
+	}
+
 	if limitLeft.IsZero() {
 		return authz.AcceptResponse{Accept: true, Delete: true}, nil
 	}
-	return authz.AcceptResponse{Accept: true, Delete: false,
-		Updated: &StakeAuthorization{Validators: a.GetValidators(), AuthorizationType: a.GetAuthorizationType(), MaxTokens: limitLeft}}, nil
-}
 
-func validateAndBech32fy(allowed []sdk.ValAddress, denied []sdk.ValAddress) ([]string, []string, error) {
-	if len(allowed) == 0 && len(denied) == 0 {
-		return nil, nil, sdkerrors.ErrInvalidRequest.Wrap("both allowed & deny list cannot be empty")
-	}
-
-	if len(allowed) > 0 && len(denied) > 0 {
-		return nil, nil, sdkerrors.ErrInvalidRequest.Wrap("cannot set both allowed & deny list")
-	}
-
-	allowedValidators := make([]string, len(allowed))
-	if len(allowed) > 0 {
-		for i, validator := range allowed {
-			allowedValidators[i] = validator.String()
-		}
-		return allowedValidators, nil, nil
-	}
-
-	deniedValidators := make([]string, len(denied))
-	for i, validator := range denied {
-		deniedValidators[i] = validator.String()
-	}
-
-	return nil, deniedValidators, nil
+	return authz.AcceptResponse{
+		Accept: true,
+		Delete: false,
+		Updated: &StakeAuthorization{
+			Validators:        a.GetValidators(),
+			AuthorizationType: a.GetAuthorizationType(),
+			MaxTokens:         limitLeft,
+		},
+	}, nil
 }
 
 func normalizeAuthzType(authzType AuthorizationType) (string, error) {
@@ -146,6 +137,8 @@ func normalizeAuthzType(authzType AuthorizationType) (string, error) {
 		return sdk.MsgTypeURL(&MsgUndelegate{}), nil
 	case AuthorizationType_AUTHORIZATION_TYPE_REDELEGATE:
 		return sdk.MsgTypeURL(&MsgBeginRedelegate{}), nil
+	case AuthorizationType_AUTHORIZATION_TYPE_CANCEL_UNBONDING_DELEGATION:
+		return sdk.MsgTypeURL(&MsgCancelUnbondingDelegation{}), nil
 	default:
 		return "", sdkerrors.ErrInvalidType.Wrapf("unknown authorization type %T", authzType)
 	}

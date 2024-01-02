@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"strings"
 
+	"cosmossdk.io/core/address"
 	vmtypes "github.com/initia-labs/initiavm/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -11,7 +12,7 @@ import (
 
 // AccAddressFromString return sdk.AccAddress from the bech32 encoded string address
 // or hex encoded string address
-func AccAddressFromString(addrStr string) (vmtypes.AccountAddress, error) {
+func AccAddressFromString(ac address.Codec, addrStr string) (vmtypes.AccountAddress, error) {
 	if strings.HasPrefix(addrStr, "0x") {
 		addrStr = strings.TrimPrefix(addrStr, "0x")
 		if len(addrStr)%2 == 1 {
@@ -19,7 +20,7 @@ func AccAddressFromString(addrStr string) (vmtypes.AccountAddress, error) {
 		}
 
 		return vmtypes.NewAccountAddress(addrStr)
-	} else if addr, err := sdk.AccAddressFromBech32(addrStr); err != nil {
+	} else if addr, err := ac.StringToBytes(addrStr); err != nil {
 		return vmtypes.AccountAddress{}, err
 	} else {
 		return ConvertSDKAddressToVMAddress(addr), nil

@@ -3,6 +3,7 @@ package keeper_test
 import (
 	"testing"
 
+	"cosmossdk.io/collections"
 	"github.com/stretchr/testify/require"
 
 	cosmostypes "github.com/cosmos/cosmos-sdk/x/staking/types"
@@ -11,7 +12,9 @@ import (
 func Test_HistoricalInfo(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
-	params := input.StakingKeeper.GetParams(ctx)
+	params, err := input.StakingKeeper.GetParams(ctx)
+	require.NoError(t, err)
+
 	params.HistoricalEntries = 2
 	input.StakingKeeper.SetParams(ctx, params)
 
@@ -19,18 +22,18 @@ func Test_HistoricalInfo(t *testing.T) {
 	input.StakingKeeper.TrackHistoricalInfo(ctx.WithBlockHeight(2))
 	input.StakingKeeper.TrackHistoricalInfo(ctx.WithBlockHeight(3))
 
-	_, found := input.StakingKeeper.GetHistoricalInfo(ctx, 1)
-	require.False(t, found)
+	_, err = input.StakingKeeper.GetHistoricalInfo(ctx, 1)
+	require.ErrorIs(t, err, collections.ErrNotFound)
 
-	historicalInfo, found := input.StakingKeeper.GetHistoricalInfo(ctx, 2)
-	require.True(t, found)
+	historicalInfo, err := input.StakingKeeper.GetHistoricalInfo(ctx, 2)
+	require.NoError(t, err)
 	require.Equal(t, cosmostypes.HistoricalInfo{
 		Header: ctx.WithBlockHeight(2).BlockHeader(),
 		Valset: nil,
 	}, historicalInfo)
 
-	historicalInfo, found = input.StakingKeeper.GetHistoricalInfo(ctx, 3)
-	require.True(t, found)
+	historicalInfo, err = input.StakingKeeper.GetHistoricalInfo(ctx, 3)
+	require.NoError(t, err)
 	require.Equal(t, cosmostypes.HistoricalInfo{
 		Header: ctx.WithBlockHeight(3).BlockHeader(),
 		Valset: nil,

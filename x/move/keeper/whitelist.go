@@ -1,9 +1,10 @@
 package keeper
 
 import (
+	"context"
+
 	"cosmossdk.io/errors"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	distrtypes "github.com/initia-labs/initia/x/distribution/types"
@@ -11,7 +12,7 @@ import (
 	vmtypes "github.com/initia-labs/initiavm/types"
 )
 
-func (k Keeper) Whitelist(ctx sdk.Context, msg types.MsgWhitelist) error {
+func (k Keeper) Whitelist(ctx context.Context, msg types.MsgWhitelist) error {
 	if k.StakingKeeper == nil {
 		return sdkerrors.ErrNotSupported
 	}
@@ -149,7 +150,7 @@ func (k Keeper) Whitelist(ctx sdk.Context, msg types.MsgWhitelist) error {
 	return nil
 }
 
-func (k Keeper) Delist(ctx sdk.Context, msg types.MsgDelist) error {
+func (k Keeper) Delist(ctx context.Context, msg types.MsgDelist) error {
 	if k.StakingKeeper == nil {
 		return sdkerrors.ErrNotSupported
 	}

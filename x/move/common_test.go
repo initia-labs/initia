@@ -41,9 +41,9 @@ var (
 
 	commissionRates = stakingtypes.NewCommissionRates(math.LegacyZeroDec(), math.LegacyZeroDec(), math.LegacyZeroDec())
 
-	genCoins       = sdk.NewCoins(sdk.NewCoin(bondDenom, sdk.NewInt(5000000))).Sort()
-	bondCoin       = sdk.NewCoin(bondDenom, sdk.NewInt(1_000_000))
-	secondBondCoin = sdk.NewCoin(secondBondDenom, sdk.NewInt(1_000_000))
+	genCoins       = sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(5000000))).Sort()
+	bondCoin       = sdk.NewCoin(bondDenom, math.NewInt(1_000_000))
+	secondBondCoin = sdk.NewCoin(secondBondDenom, math.NewInt(1_000_000))
 )
 
 func checkBalance(t *testing.T, app *initiaapp.InitiaApp, addr sdk.AccAddress, balances sdk.Coins) {
@@ -52,8 +52,8 @@ func checkBalance(t *testing.T, app *initiaapp.InitiaApp, addr sdk.AccAddress, b
 }
 
 func createApp(t *testing.T) *initiaapp.InitiaApp {
-	baseCoin := sdk.NewCoin(bondDenom, sdk.NewInt(1_000_000_000_000))
-	quoteCoin := sdk.NewCoin("uusdc", sdk.NewInt(2_500_000_000_000))
+	baseCoin := sdk.NewCoin(bondDenom, math.NewInt(1_000_000_000_000))
+	quoteCoin := sdk.NewCoin("uusdc", math.NewInt(2_500_000_000_000))
 	dexCoins := sdk.NewCoins(baseCoin, quoteCoin)
 
 	app := initiaapp.SetupWithGenesisAccounts(nil, authtypes.GenesisAccounts{
@@ -74,12 +74,12 @@ func createApp(t *testing.T) *initiaapp.InitiaApp {
 	app.BeginBlock(abci.RequestBeginBlock{Header: header})
 
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
-	createDexPool(t, ctx, app, baseCoin, quoteCoin, sdk.NewDecWithPrec(8, 1), sdk.NewDecWithPrec(2, 1))
+	createDexPool(t, ctx, app, baseCoin, quoteCoin, math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1))
 
 	// set reward weight
 	distrParams := customdistrtypes.DefaultParams()
 	distrParams.RewardWeights = []customdistrtypes.RewardWeight{
-		{Denom: bondDenom, Weight: sdk.OneDec()},
+		{Denom: bondDenom, Weight: math.LegacyOneDec()},
 	}
 	app.DistrKeeper.SetParams(ctx, distrParams)
 	app.StakingKeeper.SetBondDenoms(ctx, []string{bondDenom, secondBondDenom})

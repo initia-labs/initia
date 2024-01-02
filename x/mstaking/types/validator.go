@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"cosmossdk.io/core/address"
 	"cosmossdk.io/errors"
 	"cosmossdk.io/math"
 
@@ -43,14 +44,14 @@ var _ ValidatorI = Validator{}
 // NewValidator constructs a new Validator
 //
 //nolint:interfacer
-func NewValidator(operator sdk.ValAddress, pubKey cryptotypes.PubKey, description Description) (Validator, error) {
+func NewValidator(operator string, pubKey cryptotypes.PubKey, description Description) (Validator, error) {
 	pkAny, err := codectypes.NewAnyWithValue(pubKey)
 	if err != nil {
 		return Validator{}, err
 	}
 
 	return Validator{
-		OperatorAddress: operator.String(),
+		OperatorAddress: operator,
 		ConsensusPubkey: pkAny,
 		Jailed:          false,
 		Status:          Unbonded,
@@ -60,7 +61,7 @@ func NewValidator(operator sdk.ValAddress, pubKey cryptotypes.PubKey, descriptio
 		UnbondingHeight: int64(0),
 		UnbondingTime:   time.Unix(0, 0).UTC(),
 		Commission:      NewCommission(math.LegacyZeroDec(), math.LegacyZeroDec(), math.LegacyZeroDec()),
-		VotingPower:     sdk.ZeroInt(),
+		VotingPower:     math.ZeroInt(),
 		VotingPowers:    sdk.NewCoins(),
 	}, nil
 }
@@ -72,10 +73,13 @@ func (v Validator) String() string {
 }
 
 // Validators is a collection of Validator
-type Validators []Validator
+type Validators struct {
+	Validators     []Validator
+	ValidatorCodec address.Codec
+}
 
 func (v Validators) String() (out string) {
-	for _, val := range v {
+	for _, val := range v.Validators {
 		out += val.String() + "\n"
 	}
 
@@ -84,7 +88,7 @@ func (v Validators) String() (out string) {
 
 // ToSDKValidators -  convenience function convert []Validator to []sdk.ValidatorI
 func (v Validators) ToSDKValidators() (validators []ValidatorI) {
-	for _, val := range v {
+	for _, val := range v.Validators {
 		validators = append(validators, val)
 	}
 
@@ -98,23 +102,32 @@ func (v Validators) Sort() {
 
 // Implements sort interface
 func (v Validators) Len() int {
-	return len(v)
+	return len(v.Validators)
 }
 
 // Implements sort interface
 func (v Validators) Less(i, j int) bool {
-	return bytes.Compare(v[i].GetOperator().Bytes(), v[j].GetOperator().Bytes()) == -1
+	vi, err := v.ValidatorCodec.StringToBytes(v.Validators[i].GetOperator())
+	if err != nil {
+		panic(err)
+	}
+	vj, err := v.ValidatorCodec.StringToBytes(v.Validators[j].GetOperator())
+	if err != nil {
+		panic(err)
+	}
+
+	return bytes.Compare(vi, vj) == -1
 }
 
 // Implements sort interface
 func (v Validators) Swap(i, j int) {
-	v[i], v[j] = v[j], v[i]
+	v.Validators[i], v.Validators[j] = v.Validators[j], v.Validators[i]
 }
 
 // UnpackInterfaces implements UnpackInterfacesMessage.UnpackInterfaces
 func (v Validators) UnpackInterfaces(c codectypes.AnyUnpacker) error {
-	for i := range v {
-		if err := v[i].UnpackInterfaces(c); err != nil {
+	for i := range v.Validators {
+		if err := v.Validators[i].UnpackInterfaces(c); err != nil {
 			return err
 		}
 	}
@@ -509,8 +522,8 @@ func (v Validator) RemoveDelShares(delShares sdk.DecCoins) (Validator, sdk.Coins
 func (v *Validator) MinEqual(other *Validator) bool {
 	return v.OperatorAddress == other.OperatorAddress &&
 		v.Status == other.Status &&
-		v.Tokens.IsEqual(other.Tokens) &&
-		v.DelegatorShares.IsEqual(other.DelegatorShares) &&
+		v.Tokens.Equal(other.Tokens) &&
+		v.DelegatorShares.Equal(other.DelegatorShares) &&
 		v.Description.Equal(other.Description) &&
 		v.Commission.Equal(other.Commission) &&
 		v.Jailed == other.Jailed &&
@@ -528,15 +541,8 @@ func (v *Validator) Equal(v2 *Validator) bool {
 func (v Validator) IsJailed() bool        { return v.Jailed }
 func (v Validator) GetMoniker() string    { return v.Description.Moniker }
 func (v Validator) GetStatus() BondStatus { return v.Status }
-func (v Validator) GetOperator() sdk.ValAddress {
-	if v.OperatorAddress == "" {
-		return nil
-	}
-	addr, err := sdk.ValAddressFromBech32(v.OperatorAddress)
-	if err != nil {
-		panic(err)
-	}
-	return addr
+func (v Validator) GetOperator() string {
+	return v.OperatorAddress
 }
 
 // ConsPubKey returns the validator PubKey as a cryptotypes.PubKey.
@@ -582,7 +588,7 @@ func (v Validator) GetVotingPowers() sdk.Coins { return v.VotingPowers }
 func (v Validator) GetConsensusPower(r math.Int) int64 {
 	return v.ConsensusPower(r)
 }
-func (v Validator) GetCommission() sdk.Dec           { return v.Commission.Rate }
+func (v Validator) GetCommission() math.LegacyDec    { return v.Commission.Rate }
 func (v Validator) GetDelegatorShares() sdk.DecCoins { return v.DelegatorShares }
 
 // UnpackInterfaces implements UnpackInterfacesMessage.UnpackInterfaces

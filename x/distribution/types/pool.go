@@ -267,5 +267,5 @@ func (pool Pool) IsEqual(other Pool) bool {
 		panic(fmt.Sprintf("invalid pool denominations; %s, %s", pool.Denom, other.Denom))
 	}
 
-	return pool.Coins.IsEqual(other.Coins)
+	return pool.Coins.Equal(other.Coins)
 }

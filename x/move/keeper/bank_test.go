@@ -25,10 +25,10 @@ func Test_GetBalance(t *testing.T) {
 
 	amount, err := moveBankKeeper.GetBalance(ctx, twoAddr, bondDenom)
 	require.NoError(t, err)
-	require.Equal(t, sdk.ZeroInt(), amount)
+	require.Equal(t, math.ZeroInt(), amount)
 
 	// mint token
-	mintAmount := sdk.NewInt(100)
+	mintAmount := math.NewInt(100)
 	err = moveBankKeeper.MintCoins(ctx, twoAddr, sdk.NewCoins(sdk.NewCoin(bondDenom, mintAmount)))
 	require.NoError(t, err)
 
@@ -70,7 +70,7 @@ func Test_AccountCoinStore(t *testing.T) {
 
 		mt, amount, err := moveBankKeeper.Balance(ctx, storeAddr)
 		require.NoError(t, err)
-		require.Equal(t, sdk.NewInt(1), amount)
+		require.Equal(t, math.NewInt(1), amount)
 		require.Equal(t, metadata, mt)
 	}
 
@@ -96,7 +96,7 @@ func Test_AccountCoinStore(t *testing.T) {
 
 		mt, amount, err := moveBankKeeper.Balance(ctx, storeAddr)
 		require.NoError(t, err)
-		require.Equal(t, sdk.NewInt(mintAmount+1), amount)
+		require.Equal(t, math.NewInt(mintAmount+1), amount)
 		require.Equal(t, metadata, mt)
 	}
 }
@@ -110,7 +110,7 @@ func Test_GetSupply(t *testing.T) {
 	require.Equal(t, initiaSupply, amount)
 
 	// mint token
-	mintAmount := sdk.NewIntFromUint64(math.MaxUint64)
+	mintAmount := math.NewIntFromUint64(math.MaxUint64)
 	mintNum := 5
 
 	for i := 0; i < mintNum; i++ {
@@ -139,7 +139,7 @@ func Test_GetIssuers(t *testing.T) {
 	require.NoError(t, err)
 
 	// mint token
-	mintAmount := sdk.NewIntFromUint64(math.MaxUint64)
+	mintAmount := math.NewIntFromUint64(math.MaxUint64)
 	mintNum := 5
 
 	for i := 0; i < mintNum; i++ {
@@ -192,12 +192,12 @@ func Test_SendCoins(t *testing.T) {
 	require.NoError(t, err)
 	threeAddr := sdk.AccAddress(bz)
 
-	amount := sdk.NewCoins(sdk.NewCoin(bondDenom, sdk.NewIntFromUint64(1_000_000)))
+	amount := sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewIntFromUint64(1_000_000)))
 	input.Faucet.Fund(ctx, twoAddr, amount...)
 
 	err = moveBankKeeper.SendCoins(ctx, twoAddr, threeAddr, amount)
 	require.NoError(t, err)
 
-	require.Equal(t, sdk.NewCoin(bondDenom, sdk.ZeroInt()), input.BankKeeper.GetBalance(ctx, twoAddr, bondDenom))
+	require.Equal(t, sdk.NewCoin(bondDenom, math.ZeroInt()), input.BankKeeper.GetBalance(ctx, twoAddr, bondDenom))
 	require.Equal(t, amount, sdk.NewCoins(input.BankKeeper.GetBalance(ctx, threeAddr, bondDenom)))
 }

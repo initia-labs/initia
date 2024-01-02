@@ -18,23 +18,22 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	authzmodule "github.com/cosmos/cosmos-sdk/x/authz/module"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/cosmos/cosmos-sdk/x/capability"
-	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	"github.com/cosmos/cosmos-sdk/x/consensus"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	groupmodule "github.com/cosmos/cosmos-sdk/x/group/module"
+	"github.com/cosmos/ibc-go/modules/capability"
+	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 
+	feegrantmodule "cosmossdk.io/x/feegrant/module"
+	"cosmossdk.io/x/upgrade"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
-	feegrantmodule "github.com/cosmos/cosmos-sdk/x/feegrant/module"
 	"github.com/cosmos/cosmos-sdk/x/params"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/cosmos/cosmos-sdk/x/slashing"
-	"github.com/cosmos/cosmos-sdk/x/upgrade"
 
-	ica "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts"
-	ibctransfer "github.com/cosmos/ibc-go/v7/modules/apps/transfer"
-	ibc "github.com/cosmos/ibc-go/v7/modules/core"
-	"github.com/strangelove-ventures/packet-forward-middleware/v7/router"
+	ica "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts"
+	ibctransfer "github.com/cosmos/ibc-go/v8/modules/apps/transfer"
+	ibc "github.com/cosmos/ibc-go/v8/modules/core"
 
 	"github.com/initia-labs/initia/x/bank"
 	"github.com/initia-labs/initia/x/distribution"
@@ -119,7 +118,6 @@ func TestInitGenesisOnMigration(t *testing.T) {
 			"transfer":                   ibctransfer.AppModule{}.ConsensusVersion(),
 			"nonfungibletokentransfer":   nfttransfer.AppModule{}.ConsensusVersion(),
 			"interchainaccounts":         ica.AppModule{}.ConsensusVersion(),
-			"packetfowardmiddleware":     router.AppModule{}.ConsensusVersion(),
 			"permissionedchannelrelayer": ibcperm.AppModule{}.ConsensusVersion(),
 			"move":                       move.AppModule{}.ConsensusVersion(),
 		},

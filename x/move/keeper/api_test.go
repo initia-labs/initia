@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -69,10 +70,10 @@ func Test_AmountToShareAPI(t *testing.T) {
 	valAddr := valAddrs[0]
 	valPubKey := valPubKeys[0]
 
-	input.Faucet.Fund(ctx, addrs[0], sdk.NewCoin(bondDenom, sdk.NewInt(100_000_000)))
+	input.Faucet.Fund(ctx, addrs[0], sdk.NewCoin(bondDenom, math.NewInt(100_000_000)))
 
 	sh := staking.NewHandler(input.StakingKeeper)
-	_, err := sh(ctx, newTestMsgCreateValidator(valAddr, valPubKey, sdk.NewInt(100_000)))
+	_, err := sh(ctx, newTestMsgCreateValidator(valAddr, valPubKey, math.NewInt(100_000)))
 	require.NoError(t, err)
 
 	metadata, err := types.MetadataAddressFromDenom(bondDenom)
@@ -90,10 +91,10 @@ func Test_AmountToShareAPI_InvalidAddr(t *testing.T) {
 	valAddr := valAddrs[0]
 	valPubKey := valPubKeys[0]
 
-	input.Faucet.Fund(ctx, addrs[0], sdk.NewCoin(bondDenom, sdk.NewInt(100_000_000)))
+	input.Faucet.Fund(ctx, addrs[0], sdk.NewCoin(bondDenom, math.NewInt(100_000_000)))
 
 	sh := staking.NewHandler(input.StakingKeeper)
-	_, err := sh(ctx, newTestMsgCreateValidator(valAddr, valPubKey, sdk.NewInt(100_000)))
+	_, err := sh(ctx, newTestMsgCreateValidator(valAddr, valPubKey, math.NewInt(100_000)))
 	require.NoError(t, err)
 
 	metadata, err := types.MetadataAddressFromDenom(bondDenom)
@@ -110,10 +111,10 @@ func Test_ShareToAmountAPI(t *testing.T) {
 	valAddr := valAddrs[0]
 	valPubKey := valPubKeys[0]
 
-	input.Faucet.Fund(ctx, addrs[0], sdk.NewCoin(bondDenom, sdk.NewInt(100_000_000)))
+	input.Faucet.Fund(ctx, addrs[0], sdk.NewCoin(bondDenom, math.NewInt(100_000_000)))
 
 	sh := staking.NewHandler(input.StakingKeeper)
-	_, err := sh(ctx, newTestMsgCreateValidator(valAddr, valPubKey, sdk.NewInt(100_000)))
+	_, err := sh(ctx, newTestMsgCreateValidator(valAddr, valPubKey, math.NewInt(100_000)))
 	require.NoError(t, err)
 
 	metadata, err := types.MetadataAddressFromDenom(bondDenom)
@@ -131,10 +132,10 @@ func Test_ShareToAmountAPI_InvalidAddr(t *testing.T) {
 	valAddr := valAddrs[0]
 	valPubKey := valPubKeys[0]
 
-	input.Faucet.Fund(ctx, addrs[0], sdk.NewCoin(bondDenom, sdk.NewInt(100_000_000)))
+	input.Faucet.Fund(ctx, addrs[0], sdk.NewCoin(bondDenom, math.NewInt(100_000_000)))
 
 	sh := staking.NewHandler(input.StakingKeeper)
-	_, err := sh(ctx, newTestMsgCreateValidator(valAddr, valPubKey, sdk.NewInt(100_000)))
+	_, err := sh(ctx, newTestMsgCreateValidator(valAddr, valPubKey, math.NewInt(100_000)))
 	require.NoError(t, err)
 
 	metadata, err := types.MetadataAddressFromDenom(bondDenom)

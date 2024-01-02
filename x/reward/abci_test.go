@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -28,7 +29,7 @@ func Test_BeginBlocker(t *testing.T) {
 
 	params := app.RewardKeeper.GetParams(ctx)
 	rewardDenom := params.RewardDenom
-	rewardAmount := sdk.NewInt(10_000_000)
+	rewardAmount := math.NewInt(10_000_000)
 	rewardCoins := sdk.NewCoins(sdk.NewCoin(rewardDenom, rewardAmount))
 	err := app.BankKeeper.MintCoins(ctx, authtypes.Minter, rewardCoins)
 	require.NoError(t, err)
@@ -38,7 +39,7 @@ func Test_BeginBlocker(t *testing.T) {
 	supply := app.BankKeeper.GetSupply(ctx, rewardDenom)
 
 	params.ReleaseEnabled = true
-	params.ReleaseRate = sdk.NewDecWithPrec(7, 2) // 7%
+	params.ReleaseRate = math.LegacyNewDecWithPrec(7, 2) // 7%
 	params.DilutionPeriod = time.Hour * 24
 	app.RewardKeeper.SetParams(ctx, params)
 
@@ -51,12 +52,12 @@ func Test_BeginBlocker(t *testing.T) {
 	app.Commit()
 
 	// check supply
-	expectedReleasedAmount := sdk.NewDec(7).QuoInt64(100).MulInt(supply.Amount).QuoInt64(365).TruncateInt()
+	expectedReleasedAmount := math.LegacyNewDec(7).QuoInt64(100).MulInt(supply.Amount).QuoInt64(365).TruncateInt()
 	checkBalance(t, app, authtypes.NewModuleAddress(types.ModuleName), rewardCoins.Sub(sdk.NewCoin(rewardDenom, expectedReleasedAmount)))
 
 	// release rate should be half
 	ctx = app.BaseApp.NewContext(true, header)
-	require.Equal(t, sdk.NewDecWithPrec(35, 3), app.RewardKeeper.GetReleaseRate(ctx))
+	require.Equal(t, math.LegacyNewDecWithPrec(35, 3), app.RewardKeeper.GetReleaseRate(ctx))
 	require.Equal(t, header.Time, app.RewardKeeper.GetLastReleaseTimestamp(ctx))
 	require.Equal(t, header.Time, app.RewardKeeper.GetLastDilutionTimestamp(ctx))
 }
@@ -74,7 +75,7 @@ func Test_BeginBlockerNotEnabled(t *testing.T) {
 
 	params := app.RewardKeeper.GetParams(ctx)
 	rewardDenom := params.RewardDenom
-	rewardAmount := sdk.NewInt(10_000_000)
+	rewardAmount := math.NewInt(10_000_000)
 	rewardCoins := sdk.NewCoins(sdk.NewCoin(rewardDenom, rewardAmount))
 	err := app.BankKeeper.MintCoins(ctx, authtypes.Minter, rewardCoins)
 	require.NoError(t, err)
@@ -82,7 +83,7 @@ func Test_BeginBlockerNotEnabled(t *testing.T) {
 	require.NoError(t, err)
 
 	params.ReleaseEnabled = false
-	params.ReleaseRate = sdk.NewDecWithPrec(7, 2) // 7%
+	params.ReleaseRate = math.LegacyNewDecWithPrec(7, 2) // 7%
 	params.DilutionPeriod = time.Hour * 24
 	app.RewardKeeper.SetParams(ctx, params)
 
@@ -95,11 +96,11 @@ func Test_BeginBlockerNotEnabled(t *testing.T) {
 	app.Commit()
 
 	// check supply
-	expectedReleasedAmount := sdk.ZeroInt()
+	expectedReleasedAmount := math.ZeroInt()
 	checkBalance(t, app, authtypes.NewModuleAddress(types.ModuleName), rewardCoins.Sub(sdk.NewCoin(rewardDenom, expectedReleasedAmount)))
 
 	// only timestamps updated
-	require.Equal(t, sdk.NewDecWithPrec(7, 2), app.RewardKeeper.GetParams(app.BaseApp.NewContext(true, tmproto.Header{})).ReleaseRate)
+	require.Equal(t, math.LegacyNewDecWithPrec(7, 2), app.RewardKeeper.GetParams(app.BaseApp.NewContext(true, tmproto.Header{})).ReleaseRate)
 	require.Equal(t, header.Time, app.RewardKeeper.GetLastReleaseTimestamp(app.BaseApp.NewContext(true, tmproto.Header{})))
 	require.Equal(t, header.Time, app.RewardKeeper.GetLastDilutionTimestamp(app.BaseApp.NewContext(true, tmproto.Header{})))
 }

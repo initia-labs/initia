@@ -1,8 +1,9 @@
 package keeper
 
 import (
-	"fmt"
+	"context"
 
+	"cosmossdk.io/collections"
 	"cosmossdk.io/math"
 	"github.com/initia-labs/initia/x/mstaking/types"
 
@@ -12,89 +13,58 @@ import (
 // Validator Set
 
 // iterate through the validator set and perform the provided function
-func (k Keeper) IterateValidators(ctx sdk.Context, fn func(index int64, validator types.ValidatorI) (stop bool)) {
-	store := ctx.KVStore(k.storeKey)
-
-	iterator := sdk.KVStorePrefixIterator(store, types.ValidatorsKey)
-	defer iterator.Close()
-
-	i := int64(0)
-
-	for ; iterator.Valid(); iterator.Next() {
-		validator := types.MustUnmarshalValidator(k.cdc, iterator.Value())
-		stop := fn(i, validator) // XXX is this safe will the validator unexposed fields be able to get written to?
-
-		if stop {
-			break
-		}
-		i++
-	}
+func (k Keeper) IterateValidators(ctx context.Context, cb func(validator types.ValidatorI) (stop bool, err error)) error {
+	return k.Validators.Walk(ctx, nil, func(key []byte, val types.Validator) (stop bool, err error) {
+		return cb(val)
+	})
 }
 
 // iterate through the bonded validator set and perform the provided function
-func (k Keeper) IterateBondedValidatorsByPower(ctx sdk.Context, fn func(index int64, validator types.ValidatorI) (stop bool)) {
-	store := ctx.KVStore(k.storeKey)
-	maxValidators := k.MaxValidators(ctx)
-
-	iterator := sdk.KVStoreReversePrefixIterator(store, types.ValidatorsByPowerIndexKey)
-	defer iterator.Close()
-
-	i := int64(0)
-	for ; iterator.Valid() && i < int64(maxValidators); iterator.Next() {
-		address := iterator.Value()
-		validator := k.mustGetValidator(ctx, address)
-
-		if validator.IsBonded() {
-			stop := fn(i, validator) // XXX is this safe will the validator unexposed fields be able to get written to?
-			if stop {
-				break
-			}
-			i++
-		}
+func (k Keeper) IterateBondedValidatorsByPower(ctx context.Context, cb func(validator types.ValidatorI) (stop bool, err error)) error {
+	maxValidators, err := k.MaxValidators(ctx)
+	if err != nil {
+		return err
 	}
+
+	counter := 0
+	return k.ValidatorsByPowerIndex.Walk(ctx, new(collections.PairRange[int64, []byte]).Descending(), func(key collections.Pair[int64, []byte], value bool) (stop bool, err error) {
+		val, err := k.Validators.Get(ctx, key.K2())
+		if err != nil {
+			return true, err
+		}
+
+		if val.IsBonded() {
+			if stop, err := cb(val); err != nil || stop {
+				return stop, err
+			}
+
+			counter++
+		}
+
+		return counter == int(maxValidators), nil
+	})
 }
 
 // iterate through the active validator set and perform the provided function
-func (k Keeper) IterateLastValidators(ctx sdk.Context, fn func(index int64, validator types.ValidatorI) (stop bool)) {
-	iterator := k.LastValidatorsIterator(ctx)
-	defer iterator.Close()
-
-	i := int64(0)
-
-	for ; iterator.Valid(); iterator.Next() {
-		address := types.AddressFromLastValidatorPowerKey(iterator.Key())
-
-		validator, found := k.GetValidator(ctx, address)
-		if !found {
-			panic(fmt.Sprintf("validator record not found for address: %v\n", address))
+func (k Keeper) IterateLastValidators(ctx context.Context, cb func(validator types.ValidatorI) (stop bool, err error)) error {
+	return k.LastValidatorPowers.Walk(ctx, nil, func(valAddr []byte, power int64) (stop bool, err error) {
+		val, err := k.Validators.Get(ctx, valAddr)
+		if err != nil {
+			return true, err
 		}
 
-		stop := fn(i, validator) // XXX is this safe will the validator unexposed fields be able to get written to?
-		if stop {
-			break
-		}
-		i++
-	}
+		return cb(val)
+	})
 }
 
 // Validator gets the Validator interface for a particular address
-func (k Keeper) Validator(ctx sdk.Context, address sdk.ValAddress) types.ValidatorI {
-	val, found := k.GetValidator(ctx, address)
-	if !found {
-		return nil
-	}
-
-	return val
+func (k Keeper) Validator(ctx context.Context, address sdk.ValAddress) (types.ValidatorI, error) {
+	return k.Validators.Get(ctx, address)
 }
 
 // ValidatorByConsAddr gets the validator interface for a particular pubkey
-func (k Keeper) ValidatorByConsAddr(ctx sdk.Context, addr sdk.ConsAddress) types.ValidatorI {
-	val, found := k.GetValidatorByConsAddr(ctx, addr)
-	if !found {
-		return nil
-	}
-
-	return val
+func (k Keeper) ValidatorByConsAddr(ctx context.Context, addr sdk.ConsAddress) (types.ValidatorI, error) {
+	return k.GetValidatorByConsAddr(ctx, addr)
 }
 
 // Delegation Set
@@ -105,54 +75,39 @@ func (k Keeper) GetValidatorSet() types.ValidatorSet {
 }
 
 // Delegation get the delegation interface for a particular set of delegator and validator addresses
-func (k Keeper) Delegation(ctx sdk.Context, addrDel sdk.AccAddress, addrVal sdk.ValAddress) types.DelegationI {
-	bond, ok := k.GetDelegation(ctx, addrDel, addrVal)
-	if !ok {
-		return nil
-	}
-
-	return bond
+func (k Keeper) Delegation(ctx context.Context, addrDel sdk.AccAddress, addrVal sdk.ValAddress) (types.DelegationI, error) {
+	return k.GetDelegation(ctx, addrDel, addrVal)
 }
 
 // iterate through all of the delegations from a delegator
-func (k Keeper) IterateDelegations(ctx sdk.Context, delAddr sdk.AccAddress,
-	fn func(index int64, del types.DelegationI) (stop bool)) {
-	store := ctx.KVStore(k.storeKey)
-	delegatorPrefixKey := types.GetDelegationsKey(delAddr)
-
-	iterator := sdk.KVStorePrefixIterator(store, delegatorPrefixKey) // smallest to largest
-	defer iterator.Close()
-
-	for i := int64(0); iterator.Valid(); iterator.Next() {
-		del := types.MustUnmarshalDelegation(k.cdc, iterator.Value())
-
-		stop := fn(i, del)
-		if stop {
-			break
-		}
-		i++
-	}
+func (k Keeper) IterateDelegations(
+	ctx context.Context,
+	delAddr sdk.AccAddress,
+	cb func(del types.DelegationI) (stop bool, err error),
+) error {
+	return k.Delegations.Walk(ctx, collections.NewPrefixedPairRange[[]byte, []byte](delAddr), func(key collections.Pair[[]byte, []byte], del types.Delegation) (stop bool, err error) {
+		return cb(del)
+	})
 }
 
 // return all delegations used during genesis dump
 // TODO: remove this func, change all usage for iterate functionality
-func (k Keeper) GetAllSDKDelegations(ctx sdk.Context) (delegations []types.Delegation) {
-	store := ctx.KVStore(k.storeKey)
-
-	iterator := sdk.KVStorePrefixIterator(store, types.DelegationKey)
-	defer iterator.Close()
-
-	for ; iterator.Valid(); iterator.Next() {
-		delegation := types.MustUnmarshalDelegation(k.cdc, iterator.Value())
-		delegations = append(delegations, delegation)
-	}
+func (k Keeper) GetAllSDKDelegations(ctx context.Context) (delegations []types.Delegation, err error) {
+	k.Delegations.Walk(ctx, nil, func(key collections.Pair[[]byte, []byte], del types.Delegation) (stop bool, err error) {
+		delegations = append(delegations, del)
+		return false, nil
+	})
 
 	return
 }
 
 // VotingPower convert staking tokens to voting power
-func (k Keeper) VotingPower(ctx sdk.Context, tokens sdk.Coins) math.Int {
-	weights := k.GetVotingPowerWeights(ctx)
+func (k Keeper) VotingPower(ctx context.Context, tokens sdk.Coins) (math.Int, error) {
+	weights, err := k.GetVotingPowerWeights(ctx)
+	if err != nil {
+		return math.ZeroInt(), err
+	}
+
 	power, _ := types.CalculateVotingPower(tokens, weights)
-	return power
+	return power, nil
 }

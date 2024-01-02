@@ -45,10 +45,6 @@ service Msg {
 
 // MsgCreateValidator defines a SDK message for creating a new validator.
 message MsgCreateValidator {
-  // NOTE(fdymylja): this is a particular case in which
-  // if validator_address == delegator_address then only one
-  // is expected to sign, otherwise both are.
-  option (cosmos.msg.v1.signer) = "delegator_address";
   option (cosmos.msg.v1.signer) = "validator_address";
   option (amino.name)           = "mstaking/MsgCreateValidator";
 
@@ -57,10 +53,9 @@ message MsgCreateValidator {
 
   Description         description          = 1 [(gogoproto.nullable) = false];
   CommissionRates     commission           = 2 [(gogoproto.nullable) = false];
-  string              delegator_address    = 4 [(gogoproto.moretags) = "yaml:\"delegator_address\""];
-  string              validator_address    = 5 [(gogoproto.moretags) = "yaml:\"validator_address\""];
-  google.protobuf.Any pubkey               = 6 [(cosmos_proto.accepts_interface) = "cosmos.crypto.PubKey"];
-  repeated cosmos.base.v1beta1.Coin amount = 7 [
+  string              validator_address    = 3 [(gogoproto.moretags) = "yaml:\"validator_address\""];
+  google.protobuf.Any pubkey               = 4 [(cosmos_proto.accepts_interface) = "cosmos.crypto.PubKey"];
+  repeated cosmos.base.v1beta1.Coin amount = 5 [
     (gogoproto.moretags)     = "yaml:\"amount\"",
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
     (gogoproto.nullable)     = false,
@@ -87,7 +82,7 @@ message MsgEditValidator {
   // zero with no way to distinguish if an update was intended.
   // REF: #2373
   string commission_rate = 3 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.moretags)   = "yaml:\"commission_rate\""
   ];
 }
@@ -165,6 +160,11 @@ message MsgUndelegate {
 // MsgUndelegateResponse defines the Msg/Undelegate response type.
 message MsgUndelegateResponse {
   google.protobuf.Timestamp completion_time = 1 [(gogoproto.nullable) = false, (gogoproto.stdtime) = true];
+
+  // amount returns the amount of undelegated coins
+  //
+  // Since: cosmos-sdk 0.50
+  repeated cosmos.base.v1beta1.Coin amount = 2 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
 }
 
 // MsgCancelUnbondingDelegation defines the SDK message for performing a cancel unbonding delegation for delegator

@@ -3,6 +3,7 @@ package keeper_test
 import (
 	"testing"
 
+	"cosmossdk.io/math"
 	"github.com/initia-labs/initia/x/move/keeper"
 	"github.com/initia-labs/initia/x/move/types"
 	"github.com/stretchr/testify/require"
@@ -14,10 +15,10 @@ func Test_GetVotingPowerWeights(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
 	baseDenom := bondDenom
-	baseAmount := sdk.NewInt(1_000_000_000_000)
+	baseAmount := math.NewInt(1_000_000_000_000)
 
 	denomQuote := "uusdc"
-	quoteAmount := sdk.NewInt(2_500_000_000_000)
+	quoteAmount := math.NewInt(2_500_000_000_000)
 
 	metadataQuote, err := types.MetadataAddressFromDenom(denomQuote)
 	require.NoError(t, err)
@@ -25,7 +26,7 @@ func Test_GetVotingPowerWeights(t *testing.T) {
 	metadataLP := createDexPool(
 		t, ctx, input,
 		sdk.NewCoin(baseDenom, baseAmount), sdk.NewCoin(denomQuote, quoteAmount),
-		sdk.NewDecWithPrec(8, 1), sdk.NewDecWithPrec(2, 1),
+		math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1),
 	)
 
 	// store dex pair for queries
@@ -40,7 +41,7 @@ func Test_GetVotingPowerWeights(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, sdk.NewDecCoins(
-		sdk.NewDecCoin(bondDenom, sdk.NewInt(1)),
-		sdk.NewDecCoinFromDec(denomLP, sdk.NewDecWithPrec(5, 1))),
+		sdk.NewDecCoin(bondDenom, math.NewInt(1)),
+		sdk.NewDecCoinFromDec(denomLP, math.LegacyNewDecWithPrec(5, 1))),
 		keeper.NewVotingPowerKeeper(&input.MoveKeeper).GetVotingPowerWeights(ctx, []string{bondDenom, denomLP}))
 }

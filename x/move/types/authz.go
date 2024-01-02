@@ -1,8 +1,11 @@
 package types
 
 import (
+	context "context"
+
 	"github.com/IGLOU-EU/go-wildcard"
 
+	"cosmossdk.io/core/address"
 	"cosmossdk.io/errors"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -10,7 +13,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/authz"
 
 	"github.com/initia-labs/initiavm/api"
-	vmtypes "github.com/initia-labs/initiavm/types"
 )
 
 // it has similar issue with gasCostPerIterarion in staking/type/authz.go
@@ -27,8 +29,8 @@ var (
 )
 
 // NewPublishAuthorization creates a new PublishAuthorization object.
-func NewPublishAuthorization(items []string) (*PublishAuthorization, error) {
-	return &PublishAuthorization{items}, nil
+func NewPublishAuthorization(moduleNames []string) (*PublishAuthorization, error) {
+	return &PublishAuthorization{moduleNames}, nil
 }
 
 // MsgTypeURL implements Authorization.MsgTypeURL.
@@ -57,31 +59,24 @@ func isMatching(moduleName string, patterns []string) bool {
 	return false
 }
 
-func (a PublishAuthorization) Accept(ctx sdk.Context, msg sdk.Msg) (authz.AcceptResponse, error) {
+func (a PublishAuthorization) Accept(ctx context.Context, msg sdk.Msg) (authz.AcceptResponse, error) {
 	switch msg := msg.(type) {
 	case *MsgPublish:
-		sender, err := AccAddressFromString(msg.Sender)
-		if err != nil {
-			return authz.AcceptResponse{}, sdkerrors.ErrUnauthorized.Wrap("invalid sender")
-		}
-		senderVmAddr, _ := vmtypes.NewAccountAddressFromBytes(sender[:])
-
+		sdkCtx := sdk.UnwrapSDKContext(ctx)
 		for _, codeBytes := range msg.CodeBytes {
-			ctx.GasMeter().ConsumeGas(gasCostPerIteration, "publish authorization iteration")
+			sdkCtx.GasMeter().ConsumeGas(gasCostPerIteration, "publish authorization iteration")
 
 			if len(codeBytes) == 0 {
 				return authz.AcceptResponse{}, sdkerrors.ErrInvalidRequest.Wrap("empty module bytes")
 			}
-			ctx.GasMeter().ConsumeGas(gasCostPerReadMoveModuleInfo, "read move module info")
-			addrInCode, moduleName, err := api.ReadModuleInfo(codeBytes)
+
+			sdkCtx.GasMeter().ConsumeGas(gasCostPerReadMoveModuleInfo, "read move module info")
+			_, moduleName, err := api.ReadModuleInfo(codeBytes)
 			if err != nil {
 				return authz.AcceptResponse{}, sdkerrors.ErrUnauthorized.Wrap("code bytes are not valid")
 			}
-			if !senderVmAddr.Equals(addrInCode) {
-				return authz.AcceptResponse{}, sdkerrors.ErrUnauthorized.Wrap("unauthorized")
-			}
 
-			ctx.GasMeter().ConsumeGas(gasCostPerMatchTest, "publish authorization match test")
+			sdkCtx.GasMeter().ConsumeGas(gasCostPerMatchTest, "publish authorization match test")
 			if !isMatching(moduleName, a.ModuleNames) {
 				return authz.AcceptResponse{}, sdkerrors.ErrUnauthorized.Wrap("unauthorized")
 			}
@@ -93,20 +88,21 @@ func (a PublishAuthorization) Accept(ctx sdk.Context, msg sdk.Msg) (authz.Accept
 }
 
 // NewExecuteAuthorization creates a new ExecuteAuthorization object.
-func NewExecuteAuthorization(items []ExecuteAuthorizationItem) (*ExecuteAuthorization, error) {
-	if len(items) == 0 {
-		return nil, sdkerrors.ErrInvalidRequest.Wrap("items cannot be empty")
+func NewExecuteAuthorization(ac address.Codec, moduleIdentifiers []ExecuteAuthorizationItem) (*ExecuteAuthorization, error) {
+	if len(moduleIdentifiers) == 0 {
+		return nil, sdkerrors.ErrInvalidRequest.Wrap("moduleIdentifiers cannot be empty")
 	}
+
 	a := ExecuteAuthorization{}
-	for _, v := range items {
-		addr, err := AccAddressFromString(v.ModuleAddress)
+	for _, moduleIdentifier := range moduleIdentifiers {
+		addr, err := AccAddressFromString(ac, moduleIdentifier.ModuleAddress)
 		if err != nil {
 			return nil, sdkerrors.ErrInvalidAddress.Wrap("invalid module address")
 		}
 		a.Items = append(a.Items, ExecuteAuthorizationItem{
 			ModuleAddress: addr.String(),
-			ModuleName:    v.ModuleName,
-			FunctionNames: v.FunctionNames,
+			ModuleName:    moduleIdentifier.ModuleName,
+			FunctionNames: moduleIdentifier.FunctionNames,
 		})
 	}
 	return &a, nil
@@ -120,47 +116,46 @@ func (a ExecuteAuthorization) MsgTypeURL() string {
 func (a ExecuteAuthorization) ValidateBasic() error {
 	moduleMap := make(map[string][]string)
 	for _, v := range a.Items {
-		moduleAddr, err := AccAddressFromString(v.ModuleAddress)
-		if err != nil {
-			return errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid module address: %s", v.ModuleAddress)
-		}
+
+		// TODO - cannot retrieve address codec here
+		// _, err := AccAddressFromString(ac, v.ModuleAddress)
+		// if err != nil {
+		// 	return errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid module address: %s", v.ModuleAddress)
+		// }
+
 		if len(v.ModuleName) == 0 {
 			return errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid module name: %s", v.ModuleName)
 		}
 		if v.FunctionNames == nil || len(v.FunctionNames) == 0 {
 			return errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid module names")
 		}
-		if module, ok := moduleMap[moduleAddr.String()]; ok {
+		if module, ok := moduleMap[v.ModuleAddress]; ok {
 			for _, m := range module {
 				if m == v.ModuleName {
 					return errors.Wrapf(sdkerrors.ErrInvalidRequest, "duplicate module name: %s", v.ModuleName)
 				}
 			}
-			moduleMap[moduleAddr.String()] = append(module, v.ModuleName)
+			moduleMap[v.ModuleAddress] = append(module, v.ModuleName)
 		} else {
-			moduleMap[moduleAddr.String()] = []string{v.ModuleName}
+			moduleMap[v.ModuleAddress] = []string{v.ModuleName}
 		}
 	}
 	return nil
 }
 
-func (a ExecuteAuthorization) Accept(ctx sdk.Context, msg sdk.Msg) (authz.AcceptResponse, error) {
+func (a ExecuteAuthorization) Accept(ctx context.Context, msg sdk.Msg) (authz.AcceptResponse, error) {
 	switch msg := msg.(type) {
 	case *MsgExecute:
-		moduleAddress, err := AccAddressFromString(msg.ModuleAddress)
-		if err != nil {
-			return authz.AcceptResponse{}, sdkerrors.ErrUnauthorized.Wrap("invalid sender")
-		}
+		sdkCtx := sdk.UnwrapSDKContext(ctx)
 		for _, v := range a.Items {
-			ctx.GasMeter().ConsumeGas(gasCostPerIteration, "execute authorization iteration")
-			authzModuleAddress, _ := AccAddressFromString(v.ModuleAddress)
-			if !moduleAddress.Equals(authzModuleAddress) {
+			sdkCtx.GasMeter().ConsumeGas(gasCostPerIteration, "execute authorization iteration")
+			if msg.ModuleAddress != v.ModuleAddress {
 				continue
 			}
 			if msg.ModuleName != v.ModuleName {
 				continue
 			}
-			ctx.GasMeter().ConsumeGas(gasCostPerMatchTest, "execute authorization match test")
+			sdkCtx.GasMeter().ConsumeGas(gasCostPerMatchTest, "execute authorization match test")
 			if isMatching(msg.FunctionName, v.FunctionNames) {
 				return authz.AcceptResponse{Accept: true}, nil
 			}

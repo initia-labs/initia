@@ -3,6 +3,9 @@
 package types
 
 import (
+	"context"
+
+	"cosmossdk.io/core/address"
 	"cosmossdk.io/math"
 	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
 
@@ -11,31 +14,33 @@ import (
 
 // StakingKeeper expected staking keeper
 type StakingKeeper interface {
+	ValidatorAddressCodec() address.Codec
+	ConsensusAddressCodec() address.Codec
 	// iterate through validators by operator address, execute func for each validator
-	IterateValidators(sdk.Context,
-		func(index int64, validator stakingtypes.ValidatorI) (stop bool))
+	IterateValidators(context.Context,
+		func(index int64, validator stakingtypes.ValidatorI) (stop bool)) error
 
-	Validator(sdk.Context, sdk.ValAddress) stakingtypes.ValidatorI            // get a particular validator by operator address
-	ValidatorByConsAddr(sdk.Context, sdk.ConsAddress) stakingtypes.ValidatorI // get a particular validator by consensus address
+	Validator(context.Context, sdk.ValAddress) (stakingtypes.ValidatorI, error)            // get a particular validator by operator address
+	ValidatorByConsAddr(context.Context, sdk.ConsAddress) (stakingtypes.ValidatorI, error) // get a particular validator by consensus address
 
-	// slash the validator and delegators of the validator, specifying offense height, and slash fraction
-	Slash(sdk.Context, sdk.ConsAddress, int64, sdk.Dec) sdk.Coins
-	SlashWithInfractionReason(sdk.Context, sdk.ConsAddress, int64, sdk.Dec, stakingtypes.Infraction) sdk.Coins
-	Jail(sdk.Context, sdk.ConsAddress)   // jail a validator
-	Unjail(sdk.Context, sdk.ConsAddress) // unjail a validator
+	// slash the validator and delegators of the validator, specifying offense height, offense power, and slash fraction
+	Slash(context.Context, sdk.ConsAddress, int64, int64, math.LegacyDec) (math.Int, error)
+	SlashWithInfractionReason(context.Context, sdk.ConsAddress, int64, math.LegacyDec, stakingtypes.Infraction) (math.Int, error)
+	Jail(context.Context, sdk.ConsAddress) error   // jail a validator
+	Unjail(context.Context, sdk.ConsAddress) error // unjail a validator
 
 	// Delegation allows for getting a particular delegation for a given validator
 	// and delegator outside the scope of the staking module.
-	Delegation(sdk.Context, sdk.AccAddress, sdk.ValAddress) stakingtypes.DelegationI
+	Delegation(context.Context, sdk.AccAddress, sdk.ValAddress) (stakingtypes.DelegationI, error)
 
 	// MaxValidators returns the maximum amount of bonded validators
-	MaxValidators(sdk.Context) uint32
-
-	// VotingPower converts delegated tokens to voting power
-	VotingPower(ctx sdk.Context, tokens sdk.Coins) math.Int
-	// VotingPowerToConsensusPower converts voting power to consensus power
-	VotingPowerToConsensusPower(ctx sdk.Context, votingPower math.Int) int64
+	MaxValidators(context.Context) (uint32, error)
 
 	// IsValidatorJailed returns if the validator is jailed.
-	IsValidatorJailed(ctx sdk.Context, addr sdk.ConsAddress) bool
+	IsValidatorJailed(ctx context.Context, addr sdk.ConsAddress) (bool, error)
+
+	// VotingPower converts delegated tokens to voting power
+	VotingPower(ctx context.Context, tokens sdk.Coins) math.Int
+	// VotingPowerToConsensusPower converts voting power to consensus power
+	VotingPowerToConsensusPower(ctx context.Context, votingPower math.Int) int64
 }

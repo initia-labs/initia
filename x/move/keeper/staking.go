@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"context"
+
 	"cosmossdk.io/math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -13,25 +15,25 @@ import (
 )
 
 // AmountToShare convert token to share in the ratio of a validator's share/token
-func (k Keeper) AmountToShare(ctx sdk.Context, valAddr sdk.ValAddress, amount sdk.Coin) (math.Int, error) {
+func (k Keeper) AmountToShare(ctx context.Context, valAddr sdk.ValAddress, amount sdk.Coin) (math.Int, error) {
 	val := k.StakingKeeper.Validator(ctx, valAddr)
 	if val == nil {
-		return sdk.ZeroInt(), stakingtypes.ErrNoValidatorFound
+		return math.ZeroInt(), stakingtypes.ErrNoValidatorFound
 	}
 
 	shares, err := val.SharesFromTokens(sdk.NewCoins(amount))
 	if err != nil {
-		return sdk.ZeroInt(), err
+		return math.ZeroInt(), err
 	}
 
 	return shares.AmountOf(amount.Denom).TruncateInt(), err
 }
 
 // ShareToAmount convert share to token in the ratio of a validator's token/share
-func (k Keeper) ShareToAmount(ctx sdk.Context, valAddr sdk.ValAddress, share sdk.DecCoin) (math.Int, error) {
+func (k Keeper) ShareToAmount(ctx context.Context, valAddr sdk.ValAddress, share sdk.DecCoin) (math.Int, error) {
 	val := k.StakingKeeper.Validator(ctx, valAddr)
 	if val == nil {
-		return sdk.ZeroInt(), stakingtypes.ErrNoValidatorFound
+		return math.ZeroInt(), stakingtypes.ErrNoValidatorFound
 	}
 
 	tokens := val.TokensFromShares(sdk.NewDecCoins(share))
@@ -40,7 +42,7 @@ func (k Keeper) ShareToAmount(ctx sdk.Context, valAddr sdk.ValAddress, share sdk
 
 // WithdrawRewards withdraw rewards from a validator and send the
 // withdrawn staking rewards to the move staking module account
-func (k Keeper) WithdrawRewards(ctx sdk.Context, valAddr sdk.ValAddress) (distrtypes.Pools, error) {
+func (k Keeper) WithdrawRewards(ctx context.Context, valAddr sdk.ValAddress) (distrtypes.Pools, error) {
 	delModuleAddr := types.GetDelegatorModuleAddress(valAddr)
 	if k.hasZeroRewards(ctx, valAddr, delModuleAddr) {
 		return nil, nil
@@ -81,7 +83,7 @@ func (k Keeper) WithdrawRewards(ctx sdk.Context, valAddr sdk.ValAddress) (distrt
 
 // check whether a delegation rewards is zero or not with cache context
 // to prevent write operation at checking
-func (k Keeper) hasZeroRewards(ctx sdk.Context, validatorAddr sdk.ValAddress, delegatorAddr sdk.AccAddress) bool {
+func (k Keeper) hasZeroRewards(ctx context.Context, validatorAddr sdk.ValAddress, delegatorAddr sdk.AccAddress) bool {
 	ctx, _ = ctx.CacheContext()
 
 	val := k.StakingKeeper.Validator(ctx, validatorAddr)
@@ -102,7 +104,7 @@ func (k Keeper) hasZeroRewards(ctx sdk.Context, validatorAddr sdk.ValAddress, de
 // DelegateToValidator withdraw staking coins from the move module account
 // and send the coins to a delegator module account for a validator and
 // consequentially delegate the deposited coins to a validator.
-func (k Keeper) DelegateToValidator(ctx sdk.Context, valAddr sdk.ValAddress, delCoins sdk.Coins) (sdk.DecCoins, error) {
+func (k Keeper) DelegateToValidator(ctx context.Context, valAddr sdk.ValAddress, delCoins sdk.Coins) (sdk.DecCoins, error) {
 	delegatorModuleName := types.GetDelegatorModuleName(valAddr)
 	macc := k.authKeeper.GetModuleAccount(ctx, delegatorModuleName)
 
@@ -133,7 +135,7 @@ func (k Keeper) DelegateToValidator(ctx sdk.Context, valAddr sdk.ValAddress, del
 
 // InstantUnbondFromValidator unbond coins without unbonding period and send
 // the withdrawn coins to the move module account
-func (k Keeper) InstantUnbondFromValidator(ctx sdk.Context, valAddr sdk.ValAddress, shares sdk.DecCoins) (sdk.Coins, error) {
+func (k Keeper) InstantUnbondFromValidator(ctx context.Context, valAddr sdk.ValAddress, shares sdk.DecCoins) (sdk.Coins, error) {
 	val, found := k.StakingKeeper.GetValidator(ctx, valAddr)
 	if !found {
 		return sdk.NewCoins(), stakingtypes.ErrNoValidatorFound
@@ -158,7 +160,7 @@ func (k Keeper) InstantUnbondFromValidator(ctx sdk.Context, valAddr sdk.ValAddre
 // ApplyStakingDeltas iterate staking deltas to increase or decrease
 // a staking amount, and deposit unbonding coin to staking contract.
 func (k Keeper) ApplyStakingDeltas(
-	ctx sdk.Context,
+	ctx context.Context,
 	stakingDeltas []vmtypes.StakingDelta,
 ) error {
 	// keep the array to avoid map iteration.
@@ -183,12 +185,12 @@ func (k Keeper) ApplyStakingDeltas(
 		}
 
 		if delta.Delegation > 0 {
-			delCoin := sdk.NewCoin(denom, sdk.NewIntFromUint64(delta.Delegation))
+			delCoin := sdk.NewCoin(denom, math.NewIntFromUint64(delta.Delegation))
 			delegations[valAddrStr] = delegations[valAddrStr].Add(delCoin)
 		}
 
 		if delta.Undelegation > 0 {
-			undelCoin := sdk.NewDecCoin(denom, sdk.NewIntFromUint64(delta.Undelegation))
+			undelCoin := sdk.NewDecCoin(denom, math.NewIntFromUint64(delta.Undelegation))
 			undelegations[valAddrStr] = undelegations[valAddrStr].Add(undelCoin)
 		}
 	}
@@ -256,7 +258,7 @@ func (k Keeper) ApplyStakingDeltas(
 
 // DepositUnbondingCoin deposit instantly unbonded coins to staking contract
 func (k Keeper) DepositUnbondingCoins(
-	ctx sdk.Context,
+	ctx context.Context,
 	unbondingDenom string,
 	unbondingAmounts []uint64,
 	valAddrs [][]byte,
@@ -288,7 +290,7 @@ func (k Keeper) DepositUnbondingCoins(
 	)
 }
 
-func (k Keeper) GetStakingStatesTableHandle(ctx sdk.Context) (vmtypes.AccountAddress, error) {
+func (k Keeper) GetStakingStatesTableHandle(ctx context.Context) (vmtypes.AccountAddress, error) {
 	res, err := k.GetResourceBytes(ctx, vmtypes.StdAddress, vmtypes.StructTag{
 		Address:  vmtypes.StdAddress,
 		Module:   types.MoveModuleNameStaking,
@@ -303,7 +305,7 @@ func (k Keeper) GetStakingStatesTableHandle(ctx sdk.Context) (vmtypes.AccountAdd
 }
 
 // HasStakingState return the flag whether the metadata has registered as staking denom.
-func (k Keeper) HasStakingState(ctx sdk.Context, metadata vmtypes.AccountAddress) (bool, error) {
+func (k Keeper) HasStakingState(ctx context.Context, metadata vmtypes.AccountAddress) (bool, error) {
 	stakingStatesTableHandle, err := k.GetStakingStatesTableHandle(ctx)
 	if err != nil {
 		return false, err
@@ -314,7 +316,7 @@ func (k Keeper) HasStakingState(ctx sdk.Context, metadata vmtypes.AccountAddress
 
 // SlashUnbondingCoin slash unbonding coins of the staking contract
 func (k Keeper) SlashUnbondingDelegations(
-	ctx sdk.Context,
+	ctx context.Context,
 	valAddr sdk.ValAddress,
 	fraction sdk.Dec,
 ) error {
@@ -410,7 +412,7 @@ func (k Keeper) SlashUnbondingDelegations(
 
 // make staking states table for the given denom
 func (k Keeper) InitializeStaking(
-	ctx sdk.Context,
+	ctx context.Context,
 	bondDenom string,
 ) error {
 	metadata, err := types.MetadataAddressFromDenom(bondDenom)
@@ -423,7 +425,7 @@ func (k Keeper) InitializeStaking(
 
 // make staking states table for the given metadata
 func (k Keeper) InitializeStakingWithMetadata(
-	ctx sdk.Context,
+	ctx context.Context,
 	metadata vmtypes.AccountAddress,
 ) error {
 	if err := k.ExecuteEntryFunction(

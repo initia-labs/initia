@@ -6,29 +6,33 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
-	tmtypes "github.com/cometbft/cometbft/types"
+
+	cmtcrypto "github.com/cometbft/cometbft/crypto"
+	cmttypes "github.com/cometbft/cometbft/types"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/codec/legacy"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 
-	"github.com/initia-labs/initia/x/mstaking/teststaking"
 	"github.com/initia-labs/initia/x/mstaking/types"
 )
 
 func coins(amt int64) sdk.Coins {
-	return sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(amt)))
+	return sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, math.NewInt(amt)))
 }
 
 func decCoins(amt int64) sdk.DecCoins {
-	return sdk.NewDecCoins(sdk.NewDecCoin(sdk.DefaultBondDenom, sdk.NewInt(amt)))
+	return sdk.NewDecCoins(sdk.NewDecCoin(sdk.DefaultBondDenom, math.NewInt(amt)))
 }
 
-func decCoinsFromDec(amt sdk.Dec) sdk.DecCoins {
+func decCoinsFromDec(amt math.LegacyDec) sdk.DecCoins {
 	return sdk.NewDecCoins(sdk.NewDecCoinFromDec(sdk.DefaultBondDenom, amt))
 }
 
@@ -72,7 +76,7 @@ func TestUpdateDescription(t *testing.T) {
 
 func TestABCIValidatorUpdate(t *testing.T) {
 	validator := newValidator(t, valAddr1, pk1)
-	validator.VotingPower = sdk.NewInt(100).Mul(sdk.DefaultPowerReduction)
+	validator.VotingPower = math.NewInt(100).Mul(sdk.DefaultPowerReduction)
 	validator.Status = types.Bonded
 	abciVal := validator.ABCIValidatorUpdate(sdk.DefaultPowerReduction)
 	pk, err := validator.TmConsPublicKey()
@@ -93,11 +97,11 @@ func TestABCIValidatorUpdateZero(t *testing.T) {
 func TestShareTokens(t *testing.T) {
 	validator := mkValidator(coins(100), decCoins(100))
 
-	assert.Equal(t, decCoins(50), validator.TokensFromShares(sdk.NewDecCoins(sdk.NewDecCoin(sdk.DefaultBondDenom, sdk.NewInt(50)))))
+	assert.Equal(t, decCoins(50), validator.TokensFromShares(sdk.NewDecCoins(sdk.NewDecCoin(sdk.DefaultBondDenom, math.NewInt(50)))))
 
-	validator.Tokens = sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(50)))
-	assert.Equal(t, decCoins(25), validator.TokensFromShares(sdk.NewDecCoins(sdk.NewDecCoin(sdk.DefaultBondDenom, sdk.NewInt(50)))))
-	assert.Equal(t, decCoins(5), validator.TokensFromShares(sdk.NewDecCoins(sdk.NewDecCoin(sdk.DefaultBondDenom, sdk.NewInt(10)))))
+	validator.Tokens = sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, math.NewInt(50)))
+	assert.Equal(t, decCoins(25), validator.TokensFromShares(sdk.NewDecCoins(sdk.NewDecCoin(sdk.DefaultBondDenom, math.NewInt(50)))))
+	assert.Equal(t, decCoins(5), validator.TokensFromShares(sdk.NewDecCoins(sdk.NewDecCoin(sdk.DefaultBondDenom, math.NewInt(10)))))
 }
 
 func TestRemoveTokens(t *testing.T) {
@@ -105,7 +109,7 @@ func TestRemoveTokens(t *testing.T) {
 
 	// remove tokens and test check everything
 	validator = validator.RemoveTokens(coins(10))
-	require.Equal(t, sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(90))), validator.Tokens)
+	require.Equal(t, sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, math.NewInt(90))), validator.Tokens)
 
 	// update validator to from bonded -> unbonded
 	validator = validator.UpdateStatus(types.Unbonded)
@@ -121,9 +125,9 @@ func TestAddTokensValidatorBonded(t *testing.T) {
 	validator = validator.UpdateStatus(types.Bonded)
 	validator, delShares := validator.AddTokensFromDel(coins(10))
 
-	require.True(t, decCoins(10).IsEqual(delShares))
-	require.True(t, coins(10).IsEqual(validator.BondedTokens()))
-	require.True(t, decCoins(10).IsEqual(validator.DelegatorShares))
+	require.True(t, decCoins(10).Equal(delShares))
+	require.True(t, coins(10).Equal(validator.BondedTokens()))
+	require.True(t, decCoins(10).Equal(validator.DelegatorShares))
 }
 
 func TestAddTokensValidatorUnbonding(t *testing.T) {
@@ -205,7 +209,7 @@ func TestUpdateStatus(t *testing.T) {
 }
 
 func TestPossibleOverflow(t *testing.T) {
-	delShares := sdk.NewDec(391432570689183511).Quo(sdk.NewDec(40113011844664))
+	delShares := math.LegacyNewDec(391432570689183511).Quo(math.LegacyNewDec(40113011844664))
 	validator := mkValidator(coins(2159), decCoinsFromDec(delShares))
 	newValidator, _ := validator.AddTokensFromDel(coins(71))
 
@@ -233,12 +237,12 @@ func TestValidatorSetInitialCommission(t *testing.T) {
 		expectedErr bool
 	}{
 		{val, types.NewCommission(math.LegacyZeroDec(), math.LegacyZeroDec(), math.LegacyZeroDec()), false},
-		{val, types.NewCommission(math.LegacyZeroDec(), sdk.NewDecWithPrec(-1, 1), math.LegacyZeroDec()), true},
-		{val, types.NewCommission(math.LegacyZeroDec(), sdk.NewDec(15000000000), math.LegacyZeroDec()), true},
-		{val, types.NewCommission(sdk.NewDecWithPrec(-1, 1), math.LegacyZeroDec(), math.LegacyZeroDec()), true},
-		{val, types.NewCommission(sdk.NewDecWithPrec(2, 1), sdk.NewDecWithPrec(1, 1), math.LegacyZeroDec()), true},
-		{val, types.NewCommission(math.LegacyZeroDec(), math.LegacyZeroDec(), sdk.NewDecWithPrec(-1, 1)), true},
-		{val, types.NewCommission(math.LegacyZeroDec(), sdk.NewDecWithPrec(1, 1), sdk.NewDecWithPrec(2, 1)), true},
+		{val, types.NewCommission(math.LegacyZeroDec(), math.LegacyNewDecWithPrec(-1, 1), math.LegacyZeroDec()), true},
+		{val, types.NewCommission(math.LegacyZeroDec(), math.LegacyNewDec(15000000000), math.LegacyZeroDec()), true},
+		{val, types.NewCommission(math.LegacyNewDecWithPrec(-1, 1), math.LegacyZeroDec(), math.LegacyZeroDec()), true},
+		{val, types.NewCommission(math.LegacyNewDecWithPrec(2, 1), math.LegacyNewDecWithPrec(1, 1), math.LegacyZeroDec()), true},
+		{val, types.NewCommission(math.LegacyZeroDec(), math.LegacyZeroDec(), math.LegacyNewDecWithPrec(-1, 1)), true},
+		{val, types.NewCommission(math.LegacyZeroDec(), math.LegacyNewDecWithPrec(1, 1), math.LegacyNewDecWithPrec(2, 1)), true},
 	}
 
 	for i, tc := range testCases {
@@ -271,7 +275,7 @@ func TestValidatorsSortDeterminism(t *testing.T) {
 	}
 
 	// Save sorted copy
-	sort.Sort(types.Validators(vals))
+	sort.Sort(types.Validators{Validators: vals, ValidatorCodec: authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix())})
 	copy(sortedVals, vals)
 
 	// Randomly shuffle validators, sort, and check it is equal to original sort
@@ -282,13 +286,13 @@ func TestValidatorsSortDeterminism(t *testing.T) {
 			vals[j] = it
 		})
 
-		types.Validators(vals).Sort()
+		types.Validators{Validators: vals, ValidatorCodec: authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix())}.Sort()
 		require.Equal(t, sortedVals, vals, "Validator sort returned different slices")
 	}
 }
 
 // Check SortTendermint sorts the same as tendermint
-func TestValidatorsSortTendermint(t *testing.T) {
+func TestValidatorsSortCometBFT(t *testing.T) {
 	vals := make([]types.Validator, 100)
 
 	for i := range vals {
@@ -296,45 +300,46 @@ func TestValidatorsSortTendermint(t *testing.T) {
 		pk2 := ed25519.GenPrivKey().PubKey()
 		vals[i] = newValidator(t, sdk.ValAddress(pk2.Address()), pk)
 		vals[i].Status = types.Bonded
-		vals[i].VotingPower = sdk.NewInt(rand.Int63())
+		vals[i].VotingPower = math.NewInt(rand.Int63())
 	}
 	// create some validators with the same power
 	for i := 0; i < 10; i++ {
-		vals[i].VotingPower = sdk.NewInt(1000000)
+		vals[i].VotingPower = math.NewInt(1000000)
 	}
 
-	valz := types.Validators(vals)
+	valz := types.Validators{Validators: vals, ValidatorCodec: authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix())}
 
 	// create expected tendermint validators by converting to tendermint then sorting
-	expectedVals, err := teststaking.ToTmValidators(valz, sdk.DefaultPowerReduction)
+	expectedVals, err := toCmtValidators(valz, sdk.DefaultPowerReduction)
 	require.NoError(t, err)
-	sort.Sort(tmtypes.ValidatorsByVotingPower(expectedVals))
+	sort.Sort(cmttypes.ValidatorsByVotingPower(expectedVals))
 
 	// sort in SDK and then convert to tendermint
-	sort.SliceStable(valz, func(i, j int) bool {
-		return types.ValidatorsByVotingPower(valz).Less(i, j, sdk.DefaultPowerReduction)
+	sort.SliceStable(valz.Validators, func(i, j int) bool {
+		return types.ValidatorsByVotingPower(valz.Validators).Less(i, j, sdk.DefaultPowerReduction)
 	})
-	actualVals, err := teststaking.ToTmValidators(valz, sdk.DefaultPowerReduction)
+	actualVals, err := toCmtValidators(valz, sdk.DefaultPowerReduction)
 	require.NoError(t, err)
 
 	require.Equal(t, expectedVals, actualVals, "sorting in SDK is not the same as sorting in Tendermint")
 }
 
-func TestValidatorToTm(t *testing.T) {
-	vals := make(types.Validators, 10)
-	expected := make([]*tmtypes.Validator, 10)
+func TestValidatorToCmt(t *testing.T) {
+	vals := types.Validators{}
+	expected := make([]*cmttypes.Validator, 10)
 
-	for i := range vals {
+	for i := 0; i < 10; i++ {
 		pk := ed25519.GenPrivKey().PubKey()
 		val := newValidator(t, sdk.ValAddress(pk.Address()), pk)
 		val.Status = types.Bonded
-		val.VotingPower = sdk.NewInt(rand.Int63())
-		vals[i] = val
-		tmPk, err := cryptocodec.ToTmPubKeyInterface(pk)
+		val.VotingPower = math.NewInt(rand.Int63())
+		vals.Validators = append(vals.Validators, val)
+		cmtPk, err := cryptocodec.ToCmtPubKeyInterface(pk)
 		require.NoError(t, err)
-		expected[i] = tmtypes.NewValidator(tmPk, val.ConsensusPower(sdk.DefaultPowerReduction))
+		expected[i] = cmttypes.NewValidator(cmtPk, val.ConsensusPower(sdk.DefaultPowerReduction))
 	}
-	vs, err := teststaking.ToTmValidators(vals, sdk.DefaultPowerReduction)
+
+	vs, err := toCmtValidators(vals, sdk.DefaultPowerReduction)
 	require.NoError(t, err)
 	require.Equal(t, expected, vs)
 }
@@ -362,7 +367,44 @@ func mkValidator(tokens sdk.Coins, shares sdk.DecCoins) types.Validator {
 
 // Creates a new validators and asserts the error check.
 func newValidator(t *testing.T, operator sdk.ValAddress, pubKey cryptotypes.PubKey) types.Validator {
-	v, err := types.NewValidator(operator, pubKey, types.Description{})
+	valAddr, err := address.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix()).BytesToString(operator)
+	require.NoError(t, err)
+
+	v, err := types.NewValidator(valAddr, pubKey, types.Description{})
 	require.NoError(t, err)
 	return v
+}
+
+// getCmtConsPubKey gets the validator's public key as a cmtcrypto.PubKey.
+func getCmtConsPubKey(v types.Validator) (cmtcrypto.PubKey, error) {
+	pk, err := v.ConsPubKey()
+	if err != nil {
+		return nil, err
+	}
+
+	return cryptocodec.ToCmtPubKeyInterface(pk)
+}
+
+// toCmtValidator casts an SDK validator to a CometBFT type Validator.
+func toCmtValidator(v types.Validator, r math.Int) (*cmttypes.Validator, error) {
+	tmPk, err := getCmtConsPubKey(v)
+	if err != nil {
+		return nil, err
+	}
+
+	return cmttypes.NewValidator(tmPk, v.ConsensusPower(r)), nil
+}
+
+// toCmtValidators casts all validators to the corresponding CometBFT type.
+func toCmtValidators(v types.Validators, r math.Int) ([]*cmttypes.Validator, error) {
+	validators := make([]*cmttypes.Validator, len(v.Validators))
+	var err error
+	for i, val := range v.Validators {
+		validators[i], err = toCmtValidator(val, r)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return validators, nil
 }

@@ -3,6 +3,7 @@ package keeper_test
 import (
 	"testing"
 
+	"cosmossdk.io/math"
 	abci "github.com/cometbft/cometbft/abci/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -77,7 +78,7 @@ func TestSendCoinsFromModuleToAccount_Blacklist(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
 	testDenom := testDenoms[0]
-	coins := sdk.NewCoins(sdk.NewCoin(testDenom, sdk.NewInt(100)))
+	coins := sdk.NewCoins(sdk.NewCoin(testDenom, math.NewInt(100)))
 	require.NoError(t, input.BankKeeper.MintCoins(ctx, authtypes.Minter, coins))
 	require.Error(t, input.BankKeeper.SendCoinsFromModuleToAccount(
 		ctx, authtypes.Minter, authtypes.NewModuleAddress(authtypes.FeeCollectorName), coins,
@@ -88,7 +89,7 @@ func TestSupply_SendCoins(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
 	testDenom := testDenoms[0]
-	coins := sdk.NewCoins(sdk.NewCoin(testDenom, sdk.NewInt(100)))
+	coins := sdk.NewCoins(sdk.NewCoin(testDenom, math.NewInt(100)))
 	input.BankKeeper.MintCoins(ctx, authtypes.Minter, coins)
 
 	require.Panics(t, func() {
@@ -126,11 +127,11 @@ func TestSupply_MintCoins(t *testing.T) {
 	require.NoError(t, err)
 
 	testDenom := testDenoms[0]
-	coins := sdk.NewCoins(sdk.NewCoin(testDenom, sdk.NewInt(100)))
+	coins := sdk.NewCoins(sdk.NewCoin(testDenom, math.NewInt(100)))
 	require.Panics(t, func() { input.BankKeeper.MintCoins(ctx, "", coins) }, "no module account")                          // nolint:errcheck
 	require.Panics(t, func() { input.BankKeeper.MintCoins(ctx, authtypes.FeeCollectorName, coins) }, "invalid permission") // nolint:errcheck
 	require.Panics(t, func() {
-		input.BankKeeper.MintCoins(ctx, authtypes.Minter, sdk.Coins{sdk.Coin{Denom: "denom", Amount: sdk.NewInt(-10)}})
+		input.BankKeeper.MintCoins(ctx, authtypes.Minter, sdk.Coins{sdk.Coin{Denom: "denom", Amount: math.NewInt(-10)}})
 	}) // nolint:errcheck
 
 	err = input.BankKeeper.MintCoins(ctx, authtypes.Minter, coins)
@@ -147,7 +148,7 @@ func TestSupply_BurnCoins(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
 	testDenom := testDenoms[0]
-	coins := sdk.NewCoins(sdk.NewCoin(testDenom, sdk.NewInt(100)))
+	coins := sdk.NewCoins(sdk.NewCoin(testDenom, math.NewInt(100)))
 
 	// inflate supply
 	require.
@@ -171,7 +172,7 @@ func TestSupply_BurnCoins(t *testing.T) {
 func TestSendCoinsNewAccount(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 	testDenom := testDenoms[0]
-	balances := sdk.NewCoins(sdk.NewCoin(testDenom, sdk.NewInt(100)))
+	balances := sdk.NewCoins(sdk.NewCoin(testDenom, math.NewInt(100)))
 
 	addr1 := sdk.AccAddress([]byte("addr1_______________"))
 	acc1 := input.AccountKeeper.NewAccountWithAddress(ctx, addr1)
@@ -187,7 +188,7 @@ func TestSendCoinsNewAccount(t *testing.T) {
 	input.BankKeeper.GetAllBalances(ctx, addr2)
 	require.Empty(t, input.BankKeeper.GetAllBalances(ctx, addr2))
 
-	sendAmt := sdk.NewCoins(sdk.NewCoin(testDenom, sdk.NewInt(50)))
+	sendAmt := sdk.NewCoins(sdk.NewCoin(testDenom, math.NewInt(50)))
 	require.NoError(t, input.BankKeeper.SendCoins(ctx, addr1, addr2, sendAmt))
 
 	acc2Balances := input.BankKeeper.GetAllBalances(ctx, addr2)
@@ -202,7 +203,7 @@ func TestSendCoinsNewAccount(t *testing.T) {
 func TestSendCoins(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 	testDenom := testDenoms[0]
-	balances := sdk.NewCoins(sdk.NewCoin(testDenom, sdk.NewInt(100)), sdk.NewCoin(bondDenom, sdk.NewInt(100)))
+	balances := sdk.NewCoins(sdk.NewCoin(testDenom, math.NewInt(100)), sdk.NewCoin(bondDenom, math.NewInt(100)))
 
 	addr1 := sdk.AccAddress("addr1_______________")
 	acc1 := input.AccountKeeper.NewAccountWithAddress(ctx, addr1)
@@ -213,18 +214,18 @@ func TestSendCoins(t *testing.T) {
 	input.AccountKeeper.SetAccount(ctx, acc2)
 	input.Faucet.Fund(ctx, addr2, balances...)
 
-	sendAmt := sdk.NewCoins(sdk.NewCoin(testDenom, sdk.NewInt(50)), sdk.NewCoin(bondDenom, sdk.NewInt(25)))
+	sendAmt := sdk.NewCoins(sdk.NewCoin(testDenom, math.NewInt(50)), sdk.NewCoin(bondDenom, math.NewInt(25)))
 	require.Error(t, input.BankKeeper.SendCoins(ctx, addr1, addr2, sendAmt))
 
 	input.Faucet.Fund(ctx, addr1, balances...)
 	require.NoError(t, input.BankKeeper.SendCoins(ctx, addr1, addr2, sendAmt))
 
 	acc1Balances := input.BankKeeper.GetAllBalances(ctx, addr1)
-	expected := sdk.NewCoins(sdk.NewCoin(testDenom, sdk.NewInt(50)), sdk.NewCoin(bondDenom, sdk.NewInt(75)))
+	expected := sdk.NewCoins(sdk.NewCoin(testDenom, math.NewInt(50)), sdk.NewCoin(bondDenom, math.NewInt(75)))
 	require.Equal(t, expected, acc1Balances)
 
 	acc2Balances := input.BankKeeper.GetAllBalances(ctx, addr2)
-	expected = sdk.NewCoins(sdk.NewCoin(testDenom, sdk.NewInt(150)), sdk.NewCoin(bondDenom, sdk.NewInt(125)))
+	expected = sdk.NewCoins(sdk.NewCoin(testDenom, math.NewInt(150)), sdk.NewCoin(bondDenom, math.NewInt(125)))
 	require.Equal(t, expected, acc2Balances)
 
 	var coins sdk.Coins
@@ -246,7 +247,7 @@ func TestValidateBalance(t *testing.T) {
 	acc := input.AccountKeeper.NewAccountWithAddress(ctx, addr1)
 	input.AccountKeeper.SetAccount(ctx, acc)
 
-	balances := sdk.NewCoins(sdk.NewCoin(bondDenom, sdk.NewInt(100)))
+	balances := sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(100)))
 	input.Faucet.Fund(ctx, addr1, balances...)
 	require.NoError(t, input.BankKeeper.ValidateBalance(ctx, addr1))
 }
@@ -302,13 +303,13 @@ func TestHasBalance(t *testing.T) {
 	input.AccountKeeper.SetAccount(ctx, acc)
 
 	testDenom := testDenoms[0]
-	balances := sdk.NewCoins(sdk.NewCoin(testDenom, sdk.NewInt(100)))
-	require.False(t, input.BankKeeper.HasBalance(ctx, addr, sdk.NewCoin(testDenom, sdk.NewInt(99))))
+	balances := sdk.NewCoins(sdk.NewCoin(testDenom, math.NewInt(100)))
+	require.False(t, input.BankKeeper.HasBalance(ctx, addr, sdk.NewCoin(testDenom, math.NewInt(99))))
 
 	input.Faucet.Fund(ctx, addr, balances...)
-	require.False(t, input.BankKeeper.HasBalance(ctx, addr, sdk.NewCoin(testDenom, sdk.NewInt(101))))
-	require.True(t, input.BankKeeper.HasBalance(ctx, addr, sdk.NewCoin(testDenom, sdk.NewInt(100))))
-	require.True(t, input.BankKeeper.HasBalance(ctx, addr, sdk.NewCoin(testDenom, sdk.NewInt(1))))
+	require.False(t, input.BankKeeper.HasBalance(ctx, addr, sdk.NewCoin(testDenom, math.NewInt(101))))
+	require.True(t, input.BankKeeper.HasBalance(ctx, addr, sdk.NewCoin(testDenom, math.NewInt(100))))
+	require.True(t, input.BankKeeper.HasBalance(ctx, addr, sdk.NewCoin(testDenom, math.NewInt(1))))
 }
 
 func TestMsgSendEvents(t *testing.T) {

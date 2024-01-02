@@ -1,9 +1,9 @@
 package keeper
 
 import (
-	"bytes"
 	"fmt"
 
+	"cosmossdk.io/collections"
 	"github.com/initia-labs/initia/x/mstaking/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -52,7 +52,7 @@ func ModuleAccountInvariants(k Keeper) sdk.Invariant {
 		bondedPool := k.GetBondedPool(ctx)
 		notBondedPool := k.GetNotBondedPool(ctx)
 
-		k.IterateValidators(ctx, func(_ int64, validator types.ValidatorI) bool {
+		err := k.IterateValidators(ctx, func(validator types.ValidatorI) (bool, error) {
 			switch validator.GetStatus() {
 			case types.Bonded:
 				bonded = bonded.Add(validator.GetTokens()...)
@@ -61,19 +61,25 @@ func ModuleAccountInvariants(k Keeper) sdk.Invariant {
 			default:
 				panic("invalid validator status")
 			}
-			return false
+			return false, nil
 		})
+		if err != nil {
+			panic(err)
+		}
 
-		k.IterateUnbondingDelegations(ctx, func(_ int64, ubd types.UnbondingDelegation) bool {
+		err = k.IterateUnbondingDelegations(ctx, func(ubd types.UnbondingDelegation) (bool, error) {
 			for _, entry := range ubd.Entries {
 				notBonded = notBonded.Add(entry.Balance...)
 			}
-			return false
+			return false, nil
 		})
+		if err != nil {
+			panic(err)
+		}
 
 		poolBonded := k.bankKeeper.GetAllBalances(ctx, bondedPool.GetAddress())
 		poolNotBonded := k.bankKeeper.GetAllBalances(ctx, notBondedPool.GetAddress())
-		broken := !poolBonded.IsEqual(bonded) || !poolNotBonded.IsEqual(notBonded)
+		broken := !poolBonded.Equal(bonded) || !poolNotBonded.Equal(notBonded)
 
 		// Bonded tokens should equal sum of tokens with bonded validators
 		// Not-bonded tokens should equal unbonding delegations	plus tokens on unbonded validators
@@ -97,29 +103,29 @@ func NonNegativePowerInvariant(k Keeper) sdk.Invariant {
 			msg    string
 			broken bool
 		)
+		k.ValidatorsByPowerIndex.Walk(ctx, nil, func(key collections.Pair[int64, []byte], _ bool) (stop bool, err error) {
+			power := key.K1()
+			valAddr := key.K2()
 
-		iterator := k.ValidatorsPowerStoreIterator(ctx)
-		for ; iterator.Valid(); iterator.Next() {
-			validator, found := k.GetValidator(ctx, iterator.Value())
-			if !found {
-				panic(fmt.Sprintf("validator record not found for address: %X\n", iterator.Value()))
+			validator, err := k.Validators.Get(ctx, valAddr)
+			if err != nil {
+				panic(fmt.Sprintf("validator record not found for address: %X\n", valAddr))
 			}
 
-			powerKey := types.GetValidatorsByPowerIndexKey(validator, k.PowerReduction(ctx))
-
-			if !bytes.Equal(iterator.Key(), powerKey) {
+			if validator.GetConsensusPower(k.PowerReduction(ctx)) != power {
 				broken = true
 				msg += fmt.Sprintf("power store invariance:\n\tvalidator.Power: %v"+
 					"\n\tkey should be: %v\n\tkey in store: %v\n",
-					validator.GetConsensusPower(k.PowerReduction(ctx)), powerKey, iterator.Key())
+					validator.GetConsensusPower(k.PowerReduction(ctx)), power, key)
 			}
 
 			if validator.Tokens.IsAnyNegative() {
 				broken = true
 				msg += fmt.Sprintf("\tnegative tokens for validator: %v\n", validator)
 			}
-		}
-		iterator.Close()
+
+			return false, nil
+		})
 
 		return sdk.FormatInvariant(types.ModuleName, "nonnegative power", fmt.Sprintf("found invalid validator powers\n%s", msg)), broken
 	}
@@ -133,7 +139,11 @@ func PositiveDelegationInvariant(k Keeper) sdk.Invariant {
 			count int
 		)
 
-		delegations := k.GetAllDelegations(ctx)
+		delegations, err := k.GetAllDelegations(ctx)
+		if err != nil {
+			panic(err)
+		}
+
 		for _, delegation := range delegations {
 			if delegation.Shares.IsAnyNegative() {
 				count++
@@ -165,21 +175,38 @@ func DelegatorSharesInvariant(k Keeper) sdk.Invariant {
 			broken bool
 		)
 
-		validators := k.GetAllValidators(ctx)
+		validators, err := k.GetAllValidators(ctx)
+		if err != nil {
+			panic(err)
+		}
+
+		validatorsDelegationShares := map[string]sdk.DecCoins{}
+
 		for _, validator := range validators {
-			valTotalDelShares := validator.GetDelegatorShares()
-			totalDelShares := sdk.NewDecCoins()
+			validatorsDelegationShares[validator.GetOperator()] = sdk.NewDecCoins()
+		}
 
-			delegations := k.GetValidatorDelegations(ctx, validator.GetOperator())
-			for _, delegation := range delegations {
-				totalDelShares = totalDelShares.Add(delegation.Shares...)
-			}
+		// iterate through all the delegations to calculate the total delegation shares for each validator
+		delegations, err := k.GetAllDelegations(ctx)
+		if err != nil {
+			panic(err)
+		}
 
-			if !valTotalDelShares.IsEqual(totalDelShares) {
+		for _, delegation := range delegations {
+			delegationValidatorAddr := delegation.GetValidatorAddr()
+			validatorDelegationShares := validatorsDelegationShares[delegationValidatorAddr]
+			validatorsDelegationShares[delegationValidatorAddr] = validatorDelegationShares.Add(delegation.Shares...)
+		}
+
+		// for each validator, check if its total delegation shares calculated from the step above equals to its expected delegation shares
+		for _, validator := range validators {
+			expValTotalDelShares := validator.GetDelegatorShares()
+			calculatedValTotalDelShares := validatorsDelegationShares[validator.GetOperator()]
+			if !calculatedValTotalDelShares.Equal(expValTotalDelShares) {
 				broken = true
 				msg += fmt.Sprintf("broken delegator shares invariance:\n"+
 					"\tvalidator.DelegatorShares: %v\n"+
-					"\tsum of Delegator.Shares: %v\n", valTotalDelShares, totalDelShares)
+					"\tsum of Delegator.Shares: %v\n", expValTotalDelShares, calculatedValTotalDelShares)
 			}
 		}
 

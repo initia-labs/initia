@@ -35,13 +35,13 @@ var (
 
 	commissionRates = stakingtypes.NewCommissionRates(math.LegacyZeroDec(), math.LegacyZeroDec(), math.LegacyZeroDec())
 
-	genCoins = sdk.NewCoins(sdk.NewCoin(bondDenom, sdk.NewInt(5000000))).Sort()
-	bondCoin = sdk.NewCoin(bondDenom, sdk.NewInt(1000000))
+	genCoins = sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(5000000))).Sort()
+	bondCoin = sdk.NewCoin(bondDenom, math.NewInt(1000000))
 )
 
 func checkBalance(t *testing.T, app *initiaapp.InitiaApp, addr sdk.AccAddress, balances sdk.Coins) {
-	ctxCheck := app.BaseApp.NewContext(true, tmproto.Header{})
-	require.True(t, balances.IsEqual(app.BankKeeper.GetAllBalances(ctxCheck, addr)))
+	ctxCheck := app.BaseApp.NewContext(true)
+	require.True(t, balances.Equal(app.BankKeeper.GetAllBalances(ctxCheck, addr)))
 }
 
 func createApp(t *testing.T) *initiaapp.InitiaApp {

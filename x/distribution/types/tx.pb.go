@@ -7,6 +7,8 @@ import (
 	context "context"
 	fmt "fmt"
 	_ "github.com/cosmos/cosmos-proto"
+	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
+	types "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/cosmos/cosmos-sdk/types/msgservice"
 	_ "github.com/cosmos/cosmos-sdk/types/tx/amino"
 	_ "github.com/cosmos/gogoproto/gogoproto"
@@ -126,38 +128,140 @@ func (m *MsgUpdateParamsResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgUpdateParamsResponse proto.InternalMessageInfo
 
+// DepositValidatorRewardsPool defines the request structure to provide
+// additional rewards to delegators from a specific validator.
+//
+// Since: cosmos-sdk 0.50
+type MsgDepositValidatorRewardsPool struct {
+	Depositor        string                                   `protobuf:"bytes,1,opt,name=depositor,proto3" json:"depositor,omitempty"`
+	ValidatorAddress string                                   `protobuf:"bytes,2,opt,name=validator_address,json=validatorAddress,proto3" json:"validator_address,omitempty"`
+	Denom            string                                   `protobuf:"bytes,3,opt,name=denom,proto3" json:"denom,omitempty"`
+	Amount           github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,4,rep,name=amount,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"amount"`
+}
+
+func (m *MsgDepositValidatorRewardsPool) Reset()         { *m = MsgDepositValidatorRewardsPool{} }
+func (m *MsgDepositValidatorRewardsPool) String() string { return proto.CompactTextString(m) }
+func (*MsgDepositValidatorRewardsPool) ProtoMessage()    {}
+func (*MsgDepositValidatorRewardsPool) Descriptor() ([]byte, []int) {
+	return fileDescriptor_7186433ac180476e, []int{2}
+}
+func (m *MsgDepositValidatorRewardsPool) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgDepositValidatorRewardsPool) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgDepositValidatorRewardsPool.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgDepositValidatorRewardsPool) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgDepositValidatorRewardsPool.Merge(m, src)
+}
+func (m *MsgDepositValidatorRewardsPool) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgDepositValidatorRewardsPool) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgDepositValidatorRewardsPool.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgDepositValidatorRewardsPool proto.InternalMessageInfo
+
+// MsgDepositValidatorRewardsPoolResponse defines the response to executing a
+// MsgDepositValidatorRewardsPool message.
+//
+// Since: cosmos-sdk 0.50
+type MsgDepositValidatorRewardsPoolResponse struct {
+}
+
+func (m *MsgDepositValidatorRewardsPoolResponse) Reset() {
+	*m = MsgDepositValidatorRewardsPoolResponse{}
+}
+func (m *MsgDepositValidatorRewardsPoolResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgDepositValidatorRewardsPoolResponse) ProtoMessage()    {}
+func (*MsgDepositValidatorRewardsPoolResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_7186433ac180476e, []int{3}
+}
+func (m *MsgDepositValidatorRewardsPoolResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgDepositValidatorRewardsPoolResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgDepositValidatorRewardsPoolResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgDepositValidatorRewardsPoolResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgDepositValidatorRewardsPoolResponse.Merge(m, src)
+}
+func (m *MsgDepositValidatorRewardsPoolResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgDepositValidatorRewardsPoolResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgDepositValidatorRewardsPoolResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgDepositValidatorRewardsPoolResponse proto.InternalMessageInfo
+
 func init() {
 	proto.RegisterType((*MsgUpdateParams)(nil), "initia.distribution.v1.MsgUpdateParams")
 	proto.RegisterType((*MsgUpdateParamsResponse)(nil), "initia.distribution.v1.MsgUpdateParamsResponse")
+	proto.RegisterType((*MsgDepositValidatorRewardsPool)(nil), "initia.distribution.v1.MsgDepositValidatorRewardsPool")
+	proto.RegisterType((*MsgDepositValidatorRewardsPoolResponse)(nil), "initia.distribution.v1.MsgDepositValidatorRewardsPoolResponse")
 }
 
 func init() { proto.RegisterFile("initia/distribution/v1/tx.proto", fileDescriptor_7186433ac180476e) }
 
 var fileDescriptor_7186433ac180476e = []byte{
-	// 358 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x92, 0xcf, 0xcc, 0xcb, 0x2c,
-	0xc9, 0x4c, 0xd4, 0x4f, 0xc9, 0x2c, 0x2e, 0x29, 0xca, 0x4c, 0x2a, 0x2d, 0xc9, 0xcc, 0xcf, 0xd3,
-	0x2f, 0x33, 0xd4, 0x2f, 0xa9, 0xd0, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x12, 0x83, 0x28, 0xd0,
-	0x43, 0x56, 0xa0, 0x57, 0x66, 0x28, 0x25, 0x92, 0x9e, 0x9f, 0x9e, 0x0f, 0x56, 0xa2, 0x0f, 0x62,
-	0x41, 0x54, 0x4b, 0x49, 0x26, 0xe7, 0x17, 0xe7, 0xe6, 0x17, 0xc7, 0x43, 0x24, 0x20, 0x1c, 0xa8,
-	0x94, 0x38, 0x84, 0xa7, 0x9f, 0x5b, 0x9c, 0x0e, 0xb2, 0x20, 0xb7, 0x38, 0x1d, 0x2a, 0x21, 0x98,
-	0x98, 0x9b, 0x99, 0x97, 0xaf, 0x0f, 0x26, 0xa1, 0x42, 0x9a, 0x38, 0x5c, 0x85, 0xe2, 0x08, 0xb0,
-	0x52, 0xa5, 0xbd, 0x8c, 0x5c, 0xfc, 0xbe, 0xc5, 0xe9, 0xa1, 0x05, 0x29, 0x89, 0x25, 0xa9, 0x01,
-	0x89, 0x45, 0x89, 0xb9, 0xc5, 0x42, 0x66, 0x5c, 0x9c, 0x89, 0xa5, 0x25, 0x19, 0xf9, 0x45, 0x99,
-	0x25, 0x95, 0x12, 0x8c, 0x0a, 0x8c, 0x1a, 0x9c, 0x4e, 0x12, 0x97, 0xb6, 0xe8, 0x8a, 0x40, 0xdd,
-	0xe3, 0x98, 0x92, 0x52, 0x94, 0x5a, 0x5c, 0x1c, 0x5c, 0x52, 0x94, 0x99, 0x97, 0x1e, 0x84, 0x50,
-	0x2a, 0xe4, 0xc8, 0xc5, 0x56, 0x00, 0x36, 0x41, 0x82, 0x49, 0x81, 0x51, 0x83, 0xdb, 0x48, 0x4e,
-	0x0f, 0xbb, 0xe7, 0xf5, 0x20, 0xf6, 0x38, 0x71, 0x9e, 0xb8, 0x27, 0xcf, 0xb0, 0xe2, 0xf9, 0x06,
-	0x2d, 0xc6, 0x20, 0xa8, 0x46, 0x2b, 0xfd, 0xa6, 0xe7, 0x1b, 0xb4, 0x10, 0x46, 0x76, 0x3d, 0xdf,
-	0xa0, 0x25, 0x83, 0xe2, 0x0b, 0x34, 0xb7, 0x2a, 0x49, 0x72, 0x89, 0xa3, 0x09, 0x05, 0xa5, 0x16,
-	0x17, 0xe4, 0xe7, 0x15, 0xa7, 0x1a, 0x95, 0x71, 0x31, 0xfb, 0x16, 0xa7, 0x0b, 0x65, 0x70, 0xf1,
-	0xa0, 0xf8, 0x4e, 0x1d, 0x97, 0xab, 0xd0, 0xcc, 0x91, 0xd2, 0x27, 0x52, 0x21, 0xcc, 0x42, 0x29,
-	0xd6, 0x06, 0x90, 0x5f, 0x9c, 0x02, 0x56, 0x3c, 0x92, 0x63, 0x3c, 0xf1, 0x48, 0x8e, 0xf1, 0xc2,
-	0x23, 0x39, 0xc6, 0x07, 0x8f, 0xe4, 0x18, 0x27, 0x3c, 0x96, 0x63, 0xb8, 0xf0, 0x58, 0x8e, 0xe1,
-	0xc6, 0x63, 0x39, 0x86, 0x28, 0xa3, 0xf4, 0xcc, 0x92, 0x8c, 0xd2, 0x24, 0xbd, 0xe4, 0xfc, 0x5c,
-	0x7d, 0x88, 0xf9, 0xba, 0x39, 0x89, 0x49, 0xc5, 0x50, 0xb6, 0x7e, 0x05, 0x6a, 0xa4, 0x95, 0x54,
-	0x16, 0xa4, 0x16, 0x27, 0xb1, 0x81, 0xe3, 0xca, 0x18, 0x10, 0x00, 0x00, 0xff, 0xff, 0x83, 0xc3,
-	0x46, 0x5e, 0x6e, 0x02, 0x00, 0x00,
+	// 591 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x53, 0xbf, 0x8f, 0x12, 0x41,
+	0x14, 0xde, 0x05, 0x8f, 0x84, 0xb9, 0x4b, 0xf4, 0x36, 0xc4, 0x03, 0xd4, 0x05, 0x49, 0x54, 0x24,
+	0x61, 0x27, 0x60, 0x62, 0x71, 0x85, 0xf1, 0xd0, 0xd8, 0x61, 0x08, 0x46, 0x0b, 0x1b, 0x32, 0xcb,
+	0x6e, 0x96, 0x89, 0xec, 0xce, 0x66, 0xdf, 0x80, 0x47, 0x67, 0xac, 0x8c, 0x85, 0xb1, 0xb1, 0xb1,
+	0xba, 0xf2, 0x62, 0x45, 0x71, 0xad, 0xfd, 0x95, 0x97, 0xab, 0xac, 0xd4, 0x40, 0x81, 0xff, 0x83,
+	0x8d, 0xd9, 0x9d, 0x81, 0x63, 0x89, 0x87, 0xe6, 0x9a, 0xdd, 0x99, 0xf7, 0xbe, 0xf7, 0xbd, 0x1f,
+	0xdf, 0x1b, 0x54, 0xa0, 0x1e, 0xe5, 0x94, 0x60, 0x8b, 0x02, 0x0f, 0xa8, 0x39, 0xe0, 0x94, 0x79,
+	0x78, 0x58, 0xc3, 0x7c, 0xdf, 0xf0, 0x03, 0xc6, 0x99, 0x76, 0x55, 0x00, 0x8c, 0x65, 0x80, 0x31,
+	0xac, 0xe5, 0x33, 0x0e, 0x73, 0x58, 0x04, 0xc1, 0xe1, 0x49, 0xa0, 0xf3, 0xb9, 0x2e, 0x03, 0x97,
+	0x41, 0x47, 0x38, 0xc4, 0x45, 0xba, 0x76, 0xc4, 0x0d, 0xbb, 0xe0, 0x84, 0x09, 0x5c, 0x70, 0xa4,
+	0x63, 0x9b, 0xb8, 0xd4, 0x63, 0x38, 0xfa, 0x4a, 0x93, 0x2e, 0xb1, 0x26, 0x01, 0x1b, 0x0f, 0x6b,
+	0xa6, 0xcd, 0x49, 0x0d, 0x77, 0x19, 0xf5, 0xa4, 0xff, 0xee, 0x39, 0x55, 0xc7, 0x8a, 0x8c, 0xa0,
+	0xa5, 0xaf, 0x2a, 0xba, 0xdc, 0x04, 0xe7, 0xb9, 0x6f, 0x11, 0x6e, 0xb7, 0x48, 0x40, 0x5c, 0xd0,
+	0xee, 0xa3, 0x34, 0x19, 0xf0, 0x1e, 0x0b, 0x28, 0x1f, 0x65, 0xd5, 0xa2, 0x5a, 0x4e, 0x37, 0xb2,
+	0xa7, 0x47, 0xd5, 0x8c, 0xac, 0x77, 0xcf, 0xb2, 0x02, 0x1b, 0xe0, 0x19, 0x0f, 0xa8, 0xe7, 0xb4,
+	0xcf, 0xa0, 0xda, 0x1e, 0x4a, 0xf9, 0x11, 0x43, 0x36, 0x51, 0x54, 0xcb, 0x9b, 0x75, 0xdd, 0xf8,
+	0xfb, 0x70, 0x0c, 0x91, 0xa7, 0x91, 0x3e, 0xfe, 0x5e, 0x50, 0x0e, 0x67, 0xe3, 0x8a, 0xda, 0x96,
+	0x81, 0xbb, 0xf8, 0xed, 0x6c, 0x5c, 0x39, 0xa3, 0x7c, 0x3f, 0x1b, 0x57, 0xae, 0xc7, 0xba, 0x58,
+	0xa9, 0xb5, 0x94, 0x43, 0x3b, 0x2b, 0xa6, 0xb6, 0x0d, 0x3e, 0xf3, 0xc0, 0x2e, 0xfd, 0x4e, 0x20,
+	0xbd, 0x09, 0xce, 0x63, 0xdb, 0x67, 0x40, 0xf9, 0x0b, 0xd2, 0xa7, 0x16, 0xe1, 0x2c, 0x68, 0xdb,
+	0xaf, 0x49, 0x60, 0x41, 0x8b, 0xb1, 0x7e, 0xd8, 0xa9, 0x25, 0xdc, 0x2c, 0xf8, 0x77, 0xa7, 0x0b,
+	0xa8, 0xf6, 0x14, 0x6d, 0x0f, 0xe7, 0x7c, 0x1d, 0x22, 0x50, 0x51, 0xd3, 0xe9, 0xc6, 0xcd, 0xd3,
+	0xa3, 0xea, 0x0d, 0x19, 0xbf, 0xc8, 0x19, 0x27, 0xba, 0x32, 0x5c, 0xb1, 0x6b, 0x19, 0xb4, 0x61,
+	0xd9, 0x1e, 0x73, 0xb3, 0xc9, 0x90, 0xa3, 0x2d, 0x2e, 0xda, 0x08, 0xa5, 0x88, 0xcb, 0x06, 0x1e,
+	0xcf, 0x5e, 0x2a, 0x26, 0xcb, 0x9b, 0xf5, 0x9c, 0x21, 0x79, 0x43, 0xdd, 0x0d, 0xa9, 0xbb, 0xf1,
+	0x88, 0x51, 0xaf, 0xf1, 0x24, 0x1c, 0xe5, 0x97, 0x1f, 0x85, 0xb2, 0x43, 0x79, 0x6f, 0x60, 0x1a,
+	0x5d, 0xe6, 0xca, 0xf5, 0x92, 0xbf, 0x2a, 0x58, 0xaf, 0x30, 0x1f, 0xf9, 0x36, 0x44, 0x01, 0xf0,
+	0x79, 0x36, 0xae, 0x6c, 0xf5, 0x6d, 0x87, 0x74, 0x47, 0x9d, 0x70, 0x73, 0x40, 0xea, 0x20, 0x12,
+	0xee, 0x3e, 0x7c, 0x77, 0x50, 0x50, 0x7e, 0x1d, 0x14, 0x94, 0x48, 0x8f, 0x45, 0xe3, 0xa1, 0x1e,
+	0xb7, 0x96, 0x08, 0x23, 0x69, 0x70, 0x6c, 0xc8, 0x72, 0xbc, 0xa5, 0x32, 0xba, 0xbd, 0x7e, 0xf8,
+	0x73, 0x9d, 0xea, 0x1f, 0x12, 0x28, 0xd9, 0x04, 0x47, 0xeb, 0xa1, 0xad, 0xd8, 0x1a, 0xde, 0x39,
+	0x6f, 0x7d, 0x56, 0x04, 0xcf, 0xe3, 0xff, 0x04, 0xce, 0x33, 0x6a, 0x9f, 0x54, 0x74, 0x6d, 0xed,
+	0x5a, 0xac, 0x21, 0x5c, 0x13, 0x97, 0x7f, 0x70, 0xb1, 0xb8, 0x79, 0x5d, 0xf9, 0x8d, 0x37, 0xa1,
+	0x08, 0x8d, 0xd6, 0xe1, 0x44, 0x57, 0x8f, 0x27, 0xba, 0x7a, 0x32, 0xd1, 0xd5, 0x9f, 0x13, 0x5d,
+	0xfd, 0x38, 0xd5, 0x95, 0x93, 0xa9, 0xae, 0x7c, 0x9b, 0xea, 0xca, 0xcb, 0xfa, 0x92, 0xc4, 0x22,
+	0x5d, 0xb5, 0x4f, 0x4c, 0x90, 0x67, 0xbc, 0x1f, 0x7f, 0xf5, 0x91, 0xe4, 0x66, 0x2a, 0x7a, 0xec,
+	0xf7, 0xfe, 0x04, 0x00, 0x00, 0xff, 0xff, 0x5a, 0x3e, 0xf7, 0x98, 0xcf, 0x04, 0x00, 0x00,
 }
 
 func (this *MsgUpdateParams) Equal(that interface{}) bool {
@@ -208,6 +312,27 @@ func (this *MsgUpdateParamsResponse) Equal(that interface{}) bool {
 	}
 	return true
 }
+func (this *MsgDepositValidatorRewardsPoolResponse) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*MsgDepositValidatorRewardsPoolResponse)
+	if !ok {
+		that2, ok := that.(MsgDepositValidatorRewardsPoolResponse)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	return true
+}
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ context.Context
@@ -224,6 +349,9 @@ type MsgClient interface {
 	// UpdateParams defines a governance operation for updating the x/distribution
 	// module parameters. The authority is defined in the keeper.
 	UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error)
+	// DepositValidatorRewardsPool defines a method to provide additional rewards
+	// to delegators to a specific validator.
+	DepositValidatorRewardsPool(ctx context.Context, in *MsgDepositValidatorRewardsPool, opts ...grpc.CallOption) (*MsgDepositValidatorRewardsPoolResponse, error)
 }
 
 type msgClient struct {
@@ -243,11 +371,23 @@ func (c *msgClient) UpdateParams(ctx context.Context, in *MsgUpdateParams, opts 
 	return out, nil
 }
 
+func (c *msgClient) DepositValidatorRewardsPool(ctx context.Context, in *MsgDepositValidatorRewardsPool, opts ...grpc.CallOption) (*MsgDepositValidatorRewardsPoolResponse, error) {
+	out := new(MsgDepositValidatorRewardsPoolResponse)
+	err := c.cc.Invoke(ctx, "/initia.distribution.v1.Msg/DepositValidatorRewardsPool", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
 	// UpdateParams defines a governance operation for updating the x/distribution
 	// module parameters. The authority is defined in the keeper.
 	UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error)
+	// DepositValidatorRewardsPool defines a method to provide additional rewards
+	// to delegators to a specific validator.
+	DepositValidatorRewardsPool(context.Context, *MsgDepositValidatorRewardsPool) (*MsgDepositValidatorRewardsPoolResponse, error)
 }
 
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.
@@ -256,6 +396,9 @@ type UnimplementedMsgServer struct {
 
 func (*UnimplementedMsgServer) UpdateParams(ctx context.Context, req *MsgUpdateParams) (*MsgUpdateParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateParams not implemented")
+}
+func (*UnimplementedMsgServer) DepositValidatorRewardsPool(ctx context.Context, req *MsgDepositValidatorRewardsPool) (*MsgDepositValidatorRewardsPoolResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DepositValidatorRewardsPool not implemented")
 }
 
 func RegisterMsgServer(s grpc1.Server, srv MsgServer) {
@@ -280,6 +423,24 @@ func _Msg_UpdateParams_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_DepositValidatorRewardsPool_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgDepositValidatorRewardsPool)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).DepositValidatorRewardsPool(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/initia.distribution.v1.Msg/DepositValidatorRewardsPool",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).DepositValidatorRewardsPool(ctx, req.(*MsgDepositValidatorRewardsPool))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Msg_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "initia.distribution.v1.Msg",
 	HandlerType: (*MsgServer)(nil),
@@ -287,6 +448,10 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateParams",
 			Handler:    _Msg_UpdateParams_Handler,
+		},
+		{
+			MethodName: "DepositValidatorRewardsPool",
+			Handler:    _Msg_DepositValidatorRewardsPool_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -356,6 +521,87 @@ func (m *MsgUpdateParamsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error)
 	return len(dAtA) - i, nil
 }
 
+func (m *MsgDepositValidatorRewardsPool) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgDepositValidatorRewardsPool) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgDepositValidatorRewardsPool) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Amount) > 0 {
+		for iNdEx := len(m.Amount) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Amount[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintTx(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x22
+		}
+	}
+	if len(m.Denom) > 0 {
+		i -= len(m.Denom)
+		copy(dAtA[i:], m.Denom)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Denom)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.ValidatorAddress) > 0 {
+		i -= len(m.ValidatorAddress)
+		copy(dAtA[i:], m.ValidatorAddress)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.ValidatorAddress)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Depositor) > 0 {
+		i -= len(m.Depositor)
+		copy(dAtA[i:], m.Depositor)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Depositor)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgDepositValidatorRewardsPoolResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgDepositValidatorRewardsPoolResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgDepositValidatorRewardsPoolResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
 	offset -= sovTx(v)
 	base := offset
@@ -383,6 +629,42 @@ func (m *MsgUpdateParams) Size() (n int) {
 }
 
 func (m *MsgUpdateParamsResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *MsgDepositValidatorRewardsPool) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Depositor)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.ValidatorAddress)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.Denom)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if len(m.Amount) > 0 {
+		for _, e := range m.Amount {
+			l = e.Size()
+			n += 1 + l + sovTx(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *MsgDepositValidatorRewardsPoolResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -539,6 +821,236 @@ func (m *MsgUpdateParamsResponse) Unmarshal(dAtA []byte) error {
 		}
 		if fieldNum <= 0 {
 			return fmt.Errorf("proto: MsgUpdateParamsResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgDepositValidatorRewardsPool) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgDepositValidatorRewardsPool: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgDepositValidatorRewardsPool: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Depositor", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Depositor = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ValidatorAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ValidatorAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Denom", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Denom = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Amount", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Amount = append(m.Amount, types.Coin{})
+			if err := m.Amount[len(m.Amount)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgDepositValidatorRewardsPoolResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgDepositValidatorRewardsPoolResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgDepositValidatorRewardsPoolResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:

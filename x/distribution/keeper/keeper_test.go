@@ -6,7 +6,6 @@ import (
 
 	"cosmossdk.io/math"
 	customtypes "github.com/initia-labs/initia/x/distribution/types"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -25,15 +24,18 @@ func TestSetWithdrawAddr(t *testing.T) {
 	require.NoError(t, err)
 	twoAddr := sdk.AccAddress(bz)
 
-	params := input.DistKeeper.GetParams(ctx)
+	params, err := input.DistKeeper.Params.Get(ctx)
+	require.NoError(t, err)
 	params.WithdrawAddrEnabled = false
-	input.DistKeeper.SetParams(ctx, params)
+	err = input.DistKeeper.Params.Set(ctx, params)
+	require.NoError(t, err)
 
 	err = input.DistKeeper.SetWithdrawAddr(ctx, oneAddr, twoAddr)
 	require.NotNil(t, err)
 
 	params.WithdrawAddrEnabled = true
-	input.DistKeeper.SetParams(ctx, params)
+	err = input.DistKeeper.Params.Set(ctx, params)
+	require.NoError(t, err)
 
 	err = input.DistKeeper.SetWithdrawAddr(ctx, oneAddr, twoAddr)
 	require.Nil(t, err)
@@ -46,12 +48,12 @@ func TestWithdrawValidatorCommission(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
 	valAddr := createValidatorWithBalance(ctx, input, 100_000_000, 1_000_000, 1)
-	validator, found := input.StakingKeeper.GetValidator(ctx, valAddr)
-	require.True(t, found)
+	validator, err := input.StakingKeeper.Validators.Get(ctx, valAddr)
+	require.NoError(t, err)
 
 	// set module account coins
 	distrAcc := input.DistKeeper.GetDistributionAccount(ctx)
-	coins := sdk.NewCoins(sdk.NewCoin("mytoken", sdk.NewInt(200)), sdk.NewCoin(bondDenom, sdk.NewInt(200)))
+	coins := sdk.NewCoins(sdk.NewCoin("mytoken", math.NewInt(200)), sdk.NewCoin(bondDenom, math.NewInt(200)))
 	input.BankKeeper.MintCoins(ctx, authtypes.Minter, coins)
 	input.BankKeeper.SendCoinsFromModuleToModule(ctx, authtypes.Minter, distrAcc.GetName(), coins)
 
@@ -62,22 +64,24 @@ func TestWithdrawValidatorCommission(t *testing.T) {
 	require.Equal(t, expCoins, balance)
 
 	tokens := sdk.DecCoins{
-		{Denom: "mytoken", Amount: sdk.NewDec(2)},
-		{Denom: bondDenom, Amount: sdk.NewDec(2)},
+		{Denom: "mytoken", Amount: math.LegacyNewDec(2)},
+		{Denom: bondDenom, Amount: math.LegacyNewDec(2)},
 	}
 	input.DistKeeper.AllocateTokensToValidatorPool(ctx, validator, bondDenom, tokens)
 
 	valCommissions := customtypes.DecPools{
 		{Denom: bondDenom, DecCoins: sdk.DecCoins{
-			{Denom: "mytoken", Amount: sdk.NewDec(5).Quo(sdk.NewDec(4))},
-			{Denom: bondDenom, Amount: sdk.NewDec(3).Quo(sdk.NewDec(2))},
+			{Denom: "mytoken", Amount: math.LegacyNewDec(5).Quo(math.LegacyNewDec(4))},
+			{Denom: bondDenom, Amount: math.LegacyNewDec(3).Quo(math.LegacyNewDec(2))},
 		}},
 	}
-	input.DistKeeper.SetValidatorOutstandingRewards(ctx, valAddr, customtypes.ValidatorOutstandingRewards{Rewards: valCommissions})
-	input.DistKeeper.SetValidatorAccumulatedCommission(ctx, valAddr, customtypes.ValidatorAccumulatedCommission{Commissions: valCommissions})
+	err = input.DistKeeper.ValidatorOutstandingRewards.Set(ctx, valAddr, customtypes.ValidatorOutstandingRewards{Rewards: valCommissions})
+	require.NoError(t, err)
+	err = input.DistKeeper.ValidatorAccumulatedCommissions.Set(ctx, valAddr, customtypes.ValidatorAccumulatedCommission{Commissions: valCommissions})
+	require.NoError(t, err)
 
 	// withdraw commission
-	_, err := input.DistKeeper.WithdrawValidatorCommission(ctx, valAddr)
+	_, err = input.DistKeeper.WithdrawValidatorCommission(ctx, valAddr)
 	require.NoError(t, err)
 
 	// check balance increase
@@ -88,15 +92,14 @@ func TestWithdrawValidatorCommission(t *testing.T) {
 	), balance)
 
 	// check remainder
-	remainder := input.DistKeeper.GetValidatorAccumulatedCommission(ctx, valAddr).Commissions
+	commissions, err := input.DistKeeper.ValidatorAccumulatedCommissions.Get(ctx, valAddr)
+	require.NoError(t, err)
 	require.Equal(t,
 		customtypes.DecPools{
 			{Denom: bondDenom, DecCoins: sdk.DecCoins{
-				{Denom: "mytoken", Amount: sdk.NewDec(1).Quo(sdk.NewDec(4))},
-				{Denom: bondDenom, Amount: sdk.NewDec(1).Quo(sdk.NewDec(2))},
-			}}}, remainder)
-
-	require.True(t, true)
+				{Denom: "mytoken", Amount: math.LegacyNewDec(1).Quo(math.LegacyNewDec(4))},
+				{Denom: bondDenom, Amount: math.LegacyNewDec(1).Quo(math.LegacyNewDec(2))},
+			}}}, commissions.Commissions)
 }
 
 func TestGetTotalRewards(t *testing.T) {
@@ -105,14 +108,16 @@ func TestGetTotalRewards(t *testing.T) {
 	valAddr2 := createValidatorWithBalance(ctx, input, 100_000_000, 1_000_000, 2)
 
 	valCommissions := customtypes.DecPools{
-		{Denom: bondDenom, DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: sdk.NewDecWithPrec(500, 1)}}},
-		{Denom: bondDenom, DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: sdk.NewDecWithPrec(700, 1)}}},
+		{Denom: bondDenom, DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(500, 1)}}},
+		{Denom: bondDenom, DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(700, 1)}}},
 	}
 
-	input.DistKeeper.SetValidatorOutstandingRewards(ctx, valAddr1, customtypes.ValidatorOutstandingRewards{Rewards: valCommissions})
-	input.DistKeeper.SetValidatorOutstandingRewards(ctx, valAddr2, customtypes.ValidatorOutstandingRewards{Rewards: valCommissions})
+	err := input.DistKeeper.ValidatorOutstandingRewards.Set(ctx, valAddr1, customtypes.ValidatorOutstandingRewards{Rewards: valCommissions})
+	require.NoError(t, err)
+	err = input.DistKeeper.ValidatorOutstandingRewards.Set(ctx, valAddr2, customtypes.ValidatorOutstandingRewards{Rewards: valCommissions})
+	require.NoError(t, err)
 
-	expectedRewards := valCommissions.Sum().MulDec(sdk.NewDec(2))
+	expectedRewards := valCommissions.Sum().MulDec(math.LegacyNewDec(2))
 	totalRewards := input.DistKeeper.GetTotalRewards(ctx)
 	require.Equal(t, expectedRewards, totalRewards)
 }
@@ -124,15 +129,18 @@ func TestFundCommunityPool(t *testing.T) {
 	require.NoError(t, err)
 	oneAddr := sdk.AccAddress(bz)
 
-	fees := sdk.NewCoins(sdk.NewCoin(bondDenom, sdk.NewInt(100)))
+	fees := sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(100)))
 	input.Faucet.Fund(ctx, oneAddr, fees...)
 
-	initPool := input.DistKeeper.GetFeePool(ctx)
-	assert.Empty(t, initPool.CommunityPool)
+	initPool, err := input.DistKeeper.FeePool.Get(ctx)
+	require.NoError(t, err)
+	require.Empty(t, initPool.CommunityPool)
 
 	err = input.DistKeeper.FundCommunityPool(ctx, fees, oneAddr)
-	assert.Nil(t, err)
+	require.Nil(t, err)
 
-	assert.Equal(t, initPool.CommunityPool.Add(sdk.NewDecCoinsFromCoins(fees...)...), input.DistKeeper.GetFeePool(ctx).CommunityPool)
-	assert.Empty(t, input.BankKeeper.GetAllBalances(ctx, oneAddr))
+	feePool, err := input.DistKeeper.FeePool.Get(ctx)
+	require.NoError(t, err)
+	require.Equal(t, initPool.CommunityPool.Add(sdk.NewDecCoinsFromCoins(fees...)...), feePool.CommunityPool)
+	require.Empty(t, input.BankKeeper.GetAllBalances(ctx, oneAddr))
 }

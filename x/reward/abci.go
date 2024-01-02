@@ -1,8 +1,10 @@
 package reward
 
 import (
+	"context"
 	"time"
 
+	"cosmossdk.io/math"
 	"github.com/initia-labs/initia/x/reward/keeper"
 	"github.com/initia-labs/initia/x/reward/types"
 
@@ -11,58 +13,80 @@ import (
 )
 
 // BeginBlocker mints new tokens for the previous block.
-func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
+func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
 
 	// fetch stored minter & params
-	lastReleaseTimestamp := k.GetLastReleaseTimestamp(ctx)
-	lastDilutionTimestamp := k.GetLastDilutionTimestamp(ctx)
-	annualProvisions := k.GetAnnualProvisions(ctx)
-
-	timeDiff := ctx.BlockTime().Sub(lastReleaseTimestamp)
-	if timeDiff <= 0 {
-		return
+	lastReleaseTimestamp, err := k.GetLastReleaseTimestamp(ctx)
+	if err != nil {
+		return err
+	}
+	lastDilutionTimestamp, err := k.GetLastDilutionTimestamp(ctx)
+	if err != nil {
+		return err
+	}
+	annualProvisions, err := k.GetAnnualProvisions(ctx)
+	if err != nil {
+		return err
 	}
 
-	params := k.GetParams(ctx)
-	if !params.ReleaseEnabled {
-		k.SetLastReleaseTimestamp(ctx, ctx.BlockTime())
-		k.SetLastDilutionTimestamp(ctx, ctx.BlockTime())
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	timeDiff := sdkCtx.BlockTime().Sub(lastReleaseTimestamp)
+	if timeDiff <= 0 {
+		return nil
+	}
 
-		return
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return err
+	}
+
+	if !params.ReleaseEnabled {
+		if err := k.SetLastReleaseTimestamp(ctx, sdkCtx.BlockTime()); err != nil {
+			return err
+		}
+		if err := k.SetLastDilutionTimestamp(ctx, sdkCtx.BlockTime()); err != nil {
+			return err
+		}
+
+		return nil
 	}
 
 	remainRewardAmt := k.GetRemainRewardAmount(ctx, params.RewardDenom)
-	blockProvisionAmt := sdk.MinInt(remainRewardAmt, annualProvisions.Mul(sdk.NewDec(int64(timeDiff)).QuoInt64(int64(time.Hour*24*365))).TruncateInt())
+	blockProvisionAmt := math.MinInt(remainRewardAmt, annualProvisions.Mul(math.LegacyNewDec(int64(timeDiff)).QuoInt64(int64(time.Hour*24*365))).TruncateInt())
 	blockProvisionCoin := sdk.NewCoin(params.RewardDenom, blockProvisionAmt)
 	blockProvisionCoins := sdk.NewCoins(blockProvisionCoin)
 
 	// send the minted coins to the fee collector account
-	err := k.AddCollectedFees(ctx, blockProvisionCoins)
+	err = k.AddCollectedFees(ctx, blockProvisionCoins)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	// update release rate on every year
-	if ctx.BlockTime().Sub(lastDilutionTimestamp) >= time.Duration(params.DilutionPeriod) {
+	if sdkCtx.BlockTime().Sub(lastDilutionTimestamp) >= time.Duration(params.DilutionPeriod) {
 		// dilute release rate
 		releaseRate := params.ReleaseRate.Sub(params.ReleaseRate.Mul(params.DilutionRate))
 
 		// update store
 		if err := k.SetReleaseRate(ctx, releaseRate); err != nil {
-			panic(err)
+			return err
 		}
-		k.SetLastDilutionTimestamp(ctx, ctx.BlockTime())
+		if err := k.SetLastDilutionTimestamp(ctx, sdkCtx.BlockTime()); err != nil {
+			return err
+		}
 	}
 
 	// update last mint timestamp
-	k.SetLastReleaseTimestamp(ctx, ctx.BlockTime())
+	if err := k.SetLastReleaseTimestamp(ctx, sdkCtx.BlockTime()); err != nil {
+		return err
+	}
 
 	if blockProvisionAmt.IsInt64() {
 		defer telemetry.ModuleSetGauge(types.ModuleName, float32(blockProvisionAmt.Int64()), "reward_tokens")
 	}
 
-	ctx.EventManager().EmitEvent(
+	sdkCtx.EventManager().EmitEvent(
 		sdk.NewEvent(
 			types.EventTypeReward,
 			sdk.NewAttribute(types.AttributeKeyReleaseRate, params.ReleaseRate.String()),
@@ -70,4 +94,6 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 			sdk.NewAttribute(sdk.AttributeKeyAmount, blockProvisionAmt.String()),
 		),
 	)
+
+	return nil
 }

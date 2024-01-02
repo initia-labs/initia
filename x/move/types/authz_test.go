@@ -4,17 +4,18 @@ import (
 	"encoding/base64"
 	"testing"
 
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/stretchr/testify/require"
 
 	movetypes "github.com/initia-labs/initia/x/move/types"
 
+	storetypes "cosmossdk.io/store/types"
+	"github.com/cosmos/cosmos-sdk/codec/address"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func TestAuthzPublishAuthorization(t *testing.T) {
 	app := createApp(t)
-	ctx := app.BaseApp.NewContext(false, tmproto.Header{}).WithGasMeter(sdk.NewInfiniteGasMeter())
+	ctx := app.BaseApp.NewContext(false).WithGasMeter(storetypes.NewInfiniteGasMeter())
 
 	secpEncoded := "oRzrCwYAAAAMAQAGAgYOAxQ5BE0EBVFRB6IB6wEIjQMgBq0DMhDfA6sBCooFDAyWBb4BDdQGBAAAAAEAAgADBwAABAcAAgcHAQAAAAUAAQAABgIAAAAIAwQAAAkFBgAACgAHAAALCAAAAAwJCgAADQsKAAEPDg4AAhAQEQEAAhEMEQEACQEKAQEKAgEIAAEGCAADCgICBggBAQsCAQgAAwIKAgoCAgoCAQEIAQEGCAEDCgIGCAAGCAEBAQMKAgoCCgIAAQIBAwMLAgEIAAoCAQEJAAELAgEJAAlzZWNwMjU2azEFZXJyb3IGb3B0aW9uCVB1YmxpY0tleQlTaWduYXR1cmUVcHVibGljX2tleV9mcm9tX2J5dGVzE3B1YmxpY19rZXlfdG9fYnl0ZXMGT3B0aW9uEnJlY292ZXJfcHVibGljX2tleRtyZWNvdmVyX3B1YmxpY19rZXlfaW50ZXJuYWwUc2lnbmF0dXJlX2Zyb21fYnl0ZXMSc2lnbmF0dXJlX3RvX2J5dGVzBnZlcmlmeQ92ZXJpZnlfaW50ZXJuYWwFYnl0ZXMQaW52YWxpZF9hcmd1bWVudARzb21lBG5vbmUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQMIAgAAAAAAAAADCAEAAAAAAAAAAwggAAAAAAAAAAMIIQAAAAAAAAADCEAAAAAAAAAAE2luaXRpYTo6bWV0YWRhdGFfdjCVAQIBAAAAAAAAABNFX1dST05HX1BVQktFWV9TSVpFK1dyb25nIG51bWJlciBvZiBieXRlcyB3ZXJlIGdpdmVuIGFzIHB1YmtleS4CAAAAAAAAABRFX1dST05HX01FU1NBR0VfU0laRSxXcm9uZyBudW1iZXIgb2YgYnl0ZXMgd2VyZSBnaXZlbiBhcyBtZXNzYWdlLgAAAAIBDgoCAQIBDgoCAAEAAAwMDgBBDQcDIQQGBQkHAxEIJwsAEgACAQEAAAwECwAQABQCAgEAAA8eDgBBDQcCIQQGBQsLAgEHABEIJwsBCwALAhABFBEDDAUMBAsFBBoLBBEAOAAMAwUcOAEMAwsDAgMAAgAEAQAADAwOAEENBwQhBAYFCQcAEQgnCwASAQIFAQAADAQLABABFAIGAQAADBYOAEENBwIhBAYFDQsCAQsBAQcAEQgnCwALARAAFAsCEAEUEQcCBwACAAAAAQAA"
 	secpCodeBytes, err := base64.RawStdEncoding.DecodeString(secpEncoded)
@@ -143,7 +144,7 @@ func TestAuthzPublishAuthorization(t *testing.T) {
 
 func TestAuthzExecuteAuthorization(t *testing.T) {
 	app := createApp(t)
-	ctx := app.BaseApp.NewContext(false, tmproto.Header{}).WithGasMeter(sdk.NewInfiniteGasMeter())
+	ctx := app.BaseApp.NewContext(false).WithGasMeter(storetypes.NewInfiniteGasMeter())
 	sender := "init1vrq4g0vq5ccq9khnnn9s3nzrlpvecaj2ext5an"
 	addr1bech := "init1mz6qgwyu850l6xlnlauspwug9n7xun7g7m3n8m"
 	addr1hex := "0xD8B404389C3D1FFD1BF3FF7900BB882CFC6E4FC8"
@@ -359,7 +360,7 @@ func TestAuthzExecuteAuthorization(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.msg, func(t *testing.T) {
-			execAuth, err := movetypes.NewExecuteAuthorization(tc.execItem)
+			execAuth, err := movetypes.NewExecuteAuthorization(address.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix()), tc.execItem)
 			require.NoError(t, err)
 			resp, err := execAuth.Accept(ctx, tc.srvMsg)
 			require.Equal(t, tc.isDelete, resp.Delete)
@@ -380,15 +381,17 @@ func TestAuthzExecuteAuthorizationDuplicate(t *testing.T) {
 	addr1hex := "0x0000000000000000000000000000000000000001"
 	addr2bech := "init1emrdsw8wwj0y4y903qzzaagxqqvgsgns32dkqp"
 
+	ac := address.NewBech32Codec("init")
+
 	// normal cases
-	execAuth, err := movetypes.NewExecuteAuthorization([]movetypes.ExecuteAuthorizationItem{
+	execAuth, err := movetypes.NewExecuteAuthorization(ac, []movetypes.ExecuteAuthorizationItem{
 		{ModuleAddress: addr1hex, ModuleName: "foo", FunctionNames: []string{"*"}},
 		{ModuleAddress: addr2bech, ModuleName: "foo", FunctionNames: []string{"*"}},
 	})
 	require.NoError(t, err)
 	require.NoError(t, execAuth.ValidateBasic())
 
-	execAuth, err = movetypes.NewExecuteAuthorization([]movetypes.ExecuteAuthorizationItem{
+	execAuth, err = movetypes.NewExecuteAuthorization(ac, []movetypes.ExecuteAuthorizationItem{
 		{ModuleAddress: addr1bech, ModuleName: "bar", FunctionNames: []string{"*"}},
 		{ModuleAddress: addr1bech, ModuleName: "foo", FunctionNames: []string{"*"}},
 	})
@@ -396,28 +399,28 @@ func TestAuthzExecuteAuthorizationDuplicate(t *testing.T) {
 	require.NoError(t, execAuth.ValidateBasic())
 
 	// duplicated cases
-	execAuth, err = movetypes.NewExecuteAuthorization([]movetypes.ExecuteAuthorizationItem{
+	execAuth, err = movetypes.NewExecuteAuthorization(ac, []movetypes.ExecuteAuthorizationItem{
 		{ModuleAddress: addr1bech, ModuleName: "foo", FunctionNames: []string{"*"}},
 		{ModuleAddress: addr1bech, ModuleName: "foo", FunctionNames: []string{"*"}},
 	})
 	require.NoError(t, err)
 	require.Error(t, execAuth.ValidateBasic())
 
-	execAuth, err = movetypes.NewExecuteAuthorization([]movetypes.ExecuteAuthorizationItem{
+	execAuth, err = movetypes.NewExecuteAuthorization(ac, []movetypes.ExecuteAuthorizationItem{
 		{ModuleAddress: addr1hex, ModuleName: "foo", FunctionNames: []string{"*"}},
 		{ModuleAddress: addr1hex, ModuleName: "foo", FunctionNames: []string{"*"}},
 	})
 	require.NoError(t, err)
 	require.Error(t, execAuth.ValidateBasic())
 
-	execAuth, err = movetypes.NewExecuteAuthorization([]movetypes.ExecuteAuthorizationItem{
+	execAuth, err = movetypes.NewExecuteAuthorization(ac, []movetypes.ExecuteAuthorizationItem{
 		{ModuleAddress: addr1bech, ModuleName: "foo", FunctionNames: []string{"*"}},
 		{ModuleAddress: addr1hex, ModuleName: "foo", FunctionNames: []string{"*"}},
 	})
 	require.NoError(t, err)
 	require.Error(t, execAuth.ValidateBasic())
 
-	execAuth, err = movetypes.NewExecuteAuthorization([]movetypes.ExecuteAuthorizationItem{
+	execAuth, err = movetypes.NewExecuteAuthorization(ac, []movetypes.ExecuteAuthorizationItem{
 		{ModuleAddress: addr1hex, ModuleName: "foo", FunctionNames: []string{"*"}},
 		{ModuleAddress: addr1bech, ModuleName: "foo", FunctionNames: []string{"*"}},
 	})

@@ -64,14 +64,14 @@ func (suite *AnteTestSuite) TestEnsureMempoolFees() {
 
 	dexPools := make(map[string][]math.Int)
 	dexPools["atom"] = []math.Int{
-		sdk.NewInt(1), // base
-		sdk.NewInt(2), // quote
+		math.NewInt(1), // base
+		math.NewInt(2), // quote
 	}
 
 	dexWeights := make(map[string][]sdk.Dec)
 	dexWeights["atom"] = []sdk.Dec{
-		sdk.NewDecWithPrec(2, 1), // base
-		sdk.NewDecWithPrec(8, 1), // quote
+		math.LegacyNewDecWithPrec(2, 1), // base
+		math.LegacyNewDecWithPrec(8, 1), // quote
 	}
 
 	// set price 0.5 base == 1 quote
@@ -88,9 +88,9 @@ func (suite *AnteTestSuite) TestEnsureMempoolFees() {
 	// msg and signatures
 	// gas price 0.0005
 	msg := testdata.NewTestMsg(addr1)
-	feeAmount := sdk.NewCoins(sdk.NewCoin(baseDenom, sdk.NewInt(100)))
+	feeAmount := sdk.NewCoins(sdk.NewCoin(baseDenom, math.NewInt(100)))
 	gasLimit := uint64(200_000)
-	atomFeeAmount := sdk.NewCoins(sdk.NewCoin("atom", sdk.NewInt(200)))
+	atomFeeAmount := sdk.NewCoins(sdk.NewCoin("atom", math.NewInt(200)))
 
 	suite.Require().NoError(suite.txBuilder.SetMsgs(msg))
 	suite.txBuilder.SetFeeAmount(feeAmount)
@@ -102,7 +102,7 @@ func (suite *AnteTestSuite) TestEnsureMempoolFees() {
 
 	// Set high gas price so standard test fee fails
 	// gas price = 0.004
-	basePrice := sdk.NewDecCoinFromDec(baseDenom, sdk.NewDecWithPrec(4, 3))
+	basePrice := sdk.NewDecCoinFromDec(baseDenom, math.LegacyNewDecWithPrec(4, 3))
 	highGasPrice := []sdk.DecCoin{basePrice}
 	suite.ctx = suite.ctx.WithMinGasPrices(highGasPrice)
 
@@ -124,7 +124,7 @@ func (suite *AnteTestSuite) TestEnsureMempoolFees() {
 	suite.ctx = suite.ctx.WithIsCheckTx(true)
 
 	// gas price = 0.0005
-	basePrice = sdk.NewDecCoinFromDec(baseDenom, sdk.NewDecWithPrec(5, 4))
+	basePrice = sdk.NewDecCoinFromDec(baseDenom, math.LegacyNewDecWithPrec(5, 4))
 	lowGasPrice := []sdk.DecCoin{basePrice}
 	suite.ctx = suite.ctx.WithMinGasPrices(lowGasPrice)
 
@@ -141,7 +141,7 @@ func (suite *AnteTestSuite) TestEnsureMempoolFees() {
 		pools:           dexPools,
 		weights:         dexWeights,
 		baseDenom:       baseDenom,
-		baseMinGasPrice: sdk.NewDecWithPrec(4, 3),
+		baseMinGasPrice: math.LegacyNewDecWithPrec(4, 3),
 	})
 
 	suite.txBuilder.SetFeeAmount(feeAmount)

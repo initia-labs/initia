@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"cosmossdk.io/core/address"
 	"github.com/spf13/cobra"
 
 	movetypes "github.com/initia-labs/initia/x/move/types"
@@ -44,7 +45,7 @@ const (
 )
 
 // GetTxCmd returns the transaction commands for this module
-func GetTxCmd() *cobra.Command {
+func GetTxCmd(ac, vc address.Codec) *cobra.Command {
 	AuthorizationTxCmd := &cobra.Command{
 		Use:                        authz.ModuleName,
 		Short:                      "Authorization transactions subcommands",
@@ -55,15 +56,15 @@ func GetTxCmd() *cobra.Command {
 	}
 
 	AuthorizationTxCmd.AddCommand(
-		NewCmdGrantAuthorization(),
-		NewCmdRevokeAuthorization(),
+		NewCmdGrantAuthorization(ac, vc),
+		NewCmdRevokeAuthorization(ac),
 		NewCmdExecAuthorization(),
 	)
 
 	return AuthorizationTxCmd
 }
 
-func NewCmdGrantAuthorization() *cobra.Command {
+func NewCmdGrantAuthorization(ac, vc address.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "grant <grantee> <authorization_type=\"send\"|\"generic\"|\"delegate\"|\"unbond\"|\"redelegate\"|\"move\"> --from <granter>",
 		Short: "Grant authorization to an address",
@@ -98,7 +99,7 @@ Where authzItems.json contains:
 				return err
 			}
 
-			grantee, err := sdk.AccAddressFromBech32(args[0])
+			grantee, err := ac.StringToBytes(args[0])
 			if err != nil {
 				return err
 			}
@@ -125,7 +126,7 @@ Where authzItems.json contains:
 					return err
 				}
 
-				allowed, err := bech32toAccAddresses(allowList)
+				allowed, err := bech32toAccAddresses(allowList, ac)
 				if err != nil {
 					return err
 				}
@@ -167,23 +168,23 @@ Where authzItems.json contains:
 					delegateLimit = spendLimit
 				}
 
-				allowed, err := bech32toValidatorAddresses(allowValidators)
+				_, err = bech32toValidatorAddresses(allowValidators, vc)
 				if err != nil {
 					return err
 				}
 
-				denied, err := bech32toValidatorAddresses(denyValidators)
+				_, err = bech32toValidatorAddresses(denyValidators, vc)
 				if err != nil {
 					return err
 				}
 
 				switch args[1] {
 				case delegate:
-					authorization, err = mstaking.NewStakeAuthorization(allowed, denied, mstaking.AuthorizationType_AUTHORIZATION_TYPE_DELEGATE, delegateLimit)
+					authorization, err = mstaking.NewStakeAuthorization(allowValidators, denyValidators, mstaking.AuthorizationType_AUTHORIZATION_TYPE_DELEGATE, delegateLimit)
 				case unbond:
-					authorization, err = mstaking.NewStakeAuthorization(allowed, denied, mstaking.AuthorizationType_AUTHORIZATION_TYPE_UNDELEGATE, delegateLimit)
+					authorization, err = mstaking.NewStakeAuthorization(allowValidators, denyValidators, mstaking.AuthorizationType_AUTHORIZATION_TYPE_UNDELEGATE, delegateLimit)
 				default:
-					authorization, err = mstaking.NewStakeAuthorization(allowed, denied, mstaking.AuthorizationType_AUTHORIZATION_TYPE_REDELEGATE, delegateLimit)
+					authorization, err = mstaking.NewStakeAuthorization(allowValidators, denyValidators, mstaking.AuthorizationType_AUTHORIZATION_TYPE_REDELEGATE, delegateLimit)
 				}
 				if err != nil {
 					return err
@@ -274,7 +275,7 @@ func getExpireTime(cmd *cobra.Command) (*time.Time, error) {
 	return &e, nil
 }
 
-func NewCmdRevokeAuthorization() *cobra.Command {
+func NewCmdRevokeAuthorization(ac address.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "revoke [grantee] [msg_type] --from=[granter]",
 		Short: "revoke authorization",
@@ -291,7 +292,7 @@ Example:
 				return err
 			}
 
-			grantee, err := sdk.AccAddressFromBech32(args[0])
+			grantee, err := ac.StringToBytes(args[0])
 			if err != nil {
 				return err
 			}
@@ -345,23 +346,23 @@ Example:
 	return cmd
 }
 
-func bech32toValidatorAddresses(validators []string) ([]sdk.ValAddress, error) {
+func bech32toValidatorAddresses(validators []string, vc address.Codec) ([]sdk.ValAddress, error) {
 	vals := make([]sdk.ValAddress, len(validators))
-	for i, validator := range validators {
-		addr, err := sdk.ValAddressFromBech32(validator)
+	for i, addr := range validators {
+		valAddr, err := vc.StringToBytes(addr)
 		if err != nil {
 			return nil, err
 		}
-		vals[i] = addr
+		vals[i] = valAddr
 	}
 	return vals, nil
 }
 
 // bech32toAccAddresses returns []AccAddress from a list of Bech32 string addresses.
-func bech32toAccAddresses(accAddrs []string) ([]sdk.AccAddress, error) {
+func bech32toAccAddresses(accAddrs []string, ac address.Codec) ([]sdk.AccAddress, error) {
 	addrs := make([]sdk.AccAddress, len(accAddrs))
 	for i, addr := range accAddrs {
-		accAddr, err := sdk.AccAddressFromBech32(addr)
+		accAddr, err := ac.StringToBytes(addr)
 		if err != nil {
 			return nil, err
 		}

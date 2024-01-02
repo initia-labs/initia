@@ -1,10 +1,11 @@
 package keeper
 
 import (
+	"context"
+
 	abci "github.com/cometbft/cometbft/abci/types"
 
-	"github.com/cosmos/cosmos-sdk/store/prefix"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"cosmossdk.io/store/prefix"
 
 	"github.com/initia-labs/initia/x/move/types"
 	vmapi "github.com/initia-labs/initiavm/api"
@@ -12,7 +13,7 @@ import (
 )
 
 func (k Keeper) Initialize(
-	ctx sdk.Context,
+	ctx context.Context,
 	moduleBytes [][]byte,
 	allowArbitrary bool,
 	allowedPublishers []string,
@@ -52,7 +53,7 @@ func (k Keeper) Initialize(
 }
 
 // InitGenesis sets supply information for genesis.
-func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) ([]abci.ValidatorUpdate, error) {
+func (k Keeper) InitGenesis(ctx context.Context, genState types.GenesisState) ([]abci.ValidatorUpdate, error) {
 	k.authKeeper.GetModuleAccount(ctx, types.MoveStakingModuleName)
 
 	params := genState.GetParams()
@@ -118,7 +119,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) ([]abc
 }
 
 // ExportGenesis export genesis state
-func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
+func (k Keeper) ExportGenesis(ctx context.Context) *types.GenesisState {
 	var genState types.GenesisState
 
 	genState.Params = k.GetParams(ctx)

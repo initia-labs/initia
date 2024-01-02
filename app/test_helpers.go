@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"time"
 
+	"cosmossdk.io/math"
 	dbm "github.com/cometbft/cometbft-db"
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/libs/log"
@@ -124,7 +125,7 @@ func SetupWithGenesisAccounts(
 			Jailed:          false,
 			Status:          stakingtypes.Bonded,
 			Tokens:          bondCoins,
-			DelegatorShares: sdk.NewDecCoins(sdk.NewDecCoinFromDec(BondDenom, sdk.OneDec())),
+			DelegatorShares: sdk.NewDecCoins(sdk.NewDecCoinFromDec(BondDenom, math.LegacyOneDec())),
 			Description:     stakingtypes.Description{},
 			UnbondingHeight: int64(0),
 			UnbondingTime:   time.Unix(0, 0).UTC(),
@@ -132,7 +133,7 @@ func SetupWithGenesisAccounts(
 		}
 
 		validators = append(validators, validator)
-		delegations = append(delegations, stakingtypes.NewDelegation(genAccs[0].GetAddress(), val.Address.Bytes(), sdk.NewDecCoins(sdk.NewDecCoinFromDec(BondDenom, sdk.OneDec()))))
+		delegations = append(delegations, stakingtypes.NewDelegation(genAccs[0].GetAddress(), val.Address.Bytes(), sdk.NewDecCoins(sdk.NewDecCoinFromDec(BondDenom, math.LegacyOneDec()))))
 	}
 
 	// set validators and delegations
@@ -142,7 +143,7 @@ func SetupWithGenesisAccounts(
 	// add bonded amount to bonded pool module account
 	balances = append(balances, banktypes.Balance{
 		Address: authtypes.NewModuleAddress(stakingtypes.BondedPoolName).String(),
-		Coins:   sdk.Coins{sdk.NewCoin(BondDenom, bondAmt.Mul(sdk.NewInt(int64(len(valSet.Validators)))))},
+		Coins:   sdk.Coins{sdk.NewCoin(BondDenom, bondAmt.Mul(math.NewInt(int64(len(valSet.Validators)))))},
 	})
 
 	// set validators and delegations

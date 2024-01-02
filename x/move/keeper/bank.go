@@ -1,14 +1,16 @@
 package keeper
 
 import (
+	"context"
 	"fmt"
 
+	"cosmossdk.io/collections"
 	"cosmossdk.io/errors"
 	"cosmossdk.io/math"
 
-	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/cosmos/cosmos-sdk/types/query"
 
 	banktypes "github.com/initia-labs/initia/x/bank/types"
 	"github.com/initia-labs/initia/x/move/types"
@@ -29,18 +31,18 @@ func NewMoveBankKeeper(k *Keeper) MoveBankKeeper {
 
 // GetBalance return move coin balance
 func (k MoveBankKeeper) GetBalance(
-	ctx sdk.Context,
+	ctx context.Context,
 	addr sdk.AccAddress,
 	denom string,
 ) (math.Int, error) {
 	userAddr, err := vmtypes.NewAccountAddressFromBytes(addr[:])
 	if err != nil {
-		return sdk.ZeroInt(), err
+		return math.ZeroInt(), err
 	}
 
 	metadata, err := types.MetadataAddressFromDenom(denom)
 	if err != nil {
-		return sdk.ZeroInt(), err
+		return math.ZeroInt(), err
 	}
 
 	storeAddr := types.UserDerivedObjectAddress(userAddr, metadata)
@@ -48,12 +50,10 @@ func (k MoveBankKeeper) GetBalance(
 	return balance, err
 }
 
-// GetUserStores return a prefix store of table,
-// which holds all primary stores of a user.
-func (k MoveBankKeeper) GetUserStores(
-	ctx sdk.Context,
+func (k MoveBankKeeper) GetUserStoresTableHandle(
+	ctx context.Context,
 	addr sdk.AccAddress,
-) (*prefix.Store, error) {
+) (*vmtypes.AccountAddress, error) {
 	bz, err := k.GetResourceBytes(ctx, vmtypes.StdAddress, vmtypes.StructTag{
 		Address: vmtypes.StdAddress,
 		Module:  types.MoveModuleNamePrimaryFungibleStore,
@@ -74,8 +74,10 @@ func (k MoveBankKeeper) GetUserStores(
 	}
 
 	// check user has a store entry
-	if !k.HasTableEntry(ctx, tableAddr, userAddr[:]) {
-		return nil, nil
+	if ok, err := k.HasTableEntry(ctx, tableAddr, userAddr[:]); err != nil {
+		return nil, err
+	} else if !ok {
+		return nil, err
 	}
 
 	tableEntry, err := k.GetTableEntryBytes(ctx, tableAddr, userAddr[:])
@@ -88,24 +90,97 @@ func (k MoveBankKeeper) GetUserStores(
 		return nil, err
 	}
 
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), append(types.PrefixKeyVMStore, types.GetTableEntryPrefix(tableAddr)...))
-	return &store, nil
+	return &tableAddr, err
+}
+
+func (k MoveBankKeeper) IterateAccountBalances(
+	ctx context.Context,
+	addr sdk.AccAddress,
+	cb func(sdk.Coin) (bool, error),
+) error {
+	tableAddr, err := k.GetUserStoresTableHandle(ctx, addr)
+	if err != nil {
+		return err
+	}
+
+	// no user stores
+	if tableAddr == nil {
+		return nil
+	}
+
+	prefix := types.GetTableEntryPrefix(*tableAddr)
+	return k.VMStore.Walk(ctx, new(collections.Range[[]byte]).Prefix(collections.NewPrefix[[]byte](prefix)), func(_, value []byte) (stop bool, err error) {
+		storeAddr, err := vmtypes.NewAccountAddressFromBytes(value)
+		if err != nil {
+			return true, err
+		}
+
+		metadata, amount, err := k.Balance(ctx, storeAddr)
+		if err != nil {
+			return true, err
+		}
+
+		denom, err := types.DenomFromMetadataAddress(
+			ctx, k, metadata,
+		)
+		if err != nil {
+			return true, err
+		}
+
+		return cb(sdk.NewCoin(denom, amount))
+	})
+}
+
+func (k MoveBankKeeper) GetPaginatedBalances(ctx context.Context, pageReq *query.PageRequest, addr sdk.AccAddress) (sdk.Coins, *query.PageResponse, error) {
+	tableAddr, err := k.GetUserStoresTableHandle(ctx, addr)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// no user stores
+	if tableAddr == nil {
+		return sdk.NewCoins(), nil, nil
+	}
+
+	return query.CollectionPaginate(ctx, k.VMStore, pageReq, func(_, value []byte) (sdk.Coin, error) {
+		storeAddr, err := vmtypes.NewAccountAddressFromBytes(value)
+		if err != nil {
+			return sdk.Coin{}, err
+		}
+
+		metadata, amount, err := k.Balance(ctx, storeAddr)
+		if err != nil {
+			return sdk.Coin{}, err
+		}
+
+		denom, err := types.DenomFromMetadataAddress(
+			ctx, k, metadata,
+		)
+		if err != nil {
+			return sdk.Coin{}, err
+		}
+
+		return sdk.NewCoin(denom, amount), nil
+	}, func(o *query.CollectionsPaginateOptions[[]byte]) {
+		prefix := types.GetTableEntryPrefix(*tableAddr)
+		o.Prefix = &prefix
+	})
 }
 
 // GetSupply return move coin supply
 func (k MoveBankKeeper) GetSupply(
-	ctx sdk.Context,
+	ctx context.Context,
 	denom string,
 ) (math.Int, error) {
 	metadata, err := types.MetadataAddressFromDenom(denom)
 	if err != nil {
-		return sdk.ZeroInt(), err
+		return math.ZeroInt(), err
 	}
 
 	return k.GetSupplyWithMetadata(ctx, metadata)
 }
 
-func (k MoveBankKeeper) GetSupplyWithMetadata(ctx sdk.Context, metadata vmtypes.AccountAddress) (math.Int, error) {
+func (k MoveBankKeeper) GetSupplyWithMetadata(ctx context.Context, metadata vmtypes.AccountAddress) (math.Int, error) {
 	bz, err := k.GetResourceBytes(ctx, metadata, vmtypes.StructTag{
 		Address:  vmtypes.StdAddress,
 		Module:   types.MoveModuleNameFungibleAsset,
@@ -113,23 +188,21 @@ func (k MoveBankKeeper) GetSupplyWithMetadata(ctx sdk.Context, metadata vmtypes.
 		TypeArgs: []vmtypes.TypeTag{},
 	})
 	if err == sdkerrors.ErrNotFound {
-		return sdk.ZeroInt(), nil
+		return math.ZeroInt(), nil
 	}
 	if err != nil {
-		return sdk.ZeroInt(), err
+		return math.ZeroInt(), err
 	}
 
 	num, err := types.ReadSupplyFromSupply(bz)
 	if err != nil {
-		return sdk.ZeroInt(), err
+		return math.ZeroInt(), err
 	}
 
 	return num, nil
 }
 
-// GetIssuers return 0x1 primary_fungible_store's Issuers table prefix store.
-// The caller can consume key of the iterator, which is the metadata address.
-func (k MoveBankKeeper) GetIssuers(ctx sdk.Context) (prefix.Store, error) {
+func (k MoveBankKeeper) GetIssuersTableHandle(ctx context.Context) (*vmtypes.AccountAddress, error) {
 	bz, err := k.GetResourceBytes(ctx, vmtypes.StdAddress, vmtypes.StructTag{
 		Address:  vmtypes.StdAddress,
 		Module:   types.MoveModuleNamePrimaryFungibleStore,
@@ -137,20 +210,84 @@ func (k MoveBankKeeper) GetIssuers(ctx sdk.Context) (prefix.Store, error) {
 		TypeArgs: []vmtypes.TypeTag{},
 	})
 	if err != nil {
-		return prefix.Store{}, err
+		return nil, err
 	}
 
 	tableHandle, err := types.ReadIssuersTableHandleFromModuleStore(bz)
 	if err != nil {
-		return prefix.Store{}, err
+		return nil, err
 	}
 
-	return prefix.NewStore(ctx.KVStore(k.storeKey), append(types.PrefixKeyVMStore, types.GetTableEntryPrefix(tableHandle)...)), nil
+	return &tableHandle, nil
+}
+
+func (k MoveBankKeeper) IterateSupply(ctx context.Context, cb func(supply sdk.Coin) (bool, error)) error {
+	tableAddr, err := k.GetIssuersTableHandle(ctx)
+	if err != nil {
+		return err
+	}
+
+	prefix := types.GetTableEntryPrefix(*tableAddr)
+	return k.VMStore.Walk(ctx, new(collections.Range[[]byte]).Prefix(collections.NewPrefix[[]byte](prefix)), func(key, value []byte) (stop bool, err error) {
+		key = key[len(prefix):]
+
+		metadata, err := vmtypes.NewAccountAddressFromBytes(key)
+		if err != nil {
+			return true, err
+		}
+
+		denom, err := types.DenomFromMetadataAddress(ctx, k, metadata)
+		if err != nil {
+			return true, err
+		}
+
+		amount, err := k.GetSupply(ctx, denom)
+		if err != nil {
+			return true, err
+		}
+		if amount.IsZero() {
+			return false, nil
+		}
+
+		return cb(sdk.Coin{
+			Denom:  denom,
+			Amount: amount,
+		})
+	})
+}
+
+func (k MoveBankKeeper) GetPaginatedSupply(ctx sdk.Context, pageReq *query.PageRequest) (sdk.Coins, *query.PageResponse, error) {
+	tableAddr, err := k.GetIssuersTableHandle(ctx)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	prefix := types.GetTableEntryPrefix(*tableAddr)
+	return query.CollectionPaginate(ctx, k.VMStore, pageReq, func(key, value []byte) (sdk.Coin, error) {
+		key = key[len(prefix):]
+
+		metadata, err := vmtypes.NewAccountAddressFromBytes(key)
+		if err != nil {
+			return sdk.Coin{}, err
+		}
+
+		denom, err := types.DenomFromMetadataAddress(ctx, k, metadata)
+		if err != nil {
+			return sdk.Coin{}, err
+		}
+
+		amount, err := k.GetSupply(ctx, denom)
+		if err != nil {
+			return sdk.Coin{}, err
+		}
+
+		return sdk.NewCoin(denom, amount), nil
+	})
 }
 
 // SendCoins transfer coins to recipient
 func (k MoveBankKeeper) SendCoins(
-	ctx sdk.Context,
+	ctx context.Context,
 	fromAddr sdk.AccAddress,
 	toAddr sdk.AccAddress,
 	coins sdk.Coins,
@@ -166,7 +303,7 @@ func (k MoveBankKeeper) SendCoins(
 
 // BurnCoins burn coins or send to community pool.
 func (k MoveBankKeeper) BurnCoins(
-	ctx sdk.Context,
+	ctx context.Context,
 	accAddr sdk.AccAddress,
 	coins sdk.Coins,
 ) error {
@@ -218,7 +355,7 @@ func (k MoveBankKeeper) BurnCoins(
 
 // MintCoins mint coins to the address
 func (k MoveBankKeeper) MintCoins(
-	ctx sdk.Context,
+	ctx context.Context,
 	accAddr sdk.AccAddress,
 	coins sdk.Coins,
 ) error {
@@ -273,7 +410,7 @@ func (k MoveBankKeeper) MintCoins(
 }
 
 func (k MoveBankKeeper) InitializeCoin(
-	ctx sdk.Context,
+	ctx context.Context,
 	denom string,
 ) error {
 	if types.IsMoveDenom(denom) {
@@ -306,7 +443,7 @@ func (k MoveBankKeeper) InitializeCoin(
 }
 
 func (k MoveBankKeeper) SendCoin(
-	ctx sdk.Context,
+	ctx context.Context,
 	fromAddr sdk.AccAddress,
 	toAddr sdk.AccAddress,
 	denom string,

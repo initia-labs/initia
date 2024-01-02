@@ -96,7 +96,7 @@ func (fc MempoolFeeChecker) CheckTxFeeWithMinGasPrices(ctx sdk.Context, tx sdk.T
 
 func (fc MempoolFeeChecker) fetchPrice(ctx sdk.Context, baseDenom, quoteDenom string) (price sdk.Dec, err error) {
 	if quoteDenom == baseDenom {
-		return sdk.OneDec(), nil
+		return math.LegacyOneDec(), nil
 	}
 
 	if found, err := fc.keeper.HasDexPair(ctx, quoteDenom); err != nil {

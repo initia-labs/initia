@@ -11,7 +11,6 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
 // Staking params default values
@@ -36,23 +35,6 @@ const (
 	DefaultMinVotingPower uint64 = 1_000_000
 )
 
-var (
-	KeyUnbondingTime     = []byte("UnbondingTime")
-	KeyMaxValidators     = []byte("MaxValidators")
-	KeyMaxEntries        = []byte("MaxEntries")
-	KeyBondDenoms        = []byte("BondDenoms")
-	KeyHistoricalEntries = []byte("HistoricalEntries")
-	KeyPowerReduction    = []byte("PowerReduction")
-	KeyMinVotingPower    = []byte("MinVotingPower")
-)
-
-var _ paramtypes.ParamSet = (*Params)(nil)
-
-// ParamTable for staking module
-func ParamKeyTable() paramtypes.KeyTable {
-	return paramtypes.NewKeyTable().RegisterParamSet(&Params{})
-}
-
 // NewParams creates a new Params instance
 func NewParams(unbondingTime time.Duration, maxValidators, maxEntries uint32, historicalEntries uint32, bondDenoms []string, minVotingPower uint64) Params {
 	return Params{
@@ -62,18 +44,6 @@ func NewParams(unbondingTime time.Duration, maxValidators, maxEntries uint32, hi
 		HistoricalEntries: historicalEntries,
 		BondDenoms:        bondDenoms,
 		MinVotingPower:    minVotingPower,
-	}
-}
-
-// Implements params.ParamSet
-func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
-	return paramtypes.ParamSetPairs{
-		paramtypes.NewParamSetPair(KeyUnbondingTime, &p.UnbondingTime, validateUnbondingTime),
-		paramtypes.NewParamSetPair(KeyMaxValidators, &p.MaxValidators, validateMaxValidators),
-		paramtypes.NewParamSetPair(KeyMaxEntries, &p.MaxEntries, validateMaxEntries),
-		paramtypes.NewParamSetPair(KeyHistoricalEntries, &p.HistoricalEntries, validateHistoricalEntries),
-		paramtypes.NewParamSetPair(KeyBondDenoms, &p.BondDenoms, validateBondDenoms),
-		paramtypes.NewParamSetPair(KeyMinVotingPower, &p.MinVotingPower, validateMinVotingPower),
 	}
 }
 
@@ -134,6 +104,10 @@ func (p Params) Validate() error {
 	}
 
 	if err := validateBondDenoms(p.BondDenoms); err != nil {
+		return err
+	}
+
+	if err := validateMinVotingPower(p.MinVotingPower); err != nil {
 		return err
 	}
 
@@ -213,7 +187,7 @@ func ValidatePowerReduction(i interface{}) error {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 
-	if v.LT(sdk.NewInt(1)) {
+	if v.LT(math.OneInt()) {
 		return fmt.Errorf("power reduction cannot be lower than 1")
 	}
 

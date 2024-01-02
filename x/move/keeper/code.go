@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"context"
 
 	"github.com/initia-labs/initia/x/move/types"
 	vmtypes "github.com/initia-labs/initiavm/types"
@@ -17,7 +17,7 @@ func NewCodeKeeper(k *Keeper) CodeKeeper {
 }
 
 // Load the code params from the move store
-func (k CodeKeeper) GetParams(ctx sdk.Context) (bool, []vmtypes.AccountAddress, error) {
+func (k CodeKeeper) GetParams(ctx context.Context) (bool, []vmtypes.AccountAddress, error) {
 	bz, err := k.GetResourceBytes(ctx, vmtypes.StdAddress, vmtypes.StructTag{
 		Address:  vmtypes.StdAddress,
 		Module:   vmtypes.Identifier(types.MoveModuleNameCode),
@@ -32,7 +32,7 @@ func (k CodeKeeper) GetParams(ctx sdk.Context) (bool, []vmtypes.AccountAddress, 
 }
 
 // Load the allow_arbitrary flag from the move store
-func (k CodeKeeper) GetAllowArbitrary(ctx sdk.Context) (bool, error) {
+func (k CodeKeeper) GetAllowArbitrary(ctx context.Context) (bool, error) {
 	bz, err := k.GetResourceBytes(ctx, vmtypes.StdAddress, vmtypes.StructTag{
 		Address:  vmtypes.StdAddress,
 		Module:   vmtypes.Identifier(types.MoveModuleNameCode),
@@ -47,7 +47,7 @@ func (k CodeKeeper) GetAllowArbitrary(ctx sdk.Context) (bool, error) {
 }
 
 // Store the allow_arbitrary flag to move store.
-func (k CodeKeeper) SetAllowArbitrary(ctx sdk.Context, allow bool) error {
+func (k CodeKeeper) SetAllowArbitrary(ctx context.Context, allow bool) error {
 	ser := vmtypes.NewSerializer()
 	if err := ser.SerializeBool(allow); err != nil {
 		return err
@@ -67,7 +67,7 @@ func (k CodeKeeper) SetAllowArbitrary(ctx sdk.Context, allow bool) error {
 }
 
 // Load the allowed_publishers from the move store
-func (k CodeKeeper) GetAllowedPublishers(ctx sdk.Context) ([]vmtypes.AccountAddress, error) {
+func (k CodeKeeper) GetAllowedPublishers(ctx context.Context) ([]vmtypes.AccountAddress, error) {
 	bz, err := k.GetResourceBytes(ctx, vmtypes.StdAddress, vmtypes.StructTag{
 		Address:  vmtypes.StdAddress,
 		Module:   vmtypes.Identifier(types.MoveModuleNameCode),
@@ -83,7 +83,7 @@ func (k CodeKeeper) GetAllowedPublishers(ctx sdk.Context) ([]vmtypes.AccountAddr
 }
 
 // Store the allowed_publishers to move store.
-func (k CodeKeeper) SetAllowedPublishers(ctx sdk.Context, allowedPublishers []vmtypes.AccountAddress) error {
+func (k CodeKeeper) SetAllowedPublishers(ctx context.Context, allowedPublishers []vmtypes.AccountAddress) error {
 	bz, err := vmtypes.SerializeAddressVector(allowedPublishers)
 	if err != nil {
 		return err
@@ -103,7 +103,7 @@ func (k CodeKeeper) SetAllowedPublishers(ctx sdk.Context, allowedPublishers []vm
 }
 
 // GetUpgradePolicy reads upgrade policy from the code module.
-func (k CodeKeeper) GetUpgradePolicy(ctx sdk.Context, addr vmtypes.AccountAddress, name string) (types.UpgradePolicy, error) {
+func (k CodeKeeper) GetUpgradePolicy(ctx context.Context, addr vmtypes.AccountAddress, name string) (types.UpgradePolicy, error) {
 	st := vmtypes.StructTag{
 		Address:  vmtypes.StdAddress,
 		Module:   vmtypes.Identifier(types.MoveModuleNameCode),

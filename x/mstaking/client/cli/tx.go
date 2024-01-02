@@ -5,6 +5,8 @@ import (
 	"os"
 	"strings"
 
+	"cosmossdk.io/core/address"
+	"cosmossdk.io/math"
 	"github.com/spf13/cobra"
 	flag "github.com/spf13/pflag"
 
@@ -29,7 +31,7 @@ var (
 )
 
 // NewTxCmd returns a root CLI command handler for all x/staking transaction commands.
-func NewTxCmd() *cobra.Command {
+func NewTxCmd(ac, vc address.Codec) *cobra.Command {
 	stakingTxCmd := &cobra.Command{
 		Use:                        types.ModuleName,
 		Short:                      "The multi-staking module transaction subcommands",
@@ -39,17 +41,17 @@ func NewTxCmd() *cobra.Command {
 	}
 
 	stakingTxCmd.AddCommand(
-		NewCreateValidatorCmd(),
-		NewEditValidatorCmd(),
-		NewDelegateCmd(),
-		NewRedelegateCmd(),
-		NewUnbondCmd(),
+		NewCreateValidatorCmd(vc),
+		NewEditValidatorCmd(vc),
+		NewDelegateCmd(ac, vc),
+		NewRedelegateCmd(ac, vc),
+		NewUnbondCmd(ac, vc),
 	)
 
 	return stakingTxCmd
 }
 
-func NewCreateValidatorCmd() *cobra.Command {
+func NewCreateValidatorCmd(vc address.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "create-validator",
 		Short: "create new validator initialized with a self-delegation to it",
@@ -64,7 +66,7 @@ func NewCreateValidatorCmd() *cobra.Command {
 				return err
 			}
 
-			txf, msg, err := newBuildCreateValidatorMsg(clientCtx, txf, cmd.Flags())
+			txf, msg, err := newBuildCreateValidatorMsg(clientCtx, txf, cmd.Flags(), vc)
 			if err != nil {
 				return err
 			}
@@ -90,7 +92,7 @@ func NewCreateValidatorCmd() *cobra.Command {
 	return cmd
 }
 
-func NewEditValidatorCmd() *cobra.Command {
+func NewEditValidatorCmd(vc address.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "edit-validator",
 		Short: "edit an existing validator account",
@@ -100,6 +102,11 @@ func NewEditValidatorCmd() *cobra.Command {
 				return err
 			}
 			valAddr := clientCtx.GetFromAddress()
+			valAddrStr, err := vc.BytesToString(valAddr)
+			if err != nil {
+				return err
+			}
+
 			moniker, _ := cmd.Flags().GetString(FlagMoniker)
 			identity, _ := cmd.Flags().GetString(FlagIdentity)
 			website, _ := cmd.Flags().GetString(FlagWebsite)
@@ -107,11 +114,11 @@ func NewEditValidatorCmd() *cobra.Command {
 			details, _ := cmd.Flags().GetString(FlagDetails)
 			description := types.NewDescription(moniker, identity, website, security, details)
 
-			var newRate *sdk.Dec
+			var newRate *math.LegacyDec
 
 			commissionRate, _ := cmd.Flags().GetString(FlagCommissionRate)
 			if commissionRate != "" {
-				rate, err := sdk.NewDecFromStr(commissionRate)
+				rate, err := math.LegacyNewDecFromStr(commissionRate)
 				if err != nil {
 					return fmt.Errorf("invalid new commission rate: %v", err)
 				}
@@ -119,7 +126,10 @@ func NewEditValidatorCmd() *cobra.Command {
 				newRate = &rate
 			}
 
-			msg := types.NewMsgEditValidator(sdk.ValAddress(valAddr), description, newRate)
+			msg := types.NewMsgEditValidator(valAddrStr, description, newRate)
+			if err := msg.Validate(vc); err != nil {
+				return err
+			}
 
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},
@@ -132,7 +142,7 @@ func NewEditValidatorCmd() *cobra.Command {
 	return cmd
 }
 
-func NewDelegateCmd() *cobra.Command {
+func NewDelegateCmd(ac, vc address.Codec) *cobra.Command {
 	bech32PrefixValAddr := sdk.GetConfig().GetBech32ValidatorAddrPrefix()
 
 	cmd := &cobra.Command{
@@ -159,12 +169,20 @@ $ %s tx staking delegate %s1l2rsakp388kuv9k8qzq6lrm9taddae7fpx59wm 1000stake --f
 			}
 
 			delAddr := clientCtx.GetFromAddress()
-			valAddr, err := sdk.ValAddressFromBech32(args[0])
+			delAddrStr, err := ac.BytesToString(delAddr)
 			if err != nil {
 				return err
 			}
 
-			msg := types.NewMsgDelegate(delAddr, valAddr, amount)
+			valAddrStr := args[0]
+			if _, err := vc.StringToBytes(valAddrStr); err != nil {
+				return err
+			}
+
+			msg := types.NewMsgDelegate(delAddrStr, valAddrStr, amount)
+			if err := msg.Validate(ac, vc); err != nil {
+				return err
+			}
 
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},
@@ -175,7 +193,7 @@ $ %s tx staking delegate %s1l2rsakp388kuv9k8qzq6lrm9taddae7fpx59wm 1000stake --f
 	return cmd
 }
 
-func NewRedelegateCmd() *cobra.Command {
+func NewRedelegateCmd(ac, vc address.Codec) *cobra.Command {
 	bech32PrefixValAddr := sdk.GetConfig().GetBech32ValidatorAddrPrefix()
 
 	cmd := &cobra.Command{
@@ -197,13 +215,18 @@ $ %s tx staking redelegate %s1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj %s1l2rsakp3
 				return err
 			}
 			delAddr := clientCtx.GetFromAddress()
-			valSrcAddr, err := sdk.ValAddressFromBech32(args[0])
+			delAddrStr, err := ac.BytesToString(delAddr)
 			if err != nil {
 				return err
 			}
 
-			valDstAddr, err := sdk.ValAddressFromBech32(args[1])
-			if err != nil {
+			valSrcAddrStr := args[0]
+			if _, err := vc.StringToBytes(valSrcAddrStr); err != nil {
+				return err
+			}
+
+			valDstAddrStr := args[0]
+			if _, err := vc.StringToBytes(valDstAddrStr); err != nil {
 				return err
 			}
 
@@ -212,7 +235,10 @@ $ %s tx staking redelegate %s1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj %s1l2rsakp3
 				return err
 			}
 
-			msg := types.NewMsgBeginRedelegate(delAddr, valSrcAddr, valDstAddr, amount)
+			msg := types.NewMsgBeginRedelegate(delAddrStr, valSrcAddrStr, valDstAddrStr, amount)
+			if err := msg.Validate(ac, vc); err != nil {
+				return err
+			}
 
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},
@@ -223,7 +249,7 @@ $ %s tx staking redelegate %s1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj %s1l2rsakp3
 	return cmd
 }
 
-func NewUnbondCmd() *cobra.Command {
+func NewUnbondCmd(ac, vc address.Codec) *cobra.Command {
 	bech32PrefixValAddr := sdk.GetConfig().GetBech32ValidatorAddrPrefix()
 
 	cmd := &cobra.Command{
@@ -245,8 +271,13 @@ $ %s tx staking unbond %s1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj 100stake --from
 				return err
 			}
 			delAddr := clientCtx.GetFromAddress()
-			valAddr, err := sdk.ValAddressFromBech32(args[0])
+			delAddrStr, err := ac.BytesToString(delAddr)
 			if err != nil {
+				return err
+			}
+
+			valAddrStr := args[0]
+			if _, err := vc.StringToBytes(valAddrStr); err != nil {
 				return err
 			}
 
@@ -255,7 +286,10 @@ $ %s tx staking unbond %s1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj 100stake --from
 				return err
 			}
 
-			msg := types.NewMsgUndelegate(delAddr, valAddr, amount)
+			msg := types.NewMsgUndelegate(delAddrStr, valAddrStr, amount)
+			if err := msg.Validate(ac, vc); err != nil {
+				return err
+			}
 
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},
@@ -266,7 +300,7 @@ $ %s tx staking unbond %s1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj 100stake --from
 	return cmd
 }
 
-func newBuildCreateValidatorMsg(clientCtx client.Context, txf tx.Factory, fs *flag.FlagSet) (tx.Factory, *types.MsgCreateValidator, error) {
+func newBuildCreateValidatorMsg(clientCtx client.Context, txf tx.Factory, fs *flag.FlagSet, vc address.Codec) (tx.Factory, *types.MsgCreateValidator, error) {
 	fAmount, _ := fs.GetString(FlagAmount)
 	amount, err := sdk.ParseCoinsNormalized(fAmount)
 	if err != nil {
@@ -307,13 +341,18 @@ func newBuildCreateValidatorMsg(clientCtx client.Context, txf tx.Factory, fs *fl
 		return txf, nil, err
 	}
 
+	valAddrStr, err := vc.BytesToString(valAddr)
+	if err != nil {
+		return txf, nil, err
+	}
+
 	msg, err := types.NewMsgCreateValidator(
-		sdk.ValAddress(valAddr), pk, amount, description, commissionRates,
+		valAddrStr, pk, amount, description, commissionRates,
 	)
 	if err != nil {
 		return txf, nil, err
 	}
-	if err := msg.ValidateBasic(); err != nil {
+	if err := msg.Validate(vc); err != nil {
 		return txf, nil, err
 	}
 
@@ -464,7 +503,7 @@ func PrepareConfigForTxCreateValidator(flagSet *flag.FlagSet, moniker, nodeID, c
 }
 
 // BuildCreateValidatorMsg makes a new MsgCreateValidator.
-func BuildCreateValidatorMsg(clientCtx client.Context, config TxCreateValidatorConfig, txBldr tx.Factory, generateOnly bool) (tx.Factory, sdk.Msg, error) {
+func BuildCreateValidatorMsg(clientCtx client.Context, config TxCreateValidatorConfig, txBldr tx.Factory, generateOnly bool, vc address.Codec) (tx.Factory, sdk.Msg, error) {
 	amounstStr := config.Amount
 	amount, err := sdk.ParseCoinsNormalized(amounstStr)
 
@@ -491,8 +530,13 @@ func BuildCreateValidatorMsg(clientCtx client.Context, config TxCreateValidatorC
 		return txBldr, nil, err
 	}
 
+	valAddrStr, err := vc.BytesToString(valAddr)
+	if err != nil {
+		return txBldr, nil, err
+	}
+
 	msg, err := types.NewMsgCreateValidator(
-		sdk.ValAddress(valAddr), config.PubKey, amount, description, commissionRates,
+		valAddrStr, config.PubKey, amount, description, commissionRates,
 	)
 	if err != nil {
 		return txBldr, msg, err

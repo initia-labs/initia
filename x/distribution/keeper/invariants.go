@@ -3,6 +3,7 @@ package keeper
 import (
 	"fmt"
 
+	"cosmossdk.io/collections"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/distribution/types"
 
@@ -48,13 +49,13 @@ func NonNegativeOutstandingInvariant(k Keeper) sdk.Invariant {
 		var count int
 		var outstanding customtypes.DecPools
 
-		k.IterateValidatorOutstandingRewards(ctx, func(addr sdk.ValAddress, rewards customtypes.ValidatorOutstandingRewards) (stop bool) {
+		k.ValidatorOutstandingRewards.Walk(ctx, nil, func(addr []byte, rewards customtypes.ValidatorOutstandingRewards) (stop bool, err error) {
 			outstanding = rewards.GetRewards()
 			if outstanding.IsAnyNegative() {
 				count++
-				msg += fmt.Sprintf("\t%v has negative outstanding coins: %v\n", addr, outstanding)
+				msg += fmt.Sprintf("\t%v has negative outstanding coins: %v\n", sdk.ValAddress(addr), outstanding)
 			}
-			return false
+			return false, nil
 		})
 		broken := count != 0
 
@@ -73,27 +74,50 @@ func CanWithdrawInvariant(k Keeper) sdk.Invariant {
 		var remaining customtypes.DecPools
 
 		valDelegationAddrs := make(map[string][]sdk.AccAddress)
-		for _, del := range k.stakingKeeper.GetAllSDKDelegations(ctx) {
-			valAddr := del.GetValidatorAddr().String()
-			valDelegationAddrs[valAddr] = append(valDelegationAddrs[valAddr], del.GetDelegatorAddr())
+		allDelegations, err := k.stakingKeeper.GetAllSDKDelegations(ctx)
+		if err != nil {
+			panic(err)
+		}
+		for _, del := range allDelegations {
+			delAddr, err := k.authKeeper.AddressCodec().StringToBytes(del.GetDelegatorAddr())
+			if err != nil {
+				panic(err)
+			}
+			valAddr := del.GetValidatorAddr()
+			valDelegationAddrs[valAddr] = append(valDelegationAddrs[valAddr], delAddr)
 		}
 
 		// iterate over all validators
-		k.stakingKeeper.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) (stop bool) {
-			_, _ = k.WithdrawValidatorCommission(ctx, val.GetOperator())
+		err = k.stakingKeeper.IterateValidators(ctx, func(val stakingtypes.ValidatorI) (stop bool, err error) {
+			valAddr, err := k.stakingKeeper.ValidatorAddressCodec().StringToBytes(val.GetOperator())
+			if err != nil {
+				return false, err
+			}
 
-			delegationAddrs, ok := valDelegationAddrs[val.GetOperator().String()]
+			_, err = k.WithdrawValidatorCommission(ctx, valAddr)
+			if err != nil {
+				return false, err
+			}
+
+			delegationAddrs, ok := valDelegationAddrs[val.GetOperator()]
 			if ok {
 				for _, delAddr := range delegationAddrs {
-					if _, err := k.WithdrawDelegationRewards(ctx, delAddr, val.GetOperator()); err != nil {
-						panic(err)
+					if _, err := k.WithdrawDelegationRewards(ctx, delAddr, valAddr); err != nil {
+						return false, err
 					}
 				}
 			}
 
-			remaining = k.GetValidatorOutstandingRewardsPools(ctx, val.GetOperator())
-			return remaining.IsAnyNegative()
+			remaining, err = k.GetValidatorOutstandingRewardsPools(ctx, valAddr)
+			if err != nil {
+				return false, err
+			}
+
+			return remaining.IsAnyNegative(), nil
 		})
+		if err != nil {
+			panic(err)
+		}
 
 		broken := remaining.IsAnyNegative()
 		return sdk.FormatInvariant(types.ModuleName, "can withdraw",
@@ -106,22 +130,31 @@ func ReferenceCountInvariant(k Keeper) sdk.Invariant {
 	return func(ctx sdk.Context) (string, bool) {
 
 		valCount := uint64(0)
-		k.stakingKeeper.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) (stop bool) {
+		k.stakingKeeper.IterateValidators(ctx, func(val stakingtypes.ValidatorI) (stop bool, err error) {
 			valCount++
-			return false
+			return false, nil
 		})
-		dels := k.stakingKeeper.GetAllSDKDelegations(ctx)
+
+		dels, err := k.stakingKeeper.GetAllSDKDelegations(ctx)
+		if err != nil {
+			panic(err)
+		}
+
 		slashCount := uint64(0)
-		k.IterateValidatorSlashEvents(ctx,
-			func(_ sdk.ValAddress, _ uint64, _ customtypes.ValidatorSlashEvent) (stop bool) {
+		k.ValidatorSlashEvents.Walk(ctx, nil,
+			func(_ collections.Triple[[]byte, uint64, uint64], _ customtypes.ValidatorSlashEvent) (stop bool, err error) {
 				slashCount++
-				return false
+				return false, nil
 			})
 
 		// one record per validator (last tracked period), one record per
 		// delegation (previous period), one record per slash (previous period)
 		expected := valCount + uint64(len(dels)) + slashCount
-		count := k.GetValidatorHistoricalReferenceCount(ctx)
+		count, err := k.GetValidatorHistoricalReferenceCount(ctx)
+		if err != nil {
+			panic(err)
+		}
+
 		broken := count != expected
 
 		return sdk.FormatInvariant(types.ModuleName, "reference count",
@@ -137,18 +170,23 @@ func ModuleAccountInvariant(k Keeper) sdk.Invariant {
 	return func(ctx sdk.Context) (string, bool) {
 
 		var expectedCoins sdk.DecCoins
-		k.IterateValidatorOutstandingRewards(ctx, func(_ sdk.ValAddress, rewards customtypes.ValidatorOutstandingRewards) (stop bool) {
+		k.ValidatorOutstandingRewards.Walk(ctx, nil, func(_ []byte, rewards customtypes.ValidatorOutstandingRewards) (stop bool, err error) {
 			expectedCoins = expectedCoins.Add(rewards.Rewards.Sum()...)
-			return false
+			return false, nil
 		})
 
-		communityPool := k.GetFeePoolCommunityCoins(ctx)
+		feePool, err := k.FeePool.Get(ctx)
+		if err != nil {
+			panic(err)
+		}
+
+		communityPool := feePool.CommunityPool
 		expectedInt, _ := expectedCoins.Add(communityPool...).TruncateDecimal()
 
 		macc := k.GetDistributionAccount(ctx)
 		balances := k.bankKeeper.GetAllBalances(ctx, macc.GetAddress())
 
-		broken := !balances.IsEqual(expectedInt)
+		broken := !balances.Equal(expectedInt)
 		return sdk.FormatInvariant(
 			types.ModuleName, "ModuleAccount coins",
 			fmt.Sprintf("\texpected ModuleAccount coins:     %s\n"+

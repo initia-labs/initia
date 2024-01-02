@@ -9,7 +9,6 @@ import (
 	vmapi "github.com/initia-labs/initiavm/api"
 	vmtypes "github.com/initia-labs/initiavm/types"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
@@ -181,35 +180,35 @@ func BuildExecuteViewFunctionPayload(
 func DeserializeUint64(bz []byte) (math.Int, error) {
 	val, err := vmtypes.DeserializeUint64(bz)
 	if err != nil {
-		return sdk.ZeroInt(), err
+		return math.ZeroInt(), err
 	}
 
-	num := sdk.NewIntFromUint64(val)
+	num := math.NewIntFromUint64(val)
 	return num, nil
 }
 
 // DeserializeDecimal deserialize uint128 bytes to math.Int
-func DeserializeDecimal(bz []byte) (sdk.Dec, error) {
+func DeserializeDecimal(bz []byte) (math.LegacyDec, error) {
 	num, err := DeserializeUint128(bz)
 	if err != nil {
 		return math.LegacyZeroDec(), err
 	}
 
 	// fractional part length is 18
-	return sdk.NewDecFromInt(num).Mul(sdk.NewDecWithPrec(1, 18)), nil
+	return math.LegacyNewDecFromInt(num).Mul(math.LegacyNewDecWithPrec(1, 18)), nil
 }
 
 // DeserializeUint128 deserialize uint128 bytes to math.Int
 func DeserializeUint128(bz []byte) (math.Int, error) {
 	high, low, err := vmtypes.DeserializeUint128(bz)
 	if err != nil {
-		return sdk.ZeroInt(), err
+		return math.ZeroInt(), err
 	}
 
 	n := big.NewInt(0).SetUint64(high)
 	n.Lsh(n, 64)
 	n.Add(n, big.NewInt(0).SetUint64(low))
-	num := sdk.NewIntFromBigInt(n)
+	num := math.NewIntFromBigInt(n)
 	return num, nil
 }
 
@@ -265,7 +264,7 @@ func ReadSupplyFromSupply(bz []byte) (math.Int, error) {
 	supplyBz := bz[cursor : cursor+16]
 	num, err := DeserializeUint128(supplyBz)
 	if err != nil {
-		return sdk.ZeroInt(), err
+		return math.ZeroInt(), err
 	}
 
 	return num, nil
@@ -278,17 +277,17 @@ func ReadBalanceFromFungibleStore(bz []byte) (vmtypes.AccountAddress, math.Int, 
 	// read metadata object
 	metadata, err := vmtypes.NewAccountAddressFromBytes(bz[cursor : cursor+AddressBytesLength])
 	if err != nil {
-		return vmtypes.AccountAddress{}, sdk.ZeroInt(), err
+		return vmtypes.AccountAddress{}, math.ZeroInt(), err
 	}
 	cursor += AddressBytesLength
 
 	// read balance
 	amount, err := vmtypes.DeserializeUint64(bz[cursor : cursor+8])
 	if err != nil {
-		return vmtypes.AccountAddress{}, sdk.ZeroInt(), err
+		return vmtypes.AccountAddress{}, math.ZeroInt(), err
 	}
 
-	return metadata, sdk.NewIntFromUint64(amount), nil
+	return metadata, math.NewIntFromUint64(amount), nil
 }
 
 // ReadIssuersTableHandleFromModuleStore util function to read issuers table handle from primary_fungible_store::ModuleStore
@@ -313,7 +312,7 @@ func ReadUserStoresTableHandleFromModuleStore(bz []byte) (vmtypes.AccountAddress
 }
 
 // ReadWeightsFromDexConfig util function to read pool balances from the DexConfig
-func ReadWeightsFromDexConfig(timestamp math.Int, bz []byte) (sdk.Dec, sdk.Dec, error) {
+func ReadWeightsFromDexConfig(timestamp math.Int, bz []byte) (math.LegacyDec, math.LegacyDec, error) {
 	cursor := int(0)
 
 	// read extend_ref
@@ -385,9 +384,9 @@ func ReadStoresFromPool(bz []byte) (vmtypes.AccountAddress, vmtypes.AccountAddre
 
 // GetDexWeight conduct same calculation with `get_weight` of dex contract
 func GetPoolWeights(
-	weightCoinABefore, weightCoinBBefore, weightCoinAAfter, weightCoinBAfter sdk.Dec,
+	weightCoinABefore, weightCoinBBefore, weightCoinAAfter, weightCoinBAfter math.LegacyDec,
 	timestampBefore, timestampAfter, timestamp math.Int,
-) (sdk.Dec, sdk.Dec, error) {
+) (math.LegacyDec, math.LegacyDec, error) {
 	if timestampBefore.GT(timestamp) {
 		return math.LegacyZeroDec(), math.LegacyZeroDec(), ErrInvalidDexConfig
 	}
@@ -408,8 +407,8 @@ func GetPoolWeights(
 // GetPoolSpotPrice return quote price in base unit
 func GetPoolSpotPrice(
 	balanceBase, balanceQuote math.Int,
-	weightBase, weightQuote sdk.Dec,
-) sdk.Dec {
+	weightBase, weightQuote math.LegacyDec,
+) math.LegacyDec {
 	numerator := weightQuote.MulInt(balanceBase)
 	denominator := weightBase.MulInt(balanceQuote)
 

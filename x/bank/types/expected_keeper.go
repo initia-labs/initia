@@ -1,32 +1,36 @@
 package types
 
 import (
+	"context"
+
 	"cosmossdk.io/math"
 
-	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/query"
 
 	vmtypes "github.com/initia-labs/initiavm/types"
 )
 
 type MoveBankKeeper interface {
 	// balance
-	GetBalance(ctx sdk.Context, addr sdk.AccAddress, denom string) (math.Int, error)
-	GetUserStores(ctx sdk.Context, addr sdk.AccAddress) (*prefix.Store, error)
+	GetBalance(ctx context.Context, addr sdk.AccAddress, denom string) (math.Int, error)
+	GetPaginatedBalances(ctx context.Context, pageReq *query.PageRequest, addr sdk.AccAddress) (sdk.Coins, *query.PageResponse, error)
+	GetPaginatedSupply(ctx sdk.Context, pageReq *query.PageRequest) (sdk.Coins, *query.PageResponse, error)
+	IterateAccountBalances(ctx context.Context, addr sdk.AccAddress, cb func(sdk.Coin) (bool, error)) error
+	IterateSupply(ctx context.Context, cb func(supply sdk.Coin) (bool, error)) error
 
 	// store balance
-	Balance(ctx sdk.Context, store vmtypes.AccountAddress) (vmtypes.AccountAddress, math.Int, error)
+	Balance(ctx context.Context, store vmtypes.AccountAddress) (vmtypes.AccountAddress, math.Int, error)
 
 	// operations
-	SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) error
-	MintCoins(ctx sdk.Context, addr sdk.AccAddress, amount sdk.Coins) error
-	BurnCoins(ctx sdk.Context, addr sdk.AccAddress, amount sdk.Coins) error
+	SendCoins(ctx context.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) error
+	MintCoins(ctx context.Context, addr sdk.AccAddress, amount sdk.Coins) error
+	BurnCoins(ctx context.Context, addr sdk.AccAddress, amount sdk.Coins) error
 
 	// supply
-	GetSupply(ctx sdk.Context, denom string) (math.Int, error)
-	GetIssuers(ctx sdk.Context) (prefix.Store, error)
+	GetSupply(ctx context.Context, denom string) (math.Int, error)
 
 	// fungible asset
-	Issuer(sdk.Context, vmtypes.AccountAddress) (vmtypes.AccountAddress, error)
-	Symbol(sdk.Context, vmtypes.AccountAddress) (string, error)
+	Issuer(context.Context, vmtypes.AccountAddress) (vmtypes.AccountAddress, error)
+	Symbol(context.Context, vmtypes.AccountAddress) (string, error)
 }

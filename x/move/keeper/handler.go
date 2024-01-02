@@ -1,11 +1,12 @@
 package keeper
 
 import (
+	"context"
 	"errors"
 	"math"
 	"strings"
 
-	"github.com/cosmos/cosmos-sdk/store/prefix"
+	"cosmossdk.io/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
@@ -16,7 +17,7 @@ import (
 )
 
 func isSimulationOrCheckTx(
-	ctx sdk.Context,
+	ctx context.Context,
 ) bool {
 	if ctx.IsCheckTx() || ctx.IsReCheckTx() {
 		return true
@@ -46,7 +47,7 @@ func (k Keeper) extractModuleIdentifier(moduleBundle vmtypes.ModuleBundle) ([]st
 }
 
 func (k Keeper) PublishModuleBundle(
-	ctx sdk.Context,
+	ctx context.Context,
 	sender vmtypes.AccountAddress,
 	moduleBundle vmtypes.ModuleBundle,
 	upgradePolicy types.UpgradePolicy,
@@ -94,7 +95,7 @@ func (k Keeper) PublishModuleBundle(
 }
 
 func (k Keeper) ExecuteEntryFunction(
-	ctx sdk.Context,
+	ctx context.Context,
 	sender vmtypes.AccountAddress,
 	moduleAddr vmtypes.AccountAddress,
 	moduleName string,
@@ -114,7 +115,7 @@ func (k Keeper) ExecuteEntryFunction(
 }
 
 func (k Keeper) ExecuteEntryFunctionWithMultiSenders(
-	ctx sdk.Context,
+	ctx context.Context,
 	senders []vmtypes.AccountAddress,
 	moduleAddr vmtypes.AccountAddress,
 	moduleName string,
@@ -197,7 +198,7 @@ func (k Keeper) ExecuteEntryFunctionWithMultiSenders(
 }
 
 func (k Keeper) ExecuteScript(
-	ctx sdk.Context,
+	ctx context.Context,
 	sender vmtypes.AccountAddress,
 	byteCodes []byte,
 	typeArgs []vmtypes.TypeTag,
@@ -213,7 +214,7 @@ func (k Keeper) ExecuteScript(
 }
 
 func (k Keeper) ExecuteScriptWithMultiSenders(
-	ctx sdk.Context,
+	ctx context.Context,
 	senders []vmtypes.AccountAddress,
 	byteCodes []byte,
 	typeArgs []vmtypes.TypeTag,
@@ -289,7 +290,7 @@ func (k Keeper) ExecuteScriptWithMultiSenders(
 }
 
 func (k Keeper) handleExecuteResponse(
-	ctx sdk.Context,
+	ctx context.Context,
 	gasMeter sdk.GasMeter,
 	execRes vmtypes.ExecutionResult,
 ) error {
@@ -311,7 +312,7 @@ func (k Keeper) handleExecuteResponse(
 	for _, acc := range execRes.NewAccounts {
 		addr := types.ConvertVMAddressToSDKAddress(acc.Address)
 
-		var accI authtypes.AccountI
+		var accI sdk.AccountI
 		switch acc.AccountType {
 		case vmtypes.AccountType_Base:
 			accI = authtypes.NewBaseAccountWithAddress(addr)
@@ -355,7 +356,7 @@ func (k Keeper) handleExecuteResponse(
 }
 
 // DispatchMessages run the given cosmos messages and emit events
-func (k Keeper) DispatchMessages(ctx sdk.Context, messages []vmtypes.CosmosMessage) error {
+func (k Keeper) DispatchMessages(ctx context.Context, messages []vmtypes.CosmosMessage) error {
 	for _, message := range messages {
 		msg, err := types.ConvertToSDKMessage(ctx, NewMoveBankKeeper(&k), NewNftKeeper(&k), message)
 		if err != nil {
@@ -387,7 +388,7 @@ func (k Keeper) DispatchMessages(ctx sdk.Context, messages []vmtypes.CosmosMessa
 }
 
 // DistributeContractSharedRevenue distribute a portion of gas fee to contract creator account
-func (k Keeper) DistributeContractSharedRevenue(ctx sdk.Context, gasUsages []vmtypes.GasUsage) error {
+func (k Keeper) DistributeContractSharedRevenue(ctx context.Context, gasUsages []vmtypes.GasUsage) error {
 	value := ctx.Value(ante.GasPricesContextKey)
 	if value == nil {
 		return nil
@@ -406,7 +407,7 @@ func (k Keeper) DistributeContractSharedRevenue(ctx sdk.Context, gasUsages []vmt
 			continue
 		}
 
-		revenue, _ := revenueGasPrices.MulDec(sdk.NewDec(int64(gasUsage.GasUsed))).TruncateDecimal()
+		revenue, _ := revenueGasPrices.MulDec(math.LegacyNewDec(int64(gasUsage.GasUsed))).TruncateDecimal()
 		if revenue.IsZero() {
 			continue
 		}

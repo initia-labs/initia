@@ -7,13 +7,10 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/cosmos/cosmos-sdk/store/prefix"
+	"cosmossdk.io/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/cosmos/cosmos-sdk/x/bank/types"
-
-	movetypes "github.com/initia-labs/initia/x/move/types"
-	vmtypes "github.com/initia-labs/initiavm/types"
 )
 
 var _ types.QueryServer = BaseKeeper{}
@@ -58,44 +55,9 @@ func (k BaseKeeper) AllBalances(ctx context.Context, req *types.QueryAllBalances
 		return nil, status.Errorf(codes.InvalidArgument, "invalid address: %s", err.Error())
 	}
 
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-
-	balances := sdk.NewCoins()
-	userStores, err := k.mk.GetUserStores(sdkCtx, addr)
+	balances, pageRes, err := k.mk.AllBalances(ctx, req.Pagination, addr)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to load user stores: %s", err.Error())
-	}
-
-	// stores not found
-	if userStores == nil {
-		return &types.QueryAllBalancesResponse{Balances: balances, Pagination: nil}, nil
-	}
-
-	pageRes, err := query.Paginate(userStores, req.Pagination, func(_key, value []byte) error {
-		storeAddr, err := vmtypes.NewAccountAddressFromBytes(value)
-		if err != nil {
-			return err
-		}
-
-		metadata, amount, err := k.mk.Balance(sdkCtx, storeAddr)
-		if err != nil {
-			return err
-		}
-
-		denom, err := movetypes.DenomFromMetadataAddress(
-			sdkCtx,
-			k.mk,
-			metadata,
-		)
-		if err != nil {
-			return err
-		}
-
-		balances = append(balances, sdk.NewCoin(denom, amount))
-		return nil
-	})
-	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "paginate: %v", err)
 	}
 
 	return &types.QueryAllBalancesResponse{Balances: balances, Pagination: pageRes}, nil
@@ -113,42 +75,10 @@ func (k BaseKeeper) SpendableBalances(ctx context.Context, req *types.QuerySpend
 		return nil, status.Errorf(codes.InvalidArgument, "invalid address: %s", err.Error())
 	}
 
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-
-	balances := sdk.NewCoins()
-	userStores, err := k.mk.GetUserStores(sdkCtx, addr)
+	balances, pageRes, err := k.mk.AllBalances(ctx, req.Pagination, addr)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to load user stores: %s", err.Error())
 	}
-
-	// stores not found
-	if userStores == nil {
-		return &types.QuerySpendableBalancesResponse{Balances: balances, Pagination: nil}, nil
-	}
-
-	pageRes, err := query.Paginate(userStores, req.Pagination, func(_key, value []byte) error {
-		storeAddr, err := vmtypes.NewAccountAddressFromBytes(value)
-		if err != nil {
-			return err
-		}
-
-		metadata, amount, err := k.mk.Balance(sdkCtx, storeAddr)
-		if err != nil {
-			return err
-		}
-
-		denom, err := movetypes.DenomFromMetadataAddress(
-			sdkCtx,
-			k.mk,
-			metadata,
-		)
-		if err != nil {
-			return err
-		}
-
-		balances = append(balances, sdk.NewCoin(denom, amount))
-		return nil
-	})
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "paginate: %v", err)
 	}

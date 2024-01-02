@@ -1,14 +1,16 @@
 package keeper
 
 import (
-	goerrors "errors"
+	"bytes"
+	"context"
+	"errors"
 	"fmt"
 	"strconv"
-	"strings"
+	"time"
 
-	"cosmossdk.io/errors"
+	"cosmossdk.io/collections"
+	errorsmod "cosmossdk.io/errors"
 
-	"github.com/cosmos/cosmos-sdk/client"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/gov/types"
 	v1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
@@ -16,15 +18,16 @@ import (
 	customtypes "github.com/initia-labs/initia/x/gov/types"
 )
 
-// SubmitProposal create new proposal given a content
-func (keeper Keeper) SubmitProposal(ctx sdk.Context, messages []sdk.Msg, metadata, title, summary string, proposer sdk.AccAddress) (v1.Proposal, error) {
+// SubmitProposal creates a new proposal given an array of messages
+func (keeper Keeper) SubmitProposal(ctx context.Context, messages []sdk.Msg, metadata, title, summary string, proposer sdk.AccAddress, expedited bool) (v1.Proposal, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	err := keeper.assertMetadataLength(metadata)
 	if err != nil {
 		return v1.Proposal{}, err
 	}
 
 	// assert summary is no longer than predefined max length of metadata
-	err = keeper.assertMetadataLength(summary)
+	err = keeper.assertSummaryLength(summary)
 	if err != nil {
 		return v1.Proposal{}, err
 	}
@@ -35,33 +38,38 @@ func (keeper Keeper) SubmitProposal(ctx sdk.Context, messages []sdk.Msg, metadat
 		return v1.Proposal{}, err
 	}
 
-	// Will hold a string slice of all Msg type URLs.
-	msgs := []string{}
+	// Will hold a comma-separated string of all Msg type URLs.
+	msgsStr := ""
 
 	// Loop through all messages and confirm that each has a handler and the gov module account
 	// as the only signer
 	for _, msg := range messages {
-		msgs = append(msgs, sdk.MsgTypeURL(msg))
+		msgsStr += fmt.Sprintf(",%s", sdk.MsgTypeURL(msg))
 
 		// perform a basic validation of the message
-		if err := msg.ValidateBasic(); err != nil {
-			return v1.Proposal{}, errors.Wrap(types.ErrInvalidProposalMsg, err.Error())
+		if m, ok := msg.(sdk.HasValidateBasic); ok {
+			if err := m.ValidateBasic(); err != nil {
+				return v1.Proposal{}, errorsmod.Wrap(types.ErrInvalidProposalMsg, err.Error())
+			}
 		}
 
-		signers := msg.GetSigners()
+		signers, _, err := keeper.cdc.GetMsgV1Signers(msg)
+		if err != nil {
+			return v1.Proposal{}, err
+		}
 		if len(signers) != 1 {
 			return v1.Proposal{}, types.ErrInvalidSigner
 		}
 
 		// assert that the governance module account is the only signer of the messages
-		if !signers[0].Equals(keeper.GetGovernanceAccount(ctx).GetAddress()) {
-			return v1.Proposal{}, errors.Wrapf(types.ErrInvalidSigner, signers[0].String())
+		if !bytes.Equal(signers[0], keeper.GetGovernanceAccount(ctx).GetAddress()) {
+			return v1.Proposal{}, errorsmod.Wrapf(types.ErrInvalidSigner, sdk.AccAddress(signers[0]).String())
 		}
 
 		// use the msg service router to see that there is a valid route for that message.
 		handler := keeper.router.Handler(msg)
 		if handler == nil {
-			return v1.Proposal{}, errors.Wrap(types.ErrUnroutableProposalMsg, sdk.MsgTypeURL(msg))
+			return v1.Proposal{}, errorsmod.Wrap(types.ErrUnroutableProposalMsg, sdk.MsgTypeURL(msg))
 		}
 
 		// Only if it's a MsgExecLegacyContent do we try to execute the
@@ -70,238 +78,221 @@ func (keeper Keeper) SubmitProposal(ctx sdk.Context, messages []sdk.Msg, metadat
 		// They may fail upon execution.
 		// ref: https://github.com/cosmos/cosmos-sdk/pull/10868#discussion_r784872842
 		if msg, ok := msg.(*v1.MsgExecLegacyContent); ok {
-			cacheCtx, _ := ctx.CacheContext()
+			cacheCtx, _ := sdkCtx.CacheContext()
 			if _, err := handler(cacheCtx, msg); err != nil {
-				if goerrors.Is(types.ErrNoProposalHandlerExists, err) {
+				if errors.Is(types.ErrNoProposalHandlerExists, err) {
 					return v1.Proposal{}, err
 				}
-				return v1.Proposal{}, errors.Wrap(types.ErrInvalidProposalContent, err.Error())
+				return v1.Proposal{}, errorsmod.Wrap(types.ErrInvalidProposalContent, err.Error())
 			}
 		}
+
 	}
 
-	proposalID, err := keeper.GetProposalID(ctx)
+	proposalID, err := keeper.ProposalID.Next(ctx)
 	if err != nil {
 		return v1.Proposal{}, err
 	}
 
-	submitTime := ctx.BlockHeader().Time
-	depositPeriod := keeper.GetParams(ctx).MaxDepositPeriod
-
-	proposal, err := v1.NewProposal(messages, proposalID, submitTime, submitTime.Add(depositPeriod), metadata, title, summary, proposer)
+	params, err := keeper.Params.Get(ctx)
 	if err != nil {
 		return v1.Proposal{}, err
 	}
 
-	keeper.SetProposal(ctx, proposal)
-	keeper.InsertInactiveProposalQueue(ctx, proposalID, *proposal.DepositEndTime)
-	keeper.SetProposalID(ctx, proposalID+1)
+	submitTime := sdkCtx.BlockHeader().Time
+	depositPeriod := params.MaxDepositPeriod
+
+	proposal, err := v1.NewProposal(messages, proposalID, submitTime, submitTime.Add(depositPeriod), metadata, title, summary, proposer, expedited)
+	if err != nil {
+		return v1.Proposal{}, err
+	}
+
+	err = keeper.SetProposal(ctx, proposal)
+	if err != nil {
+		return v1.Proposal{}, err
+	}
+	err = keeper.InactiveProposalsQueue.Set(ctx, collections.Join(*proposal.DepositEndTime, proposalID), proposalID)
+	if err != nil {
+		return v1.Proposal{}, err
+	}
 
 	// called right after a proposal is submitted
-	keeper.Hooks().AfterProposalSubmission(ctx, proposalID)
+	err = keeper.Hooks().AfterProposalSubmission(ctx, proposalID)
+	if err != nil {
+		return v1.Proposal{}, err
+	}
 
-	ctx.EventManager().EmitEvent(
+	sdkCtx.EventManager().EmitEvent(
 		sdk.NewEvent(
 			types.EventTypeSubmitProposal,
 			sdk.NewAttribute(types.AttributeKeyProposalID, fmt.Sprintf("%d", proposalID)),
-			sdk.NewAttribute(types.AttributeKeyProposalMessages, strings.Join(msgs, ",")),
+			sdk.NewAttribute(types.AttributeKeyProposalMessages, msgsStr),
 		),
 	)
 
 	return proposal, nil
 }
 
-// GetProposal get proposal from store by ProposalID
-func (keeper Keeper) GetProposal(ctx sdk.Context, proposalID uint64) (v1.Proposal, bool) {
-	store := ctx.KVStore(keeper.storeKey)
-
-	bz := store.Get(types.ProposalKey(proposalID))
-	if bz == nil {
-		return v1.Proposal{}, false
+// CancelProposal will cancel proposal before the voting period ends
+func (keeper Keeper) CancelProposal(ctx context.Context, proposalID uint64, proposer string) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	proposal, err := keeper.Proposals.Get(ctx, proposalID)
+	if err != nil {
+		return err
 	}
 
-	var proposal v1.Proposal
-	keeper.MustUnmarshalProposal(bz, &proposal)
+	// Checking proposal have proposer or not because old proposal doesn't have proposer field,
+	// https://github.com/cosmos/cosmos-sdk/blob/v0.46.2/proto/cosmos/gov/v1/gov.proto#L43
+	if proposal.Proposer == "" {
+		return types.ErrInvalidProposal.Wrapf("proposal %d doesn't have proposer %s, so cannot be canceled", proposalID, proposer)
+	}
 
-	return proposal, true
+	// Check creator of the proposal
+	if proposal.Proposer != proposer {
+		return types.ErrInvalidProposer.Wrapf("invalid proposer %s", proposer)
+	}
+
+	// Check if proposal is active or not
+	if (proposal.Status != v1.StatusDepositPeriod) && (proposal.Status != v1.StatusVotingPeriod) {
+		return types.ErrInvalidProposal.Wrap("proposal should be in the deposit or voting period")
+	}
+
+	// Check proposal voting period is ended.
+	if proposal.VotingEndTime != nil && proposal.VotingEndTime.Before(sdkCtx.BlockTime()) {
+		return types.ErrVotingPeriodEnded.Wrapf("voting period is already ended for this proposal %d", proposalID)
+	}
+
+	// burn the (deposits * proposal_cancel_rate) amount or sent to cancellation destination address.
+	// and deposits * (1 - proposal_cancel_rate) will be sent to depositors.
+	params, err := keeper.Params.Get(ctx)
+	if err != nil {
+		return err
+	}
+
+	err = keeper.ChargeDeposit(ctx, proposal.Id, params.ProposalCancelDest, params.ProposalCancelRatio)
+	if err != nil {
+		return err
+	}
+
+	if proposal.VotingStartTime != nil {
+		err = keeper.deleteVotes(ctx, proposal.Id)
+		if err != nil {
+			return err
+		}
+	}
+
+	err = keeper.DeleteProposal(ctx, proposal.Id)
+	if err != nil {
+		return err
+	}
+
+	keeper.Logger(ctx).Info(
+		"proposal is canceled by proposer",
+		"proposal", proposal.Id,
+		"proposer", proposal.Proposer,
+	)
+
+	return nil
 }
 
-// SetProposal set a proposal to store
-func (keeper Keeper) SetProposal(ctx sdk.Context, proposal v1.Proposal) {
-	store := ctx.KVStore(keeper.storeKey)
-
+// SetProposal sets a proposal to store.
+func (keeper Keeper) SetProposal(ctx context.Context, proposal v1.Proposal) error {
 	if proposal.Status == v1.StatusVotingPeriod {
-		store.Set(types.VotingPeriodProposalKey(proposal.Id), []byte{1})
+		err := keeper.VotingPeriodProposals.Set(ctx, proposal.Id, []byte{1})
+		if err != nil {
+			return err
+		}
 	} else {
-		store.Delete(types.VotingPeriodProposalKey(proposal.Id))
+		err := keeper.VotingPeriodProposals.Remove(ctx, proposal.Id)
+		if err != nil {
+			return err
+		}
 	}
 
-	bz := keeper.MustMarshalProposal(proposal)
-	store.Set(types.ProposalKey(proposal.Id), bz)
+	return keeper.Proposals.Set(ctx, proposal.Id, proposal)
 }
 
-// DeleteProposal deletes a proposal from store
-func (keeper Keeper) DeleteProposal(ctx sdk.Context, proposalID uint64) {
-	store := ctx.KVStore(keeper.storeKey)
-	proposal, ok := keeper.GetProposal(ctx, proposalID)
-	if !ok {
-		panic(fmt.Sprintf("couldn't find proposal with id#%d", proposalID))
+// DeleteProposal deletes a proposal from store.
+func (keeper Keeper) DeleteProposal(ctx context.Context, proposalID uint64) error {
+	proposal, err := keeper.Proposals.Get(ctx, proposalID)
+	if err != nil {
+		return err
 	}
 
 	if proposal.DepositEndTime != nil {
-		keeper.RemoveFromInactiveProposalQueue(ctx, proposalID, *proposal.DepositEndTime)
+		err := keeper.InactiveProposalsQueue.Remove(ctx, collections.Join(*proposal.DepositEndTime, proposalID))
+		if err != nil {
+			return err
+		}
 	}
 	if proposal.VotingEndTime != nil {
-		keeper.RemoveFromActiveProposalQueue(ctx, proposalID, *proposal.VotingEndTime)
-		store.Delete(types.VotingPeriodProposalKey(proposalID))
-	}
-
-	store.Delete(types.ProposalKey(proposalID))
-}
-
-// IterateProposals iterates over the all the proposals and performs a callback function
-// Panics when the iterator encounters a proposal which can't be unmarshaled.
-func (keeper Keeper) IterateProposals(ctx sdk.Context, cb func(proposal v1.Proposal) (stop bool)) {
-	store := ctx.KVStore(keeper.storeKey)
-
-	iterator := sdk.KVStorePrefixIterator(store, types.ProposalsKeyPrefix)
-	defer iterator.Close()
-
-	for ; iterator.Valid(); iterator.Next() {
-		var proposal v1.Proposal
-		keeper.MustUnmarshalProposal(iterator.Value(), &proposal)
-
-		if cb(proposal) {
-			break
-		}
-	}
-}
-
-// GetProposals returns all the proposals from store
-func (keeper Keeper) GetProposals(ctx sdk.Context) (proposals v1.Proposals) {
-	keeper.IterateProposals(ctx, func(proposal v1.Proposal) bool {
-		proposals = append(proposals, &proposal)
-		return false
-	})
-	return
-}
-
-// GetProposalsFiltered retrieves proposals filtered by a given set of params which
-// include pagination parameters along with voter and depositor addresses and a
-// proposal status. The voter address will filter proposals by whether or not
-// that address has voted on proposals. The depositor address will filter proposals
-// by whether or not that address has deposited to them. Finally, status will filter
-// proposals by status.
-//
-// NOTE: If no filters are provided, all proposals will be returned in paginated
-// form.
-func (keeper Keeper) GetProposalsFiltered(ctx sdk.Context, params v1.QueryProposalsParams) v1.Proposals {
-	proposals := keeper.GetProposals(ctx)
-	filteredProposals := make([]*v1.Proposal, 0, len(proposals))
-
-	for _, p := range proposals {
-		matchVoter, matchDepositor, matchStatus := true, true, true
-
-		// match status (if supplied/valid)
-		if v1.ValidProposalStatus(params.ProposalStatus) {
-			matchStatus = p.Status == params.ProposalStatus
+		err := keeper.ActiveProposalsQueue.Remove(ctx, collections.Join(*proposal.VotingEndTime, proposalID))
+		if err != nil {
+			return err
 		}
 
-		// match voter address (if supplied)
-		if len(params.Voter) > 0 {
-			_, matchVoter = keeper.GetVote(ctx, p.Id, params.Voter)
+		err = keeper.VotingPeriodProposals.Remove(ctx, proposalID)
+		if err != nil {
+			return err
 		}
 
-		// match depositor (if supplied)
-		if len(params.Depositor) > 0 {
-			_, matchDepositor = keeper.GetDeposit(ctx, p.Id, params.Depositor)
-		}
-
-		if matchVoter && matchDepositor && matchStatus {
-			filteredProposals = append(filteredProposals, p)
+		err = keeper.EmergencyProposals.Remove(ctx, proposalID)
+		if err != nil {
+			return err
 		}
 	}
 
-	start, end := client.Paginate(len(filteredProposals), params.Page, params.Limit, 100)
-	if start < 0 || end < 0 {
-		filteredProposals = []*v1.Proposal{}
-	} else {
-		filteredProposals = filteredProposals[start:end]
-	}
-
-	return filteredProposals
+	return keeper.Proposals.Remove(ctx, proposalID)
 }
 
-// GetProposalID gets the highest proposal ID
-func (keeper Keeper) GetProposalID(ctx sdk.Context) (proposalID uint64, err error) {
-	store := ctx.KVStore(keeper.storeKey)
-	bz := store.Get(types.ProposalIDKey)
-	if bz == nil {
-		return 0, errors.Wrap(types.ErrInvalidGenesis, "initial proposal ID hasn't been set")
-	}
-
-	proposalID = types.GetProposalIDFromBytes(bz)
-	return proposalID, nil
-}
-
-// SetProposalID sets the new proposal ID to the store
-func (keeper Keeper) SetProposalID(ctx sdk.Context, proposalID uint64) {
-	store := ctx.KVStore(keeper.storeKey)
-	store.Set(types.ProposalIDKey, types.GetProposalIDBytes(proposalID))
-}
-
-func (keeper Keeper) ActivateVotingPeriod(ctx sdk.Context, proposal v1.Proposal) {
-	startTime := ctx.BlockHeader().Time
+// ActivateVotingPeriod activates the voting period of a proposal
+func (keeper Keeper) ActivateVotingPeriod(ctx context.Context, proposal v1.Proposal) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	startTime := sdkCtx.BlockHeader().Time
 	proposal.VotingStartTime = &startTime
-	votingPeriod := keeper.GetParams(ctx).VotingPeriod
+	var votingPeriod time.Duration
+	params, err := keeper.Params.Get(ctx)
+	if err != nil {
+		return err
+	}
+
+	if proposal.Expedited {
+		votingPeriod = params.ExpeditedVotingPeriod
+	} else {
+		votingPeriod = params.VotingPeriod
+	}
 	endTime := proposal.VotingStartTime.Add(votingPeriod)
 	proposal.VotingEndTime = &endTime
 	proposal.Status = v1.StatusVotingPeriod
-	keeper.SetProposal(ctx, proposal)
+	err = keeper.SetProposal(ctx, proposal)
+	if err != nil {
+		return err
+	}
 
-	keeper.RemoveFromInactiveProposalQueue(ctx, proposal.Id, *proposal.DepositEndTime)
-	keeper.InsertActiveProposalQueue(ctx, proposal.Id, *proposal.VotingEndTime)
+	err = keeper.InactiveProposalsQueue.Remove(ctx, collections.Join(*proposal.DepositEndTime, proposal.Id))
+	if err != nil {
+		return err
+	}
+
+	err = keeper.ActiveProposalsQueue.Set(ctx, collections.Join(*proposal.VotingEndTime, proposal.Id), proposal.Id)
+	if err != nil {
+		return err
+	}
 
 	// Emergency proposal registration
-	if sdk.NewCoins(proposal.TotalDeposit...).IsAllGTE(keeper.GetParams(ctx).EmergencyMinDeposit) {
-		keeper.InsertEmergencyProposalQueue(ctx, proposal.Id)
+	if sdk.NewCoins(proposal.TotalDeposit...).IsAllGTE(params.EmergencyMinDeposit) {
+		err = keeper.EmergencyProposals.Set(ctx, proposal.Id, []byte{1})
+		if err != nil {
+			return err
+		}
 
-		ctx.EventManager().EmitEvent(
+		sdkCtx.EventManager().EmitEvent(
 			sdk.NewEvent(
 				customtypes.EventTypeEmergencyProposal,
 				sdk.NewAttribute(customtypes.AttributeKeyProposalID, strconv.FormatUint(proposal.Id, 10)),
 			),
 		)
 	}
-}
 
-func (keeper Keeper) MarshalProposal(proposal v1.Proposal) ([]byte, error) {
-	bz, err := keeper.cdc.Marshal(&proposal)
-	if err != nil {
-		return nil, err
-	}
-	return bz, nil
-}
-
-func (keeper Keeper) UnmarshalProposal(bz []byte, proposal *v1.Proposal) error {
-	err := keeper.cdc.Unmarshal(bz, proposal)
-	if err != nil {
-		return err
-	}
 	return nil
-}
-
-func (keeper Keeper) MustMarshalProposal(proposal v1.Proposal) []byte {
-	bz, err := keeper.MarshalProposal(proposal)
-	if err != nil {
-		panic(err)
-	}
-	return bz
-}
-
-func (keeper Keeper) MustUnmarshalProposal(bz []byte, proposal *v1.Proposal) {
-	err := keeper.UnmarshalProposal(bz, proposal)
-	if err != nil {
-		panic(err)
-	}
 }

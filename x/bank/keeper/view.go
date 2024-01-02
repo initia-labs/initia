@@ -5,16 +5,13 @@ import (
 
 	"github.com/cometbft/cometbft/libs/log"
 
+	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	cosmoskeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	"github.com/cosmos/cosmos-sdk/x/bank/types"
 
 	customtypes "github.com/initia-labs/initia/x/bank/types"
-	movetypes "github.com/initia-labs/initia/x/move/types"
-	vmtypes "github.com/initia-labs/initiavm/types"
 )
 
 var _ cosmoskeeper.ViewKeeper = (*MoveViewKeeper)(nil)
@@ -103,93 +100,21 @@ func (k MoveViewKeeper) GetBalance(ctx sdk.Context, addr sdk.AccAddress, denom s
 // IterateAccountBalances iterates over the balances of a single account and
 // provides the token balance to a callback. If true is returned from the
 // callback, iteration is halted.
-func (k MoveViewKeeper) IterateAccountBalances(ctx sdk.Context, addr sdk.AccAddress, cb func(sdk.Coin) bool) {
-	userStores, err := k.mk.GetUserStores(ctx, addr)
-	if err != nil {
-		panic(err)
-	}
-
-	// stores not found
-	if userStores == nil {
-		return
-	}
-
-	iterator := userStores.Iterator(nil, nil)
-	defer iterator.Close()
-
-	for ; iterator.Valid(); iterator.Next() {
-		value := iterator.Value()
-		storeAddr, err := vmtypes.NewAccountAddressFromBytes(value)
-		if err != nil {
-			panic(err)
-		}
-
-		metadata, amount, err := k.mk.Balance(ctx, storeAddr)
-		if err != nil {
-			panic(err)
-		}
-
-		denom, err := movetypes.DenomFromMetadataAddress(
-			ctx,
-			k.mk,
-			metadata,
-		)
-		if err != nil {
-			panic(err)
-		}
-
-		if cb(sdk.NewCoin(denom, amount)) {
-			break
-		}
-	}
+func (k MoveViewKeeper) IterateAccountBalances(ctx sdk.Context, addr sdk.AccAddress, cb func(sdk.Coin) (bool, error)) error {
+	return k.mk.IterateAccountBalances(ctx, addr, cb)
 }
 
 // IterateAllBalances iterates over all the balances of all accounts and
 // denominations that are provided to a callback. If true is returned from the
 // callback, iteration is halted.
-func (k MoveViewKeeper) IterateAllBalances(ctx sdk.Context, cb func(sdk.AccAddress, sdk.Coin) bool) {
-	k.ak.IterateAccounts(ctx, func(account authtypes.AccountI) bool {
+func (k MoveViewKeeper) IterateAllBalances(ctx sdk.Context, cb func(sdk.AccAddress, sdk.Coin) (bool, error)) error {
+	k.ak.IterateAccounts(ctx, func(account sdk.AccountI) bool {
 		addr := account.GetAddress()
-		userStores, err := k.mk.GetUserStores(ctx, addr)
+		err := k.mk.IterateAccountBalances(ctx, addr, func(coin sdk.Coin) (bool, error) {
+			return cb(addr, coin)
+		})
 		if err != nil {
 			panic(err)
-		}
-
-		// stores not found
-		if userStores == nil {
-			return false
-		}
-
-		iterator := userStores.Iterator(nil, nil)
-		defer iterator.Close()
-
-		for ; iterator.Valid(); iterator.Next() {
-			value := iterator.Value()
-			storeAddr, err := vmtypes.NewAccountAddressFromBytes(value)
-			if err != nil {
-				panic(err)
-			}
-
-			metadata, amount, err := k.mk.Balance(ctx, storeAddr)
-			if err != nil {
-				panic(err)
-			}
-			if amount.IsZero() {
-				continue
-			}
-
-			denom, err := movetypes.DenomFromMetadataAddress(
-				ctx,
-				k.mk,
-				metadata,
-			)
-			if err != nil {
-				panic(err)
-			}
-
-			if cb(addr, sdk.NewCoin(denom, amount)) {
-				break
-			}
 		}
 
 		return false

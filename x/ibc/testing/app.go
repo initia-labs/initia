@@ -15,21 +15,21 @@ import (
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	tmtypes "github.com/cometbft/cometbft/types"
 
+	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	testutilsims "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
+	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 
-	icacontrollerkeeper "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/keeper"
-	"github.com/cosmos/ibc-go/v7/modules/core/keeper"
+	icacontrollerkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/keeper"
+	"github.com/cosmos/ibc-go/v8/modules/core/keeper"
 
 	initiaapp "github.com/initia-labs/initia/app"
 	ibctestingtypes "github.com/initia-labs/initia/x/ibc/testing/types"
@@ -39,11 +39,11 @@ import (
 )
 
 func coins(amt int64) sdk.Coins {
-	return sdk.NewCoins(sdk.NewCoin(initiaapp.BondDenom, sdk.NewInt(amt)))
+	return sdk.NewCoins(sdk.NewCoin(initiaapp.BondDenom, math.NewInt(amt)))
 }
 
 func decCoins(amt int64) sdk.DecCoins {
-	return sdk.NewDecCoins(sdk.NewDecCoin(initiaapp.BondDenom, sdk.NewInt(amt)))
+	return sdk.NewDecCoins(sdk.NewDecCoin(initiaapp.BondDenom, math.NewInt(amt)))
 }
 
 var DefaultTestingAppInit = SetupTestingApp
@@ -126,7 +126,7 @@ func SetupWithGenesisValSet(t *testing.T, valSet *tmtypes.ValidatorSet, genAccs 
 	// add bonded amount to bonded pool module account
 	balances = append(balances, banktypes.Balance{
 		Address: authtypes.NewModuleAddress(stakingtypes.BondedPoolName).String(),
-		Coins:   sdk.Coins{sdk.NewCoin(bondDenom, bondAmt.Mul(sdk.NewInt(int64(len(valSet.Validators)))))},
+		Coins:   sdk.Coins{sdk.NewCoin(bondDenom, bondAmt.Mul(math.NewInt(int64(len(valSet.Validators)))))},
 	})
 
 	// set validators and delegations
