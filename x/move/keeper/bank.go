@@ -9,7 +9,6 @@ import (
 	"cosmossdk.io/math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/query"
 
 	banktypes "github.com/initia-labs/initia/x/bank/types"
@@ -180,6 +179,23 @@ func (k MoveBankKeeper) GetSupply(
 	return k.GetSupplyWithMetadata(ctx, metadata)
 }
 
+func (k MoveBankKeeper) HasSupply(
+	ctx context.Context,
+	denom string,
+) (bool, error) {
+	metadata, err := types.MetadataAddressFromDenom(denom)
+	if err != nil {
+		return false, err
+	}
+
+	return k.HasResource(ctx, metadata, vmtypes.StructTag{
+		Address:  vmtypes.StdAddress,
+		Module:   types.MoveModuleNameFungibleAsset,
+		Name:     types.ResourceNameSupply,
+		TypeArgs: []vmtypes.TypeTag{},
+	})
+}
+
 func (k MoveBankKeeper) GetSupplyWithMetadata(ctx context.Context, metadata vmtypes.AccountAddress) (math.Int, error) {
 	bz, err := k.GetResourceBytes(ctx, metadata, vmtypes.StructTag{
 		Address:  vmtypes.StdAddress,
@@ -187,7 +203,7 @@ func (k MoveBankKeeper) GetSupplyWithMetadata(ctx context.Context, metadata vmty
 		Name:     types.ResourceNameSupply,
 		TypeArgs: []vmtypes.TypeTag{},
 	})
-	if err == sdkerrors.ErrNotFound {
+	if err == collections.ErrNotFound {
 		return math.ZeroInt(), nil
 	}
 	if err != nil {
@@ -256,7 +272,7 @@ func (k MoveBankKeeper) IterateSupply(ctx context.Context, cb func(supply sdk.Co
 	})
 }
 
-func (k MoveBankKeeper) GetPaginatedSupply(ctx sdk.Context, pageReq *query.PageRequest) (sdk.Coins, *query.PageResponse, error) {
+func (k MoveBankKeeper) GetPaginatedSupply(ctx context.Context, pageReq *query.PageRequest) (sdk.Coins, *query.PageResponse, error) {
 	tableAddr, err := k.GetIssuersTableHandle(ctx)
 	if err != nil {
 		return nil, nil, err

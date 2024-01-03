@@ -47,10 +47,14 @@ func TestWhitelistProposal(t *testing.T) {
 	require.NoError(t, err)
 
 	// check staking params update
-	require.Contains(t, input.StakingKeeper.BondDenoms(ctx), denomLP)
+	bondDenoms, err := input.StakingKeeper.BondDenoms(ctx)
+	require.NoError(t, err)
+	require.Contains(t, bondDenoms, denomLP)
 
 	// check distribution params update
-	require.Contains(t, input.DistKeeper.GetRewardWeights(ctx), distrtypes.RewardWeight{Denom: denomLP, Weight: math.LegacyOneDec()})
+	rewardWeights, err := input.DistKeeper.GetRewardWeights(ctx)
+	require.NoError(t, err)
+	require.Contains(t, rewardWeights, distrtypes.RewardWeight{Denom: denomLP, Weight: math.LegacyOneDec()})
 
 	// dex pair registration
 	_metadataLP, err := dexKeeper.GetMetadataLP(ctx, denomQuote)
@@ -76,10 +80,14 @@ func TestWhitelistProposal(t *testing.T) {
 	//
 
 	// check staking params update
-	require.NotContains(t, input.StakingKeeper.GetParams(ctx).BondDenoms, denomLP)
+	bondDenoms, err = input.StakingKeeper.BondDenoms(ctx)
+	require.NoError(t, err)
+	require.NotContains(t, bondDenoms, denomLP)
 
 	// check distribution params update
-	require.NotContains(t, input.DistKeeper.GetRewardWeights(ctx), distrtypes.RewardWeight{Denom: denomLP, Weight: math.LegacyOneDec()})
+	rewardWeights, err = input.DistKeeper.GetRewardWeights(ctx)
+	require.NoError(t, err)
+	require.NotContains(t, rewardWeights, distrtypes.RewardWeight{Denom: denomLP, Weight: math.LegacyOneDec()})
 
 	// check move dex pair update
 	found, err = dexKeeper.HasDexPair(ctx, denomQuote)
@@ -121,10 +129,14 @@ func TestWhitelistProposalReverse(t *testing.T) {
 	require.NoError(t, err)
 
 	// check staking params update
-	require.Contains(t, input.StakingKeeper.BondDenoms(ctx), denomLP)
+	bondDenoms, err := input.StakingKeeper.BondDenoms(ctx)
+	require.NoError(t, err)
+	require.Contains(t, bondDenoms, denomLP)
 
 	// check distribution params update
-	require.Contains(t, input.DistKeeper.GetRewardWeights(ctx), distrtypes.RewardWeight{Denom: denomLP, Weight: math.LegacyOneDec()})
+	rewardWeights, err := input.DistKeeper.GetRewardWeights(ctx)
+	require.NoError(t, err)
+	require.Contains(t, rewardWeights, distrtypes.RewardWeight{Denom: denomLP, Weight: math.LegacyOneDec()})
 
 	// dex pair registration
 	_metadataLP, err := dexKeeper.GetMetadataLP(ctx, denomQuote)
@@ -150,10 +162,14 @@ func TestWhitelistProposalReverse(t *testing.T) {
 	//
 
 	// check staking params update
-	require.NotContains(t, input.StakingKeeper.GetParams(ctx).BondDenoms, denomLP)
+	bondDenoms, err = input.StakingKeeper.BondDenoms(ctx)
+	require.NoError(t, err)
+	require.NotContains(t, bondDenoms, denomLP)
 
 	// check distribution params update
-	require.NotContains(t, input.DistKeeper.GetRewardWeights(ctx), distrtypes.RewardWeight{Denom: denomLP, Weight: math.LegacyOneDec()})
+	rewardWeights, err = input.DistKeeper.GetRewardWeights(ctx)
+	require.NoError(t, err)
+	require.NotContains(t, rewardWeights, distrtypes.RewardWeight{Denom: denomLP, Weight: math.LegacyOneDec()})
 
 	// check move dex pair update
 	found, err = dexKeeper.HasDexPair(ctx, denomQuote)

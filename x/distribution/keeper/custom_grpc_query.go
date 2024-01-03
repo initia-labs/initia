@@ -192,7 +192,7 @@ func (q CustomQueryServer) DelegationTotalRewards(ctx context.Context, req *cust
 		return nil, err
 	}
 
-	q.stakingKeeper.IterateDelegations(
+	err = q.stakingKeeper.IterateDelegations(
 		ctx, delAdr,
 		func(del stakingtypes.DelegationI) (stop bool, err error) {
 			valAddr, err := q.Keeper.stakingKeeper.ValidatorAddressCodec().StringToBytes(del.GetValidatorAddr())
@@ -219,6 +219,9 @@ func (q CustomQueryServer) DelegationTotalRewards(ctx context.Context, req *cust
 			return false, nil
 		},
 	)
+	if err != nil {
+		return nil, err
+	}
 
 	return &customtypes.QueryDelegationTotalRewardsResponse{Rewards: delRewards, Total: total}, nil
 }

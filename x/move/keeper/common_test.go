@@ -8,32 +8,41 @@ import (
 	"testing"
 	"time"
 
-	dbm "github.com/cometbft/cometbft-db"
 	"github.com/cometbft/cometbft/crypto"
 	"github.com/cometbft/cometbft/crypto/ed25519"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
-	"github.com/cometbft/cometbft/libs/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+
+	"github.com/cosmos/gogoproto/proto"
 
 	ibcfeetypes "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/types"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	"github.com/stretchr/testify/require"
 
+	"cosmossdk.io/log"
 	"cosmossdk.io/math"
 	"cosmossdk.io/store"
+	"cosmossdk.io/store/metrics"
 	storetypes "cosmossdk.io/store/types"
 	evidencetypes "cosmossdk.io/x/evidence/types"
 	"cosmossdk.io/x/feegrant"
+	"cosmossdk.io/x/tx/signing"
 	"cosmossdk.io/x/upgrade"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
+	codecaddress "github.com/cosmos/cosmos-sdk/codec/address"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/std"
 	testutilsims "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/auth"
+	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
+	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
 	"github.com/cosmos/cosmos-sdk/x/bank"
@@ -44,7 +53,6 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	govtypesv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
-	"github.com/cosmos/ibc-go/modules/capability"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 
 	initiaapp "github.com/initia-labs/initia/app"
@@ -59,6 +67,7 @@ import (
 	customgovtypes "github.com/initia-labs/initia/x/gov/types"
 
 	// nfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
+	"github.com/initia-labs/initia/x/move"
 	moveconfig "github.com/initia-labs/initia/x/move/config"
 	movekeeper "github.com/initia-labs/initia/x/move/keeper"
 	movetypes "github.com/initia-labs/initia/x/move/types"
@@ -78,7 +87,6 @@ import (
 var ModuleBasics = module.NewBasicManager(
 	auth.AppModuleBasic{},
 	bank.AppModuleBasic{},
-	capability.AppModuleBasic{},
 	staking.AppModuleBasic{},
 	reward.AppModuleBasic{},
 	distribution.AppModuleBasic{},
@@ -87,6 +95,7 @@ var ModuleBasics = module.NewBasicManager(
 	slashing.AppModuleBasic{},
 	upgrade.AppModuleBasic{},
 	evidence.AppModuleBasic{},
+	move.AppModuleBasic{},
 )
 
 // Bond denom should be set for staking test
@@ -131,24 +140,33 @@ var (
 )
 
 func MakeTestCodec(t testing.TB) codec.Codec {
-	return MakeEncodingConfig(t).Marshaler
+	return MakeEncodingConfig(t).Codec
 }
 
 func MakeEncodingConfig(_ testing.TB) initiaappparams.EncodingConfig {
-	encodingConfig := initiaappparams.MakeEncodingConfig()
-	amino := encodingConfig.Amino
-	interfaceRegistry := encodingConfig.InterfaceRegistry
+	interfaceRegistry, _ := codectypes.NewInterfaceRegistryWithOptions(codectypes.InterfaceRegistryOptions{
+		ProtoFiles: proto.HybridResolver,
+		SigningOptions: signing.Options{
+			AddressCodec:          codecaddress.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix()),
+			ValidatorAddressCodec: codecaddress.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix()),
+		},
+	})
+	appCodec := codec.NewProtoCodec(interfaceRegistry)
+	legacyAmino := codec.NewLegacyAmino()
+	txConfig := tx.NewTxConfig(appCodec, tx.DefaultSignModes)
 
 	std.RegisterInterfaces(interfaceRegistry)
-	std.RegisterLegacyAminoCodec(amino)
+	std.RegisterLegacyAminoCodec(legacyAmino)
 
-	ModuleBasics.RegisterLegacyAminoCodec(amino)
+	ModuleBasics.RegisterLegacyAminoCodec(legacyAmino)
 	ModuleBasics.RegisterInterfaces(interfaceRegistry)
-	// add initiad types
-	movetypes.RegisterInterfaces(interfaceRegistry)
-	movetypes.RegisterLegacyAminoCodec(amino)
 
-	return encodingConfig
+	return initiaappparams.EncodingConfig{
+		InterfaceRegistry: interfaceRegistry,
+		Codec:             appCodec,
+		TxConfig:          txConfig,
+		Amino:             legacyAmino,
+	}
 }
 
 func initialTotalSupply() sdk.Coins {
@@ -218,7 +236,7 @@ type TestKeepers struct {
 	// NftTransferKeeper TestIBCNftTransferKeeper
 	EncodingConfig initiaappparams.EncodingConfig
 	Faucet         *TestFaucet
-	MultiStore     sdk.CommitMultiStore
+	MultiStore     storetypes.CommitMultiStore
 }
 
 // createDefaultTestInput common settings for createTestInput
@@ -253,18 +271,18 @@ func _createTestInput(
 	moveConfig moveconfig.MoveConfig,
 	db dbm.DB,
 ) (sdk.Context, TestKeepers) {
-	keys := sdk.NewKVStoreKeys(
+	keys := storetypes.NewKVStoreKeys(
 		authtypes.StoreKey, banktypes.StoreKey, stakingtypes.StoreKey,
 		rewardtypes.StoreKey, distributiontypes.StoreKey, slashingtypes.StoreKey,
 		govtypes.StoreKey, upgradetypes.StoreKey, evidencetypes.StoreKey,
 		capabilitytypes.StoreKey, feegrant.StoreKey, authzkeeper.StoreKey,
 		movetypes.StoreKey,
 	)
-	ms := store.NewCommitMultiStore(db)
+	ms := store.NewCommitMultiStore(db, log.NewNopLogger(), metrics.NewNoOpMetrics())
 	for _, v := range keys {
 		ms.MountStoreWithDB(v, storetypes.StoreTypeIAVL, db)
 	}
-	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
+	memKeys := storetypes.NewMemoryStoreKeys()
 	for _, v := range memKeys {
 		ms.MountStoreWithDB(v, storetypes.StoreTypeMemory, db)
 	}
@@ -277,7 +295,7 @@ func _createTestInput(
 	}, isCheckTx, log.NewNopLogger())
 
 	encodingConfig := MakeEncodingConfig(t)
-	appCodec := encodingConfig.Marshaler
+	appCodec := encodingConfig.Codec
 
 	moveKeeper := &movekeeper.Keeper{}
 	maccPerms := map[string][]string{ // module account permissions
@@ -292,11 +310,17 @@ func _createTestInput(
 		// for testing
 		authtypes.Minter: {authtypes.Minter, authtypes.Burner},
 	}
+
+	ac := authcodec.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix())
+	vc := authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix())
+	cc := authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix())
+
 	accountKeeper := authkeeper.NewAccountKeeper(
 		appCodec,
-		keys[authtypes.StoreKey],   // target store
-		authtypes.ProtoBaseAccount, // prototype
+		runtime.NewKVStoreService(keys[authtypes.StoreKey]), // target store
+		authtypes.ProtoBaseAccount,                          // prototype
 		maccPerms,
+		ac,
 		sdk.GetConfig().GetBech32AccountAddrPrefix(),
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
@@ -307,29 +331,30 @@ func _createTestInput(
 
 	bankKeeper := movebank.NewBaseKeeper(
 		appCodec,
-		keys[banktypes.StoreKey],
+		runtime.NewKVStoreService(keys[banktypes.StoreKey]),
 		accountKeeper,
 		movekeeper.NewMoveBankKeeper(moveKeeper),
 		blockedAddrs,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
-	bankKeeper.SetParams(ctx, banktypes.DefaultParams())
+	require.NoError(t, bankKeeper.SetParams(ctx, banktypes.DefaultParams()))
 
 	stakingKeeper := stakingkeeper.NewKeeper(
 		appCodec,
-		keys[stakingtypes.StoreKey],
+		runtime.NewKVStoreService(keys[stakingtypes.StoreKey]),
 		accountKeeper,
 		bankKeeper,
 		movekeeper.NewVotingPowerKeeper(moveKeeper),
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		vc, cc,
 	)
 	stakingParams := stakingtypes.DefaultParams()
 	stakingParams.BondDenoms = []string{bondDenom}
-	stakingKeeper.SetParams(ctx, stakingParams)
+	require.NoError(t, stakingKeeper.SetParams(ctx, stakingParams))
 
 	rewardKeeper := rewardkeeper.NewKeeper(
 		appCodec,
-		keys[rewardtypes.StoreKey],
+		runtime.NewKVStoreService(keys[rewardtypes.StoreKey]),
 		accountKeeper,
 		bankKeeper,
 		authtypes.FeeCollectorName,
@@ -337,14 +362,14 @@ func _createTestInput(
 	)
 	rewardParams := rewardtypes.DefaultParams()
 	rewardParams.RewardDenom = bondDenom
-	rewardKeeper.SetParams(ctx, rewardParams)
+	require.NoError(t, rewardKeeper.SetParams(ctx, rewardParams))
 
 	distKeeper := distrkeeper.NewKeeper(
 		appCodec,
-		keys[distributiontypes.StoreKey],
+		runtime.NewKVStoreService(keys[distributiontypes.StoreKey]),
 		accountKeeper,
 		bankKeeper,
-		&stakingKeeper,
+		stakingKeeper,
 		movekeeper.NewDexKeeper(moveKeeper),
 		authtypes.FeeCollectorName,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
@@ -353,29 +378,24 @@ func _createTestInput(
 	distrParams.RewardWeights = []customdistrtypes.RewardWeight{
 		{Denom: bondDenom, Weight: math.LegacyOneDec()},
 	}
-	distKeeper.SetParams(ctx, distrParams)
+	require.NoError(t, distKeeper.Params.Set(ctx, distrParams))
 	stakingKeeper.SetHooks(distKeeper.Hooks())
 
 	// set genesis items required for distribution
-	distKeeper.SetFeePool(ctx, distributiontypes.InitialFeePool())
+	require.NoError(t, distKeeper.FeePool.Set(ctx, distributiontypes.InitialFeePool()))
 
 	accountKeeper.GetModuleAccount(ctx, movetypes.MoveStakingModuleName)
 
-	// nftTransferKeeper := TestIBCNftTransferKeeper{
-	// 	classTraces: make(map[string]string),
-	// }
-
-	*moveKeeper = movekeeper.NewKeeper(
+	*moveKeeper = *movekeeper.NewKeeper(
 		appCodec,
-		keys[movetypes.StoreKey],
+		runtime.NewKVStoreService(keys[movetypes.StoreKey]),
 		accountKeeper,
 		distKeeper,
-		// nftTransferKeeper,
 		TestMsgRouter{},
 		moveConfig,
 		bankKeeper,
 		distKeeper,
-		&stakingKeeper,
+		stakingKeeper,
 		rewardKeeper,
 		authtypes.FeeCollectorName,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
@@ -383,15 +403,13 @@ func _createTestInput(
 	moveParams := movetypes.DefaultParams()
 	moveParams.BaseDenom = bondDenom
 
-	moveKeeper.SetRawParams(ctx, moveParams.ToRaw())
+	require.NoError(t, moveKeeper.SetRawParams(ctx, moveParams.ToRaw()))
 	stakingKeeper.SetSlashingHooks(moveKeeper.Hooks())
 
 	// load stdlib module bytes
 	moduleBytes, err := precompile.ReadStdlib()
 	require.NoError(t, err)
 
-	// append test module
-	moduleBytes = append(moduleBytes, basicCoinModule)
 	err = moveKeeper.Initialize(ctx, moduleBytes, moveParams.ArbitraryEnabled, moveParams.AllowedPublishers)
 	require.NoError(t, err)
 
@@ -412,28 +430,29 @@ func _createTestInput(
 	govConfig := govtypes.DefaultConfig()
 	govKeeper := govkeeper.NewKeeper(
 		appCodec,
-		keys[govtypes.StoreKey],
+		runtime.NewKVStoreService(keys[govtypes.StoreKey]),
 		accountKeeper,
 		bankKeeper,
 		stakingKeeper,
+		distKeeper,
 		msgRouter,
 		govConfig,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
-	govKeeper.SetProposalID(ctx, govtypesv1.DefaultStartingProposalID)
-	govKeeper.SetParams(ctx, customgovtypes.DefaultParams())
+	require.NoError(t, govKeeper.ProposalID.Set(ctx, govtypesv1.DefaultStartingProposalID))
+	require.NoError(t, govKeeper.Params.Set(ctx, customgovtypes.DefaultParams()))
 
 	cfg := sdk.GetConfig()
 	cfg.SetAddressVerifier(initiaapp.VerifyAddressLen())
 
 	keepers := TestKeepers{
 		AccountKeeper: accountKeeper,
-		StakingKeeper: stakingKeeper,
-		DistKeeper:    distKeeper,
+		StakingKeeper: *stakingKeeper,
+		DistKeeper:    *distKeeper,
 		MoveKeeper:    *moveKeeper,
 		BankKeeper:    bankKeeper,
-		GovKeeper:     govKeeper,
+		GovKeeper:     *govKeeper,
 		// NftTransferKeeper: nftTransferKeeper,
 		EncodingConfig: encodingConfig,
 		Faucet:         faucet,
@@ -478,9 +497,14 @@ func ReadScriptFile(filename string) []byte {
 type TestMsgRouter struct{}
 
 func (router TestMsgRouter) Handler(msg sdk.Msg) baseapp.MsgServiceHandler {
-	switch msg := msg.(type) {
-	case *stakingtypes.MsgDelegate:
-		return func(ctx sdk.Context, _req sdk.Msg) (*sdk.Result, error) {
+	return router.HandlerByTypeURL(sdk.MsgTypeURL(msg))
+}
+
+func (router TestMsgRouter) HandlerByTypeURL(typeURL string) baseapp.MsgServiceHandler {
+	switch typeURL {
+	case sdk.MsgTypeURL(&stakingtypes.MsgDelegate{}):
+		return func(ctx sdk.Context, _msg sdk.Msg) (*sdk.Result, error) {
+			msg := _msg.(*stakingtypes.MsgDelegate)
 			ctx.EventManager().EmitEvent(sdk.NewEvent("delegate",
 				sdk.NewAttribute("delegator_address", msg.DelegatorAddress),
 				sdk.NewAttribute("validator_address", msg.ValidatorAddress),
@@ -489,8 +513,9 @@ func (router TestMsgRouter) Handler(msg sdk.Msg) baseapp.MsgServiceHandler {
 
 			return sdk.WrapServiceResult(ctx, &stakingtypes.MsgDelegateResponse{}, nil)
 		}
-	case *distributiontypes.MsgFundCommunityPool:
-		return func(ctx sdk.Context, _req sdk.Msg) (*sdk.Result, error) {
+	case sdk.MsgTypeURL(&distributiontypes.MsgFundCommunityPool{}):
+		return func(ctx sdk.Context, _msg sdk.Msg) (*sdk.Result, error) {
+			msg := _msg.(*distributiontypes.MsgFundCommunityPool)
 			ctx.EventManager().EmitEvent(sdk.NewEvent("fund_community_pool",
 				sdk.NewAttribute("depositor_address", msg.Depositor),
 				sdk.NewAttribute("amount", msg.Amount.String()),
@@ -498,14 +523,15 @@ func (router TestMsgRouter) Handler(msg sdk.Msg) baseapp.MsgServiceHandler {
 
 			return sdk.WrapServiceResult(ctx, &stakingtypes.MsgDelegateResponse{}, nil)
 		}
-	case *transfertypes.MsgTransfer:
-		return func(ctx sdk.Context, _req sdk.Msg) (*sdk.Result, error) {
+	case sdk.MsgTypeURL(&transfertypes.MsgTransfer{}):
+		return func(ctx sdk.Context, _msg sdk.Msg) (*sdk.Result, error) {
+			msg := _msg.(*transfertypes.MsgTransfer)
 			ctx.EventManager().EmitEvent(sdk.NewEvent("transfer",
 				sdk.NewAttribute("sender", msg.Sender),
 				sdk.NewAttribute("receiver", msg.Receiver),
-				sdk.NewAttribute("token", msg.Token.String()),
 				sdk.NewAttribute("source_port", msg.SourcePort),
 				sdk.NewAttribute("source_channel", msg.SourceChannel),
+				sdk.NewAttribute("token", msg.Token.String()),
 				sdk.NewAttribute("timeout_height", msg.TimeoutHeight.String()),
 				sdk.NewAttribute("timeout_timestamp", fmt.Sprint(msg.TimeoutTimestamp)),
 				sdk.NewAttribute("memo", msg.Memo),
@@ -513,8 +539,9 @@ func (router TestMsgRouter) Handler(msg sdk.Msg) baseapp.MsgServiceHandler {
 
 			return sdk.WrapServiceResult(ctx, &stakingtypes.MsgDelegateResponse{}, nil)
 		}
-	case *ibcfeetypes.MsgPayPacketFee:
-		return func(ctx sdk.Context, _req sdk.Msg) (*sdk.Result, error) {
+	case sdk.MsgTypeURL(&ibcfeetypes.MsgPayPacketFee{}):
+		return func(ctx sdk.Context, _msg sdk.Msg) (*sdk.Result, error) {
+			msg := _msg.(*ibcfeetypes.MsgPayPacketFee)
 			ctx.EventManager().EmitEvent(sdk.NewEvent("pay_fee",
 				sdk.NewAttribute("signer", msg.Signer),
 				sdk.NewAttribute("source_port", msg.SourcePortId),
@@ -527,33 +554,10 @@ func (router TestMsgRouter) Handler(msg sdk.Msg) baseapp.MsgServiceHandler {
 
 			return sdk.WrapServiceResult(ctx, &stakingtypes.MsgDelegateResponse{}, nil)
 		}
-
 	}
 
 	panic("handler not registered")
 }
-
-// test Keepers
-
-// type TestIBCNftTransferKeeper struct {
-// 	classTraces map[string]string
-// }
-
-// func (k TestIBCNftTransferKeeper) GetClassTrace(ctx sdk.Context, classTraceHash tmbytes.HexBytes) (nfttransfertypes.ClassTrace, bool) {
-// 	trace, found := k.classTraces[classTraceHash.String()]
-// 	if !found {
-// 		return nfttransfertypes.ClassTrace{}, false
-// 	}
-
-// 	return nfttransfertypes.ClassTrace{
-// 		Path:        "",
-// 		BaseClassId: trace,
-// 	}, true
-// }
-
-// func (k TestIBCNftTransferKeeper) SetClassTrace(ctx sdk.Context, classTrace nfttransfertypes.ClassTrace) {
-// 	k.classTraces[classTrace.Hash().String()] = classTrace.BaseClassId
-// }
 
 func MustConvertStringToTypeTag(str string) vmtypes.TypeTag {
 	tt, err := vmapi.TypeTagFromString(str)

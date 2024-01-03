@@ -6,10 +6,11 @@ import (
 	"encoding/json"
 	"time"
 
+	"cosmossdk.io/log"
 	"cosmossdk.io/math"
-	dbm "github.com/cometbft/cometbft-db"
+	dbm "github.com/cosmos/cosmos-db"
+
 	abci "github.com/cometbft/cometbft/abci/types"
-	"github.com/cometbft/cometbft/libs/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	tmtypes "github.com/cometbft/cometbft/types"
 
@@ -54,7 +55,6 @@ func getOrCreateMemDB(db *dbm.DB) dbm.DB {
 }
 
 func setup(db *dbm.DB, withGenesis bool) (*InitiaApp, GenesisState) {
-	encCdc := MakeEncodingConfig()
 	app := NewInitiaApp(
 		log.NewNopLogger(),
 		getOrCreateMemDB(db),
@@ -65,8 +65,7 @@ func setup(db *dbm.DB, withGenesis bool) (*InitiaApp, GenesisState) {
 	)
 
 	if withGenesis {
-		return app, NewDefaultGenesisState(encCdc.Marshaler).
-			ConfigureBondDenom(encCdc.Marshaler, BondDenom)
+		return app, app.DefaultGenesis()
 	}
 
 	return app, GenesisState{}
@@ -94,7 +93,7 @@ func SetupWithGenesisAccounts(
 	// allow empty validator
 	if valSet == nil || len(valSet.Validators) == 0 {
 		privVal := ed25519.GenPrivKey()
-		pubKey, err := cryptocodec.ToTmPubKeyInterface(privVal.PubKey())
+		pubKey, err := cryptocodec.ToCmtPubKeyInterface(privVal.PubKey())
 		if err != nil {
 			panic(err)
 		}
@@ -110,7 +109,7 @@ func SetupWithGenesisAccounts(
 	bondCoins := sdk.NewCoins(sdk.NewCoin(BondDenom, bondAmt))
 
 	for _, val := range valSet.Validators {
-		pk, err := cryptocodec.FromTmPubKeyInterface(val.PubKey)
+		pk, err := cryptocodec.FromCmtPubKeyInterface(val.PubKey)
 		if err != nil {
 			panic(err)
 		}
@@ -126,14 +125,14 @@ func SetupWithGenesisAccounts(
 			Status:          stakingtypes.Bonded,
 			Tokens:          bondCoins,
 			DelegatorShares: sdk.NewDecCoins(sdk.NewDecCoinFromDec(BondDenom, math.LegacyOneDec())),
-			Description:     stakingtypes.Description{},
+			Description:     stakingtypes.NewDescription("homeDir", "", "", "", ""),
 			UnbondingHeight: int64(0),
 			UnbondingTime:   time.Unix(0, 0).UTC(),
-			Commission:      stakingtypes.NewCommission(sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec()),
+			Commission:      stakingtypes.NewCommission(math.LegacyZeroDec(), math.LegacyZeroDec(), math.LegacyZeroDec()),
 		}
 
 		validators = append(validators, validator)
-		delegations = append(delegations, stakingtypes.NewDelegation(genAccs[0].GetAddress(), val.Address.Bytes(), sdk.NewDecCoins(sdk.NewDecCoinFromDec(BondDenom, math.LegacyOneDec()))))
+		delegations = append(delegations, stakingtypes.NewDelegation(genAccs[0].GetAddress().String(), sdk.ValAddress(val.Address).String(), sdk.NewDecCoins(sdk.NewDecCoinFromDec(BondDenom, math.LegacyOneDec()))))
 	}
 
 	// set validators and delegations
@@ -159,16 +158,26 @@ func SetupWithGenesisAccounts(
 		panic(err)
 	}
 
-	app.InitChain(
-		abci.RequestInitChain{
+	_, err = app.InitChain(
+		&abci.RequestInitChain{
 			Validators:      []abci.ValidatorUpdate{},
 			ConsensusParams: defaultConsensusParams,
 			AppStateBytes:   stateBytes,
 		},
 	)
+	if err != nil {
+		panic(err)
+	}
 
-	app.Commit()
-	app.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{Height: app.LastBlockHeight() + 1}})
+	_, err = app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: 1})
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = app.Commit()
+	if err != nil {
+		panic(err)
+	}
 
 	return app
 }

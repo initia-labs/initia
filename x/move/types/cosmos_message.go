@@ -1,6 +1,8 @@
 package types
 
 import (
+	context "context"
+
 	"cosmossdk.io/core/address"
 	"cosmossdk.io/math"
 	ibcfeetypes "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/types"
@@ -19,7 +21,7 @@ import (
 
 // ConvertToSDKMessage convert vm CosmosMessage to sdk.Msg
 func ConvertToSDKMessage(
-	ctx sdk.Context,
+	ctx context.Context,
 	fk FungibleAssetKeeper,
 	ck CollectionKeeper,
 	msg vmtypes.CosmosMessage,

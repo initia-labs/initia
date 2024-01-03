@@ -98,7 +98,7 @@ func TestTotalSupply(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			ctx, input := createDefaultTestInput(t)
 			input.BankKeeper.InitGenesis(ctx, tc.genesis)
-			totalSupply, _, err := input.BankKeeper.GetPaginatedTotalSupply(ctx, &query.PageRequest{Limit: query.MaxLimit})
+			totalSupply, _, err := input.BankKeeper.GetPaginatedTotalSupply(ctx, &query.PageRequest{Limit: query.PaginationMaxLimit})
 			assert.NoError(t, err)
 
 			// we need to exclude uinit and ustake due to faucet initial balance

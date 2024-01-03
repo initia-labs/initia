@@ -36,7 +36,7 @@ func decToVmArgument(t *testing.T, val math.LegacyDec) []byte {
 func createDexPool(
 	t *testing.T, ctx sdk.Context, input TestKeepers,
 	baseCoin sdk.Coin, quoteCoin sdk.Coin,
-	weightBase sdk.Dec, weightQuote sdk.Dec,
+	weightBase math.LegacyDec, weightQuote math.LegacyDec,
 ) (metadataLP vmtypes.AccountAddress) {
 	metadataBase, err := types.MetadataAddressFromDenom(baseCoin.Denom)
 	require.NoError(t, err)
@@ -130,7 +130,7 @@ func Test_ReadPool(t *testing.T) {
 	// check share balance
 	totalShare, err := moveBankKeeper.GetSupplyWithMetadata(ctx, metadataLP)
 	require.NoError(t, err)
-	require.Equal(t, sdk.MaxInt(baseAmount, quoteAmount), totalShare)
+	require.Equal(t, math.MaxInt(baseAmount, quoteAmount), totalShare)
 }
 
 func Test_ReadWeights(t *testing.T) {

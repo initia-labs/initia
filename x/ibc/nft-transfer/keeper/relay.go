@@ -3,7 +3,7 @@ package keeper
 import (
 	"strings"
 
-	"github.com/armon/go-metrics"
+	metrics "github.com/hashicorp/go-metrics"
 
 	"cosmossdk.io/errors"
 
@@ -92,7 +92,9 @@ func (k Keeper) sendNftTransfer(
 	timeoutTimestamp uint64,
 	memo string,
 ) (uint64, error) {
-	if !k.GetSendEnabled(ctx) {
+	if ok, err := k.GetSendEnabled(ctx); err != nil {
+		return 0, err
+	} else if !ok {
 		return 0, types.ErrSendDisabled
 	}
 
@@ -224,12 +226,14 @@ func (k Keeper) OnRecvPacket(ctx sdk.Context, packet channeltypes.Packet, data t
 		return err
 	}
 
-	if !k.GetReceiveEnabled(ctx) {
+	if ok, err := k.GetReceiveEnabled(ctx); err != nil {
+		return err
+	} else if !ok {
 		return types.ErrReceiveDisabled
 	}
 
 	// decode the receiver address
-	receiver, err := sdk.AccAddressFromBech32(data.Receiver)
+	receiver, err := k.authKeeper.AddressCodec().StringToBytes(data.Receiver)
 	if err != nil {
 		return err
 	}
@@ -309,8 +313,12 @@ func (k Keeper) OnRecvPacket(ctx sdk.Context, packet channeltypes.Packet, data t
 	classTrace := types.ParseClassTrace(prefixedClassId)
 
 	traceHash := classTrace.Hash()
-	if !k.HasClassTrace(ctx, traceHash) {
-		k.SetClassTrace(ctx, classTrace)
+	if ok, err := k.ClassTraces.Has(ctx, traceHash); err != nil {
+		return err
+	} else if !ok {
+		if err := k.ClassTraces.Set(ctx, traceHash, classTrace); err != nil {
+			return err
+		}
 	}
 
 	voucherClassId := classTrace.IBCClassId()
@@ -396,7 +404,7 @@ func (k Keeper) refundPacketToken(ctx sdk.Context, packet channeltypes.Packet, d
 	tokenData := data.TokenData
 
 	// decode the sender address
-	sender, err := sdk.AccAddressFromBech32(data.Sender)
+	sender, err := k.authKeeper.AddressCodec().StringToBytes(data.Sender)
 	if err != nil {
 		return err
 	}
@@ -436,9 +444,9 @@ func (k Keeper) ClassIdPathFromHash(ctx sdk.Context, classId string) (string, er
 		return "", errors.Wrap(types.ErrInvalidClassIdForNftTransfer, err.Error())
 	}
 
-	classTrace, found := k.GetClassTrace(ctx, hash)
-	if !found {
-		return "", errors.Wrap(types.ErrTraceNotFound, hexHash)
+	classTrace, err := k.ClassTraces.Get(ctx, hash)
+	if err != nil {
+		return "", err
 	}
 
 	fullClassIdPath := classTrace.GetFullClassIdPath()

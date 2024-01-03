@@ -6,6 +6,7 @@ import (
 	"cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
 
+	"github.com/cosmos/cosmos-sdk/codec/address"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 
@@ -147,7 +148,8 @@ func TestResources(t *testing.T) {
 func TestTableInfo(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
-	twoAddr, err := types.AccAddressFromString("0x2")
+	ac := address.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix())
+	twoAddr, err := types.AccAddressFromString(ac, "0x2")
 	require.NoError(t, err)
 
 	err = input.MoveKeeper.PublishModuleBundle(ctx, twoAddr,
@@ -202,7 +204,8 @@ func TestTableInfo(t *testing.T) {
 func TestTableEntries(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
-	twoAddr, err := types.AccAddressFromString("0x2")
+	ac := address.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix())
+	twoAddr, err := types.AccAddressFromString(ac, "0x2")
 	require.NoError(t, err)
 
 	err = input.MoveKeeper.PublishModuleBundle(ctx, twoAddr,
@@ -325,6 +328,7 @@ func TestParams(t *testing.T) {
 	params, err := querier.Params(sdk.WrapSDKContext(ctx), &types.QueryParamsRequest{})
 	require.NoError(t, err)
 
-	expectedParams := input.MoveKeeper.GetParams(ctx)
+	expectedParams, err := input.MoveKeeper.GetParams(ctx)
+	require.NoError(t, err)
 	require.Equal(t, expectedParams, params.Params)
 }

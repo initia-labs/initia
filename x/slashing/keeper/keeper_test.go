@@ -40,7 +40,7 @@ func TestUnJailNotBonded(t *testing.T) {
 	require.NoError(t, err)
 
 	// unbond below minimum self-delegation
-	_, err = input.StakingKeeper.Undelegate(ctx, valAddr6.Bytes(), valAddr6, sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, math.NewInt(5_000_000))))
+	_, _, err = input.StakingKeeper.Undelegate(ctx, valAddr6.Bytes(), valAddr6, sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, math.NewInt(5_000_000))))
 	require.NoError(t, err)
 
 	staking.EndBlocker(ctx, input.StakingKeeper)
@@ -76,7 +76,9 @@ func TestHandleNewValidator(t *testing.T) {
 		t, input.BankKeeper.GetAllBalances(ctx, sdk.AccAddress(valAddr)),
 		sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(90_000_000))),
 	)
-	require.Equal(t, math.NewInt(10_000_000), input.StakingKeeper.Validator(ctx, valAddr).GetBondedTokens().AmountOf(bondDenom))
+	val, err := input.StakingKeeper.Validator(ctx, valAddr)
+	require.NoError(t, err)
+	require.Equal(t, math.NewInt(10_000_000), val.GetBondedTokens().AmountOf(bondDenom))
 
 	// Now a validator, for two blocks
 	err = input.SlashingKeeper.HandleValidatorSignature(ctx, valPubKey.Address(), 10, comet.BlockIDFlagCommit)

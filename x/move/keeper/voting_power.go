@@ -23,12 +23,15 @@ func NewVotingPowerKeeper(k *Keeper) VotingPowerKeeper {
 }
 
 // returns voting power weights of bond denoms
-func (k VotingPowerKeeper) GetVotingPowerWeights(ctx context.Context, bondDenoms []string) sdk.DecCoins {
-	baseDenom := k.BaseDenom(ctx)
-	powerWeights := sdk.NewDecCoins()
+func (k VotingPowerKeeper) GetVotingPowerWeights(ctx context.Context, bondDenoms []string) (sdk.DecCoins, error) {
+	baseDenom, err := k.BaseDenom(ctx)
+	if err != nil {
+		return nil, err
+	}
 
+	powerWeights := sdk.NewDecCoins()
 	for _, denom := range bondDenoms {
-		var powerWeight sdk.Dec
+		var powerWeight math.LegacyDec
 		if denom == baseDenom {
 			powerWeight = math.LegacyOneDec()
 		} else {
@@ -64,5 +67,5 @@ func (k VotingPowerKeeper) GetVotingPowerWeights(ctx context.Context, bondDenoms
 		powerWeights = powerWeights.Add(sdk.NewDecCoinFromDec(denom, powerWeight))
 	}
 
-	return powerWeights
+	return powerWeights, nil
 }

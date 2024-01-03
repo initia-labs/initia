@@ -9,7 +9,6 @@ import (
 
 	dbm "github.com/cometbft/cometbft-db"
 	abci "github.com/cometbft/cometbft/abci/types"
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/stretchr/testify/require"
 
 	simappparams "cosmossdk.io/simapp/params"
@@ -89,8 +88,7 @@ func InitializeBenchApp(b *testing.B, db *dbm.DB, numAccounts int) AppInfo {
 	config := simappparams.MakeTestEncodingConfig().TxConfig
 
 	height := initiaApp.LastBlockHeight() + 1
-	initiaApp.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{Height: height, Time: time.Now()}})
-	initiaApp.EndBlock(abci.RequestEndBlock{Height: height})
+	initiaApp.FinalizeBlock(&abci.RequestFinalizeBlock{Height: height, Time: time.Now()})
 	initiaApp.Commit()
 
 	appInfo := AppInfo{

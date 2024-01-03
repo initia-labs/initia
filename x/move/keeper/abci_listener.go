@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"context"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/initia-labs/initia/x/move/types"
@@ -28,7 +26,7 @@ func (listener *PostHandler) GetNewPublishedModulesLoaded() bool {
 }
 
 // ListenDeliverTx updates the steaming service with the latest DeliverTx messages
-func (listener *PostHandler) PostHandle(ctx context.Context, tx sdk.Tx, simulate, success bool) (newCtx context.Context, err error) {
+func (listener *PostHandler) PostHandle(ctx sdk.Context, tx sdk.Tx, simulate, success bool) (newCtx sdk.Context, err error) {
 	// When there is no newly published modules, skip below
 	if !listener.GetNewPublishedModulesLoaded() {
 		return ctx, nil

@@ -62,7 +62,7 @@ type TestChain struct {
 	CurrentHeader tmproto.Header     // header for current block height
 	QueryServer   types.QueryServer
 	TxConfig      client.TxConfig
-	Codec         codec.BinaryCodec
+	Codec         codec.Codec
 
 	Vals     *tmtypes.ValidatorSet
 	NextVals *tmtypes.ValidatorSet

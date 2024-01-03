@@ -260,10 +260,10 @@ func TestSendEnabled(t *testing.T) {
 
 	input.BankKeeper.SetParams(ctx, params)
 
-	bondCoin := sdk.NewCoin(bondDenom, sdk.OneInt())
+	bondCoin := sdk.NewCoin(bondDenom, math.OneInt())
 
 	testDenom := testDenoms[0]
-	testCoin := sdk.NewCoin(testDenom, sdk.OneInt())
+	testCoin := sdk.NewCoin(testDenom, math.OneInt())
 
 	// assert with default (all denom) send enabled both Bar and Bond Denom are enabled
 	require.Equal(t, enabled, input.BankKeeper.IsSendEnabledCoin(ctx, testCoin))

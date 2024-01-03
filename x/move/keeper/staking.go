@@ -16,9 +16,9 @@ import (
 
 // AmountToShare convert token to share in the ratio of a validator's share/token
 func (k Keeper) AmountToShare(ctx context.Context, valAddr sdk.ValAddress, amount sdk.Coin) (math.Int, error) {
-	val := k.StakingKeeper.Validator(ctx, valAddr)
-	if val == nil {
-		return math.ZeroInt(), stakingtypes.ErrNoValidatorFound
+	val, err := k.StakingKeeper.Validator(ctx, valAddr)
+	if err != nil {
+		return math.ZeroInt(), err
 	}
 
 	shares, err := val.SharesFromTokens(sdk.NewCoins(amount))
@@ -31,9 +31,9 @@ func (k Keeper) AmountToShare(ctx context.Context, valAddr sdk.ValAddress, amoun
 
 // ShareToAmount convert share to token in the ratio of a validator's token/share
 func (k Keeper) ShareToAmount(ctx context.Context, valAddr sdk.ValAddress, share sdk.DecCoin) (math.Int, error) {
-	val := k.StakingKeeper.Validator(ctx, valAddr)
-	if val == nil {
-		return math.ZeroInt(), stakingtypes.ErrNoValidatorFound
+	val, err := k.StakingKeeper.Validator(ctx, valAddr)
+	if err != nil {
+		return math.ZeroInt(), err
 	}
 
 	tokens := val.TokensFromShares(sdk.NewDecCoins(share))
@@ -44,7 +44,9 @@ func (k Keeper) ShareToAmount(ctx context.Context, valAddr sdk.ValAddress, share
 // withdrawn staking rewards to the move staking module account
 func (k Keeper) WithdrawRewards(ctx context.Context, valAddr sdk.ValAddress) (distrtypes.Pools, error) {
 	delModuleAddr := types.GetDelegatorModuleAddress(valAddr)
-	if k.hasZeroRewards(ctx, valAddr, delModuleAddr) {
+	if ok, err := k.hasZeroRewards(ctx, valAddr, delModuleAddr); err != nil {
+		return nil, err
+	} else if ok {
 		return nil, nil
 	}
 
@@ -54,7 +56,11 @@ func (k Keeper) WithdrawRewards(ctx context.Context, valAddr sdk.ValAddress) (di
 	}
 
 	// move staking only support reward denom
-	rewardDenom := k.RewardKeeper.GetParams(ctx).RewardDenom
+	params, err := k.RewardKeeper.GetParams(ctx)
+	if err != nil {
+		return nil, err
+	}
+	rewardDenom := params.RewardDenom
 
 	pools := make(distrtypes.Pools, 0, len(rewardPools))
 	for _, pool := range rewardPools {
@@ -83,22 +89,31 @@ func (k Keeper) WithdrawRewards(ctx context.Context, valAddr sdk.ValAddress) (di
 
 // check whether a delegation rewards is zero or not with cache context
 // to prevent write operation at checking
-func (k Keeper) hasZeroRewards(ctx context.Context, validatorAddr sdk.ValAddress, delegatorAddr sdk.AccAddress) bool {
-	ctx, _ = ctx.CacheContext()
+func (k Keeper) hasZeroRewards(ctx context.Context, validatorAddr sdk.ValAddress, delegatorAddr sdk.AccAddress) (bool, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx, _ = sdkCtx.CacheContext()
 
-	val := k.StakingKeeper.Validator(ctx, validatorAddr)
-	if val == nil {
-		return true
+	val, err := k.StakingKeeper.Validator(sdkCtx, validatorAddr)
+	if err != nil {
+		return true, err
 	}
 
-	del := k.StakingKeeper.Delegation(ctx, delegatorAddr, validatorAddr)
-	if del == nil {
-		return true
+	del, err := k.StakingKeeper.Delegation(sdkCtx, delegatorAddr, validatorAddr)
+	if err != nil {
+		return true, err
 	}
-	endingPeriod := k.distrKeeper.IncrementValidatorPeriod(ctx, val)
-	rewards, _ := k.distrKeeper.CalculateDelegationRewards(ctx, val, del, endingPeriod).TruncateDecimal()
+	endingPeriod, err := k.distrKeeper.IncrementValidatorPeriod(sdkCtx, val)
+	if err != nil {
+		return true, err
+	}
 
-	return rewards.IsEmpty()
+	rewardsInDec, err := k.distrKeeper.CalculateDelegationRewards(sdkCtx, val, del, endingPeriod)
+	if err != nil {
+		return true, err
+	}
+
+	rewards, _ := rewardsInDec.TruncateDecimal()
+	return rewards.IsEmpty(), nil
 }
 
 // DelegateToValidator withdraw staking coins from the move module account
@@ -124,9 +139,9 @@ func (k Keeper) DelegateToValidator(ctx context.Context, valAddr sdk.ValAddress,
 	}
 
 	// delegate to validator
-	val, found := k.StakingKeeper.GetValidator(ctx, valAddr)
-	if !found {
-		return sdk.NewDecCoins(), stakingtypes.ErrNoValidatorFound
+	val, err := k.StakingKeeper.GetValidator(ctx, valAddr)
+	if err != nil {
+		return sdk.NewDecCoins(), err
 	}
 
 	shares, err := k.StakingKeeper.Delegate(ctx, delModuleAddr, delCoins, stakingtypes.Unbonded, val, true)
@@ -136,9 +151,9 @@ func (k Keeper) DelegateToValidator(ctx context.Context, valAddr sdk.ValAddress,
 // InstantUnbondFromValidator unbond coins without unbonding period and send
 // the withdrawn coins to the move module account
 func (k Keeper) InstantUnbondFromValidator(ctx context.Context, valAddr sdk.ValAddress, shares sdk.DecCoins) (sdk.Coins, error) {
-	val, found := k.StakingKeeper.GetValidator(ctx, valAddr)
-	if !found {
-		return sdk.NewCoins(), stakingtypes.ErrNoValidatorFound
+	val, err := k.StakingKeeper.GetValidator(ctx, valAddr)
+	if err != nil {
+		return sdk.NewCoins(), err
 	}
 
 	// unbond from a validator
@@ -311,21 +326,25 @@ func (k Keeper) HasStakingState(ctx context.Context, metadata vmtypes.AccountAdd
 		return false, err
 	}
 
-	return k.HasTableEntry(ctx, stakingStatesTableHandle, metadata[:]), nil
+	return k.HasTableEntry(ctx, stakingStatesTableHandle, metadata[:])
 }
 
 // SlashUnbondingCoin slash unbonding coins of the staking contract
 func (k Keeper) SlashUnbondingDelegations(
 	ctx context.Context,
 	valAddr sdk.ValAddress,
-	fraction sdk.Dec,
+	fraction math.LegacyDec,
 ) error {
 	stakingStatesTableHandle, err := k.GetStakingStatesTableHandle(ctx)
 	if err != nil {
 		return err
 	}
 
-	bondDenoms := k.StakingKeeper.BondDenoms(ctx)
+	bondDenoms, err := k.StakingKeeper.BondDenoms(ctx)
+	if err != nil {
+		return err
+	}
+
 	metadatas := make([]vmtypes.AccountAddress, 0, len(bondDenoms))
 	for _, bondDenom := range bondDenoms {
 		metadata, err := types.MetadataAddressFromDenom(bondDenom)
@@ -334,7 +353,9 @@ func (k Keeper) SlashUnbondingDelegations(
 		}
 
 		// check whether there is staking state for the given denom
-		if !k.HasTableEntry(ctx, stakingStatesTableHandle, metadata[:]) {
+		if ok, err := k.HasTableEntry(ctx, stakingStatesTableHandle, metadata[:]); err != nil {
+			return err
+		} else if !ok {
 			continue
 		}
 
@@ -357,7 +378,9 @@ func (k Keeper) SlashUnbondingDelegations(
 		}
 
 		// check whether there is staking state for the validator
-		if !k.HasTableEntry(ctx, metadataTableHandle, keyBz) {
+		if ok, err := k.HasTableEntry(ctx, metadataTableHandle, keyBz); err != nil {
+			return err
+		} else if !ok {
 			continue
 		}
 

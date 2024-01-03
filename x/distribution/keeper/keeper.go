@@ -51,7 +51,7 @@ func NewKeeper(
 	cdc codec.Codec, storeService store.KVStoreService,
 	ak types.AccountKeeper, bk types.BankKeeper, sk customtypes.StakingKeeper,
 	dk customtypes.DexKeeper, feeCollectorName string, authority string,
-) Keeper {
+) *Keeper {
 
 	// ensure distribution module account is set
 	if addr := ak.GetModuleAddress(types.ModuleName); addr == nil {
@@ -63,7 +63,7 @@ func NewKeeper(
 	}
 
 	sb := collections.NewSchemaBuilder(storeService)
-	k := Keeper{
+	k := &Keeper{
 		storeService:                    storeService,
 		cdc:                             cdc,
 		authKeeper:                      ak,

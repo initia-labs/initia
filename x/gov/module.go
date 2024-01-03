@@ -81,13 +81,13 @@ func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
 }
 
 // ValidateGenesis performs genesis state validation for the gov module.
-func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncodingConfig, bz json.RawMessage) error {
+func (b AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncodingConfig, bz json.RawMessage) error {
 	var data customtypes.GenesisState
 	if err := cdc.UnmarshalJSON(bz, &data); err != nil {
 		return fmt.Errorf("failed to unmarshal %s genesis state: %w", types.ModuleName, err)
 	}
 
-	return customtypes.ValidateGenesis(&data)
+	return customtypes.ValidateGenesis(&data, b.cdc.InterfaceRegistry().SigningContext().AddressCodec())
 }
 
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the gov module.

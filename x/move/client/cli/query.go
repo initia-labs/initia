@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"cosmossdk.io/core/address"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -16,7 +17,7 @@ import (
 	vmapi "github.com/initia-labs/initiavm/api"
 )
 
-func GetQueryCmd() *cobra.Command {
+func GetQueryCmd(ac address.Codec) *cobra.Command {
 	queryCmd := &cobra.Command{
 		Use:                        types.ModuleName,
 		Short:                      "Querying commands for the move module",
@@ -25,19 +26,19 @@ func GetQueryCmd() *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 	queryCmd.AddCommand(
-		GetCmdModule(),
-		GetCmdModules(),
-		GetCmdResource(),
-		GetCmdResources(),
-		GetCmdTableEntry(),
-		GetCmdTableEntries(),
-		GetCmdQueryEntryFunction(),
+		GetCmdModule(ac),
+		GetCmdModules(ac),
+		GetCmdResource(ac),
+		GetCmdResources(ac),
+		GetCmdTableEntry(ac),
+		GetCmdTableEntries(ac),
+		GetCmdQueryEntryFunction(ac),
 		GetCmdQueryParams(),
 	)
 	return queryCmd
 }
 
-func GetCmdModule() *cobra.Command {
+func GetCmdModule(ac address.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "module [module owner] [module name]",
 		Short:   "Get published move module info",
@@ -50,7 +51,7 @@ func GetCmdModule() *cobra.Command {
 				return err
 			}
 
-			_, err = types.AccAddressFromString(args[0])
+			_, err = types.AccAddressFromString(ac, args[0])
 			if err != nil {
 				return err
 			}
@@ -73,7 +74,7 @@ func GetCmdModule() *cobra.Command {
 	return cmd
 }
 
-func GetCmdModules() *cobra.Command {
+func GetCmdModules(ac address.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "modules [module owner]",
 		Short:   "Get all published move module infos of an account",
@@ -86,7 +87,7 @@ func GetCmdModules() *cobra.Command {
 				return err
 			}
 
-			_, err = types.AccAddressFromString(args[0])
+			_, err = types.AccAddressFromString(ac, args[0])
 			if err != nil {
 				return err
 			}
@@ -109,7 +110,7 @@ func GetCmdModules() *cobra.Command {
 	return cmd
 }
 
-func GetCmdResource() *cobra.Command {
+func GetCmdResource(ac address.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "resource [resource owner] [struct tag]",
 		Short:   "Get store raw resource data",
@@ -122,7 +123,7 @@ func GetCmdResource() *cobra.Command {
 				return err
 			}
 
-			_, err = types.AccAddressFromString(args[0])
+			_, err = types.AccAddressFromString(ac, args[0])
 			if err != nil {
 				return err
 			}
@@ -150,7 +151,7 @@ func GetCmdResource() *cobra.Command {
 	return cmd
 }
 
-func GetCmdResources() *cobra.Command {
+func GetCmdResources(ac address.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "resources [resource owner]",
 		Short:   "Get all raw resource data of an account",
@@ -163,7 +164,7 @@ func GetCmdResources() *cobra.Command {
 				return err
 			}
 
-			_, err = types.AccAddressFromString(args[0])
+			_, err = types.AccAddressFromString(ac, args[0])
 			if err != nil {
 				return err
 			}
@@ -186,7 +187,7 @@ func GetCmdResources() *cobra.Command {
 	return cmd
 }
 
-func GetCmdTableEntry() *cobra.Command {
+func GetCmdTableEntry(ac address.Codec) *cobra.Command {
 	decoder := newArgDecoder(asciiDecodeString)
 	cmd := &cobra.Command{
 		Use:     "table-entry [table addr] [key_bytes]",
@@ -200,7 +201,7 @@ func GetCmdTableEntry() *cobra.Command {
 				return err
 			}
 
-			_, err = types.AccAddressFromString(args[0])
+			_, err = types.AccAddressFromString(ac, args[0])
 			if err != nil {
 				return err
 			}
@@ -231,7 +232,7 @@ func GetCmdTableEntry() *cobra.Command {
 	return cmd
 }
 
-func GetCmdTableEntries() *cobra.Command {
+func GetCmdTableEntries(ac address.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "table-entries [table addr]",
 		Short:   "Get all table entries",
@@ -244,7 +245,7 @@ func GetCmdTableEntries() *cobra.Command {
 				return err
 			}
 
-			_, err = types.AccAddressFromString(args[0])
+			_, err = types.AccAddressFromString(ac, args[0])
 			if err != nil {
 				return err
 			}
@@ -270,7 +271,7 @@ func GetCmdTableEntries() *cobra.Command {
 	return cmd
 }
 
-func GetCmdQueryEntryFunction() *cobra.Command {
+func GetCmdQueryEntryFunction(ac address.Codec) *cobra.Command {
 	bech32PrefixAccAddr := sdk.GetConfig().GetBech32AccountAddrPrefix()
 	cmd := &cobra.Command{
 		Use:   "view [module owner] [module name] [function name]",
@@ -301,7 +302,7 @@ $ %s query move view \
 				return err
 			}
 
-			_, err = types.AccAddressFromString(args[0])
+			_, err = types.AccAddressFromString(ac, args[0])
 			if err != nil {
 				return err
 			}
@@ -328,7 +329,7 @@ $ %s query move view \
 			bcsArgs := [][]byte{}
 			for i := range moveArgTypes {
 				serializer := NewSerializer()
-				bcsArg, err := BcsSerializeArg(moveArgTypes[i], moveArgs[i], serializer)
+				bcsArg, err := BcsSerializeArg(moveArgTypes[i], moveArgs[i], serializer, ac)
 				if err != nil {
 					return err
 				}

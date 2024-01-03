@@ -27,7 +27,7 @@ func (k customMsgServer) UpdateParams(ctx context.Context, req *customtypes.MsgU
 		return nil, errors.Wrapf(govtypes.ErrInvalidSigner, "invalid authority; expected %s, got %s", k.authority, req.Authority)
 	}
 
-	if err := req.Params.ValidateBasic(); err != nil {
+	if err := req.Params.Validate(k.authKeeper.AddressCodec()); err != nil {
 		return nil, err
 	}
 

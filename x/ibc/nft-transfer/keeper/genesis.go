@@ -1,19 +1,22 @@
 package keeper
 
 import (
+	"context"
 	"fmt"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 )
 
 // InitGenesis initializes the ibc-transfer state and binds to PortID.
-func (k Keeper) InitGenesis(ctx sdk.Context, state types.GenesisState) {
-	k.SetPort(ctx, state.PortId)
+func (k Keeper) InitGenesis(ctx context.Context, state types.GenesisState) {
+	if err := k.PortID.Set(ctx, state.PortId); err != nil {
+		panic(err)
+	}
 
 	for _, trace := range state.ClassTraces {
-		k.SetClassTrace(ctx, trace)
+		if err := k.ClassTraces.Set(ctx, trace.Hash(), trace); err != nil {
+			panic(err)
+		}
 	}
 
 	// Only try to bind to port if it is not already bound, since we may already own
@@ -27,16 +30,31 @@ func (k Keeper) InitGenesis(ctx sdk.Context, state types.GenesisState) {
 		}
 	}
 
-	if err := k.SetParams(ctx, state.Params); err != nil {
+	if err := k.Params.Set(ctx, state.Params); err != nil {
 		panic(err)
 	}
 }
 
 // ExportGenesis exports ibc-transfer module's portID and denom trace info into its genesis state.
-func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
+func (k Keeper) ExportGenesis(ctx context.Context) *types.GenesisState {
+	portID, err := k.PortID.Get(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	allTraces, err := k.GetAllClassTraces(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	params, err := k.Params.Get(ctx)
+	if err != nil {
+		panic(err)
+	}
+
 	return &types.GenesisState{
-		PortId:      k.GetPort(ctx),
-		ClassTraces: k.GetAllClassTraces(ctx),
-		Params:      k.GetParams(ctx),
+		PortId:      portID,
+		ClassTraces: allTraces,
+		Params:      params,
 	}
 }

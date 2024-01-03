@@ -62,7 +62,7 @@ func TestSetGenTxsInAppGenesisState(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(fmt.Sprintf("Case %s", tc.msg), func(t *testing.T) {
-			cdc := initiaapp.MakeEncodingConfig().Marshaler
+			cdc := initiaapp.MakeEncodingConfig().Codec
 			txJSONEncoder := initiaapp.MakeEncodingConfig().TxConfig.TxJSONEncoder()
 
 			tc.malleate()
@@ -130,7 +130,7 @@ func TestValidateAccountInGenesis(t *testing.T) {
 		t.Run(fmt.Sprintf("Case %s", tc.msg), func(t *testing.T) {
 			app := createApp(t)
 			ctx := app.BaseApp.NewContext(false)
-			cdc := initiaapp.MakeEncodingConfig().Marshaler
+			cdc := initiaapp.MakeEncodingConfig().Codec
 
 			stakingGenesisState := app.StakingKeeper.ExportGenesis(ctx)
 			stakingGenesis, err := cdc.MarshalJSON(stakingGenesisState) // TODO switch this to use Marshaler

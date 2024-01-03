@@ -7,6 +7,7 @@ import (
 	"cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
 
+	"github.com/cosmos/cosmos-sdk/codec/address"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	v1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 
@@ -97,10 +98,11 @@ func TestValidateGenesis(t *testing.T) {
 		},
 	}
 
+	ac := address.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix())
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			err := types.ValidateGenesis(tc.genesisState())
+			err := types.ValidateGenesis(tc.genesisState(), ac)
 			if tc.expErr {
 				require.Error(t, err)
 			} else {

@@ -107,7 +107,7 @@ func SetupWithGenesisValSet(t *testing.T, valSet *tmtypes.ValidatorSet, genAccs 
 			Status:          stakingtypes.Bonded,
 			Tokens:          coins(1_000_000),
 			DelegatorShares: decCoins(1_000_000),
-			Description:     stakingtypes.Description{},
+			Description:     stakingtypes.NewDescription("homeDir", "", "", "", ""),
 			UnbondingHeight: int64(0),
 			UnbondingTime:   time.Unix(0, 0).UTC(),
 			Commission:      stakingtypes.NewCommission(math.LegacyZeroDec(), math.LegacyZeroDec(), math.LegacyZeroDec()),

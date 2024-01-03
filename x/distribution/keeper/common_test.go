@@ -462,8 +462,8 @@ func createValidatorWithCoin(
 func newTestMsgCreateValidator(address sdk.ValAddress, pubKey cryptotypes.PubKey, amt ...sdk.Coin) *stakingtypes.MsgCreateValidator {
 	commission := stakingtypes.NewCommissionRates(math.LegacyNewDecWithPrec(5, 1), math.LegacyNewDecWithPrec(5, 1), math.LegacyNewDec(0))
 	msg, _ := stakingtypes.NewMsgCreateValidator(
-		address, pubKey, amt,
-		stakingtypes.Description{}, commission,
+		address.String(), pubKey, amt,
+		stakingtypes.NewDescription("homeDir", "", "", "", ""), commission,
 	)
 	return msg
 }

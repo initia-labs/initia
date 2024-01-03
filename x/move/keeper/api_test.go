@@ -11,7 +11,7 @@ import (
 
 	"github.com/initia-labs/initia/x/move/keeper"
 	"github.com/initia-labs/initia/x/move/types"
-	staking "github.com/initia-labs/initia/x/mstaking"
+	stakingkeeper "github.com/initia-labs/initia/x/mstaking/keeper"
 
 	vmtypes "github.com/initia-labs/initiavm/types"
 )
@@ -70,10 +70,13 @@ func Test_AmountToShareAPI(t *testing.T) {
 	valAddr := valAddrs[0]
 	valPubKey := valPubKeys[0]
 
+	valAddrStr, err := input.StakingKeeper.ValidatorAddressCodec().BytesToString(valAddrs[0])
+	require.NoError(t, err)
+
 	input.Faucet.Fund(ctx, addrs[0], sdk.NewCoin(bondDenom, math.NewInt(100_000_000)))
 
-	sh := staking.NewHandler(input.StakingKeeper)
-	_, err := sh(ctx, newTestMsgCreateValidator(valAddr, valPubKey, math.NewInt(100_000)))
+	sh := stakingkeeper.NewMsgServerImpl(input.StakingKeeper)
+	_, err = sh.CreateValidator(ctx, newTestMsgCreateValidator(valAddrStr, valPubKey, math.NewInt(100_000)))
 	require.NoError(t, err)
 
 	metadata, err := types.MetadataAddressFromDenom(bondDenom)
@@ -91,10 +94,13 @@ func Test_AmountToShareAPI_InvalidAddr(t *testing.T) {
 	valAddr := valAddrs[0]
 	valPubKey := valPubKeys[0]
 
+	valAddrStr, err := input.StakingKeeper.ValidatorAddressCodec().BytesToString(valAddrs[0])
+	require.NoError(t, err)
+
 	input.Faucet.Fund(ctx, addrs[0], sdk.NewCoin(bondDenom, math.NewInt(100_000_000)))
 
-	sh := staking.NewHandler(input.StakingKeeper)
-	_, err := sh(ctx, newTestMsgCreateValidator(valAddr, valPubKey, math.NewInt(100_000)))
+	sh := stakingkeeper.NewMsgServerImpl(input.StakingKeeper)
+	_, err = sh.CreateValidator(ctx, newTestMsgCreateValidator(valAddrStr, valPubKey, math.NewInt(100_000)))
 	require.NoError(t, err)
 
 	metadata, err := types.MetadataAddressFromDenom(bondDenom)
@@ -111,10 +117,13 @@ func Test_ShareToAmountAPI(t *testing.T) {
 	valAddr := valAddrs[0]
 	valPubKey := valPubKeys[0]
 
+	valAddrStr, err := input.StakingKeeper.ValidatorAddressCodec().BytesToString(valAddrs[0])
+	require.NoError(t, err)
+
 	input.Faucet.Fund(ctx, addrs[0], sdk.NewCoin(bondDenom, math.NewInt(100_000_000)))
 
-	sh := staking.NewHandler(input.StakingKeeper)
-	_, err := sh(ctx, newTestMsgCreateValidator(valAddr, valPubKey, math.NewInt(100_000)))
+	sh := stakingkeeper.NewMsgServerImpl(input.StakingKeeper)
+	_, err = sh.CreateValidator(ctx, newTestMsgCreateValidator(valAddrStr, valPubKey, math.NewInt(100_000)))
 	require.NoError(t, err)
 
 	metadata, err := types.MetadataAddressFromDenom(bondDenom)
@@ -132,10 +141,13 @@ func Test_ShareToAmountAPI_InvalidAddr(t *testing.T) {
 	valAddr := valAddrs[0]
 	valPubKey := valPubKeys[0]
 
+	valAddrStr, err := input.StakingKeeper.ValidatorAddressCodec().BytesToString(valAddrs[0])
+	require.NoError(t, err)
+
 	input.Faucet.Fund(ctx, addrs[0], sdk.NewCoin(bondDenom, math.NewInt(100_000_000)))
 
-	sh := staking.NewHandler(input.StakingKeeper)
-	_, err := sh(ctx, newTestMsgCreateValidator(valAddr, valPubKey, math.NewInt(100_000)))
+	sh := stakingkeeper.NewMsgServerImpl(input.StakingKeeper)
+	_, err = sh.CreateValidator(ctx, newTestMsgCreateValidator(valAddrStr, valPubKey, math.NewInt(100_000)))
 	require.NoError(t, err)
 
 	metadata, err := types.MetadataAddressFromDenom(bondDenom)
@@ -150,7 +162,9 @@ func Test_UnbondTimestamp(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
 	// set UnbondingTime
-	stakingParams := input.StakingKeeper.GetParams(ctx)
+	stakingParams, err := input.StakingKeeper.GetParams(ctx)
+	require.NoError(t, err)
+
 	stakingParams.UnbondingTime = time.Duration(60 * 60 * 24 * 7)
 	input.StakingKeeper.SetParams(ctx, stakingParams)
 

@@ -4,16 +4,20 @@ import (
 	"testing"
 	"time"
 
-	dbm "github.com/cometbft/cometbft-db"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
-	"github.com/cometbft/cometbft/libs/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 
 	"github.com/stretchr/testify/require"
 
+	"cosmossdk.io/collections"
+	"cosmossdk.io/log"
 	"cosmossdk.io/store"
+	"cosmossdk.io/store/metrics"
 	storetypes "cosmossdk.io/store/types"
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/codec/address"
+	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/std"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -25,7 +29,7 @@ import (
 )
 
 func MakeTestCodec(t testing.TB) codec.Codec {
-	return MakeEncodingConfig(t).Marshaler
+	return MakeEncodingConfig(t).Codec
 }
 
 func MakeEncodingConfig(_ testing.TB) initiaappparams.EncodingConfig {
@@ -47,8 +51,8 @@ func _createTestInput(
 	t testing.TB,
 	db dbm.DB,
 ) (sdk.Context, *keeper.Keeper) {
-	keys := sdk.NewKVStoreKeys(types.StoreKey)
-	ms := store.NewCommitMultiStore(db)
+	keys := storetypes.NewKVStoreKeys(types.StoreKey)
+	ms := store.NewCommitMultiStore(db, log.NewNopLogger(), metrics.NewNoOpMetrics())
 	for _, v := range keys {
 		ms.MountStoreWithDB(v, storetypes.StoreTypeIAVL, db)
 	}
@@ -61,12 +65,14 @@ func _createTestInput(
 	}, false, log.NewNopLogger())
 
 	encodingConfig := MakeEncodingConfig(t)
-	appCodec := encodingConfig.Marshaler
+	appCodec := encodingConfig.Codec
 
+	ac := address.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix())
 	permKeeper := keeper.NewKeeper(
 		appCodec,
-		keys[types.StoreKey],
+		runtime.NewKVStoreService(keys[types.StoreKey]),
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		ac,
 	)
 
 	return ctx, permKeeper
@@ -80,15 +86,17 @@ func Test_GetChannelRelayer(t *testing.T) {
 	addr := sdk.AccAddress(pubKey.Address())
 
 	// should be empty
-	res := k.GetChannelRelayer(ctx, channel)
-	require.Nil(t, res)
+	_, err := k.ChannelRelayers.Get(ctx, channel)
+	require.ErrorIs(t, err, collections.ErrNotFound)
 
 	// set channel relayer via msg handler
-	k.SetChannelRelayer(ctx, channel, addr)
+	err = k.ChannelRelayers.Set(ctx, channel, addr)
+	require.NoError(t, err)
 
 	// check properly set
-	res = k.GetChannelRelayer(ctx, channel)
-	require.Equal(t, *res, types.ChannelRelayer{
+	res, err := k.ChannelRelayers.Get(ctx, channel)
+	require.NoError(t, err)
+	require.Equal(t, res, types.ChannelRelayer{
 		Channel: channel,
 		Relayer: addr.String(),
 	})

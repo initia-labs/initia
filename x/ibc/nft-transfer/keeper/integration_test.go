@@ -249,7 +249,7 @@ func (suite *KeeperTestSuite) transferNft(
 	suite.Require().NoError(err)
 
 	var data types.NonFungibleTokenPacketData
-	err = types.ModuleCdc.UnmarshalJSON(packet.GetData(), &data)
+	err = suite.chainA.Codec.UnmarshalJSON(packet.GetData(), &data)
 	suite.Require().NoError(err)
 
 	return packet
@@ -259,9 +259,8 @@ func (suite *KeeperTestSuite) receiverNft(
 	fromEndpoint, toEndpoint *ibctesting.Endpoint,
 	packet channeltypes.Packet,
 ) string {
-
 	var data types.NonFungibleTokenPacketData
-	err := types.ModuleCdc.UnmarshalJSON(packet.GetData(), &data)
+	err := suite.chainA.Codec.UnmarshalJSON(packet.GetData(), &data)
 	suite.Require().NoError(err)
 
 	// get proof of packet commitment from chainA

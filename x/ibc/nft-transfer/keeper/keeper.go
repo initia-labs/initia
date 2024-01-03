@@ -1,16 +1,14 @@
 package keeper
 
 import (
+	"context"
 	"fmt"
 
-	tmbytes "github.com/cometbft/cometbft/libs/bytes"
-	"github.com/cometbft/cometbft/libs/log"
-
-	"cosmossdk.io/store/prefix"
-	storetypes "cosmossdk.io/store/types"
+	"cosmossdk.io/collections"
+	"cosmossdk.io/core/store"
+	"cosmossdk.io/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 
@@ -21,9 +19,7 @@ import (
 )
 
 type Keeper struct {
-	storeKey   storetypes.StoreKey
-	cdc        codec.BinaryCodec
-	paramSpace paramtypes.Subspace
+	cdc codec.Codec
 
 	ics4Wrapper   types.ICS4Wrapper
 	channelKeeper types.ChannelKeeper
@@ -33,23 +29,28 @@ type Keeper struct {
 	scopedKeeper  capabilitykeeper.ScopedKeeper
 
 	authority string
+
+	Schema      collections.Schema
+	PortID      collections.Item[string]
+	Params      collections.Item[types.Params]
+	ClassTraces collections.Map[[]byte, types.ClassTrace]
 }
 
 // NewKeeper creates a new IBC transfer Keeper instance
 func NewKeeper(
-	cdc codec.BinaryCodec, key storetypes.StoreKey, ics4Wrapper types.ICS4Wrapper,
+	cdc codec.Codec, storeService store.KVStoreService, ics4Wrapper types.ICS4Wrapper,
 	channelKeeper types.ChannelKeeper, portKeeper types.PortKeeper,
 	authKeeper types.AccountKeeper, nftKeeper types.NftKeeper,
 	scopedKeeper capabilitykeeper.ScopedKeeper, authority string,
 ) *Keeper {
 
-	if _, err := sdk.AccAddressFromBech32(authority); err != nil {
+	if _, err := authKeeper.AddressCodec().StringToBytes(authority); err != nil {
 		panic(fmt.Sprintf("invalid authority address: %s", authority))
 	}
 
-	return &Keeper{
+	sb := collections.NewSchemaBuilder(storeService)
+	k := &Keeper{
 		cdc:           cdc,
-		storeKey:      key,
 		ics4Wrapper:   ics4Wrapper,
 		channelKeeper: channelKeeper,
 		portKeeper:    portKeeper,
@@ -57,98 +58,77 @@ func NewKeeper(
 		nftKeeper:     nftKeeper,
 		scopedKeeper:  scopedKeeper,
 		authority:     authority,
+
+		PortID:      collections.NewItem(sb, types.PortKey, "port_Id", collections.StringValue),
+		Params:      collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
+		ClassTraces: collections.NewMap(sb, types.ClassTraceKey, "class_traces", collections.BytesKey, codec.CollValue[types.ClassTrace](cdc)),
 	}
+
+	schema, err := sb.Build()
+	if err != nil {
+		panic(err)
+	}
+	k.Schema = schema
+
+	return k
 }
 
 // Logger returns a module-specific logger.
-func (k Keeper) Logger(ctx sdk.Context) log.Logger {
-	return ctx.Logger().With("module", "x/"+exported.ModuleName+"-"+types.ModuleName)
+func (k Keeper) Logger(ctx context.Context) log.Logger {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	return sdkCtx.Logger().With("module", "x/"+exported.ModuleName+"-"+types.ModuleName)
+}
+
+func (k Keeper) Codec() codec.Codec {
+	return k.cdc
 }
 
 // IsBound checks if the nft-transfer module is already bound to the desired port
-func (k Keeper) IsBound(ctx sdk.Context, portID string) bool {
-	_, ok := k.scopedKeeper.GetCapability(ctx, host.PortPath(portID))
+func (k Keeper) IsBound(ctx context.Context, portID string) bool {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	_, ok := k.scopedKeeper.GetCapability(sdkCtx, host.PortPath(portID))
 	return ok
 }
 
 // BindPort defines a wrapper function for the ort Keeper's function in
 // order to expose it to module's InitGenesis function
-func (k Keeper) BindPort(ctx sdk.Context, portID string) error {
-	cap := k.portKeeper.BindPort(ctx, portID)
+func (k Keeper) BindPort(ctx context.Context, portID string) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	cap := k.portKeeper.BindPort(sdkCtx, portID)
 	return k.ClaimCapability(ctx, cap, host.PortPath(portID))
 }
 
-// GetPort returns the portID for the nft-transfer module. Used in ExportGenesis
-func (k Keeper) GetPort(ctx sdk.Context) string {
-	store := ctx.KVStore(k.storeKey)
-	return string(store.Get(types.PortKey))
-}
-
-// SetPort sets the portID for the nft-transfer module. Used in InitGenesis
-func (k Keeper) SetPort(ctx sdk.Context, portID string) {
-	store := ctx.KVStore(k.storeKey)
-	store.Set(types.PortKey, []byte(portID))
-}
-
 // AuthenticateCapability wraps the scopedKeeper's AuthenticateCapability function
-func (k Keeper) AuthenticateCapability(ctx sdk.Context, cap *capabilitytypes.Capability, name string) bool {
-	return k.scopedKeeper.AuthenticateCapability(ctx, cap, name)
+func (k Keeper) AuthenticateCapability(ctx context.Context, cap *capabilitytypes.Capability, name string) bool {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	return k.scopedKeeper.AuthenticateCapability(sdkCtx, cap, name)
 }
 
 // ClaimCapability allows the nft-transfer module that can claim a capability that IBC module
 // passes to it
-func (k Keeper) ClaimCapability(ctx sdk.Context, cap *capabilitytypes.Capability, name string) error {
-	return k.scopedKeeper.ClaimCapability(ctx, cap, name)
-}
-
-// GetClassTrace retrieves the full identifiers trace and base denomination from the store.
-func (k Keeper) GetClassTrace(ctx sdk.Context, classTraceHash tmbytes.HexBytes) (types.ClassTrace, bool) {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.ClassTraceKey)
-	bz := store.Get(classTraceHash)
-	if bz == nil {
-		return types.ClassTrace{}, false
-	}
-
-	classTrace := k.MustUnmarshalClassTrace(bz)
-	return classTrace, true
-}
-
-// HasClassTrace checks if a the key with the given denomination trace hash exists on the store.
-func (k Keeper) HasClassTrace(ctx sdk.Context, classTraceHash tmbytes.HexBytes) bool {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.ClassTraceKey)
-	return store.Has(classTraceHash)
-}
-
-// SetClassTrace sets a new {trace hash -> denom trace} pair to the store.
-func (k Keeper) SetClassTrace(ctx sdk.Context, classTrace types.ClassTrace) {
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.ClassTraceKey)
-	bz := k.MustMarshalClassTrace(classTrace)
-	store.Set(classTrace.Hash(), bz)
+func (k Keeper) ClaimCapability(ctx context.Context, cap *capabilitytypes.Capability, name string) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	return k.scopedKeeper.ClaimCapability(sdkCtx, cap, name)
 }
 
 // GetAllClassTraces returns the trace information for all the denominations.
-func (k Keeper) GetAllClassTraces(ctx sdk.Context) types.Traces {
+func (k Keeper) GetAllClassTraces(ctx context.Context) (types.Traces, error) {
 	traces := types.Traces{}
-	k.IterateClassTraces(ctx, func(classTrace types.ClassTrace) bool {
+	err := k.IterateClassTraces(ctx, func(classTrace types.ClassTrace) (bool, error) {
 		traces = append(traces, classTrace)
-		return false
+		return false, nil
 	})
+	if err != nil {
+		return nil, err
+	}
 
-	return traces.Sort()
+	return traces.Sort(), nil
 }
 
 // IterateClassTraces iterates over the denomination traces in the store
 // and performs a callback function.
-func (k Keeper) IterateClassTraces(ctx sdk.Context, cb func(classTrace types.ClassTrace) bool) {
-	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, types.ClassTraceKey)
-
-	defer iterator.Close()
-	for ; iterator.Valid(); iterator.Next() {
-
-		classTrace := k.MustUnmarshalClassTrace(iterator.Value())
-		if cb(classTrace) {
-			break
-		}
-	}
+func (k Keeper) IterateClassTraces(ctx context.Context, cb func(classTrace types.ClassTrace) (bool, error)) error {
+	return k.ClassTraces.Walk(ctx, nil, func(key []byte, value types.ClassTrace) (stop bool, err error) {
+		return cb(value)
+	})
 }

@@ -31,7 +31,11 @@ func (k Keeper) Unjail(ctx context.Context, validatorAddr sdk.ValAddress) error 
 	}
 
 	tokens, _ := validator.TokensFromShares(selfDel.GetShares()).TruncateDecimal()
-	vp := k.sk.VotingPower(ctx, tokens)
+	vp, err := k.sk.VotingPower(ctx, tokens)
+	if err != nil {
+		return err
+	}
+
 	cp := k.sk.VotingPowerToConsensusPower(ctx, vp)
 	if cp < 1 {
 		return errors.Wrapf(

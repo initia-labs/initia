@@ -111,7 +111,7 @@ func validateReleaseRate(i interface{}) error {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 
-	if v.GT(math.LegacyZeroDec()) {
+	if v.GT(math.LegacyOneDec()) {
 		return fmt.Errorf("ReleaseRate should be smaller than 1.0")
 	}
 
@@ -128,7 +128,7 @@ func validateDilutionRate(i interface{}) error {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 
-	if v.GT(math.LegacyZeroDec()) {
+	if v.GT(math.LegacyOneDec()) {
 		return fmt.Errorf("DilutionRate should be smaller than 1.0")
 	}
 

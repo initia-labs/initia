@@ -3,12 +3,10 @@ package keeper
 import (
 	"context"
 
-	"cosmossdk.io/errors"
+	"cosmossdk.io/collections"
 	"cosmossdk.io/math"
 
-	"cosmossdk.io/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	distrtypes "github.com/initia-labs/initia/x/distribution/types"
 	"github.com/initia-labs/initia/x/move/types"
@@ -34,19 +32,18 @@ func (k DexKeeper) SetDexPair(
 	ctx context.Context,
 	dexPair types.DexPair,
 ) error {
-	metadataQuote, err := types.AccAddressFromString(dexPair.MetadataQuote)
+	ac := k.authKeeper.AddressCodec()
+	metadataQuote, err := types.AccAddressFromString(ac, dexPair.MetadataQuote)
 	if err != nil {
 		return err
 	}
 
-	metadataLP, err := types.AccAddressFromString(dexPair.MetadataLP)
+	metadataLP, err := types.AccAddressFromString(ac, dexPair.MetadataLP)
 	if err != nil {
 		return err
 	}
 
-	k.setDexPair(ctx, metadataQuote, metadataLP)
-
-	return nil
+	return k.setDexPair(ctx, metadataQuote, metadataLP)
 }
 
 // setDexPair store DexPair for both counterpart
@@ -55,20 +52,16 @@ func (k DexKeeper) setDexPair(
 	ctx context.Context,
 	metadataQuote vmtypes.AccountAddress,
 	metadataLP vmtypes.AccountAddress,
-) {
-	kvStore := ctx.KVStore(k.storeKey)
-
-	// store for counterpart coin
-	kvStore.Set(types.GetDexPairKey(metadataQuote), metadataLP[:])
+) error {
+	return k.DexPairs.Set(ctx, metadataQuote[:], metadataLP[:])
 }
 
 // deleteDexPair remove types.DexPair from the store
 func (k DexKeeper) deleteDexPair(
 	ctx context.Context,
 	metadataQuote vmtypes.AccountAddress,
-) {
-	kvStore := ctx.KVStore(k.storeKey)
-	kvStore.Delete(types.GetDexPairKey(metadataQuote))
+) error {
+	return k.DexPairs.Remove(ctx, metadataQuote[:])
 }
 
 // HasDexPair check whether types.DexPair exists or not with
@@ -91,35 +84,27 @@ func (k DexKeeper) hasDexPair(
 	ctx context.Context,
 	metadataQuote vmtypes.AccountAddress,
 ) (bool, error) {
-	kvStore := ctx.KVStore(k.storeKey)
-	return kvStore.Has(types.GetDexPairKey(metadataQuote)), nil
+	return k.DexPairs.Has(ctx, metadataQuote[:])
 }
 
 // IterateDexPair iterate DexPair store for genesis export
-func (k DexKeeper) IterateDexPair(ctx context.Context, cb func(types.DexPair)) {
-	kvStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.PrefixDexPairStore)
-	iter := kvStore.Iterator(nil, nil)
-	defer iter.Close()
-
-	for ; iter.Valid(); iter.Next() {
-		key := iter.Key()
-		value := iter.Value()
-
+func (k DexKeeper) IterateDexPair(ctx context.Context, cb func(types.DexPair) (bool, error)) error {
+	return k.DexPairs.Walk(ctx, nil, func(key, value []byte) (stop bool, err error) {
 		metadataQuote, err := vmtypes.NewAccountAddressFromBytes(key)
 		if err != nil {
-			panic(err)
+			return true, err
 		}
 
 		metadataLP, err := vmtypes.NewAccountAddressFromBytes(value)
 		if err != nil {
-			panic(err)
+			return true, err
 		}
 
-		cb(types.DexPair{
+		return cb(types.DexPair{
 			MetadataQuote: metadataQuote.CanonicalString(),
 			MetadataLP:    metadataLP.CanonicalString(),
 		})
-	}
+	})
 }
 
 // GetMetadataLP return types.DexPair with the given denom
@@ -141,11 +126,9 @@ func (k Keeper) getMetadataLP(
 	ctx context.Context,
 	metadataQuote vmtypes.AccountAddress,
 ) (vmtypes.AccountAddress, error) {
-	kvStore := ctx.KVStore(k.storeKey)
-
-	bz := kvStore.Get(types.GetDexPairKey(metadataQuote))
-	if bz == nil {
-		return vmtypes.AccountAddress{}, errors.Wrap(sdkerrors.ErrNotFound, "dex pair not found")
+	bz, err := k.DexPairs.Get(ctx, metadataQuote[:])
+	if err != nil {
+		return vmtypes.AccountAddress{}, err
 	}
 
 	return vmtypes.NewAccountAddressFromBytes(bz)
@@ -156,7 +139,7 @@ func (k Keeper) getMetadataLP(
 func (k DexKeeper) GetPoolSpotPrice(
 	ctx context.Context,
 	denomQuote string,
-) (sdk.Dec, error) {
+) (math.LegacyDec, error) {
 	metadataLP, err := k.GetMetadataLP(ctx, denomQuote)
 	if err != nil {
 		return math.LegacyZeroDec(), err
@@ -173,8 +156,8 @@ func (k DexKeeper) GetPoolSpotPrice(
 func (k DexKeeper) getPoolInfo(ctx context.Context, metadataLP vmtypes.AccountAddress) (
 	balanceBase math.Int,
 	balanceQuote math.Int,
-	weightBase sdk.Dec,
-	weightQuote sdk.Dec,
+	weightBase math.LegacyDec,
+	weightQuote math.LegacyDec,
 	err error,
 ) {
 	weightBase, weightQuote, err = k.getPoolWeights(ctx, metadataLP)
@@ -211,7 +194,11 @@ func (k DexKeeper) isReverse(
 	ctx context.Context,
 	metadataLP vmtypes.AccountAddress,
 ) (bool, error) {
-	denomBase := k.BaseDenom(ctx)
+	denomBase, err := k.BaseDenom(ctx)
+	if err != nil {
+		return false, err
+	}
+
 	metadataBase, err := types.MetadataAddressFromDenom(denomBase)
 	if err != nil {
 		return false, err
@@ -243,7 +230,7 @@ func (k DexKeeper) getPoolBalances(
 		TypeArgs: []vmtypes.TypeTag{},
 	})
 
-	if err == sdkerrors.ErrNotFound {
+	if err == collections.ErrNotFound {
 		return math.ZeroInt(), math.ZeroInt(), nil
 	}
 	if err != nil {
@@ -278,7 +265,7 @@ func (k DexKeeper) getPoolBalances(
 func (k DexKeeper) GetPoolWeights(
 	ctx context.Context,
 	denomQuote string,
-) (weightBase sdk.Dec, weightB sdk.Dec, err error) {
+) (weightBase math.LegacyDec, weightB math.LegacyDec, err error) {
 	metadataLP, err := k.GetMetadataLP(ctx, denomQuote)
 	if err != nil {
 		return math.LegacyZeroDec(), math.LegacyZeroDec(), err
@@ -291,7 +278,7 @@ func (k DexKeeper) GetPoolWeights(
 func (k DexKeeper) getPoolWeights(
 	ctx context.Context,
 	metadataLP vmtypes.AccountAddress,
-) (weightBase sdk.Dec, weightQuote sdk.Dec, err error) {
+) (weightBase math.LegacyDec, weightQuote math.LegacyDec, err error) {
 	bz, err := k.GetResourceBytes(ctx, metadataLP, vmtypes.StructTag{
 		Address:  vmtypes.StdAddress,
 		Module:   types.MoveModuleNameDex,
@@ -299,14 +286,15 @@ func (k DexKeeper) getPoolWeights(
 		TypeArgs: []vmtypes.TypeTag{},
 	})
 
-	if err == sdkerrors.ErrNotFound {
+	if err == collections.ErrNotFound {
 		return math.LegacyZeroDec(), math.LegacyZeroDec(), nil
 	}
 	if err != nil {
 		return math.LegacyZeroDec(), math.LegacyZeroDec(), err
 	}
 
-	timestamp := math.NewInt(ctx.BlockTime().Unix())
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	timestamp := math.NewInt(sdkCtx.BlockTime().Unix())
 	weightA, weightB, err := types.ReadWeightsFromDexConfig(timestamp, bz)
 	if err != nil {
 		return math.LegacyDec{}, math.LegacyDec{}, err

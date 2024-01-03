@@ -22,7 +22,7 @@ type StakingKeeper interface {
 	Delegation(context.Context, sdk.AccAddress, sdk.ValAddress) (stakingtypes.DelegationI, error)
 
 	IterateDelegations(ctx context.Context, delegator sdk.AccAddress,
-		fn func(delegation stakingtypes.DelegationI) (stop bool, err error))
+		fn func(delegation stakingtypes.DelegationI) (stop bool, err error)) error
 
 	GetAllSDKDelegations(ctx context.Context) ([]stakingtypes.Delegation, error)
 

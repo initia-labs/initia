@@ -108,7 +108,7 @@ func Test_Delegation(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
 	_, err := input.StakingKeeper.GetDelegation(ctx, addrs[0], valAddrs[0])
-	require.NoError(t, err)
+	require.ErrorIs(t, err, collections.ErrNotFound)
 
 	delegation := types.NewDelegation(addrsStr[0], valAddrsStr[0], sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, math.NewInt(100))))
 	delegation2 := types.NewDelegation(addrsStr[0], valAddrsStr[1], sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, math.NewInt(100))))
@@ -120,7 +120,7 @@ func Test_Delegation(t *testing.T) {
 
 	require.NoError(t, input.StakingKeeper.RemoveDelegation(ctx, delegation))
 	_, err = input.StakingKeeper.GetDelegation(ctx, addrs[0], valAddrs[0])
-	require.NoError(t, err)
+	require.ErrorIs(t, err, collections.ErrNotFound)
 
 	// set two delegations
 	require.NoError(t, input.StakingKeeper.SetDelegation(ctx, delegation))

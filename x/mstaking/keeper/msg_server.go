@@ -57,9 +57,9 @@ func (k msgServer) CreateValidator(ctx context.Context, msg *types.MsgCreateVali
 	}
 
 	// check to see if the pubkey or sender has been registered before
-	if _, err := k.Validators.Get(ctx, valAddr); err != nil && errors.Is(err, collections.ErrNotFound) {
+	if _, err := k.Validators.Get(ctx, valAddr); err == nil {
 		return nil, types.ErrValidatorOwnerExists
-	} else if err != nil {
+	} else if err != nil && !errors.Is(err, collections.ErrNotFound) {
 		return nil, err
 	}
 
@@ -68,9 +68,9 @@ func (k msgServer) CreateValidator(ctx context.Context, msg *types.MsgCreateVali
 		return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidType, "Expecting cryptotypes.PubKey, got %T", pk)
 	}
 
-	if _, err := k.GetValidatorByConsAddr(ctx, sdk.GetConsAddress(pk)); err != nil && errors.Is(err, collections.ErrNotFound) {
+	if _, err := k.GetValidatorByConsAddr(ctx, sdk.GetConsAddress(pk)); err == nil {
 		return nil, types.ErrValidatorPubKeyExists
-	} else if err != nil {
+	} else if err != nil && !errors.Is(err, collections.ErrNotFound) {
 		return nil, err
 	}
 

@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"cosmossdk.io/core/address"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -27,7 +28,7 @@ func GetQueryCmd() *cobra.Command {
 }
 
 // NewTxCmd returns the transaction commands for IBC non-fungible token transfer
-func NewTxCmd() *cobra.Command {
+func NewTxCmd(ac address.Codec) *cobra.Command {
 	txCmd := &cobra.Command{
 		Use:                        "ibc-nft-transfer",
 		Short:                      "IBC non-fungible token transfer transaction subcommands",
@@ -37,7 +38,7 @@ func NewTxCmd() *cobra.Command {
 	}
 
 	txCmd.AddCommand(
-		NewNftTransferTxCmd(),
+		NewNftTransferTxCmd(ac),
 	)
 
 	return txCmd

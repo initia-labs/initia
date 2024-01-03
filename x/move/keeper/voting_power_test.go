@@ -40,8 +40,10 @@ func Test_GetVotingPowerWeights(t *testing.T) {
 	denomLP, err := types.DenomFromMetadataAddress(ctx, keeper.NewMoveBankKeeper(&input.MoveKeeper), metadataLP)
 	require.NoError(t, err)
 
+	votingPowerWeights, err := keeper.NewVotingPowerKeeper(&input.MoveKeeper).GetVotingPowerWeights(ctx, []string{bondDenom, denomLP})
+	require.NoError(t, err)
 	require.Equal(t, sdk.NewDecCoins(
 		sdk.NewDecCoin(bondDenom, math.NewInt(1)),
 		sdk.NewDecCoinFromDec(denomLP, math.LegacyNewDecWithPrec(5, 1))),
-		keeper.NewVotingPowerKeeper(&input.MoveKeeper).GetVotingPowerWeights(ctx, []string{bondDenom, denomLP}))
+		votingPowerWeights)
 }

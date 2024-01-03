@@ -47,8 +47,8 @@ var (
 )
 
 func checkBalance(t *testing.T, app *initiaapp.InitiaApp, addr sdk.AccAddress, balances sdk.Coins) {
-	ctxCheck := app.BaseApp.NewContext(true, tmproto.Header{})
-	require.True(t, balances.IsEqual(app.BankKeeper.GetAllBalances(ctxCheck, addr)))
+	ctxCheck := app.BaseApp.NewContext(true)
+	require.True(t, balances.Equal(app.BankKeeper.GetAllBalances(ctxCheck, addr)))
 }
 
 func createApp(t *testing.T) *initiaapp.InitiaApp {
@@ -70,10 +70,7 @@ func createApp(t *testing.T) *initiaapp.InitiaApp {
 	checkBalance(t, app, addr2, genCoins)
 	checkBalance(t, app, types.StdAddr, dexCoins)
 
-	header := tmproto.Header{Height: app.LastBlockHeight() + 1}
-	app.BeginBlock(abci.RequestBeginBlock{Header: header})
-
-	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
+	ctx := app.BaseApp.NewContext(false)
 	createDexPool(t, ctx, app, baseCoin, quoteCoin, math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1))
 
 	// set reward weight
@@ -81,18 +78,20 @@ func createApp(t *testing.T) *initiaapp.InitiaApp {
 	distrParams.RewardWeights = []customdistrtypes.RewardWeight{
 		{Denom: bondDenom, Weight: math.LegacyOneDec()},
 	}
-	app.DistrKeeper.SetParams(ctx, distrParams)
+	require.NoError(t, app.DistrKeeper.Params.Set(ctx, distrParams))
 	app.StakingKeeper.SetBondDenoms(ctx, []string{bondDenom, secondBondDenom})
 
 	// fund second bond coin
 	app.BankKeeper.SendCoins(ctx, types.StdAddr, addr1, sdk.NewCoins(secondBondCoin))
-	app.EndBlock(abci.RequestEndBlock{})
-	app.Commit()
+	_, err := app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1})
+	require.NoError(t, err)
+	_, err = app.Commit()
+	require.NoError(t, err)
 
 	// create validator
 	description := stakingtypes.NewDescription("foo_moniker", "", "", "", "")
 	createValidatorMsg, err := stakingtypes.NewMsgCreateValidator(
-		sdk.ValAddress(addr1), valKey.PubKey(), sdk.NewCoins(bondCoin, secondBondCoin), description, commissionRates,
+		sdk.ValAddress(addr1).String(), valKey.PubKey(), sdk.NewCoins(bondCoin, secondBondCoin), description, commissionRates,
 	)
 	require.NoError(t, err)
 
@@ -101,8 +100,10 @@ func createApp(t *testing.T) *initiaapp.InitiaApp {
 
 	checkBalance(t, app, addr1, genCoins.Sub(bondCoin))
 
-	header = tmproto.Header{Height: app.LastBlockHeight() + 1}
-	app.BeginBlock(abci.RequestBeginBlock{Header: header})
+	_, err = app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1})
+	require.NoError(t, err)
+	_, err = app.Commit()
+	require.NoError(t, err)
 
 	return app
 }
@@ -135,7 +136,7 @@ func decToVmArgument(t *testing.T, val math.LegacyDec) []byte {
 func createDexPool(
 	t *testing.T, ctx sdk.Context, app *initiaapp.InitiaApp,
 	baseCoin sdk.Coin, quoteCoin sdk.Coin,
-	weightBase sdk.Dec, weightQuote sdk.Dec,
+	weightBase math.LegacyDec, weightQuote math.LegacyDec,
 ) (metadataLP vmtypes.AccountAddress) {
 	metadataBase, err := types.MetadataAddressFromDenom(baseCoin.Denom)
 	require.NoError(t, err)

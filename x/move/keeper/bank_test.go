@@ -8,11 +8,10 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/initia-labs/initia/x/move/keeper"
-	"github.com/initia-labs/initia/x/move/types"
-	vmtypes "github.com/initia-labs/initiavm/types"
 )
 
 func Test_GetBalance(t *testing.T) {
@@ -25,10 +24,10 @@ func Test_GetBalance(t *testing.T) {
 
 	amount, err := moveBankKeeper.GetBalance(ctx, twoAddr, bondDenom)
 	require.NoError(t, err)
-	require.Equal(t, math.ZeroInt(), amount)
+	require.Equal(t, sdkmath.ZeroInt(), amount)
 
 	// mint token
-	mintAmount := math.NewInt(100)
+	mintAmount := sdkmath.NewInt(100)
 	err = moveBankKeeper.MintCoins(ctx, twoAddr, sdk.NewCoins(sdk.NewCoin(bondDenom, mintAmount)))
 	require.NoError(t, err)
 
@@ -37,7 +36,7 @@ func Test_GetBalance(t *testing.T) {
 	require.Equal(t, mintAmount, amount)
 }
 
-func Test_AccountCoinStore(t *testing.T) {
+func Test_IterateBalances(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 	moveBankKeeper := keeper.NewMoveBankKeeper(&input.MoveKeeper)
 
@@ -45,34 +44,16 @@ func Test_AccountCoinStore(t *testing.T) {
 	require.NoError(t, err)
 	twoAddr := sdk.AccAddress(bz)
 
-	metadata, err := types.MetadataAddressFromDenom(bondDenom)
-	require.NoError(t, err)
-
 	err = moveBankKeeper.MintCoins(ctx, twoAddr, sdk.NewCoins(sdk.NewInt64Coin(bondDenom, int64(1))))
 	require.NoError(t, err)
 
-	coinStore, err := moveBankKeeper.GetUserStores(ctx, twoAddr)
-	require.NoError(t, err)
-
-	iter := coinStore.Iterator(nil, nil)
-	defer iter.Close()
-
-	for ; iter.Valid(); iter.Next() {
-		// first byte of key is TypeTag enum index
-		key := iter.Key()
-		mt, err := vmtypes.NewAccountAddressFromBytes(key)
-		require.NoError(t, err)
-		require.Equal(t, metadata, mt)
-
-		value := iter.Value()
-		storeAddr, err := vmtypes.NewAccountAddressFromBytes(value)
-		require.NoError(t, err)
-
-		mt, amount, err := moveBankKeeper.Balance(ctx, storeAddr)
-		require.NoError(t, err)
-		require.Equal(t, math.NewInt(1), amount)
-		require.Equal(t, metadata, mt)
-	}
+	entered := false
+	moveBankKeeper.IterateAccountBalances(ctx, twoAddr, func(amount sdk.Coin)(bool, error) {
+		entered = true
+		require.Equal(t, sdk.NewCoin(bondDenom, sdkmath.NewInt(1)), amount)
+		return false, nil
+	})
+	require.True(t, entered)
 
 	mintAmount := int64(100)
 
@@ -80,25 +61,13 @@ func Test_AccountCoinStore(t *testing.T) {
 	require.NoError(t, err)
 
 	// check after mint
-	iter2 := coinStore.Iterator(nil, nil)
-	defer iter2.Close()
-
-	for ; iter2.Valid(); iter2.Next() {
-		// first byte of key is TypeTag enum index
-		key := iter2.Key()
-		mt, err := vmtypes.NewAccountAddressFromBytes(key)
-		require.NoError(t, err)
-		require.Equal(t, metadata, mt)
-
-		value := iter2.Value()
-		storeAddr, err := vmtypes.NewAccountAddressFromBytes(value)
-		require.NoError(t, err)
-
-		mt, amount, err := moveBankKeeper.Balance(ctx, storeAddr)
-		require.NoError(t, err)
-		require.Equal(t, math.NewInt(mintAmount+1), amount)
-		require.Equal(t, metadata, mt)
-	}
+	entered = false
+	moveBankKeeper.IterateAccountBalances(ctx, twoAddr, func(amount sdk.Coin)(bool, error) {
+		entered = true
+		require.Equal(t, sdk.NewCoin(bondDenom, sdkmath.NewInt(mintAmount+1)), amount)
+		return false, nil
+	})
+	require.True(t, entered)
 }
 
 func Test_GetSupply(t *testing.T) {
@@ -110,7 +79,7 @@ func Test_GetSupply(t *testing.T) {
 	require.Equal(t, initiaSupply, amount)
 
 	// mint token
-	mintAmount := math.NewIntFromUint64(math.MaxUint64)
+	mintAmount := sdkmath.NewIntFromUint64(math.MaxUint64)
 	mintNum := 5
 
 	for i := 0; i < mintNum; i++ {
@@ -127,19 +96,14 @@ func Test_GetSupply(t *testing.T) {
 	require.Equal(t, initiaSupply.Add(mintAmount.MulRaw(int64(mintNum))), amount)
 }
 
-func Test_GetIssuers(t *testing.T) {
+func Test_IterateSupply(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 	moveBankKeeper := keeper.NewMoveBankKeeper(&input.MoveKeeper)
 
-	bondDenomMetadata, err := types.MetadataAddressFromDenom(bondDenom)
-	require.NoError(t, err)
-
 	testDenom := testDenoms[0]
-	testDenomMetadata, err := types.MetadataAddressFromDenom(testDenom)
-	require.NoError(t, err)
 
 	// mint token
-	mintAmount := math.NewIntFromUint64(math.MaxUint64)
+	mintAmount := sdkmath.NewIntFromUint64(math.MaxUint64)
 	mintNum := 5
 
 	for i := 0; i < mintNum; i++ {
@@ -151,33 +115,21 @@ func Test_GetIssuers(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	issuers, err := moveBankKeeper.GetIssuers(ctx)
-	require.NoError(t, err)
-
-	iter := issuers.Iterator(nil, nil)
-	defer iter.Close()
-
-	for ; iter.Valid(); iter.Next() {
-		// first byte of key is TypeTag enum index
-		key := iter.Key()
-		mt, err := vmtypes.NewAccountAddressFromBytes(key)
-		require.NoError(t, err)
-
-		value := iter.Value()
-
-		amount, err := keeper.NewMoveBankKeeper(&input.MoveKeeper).GetSupplyWithMetadata(ctx, mt)
-		require.NoError(t, err)
-
-		issuer, err := vmtypes.NewAccountAddressFromBytes(value)
-		require.NoError(t, err)
-		require.Equal(t, vmtypes.StdAddress, issuer)
-
-		if mt == bondDenomMetadata {
-			require.Equal(t, initiaSupply, amount)
-		} else if mt == testDenomMetadata {
-			require.Equal(t, initiaSupply.Add(mintAmount.MulRaw(int64(mintNum))), amount)
+	counter := 0
+	moveBankKeeper.IterateSupply(ctx, func(supply sdk.Coin) (bool, error) {
+		if supply.Denom == bondDenom {
+			counter++
+			require.Equal(t, initiaSupply, supply.Amount)
+		} else if supply.Denom == testDenom {
+			counter++
+			require.Equal(t, initiaSupply.Add(mintAmount.MulRaw(int64(mintNum))), supply.Amount)
+		} else {
+			require.Fail(t, "should not enter here")
 		}
-	}
+
+		return false, nil
+	})
+	require.Equal(t, 2, counter)
 }
 
 func Test_SendCoins(t *testing.T) {
@@ -192,12 +144,12 @@ func Test_SendCoins(t *testing.T) {
 	require.NoError(t, err)
 	threeAddr := sdk.AccAddress(bz)
 
-	amount := sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewIntFromUint64(1_000_000)))
+	amount := sdk.NewCoins(sdk.NewCoin(bondDenom, sdkmath.NewIntFromUint64(1_000_000)))
 	input.Faucet.Fund(ctx, twoAddr, amount...)
 
 	err = moveBankKeeper.SendCoins(ctx, twoAddr, threeAddr, amount)
 	require.NoError(t, err)
 
-	require.Equal(t, sdk.NewCoin(bondDenom, math.ZeroInt()), input.BankKeeper.GetBalance(ctx, twoAddr, bondDenom))
+	require.Equal(t, sdk.NewCoin(bondDenom, sdkmath.ZeroInt()), input.BankKeeper.GetBalance(ctx, twoAddr, bondDenom))
 	require.Equal(t, amount, sdk.NewCoins(input.BankKeeper.GetBalance(ctx, threeAddr, bondDenom)))
 }

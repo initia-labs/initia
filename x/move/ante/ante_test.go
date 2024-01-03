@@ -1,14 +1,13 @@
 package ante_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
 
-	dbm "github.com/cometbft/cometbft-db"
-	"github.com/cometbft/cometbft/libs/log"
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
-
+	"cosmossdk.io/log"
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
@@ -18,6 +17,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/testutil/testdata"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
+	authsign "github.com/cosmos/cosmos-sdk/x/auth/signing"
 	xauthsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	simcli "github.com/cosmos/cosmos-sdk/x/simulation/client/cli"
@@ -38,7 +38,7 @@ type AnteTestSuite struct {
 }
 
 // returns context and app with params set on account keeper
-func createTestApp(isCheckTx bool, tempDir string) (*initiaapp.InitiaApp, sdk.Context) {
+func (suite *AnteTestSuite) createTestApp(isCheckTx bool, tempDir string) (*initiaapp.InitiaApp, sdk.Context) {
 	appOptions := make(simtestutil.AppOptionsMap, 0)
 	appOptions[flags.FlagHome] = tempDir
 	appOptions[server.FlagInvCheckPeriod] = simcli.FlagPeriodValue
@@ -46,8 +46,10 @@ func createTestApp(isCheckTx bool, tempDir string) (*initiaapp.InitiaApp, sdk.Co
 	app := initiaapp.NewInitiaApp(
 		log.NewNopLogger(), dbm.NewMemDB(), nil, true, moveconfig.DefaultMoveConfig(), appOptions,
 	)
-	ctx := app.BaseApp.NewContext(isCheckTx, tmproto.Header{})
-	app.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
+	ctx := app.BaseApp.NewContext(isCheckTx)
+	err := app.AccountKeeper.Params.Set(ctx, authtypes.DefaultParams())
+	suite.NoError(err)
+
 	app.MoveKeeper.SetParams(ctx, movetypes.DefaultParams())
 
 	return app, ctx
@@ -56,7 +58,7 @@ func createTestApp(isCheckTx bool, tempDir string) (*initiaapp.InitiaApp, sdk.Co
 // SetupTest setups a new test, with new app, context, and anteHandler.
 func (suite *AnteTestSuite) SetupTest(isCheckTx bool) {
 	tempDir := suite.T().TempDir()
-	suite.app, suite.ctx = createTestApp(isCheckTx, tempDir)
+	suite.app, suite.ctx = suite.createTestApp(isCheckTx, tempDir)
 	suite.ctx = suite.ctx.WithBlockHeight(1)
 
 	// Set up TxConfig.
@@ -72,14 +74,18 @@ func (suite *AnteTestSuite) SetupTest(isCheckTx bool) {
 
 // CreateTestTx is a helper function to create a tx given multiple inputs.
 func (suite *AnteTestSuite) CreateTestTx(privs []cryptotypes.PrivKey, accNums []uint64, accSeqs []uint64, chainID string) (xauthsigning.Tx, error) {
+	defaultSignMode, err := authsign.APISignModeToInternal(suite.clientCtx.TxConfig.SignModeHandler().DefaultMode())
+	suite.NoError(err)
+
 	// First round: we gather all the signer infos. We use the "set empty
 	// signature" hack to do that.
 	var sigsV2 []signing.SignatureV2
 	for i, priv := range privs {
+
 		sigV2 := signing.SignatureV2{
 			PubKey: priv.PubKey(),
 			Data: &signing.SingleSignatureData{
-				SignMode:  suite.clientCtx.TxConfig.SignModeHandler().DefaultMode(),
+				SignMode:  defaultSignMode,
 				Signature: nil,
 			},
 			Sequence: accSeqs[i],
@@ -87,7 +93,7 @@ func (suite *AnteTestSuite) CreateTestTx(privs []cryptotypes.PrivKey, accNums []
 
 		sigsV2 = append(sigsV2, sigV2)
 	}
-	err := suite.txBuilder.SetSignatures(sigsV2...)
+	err = suite.txBuilder.SetSignatures(sigsV2...)
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +107,7 @@ func (suite *AnteTestSuite) CreateTestTx(privs []cryptotypes.PrivKey, accNums []
 			Sequence:      accSeqs[i],
 		}
 		sigV2, err := tx.SignWithPrivKey(
-			suite.clientCtx.TxConfig.SignModeHandler().DefaultMode(), signerData,
+			context.TODO(), defaultSignMode, signerData,
 			suite.txBuilder, priv, suite.clientCtx.TxConfig, accSeqs[i])
 		if err != nil {
 			return nil, err

@@ -183,6 +183,10 @@ func (k Keeper) InitGenesis(
 		panic(fmt.Sprintf("not bonded pool balance is different from not bonded coins: %s <-> %s", notBondedBalance, notBondedTokens))
 	}
 
+	if err := k.SetNextUnbondingId(ctx, data.NextUnbondingId); err != nil {
+		panic(err)
+	}
+
 	// don't need to run Tendermint updates if we exported
 	if data.Exported {
 		for _, lv := range data.LastValidatorPowers {
@@ -262,6 +266,11 @@ func (k Keeper) ExportGenesis(ctx context.Context) *types.GenesisState {
 		panic(err)
 	}
 
+	nextUnbondingId, err := k.GetNextUnbondingId(ctx)
+	if err != nil {
+		panic(err)
+	}
+
 	return &types.GenesisState{
 		Params:               params,
 		LastValidatorPowers:  lastValidatorPowers,
@@ -270,5 +279,6 @@ func (k Keeper) ExportGenesis(ctx context.Context) *types.GenesisState {
 		UnbondingDelegations: unbondingDelegations,
 		Redelegations:        redelegations,
 		Exported:             true,
+		NextUnbondingId:      nextUnbondingId,
 	}
 }

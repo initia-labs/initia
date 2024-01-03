@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"cosmossdk.io/collections"
+	collectioncodec "cosmossdk.io/collections/codec"
 	corestoretypes "cosmossdk.io/core/store"
 	"cosmossdk.io/log"
 	"cosmossdk.io/math"
@@ -50,13 +51,15 @@ func NewKeeper(
 	sb := collections.NewSchemaBuilder(storeService)
 
 	k := &Keeper{
-		cdc:              cdc,
-		storeService:     storeService,
-		accKeeper:        ak,
-		bankKeeper:       bk,
-		feeCollectorName: feeCollectorName,
-		authority:        authority,
-		Params:           collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
+		cdc:                   cdc,
+		storeService:          storeService,
+		accKeeper:             ak,
+		bankKeeper:            bk,
+		feeCollectorName:      feeCollectorName,
+		authority:             authority,
+		Params:                collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
+		LastReleaseTimestamp:  collections.NewItem(sb, types.LastReleaseTimestampKey, "last_release_timestamp", collectioncodec.KeyToValueCodec(sdk.TimeKey)),
+		LastDilutionTimestamp: collections.NewItem(sb, types.LastDilutionTimestampKey, "last_dilution_timestamp", collectioncodec.KeyToValueCodec(sdk.TimeKey)),
 	}
 
 	schema, err := sb.Build()

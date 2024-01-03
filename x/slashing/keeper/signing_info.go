@@ -34,7 +34,7 @@ func (k Keeper) GetValidatorSigningInfo(ctx context.Context, address sdk.ConsAdd
 
 // HasValidatorSigningInfo returns if a given validator has signing information
 // persisted.
-func (k Keeper) HasValidatorSigningInfo(ctx sdk.Context, consAddr sdk.ConsAddress) bool {
+func (k Keeper) HasValidatorSigningInfo(ctx context.Context, consAddr sdk.ConsAddress) bool {
 	_, err := k.GetValidatorSigningInfo(ctx, consAddr)
 	return err == nil
 }

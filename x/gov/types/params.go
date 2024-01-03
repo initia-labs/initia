@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"cosmossdk.io/core/address"
 	"cosmossdk.io/math"
 	"gopkg.in/yaml.v3"
 
@@ -95,8 +96,8 @@ func (p Params) String() string {
 	return string(out)
 }
 
-// ValidateBasic performs basic validation on governance parameters.
-func (p Params) ValidateBasic() error {
+// Validate performs basic validation on governance parameters.
+func (p Params) Validate(ac address.Codec) error {
 	minDeposit := sdk.Coins(p.MinDeposit)
 	if minDeposit.Empty() || !minDeposit.IsValid() {
 		return fmt.Errorf("invalid minimum deposit: %s", minDeposit)
@@ -193,7 +194,7 @@ func (p Params) ValidateBasic() error {
 	}
 
 	if len(p.ProposalCancelDest) != 0 {
-		_, err := sdk.AccAddressFromBech32(p.ProposalCancelDest)
+		_, err := ac.StringToBytes(p.ProposalCancelDest)
 		if err != nil {
 			return fmt.Errorf("deposits destination address is invalid: %s", p.ProposalCancelDest)
 		}

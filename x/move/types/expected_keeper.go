@@ -48,11 +48,12 @@ type BankKeeper interface {
 }
 
 type RewardKeeper interface {
-	GetParams(ctx context.Context) (params rewardtypes.Params)
+	GetParams(ctx context.Context) (params rewardtypes.Params, err error)
 }
 
 // StakingKeeper is expected keeper for staking module
 type StakingKeeper interface {
+	ValidatorAddressCodec() address.Codec
 	Validator(ctx context.Context, address sdk.ValAddress) (stakingtypes.ValidatorI, error)
 	GetBondedValidatorsByPower(ctx context.Context) ([]stakingtypes.Validator, error)
 	UnbondingTime(ctx context.Context) (time.Duration, error)

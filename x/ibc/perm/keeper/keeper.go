@@ -1,11 +1,13 @@
 package keeper
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/cometbft/cometbft/libs/log"
-
-	storetypes "cosmossdk.io/store/types"
+	"cosmossdk.io/collections"
+	"cosmossdk.io/core/address"
+	"cosmossdk.io/core/store"
+	"cosmossdk.io/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -15,68 +17,63 @@ import (
 )
 
 type Keeper struct {
-	storeKey storetypes.StoreKey
-	cdc      codec.BinaryCodec
+	cdc codec.Codec
+	ac  address.Codec
 
 	authority string
+
+	Schema          collections.Schema
+	ChannelRelayers collections.Map[string, []byte]
 }
 
 // NewKeeper creates a new IBC perm Keeper instance
 func NewKeeper(
-	cdc codec.BinaryCodec,
-	key storetypes.StoreKey,
+	cdc codec.Codec,
+	storeService store.KVStoreService,
 	authority string,
+	ac address.Codec,
 ) *Keeper {
-	if _, err := sdk.AccAddressFromBech32(authority); err != nil {
+	if _, err := ac.StringToBytes(authority); err != nil {
 		panic(fmt.Sprintf("invalid authority address: %s", authority))
 	}
 
-	return &Keeper{
-		cdc:       cdc,
-		storeKey:  key,
-		authority: authority,
+	sb := collections.NewSchemaBuilder(storeService)
+	k := &Keeper{
+		cdc:             cdc,
+		authority:       authority,
+		ChannelRelayers: collections.NewMap(sb, types.ChannelRelayerPrefixKey, "channel_relayers", collections.StringKey, collections.BytesValue),
+		ac:              ac,
 	}
+
+	schema, err := sb.Build()
+	if err != nil {
+		panic(err)
+	}
+	k.Schema = schema
+
+	return k
 }
 
 // Logger returns a module-specific logger.
-func (k Keeper) Logger(ctx sdk.Context) log.Logger {
-	return ctx.Logger().With("module", "x/"+exported.ModuleName+"-"+types.ModuleName)
+func (k Keeper) Logger(ctx context.Context) log.Logger {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	return sdkCtx.Logger().With("module", "x/"+exported.ModuleName+"-"+types.ModuleName)
 }
 
-// GetChannelRelayer return channel permissioned relayer address.
-func (k Keeper) GetChannelRelayer(ctx sdk.Context, channel string) *types.ChannelRelayer {
-	store := ctx.KVStore(k.storeKey)
-	bz := store.Get(types.GetChannelRelayerKey(channel))
-	if bz == nil {
-		return nil
-	}
-
-	var channelRelayer types.ChannelRelayer
-	k.cdc.MustUnmarshal(bz, &channelRelayer)
-
-	return &channelRelayer
-}
-
-// SetChannelRelayer set channel relayer in store.
-func (k Keeper) SetChannelRelayer(ctx sdk.Context, channel string, relayer sdk.AccAddress) {
-	store := ctx.KVStore(k.storeKey)
-	store.Set(types.GetChannelRelayerKey(channel), k.cdc.MustMarshal(&types.ChannelRelayer{
-		Channel: channel,
-		Relayer: relayer.String(),
-	}))
-}
-
-func (k Keeper) IterateChannelRelayer(ctx sdk.Context, cb func(channelRelayer types.ChannelRelayer) bool) {
-	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, types.ChannelRelayerPrefixKey)
-	defer iterator.Close()
-	for ; iterator.Valid(); iterator.Next() {
-
-		var channelRelayer types.ChannelRelayer
-		k.cdc.MustUnmarshal(iterator.Value(), &channelRelayer)
-
-		if cb(channelRelayer) {
-			break
+func (k Keeper) IterateChannelRelayer(ctx context.Context, cb func(channelRelayer types.ChannelRelayer) (bool, error)) error {
+	return k.ChannelRelayers.Walk(ctx, nil, func(channel string, relayer []byte) (stop bool, err error) {
+		relayerStr, err := k.ac.BytesToString(relayer)
+		if err != nil {
+			return true, err
 		}
-	}
+
+		return cb(types.ChannelRelayer{
+			Channel: channel,
+			Relayer: relayerStr,
+		})
+	})
+}
+
+func (k Keeper) SetChannelRelayer(ctx context.Context, channel string, relayer sdk.AccAddress) error {
+	return k.ChannelRelayers.Set(ctx, channel, relayer)
 }

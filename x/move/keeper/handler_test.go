@@ -352,7 +352,10 @@ func Test_ContractSharedRevenue(t *testing.T) {
 	err = input.MoveKeeper.DistributeContractSharedRevenue(ctx, gasUsages)
 	require.NoError(t, err)
 
+	revenueRatio, err := input.MoveKeeper.ContractSharedRevenueRatio(ctx)
+	require.NoError(t, err)
+
 	// 0x1 should be zero, but 0x2 should receive the coins
 	require.Equal(t, math.ZeroInt(), input.BankKeeper.GetBalance(ctx, types.ConvertVMAddressToSDKAddress(stdAddr), bondDenom).Amount)
-	require.Equal(t, input.MoveKeeper.ContractSharedRevenueRatio(ctx).MulInt64(200).TruncateInt(), input.BankKeeper.GetBalance(ctx, types.ConvertVMAddressToSDKAddress(twoAddr), bondDenom).Amount)
+	require.Equal(t, revenueRatio.MulInt64(200).TruncateInt(), input.BankKeeper.GetBalance(ctx, types.ConvertVMAddressToSDKAddress(twoAddr), bondDenom).Amount)
 }

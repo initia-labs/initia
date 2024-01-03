@@ -6,12 +6,11 @@ import (
 	"os"
 	"testing"
 
-	dbm "github.com/cometbft/cometbft-db"
-	"github.com/cometbft/cometbft/libs/log"
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
+	"cosmossdk.io/log"
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/testutil/mock"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
@@ -27,7 +26,6 @@ import (
 	feegrantmodule "cosmossdk.io/x/feegrant/module"
 	"cosmossdk.io/x/upgrade"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
-	"github.com/cosmos/cosmos-sdk/x/params"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/cosmos/cosmos-sdk/x/slashing"
 
@@ -76,10 +74,10 @@ func TestGetMaccPerms(t *testing.T) {
 
 func TestInitGenesisOnMigration(t *testing.T) {
 	db := dbm.NewMemDB()
-	logger := log.NewTMLogger(log.NewSyncWriter(os.Stdout))
+	logger := log.NewLogger(os.Stdout)
 	app := NewInitiaApp(
 		logger, db, nil, true, moveconfig.DefaultMoveConfig(), simtestutil.EmptyAppOptions{})
-	ctx := app.NewContext(true, tmproto.Header{Height: app.LastBlockHeight()})
+	ctx := app.NewContext(true)
 
 	// Create a mock module. This module will serve as the new module we're
 	// adding during a migration.
@@ -91,11 +89,11 @@ func TestInitGenesisOnMigration(t *testing.T) {
 	mockModule.EXPECT().InitGenesis(gomock.Eq(ctx), gomock.Eq(app.appCodec), gomock.Eq(mockDefaultGenesis)).Times(1).Return(nil)
 	mockModule.EXPECT().ConsensusVersion().Times(1).Return(uint64(0))
 
-	app.mm.Modules["mock"] = mockModule
+	app.ModuleManager.Modules["mock"] = mockModule
 
 	// Run migrations only for "mock" module. We exclude it from
 	// the VersionMap to simulate upgrading with a new module.
-	_, err := app.mm.RunMigrations(ctx, app.configurator,
+	_, err := app.ModuleManager.RunMigrations(ctx, app.configurator,
 		module.VersionMap{
 			"bank":                       bank.AppModule{}.ConsensusVersion(),
 			"auth":                       auth.AppModule{}.ConsensusVersion(),
@@ -105,7 +103,6 @@ func TestInitGenesisOnMigration(t *testing.T) {
 			"distribution":               distribution.AppModule{}.ConsensusVersion(),
 			"slashing":                   slashing.AppModule{}.ConsensusVersion(),
 			"gov":                        gov.AppModule{}.ConsensusVersion(),
-			"params":                     params.AppModule{}.ConsensusVersion(),
 			"upgrade":                    upgrade.AppModule{}.ConsensusVersion(),
 			"feegrant":                   feegrantmodule.AppModule{}.ConsensusVersion(),
 			"evidence":                   evidence.AppModule{}.ConsensusVersion(),
@@ -129,9 +126,11 @@ func TestUpgradeStateOnGenesis(t *testing.T) {
 	app := SetupWithGenesisAccounts(nil, nil)
 
 	// make sure the upgrade keeper has version map in state
-	ctx := app.NewContext(false, tmproto.Header{})
-	vm := app.UpgradeKeeper.GetModuleVersionMap(ctx)
-	for v, i := range app.mm.Modules {
+	ctx := app.NewContext(false)
+	vm, err := app.UpgradeKeeper.GetModuleVersionMap(ctx)
+	require.NoError(t, err)
+
+	for v, i := range app.ModuleManager.Modules {
 		if i, ok := i.(module.HasConsensusVersion); ok {
 			require.Equal(t, vm[v], i.ConsensusVersion())
 		}
@@ -141,7 +140,7 @@ func TestUpgradeStateOnGenesis(t *testing.T) {
 func TestGetKey(t *testing.T) {
 	db := dbm.NewMemDB()
 	app := NewInitiaApp(
-		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
+		log.NewLogger(os.Stdout),
 		db, nil, true, moveconfig.DefaultMoveConfig(), simtestutil.EmptyAppOptions{})
 
 	require.NotEmpty(t, app.GetKey(banktypes.StoreKey))

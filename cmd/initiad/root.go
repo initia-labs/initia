@@ -8,26 +8,34 @@ import (
 
 	rosettaCmd "cosmossdk.io/tools/rosetta/cmd"
 
-	dbm "github.com/cometbft/cometbft-db"
 	tmcli "github.com/cometbft/cometbft/libs/cli"
-	"github.com/cometbft/cometbft/libs/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"cosmossdk.io/log"
+	confixcmd "cosmossdk.io/tools/confix/cmd"
+
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/config"
 	"github.com/cosmos/cosmos-sdk/client/debug"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/keys"
+	"github.com/cosmos/cosmos-sdk/client/pruning"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
+	"github.com/cosmos/cosmos-sdk/client/snapshot"
+	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/server"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/module"
 	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
+	"github.com/cosmos/cosmos-sdk/x/genutil"
 	cosmosgenutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
+	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 
 	initiaapp "github.com/initia-labs/initia/app"
 	"github.com/initia-labs/initia/app/params"
@@ -39,8 +47,6 @@ import (
 // NewRootCmd creates a new root command for initiad. It is called once in the
 // main function.
 func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
-	encodingConfig := initiaapp.MakeEncodingConfig()
-
 	sdkConfig := sdk.GetConfig()
 	sdkConfig.SetCoinType(initiaapp.CoinType)
 
@@ -56,6 +62,9 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	sdkConfig.SetAddressVerifier(initiaapp.VerifyAddressLen())
 	sdkConfig.Seal()
 
+	encodingConfig := initiaapp.MakeEncodingConfig()
+	basicManager := initiaapp.BasicManager()
+
 	// Get the executable name and configure the viper instance so that environmental
 	// variables are checked based off that name. The underscore character is used
 	// as a separator
@@ -68,7 +77,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 
 	// Configure the viper instance
 	initClientCtx := client.Context{}.
-		WithCodec(encodingConfig.Marshaler).
+		WithCodec(encodingConfig.Codec).
 		WithInterfaceRegistry(encodingConfig.InterfaceRegistry).
 		WithTxConfig(encodingConfig.TxConfig).
 		WithLegacyAmino(encodingConfig.Amino).
@@ -117,45 +126,75 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		},
 	}
 
-	initRootCmd(rootCmd, encodingConfig)
+	initRootCmd(rootCmd, encodingConfig, basicManager)
+
+	// add keyring to autocli opts
+	autoCliOpts := initiaapp.AutoCliOpts()
+	initClientCtx, _ = config.ReadFromClientConfig(initClientCtx)
+	autoCliOpts.Keyring, _ = keyring.NewAutoCLIKeyring(initClientCtx.Keyring)
+	autoCliOpts.ClientCtx = initClientCtx
+
+	if err := autoCliOpts.EnhanceRootCommand(rootCmd); err != nil {
+		panic(err)
+	}
 
 	return rootCmd, encodingConfig
 }
 
-func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
-	// TODO check gaia before make release candidate
-	// authclient.Codec = encodingConfig.Marshaler
+func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig, basicManager module.BasicManager) {
+	a := appCreator{encodingConfig}
 
 	rootCmd.AddCommand(
-		cosmosgenutilcli.InitCmd(initiaapp.ModuleBasics, initiaapp.DefaultNodeHome),
-		genutilcli.CollectGenTxsCmd(banktypes.GenesisBalancesIterator{}, initiaapp.DefaultNodeHome),
-		genutilcli.GenTxCmd(initiaapp.ModuleBasics, encodingConfig.TxConfig, banktypes.GenesisBalancesIterator{}, initiaapp.DefaultNodeHome),
-		cosmosgenutilcli.ValidateGenesisCmd(initiaapp.ModuleBasics),
-		AddGenesisAccountCmd(initiaapp.DefaultNodeHome),
-		tmcli.NewCompletionCmd(rootCmd, true),
+		cosmosgenutilcli.InitCmd(basicManager, initiaapp.DefaultNodeHome),
 		debug.Cmd(),
+		confixcmd.ConfigCommand(),
+		pruning.Cmd(a.newApp, initiaapp.DefaultNodeHome),
+		snapshot.Cmd(a.newApp),
 	)
 
-	a := appCreator{encodingConfig}
 	server.AddCommands(rootCmd, initiaapp.DefaultNodeHome, a.newApp, a.appExport, addModuleInitFlags)
 
 	// add keybase, auxiliary RPC, query, and tx child commands
 	rootCmd.AddCommand(
-		rpc.StatusCommand(),
+		server.StatusCommand(),
+		genesisCommand(encodingConfig, basicManager),
 		queryCommand(),
 		txCommand(),
-		keys.Commands(initiaapp.DefaultNodeHome),
+		keys.Commands(),
 	)
 
 	// add rosetta commands
-	rootCmd.AddCommand(rosettaCmd.RosettaCommand(encodingConfig.InterfaceRegistry, encodingConfig.Marshaler))
+	rootCmd.AddCommand(rosettaCmd.RosettaCommand(encodingConfig.InterfaceRegistry, encodingConfig.Codec))
 
 	// add move commands
-	rootCmd.AddCommand(movecmd.MoveCommand())
+	rootCmd.AddCommand(movecmd.MoveCommand(encodingConfig.InterfaceRegistry.SigningContext().AddressCodec()))
 }
 
 func addModuleInitFlags(startCmd *cobra.Command) {
 	crisis.AddModuleInitFlags(startCmd)
+}
+
+func genesisCommand(encodingConfig params.EncodingConfig, basicManager module.BasicManager) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:                        "genesis",
+		Short:                      "Application's genesis-related subcommands",
+		DisableFlagParsing:         false,
+		SuggestionsMinimumDistance: 2,
+		RunE:                       client.ValidateCmd,
+	}
+
+	ac := encodingConfig.TxConfig.SigningContext().AddressCodec()
+	vc := encodingConfig.TxConfig.SigningContext().ValidatorAddressCodec()
+	gentxModule := basicManager[genutiltypes.ModuleName].(genutil.AppModuleBasic)
+
+	cmd.AddCommand(
+		genutilcli.CollectGenTxsCmd(banktypes.GenesisBalancesIterator{}, initiaapp.DefaultNodeHome, gentxModule.GenTxValidator, ac, vc),
+		genutilcli.GenTxCmd(basicManager, encodingConfig.TxConfig, banktypes.GenesisBalancesIterator{}, initiaapp.DefaultNodeHome, ac, vc),
+		cosmosgenutilcli.ValidateGenesisCmd(basicManager),
+		genutilcli.AddGenesisAccountCmd(initiaapp.DefaultNodeHome, encodingConfig.InterfaceRegistry.SigningContext().AddressCodec()),
+	)
+
+	return cmd
 }
 
 func queryCommand() *cobra.Command {
@@ -169,15 +208,13 @@ func queryCommand() *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		authcmd.GetAccountCmd(),
-		rpc.ValidatorCommand(),
-		rpc.BlockCommand(),
+		rpc.QueryEventForTxCmd(),
+		server.QueryBlockCmd(),
 		authcmd.QueryTxsByEventsCmd(),
+		server.QueryBlocksCmd(),
 		authcmd.QueryTxCmd(),
+		server.QueryBlockResultsCmd(),
 	)
-
-	initiaapp.ModuleBasics.AddQueryCommands(cmd)
-	cmd.PersistentFlags().String(flags.FlagChainID, "", "The network chain ID")
 
 	return cmd
 }
@@ -197,15 +234,11 @@ func txCommand() *cobra.Command {
 		authcmd.GetMultiSignCommand(),
 		authcmd.GetMultiSignBatchCmd(),
 		authcmd.GetValidateSignaturesCommand(),
-		flags.LineBreak,
 		authcmd.GetBroadcastCommand(),
 		authcmd.GetEncodeCommand(),
 		authcmd.GetDecodeCommand(),
-		flags.LineBreak,
+		authcmd.GetSimulateCmd(),
 	)
-
-	initiaapp.ModuleBasics.AddTxCommands(cmd)
-	cmd.PersistentFlags().String(flags.FlagChainID, "", "The network chain ID")
 
 	return cmd
 }
@@ -215,7 +248,12 @@ type appCreator struct {
 }
 
 // newApp is an AppCreator
-func (a appCreator) newApp(logger log.Logger, db dbm.DB, traceStore io.Writer, appOpts servertypes.AppOptions) servertypes.Application {
+func (a appCreator) newApp(
+	logger log.Logger,
+	db dbm.DB,
+	traceStore io.Writer,
+	appOpts servertypes.AppOptions,
+) servertypes.Application {
 	baseappOptions := server.DefaultBaseappOptions(appOpts)
 
 	return initiaapp.NewInitiaApp(

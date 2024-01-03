@@ -2,11 +2,13 @@ package ante
 
 import (
 	"cosmossdk.io/math"
+	storetypes "cosmossdk.io/store/types"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // combinedMinGasPrices will combine the on-chain fee and min_gas_prices.
-func combinedMinGasPrices(baseDenom string, baseMinGasPrice sdk.Dec, minGasPrices sdk.DecCoins) sdk.DecCoins {
+func combinedMinGasPrices(baseDenom string, baseMinGasPrice math.LegacyDec, minGasPrices sdk.DecCoins) sdk.DecCoins {
 	// empty min_gas_price
 	if len(minGasPrices) == 0 {
 		return sdk.DecCoins{sdk.NewDecCoinFromDec(baseDenom, baseMinGasPrice)}
@@ -26,7 +28,7 @@ func combinedMinGasPrices(baseDenom string, baseMinGasPrice sdk.Dec, minGasPrice
 }
 
 // computeRequiredFees returns required fees
-func computeRequiredFees(gas sdk.Gas, minGasPrices sdk.DecCoins) sdk.Coins {
+func computeRequiredFees(gas storetypes.Gas, minGasPrices sdk.DecCoins) sdk.Coins {
 	// special case: if minGasPrices=[], requiredFees=[]
 	requiredFees := make(sdk.Coins, len(minGasPrices))
 

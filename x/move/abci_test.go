@@ -6,7 +6,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	abci "github.com/cometbft/cometbft/abci/types"
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -20,18 +19,17 @@ func Test_BeginBlocker(t *testing.T) {
 	app := createApp(t)
 
 	// initialize staking for secondBondDenom
-	header := tmproto.Header{Height: app.LastBlockHeight() + 1}
-	app.BeginBlock(abci.RequestBeginBlock{Header: header})
-
-	ctx := app.BaseApp.NewContext(false, header)
+	ctx := app.BaseApp.NewContext(false)
 	err := app.MoveKeeper.InitializeStaking(ctx, secondBondDenom)
 	require.NoError(t, err)
 
 	// fund addr2
 	app.BankKeeper.SendCoins(ctx, types.StdAddr, addr2, sdk.NewCoins(secondBondCoin))
 
-	app.EndBlock(abci.RequestEndBlock{})
-	app.Commit()
+	_, err = app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1})
+	require.NoError(t, err)
+	_, err = app.Commit()
+	require.NoError(t, err)
 
 	// delegate coins via move staking module
 	denomLP := "ulp"
@@ -59,12 +57,11 @@ func Test_BeginBlocker(t *testing.T) {
 	checkBalance(t, app, types.MoveStakingModuleAddress, sdk.Coins{})
 
 	// new block
-	header = tmproto.Header{Height: app.LastBlockHeight() + 1}
-	app.BeginBlock(abci.RequestBeginBlock{Header: header})
 
 	// generate rewards
-	ctx = app.BaseApp.NewContext(false, header)
-	validator := app.StakingKeeper.Validator(ctx, sdk.ValAddress(addr1))
+	ctx = app.BaseApp.NewContext(false)
+	validator, err := app.StakingKeeper.Validator(ctx, sdk.ValAddress(addr1))
+	require.NoError(t, err)
 
 	rewardCoins := sdk.NewCoins(sdk.NewInt64Coin(bondDenom, 1_000_000))
 	delegatorRewardCoins := sdk.NewCoins(sdk.NewInt64Coin(bondDenom, 500_000))
@@ -78,14 +75,16 @@ func Test_BeginBlocker(t *testing.T) {
 		validator,
 		secondBondDenom,
 		sdk.NewDecCoinsFromCoins(rewardCoins...))
-	app.EndBlock(abci.RequestEndBlock{})
-	app.Commit()
+	_, err = app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1})
+	require.NoError(t, err)
+	_, err = app.Commit()
+	require.NoError(t, err)
 
 	// withdraw rewards to move module
-	header = tmproto.Header{Height: app.LastBlockHeight() + 1}
-	app.BeginBlock(abci.RequestBeginBlock{Header: header})
-	app.EndBlock(abci.RequestEndBlock{})
-	app.Commit()
+	_, err = app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1})
+	require.NoError(t, err)
+	_, err = app.Commit()
+	require.NoError(t, err)
 
 	// undelegate coins
 	undelegateMsg := types.MsgExecute{

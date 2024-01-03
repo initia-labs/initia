@@ -94,10 +94,7 @@ func CanWithdrawInvariant(k Keeper) sdk.Invariant {
 				return false, err
 			}
 
-			_, err = k.WithdrawValidatorCommission(ctx, valAddr)
-			if err != nil {
-				return false, err
-			}
+			_, _ = k.WithdrawValidatorCommission(ctx, valAddr)
 
 			delegationAddrs, ok := valDelegationAddrs[val.GetOperator()]
 			if ok {

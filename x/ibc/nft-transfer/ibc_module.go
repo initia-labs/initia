@@ -56,7 +56,10 @@ func ValidateNftTransferChannelParams(
 	}
 
 	// Require portID is the portID nft-transfer module is bound to
-	boundPort := keeper.GetPort(ctx)
+	boundPort, err := keeper.PortID.Get(ctx)
+	if err != nil {
+		return err
+	}
 	if boundPort != portID {
 		return errors.Wrapf(porttypes.ErrInvalidPort, "invalid port: %s, expected %s", portID, boundPort)
 	}
@@ -176,7 +179,7 @@ func (im IBCModule) OnRecvPacket(
 
 	var data types.NonFungibleTokenPacketData
 	var ackErr error
-	if err := types.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
+	if err := im.keeper.Codec().UnmarshalJSON(packet.GetData(), &data); err != nil {
 		ackErr = errors.Wrapf(sdkerrors.ErrInvalidType, "cannot unmarshal ICS-721 nft-transfer packet data")
 		ack = channeltypes.NewErrorAcknowledgement(ackErr)
 	}
@@ -224,11 +227,11 @@ func (im IBCModule) OnAcknowledgementPacket(
 	relayer sdk.AccAddress,
 ) error {
 	var ack channeltypes.Acknowledgement
-	if err := types.ModuleCdc.UnmarshalJSON(acknowledgement, &ack); err != nil {
+	if err := im.keeper.Codec().UnmarshalJSON(acknowledgement, &ack); err != nil {
 		return errors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-721 nft-transfer packet acknowledgement: %v", err)
 	}
 	var data types.NonFungibleTokenPacketData
-	if err := types.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
+	if err := im.keeper.Codec().UnmarshalJSON(packet.GetData(), &data); err != nil {
 		return errors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-721 nft-transfer packet data: %s", err.Error())
 	}
 
@@ -276,7 +279,7 @@ func (im IBCModule) OnTimeoutPacket(
 	relayer sdk.AccAddress,
 ) error {
 	var data types.NonFungibleTokenPacketData
-	if err := types.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
+	if err := im.keeper.Codec().UnmarshalJSON(packet.GetData(), &data); err != nil {
 		return errors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-721 nft-transfer packet data: %s", err.Error())
 	}
 	// refund tokens

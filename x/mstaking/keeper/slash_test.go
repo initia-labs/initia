@@ -134,10 +134,6 @@ func Test_SlashAtNegativeHeight(t *testing.T) {
 
 	input.StakingKeeper.Slash(ctx, consAddr, -2, fraction)
 
-	// read updated state
-	validator, err = input.StakingKeeper.GetValidatorByConsAddr(ctx, consAddr)
-	require.NoError(t, err)
-
 	// end block
 	applyValidatorSetUpdates(t, ctx, input.StakingKeeper, 1)
 
@@ -173,13 +169,10 @@ func Test_SlashValidatorAtCurrentHeight(t *testing.T) {
 
 	input.StakingKeeper.Slash(ctx, consAddr, ctx.BlockHeight(), fraction)
 
-	// read updated state
-	validator, err = input.StakingKeeper.GetValidatorByConsAddr(ctx, consAddr)
-	require.NoError(t, err)
-
 	// end block
 	applyValidatorSetUpdates(t, ctx, input.StakingKeeper, 1)
 
+	// read updated state
 	validator, err = input.StakingKeeper.Validators.Get(ctx, valAddr)
 	require.NoError(t, err)
 	// power decreased

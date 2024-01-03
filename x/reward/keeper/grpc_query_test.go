@@ -31,6 +31,7 @@ func Test_GRPCAnnualProvisions(t *testing.T) {
 	annualProvisions, err := qs.AnnualProvisions(sdk.WrapSDKContext(ctx), &types.QueryAnnualProvisionsRequest{})
 	require.NoError(t, err)
 	_annualProvisions, err := input.RewardKeeper.GetAnnualProvisions(ctx)
+	require.NoError(t, err)
 	require.Equal(t, _annualProvisions, annualProvisions.AnnualProvisions)
 }
 

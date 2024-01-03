@@ -1,6 +1,7 @@
 package ante_test
 
 import (
+	"context"
 	"fmt"
 
 	"cosmossdk.io/math"
@@ -17,12 +18,12 @@ const baseDenom = app.BondDenom
 
 type TestAnteKeeper struct {
 	pools           map[string][]math.Int
-	weights         map[string][]sdk.Dec
+	weights         map[string][]math.LegacyDec
 	baseDenom       string
-	baseMinGasPrice sdk.Dec
+	baseMinGasPrice math.LegacyDec
 }
 
-func (k TestAnteKeeper) HasDexPair(_ sdk.Context, denomQuote string) (bool, error) {
+func (k TestAnteKeeper) HasDexPair(_ context.Context, denomQuote string) (bool, error) {
 	_, found := k.pools[denomQuote]
 	if !found {
 		return false, nil
@@ -36,7 +37,7 @@ func (k TestAnteKeeper) HasDexPair(_ sdk.Context, denomQuote string) (bool, erro
 	return true, nil
 }
 
-func (k TestAnteKeeper) GetPoolSpotPrice(_ sdk.Context, denomQuote string) (quotePrice sdk.Dec, err error) {
+func (k TestAnteKeeper) GetPoolSpotPrice(_ context.Context, denomQuote string) (quotePrice math.LegacyDec, err error) {
 	balances, found := k.pools[denomQuote]
 	if !found {
 		return math.LegacyZeroDec(), fmt.Errorf("not found")
@@ -50,12 +51,12 @@ func (k TestAnteKeeper) GetPoolSpotPrice(_ sdk.Context, denomQuote string) (quot
 	return types.GetPoolSpotPrice(balances[0], balances[1], weights[0], weights[1]), nil
 }
 
-func (k TestAnteKeeper) BaseDenom(_ sdk.Context) (res string) {
-	return k.baseDenom
+func (k TestAnteKeeper) BaseDenom(_ context.Context) (string, error) {
+	return k.baseDenom, nil
 }
 
-func (k TestAnteKeeper) BaseMinGasPrice(ctx sdk.Context) sdk.Dec {
-	return k.baseMinGasPrice
+func (k TestAnteKeeper) BaseMinGasPrice(ctx context.Context) (math.LegacyDec, error) {
+	return k.baseMinGasPrice, nil
 }
 
 func (suite *AnteTestSuite) TestEnsureMempoolFees() {
@@ -68,8 +69,8 @@ func (suite *AnteTestSuite) TestEnsureMempoolFees() {
 		math.NewInt(2), // quote
 	}
 
-	dexWeights := make(map[string][]sdk.Dec)
-	dexWeights["atom"] = []sdk.Dec{
+	dexWeights := make(map[string][]math.LegacyDec)
+	dexWeights["atom"] = []math.LegacyDec{
 		math.LegacyNewDecWithPrec(2, 1), // base
 		math.LegacyNewDecWithPrec(8, 1), // quote
 	}

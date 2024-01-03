@@ -150,7 +150,7 @@ func (k Keeper) GetUnbondingDelegationsFromValidator(ctx context.Context, valAdd
 		valAddr := key.K1()
 		delAddr := key.K2()
 
-		ubd, err := k.UnbondingDelegations.Get(ctx, collections.Join(valAddr, delAddr))
+		ubd, err := k.UnbondingDelegations.Get(ctx, collections.Join(delAddr, valAddr))
 		if err != nil {
 			return false, err
 		}

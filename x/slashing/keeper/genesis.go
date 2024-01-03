@@ -11,15 +11,15 @@ import (
 // and the keeper's address to pubkey map
 func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) {
 	k.sk.IterateValidators(ctx,
-		func(index int64, validator stakingtypes.ValidatorI) bool {
+		func(validator stakingtypes.ValidatorI) (bool, error) {
 			consPk, err := validator.ConsPubKey()
 			if err != nil {
-				panic(err)
+				return true, err
 			}
 			if err = k.AddPubkey(ctx, consPk); err != nil {
-				panic(err)
+				return true, err
 			}
-			return false
+			return false, nil
 		},
 	)
 

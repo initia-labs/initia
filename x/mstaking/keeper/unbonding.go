@@ -11,9 +11,40 @@ import (
 	"github.com/initia-labs/initia/x/mstaking/types"
 )
 
+func (k Keeper) SetNextUnbondingId(ctx context.Context, unbondingId uint64) error {
+	return k.NextUnbondingId.Set(ctx, unbondingId)
+}
+
+func (k Keeper) GetNextUnbondingId(ctx context.Context) (uint64, error) {
+	nextUnbondingId, err := k.NextUnbondingId.Peek(ctx)
+	if err != nil {
+		return 0, err
+	}
+
+	if nextUnbondingId == collections.DefaultSequenceStart {
+		return types.DefaultUnbondingIdStart, nil
+	}
+
+	return nextUnbondingId, nil
+}
+
 // IncrementUnbondingId increments and returns a unique ID for an unbonding operation
 func (k Keeper) IncrementUnbondingId(ctx context.Context) (uint64, error) {
-	return k.NextUnbondingId.Next(ctx)
+	nextUnbondingId, err := k.NextUnbondingId.Next(ctx)
+	if err != nil {
+		return 0, err
+	}
+
+	if nextUnbondingId == collections.DefaultSequenceStart {
+		if err := k.NextUnbondingId.Set(ctx, types.DefaultUnbondingIdStart+1); err != nil {
+			return 0, err
+		}
+
+		return types.DefaultUnbondingIdStart, nil
+	}
+
+	return nextUnbondingId, nil
+
 }
 
 // DeleteUnbondingIndex removes a mapping from UnbondingId to unbonding operation
@@ -81,7 +112,7 @@ func (k Keeper) SetUnbondingDelegationByUnbondingId(ctx context.Context, ubd typ
 		return err
 	}
 
-	valAddr, err := k.authKeeper.AddressCodec().StringToBytes(ubd.ValidatorAddress)
+	valAddr, err := k.validatorAddressCodec.StringToBytes(ubd.ValidatorAddress)
 	if err != nil {
 		return err
 	}

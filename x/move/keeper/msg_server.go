@@ -29,8 +29,11 @@ func NewMsgServerImpl(k Keeper) MsgServer {
 func (ms MsgServer) Publish(context context.Context, req *types.MsgPublish) (*types.MsgPublishResponse, error) {
 	defer telemetry.MeasureSince(time.Now(), "move", "msg", "publish")
 	ctx := sdk.UnwrapSDKContext(context)
+	if err := req.Validate(ms.authKeeper.AddressCodec()); err != nil {
+		return nil, err
+	}
 
-	sender, err := types.AccAddressFromString(req.Sender)
+	sender, err := types.AccAddressFromString(ms.authKeeper.AddressCodec(), req.Sender)
 	if err != nil {
 		return nil, err
 	}
@@ -57,13 +60,17 @@ func (ms MsgServer) Publish(context context.Context, req *types.MsgPublish) (*ty
 func (ms MsgServer) Execute(context context.Context, req *types.MsgExecute) (*types.MsgExecuteResponse, error) {
 	defer telemetry.MeasureSince(time.Now(), "move", "msg", "execute")
 	ctx := sdk.UnwrapSDKContext(context)
+	if err := req.Validate(ms.authKeeper.AddressCodec()); err != nil {
+		return nil, err
+	}
 
-	sender, err := types.AccAddressFromString(req.Sender)
+	ac := ms.authKeeper.AddressCodec()
+	sender, err := types.AccAddressFromString(ac, req.Sender)
 	if err != nil {
 		return nil, err
 	}
 
-	moduleAddr, err := types.AccAddressFromString(req.ModuleAddress)
+	moduleAddr, err := types.AccAddressFromString(ac, req.ModuleAddress)
 	if err != nil {
 		return nil, err
 	}
@@ -93,8 +100,12 @@ func (ms MsgServer) Execute(context context.Context, req *types.MsgExecute) (*ty
 func (ms MsgServer) Script(context context.Context, req *types.MsgScript) (*types.MsgScriptResponse, error) {
 	defer telemetry.MeasureSince(time.Now(), "move", "msg", "script")
 	ctx := sdk.UnwrapSDKContext(context)
+	if err := req.Validate(ms.authKeeper.AddressCodec()); err != nil {
+		return nil, err
+	}
 
-	sender, err := types.AccAddressFromString(req.Sender)
+	ac := ms.authKeeper.AddressCodec()
+	sender, err := types.AccAddressFromString(ac, req.Sender)
 	if err != nil {
 		return nil, err
 	}
@@ -126,8 +137,12 @@ func (ms MsgServer) GovPublish(context context.Context, req *types.MsgGovPublish
 	}
 
 	ctx := sdk.UnwrapSDKContext(context)
+	if err := req.Validate(ms.authKeeper.AddressCodec()); err != nil {
+		return nil, err
+	}
 
-	sender, err := types.AccAddressFromString(req.Sender)
+	ac := ms.authKeeper.AddressCodec()
+	sender, err := types.AccAddressFromString(ac, req.Sender)
 	if err != nil {
 		return nil, err
 	}
@@ -158,13 +173,17 @@ func (ms MsgServer) GovExecute(context context.Context, req *types.MsgGovExecute
 	}
 
 	ctx := sdk.UnwrapSDKContext(context)
+	if err := req.Validate(ms.authKeeper.AddressCodec()); err != nil {
+		return nil, err
+	}
 
-	sender, err := types.AccAddressFromString(req.Sender)
+	ac := ms.authKeeper.AddressCodec()
+	sender, err := types.AccAddressFromString(ac, req.Sender)
 	if err != nil {
 		return nil, err
 	}
 
-	moduleAddr, err := types.AccAddressFromString(req.ModuleAddress)
+	moduleAddr, err := types.AccAddressFromString(ac, req.ModuleAddress)
 	if err != nil {
 		return nil, err
 	}
@@ -198,8 +217,12 @@ func (ms MsgServer) GovScript(context context.Context, req *types.MsgGovScript) 
 	}
 
 	ctx := sdk.UnwrapSDKContext(context)
+	if err := req.Validate(ms.authKeeper.AddressCodec()); err != nil {
+		return nil, err
+	}
 
-	sender, err := types.AccAddressFromString(req.Sender)
+	ac := ms.authKeeper.AddressCodec()
+	sender, err := types.AccAddressFromString(ac, req.Sender)
 	if err != nil {
 		return nil, err
 	}
@@ -230,6 +253,10 @@ func (ms MsgServer) Whitelist(context context.Context, req *types.MsgWhitelist) 
 	}
 
 	ctx := sdk.UnwrapSDKContext(context)
+	if err := req.Validate(ms.authKeeper.AddressCodec()); err != nil {
+		return nil, err
+	}
+
 	err := ms.Keeper.Whitelist(ctx, *req)
 	if err != nil {
 		return nil, err
@@ -245,6 +272,10 @@ func (ms MsgServer) Delist(context context.Context, req *types.MsgDelist) (*type
 	}
 
 	ctx := sdk.UnwrapSDKContext(context)
+	if err := req.Validate(ms.authKeeper.AddressCodec()); err != nil {
+		return nil, err
+	}
+
 	err := ms.Keeper.Delist(ctx, *req)
 	if err != nil {
 		return nil, err
@@ -260,6 +291,10 @@ func (ms MsgServer) UpdateParams(context context.Context, req *types.MsgUpdatePa
 	}
 
 	ctx := sdk.UnwrapSDKContext(context)
+	if err := req.Validate(ms.authKeeper.AddressCodec()); err != nil {
+		return nil, err
+	}
+
 	if err := ms.SetParams(ctx, req.Params); err != nil {
 		return nil, err
 	}

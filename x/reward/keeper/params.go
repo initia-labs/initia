@@ -36,9 +36,5 @@ func (k Keeper) GetParams(ctx context.Context) (types.Params, error) {
 
 // SetParams sets the x/slashing module parameters.
 func (k Keeper) SetParams(ctx context.Context, params types.Params) error {
-	if err := params.Validate(); err != nil {
-		return err
-	}
-
 	return k.Params.Set(ctx, params)
 }

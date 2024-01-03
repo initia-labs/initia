@@ -225,7 +225,7 @@ Where authzItems.json contains:
 					if err = json.Unmarshal(itemsBytes, &authzItems); err != nil {
 						return fmt.Errorf("invalid authorization item, %s", items)
 					}
-					authorization, err = movetypes.NewExecuteAuthorization(authzItems)
+					authorization, err = movetypes.NewExecuteAuthorization(ac, authzItems)
 				default:
 					return fmt.Errorf("invalid type, %s", typ)
 				}

@@ -6,7 +6,8 @@ import (
 	"math"
 	"strings"
 
-	"cosmossdk.io/store/prefix"
+	sdkmath "cosmossdk.io/math"
+	storetypes "cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
@@ -19,11 +20,12 @@ import (
 func isSimulationOrCheckTx(
 	ctx context.Context,
 ) bool {
-	if ctx.IsCheckTx() || ctx.IsReCheckTx() {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	if sdkCtx.IsCheckTx() || sdkCtx.IsReCheckTx() {
 		return true
 	}
 
-	simulate := ctx.Value(ante.SimulationFlagContextKey)
+	simulate := sdkCtx.Value(ante.SimulationFlagContextKey)
 	if simulate == nil {
 		return false
 	}
@@ -123,26 +125,7 @@ func (k Keeper) ExecuteEntryFunctionWithMultiSenders(
 	typeArgs []vmtypes.TypeTag,
 	args [][]byte,
 ) error {
-	vm := k.moveVM
-	gasMeter := ctx.GasMeter()
-	gasForRuntime := gasMeter.Limit() - gasMeter.GasConsumedToLimit()
-
-	isSimulationOrCheckTx := isSimulationOrCheckTx(ctx)
-	if isSimulationOrCheckTx {
-		vm = k.buildSimulationVM()
-		defer vm.Destroy()
-
-		gasForRuntime = k.config.ContractSimulationGasLimit
-	} else if gasMeter.Limit() == 0 {
-		// infinite gas meter
-		gasForRuntime = math.MaxUint64
-	}
-
-	// delegate gas metering to move vm
-	ctx = ctx.WithGasMeter(sdk.NewInfiniteGasMeter())
-	kvStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.PrefixKeyVMStore)
-
-	// normalize type tags
+	// prepare payload
 	payload, err := types.BuildExecuteEntryFunctionPayload(
 		moduleAddr,
 		moduleName,
@@ -159,17 +142,40 @@ func (k Keeper) ExecuteEntryFunctionWithMultiSenders(
 		sendersStr[i] = sender.String()
 	}
 
-	api := NewApi(k, ctx)
-	env := types.NewEnv(
-		ctx,
-		types.NextAccountNumber(ctx, k.authKeeper),
-		k.IncreaseExecutionCounter(ctx),
-	)
+	ac := types.NextAccountNumber(ctx, k.authKeeper)
+	ec, err := k.ExecutionCounter.Next(ctx)
+	if err != nil {
+		return err
+	}
 
+	// prepare vm
+	// if the tx is in (re)check tx or simulation, use simulation vm
+	// else use normal vm
+
+	vm := k.moveVM
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	gasMeter := sdkCtx.GasMeter()
+	gasForRuntime := gasMeter.Limit() - gasMeter.GasConsumedToLimit()
+
+	isSimulationOrCheckTx := isSimulationOrCheckTx(ctx)
+	if isSimulationOrCheckTx {
+		vm = k.buildSimulationVM()
+		defer vm.Destroy()
+
+		gasForRuntime = k.config.ContractSimulationGasLimit
+	} else if gasMeter.Limit() == 0 {
+		// infinite gas meter
+		gasForRuntime = math.MaxUint64
+	}
+
+	// delegate gas metering to move vm
+	sdkCtx = sdkCtx.WithGasMeter(storetypes.NewInfiniteGasMeter())
+
+	// run vm
 	execRes, err := vm.ExecuteEntryFunction(
-		kvStore,
-		api,
-		env,
+		types.NewVMStore(sdkCtx, k.VMStore),
+		NewApi(k, sdkCtx),
+		types.NewEnv(sdkCtx, ac, ec),
 		gasForRuntime,
 		senders,
 		payload,
@@ -177,7 +183,7 @@ func (k Keeper) ExecuteEntryFunctionWithMultiSenders(
 
 	// Mark loader cache loads new published modules.
 	if !isSimulationOrCheckTx {
-		k.abciListener.SetNewPublishedModulesLoaded(execRes.NewPublishedModulesLoaded)
+		k.postHandler.SetNewPublishedModulesLoaded(execRes.NewPublishedModulesLoaded)
 	}
 
 	// consume gas first and check error
@@ -186,7 +192,7 @@ func (k Keeper) ExecuteEntryFunctionWithMultiSenders(
 		return err
 	}
 
-	ctx.EventManager().EmitEvent(sdk.NewEvent(
+	sdkCtx.EventManager().EmitEvent(sdk.NewEvent(
 		types.EventTypeExecute,
 		sdk.NewAttribute(types.AttributeKeySender, strings.Join(sendersStr, ",")),
 		sdk.NewAttribute(types.AttributeKeyModuleAddr, moduleAddr.String()),
@@ -194,7 +200,8 @@ func (k Keeper) ExecuteEntryFunctionWithMultiSenders(
 		sdk.NewAttribute(types.AttributeKeyFunctionName, functionName),
 	))
 
-	return k.handleExecuteResponse(ctx, gasMeter, execRes)
+	// we still need infinite gas meter for CSR, so pass new context
+	return k.handleExecuteResponse(sdkCtx, gasMeter, execRes)
 }
 
 func (k Keeper) ExecuteScript(
@@ -220,26 +227,7 @@ func (k Keeper) ExecuteScriptWithMultiSenders(
 	typeArgs []vmtypes.TypeTag,
 	args [][]byte,
 ) error {
-	vm := k.moveVM
-	gasMeter := ctx.GasMeter()
-	gasForRuntime := gasMeter.Limit() - gasMeter.GasConsumedToLimit()
-
-	isSimulationOrCheckTx := isSimulationOrCheckTx(ctx)
-	if isSimulationOrCheckTx {
-		vm = k.buildSimulationVM()
-		defer vm.Destroy()
-
-		gasForRuntime = k.config.ContractSimulationGasLimit
-	} else if gasMeter.Limit() == 0 {
-		// infinite gas meter
-		gasForRuntime = math.MaxUint64
-	}
-
-	// delegate gas metering to move vm
-	ctx = ctx.WithGasMeter(sdk.NewInfiniteGasMeter())
-	kvStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.PrefixKeyVMStore)
-
-	// normalize type tags
+	// prepare payload
 	payload, err := types.BuildExecuteScriptPayload(
 		byteCodes,
 		typeArgs,
@@ -254,17 +242,40 @@ func (k Keeper) ExecuteScriptWithMultiSenders(
 		sendersStr[i] = sender.String()
 	}
 
-	api := NewApi(k, ctx)
-	env := types.NewEnv(
-		ctx,
-		types.NextAccountNumber(ctx, k.authKeeper),
-		k.IncreaseExecutionCounter(ctx),
-	)
+	ac := types.NextAccountNumber(ctx, k.authKeeper)
+	ec, err := k.ExecutionCounter.Next(ctx)
+	if err != nil {
+		return err
+	}
 
+	// prepare vm
+	// if the tx is in (re)check tx or simulation, use simulation vm.
+	// else use normal vm.
+
+	vm := k.moveVM
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	gasMeter := sdkCtx.GasMeter()
+	gasForRuntime := gasMeter.Limit() - gasMeter.GasConsumedToLimit()
+
+	isSimulationOrCheckTx := isSimulationOrCheckTx(ctx)
+	if isSimulationOrCheckTx {
+		vm = k.buildSimulationVM()
+		defer vm.Destroy()
+
+		gasForRuntime = k.config.ContractSimulationGasLimit
+	} else if gasMeter.Limit() == 0 {
+		// infinite gas meter
+		gasForRuntime = math.MaxUint64
+	}
+
+	// delegate gas metering to move vm
+	sdkCtx = sdkCtx.WithGasMeter(storetypes.NewInfiniteGasMeter())
+
+	// run vm
 	execRes, err := vm.ExecuteScript(
-		kvStore,
-		api,
-		env,
+		types.NewVMStore(sdkCtx, k.VMStore),
+		NewApi(k, sdkCtx),
+		types.NewEnv(sdkCtx, ac, ec),
 		gasForRuntime,
 		senders,
 		payload,
@@ -272,7 +283,7 @@ func (k Keeper) ExecuteScriptWithMultiSenders(
 
 	// Mark loader cache loads new published modules.
 	if !isSimulationOrCheckTx {
-		k.abciListener.SetNewPublishedModulesLoaded(execRes.NewPublishedModulesLoaded)
+		k.postHandler.SetNewPublishedModulesLoaded(execRes.NewPublishedModulesLoaded)
 	}
 
 	// consume gas first and check error
@@ -281,20 +292,20 @@ func (k Keeper) ExecuteScriptWithMultiSenders(
 		return err
 	}
 
-	ctx.EventManager().EmitEvent(sdk.NewEvent(
+	sdkCtx.EventManager().EmitEvent(sdk.NewEvent(
 		types.EventTypeScript,
 		sdk.NewAttribute(types.AttributeKeySender, strings.Join(sendersStr, ",")),
 	))
 
-	return k.handleExecuteResponse(ctx, gasMeter, execRes)
+	// we still need infinite gas meter for CSR, so pass new context
+	return k.handleExecuteResponse(sdkCtx, gasMeter, execRes)
 }
 
 func (k Keeper) handleExecuteResponse(
-	ctx context.Context,
-	gasMeter sdk.GasMeter,
+	ctx sdk.Context,
+	gasMeter storetypes.GasMeter,
 	execRes vmtypes.ExecutionResult,
 ) error {
-
 	// Emit contract events
 	for _, event := range execRes.Events {
 		typeTag, err := vmapi.StringifyTypeTag(event.TypeTag)
@@ -357,15 +368,21 @@ func (k Keeper) handleExecuteResponse(
 
 // DispatchMessages run the given cosmos messages and emit events
 func (k Keeper) DispatchMessages(ctx context.Context, messages []vmtypes.CosmosMessage) error {
+	ac := k.authKeeper.AddressCodec()
+	vc := k.StakingKeeper.ValidatorAddressCodec()
+
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	for _, message := range messages {
-		msg, err := types.ConvertToSDKMessage(ctx, NewMoveBankKeeper(&k), NewNftKeeper(&k), message)
+		msg, err := types.ConvertToSDKMessage(ctx, NewMoveBankKeeper(&k), NewNftKeeper(&k), message, ac, vc)
 		if err != nil {
 			return err
 		}
 
 		// validate msg
-		if err := msg.ValidateBasic(); err != nil {
-			return err
+		if msg, ok := msg.(sdk.HasValidateBasic); ok {
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
 		}
 
 		// find the handler
@@ -375,13 +392,13 @@ func (k Keeper) DispatchMessages(ctx context.Context, messages []vmtypes.CosmosM
 		}
 
 		//  and execute it
-		res, err := handler(ctx, msg)
+		res, err := handler(sdkCtx, msg)
 		if err != nil {
 			return err
 		}
 
 		// emit events
-		ctx.EventManager().EmitEvents(res.GetEvents())
+		sdkCtx.EventManager().EmitEvents(res.GetEvents())
 	}
 
 	return nil
@@ -389,13 +406,20 @@ func (k Keeper) DispatchMessages(ctx context.Context, messages []vmtypes.CosmosM
 
 // DistributeContractSharedRevenue distribute a portion of gas fee to contract creator account
 func (k Keeper) DistributeContractSharedRevenue(ctx context.Context, gasUsages []vmtypes.GasUsage) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
 	value := ctx.Value(ante.GasPricesContextKey)
 	if value == nil {
 		return nil
 	}
 
 	gasPrices := value.(sdk.DecCoins)
-	revenueGasPrices := gasPrices.MulDec(k.ContractSharedRevenueRatio(ctx))
+	revenueRatio, err := k.ContractSharedRevenueRatio(ctx)
+	if err != nil {
+		return err
+	}
+
+	revenueGasPrices := gasPrices.MulDec(revenueRatio)
 	if revenueGasPrices.IsZero() {
 		return nil
 	}
@@ -407,7 +431,7 @@ func (k Keeper) DistributeContractSharedRevenue(ctx context.Context, gasUsages [
 			continue
 		}
 
-		revenue, _ := revenueGasPrices.MulDec(math.LegacyNewDec(int64(gasUsage.GasUsed))).TruncateDecimal()
+		revenue, _ := revenueGasPrices.MulDec(sdkmath.LegacyNewDec(int64(gasUsage.GasUsed))).TruncateDecimal()
 		if revenue.IsZero() {
 			continue
 		}
@@ -417,7 +441,7 @@ func (k Keeper) DistributeContractSharedRevenue(ctx context.Context, gasUsages [
 			return err
 		}
 
-		ctx.EventManager().EmitEvent(sdk.NewEvent(
+		sdkCtx.EventManager().EmitEvent(sdk.NewEvent(
 			types.EventTypeContractSharedRevenue,
 			sdk.NewAttribute(types.AttributeKeyCreator, gasUsage.ModuleId.Address.String()),
 			sdk.NewAttribute(types.AttributeKeyRevenue, revenue.String()),

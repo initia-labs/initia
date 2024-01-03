@@ -4,10 +4,6 @@ import (
 	"testing"
 
 	// "fmt"
-	"time"
-
-	abci "github.com/cometbft/cometbft/abci/types"
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 
 	"github.com/stretchr/testify/require"
 
@@ -72,7 +68,6 @@ func BenchmarkTPS(b *testing.B) {
 			txEncoder := appInfo.TxConfig.TxEncoder()
 			b.ResetTimer()
 
-			appInfo.App.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{Height: appInfo.App.LastBlockHeight() + 1, Time: time.Now()}})
 			for i := 0; i < b.N/numTxs; i++ {
 				for j := 0; j < numTxs; j++ {
 					idx := i*numTxs + j

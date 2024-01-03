@@ -59,7 +59,7 @@ func createApp(t *testing.T) *initiaapp.InitiaApp {
 	// create validator
 	description := stakingtypes.NewDescription("foo_moniker", "", "", "", "")
 	createValidatorMsg, err := stakingtypes.NewMsgCreateValidator(
-		sdk.ValAddress(addr1), valKey.PubKey(), sdk.NewCoins(bondCoin), description, commissionRates,
+		sdk.ValAddress(addr1).String(), valKey.PubKey(), sdk.NewCoins(bondCoin), description, commissionRates,
 	)
 	require.NoError(t, err)
 
@@ -68,8 +68,10 @@ func createApp(t *testing.T) *initiaapp.InitiaApp {
 
 	checkBalance(t, app, addr1, genCoins.Sub(bondCoin))
 
-	header := tmproto.Header{Height: app.LastBlockHeight() + 1}
-	app.BeginBlock(abci.RequestBeginBlock{Header: header})
+	_, err = app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1})
+	require.NoError(t, err)
+	_, err = app.Commit()
+	require.NoError(t, err)
 
 	return app
 }

@@ -11,7 +11,6 @@ import (
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 
 	distrkeeper "github.com/initia-labs/initia/x/distribution/keeper"
-	staking "github.com/initia-labs/initia/x/mstaking"
 	stakingkeeper "github.com/initia-labs/initia/x/mstaking/keeper"
 	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
 
@@ -23,16 +22,17 @@ import (
 )
 
 // newTestMsgCreateValidator test msg creator
-func newTestMsgCreateValidator(address sdk.ValAddress, pubKey cryptotypes.PubKey, amt math.Int) *stakingtypes.MsgCreateValidator {
+func newTestMsgCreateValidator(valAddr string, pubKey cryptotypes.PubKey, amt math.Int) *stakingtypes.MsgCreateValidator {
 	commission := stakingtypes.NewCommissionRates(math.LegacyNewDecWithPrec(5, 1), math.LegacyNewDecWithPrec(5, 1), math.LegacyNewDec(0))
 	msg, _ := stakingtypes.NewMsgCreateValidator(
-		address, pubKey, sdk.NewCoins(sdk.NewCoin(bondDenom, amt)),
-		stakingtypes.Description{}, commission,
+		valAddr, pubKey, sdk.NewCoins(sdk.NewCoin(bondDenom, amt)),
+		stakingtypes.NewDescription("homeDir", "", "", "", ""), commission,
 	)
 	return msg
 }
 
 func createValidatorWithBalance(
+	t *testing.T,
 	ctx sdk.Context,
 	input TestKeepers,
 	balance int64,
@@ -41,18 +41,21 @@ func createValidatorWithBalance(
 	valAddr := valAddrs[0]
 	valPubKey := valPubKeys[0]
 
+	valAddrStr, err := input.StakingKeeper.ValidatorAddressCodec().BytesToString(valAddrs[0])
+	require.NoError(t, err)
+
 	input.Faucet.Fund(ctx, addrs[0], sdk.NewCoin(bondDenom, math.NewInt(balance)))
 
-	sh := staking.NewHandler(input.StakingKeeper)
-	_, err := sh(ctx, newTestMsgCreateValidator(valAddr, valPubKey, math.NewInt(delBalance)))
+	sh := stakingkeeper.NewMsgServerImpl(input.StakingKeeper)
+	_, err = sh.CreateValidator(ctx, newTestMsgCreateValidator(valAddrStr, valPubKey, math.NewInt(delBalance)))
 	if err != nil {
-		panic(err)
+		require.NoError(t, err)
 	}
 
 	// power update
 	_, err = input.StakingKeeper.ApplyAndReturnValidatorSetUpdates(ctx)
 	if err != nil {
-		panic(err)
+		require.NoError(t, err)
 	}
 
 	return valAddr
@@ -61,6 +64,7 @@ func createValidatorWithBalance(
 // mint coins and supply the coins to distribution module account
 // also allocate that coins to validator rewards pool
 func setValidatorRewards(
+	t *testing.T,
 	ctx sdk.Context,
 	faucet *TestFaucet,
 	stakingKeeper stakingkeeper.Keeper,
@@ -68,7 +72,9 @@ func setValidatorRewards(
 	valAddr sdk.ValAddress, rewards ...sdk.Coin) {
 
 	// allocate some rewards
-	validator := stakingKeeper.Validator(ctx, valAddr)
+	validator, err := stakingKeeper.Validator(ctx, valAddr)
+	require.NoError(t, err)
+
 	payout := sdk.NewDecCoinsFromCoins(rewards...)
 	distKeeper.AllocateTokensToValidatorPool(ctx, validator, bondDenom, payout)
 
@@ -78,7 +84,7 @@ func setValidatorRewards(
 
 func TestDelegateToValidator(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
-	valAddr := createValidatorWithBalance(ctx, input, 100_000_000, 100_000)
+	valAddr := createValidatorWithBalance(t, ctx, input, 100_000_000, 100_000)
 
 	input.Faucet.Fund(ctx, types.MoveStakingModuleAddress, sdk.NewCoin(bondDenom, math.NewInt(100_000_000)))
 	moveBalance := input.BankKeeper.GetBalance(ctx, types.MoveStakingModuleAddress, bondDenom).Amount.Uint64()
@@ -96,7 +102,7 @@ func TestDelegateToValidator(t *testing.T) {
 
 func TestAmountToShare(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
-	valAddr := createValidatorWithBalance(ctx, input, 100_000_000, 100_000)
+	valAddr := createValidatorWithBalance(t, ctx, input, 100_000_000, 100_000)
 
 	amount := sdk.NewCoin(bondDenom, math.NewInt(150))
 	share, err := input.MoveKeeper.AmountToShare(ctx, valAddr, amount)
@@ -106,7 +112,7 @@ func TestAmountToShare(t *testing.T) {
 
 func TestShareToAmount(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
-	valAddr := createValidatorWithBalance(ctx, input, 100_000_000, 100_000)
+	valAddr := createValidatorWithBalance(t, ctx, input, 100_000_000, 100_000)
 
 	share := sdk.NewDecCoin(bondDenom, math.NewInt(150))
 	amount, err := input.MoveKeeper.ShareToAmount(ctx, valAddr, share)
@@ -117,7 +123,7 @@ func TestShareToAmount(t *testing.T) {
 
 func TestWithdrawRewards(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
-	valAddr := createValidatorWithBalance(ctx, input, 100_000_000, 1_000_000)
+	valAddr := createValidatorWithBalance(t, ctx, input, 100_000_000, 1_000_000)
 
 	// mint coins to move staking module
 	input.Faucet.Fund(ctx, types.MoveStakingModuleAddress, sdk.NewCoin(bondDenom, math.NewInt(100_000_000)))
@@ -135,7 +141,7 @@ func TestWithdrawRewards(t *testing.T) {
 
 	var accRewards sdk.Coins
 	for i := 0; i < 10; i++ {
-		setValidatorRewards(ctx, input.Faucet, input.StakingKeeper, input.DistKeeper, valAddr, sdk.NewCoin(bondDenom, math.NewInt(100)))
+		setValidatorRewards(t, ctx, input.Faucet, input.StakingKeeper, input.DistKeeper, valAddr, sdk.NewCoin(bondDenom, math.NewInt(100)))
 		ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 		rewards, err := input.MoveKeeper.WithdrawRewards(ctx, valAddr)
 		require.NoError(t, err)
@@ -149,7 +155,7 @@ func TestWithdrawRewards(t *testing.T) {
 
 func TestInstantUnbondFromValidator(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
-	valAddr := createValidatorWithBalance(ctx, input, 100_000_000, 100_000)
+	valAddr := createValidatorWithBalance(t, ctx, input, 100_000_000, 100_000)
 
 	input.Faucet.Fund(ctx, types.MoveStakingModuleAddress, sdk.NewCoin(bondDenom, math.NewInt(100_000_000)))
 
@@ -177,7 +183,7 @@ func TestInstantUnbondFromValidator(t *testing.T) {
 
 func TestInstantUnbondFromBondedValidator(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
-	valAddr := createValidatorWithBalance(ctx, input, 100_000_000, 100_000)
+	valAddr := createValidatorWithBalance(t, ctx, input, 100_000_000, 100_000)
 
 	input.Faucet.Fund(ctx, types.MoveStakingModuleAddress, sdk.NewCoin(bondDenom, math.NewInt(100_000_000)))
 
@@ -231,7 +237,7 @@ func TestApplyStakingDeltas(t *testing.T) {
 	err = input.MoveKeeper.InitializeStaking(ctx, secondBondDenom)
 	require.NoError(t, err)
 
-	valAddr := createValidatorWithBalance(ctx, input, 100_000_000, 100_000)
+	valAddr := createValidatorWithBalance(t, ctx, input, 100_000_000, 100_000)
 
 	// mint not possible for lp coin, so transfer from the 0x2
 	_, _, addr := keyPubAddr()
@@ -258,8 +264,8 @@ func TestApplyStakingDeltas(t *testing.T) {
 	require.NoError(t, err)
 
 	delModuleAddr := types.GetDelegatorModuleAddress(valAddr)
-	delegation, found := input.StakingKeeper.GetDelegation(ctx, delModuleAddr, valAddr)
-	require.True(t, found)
+	delegation, err := input.StakingKeeper.GetDelegation(ctx, delModuleAddr, valAddr)
+	require.NoError(t, err)
 	require.Equal(t, delegation.Shares, sdk.NewDecCoins(sdk.NewDecCoin(secondBondDenom, math.NewInt(50_000_000))))
 
 	// undelegate half
@@ -280,8 +286,8 @@ func TestApplyStakingDeltas(t *testing.T) {
 	moveBalance := input.BankKeeper.GetBalance(ctx, types.MoveStakingModuleAddress, secondBondDenom).Amount.Uint64()
 	require.Equal(t, uint64(0), moveBalance)
 
-	delegation, found = input.StakingKeeper.GetDelegation(ctx, delModuleAddr, valAddr)
-	require.True(t, found)
+	delegation, err = input.StakingKeeper.GetDelegation(ctx, delModuleAddr, valAddr)
+	require.NoError(t, err)
 	require.Equal(t, delegation.Shares, sdk.NewDecCoins(sdk.NewDecCoin(secondBondDenom, math.NewInt(25_000_000))))
 
 	// check staking state
@@ -334,7 +340,7 @@ func Test_SlashUnbondingDelegations(t *testing.T) {
 	err = input.MoveKeeper.InitializeStaking(ctx, secondBondDenom)
 	require.NoError(t, err)
 
-	valAddr := createValidatorWithBalance(ctx, input, 100_000_000, 100_000)
+	valAddr := createValidatorWithBalance(t, ctx, input, 100_000_000, 100_000)
 
 	// mint not possible for lp coin, so transfer from the 0x1
 	_, _, addr := keyPubAddr()
@@ -362,8 +368,8 @@ func Test_SlashUnbondingDelegations(t *testing.T) {
 	require.NoError(t, err)
 
 	delModuleAddr := types.GetDelegatorModuleAddress(valAddr)
-	delegation, found := input.StakingKeeper.GetDelegation(ctx, delModuleAddr, valAddr)
-	require.True(t, found)
+	delegation, err := input.StakingKeeper.GetDelegation(ctx, delModuleAddr, valAddr)
+	require.NoError(t, err)
 	require.Equal(t, delegation.Shares, sdk.NewDecCoins(sdk.NewDecCoin(secondBondDenom, math.NewInt(50_000_000))))
 
 	// undelegate half
@@ -384,8 +390,8 @@ func Test_SlashUnbondingDelegations(t *testing.T) {
 	moveBalance := input.BankKeeper.GetBalance(ctx, types.MoveStakingModuleAddress, secondBondDenom).Amount.Uint64()
 	require.Equal(t, uint64(0), moveBalance)
 
-	delegation, found = input.StakingKeeper.GetDelegation(ctx, delModuleAddr, valAddr)
-	require.True(t, found)
+	delegation, err = input.StakingKeeper.GetDelegation(ctx, delModuleAddr, valAddr)
+	require.NoError(t, err)
 	require.Equal(t, delegation.Shares, sdk.NewDecCoins(sdk.NewDecCoin(secondBondDenom, math.NewInt(25_000_000))))
 
 	// slash 5%

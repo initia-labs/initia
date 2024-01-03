@@ -3,6 +3,7 @@ package ibc_middleware
 import (
 	"encoding/json"
 
+	"cosmossdk.io/core/address"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 
@@ -23,17 +24,20 @@ type IBCMiddleware struct {
 	app         porttypes.IBCModule
 	ics4Wrapper porttypes.ICS4Wrapper
 	moveKeeper  *movekeeper.Keeper
+	ac          address.Codec
 }
 
 func NewIBCMiddleware(
 	app porttypes.IBCModule,
 	ics4Wrapper porttypes.ICS4Wrapper,
 	moveKeeper *movekeeper.Keeper,
+	ac address.Codec,
 ) IBCMiddleware {
 	return IBCMiddleware{
 		app:         app,
 		ics4Wrapper: ics4Wrapper,
 		moveKeeper:  moveKeeper,
+		ac:          ac,
 	}
 }
 
@@ -256,7 +260,7 @@ func (im IBCMiddleware) handleIcs721Packet(
 }
 
 func (im IBCMiddleware) execMsg(ctx sdk.Context, msg *movetypes.MsgExecute) (*movetypes.MsgExecuteResponse, error) {
-	if err := msg.ValidateBasic(); err != nil {
+	if err := msg.Validate(im.ac); err != nil {
 		return nil, err
 	}
 

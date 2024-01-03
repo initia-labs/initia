@@ -498,7 +498,8 @@ func Test_SwapToBase(t *testing.T) {
 	params, err := input.DistKeeper.Params.Get(ctx)
 	require.NoError(t, err)
 	taxRate := params.CommunityTax
-	baseDenom := input.MoveKeeper.BaseDenom(ctx)
+	baseDenom, err := input.MoveKeeper.BaseDenom(ctx)
+	require.NoError(t, err)
 
 	val1OutRewards, err = input.DistKeeper.ValidatorOutstandingRewards.Get(ctx, valAddr1)
 	require.NoError(t, err)

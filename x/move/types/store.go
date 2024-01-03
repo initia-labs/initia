@@ -2,6 +2,7 @@ package types
 
 import (
 	"context"
+	"errors"
 
 	"cosmossdk.io/collections"
 	dbm "github.com/cosmos/cosmos-db"
@@ -18,7 +19,9 @@ func NewVMStore(ctx context.Context, store collections.Map[[]byte, []byte]) VMSt
 
 func (s VMStore) Get(key []byte) []byte {
 	bz, err := s.store.Get(s.ctx, key)
-	if err != nil {
+	if err != nil && errors.Is(err, collections.ErrNotFound) {
+		return nil
+	} else if err != nil {
 		panic(err)
 	}
 

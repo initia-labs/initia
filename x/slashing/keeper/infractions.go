@@ -129,6 +129,10 @@ func (k Keeper) HandleValidatorSignature(ctx context.Context, addr cryptotypes.A
 			}
 
 			coinsBurned, err := k.sk.SlashWithInfractionReason(ctx, consAddr, distributionHeight, slashFractionDowntime, stakingtypes.Infraction_INFRACTION_DOWNTIME)
+			if err != nil {
+				return err
+			}
+
 			sdkCtx.EventManager().EmitEvent(
 				sdk.NewEvent(
 					types.EventTypeSlash,

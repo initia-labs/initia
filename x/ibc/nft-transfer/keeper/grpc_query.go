@@ -2,27 +2,38 @@ package keeper
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"cosmossdk.io/errors"
+	"cosmossdk.io/collections"
+	errorsmod "cosmossdk.io/errors"
 
-	"cosmossdk.io/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 
 	"github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 )
 
-var _ types.QueryServer = Keeper{}
+var _ types.QueryServer = QueryServerImpl{}
+
+type QueryServerImpl struct {
+	*Keeper
+}
+
+func NewQueryServerImpl(k *Keeper) QueryServerImpl {
+	return QueryServerImpl{k}
+}
 
 // Params implements the Query/Params gRPC method
-func (q Keeper) Params(c context.Context, _ *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
-	ctx := sdk.UnwrapSDKContext(c)
-	params := q.GetParams(ctx)
+func (q QueryServerImpl) Params(ctx context.Context, _ *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
+	params, err := q.Keeper.Params.Get(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	return &types.QueryParamsResponse{
 		Params: &params,
@@ -30,7 +41,7 @@ func (q Keeper) Params(c context.Context, _ *types.QueryParamsRequest) (*types.Q
 }
 
 // EscrowAddress implements the EscrowAddress gRPC method
-func (q Keeper) EscrowAddress(c context.Context, req *types.QueryEscrowAddressRequest) (*types.QueryEscrowAddressResponse, error) {
+func (q QueryServerImpl) EscrowAddress(ctx context.Context, req *types.QueryEscrowAddressRequest) (*types.QueryEscrowAddressResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
@@ -43,7 +54,7 @@ func (q Keeper) EscrowAddress(c context.Context, req *types.QueryEscrowAddressRe
 }
 
 // ClassTrace implements the Query/ClassTrace gRPC method
-func (q Keeper) ClassTrace(c context.Context, req *types.QueryClassTraceRequest) (*types.QueryClassTraceResponse, error) {
+func (q QueryServerImpl) ClassTrace(ctx context.Context, req *types.QueryClassTraceRequest) (*types.QueryClassTraceResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
@@ -53,12 +64,16 @@ func (q Keeper) ClassTrace(c context.Context, req *types.QueryClassTraceRequest)
 		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("invalid class id trace hash: %s, error: %s", hash.String(), err))
 	}
 
-	ctx := sdk.UnwrapSDKContext(c)
-	classTrace, found := q.GetClassTrace(ctx, hash)
-	if !found {
+	classTrace, err := q.Keeper.ClassTraces.Get(ctx, hash)
+	if err != nil && errors.Is(err, collections.ErrNotFound) {
 		return nil, status.Error(
 			codes.NotFound,
-			errors.Wrap(types.ErrTraceNotFound, req.Hash).Error(),
+			errorsmod.Wrap(types.ErrTraceNotFound, req.Hash).Error(),
+		)
+	} else if err != nil {
+		return nil, status.Error(
+			codes.Internal,
+			err.Error(),
 		)
 	}
 
@@ -68,37 +83,26 @@ func (q Keeper) ClassTrace(c context.Context, req *types.QueryClassTraceRequest)
 }
 
 // ClassTraces implements the Query/ClassTraces gRPC method
-func (q Keeper) ClassTraces(c context.Context, req *types.QueryClassTracesRequest) (*types.QueryClassTracesResponse, error) {
+func (q QueryServerImpl) ClassTraces(ctx context.Context, req *types.QueryClassTracesRequest) (*types.QueryClassTracesResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
 
-	ctx := sdk.UnwrapSDKContext(c)
-
-	traces := types.Traces{}
-	store := prefix.NewStore(ctx.KVStore(q.storeKey), types.ClassTraceKey)
-
-	pageRes, err := query.Paginate(store, req.Pagination, func(_, value []byte) error {
-		result, err := q.UnmarshalClassTrace(value)
-		if err != nil {
-			return err
-		}
-
-		traces = append(traces, result)
-		return nil
+	traces, pageRes, err := query.CollectionPaginate(ctx, q.Keeper.ClassTraces, req.Pagination, func(_ []byte, trace types.ClassTrace) (types.ClassTrace, error) {
+		return trace, nil
 	})
 	if err != nil {
 		return nil, err
 	}
 
 	return &types.QueryClassTracesResponse{
-		ClassTraces: traces.Sort(),
+		ClassTraces: types.Traces(traces).Sort(),
 		Pagination:  pageRes,
 	}, nil
 }
 
 // ClassHash implements the Query/ClassHash gRPC method
-func (q Keeper) ClassHash(c context.Context, req *types.QueryClassHashRequest) (*types.QueryClassHashResponse, error) {
+func (q QueryServerImpl) ClassHash(c context.Context, req *types.QueryClassHashRequest) (*types.QueryClassHashResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
@@ -111,11 +115,13 @@ func (q Keeper) ClassHash(c context.Context, req *types.QueryClassHashRequest) (
 
 	ctx := sdk.UnwrapSDKContext(c)
 	classIdHash := classTrace.Hash()
-	found := q.HasClassTrace(ctx, classIdHash)
-	if !found {
+	found, err := q.Keeper.ClassTraces.Has(ctx, classIdHash)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	} else if !found {
 		return nil, status.Error(
 			codes.NotFound,
-			errors.Wrap(types.ErrTraceNotFound, req.Trace).Error(),
+			errorsmod.Wrap(types.ErrTraceNotFound, req.Trace).Error(),
 		)
 	}
 

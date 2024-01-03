@@ -3,10 +3,10 @@ package keeper_test
 import (
 	"testing"
 
-	dbm "github.com/cometbft/cometbft-db"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	"github.com/stretchr/testify/require"
 
+	dbm "github.com/cosmos/cosmos-db"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/initia-labs/initia/x/ibc/perm/types"

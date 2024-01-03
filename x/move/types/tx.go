@@ -23,8 +23,8 @@ var (
 
 /* MsgPublish */
 
-// ValidateBasic performs basic MsgPublish message validation.
-func (msg MsgPublish) ValidateBasic(ac address.Codec) error {
+// Validate performs basic MsgPublish message validation.
+func (msg MsgPublish) Validate(ac address.Codec) error {
 	if _, err := ac.StringToBytes(msg.Sender); err != nil {
 		return err
 	}
@@ -51,8 +51,8 @@ func (msg MsgPublish) ValidateBasic(ac address.Codec) error {
 
 /* MsgExecute */
 
-// ValidateBasic performs basic MsgExecute message validation.
-func (msg MsgExecute) ValidateBasic(ac address.Codec) error {
+// Validate performs basic MsgExecute message validation.
+func (msg MsgExecute) Validate(ac address.Codec) error {
 	if _, err := ac.StringToBytes(msg.Sender); err != nil {
 		return err
 	}
@@ -106,8 +106,8 @@ func (msg MsgExecute) ValidateBasic(ac address.Codec) error {
 
 /* MsgScript */
 
-// ValidateBasic performs basic MsgScript message validation.
-func (msg MsgScript) ValidateBasic(ac address.Codec) error {
+// Validate performs basic MsgScript message validation.
+func (msg MsgScript) Validate(ac address.Codec) error {
 	if _, err := ac.StringToBytes(msg.Sender); err != nil {
 		return err
 	}
@@ -145,8 +145,8 @@ func (msg MsgScript) ValidateBasic(ac address.Codec) error {
 
 /* MsgGovPublish */
 
-// ValidateBasic performs basic MsgGovPublish message validation.
-func (msg MsgGovPublish) ValidateBasic(ac address.Codec) error {
+// Validate performs basic MsgGovPublish message validation.
+func (msg MsgGovPublish) Validate(ac address.Codec) error {
 	if _, err := ac.StringToBytes(msg.Authority); err != nil {
 		return sdkerrors.ErrInvalidAddress.Wrapf("invalid authority address: %s", err)
 	}
@@ -170,8 +170,8 @@ func (msg MsgGovPublish) ValidateBasic(ac address.Codec) error {
 
 /* MsgGovExecute */
 
-// ValidateBasic performs basic MsgGovExecute message validation.
-func (msg MsgGovExecute) ValidateBasic(ac address.Codec) error {
+// Validate performs basic MsgGovExecute message validation.
+func (msg MsgGovExecute) Validate(ac address.Codec) error {
 	if _, err := ac.StringToBytes(msg.Authority); err != nil {
 		return sdkerrors.ErrInvalidAddress.Wrapf("invalid authority address: %s", err)
 	}
@@ -229,8 +229,8 @@ func (msg MsgGovExecute) ValidateBasic(ac address.Codec) error {
 
 /* MsgGovScript */
 
-// ValidateBasic performs basic MsgGovScript message validation.
-func (msg MsgGovScript) ValidateBasic(ac address.Codec) error {
+// Validate performs basic MsgGovScript message validation.
+func (msg MsgGovScript) Validate(ac address.Codec) error {
 	if _, err := ac.StringToBytes(msg.Authority); err != nil {
 		return sdkerrors.ErrInvalidAddress.Wrapf("invalid authority address: %s", err)
 	}
@@ -272,8 +272,8 @@ func (msg MsgGovScript) ValidateBasic(ac address.Codec) error {
 
 /* MsgWhitelist */
 
-// ValidateBasic performs basic MsgWhitelist message validation.
-func (msg MsgWhitelist) ValidateBasic(ac address.Codec) error {
+// Validate performs basic MsgWhitelist message validation.
+func (msg MsgWhitelist) Validate(ac address.Codec) error {
 	if _, err := ac.StringToBytes(msg.Authority); err != nil {
 		return sdkerrors.ErrInvalidAddress.Wrapf("invalid authority address: %s", err)
 	}
@@ -291,8 +291,8 @@ func (msg MsgWhitelist) ValidateBasic(ac address.Codec) error {
 
 /* MsgDelist */
 
-// ValidateBasic performs basic MsgDelist message validation.
-func (msg MsgDelist) ValidateBasic(ac address.Codec) error {
+// Validate performs basic MsgDelist message validation.
+func (msg MsgDelist) Validate(ac address.Codec) error {
 	if _, err := ac.StringToBytes(msg.Authority); err != nil {
 		return sdkerrors.ErrInvalidAddress.Wrapf("invalid authority address: %s", err)
 	}
@@ -306,8 +306,8 @@ func (msg MsgDelist) ValidateBasic(ac address.Codec) error {
 
 /* MsgUpdateParams */
 
-// ValidateBasic performs basic MsgUpdateParams message validation.
-func (msg MsgUpdateParams) ValidateBasic(ac address.Codec) error {
+// Validate performs basic MsgUpdateParams message validation.
+func (msg MsgUpdateParams) Validate(ac address.Codec) error {
 	if _, err := ac.StringToBytes(msg.Authority); err != nil {
 		return sdkerrors.ErrInvalidAddress.Wrapf("invalid authority address: %s", err)
 	}

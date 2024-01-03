@@ -1,39 +1,52 @@
 package move
 
 import (
+	"context"
 	"time"
 
+	"cosmossdk.io/core/address"
 	"github.com/initia-labs/initia/x/move/keeper"
 	"github.com/initia-labs/initia/x/move/types"
 
 	"github.com/cosmos/cosmos-sdk/telemetry"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	vmtypes "github.com/initia-labs/initiavm/types"
 )
 
-func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
+func BeginBlocker(ctx context.Context, k keeper.Keeper, vc address.Codec) error {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
 
 	// skip staking sweep operations when staking keeper is not registered,
 	// this is for minitia
 	if k.StakingKeeper == nil {
-		return
+		return nil
 	}
 
 	// get rewards from active validators
-	activeValidators := k.StakingKeeper.GetBondedValidatorsByPower(ctx)
-	rewardDenom := k.RewardKeeper.GetParams(ctx).RewardDenom
+	activeValidators, err := k.StakingKeeper.GetBondedValidatorsByPower(ctx)
+	if err != nil {
+		return err
+	}
+
+	params, err := k.RewardKeeper.GetParams(ctx)
+	if err != nil {
+		return err
+	}
+	rewardDenom := params.RewardDenom
 
 	denoms := []string{}
 	rewardVecMap := make(map[string][]uint64)
 	valAddrVecMap := make(map[string][][]byte)
 	for _, activeValidator := range activeValidators {
-		valAddr := activeValidator.GetOperator()
+		valAddrStr := activeValidator.GetOperator()
+		valAddr, err := vc.StringToBytes(activeValidator.GetOperator())
+		if err != nil {
+			return err
+		}
 
 		rewardPools, err := k.WithdrawRewards(ctx, valAddr)
 		if err != nil {
-			panic(err)
+			return err
 		}
 
 		for _, pool := range rewardPools {
@@ -50,24 +63,24 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 			}
 
 			rewardVecMap[poolDenom] = append(rewardVecMap[poolDenom], rewardAmount.Uint64())
-			valAddrVecMap[poolDenom] = append(valAddrVecMap[poolDenom], []byte(valAddr.String()))
+			valAddrVecMap[poolDenom] = append(valAddrVecMap[poolDenom], []byte(valAddrStr))
 		}
 	}
 
 	for _, poolDenom := range denoms {
 		rewardArg, err := vmtypes.SerializeUint64Vector(rewardVecMap[poolDenom])
 		if err != nil {
-			panic(err)
+			return err
 		}
 
 		valArg, err := vmtypes.SerializeBytesVector(valAddrVecMap[poolDenom])
 		if err != nil {
-			panic(err)
+			return err
 		}
 
 		metadata, err := types.MetadataAddressFromDenom(poolDenom)
 		if err != nil {
-			panic(err)
+			return err
 		}
 
 		args := [][]byte{metadata[:], valArg, rewardArg}
@@ -80,7 +93,9 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 			[]vmtypes.TypeTag{},
 			args,
 		); err != nil {
-			panic(err)
+			return err
 		}
 	}
+
+	return nil
 }
