@@ -150,5 +150,5 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 
 // BeginBlock returns the begin blocker for the move module.
 func (am AppModule) BeginBlock(ctx context.Context) error {
-	return BeginBlocker(ctx, am.keeper, am.accountKeeper.AddressCodec())
+	return BeginBlocker(ctx, am.keeper, am.keeper.StakingKeeper.ValidatorAddressCodec())
 }

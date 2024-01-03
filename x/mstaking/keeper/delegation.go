@@ -176,7 +176,7 @@ func (k Keeper) HasMaxUnbondingDelegationEntries(
 	validatorAddr sdk.ValAddress,
 ) (bool, error) {
 	ubd, err := k.GetUnbondingDelegation(ctx, delegatorAddr, validatorAddr)
-	if err != nil {
+	if err != nil && !errors.Is(err, collections.ErrNotFound) {
 		return false, err
 	}
 
@@ -430,13 +430,13 @@ func (k Keeper) SetRedelegation(ctx context.Context, red types.Redelegation) err
 		return err
 	}
 
-	valSrcAddr, err := k.authKeeper.AddressCodec().StringToBytes(red.ValidatorSrcAddress)
-	if valSrcAddr != nil {
+	valSrcAddr, err := k.validatorAddressCodec.StringToBytes(red.ValidatorSrcAddress)
+	if err != nil {
 		return err
 	}
 
-	valDstAddr, err := k.authKeeper.AddressCodec().StringToBytes(red.ValidatorDstAddress)
-	if valDstAddr != nil {
+	valDstAddr, err := k.validatorAddressCodec.StringToBytes(red.ValidatorDstAddress)
+	if err != nil {
 		return err
 	}
 
@@ -482,11 +482,11 @@ func (k Keeper) SetRedelegationEntry(
 		if err != nil {
 			return red, err
 		}
-		valSrcAddrStr, err := k.authKeeper.AddressCodec().BytesToString(validatorSrcAddr)
+		valSrcAddrStr, err := k.validatorAddressCodec.BytesToString(validatorSrcAddr)
 		if err != nil {
 			return red, err
 		}
-		valDstAddrStr, err := k.authKeeper.AddressCodec().BytesToString(validatorDstAddr)
+		valDstAddrStr, err := k.validatorAddressCodec.BytesToString(validatorDstAddr)
 		if err != nil {
 			return red, err
 		}
@@ -530,13 +530,13 @@ func (k Keeper) RemoveRedelegation(ctx context.Context, red types.Redelegation) 
 		return err
 	}
 
-	valSrcAddr, err := k.authKeeper.AddressCodec().StringToBytes(red.ValidatorSrcAddress)
-	if valSrcAddr != nil {
+	valSrcAddr, err := k.validatorAddressCodec.StringToBytes(red.ValidatorSrcAddress)
+	if err != nil {
 		return err
 	}
 
-	valDstAddr, err := k.authKeeper.AddressCodec().StringToBytes(red.ValidatorDstAddress)
-	if valDstAddr != nil {
+	valDstAddr, err := k.validatorAddressCodec.StringToBytes(red.ValidatorDstAddress)
+	if err != nil {
 		return err
 	}
 
@@ -561,7 +561,7 @@ func (k Keeper) RemoveRedelegation(ctx context.Context, red types.Redelegation) 
 // that expire at a certain time.
 func (k Keeper) GetRedelegationQueueTimeSlice(ctx context.Context, timestamp time.Time) (dvvTriplets []types.DVVTriplet, err error) {
 	triplets, err := k.RedelegationQueue.Get(ctx, timestamp)
-	if err != nil {
+	if err != nil && !errors.Is(err, collections.ErrNotFound) {
 		return dvvTriplets, err
 	}
 
@@ -947,14 +947,14 @@ func (k Keeper) BeginRedelegation(
 	}
 
 	dstValidator, err := k.Validators.Get(ctx, valDstAddr)
-	if errors.Is(err, types.ErrNoValidatorFound) {
+	if err != nil && errors.Is(err, collections.ErrNotFound) {
 		return time.Time{}, types.ErrBadRedelegationDst
 	} else if err != nil {
 		return time.Time{}, err
 	}
 
 	srcValidator, err := k.Validators.Get(ctx, valSrcAddr)
-	if errors.Is(err, types.ErrNoValidatorFound) {
+	if err != nil && errors.Is(err, collections.ErrNotFound) {
 		return time.Time{}, types.ErrBadRedelegationSrc
 	} else if err != nil {
 		return time.Time{}, err

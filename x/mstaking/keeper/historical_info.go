@@ -42,11 +42,11 @@ func (k Keeper) TrackHistoricalInfo(ctx context.Context) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	for i := sdkCtx.BlockHeight() - int64(entryNum); i >= 0; i-- {
 		_, err := k.GetHistoricalInfo(ctx, i)
-		if err != nil && errors.Is(err, collections.ErrNotFound) {
+		if err == nil {
 			if err := k.DeleteHistoricalInfo(ctx, i); err != nil {
 				return err
 			}
-		} else if err != nil {
+		} else if err != nil && !errors.Is(err, collections.ErrNotFound) {
 			return err
 		} else {
 			break

@@ -39,11 +39,11 @@ import (
 )
 
 func coins(amt int64) sdk.Coins {
-	return sdk.NewCoins(sdk.NewCoin(initiaapp.BondDenom, math.NewInt(amt)))
+	return sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, math.NewInt(amt)))
 }
 
 func decCoins(amt int64) sdk.DecCoins {
-	return sdk.NewDecCoins(sdk.NewDecCoin(initiaapp.BondDenom, math.NewInt(amt)))
+	return sdk.NewDecCoins(sdk.NewDecCoin(sdk.DefaultBondDenom, math.NewInt(amt)))
 }
 
 var DefaultTestingAppInit = SetupTestingApp
@@ -73,7 +73,7 @@ func SetupTestingApp(t *testing.T) (TestingApp, map[string]json.RawMessage) {
 	db := dbm.NewMemDB()
 	encCdc := initiaapp.MakeEncodingConfig()
 	app := initiaapp.NewInitiaApp(log.NewNopLogger(), db, nil, true, moveconfig.DefaultMoveConfig(), testutilsims.EmptyAppOptions{})
-	return app, initiaapp.NewDefaultGenesisState(encCdc.Marshaler).ConfigureBondDenom(encCdc.Marshaler, initiaapp.BondDenom)
+	return app, initiaapp.NewDefaultGenesisState(encCdc.Codec).ConfigureBondDenom(encCdc.Marshaler, sdk.DefaultBondDenom)
 }
 
 // SetupWithGenesisValSet initializes a new SimApp with a validator set and genesis accounts

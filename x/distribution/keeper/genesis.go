@@ -167,14 +167,14 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *customtypes.GenesisState {
 
 	outstanding := make([]customtypes.ValidatorOutstandingRewardsRecord, 0)
 	err = k.ValidatorOutstandingRewards.Walk(ctx, nil,
-		func(addr []byte, rewards customtypes.ValidatorOutstandingRewards) (stop bool, err error) {
-			addrStr, err := k.authKeeper.AddressCodec().BytesToString(addr)
+		func(valAddr []byte, rewards customtypes.ValidatorOutstandingRewards) (stop bool, err error) {
+			valAddrStr, err := k.stakingKeeper.ValidatorAddressCodec().BytesToString(valAddr)
 			if err != nil {
 				return false, err
 			}
 
 			outstanding = append(outstanding, customtypes.ValidatorOutstandingRewardsRecord{
-				ValidatorAddress:   addrStr,
+				ValidatorAddress:   valAddrStr,
 				OutstandingRewards: rewards.Rewards,
 			})
 
@@ -187,14 +187,14 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *customtypes.GenesisState {
 
 	acc := make([]customtypes.ValidatorAccumulatedCommissionRecord, 0)
 	err = k.ValidatorAccumulatedCommissions.Walk(ctx, nil,
-		func(addr []byte, commission customtypes.ValidatorAccumulatedCommission) (stop bool, err error) {
-			addrStr, err := k.authKeeper.AddressCodec().BytesToString(addr)
+		func(valAddr []byte, commission customtypes.ValidatorAccumulatedCommission) (stop bool, err error) {
+			valAddrStr, err := k.stakingKeeper.ValidatorAddressCodec().BytesToString(valAddr)
 			if err != nil {
 				return false, err
 			}
 
 			acc = append(acc, customtypes.ValidatorAccumulatedCommissionRecord{
-				ValidatorAddress: addrStr,
+				ValidatorAddress: valAddrStr,
 				Accumulated:      commission,
 			})
 			return false, nil
@@ -207,13 +207,13 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *customtypes.GenesisState {
 	his := make([]customtypes.ValidatorHistoricalRewardsRecord, 0)
 	err = k.ValidatorHistoricalRewards.Walk(ctx, nil,
 		func(key collections.Pair[[]byte, uint64], rewards customtypes.ValidatorHistoricalRewards) (stop bool, err error) {
-			addrStr, err := k.authKeeper.AddressCodec().BytesToString(key.K1())
+			valAddrStr, err := k.stakingKeeper.ValidatorAddressCodec().BytesToString(key.K1())
 			if err != nil {
 				return false, err
 			}
 
 			his = append(his, customtypes.ValidatorHistoricalRewardsRecord{
-				ValidatorAddress: addrStr,
+				ValidatorAddress: valAddrStr,
 				Period:           key.K2(),
 				Rewards:          rewards,
 			})
@@ -226,14 +226,14 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *customtypes.GenesisState {
 
 	cur := make([]customtypes.ValidatorCurrentRewardsRecord, 0)
 	err = k.ValidatorCurrentRewards.Walk(ctx, nil,
-		func(val []byte, rewards customtypes.ValidatorCurrentRewards) (stop bool, err error) {
-			addrStr, err := k.authKeeper.AddressCodec().BytesToString(val)
+		func(valAddr []byte, rewards customtypes.ValidatorCurrentRewards) (stop bool, err error) {
+			valAddrStr, err := k.stakingKeeper.ValidatorAddressCodec().BytesToString(valAddr)
 			if err != nil {
 				return false, err
 			}
 
 			cur = append(cur, customtypes.ValidatorCurrentRewardsRecord{
-				ValidatorAddress: addrStr,
+				ValidatorAddress: valAddrStr,
 				Rewards:          rewards,
 			})
 

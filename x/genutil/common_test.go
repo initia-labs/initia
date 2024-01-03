@@ -27,7 +27,7 @@ var (
 	priv2 = secp256k1.GenPrivKey()
 	addr2 = sdk.AccAddress(priv2.PubKey().Address())
 
-	bondCoin = sdk.NewCoin(sdk.DefaultBondDenom, math.NewInt(1000000))
+	bondCoin = sdk.NewCoin(initiaapp.BondDenom, math.NewInt(1000000))
 )
 
 func createApp(t *testing.T) *initiaapp.InitiaApp {

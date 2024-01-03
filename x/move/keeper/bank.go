@@ -2,10 +2,11 @@ package keeper
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"cosmossdk.io/collections"
-	"cosmossdk.io/errors"
+	moderrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -203,10 +204,9 @@ func (k MoveBankKeeper) GetSupplyWithMetadata(ctx context.Context, metadata vmty
 		Name:     types.ResourceNameSupply,
 		TypeArgs: []vmtypes.TypeTag{},
 	})
-	if err == collections.ErrNotFound {
+	if err != nil && errors.Is(err, collections.ErrNotFound) {
 		return math.ZeroInt(), nil
-	}
-	if err != nil {
+	} else if err != nil {
 		return math.ZeroInt(), err
 	}
 
@@ -377,7 +377,7 @@ func (k MoveBankKeeper) MintCoins(
 ) error {
 	for _, coin := range coins {
 		if types.IsMoveCoin(coin) {
-			return errors.Wrapf(types.ErrInvalidRequest, "cannot mint move coin: %s", coin.Denom)
+			return moderrors.Wrapf(types.ErrInvalidRequest, "cannot mint move coin: %s", coin.Denom)
 		}
 
 		metadata, err := types.MetadataAddressFromDenom(coin.Denom)
@@ -430,7 +430,7 @@ func (k MoveBankKeeper) InitializeCoin(
 	denom string,
 ) error {
 	if types.IsMoveDenom(denom) {
-		return errors.Wrapf(types.ErrInvalidRequest, "cannot initialize move coin: %s", denom)
+		return moderrors.Wrapf(types.ErrInvalidRequest, "cannot initialize move coin: %s", denom)
 	}
 
 	nameBz, err := vmtypes.SerializeString(fmt.Sprintf("%s Coin", denom))

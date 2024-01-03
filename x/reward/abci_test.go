@@ -20,16 +20,15 @@ func Test_BeginBlocker(t *testing.T) {
 	app := createApp(t)
 
 	// new block
-	header := tmproto.Header{Height: app.LastBlockHeight() + 1}
-	ctx := app.BaseApp.NewContextLegacy(false, header)
-
-	var err error
-	header.Time, err = app.RewardKeeper.GetLastReleaseTimestamp(ctx)
+	_, err := app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1})
 	require.NoError(t, err)
+
+	ctx := app.BaseApp.NewContext(false)
 
 	// update params & mint coins for reward distribution
 	params, err := app.RewardKeeper.GetParams(ctx)
 	require.NoError(t, err)
+
 	rewardDenom := params.RewardDenom
 	rewardAmount := math.NewInt(10_000_000)
 	rewardCoins := sdk.NewCoins(sdk.NewCoin(rewardDenom, rewardAmount))
@@ -45,16 +44,15 @@ func Test_BeginBlocker(t *testing.T) {
 	params.DilutionPeriod = time.Hour * 24
 	app.RewardKeeper.SetParams(ctx, params)
 
-	_, err = app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: header.Height, Time: header.Time})
+	lastReleaseTimestamp, err := app.RewardKeeper.GetLastReleaseTimestamp(ctx)
 	require.NoError(t, err)
-	_, err = app.Commit()
+
+	// new block after
+	_, err = app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1, Time: lastReleaseTimestamp})
 	require.NoError(t, err)
 
 	// new block after 24 hours
-	header = tmproto.Header{Height: app.LastBlockHeight() + 1, Time: header.Time.Add(time.Hour * 24).Add(time.Second)}
-	_, err = app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: header.Height, Time: header.Time})
-	require.NoError(t, err)
-	_, err = app.Commit()
+	_, err = app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1, Time: lastReleaseTimestamp.Add(time.Hour * 24).Add(time.Second)})
 	require.NoError(t, err)
 
 	// check supply
@@ -62,17 +60,16 @@ func Test_BeginBlocker(t *testing.T) {
 	checkBalance(t, app, authtypes.NewModuleAddress(types.ModuleName), rewardCoins.Sub(sdk.NewCoin(rewardDenom, expectedReleasedAmount)))
 
 	// release rate should be half
-	ctx = app.BaseApp.NewContextLegacy(true, header)
 	releaseRate, err := app.RewardKeeper.GetReleaseRate(ctx)
 	require.NoError(t, err)
 	require.Equal(t, math.LegacyNewDecWithPrec(35, 3), releaseRate)
 
-	lastReleaseTimestamp, err := app.RewardKeeper.GetLastReleaseTimestamp(ctx)
+	lastReleaseTimestamp2, err := app.RewardKeeper.GetLastReleaseTimestamp(ctx)
 	require.NoError(t, err)
-	require.Equal(t, header.Time, lastReleaseTimestamp)
+	require.Equal(t, lastReleaseTimestamp.Add(time.Hour*24).Add(time.Second), lastReleaseTimestamp2)
 	lastDilutionTimestamp, err := app.RewardKeeper.GetLastDilutionTimestamp(ctx)
 	require.NoError(t, err)
-	require.Equal(t, header.Time, lastDilutionTimestamp)
+	require.Equal(t, lastReleaseTimestamp.Add(time.Hour*24).Add(time.Second), lastDilutionTimestamp)
 }
 
 func Test_BeginBlockerNotEnabled(t *testing.T) {

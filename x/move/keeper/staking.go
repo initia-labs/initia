@@ -2,7 +2,9 @@ package keeper
 
 import (
 	"context"
+	"errors"
 
+	"cosmossdk.io/collections"
 	"cosmossdk.io/math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -94,14 +96,19 @@ func (k Keeper) hasZeroRewards(ctx context.Context, validatorAddr sdk.ValAddress
 	sdkCtx, _ = sdkCtx.CacheContext()
 
 	val, err := k.StakingKeeper.Validator(sdkCtx, validatorAddr)
-	if err != nil {
+	if err != nil && errors.Is(err, collections.ErrNotFound) {
+		return true, nil
+	} else if err != nil {
 		return true, err
 	}
 
 	del, err := k.StakingKeeper.Delegation(sdkCtx, delegatorAddr, validatorAddr)
-	if err != nil {
+	if err != nil && errors.Is(err, collections.ErrNotFound) {
+		return true, nil
+	} else if err != nil {
 		return true, err
 	}
+
 	endingPeriod, err := k.distrKeeper.IncrementValidatorPeriod(sdkCtx, val)
 	if err != nil {
 		return true, err

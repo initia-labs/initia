@@ -145,7 +145,7 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig, b
 	a := appCreator{encodingConfig}
 
 	rootCmd.AddCommand(
-		cosmosgenutilcli.InitCmd(basicManager, initiaapp.DefaultNodeHome),
+		genutilcli.InitCmd(basicManager, initiaapp.DefaultNodeHome),
 		debug.Cmd(),
 		confixcmd.ConfigCommand(),
 		pruning.Cmd(a.newApp, initiaapp.DefaultNodeHome),

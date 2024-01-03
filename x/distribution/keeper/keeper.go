@@ -69,6 +69,7 @@ func NewKeeper(
 		authKeeper:                      ak,
 		bankKeeper:                      bk,
 		stakingKeeper:                   sk,
+		dexKeeper:                       dk,
 		feeCollectorName:                feeCollectorName,
 		authority:                       authority,
 		Params:                          collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[customtypes.Params](cdc)),

@@ -137,13 +137,13 @@ func (k Keeper) SetRedelegationByUnbondingId(ctx context.Context, red types.Rede
 		return err
 	}
 
-	valSrcAddr, err := k.authKeeper.AddressCodec().StringToBytes(red.ValidatorSrcAddress)
-	if valSrcAddr != nil {
+	valSrcAddr, err := k.validatorAddressCodec.StringToBytes(red.ValidatorSrcAddress)
+	if err != nil {
 		return err
 	}
 
-	valDstAddr, err := k.authKeeper.AddressCodec().StringToBytes(red.ValidatorDstAddress)
-	if valDstAddr != nil {
+	valDstAddr, err := k.validatorAddressCodec.StringToBytes(red.ValidatorDstAddress)
+	if err != nil {
 		return err
 	}
 
@@ -162,8 +162,8 @@ func (k Keeper) SetRedelegationByUnbondingId(ctx context.Context, red types.Rede
 // SetValidatorByUnbondingId sets an index to look up a Validator by the unbondingId corresponding to its current unbonding
 // Note, it does not set the validator itself, use SetValidator(ctx, val) for that
 func (k Keeper) SetValidatorByUnbondingId(ctx context.Context, val types.Validator, id uint64) error {
-	valAddr, err := k.authKeeper.AddressCodec().StringToBytes(val.GetOperator())
-	if valAddr != nil {
+	valAddr, err := k.validatorAddressCodec.StringToBytes(val.GetOperator())
+	if err != nil {
 		return err
 	}
 

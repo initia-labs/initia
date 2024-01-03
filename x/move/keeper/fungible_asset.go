@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"errors"
 
 	"cosmossdk.io/collections"
 	"cosmossdk.io/math"
@@ -18,10 +19,9 @@ func (k MoveBankKeeper) Balance(ctx context.Context, store vmtypes.AccountAddres
 		Name:     types.ResourceNameFungibleStore,
 		TypeArgs: []vmtypes.TypeTag{},
 	})
-	if err == collections.ErrNotFound {
+	if err != nil && errors.Is(err, collections.ErrNotFound) {
 		return vmtypes.AccountAddress{}, math.ZeroInt(), nil
-	}
-	if err != nil {
+	} else if err != nil {
 		return vmtypes.AccountAddress{}, math.ZeroInt(), err
 	}
 

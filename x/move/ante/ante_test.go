@@ -18,7 +18,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	authsign "github.com/cosmos/cosmos-sdk/x/auth/signing"
-	xauthsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	simcli "github.com/cosmos/cosmos-sdk/x/simulation/client/cli"
 
@@ -73,7 +72,7 @@ func (suite *AnteTestSuite) SetupTest(isCheckTx bool) {
 }
 
 // CreateTestTx is a helper function to create a tx given multiple inputs.
-func (suite *AnteTestSuite) CreateTestTx(privs []cryptotypes.PrivKey, accNums []uint64, accSeqs []uint64, chainID string) (xauthsigning.Tx, error) {
+func (suite *AnteTestSuite) CreateTestTx(privs []cryptotypes.PrivKey, accNums []uint64, accSeqs []uint64, chainID string) (authsign.Tx, error) {
 	defaultSignMode, err := authsign.APISignModeToInternal(suite.clientCtx.TxConfig.SignModeHandler().DefaultMode())
 	suite.NoError(err)
 
@@ -101,7 +100,7 @@ func (suite *AnteTestSuite) CreateTestTx(privs []cryptotypes.PrivKey, accNums []
 	// Second round: all signer infos are set, so each signer can sign.
 	sigsV2 = []signing.SignatureV2{}
 	for i, priv := range privs {
-		signerData := xauthsigning.SignerData{
+		signerData := authsign.SignerData{
 			ChainID:       chainID,
 			AccountNumber: accNums[i],
 			Sequence:      accSeqs[i],

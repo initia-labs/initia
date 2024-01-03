@@ -12,6 +12,8 @@ option (gogoproto.goproto_getters_all) = false;
 
 // Msg defines the move Msg service.
 service Msg {
+  option (cosmos.msg.v1.service) = true;
+
   // Publish stores compiled Move module
   rpc Publish(MsgPublish) returns (MsgPublishResponse);
   // Execute runs a entry function with the given message

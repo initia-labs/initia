@@ -11,6 +11,8 @@ import "amino/amino.proto";
 
 // Msg defines the intertx Msg service.
 service Msg {
+  option (cosmos.msg.v1.service) = true;
+
   // Register defines a rpc handler for MsgRegisterAccount
   rpc RegisterAccount(MsgRegisterAccount) returns (MsgRegisterAccountResponse);
   // SubmitTx defines a rpc handler for MsgSubmitTx

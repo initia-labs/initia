@@ -186,11 +186,9 @@ func (k Keeper) UpdateValidatorCommission(
 func (k Keeper) RemoveValidator(ctx context.Context, valAddr sdk.ValAddress) error {
 	// first retrieve the old validator record
 	validator, err := k.GetValidator(ctx, valAddr)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return nil
-		}
-
+	if err != nil && errors.Is(err, collections.ErrNotFound) {
+		return nil
+	} else if err != nil {
 		return err
 	}
 

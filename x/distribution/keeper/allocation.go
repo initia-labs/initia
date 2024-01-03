@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 
 	"cosmossdk.io/math"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -19,6 +20,7 @@ func (k Keeper) beforeAllocateTokens(ctx context.Context) error {
 	feesCollected := k.bankKeeper.GetAllBalances(ctx, feeCollectorAddr)
 
 	for _, coin := range feesCollected {
+		fmt.Println("SIBONG", k.dexKeeper)
 		if err := k.dexKeeper.SwapToBase(ctx, feeCollectorAddr, coin); err != nil {
 			return err
 		}

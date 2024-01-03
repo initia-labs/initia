@@ -5,7 +5,8 @@ import (
 	"fmt"
 
 	"cosmossdk.io/math"
-	"github.com/initia-labs/initia/app"
+
+	initiaapp "github.com/initia-labs/initia/app"
 	"github.com/initia-labs/initia/x/move/ante"
 	"github.com/initia-labs/initia/x/move/types"
 
@@ -14,7 +15,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-const baseDenom = app.BondDenom
+var baseDenom = initiaapp.BondDenom
 
 type TestAnteKeeper struct {
 	pools           map[string][]math.Int

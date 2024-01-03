@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"errors"
 
 	"cosmossdk.io/collections"
 	"cosmossdk.io/math"
@@ -230,10 +231,9 @@ func (k DexKeeper) getPoolBalances(
 		TypeArgs: []vmtypes.TypeTag{},
 	})
 
-	if err == collections.ErrNotFound {
+	if err != nil && errors.Is(err, collections.ErrNotFound) {
 		return math.ZeroInt(), math.ZeroInt(), nil
-	}
-	if err != nil {
+	} else if err != nil {
 		return math.ZeroInt(), math.ZeroInt(), err
 	}
 
@@ -286,10 +286,9 @@ func (k DexKeeper) getPoolWeights(
 		TypeArgs: []vmtypes.TypeTag{},
 	})
 
-	if err == collections.ErrNotFound {
+	if err != nil && errors.Is(err, collections.ErrNotFound) {
 		return math.LegacyZeroDec(), math.LegacyZeroDec(), nil
-	}
-	if err != nil {
+	} else if err != nil {
 		return math.LegacyZeroDec(), math.LegacyZeroDec(), err
 	}
 

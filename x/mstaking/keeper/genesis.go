@@ -242,7 +242,7 @@ func (k Keeper) ExportGenesis(ctx context.Context) *types.GenesisState {
 	var lastValidatorPowers []types.LastValidatorPower
 
 	k.IterateLastValidatorPowers(ctx, func(addr sdk.ValAddress, power int64) (stop bool, err error) {
-		valAddr, err := k.authKeeper.AddressCodec().BytesToString(addr)
+		valAddr, err := k.validatorAddressCodec.BytesToString(addr)
 		if err != nil {
 			return true, err
 		}

@@ -65,7 +65,8 @@ func setup(db *dbm.DB, withGenesis bool) (*InitiaApp, GenesisState) {
 	)
 
 	if withGenesis {
-		return app, app.DefaultGenesis()
+		return app, NewDefaultGenesisState(app.appCodec).
+			ConfigureBondDenom(app.appCodec, BondDenom)
 	}
 
 	return app, GenesisState{}

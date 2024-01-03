@@ -368,8 +368,8 @@ func Test_Redelegation(t *testing.T) {
 	redelegation1 := types.NewRedelegation(addrsStr[0], valAddrsStr[0], valAddrsStr[1], 100, completeTime, amounts, shares, 1)
 	redelegation2 := types.NewRedelegation(addrsStr[1], valAddrsStr[1], valAddrsStr[0], 100, completeTime, amounts, shares, 2)
 
-	input.StakingKeeper.SetRedelegation(ctx, redelegation1)
-	input.StakingKeeper.SetRedelegation(ctx, redelegation2)
+	require.NoError(t, input.StakingKeeper.SetRedelegation(ctx, redelegation1))
+	require.NoError(t, input.StakingKeeper.SetRedelegation(ctx, redelegation2))
 
 	resRedelegation1, err1 := input.StakingKeeper.GetRedelegation(ctx, addrs[0], valAddrs[0], valAddrs[1])
 	resRedelegation2, err2 := input.StakingKeeper.GetRedelegation(ctx, addrs[1], valAddrs[1], valAddrs[0])

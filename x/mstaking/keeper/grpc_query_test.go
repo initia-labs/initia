@@ -357,11 +357,11 @@ func Test_grpcQueryRedelegations(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
 	valAddr1 := createValidatorWithBalance(ctx, input, 100_000_000, 2_000_000, 1)
-	valAddrStr1, err := input.AccountKeeper.AddressCodec().BytesToString(valAddr1)
+	valAddrStr1, err := input.StakingKeeper.ValidatorAddressCodec().BytesToString(valAddr1)
 	require.NoError(t, err)
 
 	valAddr2 := createValidatorWithBalance(ctx, input, 100_000_000, 2_000_000, 2)
-	valAddrStr2, err := input.AccountKeeper.AddressCodec().BytesToString(valAddr2)
+	valAddrStr2, err := input.StakingKeeper.ValidatorAddressCodec().BytesToString(valAddr2)
 	require.NoError(t, err)
 
 	bondCoins := sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(1_000_000)))
@@ -404,9 +404,8 @@ func Test_grpcQueryRedelegations(t *testing.T) {
 	redels = res.RedelegationResponses
 	require.Len(t, redels, 2)
 
-	// query with delegator addr & src validators
+	// query with src validators
 	req = types.QueryRedelegationsRequest{
-		DelegatorAddr:    delAddrStr,
 		SrcValidatorAddr: valAddrStr1,
 	}
 
@@ -414,11 +413,10 @@ func Test_grpcQueryRedelegations(t *testing.T) {
 	require.NoError(t, err)
 
 	redels = res.RedelegationResponses
-	require.Len(t, redels, 1)
+	require.Len(t, redels, 2)
 
-	// query with delegator addr & dst validators
+	// query with dst validators
 	req = types.QueryRedelegationsRequest{
-		DelegatorAddr:    delAddrStr,
 		DstValidatorAddr: valAddrStr2,
 	}
 
@@ -426,7 +424,7 @@ func Test_grpcQueryRedelegations(t *testing.T) {
 	require.NoError(t, err)
 
 	redels = res.RedelegationResponses
-	require.Len(t, redels, 1)
+	require.Len(t, redels, 2)
 }
 
 func Test_grpcPool(t *testing.T) {

@@ -51,9 +51,9 @@ message MsgCreateValidator {
   option (gogoproto.equal)           = false;
   option (gogoproto.goproto_getters) = false;
 
-  Description         description          = 1 [(gogoproto.nullable) = false];
-  CommissionRates     commission           = 2 [(gogoproto.nullable) = false];
-  string              validator_address    = 3 [(gogoproto.moretags) = "yaml:\"validator_address\""];
+  Description         description          = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+  CommissionRates     commission           = 2 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+  string              validator_address    = 3 [(cosmos_proto.scalar) = "cosmos.ValidatorAddressString"];
   google.protobuf.Any pubkey               = 4 [(cosmos_proto.accepts_interface) = "cosmos.crypto.PubKey"];
   repeated cosmos.base.v1beta1.Coin amount = 5 [
     (gogoproto.moretags)     = "yaml:\"amount\"",
