@@ -69,8 +69,8 @@ func (k Querier) AllEvidence(ctx context.Context, req *types.QueryAllEvidenceReq
 		return nil, status.Errorf(codes.InvalidArgument, "empty request")
 	}
 
-	evidences, pageRes, err := query.CollectionPaginate(ctx, k.k.Evidences, req.Pagination, func(_ []byte, value exported.Evidence) (*codectypes.Any, error) {
-		return codectypes.NewAnyWithValue(value)
+	evidences, pageRes, err := query.CollectionPaginate(ctx, k.k.Evidences, req.Pagination, func(_ []byte, evidence exported.Evidence) (*codectypes.Any, error) {
+		return codectypes.NewAnyWithValue(evidence)
 	})
 	if err != nil {
 		return nil, err

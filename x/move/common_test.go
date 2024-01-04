@@ -70,6 +70,9 @@ func createApp(t *testing.T) *initiaapp.InitiaApp {
 	checkBalance(t, app, addr2, genCoins)
 	checkBalance(t, app, types.StdAddr, dexCoins)
 
+	_, err := app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1})
+	require.NoError(t, err)
+
 	ctx := app.BaseApp.NewContext(false)
 	createDexPool(t, ctx, app, baseCoin, quoteCoin, math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1))
 
@@ -83,9 +86,8 @@ func createApp(t *testing.T) *initiaapp.InitiaApp {
 
 	// fund second bond coin
 	app.BankKeeper.SendCoins(ctx, types.StdAddr, addr1, sdk.NewCoins(secondBondCoin))
-	_, err := app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1})
-	require.NoError(t, err)
-	_, err = app.Commit()
+
+	_, err = app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1})
 	require.NoError(t, err)
 
 	// create validator
@@ -99,11 +101,6 @@ func createApp(t *testing.T) *initiaapp.InitiaApp {
 	require.NoError(t, err)
 
 	checkBalance(t, app, addr1, genCoins.Sub(bondCoin))
-
-	_, err = app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1})
-	require.NoError(t, err)
-	_, err = app.Commit()
-	require.NoError(t, err)
 
 	return app
 }

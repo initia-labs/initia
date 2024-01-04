@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-	"fmt"
 
 	"cosmossdk.io/math"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -20,7 +19,6 @@ func (k Keeper) beforeAllocateTokens(ctx context.Context) error {
 	feesCollected := k.bankKeeper.GetAllBalances(ctx, feeCollectorAddr)
 
 	for _, coin := range feesCollected {
-		fmt.Println("SIBONG", k.dexKeeper)
 		if err := k.dexKeeper.SwapToBase(ctx, feeCollectorAddr, coin); err != nil {
 			return err
 		}
@@ -200,15 +198,15 @@ func (k Keeper) AllocateTokensToValidatorPool(ctx context.Context, val stakingty
 
 	// validator was updated at EndBlock of mstaking module,
 	// so we can think this is the previous block state.
-	currentCommission, err := k.ValidatorAccumulatedCommissions.Get(ctx, valAddr)
+	currentCommission, err := k.GetValidatorAccumulatedCommission(ctx, valAddr)
 	if err != nil {
 		return err
 	}
-	currentRewards, err := k.ValidatorCurrentRewards.Get(ctx, valAddr)
+	currentRewards, err := k.GetValidatorCurrentRewards(ctx, valAddr)
 	if err != nil {
 		return err
 	}
-	outstanding, err := k.ValidatorOutstandingRewards.Get(ctx, valAddr)
+	outstanding, err := k.GetValidatorOutstandingRewards(ctx, valAddr)
 	if err != nil {
 		return err
 	}

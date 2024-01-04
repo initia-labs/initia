@@ -82,7 +82,7 @@ var ModuleBasics = module.NewBasicManager(
 	staking.AppModuleBasic{},
 	reward.AppModuleBasic{},
 	distribution.AppModuleBasic{},
-	gov.NewAppModuleBasic(),
+	gov.AppModuleBasic{},
 	crisis.AppModuleBasic{},
 	slashing.AppModuleBasic{},
 	upgrade.AppModuleBasic{},
@@ -126,10 +126,6 @@ func MakeEncodingConfig(_ testing.TB) initiaappparams.EncodingConfig {
 
 	ModuleBasics.RegisterLegacyAminoCodec(legacyAmino)
 	ModuleBasics.RegisterInterfaces(interfaceRegistry)
-
-	// add initiad types
-	movetypes.RegisterInterfaces(interfaceRegistry)
-	movetypes.RegisterLegacyAminoCodec(legacyAmino)
 
 	return initiaappparams.EncodingConfig{
 		InterfaceRegistry: interfaceRegistry,

@@ -12,16 +12,14 @@ import (
 
 func TestGetSetValidatorSigningInfo(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
-
-	signedBlock, err := input.SlashingKeeper.SignedBlocksWindow(ctx)
-	require.NoError(t, err)
-	ctx = ctx.WithBlockHeight(signedBlock + 1)
+	ctx = ctx.WithBlockHeight(1)
 
 	valAddr := createValidatorWithBalance(ctx, input, 100_000_000, 10_000_000, 1)
 	consAddr := sdk.ConsAddress(valAddr)
 
 	info, err := input.SlashingKeeper.GetValidatorSigningInfo(ctx, consAddr)
-	require.NoError(t, err)
+	require.Error(t, err)
+
 	newInfo := types.NewValidatorSigningInfo(
 		sdk.ConsAddress(valAddr),
 		int64(4),
@@ -30,7 +28,7 @@ func TestGetSetValidatorSigningInfo(t *testing.T) {
 		false,
 		int64(10),
 	)
-	input.SlashingKeeper.SetValidatorSigningInfo(ctx, consAddr, newInfo)
+	require.NoError(t, input.SlashingKeeper.SetValidatorSigningInfo(ctx, consAddr, newInfo))
 	info, err = input.SlashingKeeper.GetValidatorSigningInfo(ctx, consAddr)
 	require.NoError(t, err)
 	require.Equal(t, info.StartHeight, int64(4))
@@ -119,7 +117,7 @@ func TestTombstoned(t *testing.T) {
 	valAddr := createValidatorWithBalance(ctx, input, 100_000_000, 10_000_000, 1)
 	consAddr := sdk.ConsAddress(valAddr)
 
-	require.Panics(t, func() { input.SlashingKeeper.Tombstone(ctx, consAddr) })
+	require.Error(t, input.SlashingKeeper.Tombstone(ctx, consAddr))
 	require.False(t, input.SlashingKeeper.IsTombstoned(ctx, consAddr))
 
 	newInfo := types.NewValidatorSigningInfo(
@@ -133,22 +131,19 @@ func TestTombstoned(t *testing.T) {
 	input.SlashingKeeper.SetValidatorSigningInfo(ctx, consAddr, newInfo)
 
 	require.False(t, input.SlashingKeeper.IsTombstoned(ctx, consAddr))
-	input.SlashingKeeper.Tombstone(ctx, consAddr)
+	require.NoError(t, input.SlashingKeeper.Tombstone(ctx, consAddr))
 	require.True(t, input.SlashingKeeper.IsTombstoned(ctx, consAddr))
-	require.Panics(t, func() { input.SlashingKeeper.Tombstone(ctx, consAddr) })
+	require.Error(t, input.SlashingKeeper.Tombstone(ctx, consAddr))
 }
 
 func TestJailUntil(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
-
-	signedBlock, err := input.SlashingKeeper.SignedBlocksWindow(ctx)
-	require.NoError(t, err)
-	ctx = ctx.WithBlockHeight(signedBlock + 1)
+	ctx = ctx.WithBlockHeight(1)
 
 	valAddr := createValidatorWithBalance(ctx, input, 100_000_000, 10_000_000, 1)
 	consAddr := sdk.ConsAddress(valAddr)
 
-	require.Panics(t, func() { input.SlashingKeeper.JailUntil(ctx, consAddr, time.Now()) })
+	require.Error(t, input.SlashingKeeper.JailUntil(ctx, consAddr, time.Now()))
 
 	newInfo := types.NewValidatorSigningInfo(
 		consAddr,
@@ -159,7 +154,7 @@ func TestJailUntil(t *testing.T) {
 		int64(10),
 	)
 	input.SlashingKeeper.SetValidatorSigningInfo(ctx, consAddr, newInfo)
-	input.SlashingKeeper.JailUntil(ctx, consAddr, time.Unix(253402300799, 0).UTC())
+	require.NoError(t, input.SlashingKeeper.JailUntil(ctx, consAddr, time.Unix(253402300799, 0).UTC()))
 
 	info, err := input.SlashingKeeper.GetValidatorSigningInfo(ctx, consAddr)
 	require.NoError(t, err)

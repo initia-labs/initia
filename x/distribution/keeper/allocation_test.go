@@ -117,21 +117,21 @@ func TestLoadBondedTokens(t *testing.T) {
 	_, rewardWeight, _ := loadRewardsWeight(t, ctx, input)
 	validators, bondedTokens, bondedTokensSum, err := input.DistKeeper.LoadBondedTokens(ctx, votes, rewardWeight)
 	require.NoError(t, err)
-	require.Equal(t, validator1, validators[string(valConsPk1.Address())])
-	require.Equal(t, validator2, validators[string(valConsPk2.Address())])
+	require.Equal(t, validator1, validators[validator1.GetOperator()])
+	require.Equal(t, validator2, validators[validator2.GetOperator()])
 	for _, val := range bondedTokens["foo"] {
-		if val.ValAddr == string(valConsPk1.Address()) {
+		if val.ValAddr == validator1.GetOperator() {
 			require.Equal(t, math.NewInt(3_000_000), val.Amount)
 		} else {
-			math.NewInt(5_000_000)
+			require.Equal(t, math.NewInt(5_000_000), val.Amount)
 		}
 	}
 
 	for _, val := range bondedTokens["bar"] {
-		if val.ValAddr == string(valConsPk1.Address()) {
-			require.Equal(t, math.NewInt(5_000_000), val.Amount)
+		if val.ValAddr == validator2.GetOperator() {
+			require.Equal(t, math.NewInt(3_000_000), val.Amount)
 		} else {
-			math.NewInt(3_000_000)
+			require.Equal(t, math.NewInt(5_000_000), val.Amount)
 		}
 	}
 	require.Equal(t, math.NewInt(8_000_000), bondedTokensSum["foo"])

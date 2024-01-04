@@ -38,8 +38,5 @@ func Test_UpdateChannelRelayer(t *testing.T) {
 	// check properly set
 	res, err := k.ChannelRelayers.Get(ctx, channel)
 	require.NoError(t, err)
-	require.Equal(t, res, types.ChannelRelayer{
-		Channel: channel,
-		Relayer: addr.String(),
-	})
+	require.Equal(t, res, addr.Bytes())
 }

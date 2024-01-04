@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -69,7 +68,6 @@ func (coord *Coordinator) UpdateTime() {
 // UpdateTimeForChain updates the clock for a specific chain.
 func (coord *Coordinator) UpdateTimeForChain(chain *TestChain) {
 	chain.CurrentHeader.Time = coord.CurrentTime.UTC()
-	chain.App.BeginBlock(abci.RequestBeginBlock{Header: chain.CurrentHeader})
 }
 
 // Setup constructs a TM client, connection, and channel on both chains provided. It will
@@ -85,11 +83,8 @@ func (coord *Coordinator) Setup(path *Path) {
 // SetupClients is a helper function to create clients on both chains. It assumes the
 // caller does not anticipate any errors.
 func (coord *Coordinator) SetupClients(path *Path) {
-	err := path.EndpointA.CreateClient()
-	require.NoError(coord.T, err)
-
-	err = path.EndpointB.CreateClient()
-	require.NoError(coord.T, err)
+	path.EndpointA.CreateClient()
+	path.EndpointB.CreateClient()
 }
 
 // SetupClientConnections is a helper function to create clients and the appropriate
@@ -191,7 +186,6 @@ func (coord *Coordinator) CommitBlock(chains ...*TestChain) {
 // CommitNBlocks commits n blocks to state and updates the block height by 1 for each commit.
 func (coord *Coordinator) CommitNBlocks(chain *TestChain, n uint64) {
 	for i := uint64(0); i < n; i++ {
-		chain.App.BeginBlock(abci.RequestBeginBlock{Header: chain.CurrentHeader})
 		chain.NextBlock()
 		coord.IncrementTime()
 	}

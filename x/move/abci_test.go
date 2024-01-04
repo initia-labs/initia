@@ -18,17 +18,18 @@ import (
 func Test_BeginBlocker(t *testing.T) {
 	app := createApp(t)
 
+	_, err := app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1})
+	require.NoError(t, err)
+
 	// initialize staking for secondBondDenom
 	ctx := app.BaseApp.NewContext(false)
-	err := app.MoveKeeper.InitializeStaking(ctx, secondBondDenom)
+	err = app.MoveKeeper.InitializeStaking(ctx, secondBondDenom)
 	require.NoError(t, err)
 
 	// fund addr2
 	app.BankKeeper.SendCoins(ctx, types.StdAddr, addr2, sdk.NewCoins(secondBondCoin))
 
 	_, err = app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1})
-	require.NoError(t, err)
-	_, err = app.Commit()
 	require.NoError(t, err)
 
 	// delegate coins via move staking module
@@ -56,7 +57,8 @@ func Test_BeginBlocker(t *testing.T) {
 	// check balance
 	checkBalance(t, app, types.MoveStakingModuleAddress, sdk.Coins{})
 
-	// new block
+	_, err = app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1})
+	require.NoError(t, err)
 
 	// generate rewards
 	ctx = app.BaseApp.NewContext(false)
@@ -75,15 +77,13 @@ func Test_BeginBlocker(t *testing.T) {
 		validator,
 		secondBondDenom,
 		sdk.NewDecCoinsFromCoins(rewardCoins...))
+
+	// rewards distributed
 	_, err = app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1})
-	require.NoError(t, err)
-	_, err = app.Commit()
 	require.NoError(t, err)
 
 	// withdraw rewards to move module
 	_, err = app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1})
-	require.NoError(t, err)
-	_, err = app.Commit()
 	require.NoError(t, err)
 
 	// undelegate coins

@@ -56,8 +56,9 @@ type AppModuleBasic struct {
 }
 
 // NewAppModuleBasic creates a new AppModuleBasic object
-func NewAppModuleBasic(legacyProposalHandlers ...govclient.ProposalHandler) AppModuleBasic {
+func NewAppModuleBasic(cdc codec.Codec, legacyProposalHandlers ...govclient.ProposalHandler) AppModuleBasic {
 	return AppModuleBasic{
+		cdc:                    cdc,
 		legacyProposalHandlers: legacyProposalHandlers,
 	}
 }

@@ -242,8 +242,8 @@ func (k BaseKeeper) SendEnabled(goCtx context.Context, req *types.QuerySendEnabl
 		results, pageResp, err := query.CollectionPaginate(
 			ctx,
 			k.MoveViewKeeper.SendEnabled,
-			req.Pagination, func(key string, value bool) (*types.SendEnabled, error) {
-				return types.NewSendEnabled(key, value), nil
+			req.Pagination, func(denom string, enabled bool) (*types.SendEnabled, error) {
+				return types.NewSendEnabled(denom, enabled), nil
 			},
 		)
 		if err != nil {

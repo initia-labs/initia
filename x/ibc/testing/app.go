@@ -9,18 +9,19 @@ import (
 
 	"cosmossdk.io/math"
 
-	dbm "github.com/cometbft/cometbft-db"
 	abci "github.com/cometbft/cometbft/abci/types"
-	"github.com/cometbft/cometbft/libs/log"
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+
 	tmtypes "github.com/cometbft/cometbft/types"
 
+	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
+	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	testutilsims "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
@@ -49,7 +50,7 @@ func decCoins(amt int64) sdk.DecCoins {
 var DefaultTestingAppInit = SetupTestingApp
 
 type TestingApp interface {
-	abci.Application
+	servertypes.ABCI
 
 	// ibc-go additions
 	GetBaseApp() *baseapp.BaseApp
@@ -59,7 +60,7 @@ type TestingApp interface {
 	GetScopedIBCKeeper() capabilitykeeper.ScopedKeeper
 	GetICAControllerKeeper() *icacontrollerkeeper.Keeper
 	GetICAAuthKeeper() *icaauthkeeper.Keeper
-	GetTxConfig() client.TxConfig
+	TxConfig() client.TxConfig
 
 	// Implemented by SimApp
 	AppCodec() codec.Codec
@@ -73,7 +74,7 @@ func SetupTestingApp(t *testing.T) (TestingApp, map[string]json.RawMessage) {
 	db := dbm.NewMemDB()
 	encCdc := initiaapp.MakeEncodingConfig()
 	app := initiaapp.NewInitiaApp(log.NewNopLogger(), db, nil, true, moveconfig.DefaultMoveConfig(), testutilsims.EmptyAppOptions{})
-	return app, initiaapp.NewDefaultGenesisState(encCdc.Codec).ConfigureBondDenom(encCdc.Marshaler, sdk.DefaultBondDenom)
+	return app, initiaapp.NewDefaultGenesisState(encCdc.Codec).ConfigureBondDenom(encCdc.Codec, sdk.DefaultBondDenom)
 }
 
 // SetupWithGenesisValSet initializes a new SimApp with a validator set and genesis accounts
@@ -114,7 +115,7 @@ func SetupWithGenesisValSet(t *testing.T, valSet *tmtypes.ValidatorSet, genAccs 
 		}
 
 		validators = append(validators, validator)
-		delegations = append(delegations, stakingtypes.NewDelegation(genAccs[0].GetAddress(), val.Address.Bytes(), decCoins(1_000_000)))
+		delegations = append(delegations, stakingtypes.NewDelegation(genAccs[0].GetAddress().String(), validator.GetOperator(), decCoins(1_000_000)))
 	}
 
 	// set validators and delegations
@@ -141,28 +142,15 @@ func SetupWithGenesisValSet(t *testing.T, valSet *tmtypes.ValidatorSet, genAccs 
 	require.NoError(t, err)
 
 	// init chain will set the validator set and initialize the genesis accounts
-	app.InitChain(
-		abci.RequestInitChain{
+	_, err = app.InitChain(
+		&abci.RequestInitChain{
 			ChainId:         chainID,
 			Validators:      []abci.ValidatorUpdate{},
 			ConsensusParams: testutilsims.DefaultConsensusParams,
 			AppStateBytes:   stateBytes,
 		},
 	)
-
-	// commit genesis changes
-	app.Commit()
-	app.BeginBlock(
-		abci.RequestBeginBlock{
-			Header: tmproto.Header{
-				ChainID:            chainID,
-				Height:             app.LastBlockHeight() + 1,
-				AppHash:            app.LastCommitID().Hash,
-				ValidatorsHash:     valSet.Hash(),
-				NextValidatorsHash: valSet.Hash(),
-			},
-		},
-	)
+	require.NoError(t, err)
 
 	return app
 }

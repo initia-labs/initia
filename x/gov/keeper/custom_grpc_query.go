@@ -32,7 +32,7 @@ func (q CustomQueryServer) Params(ctx context.Context, req *customtypes.QueryPar
 func (q CustomQueryServer) EmergencyProposals(c context.Context, req *customtypes.QueryEmergencyProposalsRequest) (*customtypes.QueryEmergencyProposalsResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
 
-	proposals, pageRes, err := query.CollectionPaginate(ctx, q.Keeper.EmergencyProposals, req.Pagination, func(proposalID uint64, value []byte) (v1.Proposal, error) {
+	proposals, pageRes, err := query.CollectionPaginate(ctx, q.Keeper.EmergencyProposals, req.Pagination, func(proposalID uint64, _ []byte) (v1.Proposal, error) {
 		return q.Proposals.Get(ctx, proposalID)
 	})
 	if err != nil {

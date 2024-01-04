@@ -66,9 +66,9 @@ func (q QueryServer) ValidatorDistributionInfo(ctx context.Context, req *types.Q
 		return nil, err
 	}
 
-	delAdr := sdk.AccAddress(valAddr)
+	delAddr := sdk.AccAddress(valAddr)
 
-	del, err := q.stakingKeeper.Delegation(ctx, delAdr, valAddr)
+	del, err := q.stakingKeeper.Delegation(ctx, delAddr, valAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -84,14 +84,14 @@ func (q QueryServer) ValidatorDistributionInfo(ctx context.Context, req *types.Q
 	}
 
 	// validator's commission
-	validatorCommission, err := q.ValidatorAccumulatedCommissions.Get(ctx, valAddr)
+	validatorCommission, err := q.GetValidatorAccumulatedCommission(ctx, valAddr)
 	if err != nil {
 		return nil, err
 	}
 
 	return &types.QueryValidatorDistributionInfoResponse{
 		Commission:      validatorCommission.Commissions.Sum(),
-		OperatorAddress: delAdr.String(),
+		OperatorAddress: delAddr.String(),
 		SelfBondRewards: rewards.Sum(),
 	}, nil
 }
@@ -110,7 +110,7 @@ func (q QueryServer) ValidatorOutstandingRewards(ctx context.Context, req *types
 	if err != nil {
 		return nil, err
 	}
-	rewards, err := q.Keeper.ValidatorOutstandingRewards.Get(ctx, valAddr)
+	rewards, err := q.Keeper.GetValidatorOutstandingRewards(ctx, valAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +134,7 @@ func (q QueryServer) ValidatorCommission(ctx context.Context, req *types.QueryVa
 	if err != nil {
 		return nil, err
 	}
-	commission, err := q.Keeper.ValidatorAccumulatedCommissions.Get(ctx, valAddr)
+	commission, err := q.Keeper.GetValidatorAccumulatedCommission(ctx, valAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -215,12 +215,12 @@ func (q QueryServer) DelegationRewards(ctx context.Context, req *types.QueryDele
 		return nil, err
 	}
 
-	delAdr, err := q.authKeeper.AddressCodec().StringToBytes(req.DelegatorAddress)
+	delAddr, err := q.authKeeper.AddressCodec().StringToBytes(req.DelegatorAddress)
 	if err != nil {
 		return nil, err
 	}
 
-	del, err := q.stakingKeeper.Delegation(ctx, delAdr, valAddr)
+	del, err := q.stakingKeeper.Delegation(ctx, delAddr, valAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -250,13 +250,13 @@ func (q QueryServer) DelegationTotalRewards(ctx context.Context, req *types.Quer
 	total := sdk.DecCoins{}
 	var delRewards []types.DelegationDelegatorReward
 
-	delAdr, err := q.authKeeper.AddressCodec().StringToBytes(req.DelegatorAddress)
+	delAddr, err := q.authKeeper.AddressCodec().StringToBytes(req.DelegatorAddress)
 	if err != nil {
 		return nil, err
 	}
 
 	err = q.stakingKeeper.IterateDelegations(
-		ctx, delAdr,
+		ctx, delAddr,
 		func(del stakingtypes.DelegationI) (stop bool, err error) {
 			valAddr, err := q.stakingKeeper.ValidatorAddressCodec().StringToBytes(del.GetValidatorAddr())
 			if err != nil {
@@ -299,14 +299,14 @@ func (q QueryServer) DelegatorValidators(ctx context.Context, req *types.QueryDe
 		return nil, status.Error(codes.InvalidArgument, "empty delegator address")
 	}
 
-	delAdr, err := q.authKeeper.AddressCodec().StringToBytes(req.DelegatorAddress)
+	delAddr, err := q.authKeeper.AddressCodec().StringToBytes(req.DelegatorAddress)
 	if err != nil {
 		return nil, err
 	}
 	var validators []string
 
 	err = q.stakingKeeper.IterateDelegations(
-		ctx, delAdr,
+		ctx, delAddr,
 		func(del stakingtypes.DelegationI) (stop bool, err error) {
 			validators = append(validators, del.GetValidatorAddr())
 			return false, nil
@@ -328,12 +328,12 @@ func (q QueryServer) DelegatorWithdrawAddress(ctx context.Context, req *types.Qu
 	if req.DelegatorAddress == "" {
 		return nil, status.Error(codes.InvalidArgument, "empty delegator address")
 	}
-	delAdr, err := q.authKeeper.AddressCodec().StringToBytes(req.DelegatorAddress)
+	delAddr, err := q.authKeeper.AddressCodec().StringToBytes(req.DelegatorAddress)
 	if err != nil {
 		return nil, err
 	}
 
-	withdrawAddr, err := q.DelegatorWithdrawAddrs.Get(ctx, delAdr)
+	withdrawAddr, err := q.GetDelegatorWithdrawAddr(ctx, delAddr)
 	if err != nil {
 		return nil, err
 	}

@@ -29,7 +29,7 @@ func (h Hooks) AfterValidatorBonded(ctx context.Context, consAddr sdk.ConsAddres
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	signingInfo, err := h.k.GetValidatorSigningInfo(ctx, consAddr)
 
-	if err != nil {
+	if err == nil {
 		signingInfo.StartHeight = sdkCtx.BlockHeight()
 	} else {
 		signingInfo = types.NewValidatorSigningInfo(

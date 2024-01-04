@@ -16,13 +16,13 @@ import (
 )
 
 type Querier struct {
-	Keeper
+	*Keeper
 }
 
 var _ types.QueryServer = &Querier{}
 
 // NewQuerier return new Querier instance
-func NewQuerier(k Keeper) Querier {
+func NewQuerier(k *Keeper) Querier {
 	return Querier{k}
 }
 
@@ -53,18 +53,20 @@ func (q Querier) Modules(context context.Context, req *types.QueryModulesRequest
 		return nil, err
 	}
 
+	prefixBytes := types.GetModulePrefix(moduleAddr)
 	modules, pageRes, err := query.CollectionPaginate(ctx, q.Keeper.VMStore, req.Pagination, func(key []byte, rawBytes []byte) (types.Module, error) {
 		bz, err := q.DecodeModuleBytes(rawBytes)
 		if err != nil {
 			return types.Module{}, err
 		}
 
+		key = key[len(prefixBytes):]
 		moduleName, err := vmtypes.BcsDeserializeIdentifier(key)
 		if err != nil {
 			return types.Module{}, err
 		}
 
-		policy, err := NewCodeKeeper(&q.Keeper).GetUpgradePolicy(ctx, moduleAddr, string(moduleName))
+		policy, err := NewCodeKeeper(q.Keeper).GetUpgradePolicy(ctx, moduleAddr, string(moduleName))
 		if err != nil {
 			return types.Module{}, err
 		}
@@ -77,8 +79,7 @@ func (q Querier) Modules(context context.Context, req *types.QueryModulesRequest
 			UpgradePolicy: policy,
 		}, nil
 	}, func(opt *query.CollectionsPaginateOptions[[]byte]) {
-		prefix := types.GetModulePrefix(moduleAddr)
-		opt.Prefix = &prefix
+		opt.Prefix = &prefixBytes
 	})
 	if err != nil {
 		return nil, err
@@ -122,7 +123,9 @@ func (q Querier) Resources(context context.Context, req *types.QueryResourcesReq
 		return nil, err
 	}
 
+	prefixBytes := types.GetResourcePrefix(addr)
 	resources, pageRes, err := query.CollectionPaginate(ctx, q.VMStore, req.Pagination, func(key []byte, rawBytes []byte) (types.Resource, error) {
+		key = key[len(prefixBytes):]
 		structTag, err := vmtypes.BcsDeserializeStructTag(key)
 		if err != nil {
 			return types.Resource{}, err
@@ -145,8 +148,7 @@ func (q Querier) Resources(context context.Context, req *types.QueryResourcesReq
 			RawBytes:     rawBytes,
 		}, nil
 	}, func(opt *query.CollectionsPaginateOptions[[]byte]) {
-		prefix := types.GetResourcePrefix(addr)
-		opt.Prefix = &prefix
+		opt.Prefix = &prefixBytes
 	})
 	if err != nil {
 		return nil, err
@@ -223,13 +225,15 @@ func (q Querier) TableEntries(context context.Context, req *types.QueryTableEntr
 		return nil, err
 	}
 
-	entries, pageRes, err := query.CollectionPaginate(ctx, q.VMStore, req.Pagination, func(keyBz []byte, valueBz []byte) (types.TableEntry, error) {
-		keyStr, err := vmapi.DecodeMoveValue(vmStore, keyTypeTag, keyBz)
+	prefixBytes := types.GetTableEntryPrefix(addr)
+	entries, pageRes, err := query.CollectionPaginate(ctx, q.VMStore, req.Pagination, func(key []byte, value []byte) (types.TableEntry, error) {
+		key = key[len(prefixBytes):]
+		keyStr, err := vmapi.DecodeMoveValue(vmStore, keyTypeTag, key)
 		if err != nil {
 			return types.TableEntry{}, err
 		}
 
-		valueStr, err := vmapi.DecodeMoveValue(vmStore, valueTypeTag, valueBz)
+		valueStr, err := vmapi.DecodeMoveValue(vmStore, valueTypeTag, value)
 		if err != nil {
 			return types.TableEntry{}, err
 		}
@@ -238,12 +242,11 @@ func (q Querier) TableEntries(context context.Context, req *types.QueryTableEntr
 			Address:    addr.String(),
 			Key:        string(keyStr),
 			Value:      string(valueStr),
-			KeyBytes:   keyBz,
-			ValueBytes: valueBz,
+			KeyBytes:   key,
+			ValueBytes: value,
 		}, nil
 	}, func(opt *query.CollectionsPaginateOptions[[]byte]) {
-		prefix := types.GetTableEntryPrefix(addr)
-		opt.Prefix = &prefix
+		opt.Prefix = &prefixBytes
 	})
 	if err != nil {
 		return nil, err

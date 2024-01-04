@@ -48,7 +48,7 @@ func Test_IterateBalances(t *testing.T) {
 	require.NoError(t, err)
 
 	entered := false
-	moveBankKeeper.IterateAccountBalances(ctx, twoAddr, func(amount sdk.Coin)(bool, error) {
+	moveBankKeeper.IterateAccountBalances(ctx, twoAddr, func(amount sdk.Coin) (bool, error) {
 		entered = true
 		require.Equal(t, sdk.NewCoin(bondDenom, sdkmath.NewInt(1)), amount)
 		return false, nil
@@ -62,7 +62,7 @@ func Test_IterateBalances(t *testing.T) {
 
 	// check after mint
 	entered = false
-	moveBankKeeper.IterateAccountBalances(ctx, twoAddr, func(amount sdk.Coin)(bool, error) {
+	moveBankKeeper.IterateAccountBalances(ctx, twoAddr, func(amount sdk.Coin) (bool, error) {
 		entered = true
 		require.Equal(t, sdk.NewCoin(bondDenom, sdkmath.NewInt(mintAmount+1)), amount)
 		return false, nil
@@ -124,7 +124,7 @@ func Test_IterateSupply(t *testing.T) {
 			counter++
 			require.Equal(t, initiaSupply.Add(mintAmount.MulRaw(int64(mintNum))), supply.Amount)
 		} else {
-			require.Fail(t, "should not enter here")
+			require.Equal(t, initiaSupply, supply.Amount)
 		}
 
 		return false, nil

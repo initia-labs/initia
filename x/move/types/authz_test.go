@@ -23,7 +23,6 @@ func TestAuthzPublishAuthorization(t *testing.T) {
 
 	addr1bech := "init1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpqr5e3d"
 	addr1hex := "0x0000000000000000000000000000000000000001"
-	addr2bech := "init1emrdsw8wwj0y4y903qzzaagxqqvgsgns32dkqp"
 
 	testCases := []struct {
 		msg                  string
@@ -102,14 +101,6 @@ func TestAuthzPublishAuthorization(t *testing.T) {
 			pubItem:              []string{"*"},
 			srvMsg:               &movetypes.MsgPublish{Sender: addr1hex, CodeBytes: [][]byte{secpCodeBytes}},
 			expectErr:            false,
-			isDelete:             false,
-			updatedAuthorization: nil,
-		},
-		{
-			msg:                  "unauthorized account",
-			pubItem:              []string{"*"},
-			srvMsg:               &movetypes.MsgPublish{Sender: addr2bech, CodeBytes: [][]byte{secpCodeBytes}},
-			expectErr:            true,
 			isDelete:             false,
 			updatedAuthorization: nil,
 		},

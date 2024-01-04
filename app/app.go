@@ -37,7 +37,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/grpc/cmtservice"
 	nodeservice "github.com/cosmos/cosmos-sdk/client/grpc/node"
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/codec/legacy"
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	runtimeservices "github.com/cosmos/cosmos-sdk/runtime/services"
@@ -96,6 +95,8 @@ import (
 	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
+	solomachine "github.com/cosmos/ibc-go/v8/modules/light-clients/06-solomachine"
+	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 
 	ibcnfttransfer "github.com/initia-labs/initia/x/ibc/nft-transfer"
 	ibcnfttransferkeeper "github.com/initia-labs/initia/x/ibc/nft-transfer/keeper"
@@ -179,8 +180,6 @@ var (
 		// this is only for testing
 		authtypes.Minter: {authtypes.Minter},
 	}
-
-	legacyCodecRegistered = false
 )
 
 var (
@@ -746,20 +745,22 @@ func NewInitiaApp(
 		staking.NewAppModule(appCodec, *app.StakingKeeper),
 		upgrade.NewAppModule(app.UpgradeKeeper, ac),
 		evidence.NewAppModule(*app.EvidenceKeeper),
-		ibc.NewAppModule(app.IBCKeeper),
 		authzmodule.NewAppModule(appCodec, *app.AuthzKeeper, app.interfaceRegistry),
 		groupmodule.NewAppModule(appCodec, *app.GroupKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		consensus.NewAppModule(appCodec, *app.ConsensusParamsKeeper),
 		move.NewAppModule(appCodec, app.AccountKeeper, *app.MoveKeeper),
 		auction.NewAppModule(app.appCodec, *app.AuctionKeeper),
+		ophost.NewAppModule(appCodec, *app.OPHostKeeper),
+		// ibc modules
+		ibc.NewAppModule(app.IBCKeeper),
 		ibctransfer.NewAppModule(*app.TransferKeeper),
 		ibcnfttransfer.NewAppModule(appCodec, *app.NftTransferKeeper),
 		ica.NewAppModule(app.ICAControllerKeeper, app.ICAHostKeeper),
 		icaauth.NewAppModule(appCodec, *app.ICAAuthKeeper),
 		ibcfee.NewAppModule(*app.IBCFeeKeeper),
-		// router.NewAppModule(app.RouterKeeper),
 		ibcperm.NewAppModule(*app.IBCPermKeeper),
-		ophost.NewAppModule(appCodec, *app.OPHostKeeper),
+		ibctm.NewAppModule(),
+		solomachine.NewAppModule(),
 	)
 
 	// BasicModuleManager defines the module BasicManager is in charge of setting up basic,
@@ -769,18 +770,11 @@ func NewInitiaApp(
 	app.BasicModuleManager = module.NewBasicManagerFromManager(
 		app.ModuleManager,
 		map[string]module.AppModuleBasic{
-			genutiltypes.ModuleName: genutil.NewAppModuleBasic(genutiltypes.DefaultMessageValidator),
-			govtypes.ModuleName:     gov.NewAppModuleBasic(),
+			genutiltypes.ModuleName: genutil.NewAppModuleBasic(genutil.DefaultMessageValidator),
+			govtypes.ModuleName:     gov.NewAppModuleBasic(appCodec),
 		})
 	app.BasicModuleManager.RegisterLegacyAminoCodec(legacyAmino)
 	app.BasicModuleManager.RegisterInterfaces(interfaceRegistry)
-	if !legacyCodecRegistered {
-		// authz module use this codec to get signbytes.
-		// authz MsgExec can execute all message types,
-		// so legacy.Cdc need to register all amino messages to get proper signature
-		app.BasicModuleManager.RegisterLegacyAminoCodec(legacy.Cdc)
-		legacyCodecRegistered = true
-	}
 
 	// During begin block slashing happens after distr.BeginBlocker so that
 	// there is nothing left over in the validator fee pool, so as to keep the

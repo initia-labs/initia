@@ -82,7 +82,7 @@ var ModuleBasics = module.NewBasicManager(
 	staking.AppModuleBasic{},
 	reward.AppModuleBasic{},
 	distribution.AppModuleBasic{},
-	gov.NewAppModuleBasic(),
+	gov.AppModuleBasic{},
 	crisis.AppModuleBasic{},
 	slashing.AppModuleBasic{},
 	upgrade.AppModuleBasic{},

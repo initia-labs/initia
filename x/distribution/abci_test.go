@@ -15,43 +15,48 @@ import (
 func Test_BeginBlocker(t *testing.T) {
 	app := createApp(t)
 
+	// create rewards
+	_, err := app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1, ProposerAddress: valKey.PubKey().Address()})
+	require.NoError(t, err)
+
 	// initialize staking for bondDenom
 	header := tmproto.Header{Height: app.LastBlockHeight() + 1, ProposerAddress: valKey.PubKey().Address()}
 
-	// create rewards
-	app.BeginBlock(abci.RequestBeginBlock{Header: header})
-	ctx := app.BaseApp.NewContext(false, header)
-	err := app.BankKeeper.MintCoins(ctx, authtypes.Minter, genCoins)
+	ctx := app.BaseApp.NewContextLegacy(false, header)
+	err = app.BankKeeper.MintCoins(ctx, authtypes.Minter, genCoins)
 	require.NoError(t, err)
 	err = app.BankKeeper.SendCoinsFromModuleToModule(ctx, authtypes.Minter, authtypes.FeeCollectorName, genCoins)
 	require.NoError(t, err)
-	app.EndBlock(abci.RequestEndBlock{})
-	app.Commit()
 
-	header = tmproto.Header{Height: app.LastBlockHeight() + 1, ProposerAddress: valKey.PubKey().Address()}
-	ctx = app.BaseApp.NewContext(true, header)
 	coins := app.BankKeeper.GetAllBalances(ctx, authtypes.NewModuleAddress(authtypes.FeeCollectorName))
 	require.NotEmpty(t, coins)
 
-	app.BeginBlock(abci.RequestBeginBlock{Header: header, LastCommitInfo: abci.CommitInfo{
-		Votes: []abci.VoteInfo{
-			{
-				Validator: abci.Validator{
-					Address: sdk.GetConsAddress(valKey.PubKey()),
-					Power:   10,
+	_, err = app.FinalizeBlock(&abci.RequestFinalizeBlock{
+		Height:          app.LastBlockHeight() + 1,
+		ProposerAddress: valKey.PubKey().Address(),
+		DecidedLastCommit: abci.CommitInfo{
+			Votes: []abci.VoteInfo{
+				{
+					Validator: abci.Validator{
+						Address: sdk.GetConsAddress(valKey.PubKey()),
+						Power:   10,
+					},
+					BlockIdFlag: tmproto.BlockIDFlagCommit,
 				},
-				SignedLastBlock: true,
 			},
 		},
-	}})
-	app.EndBlock(abci.RequestEndBlock{})
-	app.Commit()
+	})
+	require.NoError(t, err)
 
 	header = tmproto.Header{Height: app.LastBlockHeight() + 1}
-	ctx = app.BaseApp.NewContext(true, header)
-	rewards := app.DistrKeeper.GetValidatorOutstandingRewards(ctx, sdk.ValAddress(addr1))
+	ctx = app.BaseApp.NewContextLegacy(false, header)
+	rewards, err := app.DistrKeeper.GetValidatorOutstandingRewards(ctx, sdk.ValAddress(addr1))
+	require.NoError(t, err)
 
 	// exclude community tax
-	expectedRewards := sdk.NewDecCoinsFromCoins(genCoins...).MulDec(math.LegacyOneDec().Sub(app.DistrKeeper.GetCommunityTax(ctx)))
+	params, err := app.DistrKeeper.Params.Get(ctx)
+	require.NoError(t, err)
+
+	expectedRewards := sdk.NewDecCoinsFromCoins(genCoins...).MulDec(math.LegacyOneDec().Sub(params.CommunityTax))
 	require.Equal(t, expectedRewards, rewards.Rewards.Sum())
 }

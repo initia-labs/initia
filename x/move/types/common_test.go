@@ -9,6 +9,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	abci "github.com/cometbft/cometbft/abci/types"
+
 	"cosmossdk.io/math"
 
 	"github.com/cosmos/cosmos-sdk/codec/address"
@@ -76,6 +78,9 @@ func createApp(t *testing.T) *initiaapp.InitiaApp {
 	checkBalance(t, app, addr1, genCoins)
 	checkBalance(t, app, addr2, genCoins)
 
+	_, err := app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1})
+	require.NoError(t, err)
+
 	// set reward weight
 	distrParams := customdistrtypes.DefaultParams()
 	distrParams.RewardWeights = []customdistrtypes.RewardWeight{
@@ -99,7 +104,7 @@ func createApp(t *testing.T) *initiaapp.InitiaApp {
 
 	checkBalance(t, app, addr1, genCoins.Sub(bondCoin))
 
-	_, err = app.BeginBlocker(app.BaseApp.NewContext(false))
+	_, err = app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1})
 	require.NoError(t, err)
 
 	return app

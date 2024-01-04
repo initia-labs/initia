@@ -12,7 +12,7 @@ import (
 
 func TestItCreatesModuleAccountOnInitBlock(t *testing.T) {
 	app := createApp(t)
-	ctx := app.BaseApp.NewContext(false)
+	ctx := app.BaseApp.NewContext(true)
 	acc := app.AccountKeeper.GetAccount(ctx, authtypes.NewModuleAddress(types.ModuleName))
 	require.NotNil(t, acc)
 }

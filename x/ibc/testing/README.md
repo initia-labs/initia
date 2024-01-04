@@ -54,7 +54,7 @@ type TestingApp interface {
  GetStakingKeeper() ibctestingtypes.StakingKeeper
  GetIBCKeeper() *keeper.Keeper
  GetScopedIBCKeeper() capabilitykeeper.ScopedKeeper
- GetTxConfig() client.TxConfig
+ TxConfig() client.TxConfig
 
  // Implemented by SimApp
  AppCodec() codec.Codec
@@ -91,8 +91,8 @@ func (app *SimApp) GetScopedIBCKeeper() capabilitykeeper.ScopedKeeper {
  return app.ScopedIBCKeeper
 }
 
-// GetTxConfig implements the TestingApp interface.
-func (app *SimApp) GetTxConfig() client.TxConfig {
+// TxConfig implements the TestingApp interface.
+func (app *SimApp) TxConfig() client.TxConfig {
  return MakeTestEncodingConfig().TxConfig
 }
 

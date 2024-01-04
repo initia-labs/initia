@@ -15,7 +15,7 @@ import (
 
 // initialize starting info for a new delegation
 func (k Keeper) initializeDelegation(ctx context.Context, val sdk.ValAddress, del sdk.AccAddress) error {
-	currentRewards, err := k.ValidatorCurrentRewards.Get(ctx, val)
+	currentRewards, err := k.GetValidatorCurrentRewards(ctx, val)
 	if err != nil {
 		return err
 	}
@@ -234,10 +234,12 @@ func (k Keeper) withdrawDelegationRewards(ctx context.Context, val stakingtypes.
 	if err != nil {
 		return nil, err
 	}
+
 	rewardsRaw, err := k.CalculateDelegationRewards(ctx, val, del, endingPeriod)
 	if err != nil {
 		return nil, err
 	}
+
 	outstanding, err := k.GetValidatorOutstandingRewardsPools(ctx, valAddr)
 	if err != nil {
 		return nil, err
@@ -263,7 +265,7 @@ func (k Keeper) withdrawDelegationRewards(ctx context.Context, val stakingtypes.
 
 	// add pools to user account
 	if !pools.IsEmpty() {
-		withdrawAddr, err := k.DelegatorWithdrawAddrs.Get(ctx, delAddr)
+		withdrawAddr, err := k.GetDelegatorWithdrawAddr(ctx, delAddr)
 		if err != nil {
 			return nil, err
 		}

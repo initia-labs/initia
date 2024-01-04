@@ -41,7 +41,7 @@ func (h Hooks) AfterValidatorRemoved(ctx context.Context, _ sdk.ConsAddress, val
 	}
 
 	// force-withdraw commission
-	ac, err := h.k.ValidatorAccumulatedCommissions.Get(ctx, valAddr)
+	ac, err := h.k.GetValidatorAccumulatedCommission(ctx, valAddr)
 	if err != nil {
 		return err
 	}
@@ -69,7 +69,7 @@ func (h Hooks) AfterValidatorRemoved(ctx context.Context, _ sdk.ConsAddress, val
 		// add to validator account
 		if !coins.IsZero() {
 			accAddr := sdk.AccAddress(valAddr)
-			withdrawAddr, err := h.k.DelegatorWithdrawAddrs.Get(ctx, accAddr)
+			withdrawAddr, err := h.k.GetDelegatorWithdrawAddr(ctx, accAddr)
 			if err != nil {
 				return err
 			}

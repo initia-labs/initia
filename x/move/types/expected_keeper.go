@@ -16,6 +16,7 @@ import (
 type AccountKeeper interface {
 	AddressCodec() address.Codec
 
+	NewAccount(ctx context.Context, acc sdk.AccountI) sdk.AccountI
 	GetAccount(ctx context.Context, addr sdk.AccAddress) sdk.AccountI
 	SetAccount(ctx context.Context, acc sdk.AccountI)
 	HasAccount(ctx context.Context, addr sdk.AccAddress) bool

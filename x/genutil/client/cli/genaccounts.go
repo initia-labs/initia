@@ -45,33 +45,42 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 				return fmt.Errorf("failed to parse coins: %w", err)
 			}
 
-			addrStr := args[0]
-			addr, err := ac.StringToBytes(addrStr)
-			isRewardModule := addrStr == rewardtypes.ModuleName
+			isRewardModule := args[0] == rewardtypes.ModuleName
+			var addr sdk.AccAddress
 			if isRewardModule {
 				addr = authtypes.NewModuleAddress(rewardtypes.ModuleName)
-			} else if err != nil {
-				inBuf := bufio.NewReader(cmd.InOrStdin())
-				keyringBackend, err := cmd.Flags().GetString(flags.FlagKeyringBackend)
+			} else {
+				addr, err = ac.StringToBytes(args[0])
 				if err != nil {
-					return err
-				}
 
-				// attempt to lookup address from Keybase if no address was provided
-				kb, err := keyring.New(sdk.KeyringServiceName(), keyringBackend, clientCtx.HomeDir, inBuf, cdc)
-				if err != nil {
-					return err
-				}
+					inBuf := bufio.NewReader(cmd.InOrStdin())
+					keyringBackend, err := cmd.Flags().GetString(flags.FlagKeyringBackend)
+					if err != nil {
+						return err
+					}
 
-				info, err := kb.Key(args[0])
-				if err != nil {
-					return fmt.Errorf("failed to get address from Keybase: %w", err)
-				}
+					// attempt to lookup address from Keybase if no address was provided
+					kb, err := keyring.New(sdk.KeyringServiceName(), keyringBackend, clientCtx.HomeDir, inBuf, cdc)
+					if err != nil {
+						return err
+					}
 
-				addr, err = info.GetAddress()
-				if err != nil {
-					return fmt.Errorf("failed to get address from Keybase: %w", err)
+					info, err := kb.Key(args[0])
+					if err != nil {
+						return fmt.Errorf("failed to get address from Keybase: %w", err)
+					}
+
+					addr, err = info.GetAddress()
+					if err != nil {
+						return fmt.Errorf("failed to get address from Keybase: %w", err)
+					}
+
 				}
+			}
+
+			addrStr, err := ac.BytesToString(addr)
+			if err != nil {
+				return err
 			}
 
 			// create concrete account type based on input parameters

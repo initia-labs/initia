@@ -56,7 +56,7 @@ func (k Keeper) IncrementValidatorPeriod(ctx context.Context, val stakingtypes.V
 	}
 
 	// fetch current rewards
-	rewards, err := k.ValidatorCurrentRewards.Get(ctx, valAddr)
+	rewards, err := k.GetValidatorCurrentRewards(ctx, valAddr)
 	if err != nil {
 		return 0, err
 	}

@@ -10,6 +10,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/cosmos/cosmos-sdk/x/auth/codec"
 	"github.com/cosmos/cosmos-sdk/x/authz"
 
 	"github.com/initia-labs/initiavm/api"
@@ -116,13 +117,6 @@ func (a ExecuteAuthorization) MsgTypeURL() string {
 func (a ExecuteAuthorization) ValidateBasic() error {
 	moduleMap := make(map[string][]string)
 	for _, v := range a.Items {
-
-		// TODO - cannot retrieve address codec here
-		// _, err := AccAddressFromString(ac, v.ModuleAddress)
-		// if err != nil {
-		// 	return errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid module address: %s", v.ModuleAddress)
-		// }
-
 		if len(v.ModuleName) == 0 {
 			return errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid module name: %s", v.ModuleName)
 		}
@@ -147,9 +141,23 @@ func (a ExecuteAuthorization) Accept(ctx context.Context, msg sdk.Msg) (authz.Ac
 	switch msg := msg.(type) {
 	case *MsgExecute:
 		sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+		// TODO - cannot retrieve address codec here
+		ac := codec.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix())
+		msgModuleAddr, err := AccAddressFromString(ac, msg.ModuleAddress)
+		if err != nil {
+			return authz.AcceptResponse{}, errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid module address: %s", msg.ModuleAddress)
+		}
+
 		for _, v := range a.Items {
+			moduleAddr, err := AccAddressFromString(ac, v.ModuleAddress)
+			if err != nil {
+				return authz.AcceptResponse{}, errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid module address: %s", v.ModuleAddress)
+			}
+
 			sdkCtx.GasMeter().ConsumeGas(gasCostPerIteration, "execute authorization iteration")
-			if msg.ModuleAddress != v.ModuleAddress {
+
+			if !msgModuleAddr.Equals(moduleAddr) {
 				continue
 			}
 			if msg.ModuleName != v.ModuleName {

@@ -11,7 +11,7 @@ import (
 
 // get outstanding rewards
 func (k Keeper) GetValidatorOutstandingRewardsPools(ctx context.Context, val sdk.ValAddress) (customtypes.DecPools, error) {
-	rewards, err := k.ValidatorOutstandingRewards.Get(ctx, val)
+	rewards, err := k.GetValidatorOutstandingRewards(ctx, val)
 	if err != nil {
 		return customtypes.DecPools{}, err
 	}

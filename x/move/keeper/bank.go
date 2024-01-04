@@ -119,6 +119,9 @@ func (k MoveBankKeeper) IterateAccountBalances(
 		if err != nil {
 			return true, err
 		}
+		if amount.IsZero() {
+			return false, nil
+		}
 
 		denom, err := types.DenomFromMetadataAddress(
 			ctx, k, metadata,
@@ -142,29 +145,41 @@ func (k MoveBankKeeper) GetPaginatedBalances(ctx context.Context, pageReq *query
 		return sdk.NewCoins(), nil, nil
 	}
 
-	return query.CollectionPaginate(ctx, k.VMStore, pageReq, func(_, value []byte) (sdk.Coin, error) {
+	var coin sdk.Coin
+	coins, pageRes, err := query.CollectionFilteredPaginate(ctx, k.VMStore, pageReq, func(_, value []byte) (bool, error) {
 		storeAddr, err := vmtypes.NewAccountAddressFromBytes(value)
 		if err != nil {
-			return sdk.Coin{}, err
+			return false, err
 		}
 
 		metadata, amount, err := k.Balance(ctx, storeAddr)
 		if err != nil {
-			return sdk.Coin{}, err
+			return false, err
 		}
 
 		denom, err := types.DenomFromMetadataAddress(
 			ctx, k, metadata,
 		)
 		if err != nil {
-			return sdk.Coin{}, err
+			return false, err
+		}
+		if !amount.IsPositive() {
+			return false, nil
 		}
 
-		return sdk.NewCoin(denom, amount), nil
+		coin = sdk.NewCoin(denom, amount)
+		return true, nil
+	}, func(_, value []byte) (sdk.Coin, error) {
+		return coin, nil
 	}, func(o *query.CollectionsPaginateOptions[[]byte]) {
 		prefix := types.GetTableEntryPrefix(*tableAddr)
 		o.Prefix = &prefix
 	})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return sdk.Coins(coins).Sort(), pageRes, nil
 }
 
 // GetSupply return move coin supply
@@ -243,9 +258,9 @@ func (k MoveBankKeeper) IterateSupply(ctx context.Context, cb func(supply sdk.Co
 		return err
 	}
 
-	prefix := types.GetTableEntryPrefix(*tableAddr)
-	return k.VMStore.Walk(ctx, new(collections.Range[[]byte]).Prefix(collections.NewPrefix[[]byte](prefix)), func(key, value []byte) (stop bool, err error) {
-		key = key[len(prefix):]
+	prefixBytes := types.GetTableEntryPrefix(*tableAddr)
+	return k.VMStore.Walk(ctx, new(collections.Range[[]byte]).Prefix(collections.NewPrefix[[]byte](prefixBytes)), func(key, value []byte) (stop bool, err error) {
+		key = key[len(prefixBytes):]
 
 		metadata, err := vmtypes.NewAccountAddressFromBytes(key)
 		if err != nil {
@@ -278,27 +293,41 @@ func (k MoveBankKeeper) GetPaginatedSupply(ctx context.Context, pageReq *query.P
 		return nil, nil, err
 	}
 
-	prefix := types.GetTableEntryPrefix(*tableAddr)
-	return query.CollectionPaginate(ctx, k.VMStore, pageReq, func(key, value []byte) (sdk.Coin, error) {
-		key = key[len(prefix):]
+	prefixBytes := types.GetTableEntryPrefix(*tableAddr)
+	var coin sdk.Coin
+	coins, pageRes, err := query.CollectionFilteredPaginate(ctx, k.VMStore, pageReq, func(key, value []byte) (bool, error) {
+		key = key[len(prefixBytes):]
 
 		metadata, err := vmtypes.NewAccountAddressFromBytes(key)
 		if err != nil {
-			return sdk.Coin{}, err
+			return false, err
 		}
 
 		denom, err := types.DenomFromMetadataAddress(ctx, k, metadata)
 		if err != nil {
-			return sdk.Coin{}, err
+			return false, err
 		}
 
 		amount, err := k.GetSupply(ctx, denom)
 		if err != nil {
-			return sdk.Coin{}, err
+			return false, err
+		}
+		if !amount.IsPositive() {
+			return false, nil
 		}
 
-		return sdk.NewCoin(denom, amount), nil
+		coin = sdk.NewCoin(denom, amount)
+		return true, nil
+	}, func(key, value []byte) (sdk.Coin, error) {
+		return coin, nil
+	}, func(opt *query.CollectionsPaginateOptions[[]byte]) {
+		opt.Prefix = &prefixBytes
 	})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return sdk.Coins(coins).Sort(), pageRes, nil
 }
 
 // SendCoins transfer coins to recipient

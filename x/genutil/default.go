@@ -13,7 +13,7 @@ func DefaultMessageValidator(msgs []sdk.Msg) error {
 		return fmt.Errorf("unexpected number of GenTx messages; got: %d, expected: 1", len(msgs))
 	}
 	if _, ok := msgs[0].(*stakingtypes.MsgCreateValidator); !ok {
-		return fmt.Errorf("unexpected GenTx message type; expected: MsgCreateValidator, got: %T", msgs[0])
+		return fmt.Errorf("unexpected GenTx message type; expected: MsgCreateValidator, got: %V", msgs[0])
 	}
 
 	if m, ok := msgs[0].(sdk.HasValidateBasic); ok {

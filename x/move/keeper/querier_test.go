@@ -38,10 +38,10 @@ func TestViewFunction(t *testing.T) {
 	)
 	require.NoError(t, err)
 
-	querier := keeper.NewQuerier(input.MoveKeeper)
+	querier := keeper.NewQuerier(&input.MoveKeeper)
 
 	res, err := querier.ViewFunction(
-		sdk.WrapSDKContext(ctx),
+		ctx,
 		&types.QueryViewFunctionRequest{
 			Address:      vmtypes.StdAddress.String(),
 			ModuleName:   "BasicCoin",
@@ -59,10 +59,10 @@ func TestModules(t *testing.T) {
 	err := input.MoveKeeper.PublishModuleBundle(ctx, vmtypes.StdAddress, vmtypes.NewModuleBundle(vmtypes.NewModule(basicCoinModule)), types.UpgradePolicy_COMPATIBLE)
 	require.NoError(t, err)
 
-	querier := keeper.NewQuerier(input.MoveKeeper)
+	querier := keeper.NewQuerier(&input.MoveKeeper)
 
 	moduleRes, err := querier.Module(
-		sdk.WrapSDKContext(ctx),
+		ctx,
 		&types.QueryModuleRequest{
 			Address:    vmtypes.StdAddress.String(),
 			ModuleName: "BasicCoin",
@@ -79,7 +79,7 @@ func TestModules(t *testing.T) {
 	})
 
 	modulesRes, err := querier.Modules(
-		sdk.WrapSDKContext(ctx),
+		ctx,
 		&types.QueryModulesRequest{
 			Address: vmtypes.StdAddress.String(),
 			Pagination: &query.PageRequest{
@@ -113,10 +113,10 @@ func TestResources(t *testing.T) {
 		[][]byte{argBz})
 	require.NoError(t, err)
 
-	querier := keeper.NewQuerier(input.MoveKeeper)
+	querier := keeper.NewQuerier(&input.MoveKeeper)
 
 	resourceRes, err := querier.Resource(
-		sdk.WrapSDKContext(ctx),
+		ctx,
 		&types.QueryResourceRequest{
 			Address:   vmtypes.TestAddress.String(),
 			StructTag: "0x1::BasicCoin::Coin<0x1::BasicCoin::Initia>",
@@ -131,7 +131,7 @@ func TestResources(t *testing.T) {
 	}, resourceRes.Resource)
 
 	resourcesRes, err := querier.Resources(
-		sdk.WrapSDKContext(ctx),
+		ctx,
 		&types.QueryResourcesRequest{
 			Address: vmtypes.TestAddress.String(),
 		},
@@ -173,9 +173,9 @@ func TestTableInfo(t *testing.T) {
 	)
 	require.NoError(t, err)
 
-	querier := keeper.NewQuerier(input.MoveKeeper)
+	querier := keeper.NewQuerier(&input.MoveKeeper)
 	resource, err := querier.Resource(
-		sdk.WrapSDKContext(ctx),
+		ctx,
 		&types.QueryResourceRequest{
 			Address:   vmtypes.TestAddress.String(),
 			StructTag: "0x2::TableGenerator::S<u64,u64>",
@@ -188,7 +188,7 @@ func TestTableInfo(t *testing.T) {
 	require.NoError(t, err)
 
 	infoRes, err := querier.TableInfo(
-		sdk.WrapSDKContext(ctx),
+		ctx,
 		&types.QueryTableInfoRequest{
 			Address: tableAddr.String(),
 		},
@@ -229,9 +229,9 @@ func TestTableEntries(t *testing.T) {
 	)
 	require.NoError(t, err)
 
-	querier := keeper.NewQuerier(input.MoveKeeper)
+	querier := keeper.NewQuerier(&input.MoveKeeper)
 	resource, err := querier.Resource(
-		sdk.WrapSDKContext(ctx),
+		ctx,
 		&types.QueryResourceRequest{
 			Address:   vmtypes.TestAddress.String(),
 			StructTag: "0x2::TableGenerator::S<u64,u64>",
@@ -253,7 +253,7 @@ func TestTableEntries(t *testing.T) {
 	require.NoError(t, err)
 
 	entryRes, err := querier.TableEntry(
-		sdk.WrapSDKContext(ctx),
+		ctx,
 		&types.QueryTableEntryRequest{
 			Address:  tableAddr.String(),
 			KeyBytes: oneBz,
@@ -269,7 +269,7 @@ func TestTableEntries(t *testing.T) {
 	}, entryRes.TableEntry)
 
 	entriesRes, err := querier.TableEntries(
-		sdk.WrapSDKContext(ctx),
+		ctx,
 		&types.QueryTableEntriesRequest{
 			Address: tableAddr.String(),
 		},
@@ -309,9 +309,9 @@ func TestTableEntries(t *testing.T) {
 func TestScriptABI(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
-	querier := keeper.NewQuerier(input.MoveKeeper)
+	querier := keeper.NewQuerier(&input.MoveKeeper)
 	abi, err := querier.ScriptABI(
-		sdk.WrapSDKContext(ctx),
+		ctx,
 		&types.QueryScriptABIRequest{
 			CodeBytes: basicCoinMintScript,
 		},
@@ -324,8 +324,8 @@ func TestScriptABI(t *testing.T) {
 func TestParams(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
-	querier := keeper.NewQuerier(input.MoveKeeper)
-	params, err := querier.Params(sdk.WrapSDKContext(ctx), &types.QueryParamsRequest{})
+	querier := keeper.NewQuerier(&input.MoveKeeper)
+	params, err := querier.Params(ctx, &types.QueryParamsRequest{})
 	require.NoError(t, err)
 
 	expectedParams, err := input.MoveKeeper.GetParams(ctx)

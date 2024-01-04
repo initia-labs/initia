@@ -51,7 +51,7 @@ func (q CustomQueryServer) ValidatorOutstandingRewards(ctx context.Context, req 
 		return nil, err
 	}
 
-	rewards, err := q.Keeper.ValidatorOutstandingRewards.Get(ctx, valAdr)
+	rewards, err := q.Keeper.GetValidatorOutstandingRewards(ctx, valAdr)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +74,7 @@ func (q CustomQueryServer) ValidatorCommission(ctx context.Context, req *customt
 		return nil, err
 	}
 
-	commission, err := q.Keeper.ValidatorAccumulatedCommissions.Get(ctx, valAdr)
+	commission, err := q.Keeper.GetValidatorAccumulatedCommission(ctx, valAdr)
 	if err != nil {
 		return nil, err
 	}

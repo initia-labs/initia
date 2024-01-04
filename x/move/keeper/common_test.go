@@ -24,11 +24,7 @@ import (
 	"cosmossdk.io/store"
 	"cosmossdk.io/store/metrics"
 	storetypes "cosmossdk.io/store/types"
-	evidencetypes "cosmossdk.io/x/evidence/types"
-	"cosmossdk.io/x/feegrant"
 	"cosmossdk.io/x/tx/signing"
-	"cosmossdk.io/x/upgrade"
-	upgradetypes "cosmossdk.io/x/upgrade/types"
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -48,12 +44,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/cosmos/cosmos-sdk/x/crisis"
 	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	govtypesv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
-	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 
 	initiaapp "github.com/initia-labs/initia/app"
 	initiaappparams "github.com/initia-labs/initia/app/params"
@@ -61,7 +55,6 @@ import (
 	"github.com/initia-labs/initia/x/distribution"
 	distrkeeper "github.com/initia-labs/initia/x/distribution/keeper"
 	customdistrtypes "github.com/initia-labs/initia/x/distribution/types"
-	"github.com/initia-labs/initia/x/evidence"
 	"github.com/initia-labs/initia/x/gov"
 	govkeeper "github.com/initia-labs/initia/x/gov/keeper"
 	customgovtypes "github.com/initia-labs/initia/x/gov/types"
@@ -90,11 +83,8 @@ var ModuleBasics = module.NewBasicManager(
 	staking.AppModuleBasic{},
 	reward.AppModuleBasic{},
 	distribution.AppModuleBasic{},
-	gov.NewAppModuleBasic(),
-	crisis.AppModuleBasic{},
+	gov.AppModuleBasic{},
 	slashing.AppModuleBasic{},
-	upgrade.AppModuleBasic{},
-	evidence.AppModuleBasic{},
 	move.AppModuleBasic{},
 )
 
@@ -227,13 +217,12 @@ func (f *TestFaucet) NewFundedAccount(ctx sdk.Context, amounts ...sdk.Coin) sdk.
 }
 
 type TestKeepers struct {
-	AccountKeeper authkeeper.AccountKeeper
-	StakingKeeper stakingkeeper.Keeper
-	DistKeeper    distrkeeper.Keeper
-	BankKeeper    bankkeeper.Keeper
-	GovKeeper     govkeeper.Keeper
-	MoveKeeper    movekeeper.Keeper
-	// NftTransferKeeper TestIBCNftTransferKeeper
+	AccountKeeper  authkeeper.AccountKeeper
+	StakingKeeper  stakingkeeper.Keeper
+	DistKeeper     distrkeeper.Keeper
+	BankKeeper     bankkeeper.Keeper
+	GovKeeper      govkeeper.Keeper
+	MoveKeeper     movekeeper.Keeper
 	EncodingConfig initiaappparams.EncodingConfig
 	Faucet         *TestFaucet
 	MultiStore     storetypes.CommitMultiStore
@@ -274,9 +263,7 @@ func _createTestInput(
 	keys := storetypes.NewKVStoreKeys(
 		authtypes.StoreKey, banktypes.StoreKey, stakingtypes.StoreKey,
 		rewardtypes.StoreKey, distributiontypes.StoreKey, slashingtypes.StoreKey,
-		govtypes.StoreKey, upgradetypes.StoreKey, evidencetypes.StoreKey,
-		capabilitytypes.StoreKey, feegrant.StoreKey, authzkeeper.StoreKey,
-		movetypes.StoreKey,
+		govtypes.StoreKey, authzkeeper.StoreKey, movetypes.StoreKey,
 	)
 	ms := store.NewCommitMultiStore(db, log.NewNopLogger(), metrics.NewNoOpMetrics())
 	for _, v := range keys {
@@ -410,6 +397,9 @@ func _createTestInput(
 	moduleBytes, err := precompile.ReadStdlib()
 	require.NoError(t, err)
 
+	// append test module
+	moduleBytes = append(moduleBytes, basicCoinModule)
+
 	err = moveKeeper.Initialize(ctx, moduleBytes, moveParams.ArbitraryEnabled, moveParams.AllowedPublishers)
 	require.NoError(t, err)
 
@@ -529,9 +519,9 @@ func (router TestMsgRouter) HandlerByTypeURL(typeURL string) baseapp.MsgServiceH
 			ctx.EventManager().EmitEvent(sdk.NewEvent("transfer",
 				sdk.NewAttribute("sender", msg.Sender),
 				sdk.NewAttribute("receiver", msg.Receiver),
+				sdk.NewAttribute("token", msg.Token.String()),
 				sdk.NewAttribute("source_port", msg.SourcePort),
 				sdk.NewAttribute("source_channel", msg.SourceChannel),
-				sdk.NewAttribute("token", msg.Token.String()),
 				sdk.NewAttribute("timeout_height", msg.TimeoutHeight.String()),
 				sdk.NewAttribute("timeout_timestamp", fmt.Sprint(msg.TimeoutTimestamp)),
 				sdk.NewAttribute("memo", msg.Memo),

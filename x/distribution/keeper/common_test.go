@@ -1,36 +1,41 @@
 package keeper_test
 
 import (
+	"context"
 	"encoding/binary"
 	"fmt"
 	"testing"
 	"time"
 
-	dbm "github.com/cometbft/cometbft-db"
+	"github.com/stretchr/testify/require"
+
 	"github.com/cometbft/cometbft/crypto"
 	"github.com/cometbft/cometbft/crypto/ed25519"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
-	"github.com/cometbft/cometbft/libs/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	"github.com/stretchr/testify/require"
 
+	"cosmossdk.io/log"
 	"cosmossdk.io/math"
 	"cosmossdk.io/store"
+	"cosmossdk.io/store/metrics"
 	storetypes "cosmossdk.io/store/types"
-	evidencetypes "cosmossdk.io/x/evidence/types"
-	"cosmossdk.io/x/feegrant"
+	"cosmossdk.io/x/tx/signing"
 	"cosmossdk.io/x/upgrade"
-	upgradetypes "cosmossdk.io/x/upgrade/types"
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
+	codecaddress "github.com/cosmos/cosmos-sdk/codec/address"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
+	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/std"
 	testutilsims "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/auth"
+	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
+	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
 	"github.com/cosmos/cosmos-sdk/x/bank"
@@ -41,8 +46,8 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	govtypesv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
-	"github.com/cosmos/ibc-go/modules/capability"
-	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
+	"github.com/cosmos/gogoproto/proto"
+	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 
 	initiaapp "github.com/initia-labs/initia/app"
 	initiaappparams "github.com/initia-labs/initia/app/params"
@@ -54,6 +59,7 @@ import (
 	"github.com/initia-labs/initia/x/gov"
 	govkeeper "github.com/initia-labs/initia/x/gov/keeper"
 	customgovtypes "github.com/initia-labs/initia/x/gov/types"
+	"github.com/initia-labs/initia/x/move"
 	moveconfig "github.com/initia-labs/initia/x/move/config"
 	movekeeper "github.com/initia-labs/initia/x/move/keeper"
 	movetypes "github.com/initia-labs/initia/x/move/types"
@@ -70,15 +76,15 @@ import (
 var ModuleBasics = module.NewBasicManager(
 	auth.AppModuleBasic{},
 	bank.AppModuleBasic{},
-	capability.AppModuleBasic{},
 	staking.AppModuleBasic{},
 	reward.AppModuleBasic{},
 	distribution.AppModuleBasic{},
-	gov.NewAppModuleBasic(),
+	gov.AppModuleBasic{},
 	crisis.AppModuleBasic{},
 	slashing.AppModuleBasic{},
 	upgrade.AppModuleBasic{},
 	evidence.AppModuleBasic{},
+	move.AppModuleBasic{},
 )
 
 // Bond denom should be set for staking test
@@ -96,25 +102,33 @@ var (
 )
 
 func MakeTestCodec(t testing.TB) codec.Codec {
-	return MakeEncodingConfig(t).Marshaler
+	return MakeEncodingConfig(t).Codec
 }
 
 func MakeEncodingConfig(_ testing.TB) initiaappparams.EncodingConfig {
-	encodingConfig := initiaappparams.MakeEncodingConfig()
-	amino := encodingConfig.Amino
-	interfaceRegistry := encodingConfig.InterfaceRegistry
+	interfaceRegistry, _ := codectypes.NewInterfaceRegistryWithOptions(codectypes.InterfaceRegistryOptions{
+		ProtoFiles: proto.HybridResolver,
+		SigningOptions: signing.Options{
+			AddressCodec:          codecaddress.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix()),
+			ValidatorAddressCodec: codecaddress.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix()),
+		},
+	})
+	appCodec := codec.NewProtoCodec(interfaceRegistry)
+	legacyAmino := codec.NewLegacyAmino()
+	txConfig := tx.NewTxConfig(appCodec, tx.DefaultSignModes)
 
 	std.RegisterInterfaces(interfaceRegistry)
-	std.RegisterLegacyAminoCodec(amino)
+	std.RegisterLegacyAminoCodec(legacyAmino)
 
-	ModuleBasics.RegisterLegacyAminoCodec(amino)
+	ModuleBasics.RegisterLegacyAminoCodec(legacyAmino)
 	ModuleBasics.RegisterInterfaces(interfaceRegistry)
 
-	// add initiad types
-	movetypes.RegisterInterfaces(interfaceRegistry)
-	movetypes.RegisterLegacyAminoCodec(amino)
-
-	return encodingConfig
+	return initiaappparams.EncodingConfig{
+		InterfaceRegistry: interfaceRegistry,
+		Codec:             appCodec,
+		TxConfig:          txConfig,
+		Amino:             legacyAmino,
+	}
 }
 
 func initialTotalSupply() sdk.Coins {
@@ -184,7 +198,7 @@ type TestKeepers struct {
 	DexKeeper      TestDexKeeper
 	EncodingConfig initiaappparams.EncodingConfig
 	Faucet         *TestFaucet
-	MultiStore     sdk.CommitMultiStore
+	MultiStore     storetypes.CommitMultiStore
 }
 
 // createDefaultTestInput common settings for createTestInput
@@ -220,18 +234,16 @@ func _createTestInput(
 	moveConfig moveconfig.MoveConfig,
 	db dbm.DB,
 ) (sdk.Context, TestKeepers) {
-	keys := sdk.NewKVStoreKeys(
+	keys := storetypes.NewKVStoreKeys(
 		authtypes.StoreKey, banktypes.StoreKey, stakingtypes.StoreKey,
 		rewardtypes.StoreKey, distributiontypes.StoreKey, slashingtypes.StoreKey,
-		govtypes.StoreKey, upgradetypes.StoreKey, evidencetypes.StoreKey,
-		capabilitytypes.StoreKey, feegrant.StoreKey, authzkeeper.StoreKey,
-		movetypes.StoreKey,
+		govtypes.StoreKey, authzkeeper.StoreKey, movetypes.StoreKey,
 	)
-	ms := store.NewCommitMultiStore(db)
+	ms := store.NewCommitMultiStore(db, log.NewNopLogger(), metrics.NewNoOpMetrics())
 	for _, v := range keys {
 		ms.MountStoreWithDB(v, storetypes.StoreTypeIAVL, db)
 	}
-	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
+	memKeys := storetypes.NewMemoryStoreKeys()
 	for _, v := range memKeys {
 		ms.MountStoreWithDB(v, storetypes.StoreTypeMemory, db)
 	}
@@ -244,7 +256,7 @@ func _createTestInput(
 	}, isCheckTx, log.NewNopLogger())
 
 	encodingConfig := MakeEncodingConfig(t)
-	appCodec := encodingConfig.Marshaler
+	appCodec := encodingConfig.Codec
 
 	moveKeeper := &movekeeper.Keeper{}
 	maccPerms := map[string][]string{ // module account permissions
@@ -259,11 +271,17 @@ func _createTestInput(
 		// for testing
 		authtypes.Minter: {authtypes.Minter, authtypes.Burner},
 	}
+
+	ac := authcodec.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix())
+	vc := authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix())
+	cc := authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix())
+
 	accountKeeper := authkeeper.NewAccountKeeper(
 		appCodec,
-		keys[authtypes.StoreKey],   // target store
-		authtypes.ProtoBaseAccount, // prototype
+		runtime.NewKVStoreService(keys[authtypes.StoreKey]), // target store
+		authtypes.ProtoBaseAccount,                          // prototype
 		maccPerms,
+		ac,
 		sdk.GetConfig().GetBech32AccountAddrPrefix(),
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
@@ -274,29 +292,30 @@ func _createTestInput(
 
 	bankKeeper := movebank.NewBaseKeeper(
 		appCodec,
-		keys[banktypes.StoreKey],
+		runtime.NewKVStoreService(keys[banktypes.StoreKey]),
 		accountKeeper,
 		movekeeper.NewMoveBankKeeper(moveKeeper),
 		blockedAddrs,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
-	bankKeeper.SetParams(ctx, banktypes.DefaultParams())
+	require.NoError(t, bankKeeper.SetParams(ctx, banktypes.DefaultParams()))
 
 	stakingKeeper := stakingkeeper.NewKeeper(
 		appCodec,
-		keys[stakingtypes.StoreKey],
+		runtime.NewKVStoreService(keys[stakingtypes.StoreKey]),
 		accountKeeper,
 		bankKeeper,
 		movekeeper.NewVotingPowerKeeper(moveKeeper),
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		vc, cc,
 	)
 	stakingParams := stakingtypes.DefaultParams()
 	stakingParams.BondDenoms = []string{bondDenom}
-	stakingKeeper.SetParams(ctx, stakingParams)
+	require.NoError(t, stakingKeeper.SetParams(ctx, stakingParams))
 
 	rewardKeeper := rewardkeeper.NewKeeper(
 		appCodec,
-		keys[rewardtypes.StoreKey],
+		runtime.NewKVStoreService(keys[rewardtypes.StoreKey]),
 		accountKeeper,
 		bankKeeper,
 		authtypes.FeeCollectorName,
@@ -304,15 +323,15 @@ func _createTestInput(
 	)
 	rewardParams := rewardtypes.DefaultParams()
 	rewardParams.RewardDenom = bondDenom
-	rewardKeeper.SetParams(ctx, rewardParams)
+	require.NoError(t, rewardKeeper.SetParams(ctx, rewardParams))
 
 	dexKeeper := NewTestDexKeeper(moveKeeper)
 	distKeeper := distrkeeper.NewKeeper(
 		appCodec,
-		keys[distributiontypes.StoreKey],
+		runtime.NewKVStoreService(keys[distributiontypes.StoreKey]),
 		accountKeeper,
 		bankKeeper,
-		&stakingKeeper,
+		stakingKeeper,
 		dexKeeper,
 		authtypes.FeeCollectorName,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
@@ -321,25 +340,24 @@ func _createTestInput(
 	distrParams.RewardWeights = []customdistrtypes.RewardWeight{
 		{Denom: bondDenom, Weight: math.LegacyOneDec()},
 	}
-	distKeeper.SetParams(ctx, distrParams)
+	require.NoError(t, distKeeper.Params.Set(ctx, distrParams))
 	stakingKeeper.SetHooks(distKeeper.Hooks())
 
 	// set genesis items required for distribution
-	distKeeper.SetFeePool(ctx, distributiontypes.InitialFeePool())
+	require.NoError(t, distKeeper.FeePool.Set(ctx, distributiontypes.InitialFeePool()))
 
 	accountKeeper.GetModuleAccount(ctx, movetypes.MoveStakingModuleName)
 
-	*moveKeeper = movekeeper.NewKeeper(
+	*moveKeeper = *movekeeper.NewKeeper(
 		appCodec,
-		keys[movetypes.StoreKey],
+		runtime.NewKVStoreService(keys[movetypes.StoreKey]),
 		accountKeeper,
 		distKeeper,
-		// nftTransferKeeper,
-		TestMsgRouter{},
+		nil,
 		moveConfig,
 		bankKeeper,
 		distKeeper,
-		&stakingKeeper,
+		stakingKeeper,
 		rewardKeeper,
 		authtypes.FeeCollectorName,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
@@ -347,7 +365,7 @@ func _createTestInput(
 	moveParams := movetypes.DefaultParams()
 	moveParams.BaseDenom = bondDenom
 
-	moveKeeper.SetRawParams(ctx, moveParams.ToRaw())
+	require.NoError(t, moveKeeper.SetRawParams(ctx, moveParams.ToRaw()))
 	stakingKeeper.SetSlashingHooks(moveKeeper.Hooks())
 
 	// load stdlib module bytes
@@ -368,28 +386,29 @@ func _createTestInput(
 	govConfig := govtypes.DefaultConfig()
 	govKeeper := govkeeper.NewKeeper(
 		appCodec,
-		keys[govtypes.StoreKey],
+		runtime.NewKVStoreService(keys[govtypes.StoreKey]),
 		accountKeeper,
 		bankKeeper,
 		stakingKeeper,
+		distKeeper,
 		msgRouter,
 		govConfig,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
-	govKeeper.SetProposalID(ctx, govtypesv1.DefaultStartingProposalID)
-	govKeeper.SetParams(ctx, customgovtypes.DefaultParams())
+	require.NoError(t, govKeeper.ProposalID.Set(ctx, govtypesv1.DefaultStartingProposalID))
+	require.NoError(t, govKeeper.Params.Set(ctx, customgovtypes.DefaultParams()))
 
 	cfg := sdk.GetConfig()
 	cfg.SetAddressVerifier(initiaapp.VerifyAddressLen())
 
 	keepers := TestKeepers{
 		AccountKeeper:  accountKeeper,
-		StakingKeeper:  stakingKeeper,
-		DistKeeper:     distKeeper,
+		StakingKeeper:  *stakingKeeper,
+		DistKeeper:     *distKeeper,
 		MoveKeeper:     *moveKeeper,
 		BankKeeper:     bankKeeper,
-		GovKeeper:      govKeeper,
+		GovKeeper:      *govKeeper,
 		DexKeeper:      dexKeeper,
 		EncodingConfig: encodingConfig,
 		Faucet:         faucet,
@@ -413,8 +432,8 @@ func createValidatorWithBalance(
 
 	input.Faucet.Fund(ctx, accAddr, sdk.NewCoin(bondDenom, math.NewInt(balance)))
 
-	sh := staking.NewHandler(input.StakingKeeper)
-	_, err := sh(ctx, newTestMsgCreateValidator(valAddr, valPubKey, sdk.NewCoin(bondDenom, math.NewInt(delBalance))))
+	sh := stakingkeeper.NewMsgServerImpl(input.StakingKeeper)
+	_, err := sh.CreateValidator(ctx, newTestMsgCreateValidator(valAddr, valPubKey, sdk.NewCoin(bondDenom, math.NewInt(delBalance))))
 	if err != nil {
 		panic(err)
 	}
@@ -443,8 +462,8 @@ func createValidatorWithCoin(
 
 	input.Faucet.Fund(ctx, accAddr, balance...)
 
-	sh := staking.NewHandler(input.StakingKeeper)
-	_, err := sh(ctx, newTestMsgCreateValidator(valAddr, valPubKey, delBalance...))
+	sh := stakingkeeper.NewMsgServerImpl(input.StakingKeeper)
+	_, err := sh.CreateValidator(ctx, newTestMsgCreateValidator(valAddr, valPubKey, delBalance...))
 	if err != nil {
 		panic(err)
 	}
@@ -505,32 +524,37 @@ func (router TestMsgRouter) Handler(msg sdk.Msg) baseapp.MsgServiceHandler {
 // test Keeper
 
 type TestDexKeeper struct {
-	prices     map[string]sdk.Dec
+	prices     map[string]math.LegacyDec
 	moveKeeper *movekeeper.Keeper
 }
 
 func NewTestDexKeeper(moveKeeper *movekeeper.Keeper) TestDexKeeper {
 	return TestDexKeeper{
-		prices:     make(map[string]sdk.Dec),
+		prices:     make(map[string]math.LegacyDec),
 		moveKeeper: moveKeeper,
 	}
 }
 
-func (k TestDexKeeper) SetPrice(denom string, price sdk.Dec) {
+func (k TestDexKeeper) SetPrice(denom string, price math.LegacyDec) {
 	k.prices[denom] = price
 }
 
-func (k TestDexKeeper) SwapToBase(ctx sdk.Context, addr sdk.AccAddress, quoteCoin sdk.Coin) error {
+func (k TestDexKeeper) SwapToBase(ctx context.Context, addr sdk.AccAddress, quoteCoin sdk.Coin) error {
 	price, ok := k.prices[quoteCoin.Denom]
 	if !ok {
 		return nil
 	}
 
 	bk := movekeeper.NewMoveBankKeeper(k.moveKeeper)
+	baseDenom, err := k.moveKeeper.BaseDenom(ctx)
+	if err != nil {
+		return err
+	}
+
 	if err := bk.MintCoins(
 		ctx, addr,
 		sdk.NewCoins(sdk.NewCoin(
-			k.moveKeeper.BaseDenom(ctx),
+			baseDenom,
 			price.MulInt(quoteCoin.Amount).TruncateInt(),
 		)),
 	); err != nil {

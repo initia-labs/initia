@@ -129,7 +129,7 @@ func TestValidateAccountInGenesis(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(fmt.Sprintf("Case %s", tc.msg), func(t *testing.T) {
 			app := createApp(t)
-			ctx := app.BaseApp.NewContext(false)
+			ctx := app.BaseApp.NewContext(true)
 			cdc := initiaapp.MakeEncodingConfig().Codec
 
 			stakingGenesisState := app.StakingKeeper.ExportGenesis(ctx)

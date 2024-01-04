@@ -308,7 +308,7 @@ func (k Keeper) GetTableInfo(
 	tableAddr vmtypes.AccountAddress,
 ) (types.TableInfo, error) {
 	bz, err := k.VMStore.Get(ctx, types.GetTableInfoKey(tableAddr))
-	if err == nil {
+	if err != nil {
 		return types.TableInfo{}, err
 	}
 

@@ -111,14 +111,14 @@ func TestHandleAlreadyJailed(t *testing.T) {
 	// initial setup
 	ctx, input := createDefaultTestInput(t)
 
-	signedBlock, err := input.SlashingKeeper.SignedBlocksWindow(ctx)
-	require.NoError(t, err)
-	ctx = ctx.WithBlockHeight(signedBlock + 1)
-
 	p, err := input.SlashingKeeper.GetParams(ctx)
 	require.NoError(t, err)
 	p.SignedBlocksWindow = 1000
 	input.SlashingKeeper.SetParams(ctx, p)
+
+	signedBlock, err := input.SlashingKeeper.SignedBlocksWindow(ctx)
+	require.NoError(t, err)
+	ctx = ctx.WithBlockHeight(1)
 
 	power := int64(100)
 	amt := math.NewInt(100_000_000)
@@ -134,6 +134,7 @@ func TestHandleAlreadyJailed(t *testing.T) {
 	}
 
 	minSignedPerWindow, err := input.SlashingKeeper.MinSignedPerWindow(ctx)
+	require.NoError(t, err)
 
 	// 501 blocks missed
 	for ; height < signedBlock+(signedBlock-minSignedPerWindow)+1; height++ {
@@ -166,10 +167,7 @@ func TestHandleAlreadyJailed(t *testing.T) {
 // the start height of the signing info is reset correctly
 func TestValidatorDippingInAndOut(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
-
-	signedBlock, err := input.SlashingKeeper.SignedBlocksWindow(ctx)
-	require.NoError(t, err)
-	ctx = ctx.WithBlockHeight(signedBlock + 1)
+	ctx = ctx.WithBlockHeight(1)
 
 	stakingParams, err := input.StakingKeeper.GetParams(ctx)
 	require.NoError(t, err)
@@ -181,6 +179,9 @@ func TestValidatorDippingInAndOut(t *testing.T) {
 	require.NoError(t, err)
 	slashingParams.SignedBlocksWindow = 1000
 	input.SlashingKeeper.SetParams(ctx, slashingParams)
+
+	signedBlock, err := input.SlashingKeeper.SignedBlocksWindow(ctx)
+	require.NoError(t, err)
 
 	power := int64(100)
 

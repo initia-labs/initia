@@ -133,7 +133,8 @@ func (k Keeper) DelegateToValidator(ctx context.Context, valAddr sdk.ValAddress,
 	// register module account if not registered
 	if macc == nil {
 		macc = authtypes.NewEmptyModuleAccount(delegatorModuleName)
-		k.authKeeper.SetModuleAccount(ctx, macc)
+		maccI := (k.authKeeper.NewAccount(ctx, macc)).(sdk.ModuleAccountI) // set the account number
+		k.authKeeper.SetModuleAccount(ctx, maccI)
 	}
 
 	delModuleAddr := macc.GetAddress()
