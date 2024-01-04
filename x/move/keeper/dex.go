@@ -33,13 +33,12 @@ func (k DexKeeper) SetDexPair(
 	ctx context.Context,
 	dexPair types.DexPair,
 ) error {
-	ac := k.authKeeper.AddressCodec()
-	metadataQuote, err := types.AccAddressFromString(ac, dexPair.MetadataQuote)
+	metadataQuote, err := types.AccAddressFromString(k.ac, dexPair.MetadataQuote)
 	if err != nil {
 		return err
 	}
 
-	metadataLP, err := types.AccAddressFromString(ac, dexPair.MetadataLP)
+	metadataLP, err := types.AccAddressFromString(k.ac, dexPair.MetadataLP)
 	if err != nil {
 		return err
 	}

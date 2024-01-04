@@ -679,6 +679,7 @@ func NewInitiaApp(
 		app.RewardKeeper,
 		authtypes.FeeCollectorName,
 		authorityAddr,
+		ac, vc,
 	)
 
 	app.MoveKeeper = moveKeeper
@@ -748,7 +749,7 @@ func NewInitiaApp(
 		authzmodule.NewAppModule(appCodec, *app.AuthzKeeper, app.interfaceRegistry),
 		groupmodule.NewAppModule(appCodec, *app.GroupKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		consensus.NewAppModule(appCodec, *app.ConsensusParamsKeeper),
-		move.NewAppModule(appCodec, app.AccountKeeper, *app.MoveKeeper),
+		move.NewAppModule(appCodec, *app.MoveKeeper, vc),
 		auction.NewAppModule(app.appCodec, *app.AuctionKeeper),
 		ophost.NewAppModule(appCodec, *app.OPHostKeeper),
 		// ibc modules

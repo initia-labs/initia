@@ -29,7 +29,7 @@ func NewQuerier(k *Keeper) Querier {
 func (q Querier) Module(context context.Context, req *types.QueryModuleRequest) (*types.QueryModuleResponse, error) {
 	ctx := sdk.UnwrapSDKContext(context)
 
-	addr, err := types.AccAddressFromString(q.authKeeper.AddressCodec(), req.Address)
+	addr, err := types.AccAddressFromString(q.ac, req.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +48,7 @@ func (q Querier) Module(context context.Context, req *types.QueryModuleRequest) 
 func (q Querier) Modules(context context.Context, req *types.QueryModulesRequest) (*types.QueryModulesResponse, error) {
 	ctx := sdk.UnwrapSDKContext(context)
 
-	moduleAddr, err := types.AccAddressFromString(q.authKeeper.AddressCodec(), req.Address)
+	moduleAddr, err := types.AccAddressFromString(q.ac, req.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func (q Querier) Modules(context context.Context, req *types.QueryModulesRequest
 func (q Querier) Resource(context context.Context, req *types.QueryResourceRequest) (*types.QueryResourceResponse, error) {
 	ctx := sdk.UnwrapSDKContext(context)
 
-	addr, err := types.AccAddressFromString(q.authKeeper.AddressCodec(), req.Address)
+	addr, err := types.AccAddressFromString(q.ac, req.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +118,7 @@ func (q Querier) Resource(context context.Context, req *types.QueryResourceReque
 func (q Querier) Resources(context context.Context, req *types.QueryResourcesRequest) (*types.QueryResourcesResponse, error) {
 	ctx := sdk.UnwrapSDKContext(context)
 
-	addr, err := types.AccAddressFromString(q.authKeeper.AddressCodec(), req.Address)
+	addr, err := types.AccAddressFromString(q.ac, req.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -163,7 +163,7 @@ func (q Querier) Resources(context context.Context, req *types.QueryResourcesReq
 func (q Querier) TableInfo(context context.Context, req *types.QueryTableInfoRequest) (*types.QueryTableInfoResponse, error) {
 	ctx := sdk.UnwrapSDKContext(context)
 
-	address, err := types.AccAddressFromString(q.authKeeper.AddressCodec(), req.Address)
+	address, err := types.AccAddressFromString(q.ac, req.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -181,7 +181,7 @@ func (q Querier) TableInfo(context context.Context, req *types.QueryTableInfoReq
 func (q Querier) TableEntry(context context.Context, req *types.QueryTableEntryRequest) (*types.QueryTableEntryResponse, error) {
 	ctx := sdk.UnwrapSDKContext(context)
 
-	addr, err := types.AccAddressFromString(q.authKeeper.AddressCodec(), req.Address)
+	addr, err := types.AccAddressFromString(q.ac, req.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -205,7 +205,7 @@ func (q Querier) TableEntries(context context.Context, req *types.QueryTableEntr
 	ctx := sdk.UnwrapSDKContext(context)
 	vmStore := types.NewVMStore(ctx, q.VMStore)
 
-	addr, err := types.AccAddressFromString(q.authKeeper.AddressCodec(), req.Address)
+	addr, err := types.AccAddressFromString(q.ac, req.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -267,7 +267,7 @@ func (q Querier) ViewFunction(context context.Context, req *types.QueryViewFunct
 
 	ctx := sdk.UnwrapSDKContext(context)
 
-	moduleAddr, err := types.AccAddressFromString(q.authKeeper.AddressCodec(), req.Address)
+	moduleAddr, err := types.AccAddressFromString(q.ac, req.Address)
 	if err != nil {
 		return
 	}

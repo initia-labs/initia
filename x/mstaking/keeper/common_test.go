@@ -406,6 +406,7 @@ func _createTestInput(
 		rewardKeeper,
 		authtypes.FeeCollectorName,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		ac, vc,
 	)
 	moveParams := movetypes.DefaultParams()
 	moveParams.BaseDenom = bondDenom

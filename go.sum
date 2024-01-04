@@ -709,8 +709,8 @@ github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANyt
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
 github.com/influxdata/influxdb1-client v0.0.0-20191209144304-8bf82d3c094d/go.mod h1:qj24IKcXYK6Iy9ceXlo3Tc+vtHo9lIhSX5JddghvEPo=
-github.com/initia-labs/OPinit v0.1.1-beta.0 h1:YA3OmLpwFuJ1XKbcU+kHR3+XzlE7Zez4VboKg4ZJoiA=
-github.com/initia-labs/OPinit v0.1.1-beta.0/go.mod h1:1dn1iseG1S4wfXUtnb4mUkraJdL9/lWBQPpI+HbVzL0=
+github.com/initia-labs/OPinit v0.1.1-beta.1 h1:3/qjPPHB5FsdUHmTOqvcuL+IAkfFENtF7fk+/eHSH1k=
+github.com/initia-labs/OPinit v0.1.1-beta.1/go.mod h1:1dn1iseG1S4wfXUtnb4mUkraJdL9/lWBQPpI+HbVzL0=
 github.com/initia-labs/cosmos-sdk v0.0.0-20240103092915-bf1e1bc520d0 h1:ZgI0FQvyUrpp3zKM0RuXU5hYdRw3u1/a50RG9l0G0Cw=
 github.com/initia-labs/cosmos-sdk v0.0.0-20240103092915-bf1e1bc520d0/go.mod h1:n/WQqDh73qdtBmY9Op3sYgiBgTujSfGSd6CNh6GfqvQ=
 github.com/initia-labs/initiavm v0.1.2-beta.6 h1:U59NfxapDLcGnSuP5IC8szsHw300Er81kMHhre4Nr68=

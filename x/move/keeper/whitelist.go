@@ -33,7 +33,7 @@ func (k Keeper) Whitelist(ctx context.Context, msg types.MsgWhitelist) error {
 		return err
 	}
 
-	metadataLP, err := types.AccAddressFromString(k.authKeeper.AddressCodec(), msg.MetadataLP)
+	metadataLP, err := types.AccAddressFromString(k.ac, msg.MetadataLP)
 	if err != nil {
 		return err
 	}
@@ -173,7 +173,7 @@ func (k Keeper) Delist(ctx context.Context, msg types.MsgDelist) error {
 	// load metadata
 	//
 
-	metadataLP, err := types.AccAddressFromString(k.authKeeper.AddressCodec(), msg.MetadataLP)
+	metadataLP, err := types.AccAddressFromString(k.ac, msg.MetadataLP)
 	if err != nil {
 		return err
 	}

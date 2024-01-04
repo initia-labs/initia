@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"cosmossdk.io/core/address"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	distrtypes "github.com/initia-labs/initia/x/distribution/types"
@@ -14,8 +13,6 @@ import (
 
 // AccountKeeper is expected keeper for auth module
 type AccountKeeper interface {
-	AddressCodec() address.Codec
-
 	NewAccount(ctx context.Context, acc sdk.AccountI) sdk.AccountI
 	GetAccount(ctx context.Context, addr sdk.AccAddress) sdk.AccountI
 	SetAccount(ctx context.Context, acc sdk.AccountI)
@@ -54,7 +51,6 @@ type RewardKeeper interface {
 
 // StakingKeeper is expected keeper for staking module
 type StakingKeeper interface {
-	ValidatorAddressCodec() address.Codec
 	Validator(ctx context.Context, address sdk.ValAddress) (stakingtypes.ValidatorI, error)
 	GetBondedValidatorsByPower(ctx context.Context) ([]stakingtypes.Validator, error)
 	UnbondingTime(ctx context.Context) (time.Duration, error)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
+	"cosmossdk.io/core/address"
 	"cosmossdk.io/core/appmodule"
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
@@ -90,8 +91,8 @@ func (b AppModuleBasic) RegisterInterfaces(registry cdctypes.InterfaceRegistry) 
 // AppModule implements an application module for the move module.
 type AppModule struct {
 	AppModuleBasic
-	accountKeeper types.AccountKeeper
-	keeper        keeper.Keeper
+	keeper keeper.Keeper
+	vc     address.Codec
 }
 
 // IsAppModule implements the appmodule.AppModule interface.
@@ -109,13 +110,13 @@ func (AppModule) ConsensusVersion() uint64 { return ConsensusVersion }
 // NewAppModule creates a new AppModule object
 func NewAppModule(
 	cdc codec.Codec,
-	ak types.AccountKeeper,
 	k keeper.Keeper,
+	vc address.Codec,
 ) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{cdc},
-		accountKeeper:  ak,
 		keeper:         k,
+		vc:             vc,
 	}
 }
 
@@ -150,5 +151,5 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 
 // BeginBlock returns the begin blocker for the move module.
 func (am AppModule) BeginBlock(ctx context.Context) error {
-	return BeginBlocker(ctx, am.keeper, am.keeper.StakingKeeper.ValidatorAddressCodec())
+	return BeginBlocker(ctx, am.keeper, am.vc)
 }

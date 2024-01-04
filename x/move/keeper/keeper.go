@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"cosmossdk.io/collections"
+	"cosmossdk.io/core/address"
 	corestoretypes "cosmossdk.io/core/store"
 	"cosmossdk.io/log"
 	"github.com/cosmos/cosmos-sdk/baseapp"
@@ -50,6 +51,9 @@ type Keeper struct {
 	Params           collections.Item[types.RawParams]
 	DexPairs         collections.Map[[]byte, []byte]
 	VMStore          collections.Map[[]byte, []byte]
+
+	ac address.Codec
+	vc address.Codec
 }
 
 func NewKeeper(
@@ -65,9 +69,10 @@ func NewKeeper(
 	rewardKeeper types.RewardKeeper, // can be nil, if staking not used
 	feeCollector string,
 	authority string,
+	ac, vc address.Codec,
 ) *Keeper {
 	// ensure that authority is a valid AccAddress
-	if _, err := authKeeper.AddressCodec().StringToBytes(authority); err != nil {
+	if _, err := ac.StringToBytes(authority); err != nil {
 		panic("authority is not a valid acc address")
 	}
 
@@ -103,6 +108,9 @@ func NewKeeper(
 		Params:           collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.RawParams](cdc)),
 		DexPairs:         collections.NewMap(sb, types.DexPairPrefix, "dex_pairs", collections.BytesKey, collections.BytesValue),
 		VMStore:          collections.NewMap(sb, types.VMStorePrefix, "vm_store", collections.BytesKey, collections.BytesValue),
+
+		ac: ac,
+		vc: vc,
 	}
 	schema, err := sb.Build()
 	if err != nil {
@@ -339,7 +347,7 @@ func (k Keeper) SetTableInfo(
 	ctx context.Context,
 	tableInfo types.TableInfo,
 ) error {
-	tableAddr, err := types.AccAddressFromString(k.authKeeper.AddressCodec(), tableInfo.Address)
+	tableAddr, err := types.AccAddressFromString(k.ac, tableInfo.Address)
 	if err != nil {
 		return err
 	}
@@ -445,7 +453,7 @@ func (k Keeper) SetTableEntry(
 	ctx context.Context,
 	tableEntry types.TableEntry,
 ) error {
-	tableAddr, err := types.AccAddressFromString(k.authKeeper.AddressCodec(), tableEntry.Address)
+	tableAddr, err := types.AccAddressFromString(k.ac, tableEntry.Address)
 	if err != nil {
 		return err
 	}

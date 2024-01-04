@@ -38,10 +38,9 @@ func (k Keeper) Initialize(
 		modules[i] = vmtypes.NewModule(moduleBz)
 	}
 
-	ac := k.authKeeper.AddressCodec()
 	_allowedPublishers := make([]vmtypes.AccountAddress, len(allowedPublishers))
 	for i, addr := range allowedPublishers {
-		addr, err := types.AccAddressFromString(ac, addr)
+		addr, err := types.AccAddressFromString(k.ac, addr)
 		if err != nil {
 			return err
 		}
@@ -77,9 +76,8 @@ func (k Keeper) InitGenesis(ctx context.Context, genState types.GenesisState) ([
 		}
 	}
 
-	ac := k.authKeeper.AddressCodec()
 	for _, module := range genState.GetModules() {
-		addr, err := types.AccAddressFromString(ac, module.Address)
+		addr, err := types.AccAddressFromString(k.ac, module.Address)
 		if err != nil {
 			return nil, err
 		}
@@ -90,7 +88,7 @@ func (k Keeper) InitGenesis(ctx context.Context, genState types.GenesisState) ([
 	}
 
 	for _, resource := range genState.GetResources() {
-		addr, err := types.AccAddressFromString(ac, resource.Address)
+		addr, err := types.AccAddressFromString(k.ac, resource.Address)
 		if err != nil {
 			return nil, err
 		}
