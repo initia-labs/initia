@@ -47,11 +47,10 @@ func (k Keeper) GetValidatorSlashEvent(ctx context.Context, val sdk.ValAddress, 
 }
 
 // get validator outstanding rewards
+// ValidatorOutstandingRewards should be initialized at initValidator()
 func (k Keeper) GetValidatorOutstandingRewards(ctx context.Context, val sdk.ValAddress) (rewards types.ValidatorOutstandingRewards, err error) {
 	rewards, err = k.ValidatorOutstandingRewards.Get(ctx, val)
-	if err != nil && errors.Is(err, collections.ErrNotFound) {
-		return types.ValidatorOutstandingRewards{}, nil
-	} else if err != nil {
+	if err != nil {
 		return types.ValidatorOutstandingRewards{}, err
 	}
 
@@ -59,11 +58,10 @@ func (k Keeper) GetValidatorOutstandingRewards(ctx context.Context, val sdk.ValA
 }
 
 // get current rewards for a validator
+// ValidatorCurrentRewards rewards should be initialized at initValidator()
 func (k Keeper) GetValidatorCurrentRewards(ctx context.Context, val sdk.ValAddress) (rewards types.ValidatorCurrentRewards, err error) {
 	rewards, err = k.ValidatorCurrentRewards.Get(ctx, val)
-	if err != nil && errors.Is(err, collections.ErrNotFound) {
-		return types.ValidatorCurrentRewards{}, nil
-	} else if err != nil {
+	if err != nil {
 		return types.ValidatorCurrentRewards{}, err
 	}
 

@@ -128,35 +128,32 @@ func (k Keeper) CalculateDelegationRewards(ctx context.Context, val stakingtypes
 	// for them for the stake sanity check below.
 	endingHeight := uint64(sdkCtx.BlockHeight())
 	if endingHeight > startingHeight {
-
-		// TODO - change height iteration to raw iteration
-		// k.ValidatorSlashEvents.IterateRaw()
-		for height := startingHeight; height < endingHeight+1; height++ {
-			err = k.ValidatorSlashEvents.Walk(ctx, collections.NewSuperPrefixedTripleRange[[]byte, uint64, uint64](valAddr, height),
-				func(key collections.Triple[[]byte, uint64, uint64], event customtypes.ValidatorSlashEvent) (stop bool, err error) {
-					endingPeriod := event.ValidatorPeriod
-					if endingPeriod > startingPeriod {
-						rewardsBetween, err := k.calculateDelegationRewardsBetween(ctx, val, startingPeriod, endingPeriod, stakes)
-						if err != nil {
-							return false, err
-						}
-
-						rewards = rewards.Add(rewardsBetween...)
-
-						// Note: It is necessary to truncate so we don't allow withdrawing
-						// more rewards than owed.
-						for i, stake := range stakes {
-							stakes[i].Amount = stake.Amount.MulTruncate(math.LegacyOneDec().Sub(event.Fractions.AmountOf(stake.Denom)))
-						}
-						startingPeriod = endingPeriod
+		err = k.ValidatorSlashEvents.Walk(ctx, new(collections.Range[collections.Triple[[]byte, uint64, uint64]]).
+			StartInclusive(collections.Join3[[]byte, uint64, uint64](valAddr, startingHeight, 0)).
+			EndExclusive(collections.Join3[[]byte, uint64, uint64](valAddr, endingHeight+1, 0)),
+			func(key collections.Triple[[]byte, uint64, uint64], event customtypes.ValidatorSlashEvent) (stop bool, err error) {
+				endingPeriod := event.ValidatorPeriod
+				if endingPeriod > startingPeriod {
+					rewardsBetween, err := k.calculateDelegationRewardsBetween(ctx, val, startingPeriod, endingPeriod, stakes)
+					if err != nil {
+						return false, err
 					}
 
-					return false, nil
-				},
-			)
-			if err != nil {
-				return
-			}
+					rewards = rewards.Add(rewardsBetween...)
+
+					// Note: It is necessary to truncate so we don't allow withdrawing
+					// more rewards than owed.
+					for i, stake := range stakes {
+						stakes[i].Amount = stake.Amount.MulTruncate(math.LegacyOneDec().Sub(event.Fractions.AmountOf(stake.Denom)))
+					}
+					startingPeriod = endingPeriod
+				}
+
+				return false, nil
+			},
+		)
+		if err != nil {
+			return
 		}
 	}
 

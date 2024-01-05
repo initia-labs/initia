@@ -163,7 +163,7 @@ func (k Keeper) decrementReferenceCount(ctx context.Context, valAddr sdk.ValAddr
 func (k Keeper) updateValidatorSlashFraction(ctx context.Context, valAddr sdk.ValAddress, fractions sdk.DecCoins) error {
 	for _, fraction := range fractions {
 		if fraction.Amount.GT(math.LegacyOneDec()) || fraction.Amount.IsNegative() {
-			panic(fmt.Sprintf("fraction must be >=0 and <=1, current fraction: %v", fraction))
+			return fmt.Errorf("fraction must be >=0 and <=1, current fraction: %v", fraction)
 		}
 	}
 
