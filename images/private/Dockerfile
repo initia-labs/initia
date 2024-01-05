@@ -1,4 +1,4 @@
-FROM golang:1.19.1-alpine3.16 AS go-builder
+FROM golang:1.21-alpine AS go-builder
 #ARG arch=x86_64
 
 # See https://github.com/initia-labs/initiavm/releases
