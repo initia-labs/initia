@@ -23,7 +23,7 @@ const (
 	MoveModuleNamePrimaryFungibleStore = "primary_fungible_store"
 	MoveModuleNameManagedCoin          = "managed_coin"
 	MoveModuleNameObject               = "object"
-	MoveModuleNameSimpleNft            = "simple_nft"
+	MoveModuleNameSimpleNft            = "initia_nft"
 	MoveModuleNameCollection           = "collection"
 
 	// function names for managed_coin
@@ -79,7 +79,7 @@ const (
 	ResourceNameIssuer        = "Issuer"
 	ResourceNameManagingRefs  = "ManagingRefs"
 	ResourceNameCollection    = "Collection"
-	ResourceNameSimpleNft     = "SimpleNft"
+	ResourceNameSimpleNft     = "InitiaNft"
 	ResourceNameNft           = "Nft"
 )
 

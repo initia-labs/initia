@@ -38,7 +38,7 @@ func (suite *KeeperTestSuite) CreateNftClass(
 		movetypes.MoveModuleNameSimpleNft,
 		movetypes.FunctionNameSimpleNftInitialize,
 		[]vmtypes.TypeTag{},
-		[][]byte{descBz, {0}, nameBz, uriBz, {0}, {0}, {0}, {0}, {0}, {0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+		[][]byte{descBz, {0}, nameBz, uriBz, {0}, {0}, {0}, {0}, {0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
 	)
 	suite.Require().NoError(err, "MakeCollection error on chain")
 
@@ -78,7 +78,7 @@ func (suite *KeeperTestSuite) MintNft(
 		movetypes.MoveModuleNameSimpleNft,
 		movetypes.FunctionNameSimpleNftMint,
 		[]vmtypes.TypeTag{},
-		[][]byte{classNameBz, dataBz, idBz, uriBz, {0}, {0}, {0}, append([]byte{1}, receiverAddr[:]...)},
+		[][]byte{classNameBz, dataBz, idBz, uriBz, {1}, append([]byte{1}, receiverAddr[:]...)},
 	)
 	suite.Require().NoError(err, "MakeCollection error on chain")
 }

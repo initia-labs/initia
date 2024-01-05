@@ -89,7 +89,7 @@ func (k NftKeeper) Mint(
 		types.MoveModuleNameSimpleNft,
 		types.FunctionNameSimpleNftMint,
 		[]vmtypes.TypeTag{},
-		[][]byte{collectionNameBz, dataBz, idBz, uriBz, {0}, {0}, {0}, append([]byte{1}, recipientAddr[:]...)},
+		[][]byte{collectionNameBz, dataBz, idBz, uriBz, {1}, append([]byte{1}, recipientAddr[:]...)},
 	)
 }
 
@@ -159,7 +159,7 @@ func (k NftKeeper) initializeCollection(ctx context.Context, collectionName, col
 		types.MoveModuleNameSimpleNft,
 		types.FunctionNameSimpleNftInitialize,
 		[]vmtypes.TypeTag{},
-		[][]byte{descBz, {0}, nameBz, uriBz, {0}, {0}, {0}, {0}, {0}, {0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+		[][]byte{descBz, {0}, nameBz, uriBz, {0}, {0}, {0}, {0}, {0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
 	)
 }
 
