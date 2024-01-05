@@ -4,14 +4,14 @@ import (
 	"context"
 	"time"
 
-	"github.com/armon/go-metrics"
+	"github.com/hashicorp/go-metrics"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	"cosmossdk.io/errors"
 
 	"github.com/cosmos/cosmos-sdk/telemetry"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/distribution/types"
@@ -30,15 +30,14 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 
 var _ types.MsgServer = msgServer{}
 
-func (k msgServer) SetWithdrawAddress(goCtx context.Context, msg *types.MsgSetWithdrawAddress) (*types.MsgSetWithdrawAddressResponse, error) {
+func (k msgServer) SetWithdrawAddress(ctx context.Context, msg *types.MsgSetWithdrawAddress) (*types.MsgSetWithdrawAddressResponse, error) {
 	defer telemetry.MeasureSince(time.Now(), "distribution", "msg", "set-withdraw-address")
-	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	delegatorAddress, err := sdk.AccAddressFromBech32(msg.DelegatorAddress)
+	delegatorAddress, err := k.authKeeper.AddressCodec().StringToBytes(msg.DelegatorAddress)
 	if err != nil {
 		return nil, err
 	}
-	withdrawAddress, err := sdk.AccAddressFromBech32(msg.WithdrawAddress)
+	withdrawAddress, err := k.authKeeper.AddressCodec().StringToBytes(msg.WithdrawAddress)
 	if err != nil {
 		return nil, err
 	}
@@ -50,15 +49,14 @@ func (k msgServer) SetWithdrawAddress(goCtx context.Context, msg *types.MsgSetWi
 	return &types.MsgSetWithdrawAddressResponse{}, nil
 }
 
-func (k msgServer) WithdrawDelegatorReward(goCtx context.Context, msg *types.MsgWithdrawDelegatorReward) (*types.MsgWithdrawDelegatorRewardResponse, error) {
+func (k msgServer) WithdrawDelegatorReward(ctx context.Context, msg *types.MsgWithdrawDelegatorReward) (*types.MsgWithdrawDelegatorRewardResponse, error) {
 	defer telemetry.MeasureSince(time.Now(), "distribution", "msg", "withdraw-delegator-reward")
-	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	valAddr, err := sdk.ValAddressFromBech32(msg.ValidatorAddress)
+	valAddr, err := k.stakingKeeper.ValidatorAddressCodec().StringToBytes(msg.ValidatorAddress)
 	if err != nil {
 		return nil, err
 	}
-	delegatorAddress, err := sdk.AccAddressFromBech32(msg.DelegatorAddress)
+	delegatorAddress, err := k.authKeeper.AddressCodec().StringToBytes(msg.DelegatorAddress)
 	if err != nil {
 		return nil, err
 	}
@@ -83,11 +81,10 @@ func (k msgServer) WithdrawDelegatorReward(goCtx context.Context, msg *types.Msg
 	return &types.MsgWithdrawDelegatorRewardResponse{}, nil
 }
 
-func (k msgServer) WithdrawValidatorCommission(goCtx context.Context, msg *types.MsgWithdrawValidatorCommission) (*types.MsgWithdrawValidatorCommissionResponse, error) {
+func (k msgServer) WithdrawValidatorCommission(ctx context.Context, msg *types.MsgWithdrawValidatorCommission) (*types.MsgWithdrawValidatorCommissionResponse, error) {
 	defer telemetry.MeasureSince(time.Now(), "distribution", "msg", "withdraw-validator-commission")
-	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	valAddr, err := sdk.ValAddressFromBech32(msg.ValidatorAddress)
+	valAddr, err := k.stakingKeeper.ValidatorAddressCodec().StringToBytes(msg.ValidatorAddress)
 	if err != nil {
 		return nil, err
 	}
@@ -112,11 +109,10 @@ func (k msgServer) WithdrawValidatorCommission(goCtx context.Context, msg *types
 	return &types.MsgWithdrawValidatorCommissionResponse{Amount: amount}, nil
 }
 
-func (k msgServer) FundCommunityPool(goCtx context.Context, msg *types.MsgFundCommunityPool) (*types.MsgFundCommunityPoolResponse, error) {
+func (k msgServer) FundCommunityPool(ctx context.Context, msg *types.MsgFundCommunityPool) (*types.MsgFundCommunityPoolResponse, error) {
 	defer telemetry.MeasureSince(time.Now(), "distribution", "msg", "fund-community-pool")
-	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	depositor, err := sdk.AccAddressFromBech32(msg.Depositor)
+	depositor, err := k.authKeeper.AddressCodec().StringToBytes(msg.Depositor)
 	if err != nil {
 		return nil, err
 	}
@@ -127,19 +123,17 @@ func (k msgServer) FundCommunityPool(goCtx context.Context, msg *types.MsgFundCo
 	return &types.MsgFundCommunityPoolResponse{}, nil
 }
 
-func (k msgServer) UpdateParams(goCtx context.Context, req *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
+func (k msgServer) UpdateParams(ctx context.Context, req *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "not supported")
 }
 
-func (k msgServer) CommunityPoolSpend(goCtx context.Context, req *types.MsgCommunityPoolSpend) (*types.MsgCommunityPoolSpendResponse, error) {
+func (k msgServer) CommunityPoolSpend(ctx context.Context, req *types.MsgCommunityPoolSpend) (*types.MsgCommunityPoolSpendResponse, error) {
 	defer telemetry.MeasureSince(time.Now(), "distribution", "msg", "community-pool-spend")
 	if k.authority != req.Authority {
 		return nil, errors.Wrapf(govtypes.ErrInvalidSigner, "invalid authority; expected %s, got %s", k.authority, req.Authority)
 	}
 
-	ctx := sdk.UnwrapSDKContext(goCtx)
-
-	recipient, err := sdk.AccAddressFromBech32(req.Recipient)
+	recipient, err := k.authKeeper.AddressCodec().StringToBytes(req.Recipient)
 	if err != nil {
 		return nil, err
 	}
@@ -156,4 +150,8 @@ func (k msgServer) CommunityPoolSpend(goCtx context.Context, req *types.MsgCommu
 	logger.Info("transferred from the community pool to recipient", "amount", req.Amount.String(), "recipient", req.Recipient)
 
 	return &types.MsgCommunityPoolSpendResponse{}, nil
+}
+
+func (k msgServer) DepositValidatorRewardsPool(ctx context.Context, msg *types.MsgDepositValidatorRewardsPool) (*types.MsgDepositValidatorRewardsPoolResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "not supported")
 }

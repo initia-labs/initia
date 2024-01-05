@@ -3,11 +3,13 @@ package types_test
 import (
 	"testing"
 
+	"cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
 
-	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
-	ibctesting "github.com/cosmos/ibc-go/v7/testing"
+	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
+	ibctesting "github.com/cosmos/ibc-go/v8/testing"
 
+	"github.com/cosmos/cosmos-sdk/codec/address"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
@@ -30,12 +32,12 @@ var (
 	TestMessage = &banktypes.MsgSend{
 		FromAddress: "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs",
 		ToAddress:   "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs",
-		Amount:      sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(100))),
+		Amount:      sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, math.NewInt(100))),
 	}
 )
 
-// TestMsgRegisterAccountValidateBasic tests ValidateBasic for MsgRegisterAccount
-func TestMsgRegisterAccountValidateBasic(t *testing.T) {
+// TestMsgRegisterAccountValidate tests Validate for MsgRegisterAccount
+func TestMsgRegisterAccountValidate(t *testing.T) {
 	testCases := []struct {
 		name    string
 		msg     *types.MsgRegisterAccount
@@ -46,8 +48,9 @@ func TestMsgRegisterAccountValidateBasic(t *testing.T) {
 		{"owner address is invalid", types.NewMsgRegisterAccount("invalid_address", ibctesting.FirstConnectionID, TestVersion), false},
 	}
 
+	ac := address.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix())
 	for i, tc := range testCases {
-		err := tc.msg.ValidateBasic()
+		err := tc.msg.Validate(ac)
 		if tc.expPass {
 			require.NoError(t, err, "valid test case %d failed: %s", i, tc.name)
 		} else {
@@ -56,18 +59,8 @@ func TestMsgRegisterAccountValidateBasic(t *testing.T) {
 	}
 }
 
-// TestMsgRegisterAccountGetSigners tests GetSigners for MsgRegisterAccount
-func TestMsgRegisterAccountGetSigners(t *testing.T) {
-	expSigner, err := sdk.AccAddressFromBech32(TestOwnerAddress)
-	require.NoError(t, err)
-
-	msg := types.NewMsgRegisterAccount(TestOwnerAddress, ibctesting.FirstConnectionID, TestVersion)
-
-	require.Equal(t, []sdk.AccAddress{expSigner}, msg.GetSigners())
-}
-
-// TestMsgSubmitTxValidateBasic tests ValidateBasic for MsgSubmitTx
-func TestMsgSubmitTxValidateBasic(t *testing.T) {
+// TestMsgSubmitTxValidate tests Validate for MsgSubmitTx
+func TestMsgSubmitTxValidate(t *testing.T) {
 	var msg *types.MsgSubmitTx
 
 	testCases := []struct {
@@ -89,27 +82,17 @@ func TestMsgSubmitTxValidateBasic(t *testing.T) {
 		},
 	}
 
+	ac := address.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix())
 	for i, tc := range testCases {
 		msg, _ = types.NewMsgSubmitTx(TestMessage, ibctesting.FirstConnectionID, TestOwnerAddress)
 
 		tc.malleate()
 
-		err := msg.ValidateBasic()
+		err := msg.Validate(ac)
 		if tc.expPass {
 			require.NoError(t, err, "valid test case %d failed: %s", i, tc.name)
 		} else {
 			require.Error(t, err, "invalid test case %d passed: %s", i, tc.name)
 		}
 	}
-}
-
-// TestMsgSubmitTxGetSigners tests GetSigners for MsgSubmitTx
-func TestMsgSubmitTxGetSigners(t *testing.T) {
-	expSigner, err := sdk.AccAddressFromBech32(TestOwnerAddress)
-	require.NoError(t, err)
-
-	msg, err := types.NewMsgSubmitTx(TestMessage, ibctesting.FirstConnectionID, TestOwnerAddress)
-	require.NoError(t, err)
-
-	require.Equal(t, []sdk.AccAddress{expSigner}, msg.GetSigners())
 }

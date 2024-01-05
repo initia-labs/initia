@@ -30,10 +30,10 @@ func (dvv DVVTriplet) String() string {
 // NewDelegation creates a new delegation object
 //
 //nolint:interfacer
-func NewDelegation(delegatorAddr sdk.AccAddress, validatorAddr sdk.ValAddress, shares sdk.DecCoins) Delegation {
+func NewDelegation(delegatorAddr, validatorAddr string, shares sdk.DecCoins) Delegation {
 	return Delegation{
-		DelegatorAddress: delegatorAddr.String(),
-		ValidatorAddress: validatorAddr.String(),
+		DelegatorAddress: delegatorAddr,
+		ValidatorAddress: validatorAddr,
 		Shares:           shares,
 	}
 }
@@ -60,19 +60,11 @@ func UnmarshalDelegation(cdc codec.BinaryCodec, value []byte) (delegation Delega
 	return delegation, err
 }
 
-func (d Delegation) GetDelegatorAddr() sdk.AccAddress {
-	delAddr, err := sdk.AccAddressFromBech32(d.DelegatorAddress)
-	if err != nil {
-		panic(err)
-	}
-	return delAddr
+func (d Delegation) GetDelegatorAddr() string {
+	return d.DelegatorAddress
 }
-func (d Delegation) GetValidatorAddr() sdk.ValAddress {
-	addr, err := sdk.ValAddressFromBech32(d.ValidatorAddress)
-	if err != nil {
-		panic(err)
-	}
-	return addr
+func (d Delegation) GetValidatorAddr() string {
+	return d.ValidatorAddress
 }
 func (d Delegation) GetShares() sdk.DecCoins { return d.Shares }
 
@@ -145,12 +137,12 @@ func UnmarshalUBDE(cdc codec.BinaryCodec, value []byte) (ubd UnbondingDelegation
 //
 //nolint:interfacer
 func NewUnbondingDelegation(
-	delegatorAddr sdk.AccAddress, validatorAddr sdk.ValAddress,
-	creationHeight int64, minTime time.Time, balance sdk.Coins, unbondingId uint64,
+	delegatorAddr, validatorAddr string, creationHeight int64,
+	minTime time.Time, balance sdk.Coins, unbondingId uint64,
 ) UnbondingDelegation {
 	return UnbondingDelegation{
-		DelegatorAddress: delegatorAddr.String(),
-		ValidatorAddress: validatorAddr.String(),
+		DelegatorAddress: delegatorAddr,
+		ValidatorAddress: validatorAddr,
 		Entries: []UnbondingDelegationEntry{
 			NewUnbondingDelegationEntry(creationHeight, minTime, balance, unbondingId),
 		},
@@ -159,6 +151,7 @@ func NewUnbondingDelegation(
 
 // AddEntry - append entry to the unbonding delegation
 func (ubd *UnbondingDelegation) AddEntry(creationHeight int64, minTime time.Time, balance sdk.Coins, unbondingId uint64) {
+	// append the new unbond delegation entry
 	entry := NewUnbondingDelegationEntry(creationHeight, minTime, balance, unbondingId)
 	ubd.Entries = append(ubd.Entries, entry)
 }
@@ -248,13 +241,13 @@ func (e RedelegationEntry) OnHold() bool {
 
 //nolint:interfacer
 func NewRedelegation(
-	delegatorAddr sdk.AccAddress, validatorSrcAddr, validatorDstAddr sdk.ValAddress,
-	creationHeight int64, minTime time.Time, balance sdk.Coins, sharesDst sdk.DecCoins, unbondingId uint64,
+	delegatorAddr, validatorSrcAddr, validatorDstAddr string, creationHeight int64,
+	minTime time.Time, balance sdk.Coins, sharesDst sdk.DecCoins, unbondingId uint64,
 ) Redelegation {
 	return Redelegation{
-		DelegatorAddress:    delegatorAddr.String(),
-		ValidatorSrcAddress: validatorSrcAddr.String(),
-		ValidatorDstAddress: validatorDstAddr.String(),
+		DelegatorAddress:    delegatorAddr,
+		ValidatorSrcAddress: validatorSrcAddr,
+		ValidatorDstAddress: validatorDstAddr,
 		Entries: []RedelegationEntry{
 			NewRedelegationEntry(creationHeight, minTime, balance, sharesDst, unbondingId),
 		},
@@ -335,7 +328,7 @@ func (d Redelegations) String() (out string) {
 
 // NewDelegationResp creates a new DelegationResponse instance
 func NewDelegationResp(
-	delegatorAddr sdk.AccAddress, validatorAddr sdk.ValAddress, shares sdk.DecCoins, balance sdk.Coins,
+	delegatorAddr, validatorAddr string, shares sdk.DecCoins, balance sdk.Coins,
 ) DelegationResponse {
 	return DelegationResponse{
 		Delegation: NewDelegation(delegatorAddr, validatorAddr, shares),
@@ -378,13 +371,13 @@ func (d DelegationResponses) String() (out string) {
 //
 //nolint:interfacer
 func NewRedelegationResponse(
-	delegatorAddr sdk.AccAddress, validatorSrc, validatorDst sdk.ValAddress, entries []RedelegationEntryResponse,
+	delegatorAddr, validatorSrc, validatorDst string, entries []RedelegationEntryResponse,
 ) RedelegationResponse {
 	return RedelegationResponse{
 		Redelegation: Redelegation{
-			DelegatorAddress:    delegatorAddr.String(),
-			ValidatorSrcAddress: validatorSrc.String(),
-			ValidatorDstAddress: validatorDst.String(),
+			DelegatorAddress:    delegatorAddr,
+			ValidatorSrcAddress: validatorSrc,
+			ValidatorDstAddress: validatorDst,
 		},
 		Entries: entries,
 	}

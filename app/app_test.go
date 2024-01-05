@@ -6,35 +6,32 @@ import (
 	"os"
 	"testing"
 
-	dbm "github.com/cometbft/cometbft-db"
-	"github.com/cometbft/cometbft/libs/log"
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 
+	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
+
+	"cosmossdk.io/log"
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/testutil/mock"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	authzmodule "github.com/cosmos/cosmos-sdk/x/authz/module"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/cosmos/cosmos-sdk/x/capability"
-	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	"github.com/cosmos/cosmos-sdk/x/consensus"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	groupmodule "github.com/cosmos/cosmos-sdk/x/group/module"
+	"github.com/cosmos/ibc-go/modules/capability"
 
+	feegrantmodule "cosmossdk.io/x/feegrant/module"
+	"cosmossdk.io/x/upgrade"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
-	feegrantmodule "github.com/cosmos/cosmos-sdk/x/feegrant/module"
-	"github.com/cosmos/cosmos-sdk/x/params"
-	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/cosmos/cosmos-sdk/x/slashing"
-	"github.com/cosmos/cosmos-sdk/x/upgrade"
 
-	ica "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts"
-	ibctransfer "github.com/cosmos/ibc-go/v7/modules/apps/transfer"
-	ibc "github.com/cosmos/ibc-go/v7/modules/core"
-	"github.com/strangelove-ventures/packet-forward-middleware/v7/router"
+	ica "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts"
+	ibctransfer "github.com/cosmos/ibc-go/v8/modules/apps/transfer"
+	ibc "github.com/cosmos/ibc-go/v8/modules/core"
 
 	"github.com/initia-labs/initia/x/bank"
 	"github.com/initia-labs/initia/x/distribution"
@@ -77,10 +74,10 @@ func TestGetMaccPerms(t *testing.T) {
 
 func TestInitGenesisOnMigration(t *testing.T) {
 	db := dbm.NewMemDB()
-	logger := log.NewTMLogger(log.NewSyncWriter(os.Stdout))
+	logger := log.NewLogger(os.Stdout)
 	app := NewInitiaApp(
 		logger, db, nil, true, moveconfig.DefaultMoveConfig(), simtestutil.EmptyAppOptions{})
-	ctx := app.NewContext(true, tmproto.Header{Height: app.LastBlockHeight()})
+	ctx := app.NewContextLegacy(true, cmtproto.Header{Height: app.LastBlockHeight()})
 
 	// Create a mock module. This module will serve as the new module we're
 	// adding during a migration.
@@ -89,14 +86,14 @@ func TestInitGenesisOnMigration(t *testing.T) {
 	mockModule := mock.NewMockAppModuleWithAllExtensions(mockCtrl)
 	mockDefaultGenesis := json.RawMessage(`{"key": "value"}`)
 	mockModule.EXPECT().DefaultGenesis(gomock.Eq(app.appCodec)).Times(1).Return(mockDefaultGenesis)
-	mockModule.EXPECT().InitGenesis(gomock.Eq(ctx), gomock.Eq(app.appCodec), gomock.Eq(mockDefaultGenesis)).Times(1).Return(nil)
+	mockModule.EXPECT().InitGenesis(gomock.Eq(ctx), gomock.Eq(app.appCodec), gomock.Eq(mockDefaultGenesis)).Times(1)
 	mockModule.EXPECT().ConsensusVersion().Times(1).Return(uint64(0))
 
-	app.mm.Modules["mock"] = mockModule
+	app.ModuleManager.Modules["mock"] = mockModule
 
 	// Run migrations only for "mock" module. We exclude it from
 	// the VersionMap to simulate upgrading with a new module.
-	_, err := app.mm.RunMigrations(ctx, app.configurator,
+	_, err := app.ModuleManager.RunMigrations(ctx, app.configurator,
 		module.VersionMap{
 			"bank":                       bank.AppModule{}.ConsensusVersion(),
 			"auth":                       auth.AppModule{}.ConsensusVersion(),
@@ -106,7 +103,6 @@ func TestInitGenesisOnMigration(t *testing.T) {
 			"distribution":               distribution.AppModule{}.ConsensusVersion(),
 			"slashing":                   slashing.AppModule{}.ConsensusVersion(),
 			"gov":                        gov.AppModule{}.ConsensusVersion(),
-			"params":                     params.AppModule{}.ConsensusVersion(),
 			"upgrade":                    upgrade.AppModule{}.ConsensusVersion(),
 			"feegrant":                   feegrantmodule.AppModule{}.ConsensusVersion(),
 			"evidence":                   evidence.AppModule{}.ConsensusVersion(),
@@ -119,7 +115,6 @@ func TestInitGenesisOnMigration(t *testing.T) {
 			"transfer":                   ibctransfer.AppModule{}.ConsensusVersion(),
 			"nonfungibletokentransfer":   nfttransfer.AppModule{}.ConsensusVersion(),
 			"interchainaccounts":         ica.AppModule{}.ConsensusVersion(),
-			"packetfowardmiddleware":     router.AppModule{}.ConsensusVersion(),
 			"permissionedchannelrelayer": ibcperm.AppModule{}.ConsensusVersion(),
 			"move":                       move.AppModule{}.ConsensusVersion(),
 		},
@@ -131,9 +126,11 @@ func TestUpgradeStateOnGenesis(t *testing.T) {
 	app := SetupWithGenesisAccounts(nil, nil)
 
 	// make sure the upgrade keeper has version map in state
-	ctx := app.NewContext(false, tmproto.Header{})
-	vm := app.UpgradeKeeper.GetModuleVersionMap(ctx)
-	for v, i := range app.mm.Modules {
+	ctx := app.NewContext(true)
+	vm, err := app.UpgradeKeeper.GetModuleVersionMap(ctx)
+	require.NoError(t, err)
+
+	for v, i := range app.ModuleManager.Modules {
 		if i, ok := i.(module.HasConsensusVersion); ok {
 			require.Equal(t, vm[v], i.ConsensusVersion())
 		}
@@ -143,10 +140,8 @@ func TestUpgradeStateOnGenesis(t *testing.T) {
 func TestGetKey(t *testing.T) {
 	db := dbm.NewMemDB()
 	app := NewInitiaApp(
-		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
+		log.NewLogger(os.Stdout),
 		db, nil, true, moveconfig.DefaultMoveConfig(), simtestutil.EmptyAppOptions{})
 
 	require.NotEmpty(t, app.GetKey(banktypes.StoreKey))
-	require.NotEmpty(t, app.GetTKey(paramstypes.TStoreKey))
-	require.NotEmpty(t, app.GetMemKey(capabilitytypes.MemStoreKey))
 }

@@ -27,7 +27,7 @@ func NewMsgServerImpl(k *Keeper) MsgServer {
 func (k MsgServer) Transfer(goCtx context.Context, msg *types.MsgTransfer) (*types.MsgTransferResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	sender, err := sdk.AccAddressFromBech32(msg.Sender)
+	sender, err := k.authKeeper.AddressCodec().StringToBytes(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +73,7 @@ func (ms MsgServer) UpdateParams(context context.Context, req *types.MsgUpdatePa
 	}
 
 	ctx := sdk.UnwrapSDKContext(context)
-	if err := ms.SetParams(ctx, req.Params); err != nil {
+	if err := ms.Params.Set(ctx, req.Params); err != nil {
 		return nil, err
 	}
 

@@ -36,7 +36,7 @@ func decToVmArgument(t *testing.T, val math.LegacyDec) []byte {
 func createDexPool(
 	t *testing.T, ctx sdk.Context, input TestKeepers,
 	baseCoin sdk.Coin, quoteCoin sdk.Coin,
-	weightBase sdk.Dec, weightQuote sdk.Dec,
+	weightBase math.LegacyDec, weightQuote math.LegacyDec,
 ) (metadataLP vmtypes.AccountAddress) {
 	metadataBase, err := types.MetadataAddressFromDenom(baseCoin.Denom)
 	require.NoError(t, err)
@@ -100,10 +100,10 @@ func Test_ReadPool(t *testing.T) {
 	moveBankKeeper := keeper.NewMoveBankKeeper(&input.MoveKeeper)
 
 	baseDenom := bondDenom
-	baseAmount := sdk.NewInt(1_000_000_000_000)
+	baseAmount := math.NewInt(1_000_000_000_000)
 
 	denomQuote := "uusdc"
-	quoteAmount := sdk.NewInt(2_500_000_000_000)
+	quoteAmount := math.NewInt(2_500_000_000_000)
 
 	metadataQuote, err := types.MetadataAddressFromDenom(denomQuote)
 	require.NoError(t, err)
@@ -111,7 +111,7 @@ func Test_ReadPool(t *testing.T) {
 	metadataLP := createDexPool(
 		t, ctx, input,
 		sdk.NewCoin(baseDenom, baseAmount), sdk.NewCoin(denomQuote, quoteAmount),
-		sdk.NewDecWithPrec(8, 1), sdk.NewDecWithPrec(2, 1),
+		math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1),
 	)
 
 	// store dex pair for queries
@@ -130,7 +130,7 @@ func Test_ReadPool(t *testing.T) {
 	// check share balance
 	totalShare, err := moveBankKeeper.GetSupplyWithMetadata(ctx, metadataLP)
 	require.NoError(t, err)
-	require.Equal(t, sdk.MaxInt(baseAmount, quoteAmount), totalShare)
+	require.Equal(t, math.MaxInt(baseAmount, quoteAmount), totalShare)
 }
 
 func Test_ReadWeights(t *testing.T) {
@@ -138,10 +138,10 @@ func Test_ReadWeights(t *testing.T) {
 	dexKeeper := keeper.NewDexKeeper(&input.MoveKeeper)
 
 	baseDenom := bondDenom
-	baseAmount := sdk.NewInt(1_000_000_000_000)
+	baseAmount := math.NewInt(1_000_000_000_000)
 
 	denomQuote := "uusdc"
-	quoteAmount := sdk.NewInt(4_000_000_000_000)
+	quoteAmount := math.NewInt(4_000_000_000_000)
 
 	metadataQuote, err := types.MetadataAddressFromDenom(denomQuote)
 	require.NoError(t, err)
@@ -149,7 +149,7 @@ func Test_ReadWeights(t *testing.T) {
 	metadataLP := createDexPool(
 		t, ctx, input,
 		sdk.NewCoin(denomQuote, quoteAmount), sdk.NewCoin(baseDenom, baseAmount),
-		sdk.NewDecWithPrec(2, 1), sdk.NewDecWithPrec(8, 1),
+		math.LegacyNewDecWithPrec(2, 1), math.LegacyNewDecWithPrec(8, 1),
 	)
 
 	// store dex pair for queries
@@ -161,8 +161,8 @@ func Test_ReadWeights(t *testing.T) {
 
 	weightBase, weightQuote, err := dexKeeper.GetPoolWeights(ctx, denomQuote)
 	require.NoError(t, err)
-	require.Equal(t, sdk.NewDecWithPrec(8, 1), weightBase)
-	require.Equal(t, sdk.NewDecWithPrec(2, 1), weightQuote)
+	require.Equal(t, math.LegacyNewDecWithPrec(8, 1), weightBase)
+	require.Equal(t, math.LegacyNewDecWithPrec(2, 1), weightQuote)
 }
 
 func Test_GetPoolSpotPrice(t *testing.T) {
@@ -170,10 +170,10 @@ func Test_GetPoolSpotPrice(t *testing.T) {
 	dexKeeper := keeper.NewDexKeeper(&input.MoveKeeper)
 
 	baseDenom := bondDenom
-	baseAmount := sdk.NewInt(4_000_000_000_000)
+	baseAmount := math.NewInt(4_000_000_000_000)
 
 	denomQuote := "uusdc"
-	quoteAmount := sdk.NewInt(1_000_000_000_000)
+	quoteAmount := math.NewInt(1_000_000_000_000)
 
 	metadataQuote, err := types.MetadataAddressFromDenom(denomQuote)
 	require.NoError(t, err)
@@ -181,7 +181,7 @@ func Test_GetPoolSpotPrice(t *testing.T) {
 	metadataLP := createDexPool(
 		t, ctx, input,
 		sdk.NewCoin(baseDenom, baseAmount), sdk.NewCoin(denomQuote, quoteAmount),
-		sdk.NewDecWithPrec(8, 1), sdk.NewDecWithPrec(2, 1),
+		math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1),
 	)
 
 	// store dex pair for queries
@@ -193,7 +193,7 @@ func Test_GetPoolSpotPrice(t *testing.T) {
 
 	quotePrice, err := dexKeeper.GetPoolSpotPrice(ctx, denomQuote)
 	require.NoError(t, err)
-	require.Equal(t, sdk.OneDec(), quotePrice)
+	require.Equal(t, math.LegacyOneDec(), quotePrice)
 }
 
 func Test_SwapToBase(t *testing.T) {
@@ -201,10 +201,10 @@ func Test_SwapToBase(t *testing.T) {
 	dexKeeper := keeper.NewDexKeeper(&input.MoveKeeper)
 
 	baseDenom := bondDenom
-	baseAmount := sdk.NewInt(4_000_000_000_000)
+	baseAmount := math.NewInt(4_000_000_000_000)
 
 	denomQuote := "uusdc"
-	quoteAmount := sdk.NewInt(1_000_000_000_000)
+	quoteAmount := math.NewInt(1_000_000_000_000)
 
 	metadataQuote, err := types.MetadataAddressFromDenom(denomQuote)
 	require.NoError(t, err)
@@ -212,7 +212,7 @@ func Test_SwapToBase(t *testing.T) {
 	metadataLP := createDexPool(
 		t, ctx, input,
 		sdk.NewCoin(baseDenom, baseAmount), sdk.NewCoin(denomQuote, quoteAmount),
-		sdk.NewDecWithPrec(8, 1), sdk.NewDecWithPrec(2, 1),
+		math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1),
 	)
 
 	// store dex pair for queries

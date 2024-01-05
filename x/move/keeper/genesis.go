@@ -1,9 +1,10 @@
 package keeper
 
 import (
+	"context"
+
 	abci "github.com/cometbft/cometbft/abci/types"
 
-	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/initia-labs/initia/x/move/types"
@@ -12,18 +13,24 @@ import (
 )
 
 func (k Keeper) Initialize(
-	ctx sdk.Context,
+	ctx context.Context,
 	moduleBytes [][]byte,
 	allowArbitrary bool,
 	allowedPublishers []string,
 ) error {
-	ctx = ctx.WithTxBytes(make([]byte, 32))
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	ctx = sdkCtx.WithTxBytes(make([]byte, 32))
+
+	ec, err := k.ExecutionCounter.Next(ctx)
+	if err != nil {
+		return err
+	}
 
 	api := NewApi(k, ctx)
 	env := types.NewEnv(
 		ctx,
 		types.NextAccountNumber(ctx, k.authKeeper),
-		k.IncreaseExecutionCounter(ctx),
+		ec,
 	)
 
 	modules := make([]vmtypes.Module, len(moduleBytes))
@@ -33,7 +40,7 @@ func (k Keeper) Initialize(
 
 	_allowedPublishers := make([]vmtypes.AccountAddress, len(allowedPublishers))
 	for i, addr := range allowedPublishers {
-		addr, err := types.AccAddressFromString(addr)
+		addr, err := types.AccAddressFromString(k.ac, addr)
 		if err != nil {
 			return err
 		}
@@ -43,8 +50,8 @@ func (k Keeper) Initialize(
 
 	// The default upgrade policy is compatible when it's not set,
 	// so skip the registration at initialize.
-	kvStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.PrefixKeyVMStore)
-	if err := k.moveVM.Initialize(kvStore, api, env, vmtypes.NewModuleBundle(modules...), allowArbitrary, _allowedPublishers); err != nil {
+	vmStore := types.NewVMStore(ctx, k.VMStore)
+	if err := k.moveVM.Initialize(vmStore, api, env, vmtypes.NewModuleBundle(modules...), allowArbitrary, _allowedPublishers); err != nil {
 		return err
 	}
 
@@ -52,14 +59,16 @@ func (k Keeper) Initialize(
 }
 
 // InitGenesis sets supply information for genesis.
-func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) ([]abci.ValidatorUpdate, error) {
+func (k Keeper) InitGenesis(ctx context.Context, genState types.GenesisState) ([]abci.ValidatorUpdate, error) {
 	k.authKeeper.GetModuleAccount(ctx, types.MoveStakingModuleName)
 
 	params := genState.GetParams()
 	if err := k.SetRawParams(ctx, params.ToRaw()); err != nil {
 		return nil, err
 	}
-	k.SetExecutionCounter(ctx, genState.ExecutionCounter)
+	if err := k.ExecutionCounter.Set(ctx, genState.ExecutionCounter); err != nil {
+		return nil, err
+	}
 
 	if len(genState.GetModules()) == 0 {
 		if err := k.Initialize(ctx, genState.GetStdlibs(), params.ArbitraryEnabled, params.AllowedPublishers); err != nil {
@@ -68,7 +77,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) ([]abc
 	}
 
 	for _, module := range genState.GetModules() {
-		addr, err := types.AccAddressFromString(module.Address)
+		addr, err := types.AccAddressFromString(k.ac, module.Address)
 		if err != nil {
 			return nil, err
 		}
@@ -79,7 +88,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) ([]abc
 	}
 
 	for _, resource := range genState.GetResources() {
-		addr, err := types.AccAddressFromString(resource.Address)
+		addr, err := types.AccAddressFromString(k.ac, resource.Address)
 		if err != nil {
 			return nil, err
 		}
@@ -118,10 +127,14 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) ([]abc
 }
 
 // ExportGenesis export genesis state
-func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
+func (k Keeper) ExportGenesis(ctx context.Context) *types.GenesisState {
 	var genState types.GenesisState
 
-	genState.Params = k.GetParams(ctx)
+	var err error
+	genState.Params, err = k.GetParams(ctx)
+	if err != nil {
+		panic(err)
+	}
 
 	var modules []types.Module
 	var resources []types.Resource
@@ -154,16 +167,24 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 	dexKeeper := NewDexKeeper(&k)
 
 	var dexPairs []types.DexPair
-	dexKeeper.IterateDexPair(ctx, func(dexPair types.DexPair) {
+	err = dexKeeper.IterateDexPair(ctx, func(dexPair types.DexPair) (bool, error) {
 		dexPairs = append(dexPairs, dexPair)
+		return false, nil
 	})
+	if err != nil {
+		panic(err)
+	}
 
 	genState.Modules = modules
 	genState.Resources = resources
 	genState.TableInfos = tableInfos
 	genState.TableEntries = tableEntries
-	genState.ExecutionCounter = k.GetExecutionCounter(ctx)
 	genState.DexPairs = dexPairs
+
+	genState.ExecutionCounter, err = k.GetExecutionCounter(ctx)
+	if err != nil {
+		panic(err)
+	}
 
 	return &genState
 }

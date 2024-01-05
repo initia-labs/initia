@@ -8,26 +8,34 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-var _ types.QueryServer = Keeper{}
+var _ types.QueryServer = QueryServer{}
+
+type QueryServer struct {
+	*Keeper
+}
+
+func NewQueryServerImpl(k *Keeper) QueryServer {
+	return QueryServer{k}
+}
 
 // Params returns params of the reward module.
-func (k Keeper) Params(c context.Context, _ *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
+func (qs QueryServer) Params(c context.Context, _ *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
-	params := k.GetParams(ctx)
+	params, err := qs.GetParams(ctx)
 
-	return &types.QueryParamsResponse{Params: params}, nil
+	return &types.QueryParamsResponse{Params: params}, err
 }
 
 // AnnualProvisions returns calculated annual rewards.
-func (k Keeper) AnnualProvisions(c context.Context, _ *types.QueryAnnualProvisionsRequest) (*types.QueryAnnualProvisionsResponse, error) {
+func (qs QueryServer) AnnualProvisions(c context.Context, _ *types.QueryAnnualProvisionsRequest) (*types.QueryAnnualProvisionsResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
-	annualProvisions := k.GetAnnualProvisions(ctx)
-	return &types.QueryAnnualProvisionsResponse{AnnualProvisions: annualProvisions}, nil
+	annualProvisions, err := qs.GetAnnualProvisions(ctx)
+	return &types.QueryAnnualProvisionsResponse{AnnualProvisions: annualProvisions}, err
 }
 
 // LastDilutionTimestamp returns calculated annual rewards.
-func (k Keeper) LastDilutionTimestamp(c context.Context, _ *types.QueryLastDilutionTimestampRequest) (*types.QueryLastDilutionTimestampResponse, error) {
+func (qs QueryServer) LastDilutionTimestamp(c context.Context, _ *types.QueryLastDilutionTimestampRequest) (*types.QueryLastDilutionTimestampResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
-	lastDilutionTimestamp := k.GetLastDilutionTimestamp(ctx)
-	return &types.QueryLastDilutionTimestampResponse{LastDilutionTimestamp: lastDilutionTimestamp}, nil
+	lastDilutionTimestamp, err := qs.GetLastDilutionTimestamp(ctx)
+	return &types.QueryLastDilutionTimestampResponse{LastDilutionTimestamp: lastDilutionTimestamp}, err
 }

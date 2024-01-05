@@ -17,7 +17,7 @@ message Params {
   string base_denom         = 1;
   string base_min_gas_price = 2 [
     (gogoproto.moretags)   = "yaml:\"base_min_gas_price\"",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable)   = false,
     (amino.dont_omitempty) = true
   ];
@@ -26,7 +26,7 @@ message Params {
   // CSR: Percentage of fees distributed to developers
   string contract_shared_revenue_ratio = 4 [
     (gogoproto.moretags)   = "yaml:\"contract_shared_revenue_ratio\"",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable)   = false,
     (amino.dont_omitempty) = true
   ];
@@ -44,7 +44,7 @@ message RawParams {
   string base_denom         = 1;
   string base_min_gas_price = 2 [
     (gogoproto.moretags)   = "yaml:\"base_min_gas_price\"",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable)   = false,
     (amino.dont_omitempty) = true
   ];
@@ -52,7 +52,7 @@ message RawParams {
   // CSR: Percentage of fees distributed to developers
   string contract_shared_revenue_ratio = 3 [
     (gogoproto.moretags)   = "yaml:\"contract_shared_revenue_ratio\"",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable)   = false,
     (amino.dont_omitempty) = true
   ];

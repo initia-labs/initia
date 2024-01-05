@@ -10,9 +10,9 @@ import (
 
 // DelegationI delegation bond for a delegated proof of stake system
 type DelegationI interface {
-	GetDelegatorAddr() sdk.AccAddress // delegator sdk.AccAddress for the bond
-	GetValidatorAddr() sdk.ValAddress // validator operator address
-	GetShares() sdk.DecCoins          // amount of validator's shares held in this delegation
+	GetDelegatorAddr() string // delegator sdk.AccAddress for the bond
+	GetValidatorAddr() string // validator operator address
+	GetShares() sdk.DecCoins  // amount of validator's shares held in this delegation
 }
 
 // ValidatorI expected validator functions
@@ -23,7 +23,7 @@ type ValidatorI interface {
 	IsBonded() bool                                                // check if has a bonded status
 	IsUnbonded() bool                                              // check if has status unbonded
 	IsUnbonding() bool                                             // check if has status unbonding
-	GetOperator() sdk.ValAddress                                   // operator address to receive/return validators coins
+	GetOperator() string                                           // operator address to receive/return validators coins
 	ConsPubKey() (cryptotypes.PubKey, error)                       // validation consensus pubkey (cryptotypes.PubKey)
 	TmConsPublicKey() (tmprotocrypto.PublicKey, error)             // validation consensus pubkey (Tendermint)
 	GetConsAddr() (sdk.ConsAddress, error)                         // validation consensus address
@@ -32,7 +32,7 @@ type ValidatorI interface {
 	GetVotingPower() math.Int                                      // validation voting power
 	GetVotingPowers() sdk.Coins                                    // validation voting powers
 	GetConsensusPower(math.Int) int64                              // validation power in tendermint
-	GetCommission() sdk.Dec                                        // validator commission rate
+	GetCommission() math.LegacyDec                                 // validator commission rate
 	GetDelegatorShares() sdk.DecCoins                              // total outstanding delegator shares
 	TokensFromShares(sdk.DecCoins) sdk.DecCoins                    // token worth of provided delegator shares
 	TokensFromSharesTruncated(sdk.DecCoins) sdk.DecCoins           // token worth of provided delegator shares, truncated

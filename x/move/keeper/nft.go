@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"context"
+
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -22,7 +24,7 @@ func NewNftKeeper(k *Keeper) NftKeeper {
 	return NftKeeper{k}
 }
 
-func (k NftKeeper) CollectionInfo(ctx sdk.Context, collection vmtypes.AccountAddress) (
+func (k NftKeeper) CollectionInfo(ctx context.Context, collection vmtypes.AccountAddress) (
 	creator vmtypes.AccountAddress,
 	name, uri, data string,
 	err error,
@@ -39,7 +41,7 @@ func (k NftKeeper) CollectionInfo(ctx sdk.Context, collection vmtypes.AccountAdd
 	return types.ReadCollectionInfo(bz)
 }
 
-func (k NftKeeper) Transfer(ctx sdk.Context, sender, receiver, tokenAddr vmtypes.AccountAddress) error {
+func (k NftKeeper) Transfer(ctx context.Context, sender, receiver, tokenAddr vmtypes.AccountAddress) error {
 	return k.ExecuteEntryFunction(
 		ctx,
 		sender,
@@ -56,7 +58,7 @@ func (k NftKeeper) Transfer(ctx sdk.Context, sender, receiver, tokenAddr vmtypes
 }
 
 func (k NftKeeper) Mint(
-	ctx sdk.Context,
+	ctx context.Context,
 	collectionName, tokenId, tokenUri, tokenData string,
 	recipientAddr vmtypes.AccountAddress,
 ) error {
@@ -87,11 +89,11 @@ func (k NftKeeper) Mint(
 		types.MoveModuleNameSimpleNft,
 		types.FunctionNameSimpleNftMint,
 		[]vmtypes.TypeTag{},
-		[][]byte{collectionNameBz, dataBz, idBz, uriBz, {0}, {0}, {0}, append([]byte{1}, recipientAddr[:]...)},
+		[][]byte{collectionNameBz, dataBz, idBz, uriBz, {1}, append([]byte{1}, recipientAddr[:]...)},
 	)
 }
 
-func (k NftKeeper) Burn(ctx sdk.Context, ownerAddr, tokenAddr vmtypes.AccountAddress) error {
+func (k NftKeeper) Burn(ctx context.Context, ownerAddr, tokenAddr vmtypes.AccountAddress) error {
 	return k.ExecuteEntryFunction(
 		ctx,
 		ownerAddr,
@@ -107,7 +109,7 @@ func (k NftKeeper) Burn(ctx sdk.Context, ownerAddr, tokenAddr vmtypes.AccountAdd
 	)
 }
 
-func (k NftKeeper) isCollectionInitialized(ctx sdk.Context, collection vmtypes.AccountAddress) (bool, error) {
+func (k NftKeeper) isCollectionInitialized(ctx context.Context, collection vmtypes.AccountAddress) (bool, error) {
 	return k.HasResource(ctx, collection, vmtypes.StructTag{
 		Address: vmtypes.StdAddress,
 		Module:  types.MoveModuleNameCollection,
@@ -115,7 +117,7 @@ func (k NftKeeper) isCollectionInitialized(ctx sdk.Context, collection vmtypes.A
 	})
 }
 
-func (k NftKeeper) CreateOrUpdateClass(ctx sdk.Context, classId, classUri, classData string) error {
+func (k NftKeeper) CreateOrUpdateClass(ctx context.Context, classId, classUri, classData string) error {
 	collection, err := types.CollectionAddressFromClassId(classId)
 	if err != nil {
 		return err
@@ -134,7 +136,7 @@ func (k NftKeeper) CreateOrUpdateClass(ctx sdk.Context, classId, classUri, class
 	return nil
 }
 
-func (k NftKeeper) initializeCollection(ctx sdk.Context, collectionName, collectionUri, collectionDesc string) error {
+func (k NftKeeper) initializeCollection(ctx context.Context, collectionName, collectionUri, collectionDesc string) error {
 	nameBz, err := vmtypes.SerializeString(collectionName)
 	if err != nil {
 		return err
@@ -157,11 +159,11 @@ func (k NftKeeper) initializeCollection(ctx sdk.Context, collectionName, collect
 		types.MoveModuleNameSimpleNft,
 		types.FunctionNameSimpleNftInitialize,
 		[]vmtypes.TypeTag{},
-		[][]byte{descBz, {0}, nameBz, uriBz, {0}, {0}, {0}, {0}, {0}, {0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+		[][]byte{descBz, {0}, nameBz, uriBz, {0}, {0}, {0}, {0}, {0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
 	)
 }
 
-func (k NftKeeper) Transfers(ctx sdk.Context, sender, receiver sdk.AccAddress, classId string, tokenIds []string) error {
+func (k NftKeeper) Transfers(ctx context.Context, sender, receiver sdk.AccAddress, classId string, tokenIds []string) error {
 	// register account (nft is not using bank module, so need to register manually)
 	accExists := k.authKeeper.HasAccount(ctx, receiver)
 	if !accExists {
@@ -203,7 +205,7 @@ func (k NftKeeper) Transfers(ctx sdk.Context, sender, receiver sdk.AccAddress, c
 	return nil
 }
 
-func (k NftKeeper) Burns(ctx sdk.Context, owner sdk.AccAddress, classId string, tokenIds []string) error {
+func (k NftKeeper) Burns(ctx context.Context, owner sdk.AccAddress, classId string, tokenIds []string) error {
 	ownerAddr, err := vmtypes.NewAccountAddressFromBytes(owner)
 	if err != nil {
 		return err
@@ -234,7 +236,7 @@ func (k NftKeeper) Burns(ctx sdk.Context, owner sdk.AccAddress, classId string, 
 }
 
 func (k NftKeeper) Mints(
-	ctx sdk.Context, receiver sdk.AccAddress,
+	ctx context.Context, receiver sdk.AccAddress,
 	classId string, tokenIds, tokenUris, tokenData []string,
 ) error {
 	// register account (nft is not using bank module, so need to register manually)
@@ -268,7 +270,7 @@ func (k NftKeeper) Mints(
 	return nil
 }
 
-func (k NftKeeper) GetClassInfo(ctx sdk.Context, classId string) (classUri string, classData string, err error) {
+func (k NftKeeper) GetClassInfo(ctx context.Context, classId string) (classUri string, classData string, err error) {
 	collection, err := types.CollectionAddressFromClassId(classId)
 	if err != nil {
 		return "", "", err
@@ -278,7 +280,7 @@ func (k NftKeeper) GetClassInfo(ctx sdk.Context, classId string) (classUri strin
 	return
 }
 
-func (k NftKeeper) GetTokenInfos(ctx sdk.Context, classId string, tokenIds []string) (tokenUris []string, tokenData []string, err error) {
+func (k NftKeeper) GetTokenInfos(ctx context.Context, classId string, tokenIds []string) (tokenUris []string, tokenData []string, err error) {
 	collection, err := types.CollectionAddressFromClassId(classId)
 	if err != nil {
 		return nil, nil, err

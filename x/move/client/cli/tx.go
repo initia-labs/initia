@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"cosmossdk.io/core/address"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -17,7 +18,7 @@ import (
 )
 
 // GetTxCmd returns the transaction commands for this module
-func GetTxCmd() *cobra.Command {
+func GetTxCmd(ac address.Codec) *cobra.Command {
 	txCmd := &cobra.Command{
 		Use:                        types.ModuleName,
 		Short:                      "Move transaction subcommands",
@@ -26,15 +27,15 @@ func GetTxCmd() *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 	txCmd.AddCommand(
-		PublishCmd(),
-		ExecuteCmd(),
-		ScriptCmd(),
+		PublishCmd(ac),
+		ExecuteCmd(ac),
+		ScriptCmd(ac),
 	)
 	return txCmd
 }
 
 // PublishCmd will publish move binary files
-func PublishCmd() *cobra.Command {
+func PublishCmd(ac address.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "publish [move file1] [move file2] [...]",
 		Short: "Publish move binary files",
@@ -80,13 +81,18 @@ $ %s tx move publish \
 				return fmt.Errorf("invalid upgrade-policy `%s`", upgradePolicyStr)
 			}
 
+			sender, err := ac.BytesToString(clientCtx.FromAddress)
+			if err != nil {
+				return err
+			}
+
 			msg := types.MsgPublish{
-				Sender:        clientCtx.FromAddress.String(),
+				Sender:        sender,
 				CodeBytes:     bundle,
 				UpgradePolicy: types.UpgradePolicy(upgradePolicy),
 			}
 
-			if err = msg.ValidateBasic(); err != nil {
+			if err = msg.Validate(ac); err != nil {
 				return err
 			}
 
@@ -100,7 +106,7 @@ $ %s tx move publish \
 }
 
 // ExecuteCmd will execute an entry function of a published module.
-func ExecuteCmd() *cobra.Command {
+func ExecuteCmd(ac address.Codec) *cobra.Command {
 	bech32PrefixAccAddr := sdk.GetConfig().GetBech32AccountAddrPrefix()
 	cmd := &cobra.Command{
 		Use:   "execute [module address] [module name] [function name]",
@@ -131,7 +137,7 @@ $ %s tx move execute \
 				return err
 			}
 
-			if _, err := types.AccAddressFromString(args[0]); err != nil {
+			if _, err := types.AccAddressFromString(ac, args[0]); err != nil {
 				return err
 			}
 
@@ -157,7 +163,7 @@ $ %s tx move execute \
 			bcsArgs := [][]byte{}
 			for i := range moveArgTypes {
 				serializer := NewSerializer()
-				bcsArg, err := BcsSerializeArg(moveArgTypes[i], moveArgs[i], serializer)
+				bcsArg, err := BcsSerializeArg(moveArgTypes[i], moveArgs[i], serializer, ac)
 				if err != nil {
 					return err
 				}
@@ -165,8 +171,13 @@ $ %s tx move execute \
 				bcsArgs = append(bcsArgs, bcsArg)
 			}
 
+			sender, err := ac.BytesToString(clientCtx.FromAddress)
+			if err != nil {
+				return err
+			}
+
 			msg := types.MsgExecute{
-				Sender:        clientCtx.FromAddress.String(),
+				Sender:        sender,
 				ModuleAddress: args[0],
 				ModuleName:    args[1],
 				FunctionName:  args[2],
@@ -174,7 +185,7 @@ $ %s tx move execute \
 				Args:          bcsArgs,
 			}
 
-			if err = msg.ValidateBasic(); err != nil {
+			if err = msg.Validate(ac); err != nil {
 				return err
 			}
 
@@ -189,7 +200,7 @@ $ %s tx move execute \
 }
 
 // ScriptCmd will execute a given script.
-func ScriptCmd() *cobra.Command {
+func ScriptCmd(ac address.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "script [script-file]",
 		Short: "Execute a given script",
@@ -248,7 +259,7 @@ $ %s tx move script \
 				}
 
 				serializer := NewSerializer()
-				bcsArg, err := BcsSerializeArg(argSplit[0], argSplit[1], serializer)
+				bcsArg, err := BcsSerializeArg(argSplit[0], argSplit[1], serializer, ac)
 				if err != nil {
 					return err
 				}
@@ -256,14 +267,19 @@ $ %s tx move script \
 				bcsArgs[i] = bcsArg
 			}
 
+			sender, err := ac.BytesToString(clientCtx.FromAddress)
+			if err != nil {
+				return err
+			}
+
 			msg := types.MsgScript{
-				Sender:    clientCtx.FromAddress.String(),
+				Sender:    sender,
 				CodeBytes: codeBytes,
 				TypeArgs:  typeArgs,
 				Args:      bcsArgs,
 			}
 
-			if err = msg.ValidateBasic(); err != nil {
+			if err = msg.Validate(ac); err != nil {
 				return err
 			}
 

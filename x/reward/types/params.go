@@ -106,12 +106,12 @@ func validateDilutionPeriod(i interface{}) error {
 }
 
 func validateReleaseRate(i interface{}) error {
-	v, ok := i.(sdk.Dec)
+	v, ok := i.(math.LegacyDec)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 
-	if v.GT(sdk.OneDec()) {
+	if v.GT(math.LegacyOneDec()) {
 		return fmt.Errorf("ReleaseRate should be smaller than 1.0")
 	}
 
@@ -123,12 +123,12 @@ func validateReleaseRate(i interface{}) error {
 }
 
 func validateDilutionRate(i interface{}) error {
-	v, ok := i.(sdk.Dec)
+	v, ok := i.(math.LegacyDec)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 
-	if v.GT(sdk.OneDec()) {
+	if v.GT(math.LegacyOneDec()) {
 		return fmt.Errorf("DilutionRate should be smaller than 1.0")
 	}
 

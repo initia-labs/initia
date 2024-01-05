@@ -58,22 +58,17 @@ var TestAddr = sdk.AccAddress(vmtypes.TestAddress[:])
 // Keys for move store
 // Items are stored with the following key: values
 var (
-	KeyExecutionCounter = []byte{0x11}
-	PrefixKeyVMStore    = []byte{0x12} // prefix for vm
-	PrefixDexPairStore  = []byte{0x14} // prefix for dex pairs
+	ExecutionCounterKey = []byte{0x11}
+	DexPairPrefix       = []byte{0x12} // prefix for dex pairs
+	VMStorePrefix       = []byte{0x21} // prefix for vm
 
-	ParamsKey = []byte{0x21} // prefix for parameters for module x/move
+	ParamsKey = []byte{0x31} // prefix for parameters for module x/move
 
 	ModuleSeparator     = byte(0)
 	ResourceSeparator   = byte(1)
 	TableEntrySeparator = byte(2)
 	TableInfoSeparator  = byte(3)
 )
-
-// GetDexPairKey returns the key of the dex pair
-func GetDexPairKey(metadata vmtypes.AccountAddress) []byte {
-	return append(PrefixDexPairStore, metadata.Bytes()...)
-}
 
 // GetModulePrefix returns the prefix key of an account module store
 func GetModulePrefix(addr vmtypes.AccountAddress) []byte {

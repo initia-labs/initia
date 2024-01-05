@@ -7,6 +7,8 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 )
 
+const DefaultUnbondingIdStart = 1
+
 // NewGenesisState creates a new GenesisState instanc e
 func NewGenesisState(params Params, validators []Validator, delegations []Delegation) *GenesisState {
 	return &GenesisState{
@@ -19,7 +21,8 @@ func NewGenesisState(params Params, validators []Validator, delegations []Delega
 // DefaultGenesisState gets the raw genesis raw message for testing
 func DefaultGenesisState() *GenesisState {
 	return &GenesisState{
-		Params: DefaultParams(),
+		Params:          DefaultParams(),
+		NextUnbondingId: DefaultUnbondingIdStart,
 	}
 }
 

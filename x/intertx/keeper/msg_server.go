@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/cosmos/gogoproto/proto"
-	icacontrollerkeeper "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/keeper"
-	icacontrollertypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/controller/types"
-	icatypes "github.com/cosmos/ibc-go/v7/modules/apps/27-interchain-accounts/types"
+	icacontrollerkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/keeper"
+	icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
+	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -28,6 +28,9 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 
 // RegisterAccount implements the Msg/RegisterAccount interface
 func (k msgServer) RegisterAccount(goCtx context.Context, msg *types.MsgRegisterAccount) (*types.MsgRegisterAccountResponse, error) {
+	if err := msg.Validate(k.ac); err != nil {
+		return nil, err
+	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
@@ -41,9 +44,13 @@ func (k msgServer) RegisterAccount(goCtx context.Context, msg *types.MsgRegister
 
 // SubmitTx implements the Msg/SubmitTx interface
 func (k msgServer) SubmitTx(goCtx context.Context, msg *types.MsgSubmitTx) (*types.MsgSubmitTxResponse, error) {
+	if err := msg.Validate(k.ac); err != nil {
+		return nil, err
+	}
+
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	data, err := icatypes.SerializeCosmosTx(k.cdc, []proto.Message{msg.GetTxMsg()})
+	data, err := icatypes.SerializeCosmosTx(k.cdc, []proto.Message{msg.GetTxMsg()}, icatypes.EncodingProtobuf)
 	if err != nil {
 		return nil, err
 	}

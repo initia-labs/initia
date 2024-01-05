@@ -1,53 +1,65 @@
 package keeper
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"context"
+
+	"cosmossdk.io/math"
 
 	"github.com/initia-labs/initia/x/move/types"
 	vmtypes "github.com/initia-labs/initiavm/types"
 )
 
 // BaseDenom - base denom of native move dex
-func (k Keeper) BaseDenom(ctx sdk.Context) string {
-	return k.GetParams(ctx).BaseDenom
+func (k Keeper) BaseDenom(ctx context.Context) (string, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	return params.BaseDenom, nil
 }
 
 // BaseMinGasPrice - min gas price in base denom unit
-func (k Keeper) BaseMinGasPrice(ctx sdk.Context) sdk.Dec {
-	return k.GetParams(ctx).BaseMinGasPrice
+func (k Keeper) BaseMinGasPrice(ctx context.Context) (math.LegacyDec, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return math.LegacyDec{}, err
+	}
+	return params.BaseMinGasPrice, nil
 }
 
 // ArbitraryEnabled - arbitrary enabled flag
-func (k Keeper) ArbitraryEnabled(ctx sdk.Context) (bool, error) {
+func (k Keeper) ArbitraryEnabled(ctx context.Context) (bool, error) {
 	return NewCodeKeeper(&k).GetAllowArbitrary(ctx)
 }
 
 // AllowedPublishers - allowed publishers
-func (k Keeper) AllowedPublishers(ctx sdk.Context) ([]vmtypes.AccountAddress, error) {
+func (k Keeper) AllowedPublishers(ctx context.Context) ([]vmtypes.AccountAddress, error) {
 	return NewCodeKeeper(&k).GetAllowedPublishers(ctx)
 }
 
 // SetArbitraryEnabled - update arbitrary enabled flag
-func (k Keeper) SetArbitraryEnabled(ctx sdk.Context, arbitraryEnabled bool) error {
+func (k Keeper) SetArbitraryEnabled(ctx context.Context, arbitraryEnabled bool) error {
 	return NewCodeKeeper(&k).SetAllowArbitrary(ctx, arbitraryEnabled)
 }
 
 // SetAllowedPublishers - update allowed publishers
-func (k Keeper) SetAllowedPublishers(ctx sdk.Context, allowedPublishers []vmtypes.AccountAddress) error {
+func (k Keeper) SetAllowedPublishers(ctx context.Context, allowedPublishers []vmtypes.AccountAddress) error {
 	return NewCodeKeeper(&k).SetAllowedPublishers(ctx, allowedPublishers)
 }
 
 // ContractSharedRevenueRatio - percentage of fees distributed to developers
-func (k Keeper) ContractSharedRevenueRatio(ctx sdk.Context) sdk.Dec {
-	return k.GetParams(ctx).ContractSharedRevenueRatio
+func (k Keeper) ContractSharedRevenueRatio(ctx context.Context) (math.LegacyDec, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return math.LegacyDec{}, err
+	}
+
+	return params.ContractSharedRevenueRatio, nil
 }
 
 // SetParams sets the x/move module parameters.
-func (k Keeper) SetParams(ctx sdk.Context, params types.Params) error {
-	if err := params.Validate(); err != nil {
-		return err
-	}
-
+func (k Keeper) SetParams(ctx context.Context, params types.Params) error {
 	if err := k.SetRawParams(ctx, params.ToRaw()); err != nil {
 		return err
 	}
@@ -56,19 +68,15 @@ func (k Keeper) SetParams(ctx sdk.Context, params types.Params) error {
 }
 
 // GetParams returns the x/move module parameters.
-func (k Keeper) GetParams(ctx sdk.Context) types.Params {
-	store := ctx.KVStore(k.storeKey)
-	bz := store.Get(types.ParamsKey)
-	if bz == nil {
-		panic("params not found")
+func (k Keeper) GetParams(ctx context.Context) (types.Params, error) {
+	rawParams, err := k.Params.Get(ctx)
+	if err != nil {
+		return types.Params{}, err
 	}
-
-	rawParams := types.RawParams{}
-	k.cdc.MustUnmarshal(bz, &rawParams)
 
 	allowArbitrary, allowedPublishers, err := NewCodeKeeper(&k).GetParams(ctx)
 	if err != nil {
-		panic(err)
+		return types.Params{}, err
 	}
 
 	_allowedPublishers := make([]string, len(allowedPublishers))
@@ -76,17 +84,10 @@ func (k Keeper) GetParams(ctx sdk.Context) types.Params {
 		_allowedPublishers[i] = addr.String()
 	}
 
-	return rawParams.ToParams(allowArbitrary, _allowedPublishers)
+	return rawParams.ToParams(allowArbitrary, _allowedPublishers), nil
 }
 
 // SetRawParams stores raw params to store.
-func (k Keeper) SetRawParams(ctx sdk.Context, params types.RawParams) error {
-	store := ctx.KVStore(k.storeKey)
-	if bz, err := k.cdc.Marshal(&params); err != nil {
-		return err
-	} else {
-		store.Set(types.ParamsKey, bz)
-	}
-
-	return nil
+func (k Keeper) SetRawParams(ctx context.Context, params types.RawParams) error {
+	return k.Params.Set(ctx, params)
 }

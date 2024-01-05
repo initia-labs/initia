@@ -36,13 +36,13 @@ var (
 
 	commissionRates = stakingtypes.NewCommissionRates(math.LegacyZeroDec(), math.LegacyZeroDec(), math.LegacyZeroDec())
 
-	genCoins = sdk.NewCoins(sdk.NewCoin(bondDenom, sdk.NewInt(5000000))).Sort()
-	bondCoin = sdk.NewCoin(bondDenom, sdk.NewInt(1000000))
+	genCoins = sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(5000000))).Sort()
+	bondCoin = sdk.NewCoin(bondDenom, math.NewInt(1000000))
 )
 
 func checkBalance(t *testing.T, app *initiaapp.InitiaApp, addr sdk.AccAddress, balances sdk.Coins) {
-	ctxCheck := app.BaseApp.NewContext(true, tmproto.Header{})
-	require.True(t, balances.IsEqual(app.BankKeeper.GetAllBalances(ctxCheck, addr)))
+	ctxCheck := app.BaseApp.NewContext(true)
+	require.True(t, balances.Equal(app.BankKeeper.GetAllBalances(ctxCheck, addr)))
 }
 
 func createApp(t *testing.T) *initiaapp.InitiaApp {
@@ -57,17 +57,21 @@ func createApp(t *testing.T) *initiaapp.InitiaApp {
 	checkBalance(t, app, addr1, genCoins)
 	checkBalance(t, app, addr2, genCoins)
 
+	_, err := app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1})
+	require.NoError(t, err)
+
 	// set reward weight
 	distrParams := customdistrtypes.DefaultParams()
 	distrParams.RewardWeights = []customdistrtypes.RewardWeight{
-		{Denom: bondDenom, Weight: sdk.OneDec()},
+		{Denom: bondDenom, Weight: math.LegacyOneDec()},
 	}
-	app.DistrKeeper.SetParams(app.BaseApp.NewContext(false, tmproto.Header{}), distrParams)
+	err = app.DistrKeeper.Params.Set(app.BaseApp.NewContext(false), distrParams)
+	require.NoError(t, err)
 
 	// create validator
 	description := stakingtypes.NewDescription("foo_moniker", "", "", "", "")
 	createValidatorMsg, err := stakingtypes.NewMsgCreateValidator(
-		sdk.ValAddress(addr1), valKey.PubKey(), sdk.NewCoins(bondCoin), description, commissionRates,
+		sdk.ValAddress(addr1).String(), valKey.PubKey(), sdk.NewCoins(bondCoin), description, commissionRates,
 	)
 	require.NoError(t, err)
 
@@ -75,9 +79,6 @@ func createApp(t *testing.T) *initiaapp.InitiaApp {
 	require.NoError(t, err)
 
 	checkBalance(t, app, addr1, genCoins.Sub(bondCoin))
-
-	header := tmproto.Header{Height: app.LastBlockHeight() + 1}
-	app.BeginBlock(abci.RequestBeginBlock{Header: header})
 
 	return app
 }

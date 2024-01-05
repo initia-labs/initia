@@ -21,7 +21,10 @@ var _ cosmostypes.QueryServer = CompatibilityQuerier{}
 // returns a first bond denom.
 func (q CompatibilityQuerier) Params(c context.Context, _ *cosmostypes.QueryParamsRequest) (*cosmostypes.QueryParamsResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
-	params := q.GetParams(ctx)
+	params, err := q.GetParams(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	return &cosmostypes.QueryParamsResponse{Params: cosmostypes.Params{
 		UnbondingTime:     params.UnbondingTime,

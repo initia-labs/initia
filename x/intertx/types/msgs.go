@@ -4,27 +4,19 @@ import (
 	fmt "fmt"
 	"strings"
 
+	"cosmossdk.io/core/address"
 	errorsmod "cosmossdk.io/errors"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/cosmos/cosmos-sdk/x/auth/migrations/legacytx"
 
 	proto "github.com/gogo/protobuf/proto"
-)
-
-const (
-	TypeMsgRegisterAccount = "register_account"
-	TypeMsgSubmitTx        = "submit_tx"
 )
 
 var (
 	_ sdk.Msg = &MsgRegisterAccount{}
 	_ sdk.Msg = &MsgSubmitTx{}
-
-	_ legacytx.LegacyMsg = &MsgRegisterAccount{}
-	_ legacytx.LegacyMsg = &MsgSubmitTx{}
 
 	_ codectypes.UnpackInterfacesMessage = MsgSubmitTx{}
 )
@@ -38,42 +30,17 @@ func NewMsgRegisterAccount(owner, connectionID, version string) *MsgRegisterAcco
 	}
 }
 
-// Route implements the sdk.Msg interface.
-func (msg MsgRegisterAccount) Route() string {
-	return RouterKey
-}
-
-// Type implements the sdk.Msg interface.
-func (msg MsgRegisterAccount) Type() string {
-	return TypeMsgRegisterAccount
-}
-
 // ValidateBasic implements sdk.Msg
-func (msg MsgRegisterAccount) ValidateBasic() error {
+func (msg MsgRegisterAccount) Validate(ac address.Codec) error {
 	if strings.TrimSpace(msg.Owner) == "" {
 		return errorsmod.Wrap(sdkerrors.ErrInvalidAddress, "missing sender address")
 	}
 
-	if _, err := sdk.AccAddressFromBech32(msg.Owner); err != nil {
+	if _, err := ac.StringToBytes(msg.Owner); err != nil {
 		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "failed to parse address: %s", msg.Owner)
 	}
 
 	return nil
-}
-
-// GetSignBytes returns the message bytes to sign over.
-func (msg MsgRegisterAccount) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&msg))
-}
-
-// GetSigners implements sdk.Msg
-func (msg MsgRegisterAccount) GetSigners() []sdk.AccAddress {
-	accAddr, err := sdk.AccAddressFromBech32(msg.Owner)
-	if err != nil {
-		panic(err)
-	}
-
-	return []sdk.AccAddress{accAddr}
 }
 
 // NewMsgSubmitTx creates and returns a new MsgSubmitTx instance
@@ -105,16 +72,6 @@ func PackTxMsgAny(sdkMsg sdk.Msg) (*codectypes.Any, error) {
 	return protoAny, nil
 }
 
-// Route implements the sdk.Msg interface.
-func (msg MsgSubmitTx) Route() string {
-	return RouterKey
-}
-
-// Type implements the sdk.Msg interface.
-func (msg MsgSubmitTx) Type() string {
-	return TypeMsgSubmitTx
-}
-
 // UnpackInterfaces implements codectypes.UnpackInterfacesMessage
 func (msg MsgSubmitTx) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
 	var sdkMsg sdk.Msg
@@ -132,24 +89,9 @@ func (msg *MsgSubmitTx) GetTxMsg() sdk.Msg {
 	return sdkMsg
 }
 
-// GetSignBytes returns the message bytes to sign over.
-func (msg MsgSubmitTx) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&msg))
-}
-
-// GetSigners implements sdk.Msg
-func (msg MsgSubmitTx) GetSigners() []sdk.AccAddress {
-	accAddr, err := sdk.AccAddressFromBech32(msg.Owner)
-	if err != nil {
-		panic(err)
-	}
-
-	return []sdk.AccAddress{accAddr}
-}
-
 // ValidateBasic implements sdk.Msg
-func (msg MsgSubmitTx) ValidateBasic() error {
-	_, err := sdk.AccAddressFromBech32(msg.Owner)
+func (msg MsgSubmitTx) Validate(ac address.Codec) error {
+	_, err := ac.StringToBytes(msg.Owner)
 	if err != nil {
 		return errorsmod.Wrap(sdkerrors.ErrInvalidAddress, "invalid owner address")
 	}

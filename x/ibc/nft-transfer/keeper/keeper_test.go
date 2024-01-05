@@ -3,6 +3,7 @@ package keeper_test
 import (
 	"testing"
 
+	"github.com/initia-labs/initia/x/ibc/nft-transfer/keeper"
 	"github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 	ibctesting "github.com/initia-labs/initia/x/ibc/testing"
 	"github.com/stretchr/testify/suite"
@@ -30,7 +31,7 @@ func (suite *KeeperTestSuite) SetupTest() {
 	suite.chainC = suite.coordinator.GetChain(ibctesting.GetChainID(3))
 
 	queryHelper := baseapp.NewQueryServerTestHelper(suite.chainA.GetContext(), suite.chainA.GetInitiaApp().InterfaceRegistry())
-	types.RegisterQueryServer(queryHelper, suite.chainA.GetInitiaApp().NftTransferKeeper)
+	types.RegisterQueryServer(queryHelper, keeper.NewQueryServerImpl(suite.chainA.GetInitiaApp().NftTransferKeeper))
 	suite.queryClient = types.NewQueryClient(queryHelper)
 }
 

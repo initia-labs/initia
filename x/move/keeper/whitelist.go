@@ -1,9 +1,10 @@
 package keeper
 
 import (
+	"context"
+
 	"cosmossdk.io/errors"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	distrtypes "github.com/initia-labs/initia/x/distribution/types"
@@ -11,7 +12,7 @@ import (
 	vmtypes "github.com/initia-labs/initiavm/types"
 )
 
-func (k Keeper) Whitelist(ctx sdk.Context, msg types.MsgWhitelist) error {
+func (k Keeper) Whitelist(ctx context.Context, msg types.MsgWhitelist) error {
 	if k.StakingKeeper == nil {
 		return sdkerrors.ErrNotSupported
 	}
@@ -22,13 +23,17 @@ func (k Keeper) Whitelist(ctx sdk.Context, msg types.MsgWhitelist) error {
 	// load metadata
 	//
 
-	denomBase := k.BaseDenom(ctx)
+	denomBase, err := k.BaseDenom(ctx)
+	if err != nil {
+		return err
+	}
+
 	metadataBase, err := types.MetadataAddressFromDenom(denomBase)
 	if err != nil {
 		return err
 	}
 
-	metadataLP, err := types.AccAddressFromString(msg.MetadataLP)
+	metadataLP, err := types.AccAddressFromString(k.ac, msg.MetadataLP)
 	if err != nil {
 		return err
 	}
@@ -95,7 +100,11 @@ func (k Keeper) Whitelist(ctx sdk.Context, msg types.MsgWhitelist) error {
 	//
 
 	// check bond denom was registered
-	bondDenoms := k.StakingKeeper.BondDenoms(ctx)
+	bondDenoms, err := k.StakingKeeper.BondDenoms(ctx)
+	if err != nil {
+		return err
+	}
+
 	for _, denom := range bondDenoms {
 		if denom == denomLP {
 			return errors.Wrapf(types.ErrInvalidRequest, "coin `%s` was already registered as staking denom", metadataLP.String())
@@ -103,7 +112,11 @@ func (k Keeper) Whitelist(ctx sdk.Context, msg types.MsgWhitelist) error {
 	}
 
 	// check reward weights was registered
-	rewardWeights := k.distrKeeper.GetRewardWeights(ctx)
+	rewardWeights, err := k.distrKeeper.GetRewardWeights(ctx)
+	if err != nil {
+		return err
+	}
+
 	for _, rw := range rewardWeights {
 		if rw.Denom == denomLP {
 			return errors.Wrapf(types.ErrInvalidRequest, "coin `%s` reward weight was already registered", metadataLP.String())
@@ -149,7 +162,7 @@ func (k Keeper) Whitelist(ctx sdk.Context, msg types.MsgWhitelist) error {
 	return nil
 }
 
-func (k Keeper) Delist(ctx sdk.Context, msg types.MsgDelist) error {
+func (k Keeper) Delist(ctx context.Context, msg types.MsgDelist) error {
 	if k.StakingKeeper == nil {
 		return sdkerrors.ErrNotSupported
 	}
@@ -160,7 +173,7 @@ func (k Keeper) Delist(ctx sdk.Context, msg types.MsgDelist) error {
 	// load metadata
 	//
 
-	metadataLP, err := types.AccAddressFromString(msg.MetadataLP)
+	metadataLP, err := types.AccAddressFromString(k.ac, msg.MetadataLP)
 	if err != nil {
 		return err
 	}
@@ -183,7 +196,10 @@ func (k Keeper) Delist(ctx sdk.Context, msg types.MsgDelist) error {
 	// registered check
 	//
 
-	bondDenoms := k.StakingKeeper.BondDenoms(ctx)
+	bondDenoms, err := k.StakingKeeper.BondDenoms(ctx)
+	if err != nil {
+		return err
+	}
 
 	// check bond denom was registered
 	bondDenomIndex := -1
@@ -199,7 +215,11 @@ func (k Keeper) Delist(ctx sdk.Context, msg types.MsgDelist) error {
 
 	// check reward weights was registered
 	rewardWeightIndex := -1
-	rewardWeights := k.distrKeeper.GetRewardWeights(ctx)
+	rewardWeights, err := k.distrKeeper.GetRewardWeights(ctx)
+	if err != nil {
+		return err
+	}
+
 	for i, rw := range rewardWeights {
 		if rw.Denom == denomLP {
 			rewardWeightIndex = i

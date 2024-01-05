@@ -3,6 +3,9 @@ package cli
 import (
 	"testing"
 
+	"github.com/cosmos/cosmos-sdk/codec/address"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/stretchr/testify/require"
 )
 
@@ -68,9 +71,11 @@ func Test_BcsSerializeArg(t *testing.T) {
 		{"badtype", "1", nil, true, "badtype 1"},
 	}
 
+	ac := address.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix())
+
 	for _, tc := range testCases {
 		s := NewSerializer()
-		res, err := BcsSerializeArg(tc.argType, tc.arg, s)
+		res, err := BcsSerializeArg(tc.argType, tc.arg, s, ac)
 		if tc.expErr {
 			require.Error(t, err, tc.name)
 		} else {

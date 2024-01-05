@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/collections"
 	"cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
 
@@ -38,7 +39,7 @@ func decToVmArgument(t *testing.T, val math.LegacyDec) []byte {
 func createDexPool(
 	t *testing.T, ctx sdk.Context, input TestKeepers,
 	baseCoin sdk.Coin, quoteCoin sdk.Coin,
-	weightBase sdk.Dec, weightQuote sdk.Dec,
+	weightBase math.LegacyDec, weightQuote math.LegacyDec,
 ) (metadataLP vmtypes.AccountAddress) {
 	metadataBase, err := movetypes.MetadataAddressFromDenom(baseCoin.Denom)
 	require.NoError(t, err)
@@ -106,33 +107,35 @@ func createDexPool(
 func Test_Delegation(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
-	_, found := input.StakingKeeper.GetDelegation(ctx, addrs[0], valAddrs[0])
-	require.False(t, found)
+	_, err := input.StakingKeeper.GetDelegation(ctx, addrs[0], valAddrs[0])
+	require.ErrorIs(t, err, collections.ErrNotFound)
 
-	delegation := types.NewDelegation(addrs[0], valAddrs[0], sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, sdk.NewInt(100))))
-	delegation2 := types.NewDelegation(addrs[0], valAddrs[1], sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, sdk.NewInt(100))))
+	delegation := types.NewDelegation(addrsStr[0], valAddrsStr[0], sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, math.NewInt(100))))
+	delegation2 := types.NewDelegation(addrsStr[0], valAddrsStr[1], sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, math.NewInt(100))))
 
-	input.StakingKeeper.SetDelegation(ctx, delegation)
-	resDelegation, found := input.StakingKeeper.GetDelegation(ctx, addrs[0], valAddrs[0])
-	require.True(t, found)
+	require.NoError(t, input.StakingKeeper.SetDelegation(ctx, delegation))
+	resDelegation, err := input.StakingKeeper.GetDelegation(ctx, addrs[0], valAddrs[0])
+	require.NoError(t, err)
 	require.Equal(t, delegation, resDelegation)
 
-	input.StakingKeeper.RemoveDelegation(ctx, delegation)
-	_, found = input.StakingKeeper.GetDelegation(ctx, addrs[0], valAddrs[0])
-	require.False(t, found)
+	require.NoError(t, input.StakingKeeper.RemoveDelegation(ctx, delegation))
+	_, err = input.StakingKeeper.GetDelegation(ctx, addrs[0], valAddrs[0])
+	require.ErrorIs(t, err, collections.ErrNotFound)
 
 	// set two delegations
-	input.StakingKeeper.SetDelegation(ctx, delegation)
-	input.StakingKeeper.SetDelegation(ctx, delegation2)
+	require.NoError(t, input.StakingKeeper.SetDelegation(ctx, delegation))
+	require.NoError(t, input.StakingKeeper.SetDelegation(ctx, delegation2))
 
-	delegations := input.StakingKeeper.GetDelegatorDelegations(ctx, addrs[0], 1)
+	delegations, err := input.StakingKeeper.GetDelegatorDelegations(ctx, addrs[0], 1)
+	require.NoError(t, err)
 	require.Len(t, delegations, 1)
 
-	delegations = input.StakingKeeper.GetDelegatorDelegations(ctx, addrs[0], 2)
+	delegations, err = input.StakingKeeper.GetDelegatorDelegations(ctx, addrs[0], 2)
+	require.NoError(t, err)
 	require.Len(t, delegations, 2)
 
 	for _, resDelegation := range delegations {
-		if resDelegation.GetValidatorAddr().Equals(valAddrs[0]) {
+		if resDelegation.GetValidatorAddr() == valAddrsStr[0] {
 			require.Equal(t, delegation, resDelegation)
 		} else {
 			require.Equal(t, delegation2, resDelegation)
@@ -143,21 +146,23 @@ func Test_Delegation(t *testing.T) {
 func Test_GetValidatorDelegations(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
-	delegation1 := types.NewDelegation(addrs[0], valAddrs[0], sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, sdk.NewInt(1))))
-	delegation2 := types.NewDelegation(addrs[1], valAddrs[0], sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, sdk.NewInt(2))))
-	delegation3 := types.NewDelegation(addrs[2], valAddrs[0], sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, sdk.NewInt(3))))
-	delegation4 := types.NewDelegation(addrs[0], valAddrs[1], sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, sdk.NewInt(3))))
+	delegation1 := types.NewDelegation(addrsStr[0], valAddrsStr[0], sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, math.NewInt(1))))
+	delegation2 := types.NewDelegation(addrsStr[1], valAddrsStr[0], sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, math.NewInt(2))))
+	delegation3 := types.NewDelegation(addrsStr[2], valAddrsStr[0], sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, math.NewInt(3))))
+	delegation4 := types.NewDelegation(addrsStr[0], valAddrsStr[1], sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, math.NewInt(3))))
 
-	input.StakingKeeper.SetDelegation(ctx, delegation1)
-	input.StakingKeeper.SetDelegation(ctx, delegation2)
-	input.StakingKeeper.SetDelegation(ctx, delegation3)
-	input.StakingKeeper.SetDelegation(ctx, delegation4)
+	require.NoError(t, input.StakingKeeper.SetDelegation(ctx, delegation1))
+	require.NoError(t, input.StakingKeeper.SetDelegation(ctx, delegation2))
+	require.NoError(t, input.StakingKeeper.SetDelegation(ctx, delegation3))
+	require.NoError(t, input.StakingKeeper.SetDelegation(ctx, delegation4))
 
-	delegations := input.StakingKeeper.GetValidatorDelegations(ctx, valAddrs[0])
+	delegations, err := input.StakingKeeper.GetValidatorDelegations(ctx, valAddrs[0])
+	require.NoError(t, err)
+
 	for _, resDelegation := range delegations {
-		if resDelegation.GetDelegatorAddr().Equals(addrs[0]) {
+		if resDelegation.GetDelegatorAddr() == addrsStr[0] {
 			require.Equal(t, delegation1, resDelegation)
-		} else if resDelegation.GetDelegatorAddr().Equals(addrs[1]) {
+		} else if resDelegation.GetDelegatorAddr() == addrsStr[1] {
 			require.Equal(t, delegation2, resDelegation)
 		} else {
 			require.Equal(t, delegation3, resDelegation)
@@ -168,64 +173,67 @@ func Test_GetValidatorDelegations(t *testing.T) {
 func Test_GetAllDelegations(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
-	delegation1 := types.NewDelegation(addrs[0], valAddrs[0], sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, sdk.NewInt(1))))
-	delegation2 := types.NewDelegation(addrs[1], valAddrs[0], sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, sdk.NewInt(2))))
-	delegation3 := types.NewDelegation(addrs[0], valAddrs[1], sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, sdk.NewInt(3))))
-	delegation4 := types.NewDelegation(addrs[1], valAddrs[1], sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, sdk.NewInt(3))))
+	delegation1 := types.NewDelegation(addrsStr[0], valAddrsStr[0], sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, math.NewInt(1))))
+	delegation2 := types.NewDelegation(addrsStr[1], valAddrsStr[0], sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, math.NewInt(2))))
+	delegation3 := types.NewDelegation(addrsStr[0], valAddrsStr[1], sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, math.NewInt(3))))
+	delegation4 := types.NewDelegation(addrsStr[1], valAddrsStr[1], sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, math.NewInt(3))))
 
-	input.StakingKeeper.SetDelegation(ctx, delegation1)
-	input.StakingKeeper.SetDelegation(ctx, delegation2)
-	input.StakingKeeper.SetDelegation(ctx, delegation3)
-	input.StakingKeeper.SetDelegation(ctx, delegation4)
+	require.NoError(t, input.StakingKeeper.SetDelegation(ctx, delegation1))
+	require.NoError(t, input.StakingKeeper.SetDelegation(ctx, delegation2))
+	require.NoError(t, input.StakingKeeper.SetDelegation(ctx, delegation3))
+	require.NoError(t, input.StakingKeeper.SetDelegation(ctx, delegation4))
 
-	delegations := input.StakingKeeper.GetValidatorDelegations(ctx, valAddrs[0])
+	delegations, err := input.StakingKeeper.GetValidatorDelegations(ctx, valAddrs[0])
+	require.NoError(t, err)
+
 	for _, resDelegation := range delegations {
-		if resDelegation.GetDelegatorAddr().Equals(addrs[0]) {
-			if resDelegation.GetValidatorAddr().Equals(valAddrs[0]) {
+		if resDelegation.GetDelegatorAddr() == addrsStr[0] {
+			if resDelegation.GetValidatorAddr() == valAddrsStr[0] {
 				require.Equal(t, delegation1, resDelegation)
 			} else {
 				require.Equal(t, delegation3, resDelegation)
 			}
-		} else if resDelegation.GetValidatorAddr().Equals(valAddrs[0]) {
+		} else if resDelegation.GetValidatorAddr() == valAddrsStr[0] {
 			require.Equal(t, delegation2, resDelegation)
 		} else {
 			require.Equal(t, delegation4, resDelegation)
 		}
 	}
 
-	input.StakingKeeper.IterateAllDelegations(ctx, func(resDelegation types.Delegation) bool {
-		if resDelegation.GetDelegatorAddr().Equals(addrs[0]) {
-			if resDelegation.GetValidatorAddr().Equals(valAddrs[0]) {
+	require.NoError(t, input.StakingKeeper.IterateAllDelegations(ctx, func(resDelegation types.Delegation) (bool, error) {
+		if resDelegation.GetDelegatorAddr() == addrsStr[0] {
+			if resDelegation.GetValidatorAddr() == valAddrsStr[0] {
 				require.Equal(t, delegation1, resDelegation)
 			} else {
 				require.Equal(t, delegation3, resDelegation)
 			}
-		} else if resDelegation.GetValidatorAddr().Equals(valAddrs[0]) {
+		} else if resDelegation.GetValidatorAddr() == valAddrsStr[0] {
 			require.Equal(t, delegation2, resDelegation)
 		} else {
 			require.Equal(t, delegation4, resDelegation)
 		}
 
-		return false
-	})
+		return false, nil
+	}))
 }
 
 func Test_GetDelegatorDelegations(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
-	delegation1 := types.NewDelegation(addrs[0], valAddrs[0], sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, sdk.NewInt(1))))
-	delegation2 := types.NewDelegation(addrs[1], valAddrs[0], sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, sdk.NewInt(2))))
-	delegation3 := types.NewDelegation(addrs[0], valAddrs[1], sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, sdk.NewInt(3))))
-	delegation4 := types.NewDelegation(addrs[1], valAddrs[1], sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, sdk.NewInt(3))))
+	delegation1 := types.NewDelegation(addrsStr[0], valAddrsStr[0], sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, math.NewInt(1))))
+	delegation2 := types.NewDelegation(addrsStr[1], valAddrsStr[0], sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, math.NewInt(2))))
+	delegation3 := types.NewDelegation(addrsStr[0], valAddrsStr[1], sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, math.NewInt(3))))
+	delegation4 := types.NewDelegation(addrsStr[1], valAddrsStr[1], sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, math.NewInt(3))))
 
 	input.StakingKeeper.SetDelegation(ctx, delegation1)
 	input.StakingKeeper.SetDelegation(ctx, delegation2)
 	input.StakingKeeper.SetDelegation(ctx, delegation3)
 	input.StakingKeeper.SetDelegation(ctx, delegation4)
 
-	delegations := input.StakingKeeper.GetDelegatorDelegations(ctx, addrs[0], 10)
+	delegations, err := input.StakingKeeper.GetDelegatorDelegations(ctx, addrs[0], 10)
+	require.NoError(t, err)
 	for _, resDelegation := range delegations {
-		if resDelegation.GetValidatorAddr().Equals(valAddrs[0]) {
+		if resDelegation.GetValidatorAddr() == valAddrsStr[0] {
 			require.Equal(t, delegation1, resDelegation)
 		} else {
 			require.Equal(t, delegation3, resDelegation)
@@ -237,30 +245,30 @@ func Test_UnbondingDelegations(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
 	completeTime := time.Now().UTC()
-	unbondingCoins1 := sdk.NewCoins(sdk.NewCoin(bondDenom, sdk.NewInt(100)))
-	unbondingCoins2 := sdk.NewCoins(sdk.NewCoin("foo", sdk.NewInt(100)))
-	unbondingCoins3 := sdk.NewCoins(sdk.NewCoin("bar", sdk.NewInt(100)))
-	unbondingDelegation1 := types.NewUnbondingDelegation(addrs[0], valAddrs[0], 10, completeTime, unbondingCoins1, 1)
-	unbondingDelegation2 := types.NewUnbondingDelegation(addrs[1], valAddrs[1], 10, completeTime, unbondingCoins2, 2)
+	unbondingCoins1 := sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(100)))
+	unbondingCoins2 := sdk.NewCoins(sdk.NewCoin("foo", math.NewInt(100)))
+	unbondingCoins3 := sdk.NewCoins(sdk.NewCoin("bar", math.NewInt(100)))
+	unbondingDelegation1 := types.NewUnbondingDelegation(addrsStr[0], valAddrsStr[0], 10, completeTime, unbondingCoins1, 1)
+	unbondingDelegation2 := types.NewUnbondingDelegation(addrsStr[1], valAddrsStr[1], 10, completeTime, unbondingCoins2, 2)
 	input.StakingKeeper.IncrementUnbondingId(ctx)
 	input.StakingKeeper.IncrementUnbondingId(ctx)
 
-	input.StakingKeeper.SetUnbondingDelegation(ctx, unbondingDelegation1)
-	input.StakingKeeper.SetUnbondingDelegation(ctx, unbondingDelegation2)
+	require.NoError(t, input.StakingKeeper.SetUnbondingDelegation(ctx, unbondingDelegation1))
+	require.NoError(t, input.StakingKeeper.SetUnbondingDelegation(ctx, unbondingDelegation2))
 
-	resUnbondingDelegation1, found := input.StakingKeeper.GetUnbondingDelegation(ctx, addrs[0], valAddrs[0])
-	require.True(t, found)
+	resUnbondingDelegation1, err := input.StakingKeeper.GetUnbondingDelegation(ctx, addrs[0], valAddrs[0])
+	require.NoError(t, err)
 	require.Equal(t, unbondingDelegation1, resUnbondingDelegation1)
 
-	resUnbondingDelegation2, found := input.StakingKeeper.GetUnbondingDelegation(ctx, addrs[1], valAddrs[1])
-	require.True(t, found)
+	resUnbondingDelegation2, err := input.StakingKeeper.GetUnbondingDelegation(ctx, addrs[1], valAddrs[1])
+	require.NoError(t, err)
 	require.Equal(t, unbondingDelegation2, resUnbondingDelegation2)
 
 	ubde, err := input.StakingKeeper.SetUnbondingDelegationEntry(ctx, addrs[0], valAddrs[0], 5, completeTime, unbondingCoins3)
 	require.NoError(t, err)
 	require.Equal(t, types.UnbondingDelegation{
-		DelegatorAddress: addrs[0].String(),
-		ValidatorAddress: valAddrs[0].String(),
+		DelegatorAddress: addrsStr[0],
+		ValidatorAddress: valAddrsStr[0],
 		Entries: []types.UnbondingDelegationEntry{
 			{
 				CreationHeight: 10,
@@ -279,26 +287,28 @@ func Test_UnbondingDelegations(t *testing.T) {
 		},
 	}, ubde)
 
-	input.StakingKeeper.RemoveUnbondingDelegation(ctx, unbondingDelegation1)
-	_, found = input.StakingKeeper.GetUnbondingDelegation(ctx, addrs[0], valAddrs[0])
-	require.False(t, found)
+	require.NoError(t, input.StakingKeeper.RemoveUnbondingDelegation(ctx, unbondingDelegation1))
+	_, err = input.StakingKeeper.GetUnbondingDelegation(ctx, addrs[0], valAddrs[0])
+	require.ErrorIs(t, err, collections.ErrNotFound)
 }
 
 func Test_GetUnbondingDelegationsFromValidator(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
 	completeTime := time.Now().UTC()
-	unbondingCoins1 := sdk.NewCoins(sdk.NewCoin(bondDenom, sdk.NewInt(100)))
-	unbondingCoins2 := sdk.NewCoins(sdk.NewCoin("foo", sdk.NewInt(100)))
-	unbondingDelegation1 := types.NewUnbondingDelegation(addrs[0], valAddrs[0], 10, completeTime, unbondingCoins1, 1)
-	unbondingDelegation2 := types.NewUnbondingDelegation(addrs[1], valAddrs[0], 10, completeTime, unbondingCoins2, 2)
+	unbondingCoins1 := sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(100)))
+	unbondingCoins2 := sdk.NewCoins(sdk.NewCoin("foo", math.NewInt(100)))
+	unbondingDelegation1 := types.NewUnbondingDelegation(addrsStr[0], valAddrsStr[0], 10, completeTime, unbondingCoins1, 1)
+	unbondingDelegation2 := types.NewUnbondingDelegation(addrsStr[1], valAddrsStr[0], 10, completeTime, unbondingCoins2, 2)
 
-	input.StakingKeeper.SetUnbondingDelegation(ctx, unbondingDelegation1)
-	input.StakingKeeper.SetUnbondingDelegation(ctx, unbondingDelegation2)
+	require.NoError(t, input.StakingKeeper.SetUnbondingDelegation(ctx, unbondingDelegation1))
+	require.NoError(t, input.StakingKeeper.SetUnbondingDelegation(ctx, unbondingDelegation2))
 
-	unbondingDelegations := input.StakingKeeper.GetUnbondingDelegationsFromValidator(ctx, valAddrs[0])
+	unbondingDelegations, err := input.StakingKeeper.GetUnbondingDelegationsFromValidator(ctx, valAddrs[0])
+	require.NoError(t, err)
+
 	for _, resUnbondingDelegation := range unbondingDelegations {
-		if resUnbondingDelegation.DelegatorAddress == addrs[0].String() {
+		if resUnbondingDelegation.DelegatorAddress == addrsStr[0] {
 			require.Equal(t, unbondingDelegation1, resUnbondingDelegation)
 		} else {
 			require.Equal(t, unbondingDelegation2, resUnbondingDelegation)
@@ -312,35 +322,39 @@ func Test_UBDQueue(t *testing.T) {
 
 	dvPairs := []types.DVPair{
 		{
-			DelegatorAddress: addrs[0].String(),
-			ValidatorAddress: valAddrs[0].String(),
+			DelegatorAddress: addrsStr[0],
+			ValidatorAddress: valAddrsStr[0],
 		},
 		{
-			DelegatorAddress: addrs[1].String(),
-			ValidatorAddress: valAddrs[0].String(),
+			DelegatorAddress: addrsStr[1],
+			ValidatorAddress: valAddrsStr[0],
 		},
 	}
-	input.StakingKeeper.SetUBDQueueTimeSlice(ctx, completeTime, dvPairs)
-	resDvPairs := input.StakingKeeper.GetUBDQueueTimeSlice(ctx, completeTime)
+	require.NoError(t, input.StakingKeeper.SetUBDQueueTimeSlice(ctx, completeTime, dvPairs))
+	resDvPairs, err := input.StakingKeeper.GetUBDQueueTimeSlice(ctx, completeTime)
+	require.NoError(t, err)
 	require.Equal(t, dvPairs, resDvPairs)
-	resDvPairs = input.StakingKeeper.DequeueAllMatureUBDQueue(ctx, completeTime.Add(time.Second))
+	resDvPairs, err = input.StakingKeeper.DequeueAllMatureUBDQueue(ctx, completeTime.Add(time.Second))
+	require.NoError(t, err)
 	require.Equal(t, dvPairs, resDvPairs)
 
 	completeTime1 := completeTime.Add(time.Second)
 	completeTime2 := completeTime.Add(time.Hour)
-	unbondingCoins1 := sdk.NewCoins(sdk.NewCoin(bondDenom, sdk.NewInt(100)))
-	unbondingCoins2 := sdk.NewCoins(sdk.NewCoin("foo", sdk.NewInt(100)))
-	unbondingDelegation1 := types.NewUnbondingDelegation(addrs[0], valAddrs[0], 10, completeTime1, unbondingCoins1, 1)
-	unbondingDelegation2 := types.NewUnbondingDelegation(addrs[1], valAddrs[0], 10, completeTime2, unbondingCoins2, 2)
+	unbondingCoins1 := sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(100)))
+	unbondingCoins2 := sdk.NewCoins(sdk.NewCoin("foo", math.NewInt(100)))
+	unbondingDelegation1 := types.NewUnbondingDelegation(addrsStr[0], valAddrsStr[0], 10, completeTime1, unbondingCoins1, 1)
+	unbondingDelegation2 := types.NewUnbondingDelegation(addrsStr[1], valAddrsStr[0], 10, completeTime2, unbondingCoins2, 2)
 
-	input.StakingKeeper.InsertUBDQueue(ctx, unbondingDelegation1, completeTime1)
-	input.StakingKeeper.InsertUBDQueue(ctx, unbondingDelegation2, completeTime1)
-	input.StakingKeeper.InsertUBDQueue(ctx, unbondingDelegation2, completeTime2)
+	require.NoError(t, input.StakingKeeper.InsertUBDQueue(ctx, unbondingDelegation1, completeTime1))
+	require.NoError(t, input.StakingKeeper.InsertUBDQueue(ctx, unbondingDelegation2, completeTime1))
+	require.NoError(t, input.StakingKeeper.InsertUBDQueue(ctx, unbondingDelegation2, completeTime2))
 
-	resDvPairs = input.StakingKeeper.GetUBDQueueTimeSlice(ctx, completeTime1)
+	resDvPairs, err = input.StakingKeeper.GetUBDQueueTimeSlice(ctx, completeTime1)
+	require.NoError(t, err)
 	require.Equal(t, dvPairs, resDvPairs)
 
-	resDvPairs = input.StakingKeeper.GetUBDQueueTimeSlice(ctx, completeTime2)
+	resDvPairs, err = input.StakingKeeper.GetUBDQueueTimeSlice(ctx, completeTime2)
+	require.NoError(t, err)
 	require.Equal(t, []types.DVPair{dvPairs[1]}, resDvPairs)
 }
 
@@ -348,73 +362,84 @@ func Test_Redelegation(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
 	completeTime := time.Now().UTC()
-	amounts := sdk.NewCoins(sdk.NewCoin(bondDenom, sdk.NewInt(100)))
-	shares := sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, sdk.NewInt(100)))
+	amounts := sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(100)))
+	shares := sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, math.NewInt(100)))
 
-	redelegation1 := types.NewRedelegation(addrs[0], valAddrs[0], valAddrs[1], 100, completeTime, amounts, shares, 1)
-	redelegation2 := types.NewRedelegation(addrs[1], valAddrs[1], valAddrs[0], 100, completeTime, amounts, shares, 2)
+	redelegation1 := types.NewRedelegation(addrsStr[0], valAddrsStr[0], valAddrsStr[1], 100, completeTime, amounts, shares, 1)
+	redelegation2 := types.NewRedelegation(addrsStr[1], valAddrsStr[1], valAddrsStr[0], 100, completeTime, amounts, shares, 2)
 
-	input.StakingKeeper.SetRedelegation(ctx, redelegation1)
-	input.StakingKeeper.SetRedelegation(ctx, redelegation2)
+	require.NoError(t, input.StakingKeeper.SetRedelegation(ctx, redelegation1))
+	require.NoError(t, input.StakingKeeper.SetRedelegation(ctx, redelegation2))
 
-	resRedelegation1, found1 := input.StakingKeeper.GetRedelegation(ctx, addrs[0], valAddrs[0], valAddrs[1])
-	resRedelegation2, found2 := input.StakingKeeper.GetRedelegation(ctx, addrs[1], valAddrs[1], valAddrs[0])
-	_, found3 := input.StakingKeeper.GetRedelegation(ctx, addrs[0], valAddrs[1], valAddrs[0])
-	require.True(t, found1)
-	require.True(t, found2)
-	require.False(t, found3)
+	resRedelegation1, err1 := input.StakingKeeper.GetRedelegation(ctx, addrs[0], valAddrs[0], valAddrs[1])
+	resRedelegation2, err2 := input.StakingKeeper.GetRedelegation(ctx, addrs[1], valAddrs[1], valAddrs[0])
+	_, err3 := input.StakingKeeper.GetRedelegation(ctx, addrs[0], valAddrs[1], valAddrs[0])
+	require.NoError(t, err1)
+	require.NoError(t, err2)
+	require.ErrorIs(t, err3, collections.ErrNotFound)
 	require.Equal(t, redelegation1, resRedelegation1)
 	require.Equal(t, redelegation2, resRedelegation2)
 
-	redelegations := input.StakingKeeper.GetRedelegationsFromSrcValidator(ctx, valAddrs[0])
+	redelegations, err := input.StakingKeeper.GetRedelegationsFromSrcValidator(ctx, valAddrs[0])
+	require.NoError(t, err)
 	require.Equal(t, []types.Redelegation{redelegation1}, redelegations)
 
-	redelegations = input.StakingKeeper.GetRedelegationsFromSrcValidator(ctx, valAddrs[1])
+	redelegations, err = input.StakingKeeper.GetRedelegationsFromSrcValidator(ctx, valAddrs[1])
+	require.NoError(t, err)
 	require.Equal(t, []types.Redelegation{redelegation2}, redelegations)
 
-	require.True(t, input.StakingKeeper.HasReceivingRedelegation(ctx, addrs[0], valAddrs[1]))
-	require.False(t, input.StakingKeeper.HasReceivingRedelegation(ctx, addrs[0], valAddrs[0]))
+	has, err := input.StakingKeeper.HasReceivingRedelegation(ctx, addrs[0], valAddrs[1])
+	require.NoError(t, err)
+	require.True(t, has)
+	has, err = input.StakingKeeper.HasReceivingRedelegation(ctx, addrs[0], valAddrs[0])
+	require.NoError(t, err)
+	require.False(t, has)
 
 	// max entry
-	require.False(t, input.StakingKeeper.HasMaxRedelegationEntries(ctx, addrs[0], valAddrs[0], valAddrs[1]))
+	has, err = input.StakingKeeper.HasMaxRedelegationEntries(ctx, addrs[0], valAddrs[0], valAddrs[1])
+	require.NoError(t, err)
+	require.False(t, has)
 
 	// set max entry to 1
-	params := input.StakingKeeper.GetParams(ctx)
+	params, err := input.StakingKeeper.GetParams(ctx)
+	require.NoError(t, err)
 	params.MaxEntries = 1
-	input.StakingKeeper.SetParams(ctx, params)
-	require.True(t, input.StakingKeeper.HasMaxRedelegationEntries(ctx, addrs[0], valAddrs[0], valAddrs[1]))
+	require.NoError(t, input.StakingKeeper.SetParams(ctx, params))
+	has, err = input.StakingKeeper.HasMaxRedelegationEntries(ctx, addrs[0], valAddrs[0], valAddrs[1])
+	require.NoError(t, err)
+	require.True(t, has)
 
 	// back max entry to 7
 	// set max entry to 1
 	params.MaxEntries = 7
 	input.StakingKeeper.SetParams(ctx, params)
 
-	input.StakingKeeper.IterateRedelegations(ctx, func(_ int64, resRedelegation types.Redelegation) bool {
-		if resRedelegation.ValidatorSrcAddress == valAddrs[0].String() {
+	require.NoError(t, input.StakingKeeper.IterateRedelegations(ctx, func(resRedelegation types.Redelegation) (bool, error) {
+		if resRedelegation.ValidatorSrcAddress == valAddrsStr[0] {
 			require.Equal(t, redelegation1, resRedelegation)
 		} else {
 			require.Equal(t, redelegation2, resRedelegation)
 		}
-		return false
-	})
+		return false, nil
+	}))
 
-	input.StakingKeeper.RemoveRedelegation(ctx, redelegation1)
-	_, found := input.StakingKeeper.GetRedelegation(ctx, addrs[0], valAddrs[0], valAddrs[1])
-	require.False(t, found)
+	require.NoError(t, input.StakingKeeper.RemoveRedelegation(ctx, redelegation1))
+	_, err = input.StakingKeeper.GetRedelegation(ctx, addrs[0], valAddrs[0], valAddrs[1])
+	require.ErrorIs(t, err, collections.ErrNotFound)
 
-	input.StakingKeeper.SetRedelegation(ctx, redelegation1)
+	require.NoError(t, input.StakingKeeper.SetRedelegation(ctx, redelegation1))
 
 	completeTime2 := completeTime.Add(time.Hour)
-	amounts2 := sdk.NewCoins(sdk.NewCoin(bondDenom, sdk.NewInt(1000000)))
-	shares2 := sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, sdk.NewInt(1000000)))
+	amounts2 := sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(1000000)))
+	shares2 := sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, math.NewInt(1000000)))
 	redelegation1.Entries = append(redelegation1.Entries, types.NewRedelegationEntry(
 		110, completeTime2, amounts2, shares2, 1,
 	))
 	resRedelegation, err := input.StakingKeeper.SetRedelegationEntry(ctx, addrs[0], valAddrs[0], valAddrs[1], 110, completeTime2, amounts2, shares2)
 	require.NoError(t, err)
 	require.Equal(t, redelegation1, resRedelegation)
-	resRedelegation, found = input.StakingKeeper.GetRedelegation(ctx, addrs[0], valAddrs[0], valAddrs[1])
-	require.True(t, found)
+	resRedelegation, err = input.StakingKeeper.GetRedelegation(ctx, addrs[0], valAddrs[0], valAddrs[1])
+	require.NoError(t, err)
 	require.Equal(t, redelegation1, resRedelegation)
 }
 
@@ -424,40 +449,44 @@ func Test_RedelegationQueue(t *testing.T) {
 
 	dvvTriplets := []types.DVVTriplet{
 		{
-			DelegatorAddress:    addrs[0].String(),
-			ValidatorSrcAddress: valAddrs[0].String(),
-			ValidatorDstAddress: valAddrs[1].String(),
+			DelegatorAddress:    addrsStr[0],
+			ValidatorSrcAddress: valAddrsStr[0],
+			ValidatorDstAddress: valAddrsStr[1],
 		},
 		{
-			DelegatorAddress:    addrs[1].String(),
-			ValidatorSrcAddress: valAddrs[1].String(),
-			ValidatorDstAddress: valAddrs[0].String(),
+			DelegatorAddress:    addrsStr[1],
+			ValidatorSrcAddress: valAddrsStr[1],
+			ValidatorDstAddress: valAddrsStr[0],
 		},
 	}
 
-	input.StakingKeeper.SetRedelegationQueueTimeSlice(ctx, completeTime, dvvTriplets)
-	resDvvTriplets := input.StakingKeeper.GetRedelegationQueueTimeSlice(ctx, completeTime)
+	require.NoError(t, input.StakingKeeper.SetRedelegationQueueTimeSlice(ctx, completeTime, dvvTriplets))
+	resDvvTriplets, err := input.StakingKeeper.GetRedelegationQueueTimeSlice(ctx, completeTime)
+	require.NoError(t, err)
 	require.Equal(t, dvvTriplets, resDvvTriplets)
-	resDvvTriplets = input.StakingKeeper.DequeueAllMatureRedelegationQueue(ctx, completeTime.Add(time.Second))
+	resDvvTriplets, err = input.StakingKeeper.DequeueAllMatureRedelegationQueue(ctx, completeTime.Add(time.Second))
+	require.NoError(t, err)
 	require.Equal(t, dvvTriplets, resDvvTriplets)
 
 	completeTime1 := completeTime.Add(time.Second)
 	completeTime2 := completeTime.Add(time.Hour)
-	redelegationCoins1 := sdk.NewCoins(sdk.NewCoin(bondDenom, sdk.NewInt(100)))
-	redelegationCoins2 := sdk.NewCoins(sdk.NewCoin("foo", sdk.NewInt(100)))
-	redelegationShares1 := sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, sdk.NewInt(100)))
-	redelegationShares2 := sdk.NewDecCoins(sdk.NewDecCoin("foo", sdk.NewInt(100)))
-	redelegation1 := types.NewRedelegation(addrs[0], valAddrs[0], valAddrs[1], 10, completeTime1, redelegationCoins1, redelegationShares1, 1)
-	redelegation2 := types.NewRedelegation(addrs[1], valAddrs[1], valAddrs[0], 10, completeTime2, redelegationCoins2, redelegationShares2, 2)
+	redelegationCoins1 := sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(100)))
+	redelegationCoins2 := sdk.NewCoins(sdk.NewCoin("foo", math.NewInt(100)))
+	redelegationShares1 := sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, math.NewInt(100)))
+	redelegationShares2 := sdk.NewDecCoins(sdk.NewDecCoin("foo", math.NewInt(100)))
+	redelegation1 := types.NewRedelegation(addrsStr[0], valAddrsStr[0], valAddrsStr[1], 10, completeTime1, redelegationCoins1, redelegationShares1, 1)
+	redelegation2 := types.NewRedelegation(addrsStr[1], valAddrsStr[1], valAddrsStr[0], 10, completeTime2, redelegationCoins2, redelegationShares2, 2)
 
-	input.StakingKeeper.InsertRedelegationQueue(ctx, redelegation1, completeTime1)
-	input.StakingKeeper.InsertRedelegationQueue(ctx, redelegation2, completeTime1)
-	input.StakingKeeper.InsertRedelegationQueue(ctx, redelegation2, completeTime2)
+	require.NoError(t, input.StakingKeeper.InsertRedelegationQueue(ctx, redelegation1, completeTime1))
+	require.NoError(t, input.StakingKeeper.InsertRedelegationQueue(ctx, redelegation2, completeTime1))
+	require.NoError(t, input.StakingKeeper.InsertRedelegationQueue(ctx, redelegation2, completeTime2))
 
-	resDvvTriplets = input.StakingKeeper.GetRedelegationQueueTimeSlice(ctx, completeTime1)
+	resDvvTriplets, err = input.StakingKeeper.GetRedelegationQueueTimeSlice(ctx, completeTime1)
+	require.NoError(t, err)
 	require.Equal(t, dvvTriplets, resDvvTriplets)
 
-	resDvvTriplets = input.StakingKeeper.GetRedelegationQueueTimeSlice(ctx, completeTime2)
+	resDvvTriplets, err = input.StakingKeeper.GetRedelegationQueueTimeSlice(ctx, completeTime2)
+	require.NoError(t, err)
 	require.Equal(t, []types.DVVTriplet{dvvTriplets[1]}, resDvvTriplets)
 }
 
@@ -466,36 +495,41 @@ func Test_Delegate(t *testing.T) {
 
 	// create dex to register second bond denom
 	baseDenom := bondDenom
-	metadataLP := createDexPool(t, ctx, input, sdk.NewInt64Coin(baseDenom, 1_000_000_000), sdk.NewInt64Coin("uusdc", 2_500_000_000), sdk.NewDecWithPrec(8, 1), sdk.NewDecWithPrec(2, 1))
+	metadataLP := createDexPool(t, ctx, input, sdk.NewInt64Coin(baseDenom, 1_000_000_000), sdk.NewInt64Coin("uusdc", 2_500_000_000), math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1))
 
 	secondBondDenom, err := movetypes.DenomFromMetadataAddress(ctx, movekeeper.NewMoveBankKeeper(&input.MoveKeeper), metadataLP)
 	require.NoError(t, err)
 
 	// update params
-	params := input.StakingKeeper.GetParams(ctx)
+	params, err := input.StakingKeeper.GetParams(ctx)
+	require.NoError(t, err)
 	params.BondDenoms = append(params.BondDenoms, secondBondDenom)
 	valAddr := createValidatorWithBalance(ctx, input, 100_000_000, 1_000_000, 1)
+	valAddrStr, err := input.StakingKeeper.ValidatorAddressCodec().BytesToString(valAddr)
+	require.NoError(t, err)
 
-	firstCoin := sdk.NewCoin(bondDenom, sdk.NewInt(1_000_000))
-	secondCoin := sdk.NewCoin(secondBondDenom, sdk.NewInt(2_500_000))
+	firstCoin := sdk.NewCoin(bondDenom, math.NewInt(1_000_000))
+	secondCoin := sdk.NewCoin(secondBondDenom, math.NewInt(2_500_000))
 	bondCoins := sdk.NewCoins(firstCoin, secondCoin)
 	delAddr := input.Faucet.NewFundedAccount(ctx, firstCoin)
+	delAddrStr, err := input.AccountKeeper.AddressCodec().BytesToString(delAddr)
+	require.NoError(t, err)
 
 	// mint not possible for second bond denom, so transfer from the 0x1
 	require.NoError(t, input.BankKeeper.SendCoins(ctx, movetypes.TestAddr, delAddr, sdk.NewCoins(secondCoin)))
 
-	validator, found := input.StakingKeeper.GetValidator(ctx, valAddr)
-	require.True(t, found)
+	validator, err := input.StakingKeeper.Validators.Get(ctx, valAddr)
+	require.NoError(t, err)
 
 	shares, err := input.StakingKeeper.Delegate(ctx, delAddr, bondCoins, types.Unbonded, validator, true)
 	require.NoError(t, err)
 	require.Equal(t, sdk.NewDecCoinsFromCoins(bondCoins...), shares)
 
-	delegation, found := input.StakingKeeper.GetDelegation(ctx, delAddr, valAddr)
-	require.True(t, found)
+	delegation, err := input.StakingKeeper.GetDelegation(ctx, delAddr, valAddr)
+	require.NoError(t, err)
 	require.Equal(t, types.Delegation{
-		DelegatorAddress: delAddr.String(),
-		ValidatorAddress: valAddr.String(),
+		DelegatorAddress: delAddrStr,
+		ValidatorAddress: valAddrStr,
 		Shares:           shares,
 	}, delegation)
 }
@@ -505,35 +539,36 @@ func Test_Unbond(t *testing.T) {
 
 	// create dex to register second bond denom
 	baseDenom := bondDenom
-	metadataLP := createDexPool(t, ctx, input, sdk.NewInt64Coin(baseDenom, 1_000_000_000), sdk.NewInt64Coin("uusdc", 2_500_000_000), sdk.NewDecWithPrec(8, 1), sdk.NewDecWithPrec(2, 1))
+	metadataLP := createDexPool(t, ctx, input, sdk.NewInt64Coin(baseDenom, 1_000_000_000), sdk.NewInt64Coin("uusdc", 2_500_000_000), math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1))
 
 	secondBondDenom, err := movetypes.DenomFromMetadataAddress(ctx, movekeeper.NewMoveBankKeeper(&input.MoveKeeper), metadataLP)
 	require.NoError(t, err)
 
 	// update params
-	params := input.StakingKeeper.GetParams(ctx)
+	params, err := input.StakingKeeper.GetParams(ctx)
+	require.NoError(t, err)
 	params.BondDenoms = append(params.BondDenoms, secondBondDenom)
 	valAddr := createValidatorWithBalance(ctx, input, 100_000_000, 1_000_000, 1)
 
-	firstCoin := sdk.NewCoin(bondDenom, sdk.NewInt(1_000_000))
-	secondCoin := sdk.NewCoin(secondBondDenom, sdk.NewInt(2_500_000))
+	firstCoin := sdk.NewCoin(bondDenom, math.NewInt(1_000_000))
+	secondCoin := sdk.NewCoin(secondBondDenom, math.NewInt(2_500_000))
 	bondCoins := sdk.NewCoins(firstCoin, secondCoin)
 	delAddr := input.Faucet.NewFundedAccount(ctx, firstCoin)
 
 	// mint not possible for second bond denom, so transfer from the 0x1
 	require.NoError(t, input.BankKeeper.SendCoins(ctx, movetypes.TestAddr, delAddr, sdk.NewCoins(secondCoin)))
 
-	validator, found := input.StakingKeeper.GetValidator(ctx, valAddr)
-	require.True(t, found)
+	validator, err := input.StakingKeeper.Validators.Get(ctx, valAddr)
+	require.NoError(t, err)
 
 	shares, err := input.StakingKeeper.Delegate(ctx, delAddr, bondCoins, types.Unbonded, validator, true)
 	require.NoError(t, err)
 	require.Equal(t, sdk.NewDecCoinsFromCoins(bondCoins...), shares)
 
 	// unbond half
-	unbondedAmount, err := input.StakingKeeper.Unbond(ctx, delAddr, valAddr, shares.QuoDec(sdk.NewDec(2)))
+	unbondedAmount, err := input.StakingKeeper.Unbond(ctx, delAddr, valAddr, shares.QuoDec(math.LegacyNewDec(2)))
 	require.NoError(t, err)
-	halfCoins, _ := sdk.NewDecCoinsFromCoins(bondCoins...).QuoDec(sdk.NewDec(2)).TruncateDecimal()
+	halfCoins, _ := sdk.NewDecCoinsFromCoins(bondCoins...).QuoDec(math.LegacyNewDec(2)).TruncateDecimal()
 	require.Equal(t, halfCoins, unbondedAmount)
 }
 
@@ -542,28 +577,29 @@ func Test_UnbondAfterSlash(t *testing.T) {
 
 	// create dex to register second bond denom
 	baseDenom := bondDenom
-	metadataLP := createDexPool(t, ctx, input, sdk.NewInt64Coin(baseDenom, 1_000_000_000), sdk.NewInt64Coin("uusdc", 2_500_000_000), sdk.NewDecWithPrec(8, 1), sdk.NewDecWithPrec(2, 1))
+	metadataLP := createDexPool(t, ctx, input, sdk.NewInt64Coin(baseDenom, 1_000_000_000), sdk.NewInt64Coin("uusdc", 2_500_000_000), math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1))
 
 	secondBondDenom, err := movetypes.DenomFromMetadataAddress(ctx, movekeeper.NewMoveBankKeeper(&input.MoveKeeper), metadataLP)
 	require.NoError(t, err)
 
 	// update params
-	params := input.StakingKeeper.GetParams(ctx)
+	params, err := input.StakingKeeper.GetParams(ctx)
+	require.NoError(t, err)
 	params.BondDenoms = append(params.BondDenoms, secondBondDenom)
 	input.StakingKeeper.SetParams(ctx, params)
 
 	valAddr := createValidatorWithBalance(ctx, input, 100_000_000, 1_000_000, 1)
 
-	firstCoin := sdk.NewCoin(bondDenom, sdk.NewInt(1_000_000))
-	secondCoin := sdk.NewCoin(secondBondDenom, sdk.NewInt(2_600_000))
+	firstCoin := sdk.NewCoin(bondDenom, math.NewInt(1_000_000))
+	secondCoin := sdk.NewCoin(secondBondDenom, math.NewInt(2_600_000))
 	bondCoins := sdk.NewCoins(firstCoin, secondCoin)
 	delAddr := input.Faucet.NewFundedAccount(ctx, firstCoin)
 
 	// mint not possible for second bond denom, so transfer from the 0x1
 	require.NoError(t, input.BankKeeper.SendCoins(ctx, movetypes.TestAddr, delAddr, sdk.NewCoins(secondCoin)))
 
-	validator, found := input.StakingKeeper.GetValidator(ctx, valAddr)
-	require.True(t, found)
+	validator, err := input.StakingKeeper.Validators.Get(ctx, valAddr)
+	require.NoError(t, err)
 
 	shares, err := input.StakingKeeper.Delegate(ctx, delAddr, bondCoins, types.Unbonded, validator, true)
 	require.NoError(t, err)
@@ -576,19 +612,20 @@ func Test_UnbondAfterSlash(t *testing.T) {
 	_, err = input.StakingKeeper.ApplyAndReturnValidatorSetUpdates(ctx)
 	require.NoError(t, err)
 
-	validator, found = input.StakingKeeper.GetValidator(ctx, valAddr)
-	require.True(t, found)
+	validator, err = input.StakingKeeper.Validators.Get(ctx, valAddr)
+	require.NoError(t, err)
 
 	power := validator.ConsensusPower(input.StakingKeeper.PowerReduction(ctx))
 	require.Equal(t, int64(3), power)
 
 	// 50% slashing
-	input.StakingKeeper.Slash(ctx, pubkey.Address().Bytes(), 100, sdk.NewDecWithPrec(5, 1))
+	_, err = input.StakingKeeper.Slash(ctx, pubkey.Address().Bytes(), 100, math.LegacyNewDecWithPrec(5, 1))
+	require.NoError(t, err)
 
 	// unbond half
-	unbondedAmount, err := input.StakingKeeper.Unbond(ctx, delAddr, valAddr, shares.QuoDec(sdk.NewDec(2)))
+	unbondedAmount, err := input.StakingKeeper.Unbond(ctx, delAddr, valAddr, shares.QuoDec(math.LegacyNewDec(2)))
 	require.NoError(t, err)
-	quarterCoins, _ := sdk.NewDecCoinsFromCoins(bondCoins...).QuoDec(sdk.NewDec(4)).TruncateDecimal()
+	quarterCoins, _ := sdk.NewDecCoinsFromCoins(bondCoins...).QuoDec(math.LegacyNewDec(4)).TruncateDecimal()
 	require.Equal(t, quarterCoins, unbondedAmount)
 }
 
@@ -597,33 +634,34 @@ func Test_Undelegate(t *testing.T) {
 
 	// create dex to register second bond denom
 	baseDenom := bondDenom
-	metadataLP := createDexPool(t, ctx, input, sdk.NewInt64Coin(baseDenom, 1_000_000_000), sdk.NewInt64Coin("uusdc", 2_500_000_000), sdk.NewDecWithPrec(8, 1), sdk.NewDecWithPrec(2, 1))
+	metadataLP := createDexPool(t, ctx, input, sdk.NewInt64Coin(baseDenom, 1_000_000_000), sdk.NewInt64Coin("uusdc", 2_500_000_000), math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1))
 
 	secondBondDenom, err := movetypes.DenomFromMetadataAddress(ctx, movekeeper.NewMoveBankKeeper(&input.MoveKeeper), metadataLP)
 	require.NoError(t, err)
 
 	// update params
-	params := input.StakingKeeper.GetParams(ctx)
+	params, err := input.StakingKeeper.GetParams(ctx)
+	require.NoError(t, err)
 	params.BondDenoms = append(params.BondDenoms, secondBondDenom)
 	valAddr := createValidatorWithBalance(ctx, input, 100_000_000, 1_000_000, 1)
 
-	firstCoin := sdk.NewCoin(bondDenom, sdk.NewInt(1_000_000))
-	secondCoin := sdk.NewCoin(secondBondDenom, sdk.NewInt(2_500_000))
+	firstCoin := sdk.NewCoin(bondDenom, math.NewInt(1_000_000))
+	secondCoin := sdk.NewCoin(secondBondDenom, math.NewInt(2_500_000))
 	bondCoins := sdk.NewCoins(firstCoin, secondCoin)
 	delAddr := input.Faucet.NewFundedAccount(ctx, firstCoin)
 
 	// mint not possible for second bond denom, so transfer from the 0x1
 	require.NoError(t, input.BankKeeper.SendCoins(ctx, movetypes.TestAddr, delAddr, sdk.NewCoins(secondCoin)))
 
-	validator, found := input.StakingKeeper.GetValidator(ctx, valAddr)
-	require.True(t, found)
+	validator, err := input.StakingKeeper.Validators.Get(ctx, valAddr)
+	require.NoError(t, err)
 
 	shares, err := input.StakingKeeper.Delegate(ctx, delAddr, bondCoins, types.Unbonded, validator, true)
 	require.NoError(t, err)
 	require.Equal(t, sdk.NewDecCoinsFromCoins(bondCoins...), shares)
 
 	// unbond half
-	completeTime, err := input.StakingKeeper.Undelegate(ctx, delAddr, valAddr, shares.QuoDec(sdk.NewDec(2)))
+	completeTime, _, err := input.StakingKeeper.Undelegate(ctx, delAddr, valAddr, shares.QuoDec(math.LegacyNewDec(2)))
 	require.NoError(t, err)
 	require.Equal(t, ctx.BlockHeader().Time.Add(params.UnbondingTime), completeTime)
 
@@ -631,7 +669,7 @@ func Test_Undelegate(t *testing.T) {
 	unbondedCoins, err := input.StakingKeeper.CompleteUnbonding(ctx, delAddr, valAddr)
 	require.NoError(t, err)
 
-	halfCoins, _ := sdk.NewDecCoinsFromCoins(bondCoins...).QuoDec(sdk.NewDec(2)).TruncateDecimal()
+	halfCoins, _ := sdk.NewDecCoinsFromCoins(bondCoins...).QuoDec(math.LegacyNewDec(2)).TruncateDecimal()
 	require.Equal(t, halfCoins, unbondedCoins)
 }
 
@@ -640,34 +678,35 @@ func Test_BeginRedelegation(t *testing.T) {
 
 	// create dex to register second bond denom
 	baseDenom := bondDenom
-	metadataLP := createDexPool(t, ctx, input, sdk.NewInt64Coin(baseDenom, 1_000_000_000), sdk.NewInt64Coin("uusdc", 2_500_000_000), sdk.NewDecWithPrec(8, 1), sdk.NewDecWithPrec(2, 1))
+	metadataLP := createDexPool(t, ctx, input, sdk.NewInt64Coin(baseDenom, 1_000_000_000), sdk.NewInt64Coin("uusdc", 2_500_000_000), math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1))
 
 	secondBondDenom, err := movetypes.DenomFromMetadataAddress(ctx, movekeeper.NewMoveBankKeeper(&input.MoveKeeper), metadataLP)
 	require.NoError(t, err)
 
 	// update params
-	params := input.StakingKeeper.GetParams(ctx)
+	params, err := input.StakingKeeper.GetParams(ctx)
+	require.NoError(t, err)
 	params.BondDenoms = append(params.BondDenoms, secondBondDenom)
 	valAddr := createValidatorWithBalance(ctx, input, 100_000_000, 1_000_000, 1)
 	valAddr2 := createValidatorWithBalance(ctx, input, 100_000_000, 1_000_000, 2)
 
-	firstCoin := sdk.NewCoin(bondDenom, sdk.NewInt(1_000_000))
-	secondCoin := sdk.NewCoin(secondBondDenom, sdk.NewInt(2_500_000))
+	firstCoin := sdk.NewCoin(bondDenom, math.NewInt(1_000_000))
+	secondCoin := sdk.NewCoin(secondBondDenom, math.NewInt(2_500_000))
 	bondCoins := sdk.NewCoins(firstCoin, secondCoin)
 	delAddr := input.Faucet.NewFundedAccount(ctx, firstCoin)
 
 	// mint not possible for second bond denom, so transfer from the 0x1
 	require.NoError(t, input.BankKeeper.SendCoins(ctx, movetypes.TestAddr, delAddr, sdk.NewCoins(secondCoin)))
 
-	validator, found := input.StakingKeeper.GetValidator(ctx, valAddr)
-	require.True(t, found)
+	validator, err := input.StakingKeeper.Validators.Get(ctx, valAddr)
+	require.NoError(t, err)
 
 	shares, err := input.StakingKeeper.Delegate(ctx, delAddr, bondCoins, types.Unbonded, validator, true)
 	require.NoError(t, err)
 	require.Equal(t, sdk.NewDecCoinsFromCoins(bondCoins...), shares)
 
 	// redelegate half
-	completeTime, err := input.StakingKeeper.BeginRedelegation(ctx, delAddr, valAddr, valAddr2, shares.QuoDec(sdk.NewDec(2)))
+	completeTime, err := input.StakingKeeper.BeginRedelegation(ctx, delAddr, valAddr, valAddr2, shares.QuoDec(math.LegacyNewDec(2)))
 	require.NoError(t, err)
 	require.Equal(t, ctx.BlockHeader().Time.Add(params.UnbondingTime), completeTime)
 
@@ -675,7 +714,7 @@ func Test_BeginRedelegation(t *testing.T) {
 	redelegatedCoins, err := input.StakingKeeper.CompleteRedelegation(ctx, delAddr, valAddr, valAddr2)
 	require.NoError(t, err)
 
-	halfCoins, _ := sdk.NewDecCoinsFromCoins(bondCoins...).QuoDec(sdk.NewDec(2)).TruncateDecimal()
+	halfCoins, _ := sdk.NewDecCoinsFromCoins(bondCoins...).QuoDec(math.LegacyNewDec(2)).TruncateDecimal()
 	require.Equal(t, halfCoins, redelegatedCoins)
 }
 
@@ -684,26 +723,27 @@ func Test_ValidateUnbondAmount(t *testing.T) {
 
 	// create dex to register second bond denom
 	baseDenom := bondDenom
-	metadataLP := createDexPool(t, ctx, input, sdk.NewInt64Coin(baseDenom, 1_000_000_000), sdk.NewInt64Coin("uusdc", 2_500_000_000), sdk.NewDecWithPrec(8, 1), sdk.NewDecWithPrec(2, 1))
+	metadataLP := createDexPool(t, ctx, input, sdk.NewInt64Coin(baseDenom, 1_000_000_000), sdk.NewInt64Coin("uusdc", 2_500_000_000), math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1))
 
 	secondBondDenom, err := movetypes.DenomFromMetadataAddress(ctx, movekeeper.NewMoveBankKeeper(&input.MoveKeeper), metadataLP)
 	require.NoError(t, err)
 
 	// update params
-	params := input.StakingKeeper.GetParams(ctx)
+	params, err := input.StakingKeeper.GetParams(ctx)
+	require.NoError(t, err)
 	params.BondDenoms = append(params.BondDenoms, secondBondDenom)
 	valAddr := createValidatorWithBalance(ctx, input, 100_000_000, 1_000_000, 1)
 
-	firstCoin := sdk.NewCoin(bondDenom, sdk.NewInt(1_000_000))
-	secondCoin := sdk.NewCoin(secondBondDenom, sdk.NewInt(2_500_000))
+	firstCoin := sdk.NewCoin(bondDenom, math.NewInt(1_000_000))
+	secondCoin := sdk.NewCoin(secondBondDenom, math.NewInt(2_500_000))
 	bondCoins := sdk.NewCoins(firstCoin, secondCoin)
 	delAddr := input.Faucet.NewFundedAccount(ctx, firstCoin)
 
 	// mint not possible for second bond denom, so transfer from the 0x1
 	require.NoError(t, input.BankKeeper.SendCoins(ctx, movetypes.TestAddr, delAddr, sdk.NewCoins(secondCoin)))
 
-	validator, found := input.StakingKeeper.GetValidator(ctx, valAddr)
-	require.True(t, found)
+	validator, err := input.StakingKeeper.Validators.Get(ctx, valAddr)
+	require.NoError(t, err)
 
 	shares, err := input.StakingKeeper.Delegate(ctx, delAddr, bondCoins, types.Unbonded, validator, true)
 	require.NoError(t, err)
@@ -713,6 +753,6 @@ func Test_ValidateUnbondAmount(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, shares, unbondShares)
 
-	_, err = input.StakingKeeper.ValidateUnbondAmount(ctx, delAddr, valAddr, bondCoins.Add(sdk.NewCoin(bondDenom, sdk.OneInt())))
+	_, err = input.StakingKeeper.ValidateUnbondAmount(ctx, delAddr, valAddr, bondCoins.Add(sdk.NewCoin(bondDenom, math.OneInt())))
 	require.Error(t, err)
 }

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"time"
 
+	"cosmossdk.io/core/address"
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	v1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 )
@@ -32,12 +33,12 @@ func (data GenesisState) Empty() bool {
 }
 
 // ValidateGenesis checks if parameters are within valid ranges
-func ValidateGenesis(data *GenesisState) error {
+func ValidateGenesis(data *GenesisState, ac address.Codec) error {
 	if data.StartingProposalId == 0 {
 		return errors.New("starting proposal id must be greater than 0")
 	}
 
-	return data.Params.ValidateBasic()
+	return data.Params.Validate(ac)
 }
 
 var _ types.UnpackInterfacesMessage = GenesisState{}

@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	"cosmossdk.io/core/address"
 	sdkmath "cosmossdk.io/math"
 	"github.com/initia-labs/initia/x/move/types"
 	"github.com/novifinancial/serde-reflection/serde-generate/runtime/golang/bcs"
@@ -63,7 +64,7 @@ func asciiDecodeString(s string) ([]byte, error) {
 	return []byte(s), nil
 }
 
-func BcsSerializeArg(argType string, arg string, s serde.Serializer) ([]byte, error) {
+func BcsSerializeArg(argType string, arg string, s serde.Serializer, ac address.Codec) ([]byte, error) {
 	if arg == "" {
 		err := s.SerializeBytes([]byte(arg))
 		return s.GetBytes(), err
@@ -86,7 +87,7 @@ func BcsSerializeArg(argType string, arg string, s serde.Serializer) ([]byte, er
 		err = s.SerializeBytes(decoded)
 		return s.GetBytes(), err
 	case "address", "object":
-		accAddr, err := types.AccAddressFromString(arg)
+		accAddr, err := types.AccAddressFromString(ac, arg)
 		if err != nil {
 			return nil, err
 		}
@@ -177,21 +178,21 @@ func BcsSerializeArg(argType string, arg string, s serde.Serializer) ([]byte, er
 			return nil, err
 		}
 		decstr := dec.MulInt64(1000000000000000000).TruncateInt().String()
-		return BcsSerializeArg("u128", decstr, s)
+		return BcsSerializeArg("u128", decstr, s, ac)
 	case "decimal256":
 		dec, err := sdkmath.LegacyNewDecFromStr(arg)
 		if err != nil {
 			return nil, err
 		}
 		decstr := dec.MulInt64(1000000000000000000).TruncateInt().String()
-		return BcsSerializeArg("u256", decstr, s)
+		return BcsSerializeArg("u256", decstr, s, ac)
 	case "fixed_point32":
 		dec, err := sdkmath.LegacyNewDecFromStr(arg)
 		if err != nil {
 			return nil, err
 		}
 		decstr := dec.MulInt64(4294967296).TruncateInt().String()
-		return BcsSerializeArg("u64", decstr, s)
+		return BcsSerializeArg("u64", decstr, s, ac)
 	case "fixed_point64":
 		dec, err := sdkmath.LegacyNewDecFromStr(arg)
 		if err != nil {
@@ -200,7 +201,7 @@ func BcsSerializeArg(argType string, arg string, s serde.Serializer) ([]byte, er
 		denominator := new(big.Int)
 		denominator.SetString("18446744073709551616", 10)
 		decstr := dec.MulInt(sdkmath.NewIntFromBigInt(denominator)).TruncateInt().String()
-		return BcsSerializeArg("u128", decstr, s)
+		return BcsSerializeArg("u128", decstr, s, ac)
 	default:
 		if vectorRegex.MatchString(argType) {
 			vecType := getInnerType(argType)
@@ -210,7 +211,7 @@ func BcsSerializeArg(argType string, arg string, s serde.Serializer) ([]byte, er
 				return nil, err
 			}
 			for _, item := range items {
-				_, err := BcsSerializeArg(vecType, item, s)
+				_, err := BcsSerializeArg(vecType, item, s, ac)
 				if err != nil {
 					return nil, err
 				}
@@ -227,7 +228,7 @@ func BcsSerializeArg(argType string, arg string, s serde.Serializer) ([]byte, er
 			if err := s.SerializeLen(1); err != nil {
 				return nil, err
 			}
-			_, err := BcsSerializeArg(optionType, arg, s)
+			_, err := BcsSerializeArg(optionType, arg, s, ac)
 			if err != nil {
 				return nil, err
 			}

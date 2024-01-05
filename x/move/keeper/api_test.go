@@ -4,13 +4,14 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/initia-labs/initia/x/move/keeper"
 	"github.com/initia-labs/initia/x/move/types"
-	staking "github.com/initia-labs/initia/x/mstaking"
+	stakingkeeper "github.com/initia-labs/initia/x/mstaking/keeper"
 
 	vmtypes "github.com/initia-labs/initiavm/types"
 )
@@ -69,10 +70,13 @@ func Test_AmountToShareAPI(t *testing.T) {
 	valAddr := valAddrs[0]
 	valPubKey := valPubKeys[0]
 
-	input.Faucet.Fund(ctx, addrs[0], sdk.NewCoin(bondDenom, sdk.NewInt(100_000_000)))
+	valAddrStr, err := input.StakingKeeper.ValidatorAddressCodec().BytesToString(valAddrs[0])
+	require.NoError(t, err)
 
-	sh := staking.NewHandler(input.StakingKeeper)
-	_, err := sh(ctx, newTestMsgCreateValidator(valAddr, valPubKey, sdk.NewInt(100_000)))
+	input.Faucet.Fund(ctx, addrs[0], sdk.NewCoin(bondDenom, math.NewInt(100_000_000)))
+
+	sh := stakingkeeper.NewMsgServerImpl(input.StakingKeeper)
+	_, err = sh.CreateValidator(ctx, newTestMsgCreateValidator(valAddrStr, valPubKey, math.NewInt(100_000)))
 	require.NoError(t, err)
 
 	metadata, err := types.MetadataAddressFromDenom(bondDenom)
@@ -90,10 +94,13 @@ func Test_AmountToShareAPI_InvalidAddr(t *testing.T) {
 	valAddr := valAddrs[0]
 	valPubKey := valPubKeys[0]
 
-	input.Faucet.Fund(ctx, addrs[0], sdk.NewCoin(bondDenom, sdk.NewInt(100_000_000)))
+	valAddrStr, err := input.StakingKeeper.ValidatorAddressCodec().BytesToString(valAddrs[0])
+	require.NoError(t, err)
 
-	sh := staking.NewHandler(input.StakingKeeper)
-	_, err := sh(ctx, newTestMsgCreateValidator(valAddr, valPubKey, sdk.NewInt(100_000)))
+	input.Faucet.Fund(ctx, addrs[0], sdk.NewCoin(bondDenom, math.NewInt(100_000_000)))
+
+	sh := stakingkeeper.NewMsgServerImpl(input.StakingKeeper)
+	_, err = sh.CreateValidator(ctx, newTestMsgCreateValidator(valAddrStr, valPubKey, math.NewInt(100_000)))
 	require.NoError(t, err)
 
 	metadata, err := types.MetadataAddressFromDenom(bondDenom)
@@ -110,10 +117,13 @@ func Test_ShareToAmountAPI(t *testing.T) {
 	valAddr := valAddrs[0]
 	valPubKey := valPubKeys[0]
 
-	input.Faucet.Fund(ctx, addrs[0], sdk.NewCoin(bondDenom, sdk.NewInt(100_000_000)))
+	valAddrStr, err := input.StakingKeeper.ValidatorAddressCodec().BytesToString(valAddrs[0])
+	require.NoError(t, err)
 
-	sh := staking.NewHandler(input.StakingKeeper)
-	_, err := sh(ctx, newTestMsgCreateValidator(valAddr, valPubKey, sdk.NewInt(100_000)))
+	input.Faucet.Fund(ctx, addrs[0], sdk.NewCoin(bondDenom, math.NewInt(100_000_000)))
+
+	sh := stakingkeeper.NewMsgServerImpl(input.StakingKeeper)
+	_, err = sh.CreateValidator(ctx, newTestMsgCreateValidator(valAddrStr, valPubKey, math.NewInt(100_000)))
 	require.NoError(t, err)
 
 	metadata, err := types.MetadataAddressFromDenom(bondDenom)
@@ -131,10 +141,13 @@ func Test_ShareToAmountAPI_InvalidAddr(t *testing.T) {
 	valAddr := valAddrs[0]
 	valPubKey := valPubKeys[0]
 
-	input.Faucet.Fund(ctx, addrs[0], sdk.NewCoin(bondDenom, sdk.NewInt(100_000_000)))
+	valAddrStr, err := input.StakingKeeper.ValidatorAddressCodec().BytesToString(valAddrs[0])
+	require.NoError(t, err)
 
-	sh := staking.NewHandler(input.StakingKeeper)
-	_, err := sh(ctx, newTestMsgCreateValidator(valAddr, valPubKey, sdk.NewInt(100_000)))
+	input.Faucet.Fund(ctx, addrs[0], sdk.NewCoin(bondDenom, math.NewInt(100_000_000)))
+
+	sh := stakingkeeper.NewMsgServerImpl(input.StakingKeeper)
+	_, err = sh.CreateValidator(ctx, newTestMsgCreateValidator(valAddrStr, valPubKey, math.NewInt(100_000)))
 	require.NoError(t, err)
 
 	metadata, err := types.MetadataAddressFromDenom(bondDenom)
@@ -149,7 +162,9 @@ func Test_UnbondTimestamp(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
 	// set UnbondingTime
-	stakingParams := input.StakingKeeper.GetParams(ctx)
+	stakingParams, err := input.StakingKeeper.GetParams(ctx)
+	require.NoError(t, err)
+
 	stakingParams.UnbondingTime = time.Duration(60 * 60 * 24 * 7)
 	input.StakingKeeper.SetParams(ctx, stakingParams)
 

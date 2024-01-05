@@ -3,18 +3,17 @@ package types_test
 import (
 	"testing"
 
+	"cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
 
 	"github.com/initia-labs/initia/x/distribution/types"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func TestParams_ValidateBasic(t *testing.T) {
-	toDec := sdk.MustNewDecFromStr
+	toDec := math.LegacyMustNewDecFromStr
 
 	type fields struct {
-		CommunityTax        sdk.Dec
+		CommunityTax        math.LegacyDec
 		WithdrawAddrEnabled bool
 		RewardWeights       []types.RewardWeight
 	}
@@ -29,19 +28,19 @@ func TestParams_ValidateBasic(t *testing.T) {
 		{"valid reward weight", fields{toDec("0.1"), true, []types.RewardWeight{
 			{
 				Denom:  "foo",
-				Weight: sdk.OneDec(),
+				Weight: math.LegacyOneDec(),
 			},
 		}}, false},
 		{"invalid reward denom", fields{toDec("0.1"), true, []types.RewardWeight{
 			{
 				Denom:  "foo!",
-				Weight: sdk.OneDec(),
+				Weight: math.LegacyOneDec(),
 			},
 		}}, true},
 		{"invalid reward weight", fields{toDec("0.1"), true, []types.RewardWeight{
 			{
 				Denom:  "foo",
-				Weight: sdk.OneDec().Neg(),
+				Weight: math.LegacyOneDec().Neg(),
 			},
 		}}, true},
 	}

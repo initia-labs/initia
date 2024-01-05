@@ -41,9 +41,19 @@ func (fc MempoolFeeChecker) CheckTxFeeWithMinGasPrices(ctx sdk.Context, tx sdk.T
 	if ctx.IsCheckTx() {
 		minGasPrices := ctx.MinGasPrices()
 		feeValueInBaseUnit := math.ZeroInt()
+
+		var baseDenom string
+		var err error
 		if fc.keeper != nil {
-			baseDenom := fc.keeper.BaseDenom(ctx)
-			baseMinGasPrice := fc.keeper.BaseMinGasPrice(ctx)
+			baseDenom, err = fc.keeper.BaseDenom(ctx)
+			if err != nil {
+				return nil, 0, err
+			}
+
+			baseMinGasPrice, err := fc.keeper.BaseMinGasPrice(ctx)
+			if err != nil {
+				return nil, 0, err
+			}
 
 			minGasPrices = combinedMinGasPrices(baseDenom, baseMinGasPrice, minGasPrices)
 
@@ -71,7 +81,6 @@ func (fc MempoolFeeChecker) CheckTxFeeWithMinGasPrices(ctx sdk.Context, tx sdk.T
 				sumInBaseUnit := math.ZeroInt()
 
 				if fc.keeper != nil {
-					baseDenom := fc.keeper.BaseDenom(ctx)
 					requiredBaseAmount := requiredFees.AmountOfNoDenomValidation(baseDenom)
 
 					// converting to base token only works when the requiredBaseAmount is non-zero.
@@ -94,19 +103,19 @@ func (fc MempoolFeeChecker) CheckTxFeeWithMinGasPrices(ctx sdk.Context, tx sdk.T
 	return feeCoins, priority, nil
 }
 
-func (fc MempoolFeeChecker) fetchPrice(ctx sdk.Context, baseDenom, quoteDenom string) (price sdk.Dec, err error) {
+func (fc MempoolFeeChecker) fetchPrice(ctx sdk.Context, baseDenom, quoteDenom string) (price math.LegacyDec, err error) {
 	if quoteDenom == baseDenom {
-		return sdk.OneDec(), nil
+		return math.LegacyOneDec(), nil
 	}
 
 	if found, err := fc.keeper.HasDexPair(ctx, quoteDenom); err != nil {
-		return sdk.ZeroDec(), err
+		return math.LegacyZeroDec(), err
 	} else if !found {
-		return sdk.ZeroDec(), nil
+		return math.LegacyZeroDec(), nil
 	}
 
 	if quotePrice, err := fc.keeper.GetPoolSpotPrice(ctx, quoteDenom); err != nil {
-		return sdk.ZeroDec(), err
+		return math.LegacyZeroDec(), err
 	} else {
 		return quotePrice, nil
 	}

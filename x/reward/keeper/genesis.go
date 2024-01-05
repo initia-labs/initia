@@ -1,27 +1,45 @@
 package keeper
 
 import (
-	"github.com/initia-labs/initia/x/reward/types"
+	"context"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/initia-labs/initia/x/reward/types"
 )
 
 // InitGenesis new mint genesis
-func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) {
+func (k Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) {
 
 	if err := k.SetParams(ctx, data.Params); err != nil {
 		panic(err)
 	}
-	k.SetLastReleaseTimestamp(ctx, data.LastReleaseTimestamp)
-	k.SetLastDilutionTimestamp(ctx, data.LastDilutionTimestamp)
+
+	if err := k.SetLastReleaseTimestamp(ctx, data.LastReleaseTimestamp); err != nil {
+		panic(err)
+	}
+
+	if err := k.SetLastDilutionTimestamp(ctx, data.LastDilutionTimestamp); err != nil {
+		panic(err)
+	}
 
 	k.accKeeper.GetModuleAccount(ctx, types.ModuleName)
 }
 
 // ExportGenesis returns a GenesisState for a given context and keeper.
-func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
-	params := k.GetParams(ctx)
-	lastMintTimestamp := k.GetLastReleaseTimestamp(ctx)
-	lastDilutionTimestamp := k.GetLastDilutionTimestamp(ctx)
+func (k Keeper) ExportGenesis(ctx context.Context) *types.GenesisState {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	lastMintTimestamp, err := k.GetLastReleaseTimestamp(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	lastDilutionTimestamp, err := k.GetLastDilutionTimestamp(ctx)
+	if err != nil {
+		panic(err)
+	}
+
 	return types.NewGenesisState(params, lastMintTimestamp, lastDilutionTimestamp)
 }

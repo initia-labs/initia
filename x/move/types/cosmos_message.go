@@ -1,9 +1,13 @@
 package types
 
 import (
-	ibcfeetypes "github.com/cosmos/ibc-go/v7/modules/apps/29-fee/types"
-	transfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
-	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
+	context "context"
+
+	"cosmossdk.io/core/address"
+	"cosmossdk.io/math"
+	ibcfeetypes "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/types"
+	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
 	nfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -17,29 +21,31 @@ import (
 
 // ConvertToSDKMessage convert vm CosmosMessage to sdk.Msg
 func ConvertToSDKMessage(
-	ctx sdk.Context,
+	ctx context.Context,
 	fk FungibleAssetKeeper,
 	ck CollectionKeeper,
 	msg vmtypes.CosmosMessage,
+	ac address.Codec,
+	vc address.Codec,
 ) (sdk.Msg, error) {
 	switch msg := msg.(type) {
 	case *vmtypes.CosmosMessage__Staking:
 		switch msg := msg.Value.(type) {
 		case *vmtypes.StakingMessage__Delegate:
-			validatorAddress, err := sdk.ValAddressFromBech32(msg.ValidatorAddress)
-			if err != nil {
-				return nil, err
-			}
-
 			denom, err := DenomFromMetadataAddress(ctx, fk, msg.Amount.Metadata)
 			if err != nil {
 				return nil, err
 			}
 
+			delAddr, err := ac.BytesToString(ConvertVMAddressToSDKAddress(msg.DelegatorAddress))
+			if err != nil {
+				return nil, err
+			}
+
 			return stakingtypes.NewMsgDelegate(
-				ConvertVMAddressToSDKAddress(msg.DelegatorAddress),
-				validatorAddress,
-				sdk.NewCoins(sdk.NewCoin(denom, sdk.NewIntFromUint64(msg.Amount.Amount))),
+				delAddr,
+				msg.ValidatorAddress,
+				sdk.NewCoins(sdk.NewCoin(denom, math.NewIntFromUint64(msg.Amount.Amount))),
 			), nil
 		}
 	case *vmtypes.CosmosMessage__Distribution:
@@ -50,9 +56,14 @@ func ConvertToSDKMessage(
 				return nil, err
 			}
 
+			senderAddr, err := ac.BytesToString(ConvertVMAddressToSDKAddress(msg.SenderAddress))
+			if err != nil {
+				return nil, err
+			}
+
 			fundCommunityPoolMsg := distrtypes.NewMsgFundCommunityPool(
-				sdk.NewCoins(sdk.NewCoin(denom, sdk.NewIntFromUint64(msg.Amount.Amount))),
-				ConvertVMAddressToSDKAddress(msg.SenderAddress),
+				sdk.NewCoins(sdk.NewCoin(denom, math.NewIntFromUint64(msg.Amount.Amount))),
+				senderAddr,
 			)
 
 			return fundCommunityPoolMsg, nil
@@ -65,11 +76,16 @@ func ConvertToSDKMessage(
 				return nil, err
 			}
 
+			senderAddr, err := ac.BytesToString(ConvertVMAddressToSDKAddress(msg.Sender))
+			if err != nil {
+				return nil, err
+			}
+
 			transferMsg := transfertypes.NewMsgTransfer(
 				msg.SourcePort,
 				msg.SourceChannel,
-				sdk.NewCoin(denom, sdk.NewIntFromUint64(msg.Token.Amount)),
-				ConvertVMAddressToSDKAddress(msg.Sender).String(),
+				sdk.NewCoin(denom, math.NewIntFromUint64(msg.Token.Amount)),
+				senderAddr,
 				msg.Receiver,
 				clienttypes.NewHeight(msg.TimeoutHeight.RevisionNumber, msg.TimeoutHeight.RevisionHeight),
 				msg.TimeoutTimestamp,
@@ -83,12 +99,17 @@ func ConvertToSDKMessage(
 				return nil, err
 			}
 
+			senderAddr, err := ac.BytesToString(ConvertVMAddressToSDKAddress(msg.Sender))
+			if err != nil {
+				return nil, err
+			}
+
 			nftTransferMsg := nfttransfertypes.NewMsgTransfer(
 				msg.SourcePort,
 				msg.SourceChannel,
 				classId,
 				msg.TokenIds,
-				ConvertVMAddressToSDKAddress(msg.Sender).String(),
+				senderAddr,
 				msg.Receiver,
 				clienttypes.NewHeight(msg.TimeoutHeight.RevisionNumber, msg.TimeoutHeight.RevisionHeight),
 				msg.TimeoutTimestamp,
@@ -112,15 +133,20 @@ func ConvertToSDKMessage(
 				return nil, err
 			}
 
+			senderAddr, err := ac.BytesToString(ConvertVMAddressToSDKAddress(msg.Signer))
+			if err != nil {
+				return nil, err
+			}
+
 			payPacketFeeMsg := ibcfeetypes.NewMsgPayPacketFee(
 				ibcfeetypes.NewFee(
-					sdk.NewCoins(sdk.NewCoin(recvFeeDenom, sdk.NewIntFromUint64(msg.Fee.RecvFee.Amount))),
-					sdk.NewCoins(sdk.NewCoin(ackFeeDenom, sdk.NewIntFromUint64(msg.Fee.AckFee.Amount))),
-					sdk.NewCoins(sdk.NewCoin(timeoutFeeDenom, sdk.NewIntFromUint64(msg.Fee.TimeoutFee.Amount))),
+					sdk.NewCoins(sdk.NewCoin(recvFeeDenom, math.NewIntFromUint64(msg.Fee.RecvFee.Amount))),
+					sdk.NewCoins(sdk.NewCoin(ackFeeDenom, math.NewIntFromUint64(msg.Fee.AckFee.Amount))),
+					sdk.NewCoins(sdk.NewCoin(timeoutFeeDenom, math.NewIntFromUint64(msg.Fee.TimeoutFee.Amount))),
 				),
 				msg.SourcePort,
 				msg.SourceChannel,
-				ConvertVMAddressToSDKAddress(msg.Signer).String(),
+				senderAddr,
 				[]string{},
 			)
 
@@ -134,11 +160,21 @@ func ConvertToSDKMessage(
 				return nil, err
 			}
 
+			senderAddr, err := ac.BytesToString(ConvertVMAddressToSDKAddress(msg.SenderAddress))
+			if err != nil {
+				return nil, err
+			}
+
+			toAddr, err := ac.BytesToString(ConvertVMAddressToSDKAddress(msg.ToAddress))
+			if err != nil {
+				return nil, err
+			}
+
 			depositMsg := ophosttypes.NewMsgInitiateTokenDeposit(
-				ConvertVMAddressToSDKAddress(msg.SenderAddress),
+				senderAddr,
 				msg.BridgeId,
-				ConvertVMAddressToSDKAddress(msg.ToAddress),
-				sdk.NewCoin(denom, sdk.NewIntFromUint64(msg.Amount.Amount)),
+				toAddr,
+				sdk.NewCoin(denom, math.NewIntFromUint64(msg.Amount.Amount)),
 				msg.Data,
 			)
 
@@ -150,10 +186,20 @@ func ConvertToSDKMessage(
 				return nil, err
 			}
 
+			senderAddr, err := ac.BytesToString(ConvertVMAddressToSDKAddress(msg.SenderAddress))
+			if err != nil {
+				return nil, err
+			}
+
+			toAddr, err := ac.BytesToString(ConvertVMAddressToSDKAddress(msg.ToAddress))
+			if err != nil {
+				return nil, err
+			}
+
 			withdrawMsg := opchildtypes.NewMsgInitiateTokenWithdrawal(
-				ConvertVMAddressToSDKAddress(msg.SenderAddress),
-				ConvertVMAddressToSDKAddress(msg.ToAddress),
-				sdk.NewCoin(denom, sdk.NewIntFromUint64(msg.Amount.Amount)),
+				senderAddr,
+				toAddr,
+				sdk.NewCoin(denom, math.NewIntFromUint64(msg.Amount.Amount)),
 			)
 
 			return withdrawMsg, nil

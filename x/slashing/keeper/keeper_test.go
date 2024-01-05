@@ -4,6 +4,8 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/core/comet"
+	"cosmossdk.io/math"
 	staking "github.com/initia-labs/initia/x/mstaking"
 	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
 	"github.com/stretchr/testify/require"
@@ -14,7 +16,9 @@ import (
 func TestUnJailNotBonded(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
-	p := input.StakingKeeper.GetParams(ctx)
+	p, err := input.StakingKeeper.GetParams(ctx)
+	require.NoError(t, err)
+
 	p.MaxValidators = 5
 	input.StakingKeeper.SetParams(ctx, p)
 
@@ -32,19 +36,19 @@ func TestUnJailNotBonded(t *testing.T) {
 	staking.EndBlocker(ctx, input.StakingKeeper)
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 
-	_, found := input.StakingKeeper.GetValidator(ctx, valAddr6)
-	require.True(t, found)
+	_, err = input.StakingKeeper.GetValidator(ctx, valAddr6)
+	require.NoError(t, err)
 
 	// unbond below minimum self-delegation
-	_, err := input.StakingKeeper.Undelegate(ctx, valAddr6.Bytes(), valAddr6, sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, sdk.NewInt(5_000_000))))
+	_, _, err = input.StakingKeeper.Undelegate(ctx, valAddr6.Bytes(), valAddr6, sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, math.NewInt(5_000_000))))
 	require.NoError(t, err)
 
 	staking.EndBlocker(ctx, input.StakingKeeper)
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 
 	// verify that validator is jailed and removed from whitelist
-	_, found = input.StakingKeeper.GetValidator(ctx, valAddr6)
-	require.False(t, found)
+	_, err = input.StakingKeeper.GetValidator(ctx, valAddr6)
+	require.Error(t, err)
 
 	// verify we cannot unjail
 	require.Error(t, input.SlashingKeeper.Unjail(ctx, valAddr6))
@@ -57,31 +61,38 @@ func TestUnJailNotBonded(t *testing.T) {
 // and that they are not immediately jailed
 func TestHandleNewValidator(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
-	ctx = ctx.WithBlockHeight(input.SlashingKeeper.SignedBlocksWindow(ctx) + 1)
+
+	signedBlock, err := input.SlashingKeeper.SignedBlocksWindow(ctx)
+	require.NoError(t, err)
+	ctx = ctx.WithBlockHeight(signedBlock + 1)
 
 	valAddr, valPubKey := createValidatorWithBalanceAndGetPk(ctx, input, 100_000_000, 10_000_000, 1)
-	validator, found := input.StakingKeeper.GetValidator(ctx, valAddr)
-	require.True(t, found)
+	validator, err := input.StakingKeeper.GetValidator(ctx, valAddr)
+	require.NoError(t, err)
 
 	staking.EndBlocker(ctx, input.StakingKeeper)
 
 	require.Equal(
 		t, input.BankKeeper.GetAllBalances(ctx, sdk.AccAddress(valAddr)),
-		sdk.NewCoins(sdk.NewCoin(bondDenom, sdk.NewInt(90_000_000))),
+		sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(90_000_000))),
 	)
-	require.Equal(t, sdk.NewInt(10_000_000), input.StakingKeeper.Validator(ctx, valAddr).GetBondedTokens().AmountOf(bondDenom))
+	val, err := input.StakingKeeper.Validator(ctx, valAddr)
+	require.NoError(t, err)
+	require.Equal(t, math.NewInt(10_000_000), val.GetBondedTokens().AmountOf(bondDenom))
 
 	// Now a validator, for two blocks
-	input.SlashingKeeper.HandleValidatorSignature(ctx, valPubKey.Address(), 10, true)
-	ctx = ctx.WithBlockHeight(input.SlashingKeeper.SignedBlocksWindow(ctx) + 2)
-	input.SlashingKeeper.HandleValidatorSignature(ctx, valPubKey.Address(), 10, false)
+	err = input.SlashingKeeper.HandleValidatorSignature(ctx, valPubKey.Address(), 10, comet.BlockIDFlagCommit)
+	require.NoError(t, err)
+	ctx = ctx.WithBlockHeight(signedBlock + 2)
+	err = input.SlashingKeeper.HandleValidatorSignature(ctx, valPubKey.Address(), 10, comet.BlockIDFlagAbsent)
+	require.NoError(t, err)
 
 	valConsPk, err := validator.ConsPubKey()
 	require.NoError(t, err)
 
-	info, found := input.SlashingKeeper.GetValidatorSigningInfo(ctx, sdk.ConsAddress(valConsPk.Address()))
-	require.True(t, found)
-	require.Equal(t, input.SlashingKeeper.SignedBlocksWindow(ctx)+1, info.StartHeight)
+	info, err := input.SlashingKeeper.GetValidatorSigningInfo(ctx, sdk.ConsAddress(valConsPk.Address()))
+	require.NoError(t, err)
+	require.Equal(t, signedBlock+1, info.StartHeight)
 	require.Equal(t, int64(2), info.IndexOffset)
 	require.Equal(t, int64(1), info.MissedBlocksCounter)
 	require.Equal(t, time.Unix(0, 0).UTC(), info.JailedUntil)
@@ -99,28 +110,36 @@ func TestHandleNewValidator(t *testing.T) {
 func TestHandleAlreadyJailed(t *testing.T) {
 	// initial setup
 	ctx, input := createDefaultTestInput(t)
-	ctx = ctx.WithBlockHeight(input.SlashingKeeper.SignedBlocksWindow(ctx) + 1)
 
-	p := input.SlashingKeeper.GetParams(ctx)
+	p, err := input.SlashingKeeper.GetParams(ctx)
+	require.NoError(t, err)
 	p.SignedBlocksWindow = 1000
 	input.SlashingKeeper.SetParams(ctx, p)
 
+	signedBlock, err := input.SlashingKeeper.SignedBlocksWindow(ctx)
+	require.NoError(t, err)
+	ctx = ctx.WithBlockHeight(1)
+
 	power := int64(100)
-	amt := sdk.NewInt(100_000_000)
+	amt := math.NewInt(100_000_000)
 	_, valPubKey := createValidatorWithBalanceAndGetPk(ctx, input, 100_000_000, 100_000_000, 1)
 
 	staking.EndBlocker(ctx, input.StakingKeeper)
 
 	// 1000 first blocks OK
 	height := int64(0)
-	for ; height < input.SlashingKeeper.SignedBlocksWindow(ctx); height++ {
+	for ; height < signedBlock; height++ {
 		ctx = ctx.WithBlockHeight(height)
-		input.SlashingKeeper.HandleValidatorSignature(ctx, valPubKey.Address(), power, true)
+		input.SlashingKeeper.HandleValidatorSignature(ctx, valPubKey.Address(), power, comet.BlockIDFlagCommit)
 	}
+
+	minSignedPerWindow, err := input.SlashingKeeper.MinSignedPerWindow(ctx)
+	require.NoError(t, err)
+
 	// 501 blocks missed
-	for ; height < input.SlashingKeeper.SignedBlocksWindow(ctx)+(input.SlashingKeeper.SignedBlocksWindow(ctx)-input.SlashingKeeper.MinSignedPerWindow(ctx))+1; height++ {
+	for ; height < signedBlock+(signedBlock-minSignedPerWindow)+1; height++ {
 		ctx = ctx.WithBlockHeight(height)
-		input.SlashingKeeper.HandleValidatorSignature(ctx, valPubKey.Address(), power, false)
+		input.SlashingKeeper.HandleValidatorSignature(ctx, valPubKey.Address(), power, comet.BlockIDFlagAbsent)
 	}
 
 	// end block
@@ -136,7 +155,7 @@ func TestHandleAlreadyJailed(t *testing.T) {
 
 	// another block missed
 	ctx = ctx.WithBlockHeight(height)
-	input.SlashingKeeper.HandleValidatorSignature(ctx, valPubKey.Address(), power, false)
+	input.SlashingKeeper.HandleValidatorSignature(ctx, valPubKey.Address(), power, comet.BlockIDFlagAbsent)
 
 	// validator should not have been slashed twice
 	validator, _ = input.StakingKeeper.GetValidatorByConsAddr(ctx, sdk.GetConsAddress(valPubKey))
@@ -148,22 +167,30 @@ func TestHandleAlreadyJailed(t *testing.T) {
 // the start height of the signing info is reset correctly
 func TestValidatorDippingInAndOut(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
-	ctx = ctx.WithBlockHeight(input.SlashingKeeper.SignedBlocksWindow(ctx) + 1)
+	ctx = ctx.WithBlockHeight(1)
 
-	stakingParams := input.StakingKeeper.GetParams(ctx)
+	stakingParams, err := input.StakingKeeper.GetParams(ctx)
+	require.NoError(t, err)
+
 	stakingParams.MaxValidators = 1
 	input.StakingKeeper.SetParams(ctx, stakingParams)
 
-	slashingParams := input.SlashingKeeper.GetParams(ctx)
+	slashingParams, err := input.SlashingKeeper.GetParams(ctx)
+	require.NoError(t, err)
 	slashingParams.SignedBlocksWindow = 1000
 	input.SlashingKeeper.SetParams(ctx, slashingParams)
+
+	signedBlock, err := input.SlashingKeeper.SignedBlocksWindow(ctx)
+	require.NoError(t, err)
 
 	power := int64(100)
 
 	valAddr1, valPubKey1 := createValidatorWithBalanceAndGetPk(ctx, input, 200_000_000, 100_000_000, 1)
-	validator1, found := input.StakingKeeper.GetValidator(ctx, valAddr1)
-	require.True(t, found)
-	require.True(t, input.StakingKeeper.IsWhitelist(ctx, validator1))
+	validator1, err := input.StakingKeeper.GetValidator(ctx, valAddr1)
+	require.NoError(t, err)
+	ok, err := input.StakingKeeper.IsWhitelist(ctx, validator1)
+	require.NoError(t, err)
+	require.True(t, ok)
 
 	staking.EndBlocker(ctx, input.StakingKeeper)
 
@@ -171,15 +198,15 @@ func TestValidatorDippingInAndOut(t *testing.T) {
 	height := int64(0)
 	for ; height < int64(100); height++ {
 		ctx = ctx.WithBlockHeight(height)
-		input.SlashingKeeper.HandleValidatorSignature(ctx, valPubKey1.Address(), power, true)
+		input.SlashingKeeper.HandleValidatorSignature(ctx, valPubKey1.Address(), power, comet.BlockIDFlagCommit)
 	}
 
 	// kick first validator out of validator set
 	createValidatorWithBalance(ctx, input, 200_000_000, 101_000_000, 2)
 	staking.EndBlocker(ctx, input.StakingKeeper)
 
-	validator1, found = input.StakingKeeper.GetValidator(ctx, valAddr1)
-	require.True(t, found)
+	validator1, err = input.StakingKeeper.GetValidator(ctx, valAddr1)
+	require.NoError(t, err)
 	require.Equal(t, stakingtypes.Unbonding, validator1.GetStatus())
 
 	// 600 more blocks happened
@@ -188,8 +215,7 @@ func TestValidatorDippingInAndOut(t *testing.T) {
 
 	// validator added back in
 	valAddr3 := createValidatorWithBalance(ctx, input, 200_000_000, 50_000_000, 3)
-	bondCoins := sdk.NewCoins(sdk.NewCoin(bondDenom, sdk.NewInt(50_000_000)))
-	require.True(t, found)
+	bondCoins := sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(50_000_000)))
 	input.StakingKeeper.Delegate(ctx, valAddr3.Bytes(), bondCoins, stakingtypes.Unbonded, validator1, true)
 	staking.EndBlocker(ctx, input.StakingKeeper)
 
@@ -199,7 +225,7 @@ func TestValidatorDippingInAndOut(t *testing.T) {
 	newPower := power + 50
 
 	// validator misses a block
-	input.SlashingKeeper.HandleValidatorSignature(ctx, valPubKey1.Address(), newPower, false)
+	input.SlashingKeeper.HandleValidatorSignature(ctx, valPubKey1.Address(), newPower, comet.BlockIDFlagAbsent)
 	height++
 
 	// shouldn't be jailed/kicked yet
@@ -207,12 +233,12 @@ func TestValidatorDippingInAndOut(t *testing.T) {
 	require.Equal(t, stakingtypes.Bonded, validator1.GetStatus())
 
 	// validator misses an additional 500 more blocks within the SignedBlockWindow (here 1000 blocks).
-	latest := input.SlashingKeeper.SignedBlocksWindow(ctx) + height
+	latest := signedBlock + height
 	// misses 500 blocks + within the signing windows i.e. 700-1700
 	// validators misses all 1000 block of a SignedBlockWindows
 	for ; height < latest+1; height++ {
 		ctx = ctx.WithBlockHeight(height)
-		input.SlashingKeeper.HandleValidatorSignature(ctx, valPubKey1.Address(), newPower, false)
+		input.SlashingKeeper.HandleValidatorSignature(ctx, valPubKey1.Address(), newPower, comet.BlockIDFlagAbsent)
 	}
 
 	// should now be jailed & kicked
@@ -222,8 +248,9 @@ func TestValidatorDippingInAndOut(t *testing.T) {
 	require.True(t, validator1.IsJailed())
 
 	// array should be cleared
-	for offset := int64(0); offset < input.SlashingKeeper.SignedBlocksWindow(ctx); offset++ {
-		missed := input.SlashingKeeper.GetValidatorMissedBlockBitArray(ctx, sdk.ConsAddress(valPubKey1.Address()), offset)
+	for offset := int64(0); offset < signedBlock; offset++ {
+		missed, err := input.SlashingKeeper.GetMissedBlockBitmapValue(ctx, sdk.ConsAddress(valPubKey1.Address()), offset)
+		require.NoError(t, err)
 		require.False(t, missed)
 	}
 
@@ -233,7 +260,7 @@ func TestValidatorDippingInAndOut(t *testing.T) {
 
 	// // validator rejoins and starts signing again
 	input.StakingKeeper.Unjail(ctx, sdk.ConsAddress(valPubKey1.Address()))
-	input.SlashingKeeper.HandleValidatorSignature(ctx, valPubKey1.Address(), newPower, true)
+	input.SlashingKeeper.HandleValidatorSignature(ctx, valPubKey1.Address(), newPower, comet.BlockIDFlagCommit)
 	height++
 
 	// validator should not be kicked since we reset counter/array when it was jailed
@@ -242,10 +269,10 @@ func TestValidatorDippingInAndOut(t *testing.T) {
 	require.Equal(t, stakingtypes.Bonded, validator1.GetStatus())
 
 	// validator misses 501 blocks after SignedBlockWindow period (1000 blocks)
-	latest = input.SlashingKeeper.SignedBlocksWindow(ctx) + height
+	latest = signedBlock + height
 	for ; height < latest+1; height++ {
 		ctx = ctx.WithBlockHeight(height)
-		input.SlashingKeeper.HandleValidatorSignature(ctx, valPubKey1.Address(), newPower, false)
+		input.SlashingKeeper.HandleValidatorSignature(ctx, valPubKey1.Address(), newPower, comet.BlockIDFlagAbsent)
 	}
 
 	// validator should now be jailed & kicked

@@ -3,8 +3,8 @@ package keeper
 import (
 	"context"
 
+	"cosmossdk.io/x/evidence/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/evidence/types"
 )
 
 type msgServer struct {

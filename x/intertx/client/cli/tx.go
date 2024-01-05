@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"cosmossdk.io/core/address"
 	"github.com/initia-labs/initia/x/intertx/types"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -17,7 +18,7 @@ import (
 )
 
 // GetTxCmd creates and returns the intertx tx command
-func GetTxCmd() *cobra.Command {
+func GetTxCmd(ac address.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:                        types.ModuleName,
 		Short:                      fmt.Sprintf("%s transactions subcommands", types.ModuleName),
@@ -27,14 +28,14 @@ func GetTxCmd() *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		getRegisterAccountCmd(),
-		getSubmitTxCmd(),
+		getRegisterAccountCmd(ac),
+		getSubmitTxCmd(ac),
 	)
 
 	return cmd
 }
 
-func getRegisterAccountCmd() *cobra.Command {
+func getRegisterAccountCmd(ac address.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use: "register",
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -43,13 +44,18 @@ func getRegisterAccountCmd() *cobra.Command {
 				return err
 			}
 
+			fromAddr, err := ac.BytesToString(clientCtx.GetFromAddress())
+			if err != nil {
+				return err
+			}
+
 			msg := types.NewMsgRegisterAccount(
-				clientCtx.GetFromAddress().String(),
+				fromAddr,
 				viper.GetString(FlagConnectionID),
 				viper.GetString(FlagVersion),
 			)
 
-			if err := msg.ValidateBasic(); err != nil {
+			if err := msg.Validate(ac); err != nil {
 				return err
 			}
 
@@ -66,7 +72,7 @@ func getRegisterAccountCmd() *cobra.Command {
 	return cmd
 }
 
-func getSubmitTxCmd() *cobra.Command {
+func getSubmitTxCmd(ac address.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:  "submit [path/to/sdk_msg.json]",
 		Args: cobra.ExactArgs(1),
@@ -92,12 +98,17 @@ func getSubmitTxCmd() *cobra.Command {
 				}
 			}
 
-			msg, err := types.NewMsgSubmitTx(txMsg, viper.GetString(FlagConnectionID), clientCtx.GetFromAddress().String())
+			fromAddr, err := ac.BytesToString(clientCtx.GetFromAddress())
 			if err != nil {
 				return err
 			}
 
-			if err := msg.ValidateBasic(); err != nil {
+			msg, err := types.NewMsgSubmitTx(txMsg, viper.GetString(FlagConnectionID), fromAddr)
+			if err != nil {
+				return err
+			}
+
+			if err := msg.Validate(ac); err != nil {
 				return err
 			}
 

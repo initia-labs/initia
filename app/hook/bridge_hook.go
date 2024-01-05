@@ -1,10 +1,13 @@
 package hook
 
 import (
+	"context"
+
+	"cosmossdk.io/core/address"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	ibctransfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
+	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
 	ophosttypes "github.com/initia-labs/OPinit/x/ophost/types"
 )
@@ -14,6 +17,7 @@ var _ ophosttypes.BridgeHook = BridgeHook{}
 type BridgeHook struct {
 	IBCChannelKeeper ChannelKeeper
 	IBCPermKeeper    PermKeeper
+	ac               address.Codec
 }
 
 type ChannelKeeper interface {
@@ -21,59 +25,61 @@ type ChannelKeeper interface {
 }
 
 type PermKeeper interface {
-	SetChannelRelayer(ctx sdk.Context, channel string, relayer sdk.AccAddress)
+	SetChannelRelayer(ctx context.Context, channel string, relayer sdk.AccAddress) error
 }
 
-func NewBridgeHook(channelKeeper ChannelKeeper, permKeeper PermKeeper) BridgeHook {
-	return BridgeHook{channelKeeper, permKeeper}
+func NewBridgeHook(channelKeeper ChannelKeeper, permKeeper PermKeeper, ac address.Codec) BridgeHook {
+	return BridgeHook{channelKeeper, permKeeper, ac}
 }
 
 func (h BridgeHook) BridgeCreated(
-	ctx sdk.Context,
+	ctx context.Context,
 	bridgeId uint64,
 	bridgeConfig ophosttypes.BridgeConfig,
 ) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	channelID := string(bridgeConfig.Metadata)
 	if channeltypes.IsValidChannelID(channelID) {
-		if seq, ok := h.IBCChannelKeeper.GetNextSequenceSend(ctx, ibctransfertypes.PortID, channelID); !ok {
+		if seq, ok := h.IBCChannelKeeper.GetNextSequenceSend(sdkCtx, ibctransfertypes.PortID, channelID); !ok {
 			return channeltypes.ErrChannelNotFound.Wrap("failed to register permissioned relayer")
 		} else if seq != 1 {
 			return channeltypes.ErrChannelExists.Wrap("cannot register permissioned relayer for the channel in use")
 		}
 
-		challenger, err := sdk.AccAddressFromBech32(bridgeConfig.Challenger)
+		challenger, err := h.ac.StringToBytes(bridgeConfig.Challenger)
 		if err != nil {
 			return err
 		}
 
 		// register challenger as channel relayer
-		h.IBCPermKeeper.SetChannelRelayer(ctx, channelID, challenger)
+		h.IBCPermKeeper.SetChannelRelayer(sdkCtx, channelID, challenger)
 	}
 
 	return nil
 }
 
 func (h BridgeHook) BridgeChallengerUpdated(
-	ctx sdk.Context,
+	ctx context.Context,
 	bridgeId uint64,
 	bridgeConfig ophosttypes.BridgeConfig,
 ) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	channelID := string(bridgeConfig.Metadata)
 	if channeltypes.IsValidChannelID(channelID) {
-		challenger, err := sdk.AccAddressFromBech32(bridgeConfig.Challenger)
+		challenger, err := h.ac.StringToBytes(bridgeConfig.Challenger)
 		if err != nil {
 			return err
 		}
 
 		// update relayer to a new challenger
-		h.IBCPermKeeper.SetChannelRelayer(ctx, channelID, challenger)
+		h.IBCPermKeeper.SetChannelRelayer(sdkCtx, channelID, challenger)
 	}
 
 	return nil
 }
 
 func (h BridgeHook) BridgeProposerUpdated(
-	ctx sdk.Context,
+	ctx context.Context,
 	bridgeId uint64,
 	bridgeConfig ophosttypes.BridgeConfig,
 ) error {

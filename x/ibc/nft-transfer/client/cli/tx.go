@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"cosmossdk.io/core/address"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -13,8 +14,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/cosmos/cosmos-sdk/version"
 
-	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
-	channelutils "github.com/cosmos/ibc-go/v7/modules/core/04-channel/client/utils"
+	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
+	channelutils "github.com/cosmos/ibc-go/v8/modules/core/04-channel/client/utils"
 
 	"github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 )
@@ -27,7 +28,7 @@ const (
 )
 
 // NewNftTransferTxCmd returns the command to create a NewMsgTransfer transaction
-func NewNftTransferTxCmd() *cobra.Command {
+func NewNftTransferTxCmd(ac address.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "nft-transfer [src-port] [src-channel] [receiver] [class-id] [token-id],...[token-id]",
 		Short: "Transfer a non-fungible token through IBC",
@@ -44,7 +45,12 @@ corresponding to the counterpartychannel. Any timeout set to 0 is disabled.`),
 			if err != nil {
 				return err
 			}
-			sender := clientCtx.GetFromAddress().String()
+
+			sender, err := ac.BytesToString(clientCtx.GetFromAddress())
+			if err != nil {
+				return err
+			}
+
 			srcPort := args[0]
 			srcChannel := args[1]
 			receiver := args[2]

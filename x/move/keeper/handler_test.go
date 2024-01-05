@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
+	"cosmossdk.io/math"
+	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
 	"github.com/stretchr/testify/require"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -103,7 +104,7 @@ func TestDispatchDelegateMessage(t *testing.T) {
 	validator := valAddrs[0]
 	require.NoError(t, err)
 	denom := bondDenom
-	amount := sdk.NewInt(100)
+	amount := math.NewInt(100)
 
 	metadata, err := types.MetadataAddressFromDenom(denom)
 	require.NoError(t, err)
@@ -141,7 +142,7 @@ func TestDispatchFundCommunityPoolMessage(t *testing.T) {
 	depositorAddr, err := vmtypes.NewAccountAddressFromBytes(addrs[0])
 	require.NoError(t, err)
 	denom := bondDenom
-	amount := sdk.NewInt(100)
+	amount := math.NewInt(100)
 
 	metadata, err := types.MetadataAddressFromDenom(denom)
 	require.NoError(t, err)
@@ -175,7 +176,7 @@ func TestDispatchTransferMessage(t *testing.T) {
 	require.NoError(t, err)
 	receiver := valAddrs[0]
 	denom := bondDenom
-	amount := sdk.NewInt(100)
+	amount := math.NewInt(100)
 	sourcePort := "port-1"
 	sourceChannel := "channel-1"
 	revisionNumber := uint64(1)
@@ -249,11 +250,11 @@ func TestDispatchPayFeeMessage(t *testing.T) {
 	senderAddr, err := vmtypes.NewAccountAddressFromBytes(addrs[0])
 	require.NoError(t, err)
 	recvFeeDenom := testDenoms[0]
-	recvFeeAmount := sdk.NewInt(100)
+	recvFeeAmount := math.NewInt(100)
 	ackFeeDenom := testDenoms[1]
-	ackFeeAmount := sdk.NewInt(200)
+	ackFeeAmount := math.NewInt(200)
 	timeoutFeeDenom := testDenoms[2]
-	timeoutFeeAmount := sdk.NewInt(300)
+	timeoutFeeAmount := math.NewInt(300)
 
 	sourcePort := "port-1"
 	sourceChannel := "channel-1"
@@ -334,24 +335,27 @@ func Test_ContractSharedRevenue(t *testing.T) {
 
 	// fund fee collector account
 	feeCollectorAddr := authtypes.NewModuleAddress(authtypes.FeeCollectorName)
-	input.Faucet.Fund(ctx, feeCollectorAddr, sdk.NewCoin(bondDenom, sdk.NewInt(1_000_000_000_000)))
+	input.Faucet.Fund(ctx, feeCollectorAddr, sdk.NewCoin(bondDenom, math.NewInt(1_000_000_000_000)))
 
 	// distribute without gas prices context value
 	err = input.MoveKeeper.DistributeContractSharedRevenue(ctx, gasUsages)
 	require.NoError(t, err)
 
 	// should be zero
-	require.Equal(t, sdk.ZeroInt(), input.BankKeeper.GetBalance(ctx, types.ConvertVMAddressToSDKAddress(stdAddr), bondDenom).Amount)
-	require.Equal(t, sdk.ZeroInt(), input.BankKeeper.GetBalance(ctx, types.ConvertVMAddressToSDKAddress(twoAddr), bondDenom).Amount)
+	require.Equal(t, math.ZeroInt(), input.BankKeeper.GetBalance(ctx, types.ConvertVMAddressToSDKAddress(stdAddr), bondDenom).Amount)
+	require.Equal(t, math.ZeroInt(), input.BankKeeper.GetBalance(ctx, types.ConvertVMAddressToSDKAddress(twoAddr), bondDenom).Amount)
 
 	// set gas prices as `1 bondDenom``
-	ctx = ctx.WithValue(ante.GasPricesContextKey, sdk.NewDecCoinsFromCoins(sdk.NewCoin(bondDenom, sdk.NewInt(1))))
+	ctx = ctx.WithValue(ante.GasPricesContextKey, sdk.NewDecCoinsFromCoins(sdk.NewCoin(bondDenom, math.NewInt(1))))
 
 	// distribute with gas prices context value
 	err = input.MoveKeeper.DistributeContractSharedRevenue(ctx, gasUsages)
 	require.NoError(t, err)
 
+	revenueRatio, err := input.MoveKeeper.ContractSharedRevenueRatio(ctx)
+	require.NoError(t, err)
+
 	// 0x1 should be zero, but 0x2 should receive the coins
-	require.Equal(t, sdk.ZeroInt(), input.BankKeeper.GetBalance(ctx, types.ConvertVMAddressToSDKAddress(stdAddr), bondDenom).Amount)
-	require.Equal(t, input.MoveKeeper.ContractSharedRevenueRatio(ctx).MulInt64(200).TruncateInt(), input.BankKeeper.GetBalance(ctx, types.ConvertVMAddressToSDKAddress(twoAddr), bondDenom).Amount)
+	require.Equal(t, math.ZeroInt(), input.BankKeeper.GetBalance(ctx, types.ConvertVMAddressToSDKAddress(stdAddr), bondDenom).Amount)
+	require.Equal(t, revenueRatio.MulInt64(200).TruncateInt(), input.BankKeeper.GetBalance(ctx, types.ConvertVMAddressToSDKAddress(twoAddr), bondDenom).Amount)
 }

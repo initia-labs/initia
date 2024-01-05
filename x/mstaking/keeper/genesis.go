@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"context"
 	"fmt"
 	"log"
 
@@ -17,7 +18,7 @@ import (
 // data. Finally, it updates the bonded validators.
 // Returns final validator set after applying all declaration and delegations
 func (k Keeper) InitGenesis(
-	ctx sdk.Context, data *types.GenesisState,
+	ctx context.Context, data *types.GenesisState,
 ) (res []abci.ValidatorUpdate) {
 	bondedTokens := sdk.NewCoins()
 	notBondedTokens := sdk.NewCoins()
@@ -27,37 +28,61 @@ func (k Keeper) InitGenesis(
 	// initialized for the validator set e.g. with a one-block offset - the
 	// first TM block is at height 1, so state updates applied from
 	// genesis.json are in block 0.
-	ctx = ctx.WithBlockHeight(1 - sdk.ValidatorUpdateDelay)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx = sdkCtx.WithBlockHeight(1 - sdk.ValidatorUpdateDelay)
+	ctx = sdkCtx
 
 	if err := k.SetParams(ctx, data.Params); err != nil {
 		panic(err)
 	}
 
-	minVotingPower := k.MinVotingPower(ctx)
-	for _, validator := range data.Validators {
-		k.SetValidator(ctx, validator)
+	minVotingPower, err := k.MinVotingPower(ctx)
+	if err != nil {
+		panic(err)
+	}
 
-		votingPower := k.VotingPower(ctx, validator.Tokens)
+	for _, validator := range data.Validators {
+		if err := k.SetValidator(ctx, validator); err != nil {
+			panic(err)
+		}
+
+		votingPower, err := k.VotingPower(ctx, validator.Tokens)
+		if err != nil {
+			panic(err)
+		}
+
 		if votingPower.GTE(minVotingPower) {
-			k.AddWhitelistValidator(ctx, validator)
+			if err := k.AddWhitelistValidator(ctx, validator); err != nil {
+				panic(err)
+			}
 		}
 
 		// Manually set indices for the first time
 		if err := k.SetValidatorByConsAddr(ctx, validator); err != nil {
 			panic(err)
 		}
-		k.SetValidatorByPowerIndex(ctx, validator)
+
+		if err := k.SetValidatorByPowerIndex(ctx, validator); err != nil {
+			panic(err)
+		}
 
 		// Call the creation hook if not exported
 		if !data.Exported {
-			if err := k.Hooks().AfterValidatorCreated(ctx, validator.GetOperator()); err != nil {
+			valAddr, err := k.ValidatorAddressCodec().StringToBytes(validator.GetOperator())
+			if err != nil {
+				panic(err)
+			}
+
+			if err := k.Hooks().AfterValidatorCreated(ctx, valAddr); err != nil {
 				panic(err)
 			}
 		}
 
 		// update timeslice if necessary
 		if validator.IsUnbonding() {
-			k.InsertUnbondingValidatorQueue(ctx, validator)
+			if err := k.InsertUnbondingValidatorQueue(ctx, validator); err != nil {
+				panic(err)
+			}
 		}
 
 		switch validator.GetStatus() {
@@ -71,42 +96,58 @@ func (k Keeper) InitGenesis(
 	}
 
 	for _, delegation := range data.Delegations {
-		delegatorAddress, err := sdk.AccAddressFromBech32(delegation.DelegatorAddress)
+		delAddr, err := k.authKeeper.AddressCodec().StringToBytes(delegation.DelegatorAddress)
+		if err != nil {
+			panic(fmt.Errorf("invalid delegator address: %s", err))
+		}
+
+		valAddr, err := k.validatorAddressCodec.StringToBytes(delegation.GetValidatorAddr())
 		if err != nil {
 			panic(err)
 		}
 
 		// Call the before-creation hook if not exported
 		if !data.Exported {
-			if err := k.Hooks().BeforeDelegationCreated(ctx, delegatorAddress, delegation.GetValidatorAddr()); err != nil {
+			if err := k.Hooks().BeforeDelegationCreated(ctx, delAddr, valAddr); err != nil {
 				panic(err)
 			}
 		}
 
-		k.SetDelegation(ctx, delegation)
+		if err := k.SetDelegation(ctx, delegation); err != nil {
+			panic(err)
+		}
 
 		// Call the after-modification hook if not exported
 		if !data.Exported {
-			if err := k.Hooks().AfterDelegationModified(ctx, delegatorAddress, delegation.GetValidatorAddr()); err != nil {
+			if err := k.Hooks().AfterDelegationModified(ctx, delAddr, valAddr); err != nil {
 				panic(err)
 			}
 		}
 	}
 
 	for _, ubd := range data.UnbondingDelegations {
-		k.SetUnbondingDelegation(ctx, ubd)
+		if err := k.SetUnbondingDelegation(ctx, ubd); err != nil {
+			panic(err)
+		}
 
 		for _, entry := range ubd.Entries {
-			k.InsertUBDQueue(ctx, ubd, entry.CompletionTime)
+			if err := k.InsertUBDQueue(ctx, ubd, entry.CompletionTime); err != nil {
+				panic(err)
+			}
+
 			notBondedTokens = notBondedTokens.Add(entry.Balance...)
 		}
 	}
 
 	for _, red := range data.Redelegations {
-		k.SetRedelegation(ctx, red)
+		if err := k.SetRedelegation(ctx, red); err != nil {
+			panic(err)
+		}
 
 		for _, entry := range red.Entries {
-			k.InsertRedelegationQueue(ctx, red, entry.CompletionTime)
+			if err := k.InsertRedelegationQueue(ctx, red, entry.CompletionTime); err != nil {
+				panic(err)
+			}
 		}
 	}
 
@@ -123,7 +164,7 @@ func (k Keeper) InitGenesis(
 	}
 
 	// if balance is different from bonded coins panic because genesis is most likely malformed
-	if !bondedBalance.IsEqual(bondedTokens) {
+	if !bondedBalance.Equal(bondedTokens) {
 		panic(fmt.Sprintf("bonded pool balance is different from bonded coins: %s <-> %s", bondedBalance, bondedTokens))
 	}
 
@@ -138,21 +179,29 @@ func (k Keeper) InitGenesis(
 	}
 
 	// if balance is different from non bonded coins panic because genesis is most likely malformed
-	if !notBondedBalance.IsEqual(notBondedTokens) {
+	if !notBondedBalance.Equal(notBondedTokens) {
 		panic(fmt.Sprintf("not bonded pool balance is different from not bonded coins: %s <-> %s", notBondedBalance, notBondedTokens))
+	}
+
+	if err := k.SetNextUnbondingId(ctx, data.NextUnbondingId); err != nil {
+		panic(err)
 	}
 
 	// don't need to run Tendermint updates if we exported
 	if data.Exported {
 		for _, lv := range data.LastValidatorPowers {
-			valAddr, err := sdk.ValAddressFromBech32(lv.Address)
+			valAddr, err := k.validatorAddressCodec.StringToBytes(lv.Address)
 			if err != nil {
 				panic(err)
 			}
 
-			k.SetLastValidatorPower(ctx, valAddr, lv.Power)
-			validator, found := k.GetValidator(ctx, valAddr)
-			if !found {
+			err = k.SetLastValidatorPower(ctx, valAddr, lv.Power)
+			if err != nil {
+				panic(err)
+			}
+
+			validator, err := k.Validators.Get(ctx, valAddr)
+			if err != nil {
 				panic(fmt.Sprintf("validator %s not found", lv.Address))
 			}
 
@@ -162,6 +211,7 @@ func (k Keeper) InitGenesis(
 		}
 	} else {
 		var err error
+
 		res, err = k.ApplyAndReturnValidatorSetUpdates(ctx)
 		if err != nil {
 			log.Fatal(err)
@@ -174,35 +224,61 @@ func (k Keeper) InitGenesis(
 // ExportGenesis returns a GenesisState for a given context and keeper. The
 // GenesisState will contain the pool, params, validators, and bonds found in
 // the keeper.
-func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
+func (k Keeper) ExportGenesis(ctx context.Context) *types.GenesisState {
 	var unbondingDelegations []types.UnbondingDelegation
 
-	k.IterateUnbondingDelegations(ctx, func(_ int64, ubd types.UnbondingDelegation) (stop bool) {
+	k.IterateUnbondingDelegations(ctx, func(ubd types.UnbondingDelegation) (stop bool, err error) {
 		unbondingDelegations = append(unbondingDelegations, ubd)
-		return false
+		return false, nil
 	})
 
 	var redelegations []types.Redelegation
 
-	k.IterateRedelegations(ctx, func(_ int64, red types.Redelegation) (stop bool) {
+	k.IterateRedelegations(ctx, func(red types.Redelegation) (stop bool, err error) {
 		redelegations = append(redelegations, red)
-		return false
+		return false, nil
 	})
 
 	var lastValidatorPowers []types.LastValidatorPower
 
-	k.IterateLastValidatorPowers(ctx, func(addr sdk.ValAddress, power int64) (stop bool) {
-		lastValidatorPowers = append(lastValidatorPowers, types.LastValidatorPower{Address: addr.String(), Power: power})
-		return false
+	k.IterateLastValidatorPowers(ctx, func(addr sdk.ValAddress, power int64) (stop bool, err error) {
+		valAddr, err := k.validatorAddressCodec.BytesToString(addr)
+		if err != nil {
+			return true, err
+		}
+
+		lastValidatorPowers = append(lastValidatorPowers, types.LastValidatorPower{Address: valAddr, Power: power})
+		return false, nil
 	})
 
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	allDelegations, err := k.GetAllDelegations(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	allValidators, err := k.GetAllValidators(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	nextUnbondingId, err := k.GetNextUnbondingId(ctx)
+	if err != nil {
+		panic(err)
+	}
+
 	return &types.GenesisState{
-		Params:               k.GetParams(ctx),
+		Params:               params,
 		LastValidatorPowers:  lastValidatorPowers,
-		Validators:           k.GetAllValidators(ctx),
-		Delegations:          k.GetAllDelegations(ctx),
+		Validators:           allValidators,
+		Delegations:          allDelegations,
 		UnbondingDelegations: unbondingDelegations,
 		Redelegations:        redelegations,
 		Exported:             true,
+		NextUnbondingId:      nextUnbondingId,
 	}
 }

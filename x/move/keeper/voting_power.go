@@ -1,6 +1,9 @@
 package keeper
 
 import (
+	"context"
+
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/initia-labs/initia/x/move/types"
@@ -20,14 +23,17 @@ func NewVotingPowerKeeper(k *Keeper) VotingPowerKeeper {
 }
 
 // returns voting power weights of bond denoms
-func (k VotingPowerKeeper) GetVotingPowerWeights(ctx sdk.Context, bondDenoms []string) sdk.DecCoins {
-	baseDenom := k.BaseDenom(ctx)
-	powerWeights := sdk.NewDecCoins()
+func (k VotingPowerKeeper) GetVotingPowerWeights(ctx context.Context, bondDenoms []string) (sdk.DecCoins, error) {
+	baseDenom, err := k.BaseDenom(ctx)
+	if err != nil {
+		return nil, err
+	}
 
+	powerWeights := sdk.NewDecCoins()
 	for _, denom := range bondDenoms {
-		var powerWeight sdk.Dec
+		var powerWeight math.LegacyDec
 		if denom == baseDenom {
-			powerWeight = sdk.OneDec()
+			powerWeight = math.LegacyOneDec()
 		} else {
 			metadataLP, err := types.MetadataAddressFromDenom(denom)
 			if err != nil {
@@ -54,12 +60,12 @@ func (k VotingPowerKeeper) GetVotingPowerWeights(ctx sdk.Context, bondDenoms []s
 
 			// weight = balanceBase / totalShare => compute locked base balance
 			//          * (weightBase + weightQuote) / weightBase => dilute weight
-			powerWeight = sdk.NewDecFromInt(balanceBase).QuoInt(totalShare).
+			powerWeight = math.LegacyNewDecFromInt(balanceBase).QuoInt(totalShare).
 				Quo(weightBase).Mul(weightBase.Add(weightQuote))
 		}
 
 		powerWeights = powerWeights.Add(sdk.NewDecCoinFromDec(denom, powerWeight))
 	}
 
-	return powerWeights
+	return powerWeights, nil
 }

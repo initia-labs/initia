@@ -6,6 +6,7 @@ import (
 	"path"
 	"strings"
 
+	"cosmossdk.io/core/address"
 	"cosmossdk.io/errors"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -94,7 +95,7 @@ const (
 	defaultInstallDir  = "."
 )
 
-func MoveCommand() *cobra.Command {
+func MoveCommand(ac address.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:                        "move",
 		Short:                      "move subcommands",
@@ -108,7 +109,7 @@ func MoveCommand() *cobra.Command {
 		moveTestCmd(),
 		moveNewCmd(),
 		moveCleanCmd(),
-		moveDeployCmd(),
+		moveDeployCmd(ac),
 		moveProveCmd(),
 		moveVerifyCmd(),
 		moveDocgenCmd(),
@@ -360,7 +361,7 @@ func getModuleBundle(packagePath string) ([][]byte, error) {
 	return moduleBundle, nil
 }
 
-func moveDeployCmd() *cobra.Command {
+func moveDeployCmd(ac address.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "deploy [flags]",
 		Short: "deploy a whole move package",
@@ -411,7 +412,7 @@ func moveDeployCmd() *cobra.Command {
 				UpgradePolicy: movetypes.UpgradePolicy(upgradePolicy),
 			}
 
-			if err = msg.ValidateBasic(); err != nil {
+			if err = msg.Validate(ac); err != nil {
 				return err
 			}
 

@@ -1,29 +1,32 @@
 package types
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/auth/types"
-	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
+	context "context"
 
-	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
-	connectiontypes "github.com/cosmos/ibc-go/v7/modules/core/03-connection/types"
-	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
-	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
+	"cosmossdk.io/core/address"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
+
+	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
+	connectiontypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 )
 
 // AccountKeeper defines the contract required for account APIs.
 type AccountKeeper interface {
+	AddressCodec() address.Codec
 	GetModuleAddress(name string) sdk.AccAddress
-	GetModuleAccount(ctx sdk.Context, name string) types.ModuleAccountI
+	GetModuleAccount(ctx context.Context, name string) sdk.ModuleAccountI
 }
 
 type NftKeeper interface {
-	CreateOrUpdateClass(ctx sdk.Context, classId, classUri, classData string) error
-	Transfers(ctx sdk.Context, sender, escrowAddress sdk.AccAddress, classId string, tokenIds []string) error
-	Burns(ctx sdk.Context, owner sdk.AccAddress, classId string, tokenIds []string) error
-	Mints(ctx sdk.Context, receiver sdk.AccAddress, classId string, tokenIds, tokenUris []string, tokenData []string) error
-	GetClassInfo(ctx sdk.Context, classId string) (classUri string, classData string, err error)
-	GetTokenInfos(ctx sdk.Context, classId string, tokenIds []string) (tokenUris []string, tokenData []string, err error)
+	CreateOrUpdateClass(ctx context.Context, classId, classUri, classData string) error
+	Transfers(ctx context.Context, sender, escrowAddress sdk.AccAddress, classId string, tokenIds []string) error
+	Burns(ctx context.Context, owner sdk.AccAddress, classId string, tokenIds []string) error
+	Mints(ctx context.Context, receiver sdk.AccAddress, classId string, tokenIds, tokenUris []string, tokenData []string) error
+	GetClassInfo(ctx context.Context, classId string) (classUri string, classData string, err error)
+	GetTokenInfos(ctx context.Context, classId string, tokenIds []string) (tokenUris []string, tokenData []string, err error)
 }
 
 // ICS4Wrapper defines the expected ICS4Wrapper for middleware

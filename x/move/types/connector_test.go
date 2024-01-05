@@ -7,33 +7,31 @@ import (
 	"cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	"github.com/initia-labs/initia/x/move/types"
 )
 
 func Test_GetDexWeight(t *testing.T) {
 	weightBase, weightQuote, err := types.GetPoolWeights(
-		sdk.NewDecWithPrec(5, 1), // 50%
-		sdk.NewDecWithPrec(5, 1), // 50%
-		sdk.NewDecWithPrec(7, 1), // 70%
-		sdk.NewDecWithPrec(3, 1), // 30%
-		sdk.NewInt(1_000_000),
-		sdk.NewInt(2_000_000),
-		sdk.NewInt(1_500_000),
+		math.LegacyNewDecWithPrec(5, 1), // 50%
+		math.LegacyNewDecWithPrec(5, 1), // 50%
+		math.LegacyNewDecWithPrec(7, 1), // 70%
+		math.LegacyNewDecWithPrec(3, 1), // 30%
+		math.NewInt(1_000_000),
+		math.NewInt(2_000_000),
+		math.NewInt(1_500_000),
 	)
 
 	require.NoError(t, err)
-	require.Equal(t, sdk.NewDecWithPrec(6, 1), weightBase)
-	require.Equal(t, sdk.NewDecWithPrec(4, 1), weightQuote)
+	require.Equal(t, math.LegacyNewDecWithPrec(6, 1), weightBase)
+	require.Equal(t, math.LegacyNewDecWithPrec(4, 1), weightQuote)
 }
 
 func Test_GetPoolSpotPrice(t *testing.T) {
 	price := types.GetPoolSpotPrice(
-		sdk.NewInt(1_000_000),
-		sdk.NewInt(8_000_000),
-		sdk.NewDecWithPrec(2, 1),
-		sdk.NewDecWithPrec(8, 1),
+		math.NewInt(1_000_000),
+		math.NewInt(8_000_000),
+		math.LegacyNewDecWithPrec(2, 1),
+		math.LegacyNewDecWithPrec(8, 1),
 	)
 
 	require.Equal(t, math.LegacyNewDecWithPrec(5, 1), price)

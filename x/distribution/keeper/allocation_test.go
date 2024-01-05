@@ -1,16 +1,35 @@
 package keeper_test
 
 import (
+	"context"
 	"testing"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	abci "github.com/cometbft/cometbft/abci/types"
+	"github.com/cometbft/cometbft/proto/tendermint/types"
 	customtypes "github.com/initia-labs/initia/x/distribution/types"
 	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
 	"github.com/stretchr/testify/require"
 )
+
+func setRewardWeights(t *testing.T, ctx context.Context, input TestKeepers, weights []customtypes.RewardWeight) {
+	// update reward weights
+	params, err := input.DistKeeper.Params.Get(ctx)
+	require.NoError(t, err)
+	params.RewardWeights = weights
+	err = input.DistKeeper.Params.Set(ctx, params)
+	require.NoError(t, err)
+}
+
+func loadRewardsWeight(t *testing.T, ctx context.Context, input TestKeepers) ([]customtypes.RewardWeight, map[string]math.LegacyDec, math.LegacyDec) {
+	params, err := input.DistKeeper.Params.Get(ctx)
+	require.NoError(t, err)
+
+	return input.DistKeeper.LoadRewardWeights(ctx, params)
+}
 
 func TestLoadRewardWeights(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
@@ -18,38 +37,43 @@ func TestLoadRewardWeights(t *testing.T) {
 	weights := []customtypes.RewardWeight{
 		{
 			Denom:  "aaa",
-			Weight: sdk.NewDecWithPrec(3, 1),
+			Weight: math.LegacyNewDecWithPrec(3, 1),
 		},
 		{
 			Denom:  "bar",
-			Weight: sdk.NewDecWithPrec(4, 1),
+			Weight: math.LegacyNewDecWithPrec(4, 1),
 		},
 		{
 			Denom:  "foo",
-			Weight: sdk.NewDecWithPrec(3, 1),
+			Weight: math.LegacyNewDecWithPrec(3, 1),
 		},
 	}
-	input.DistKeeper.SetRewardWeights(ctx, weights)
 
-	_, loadedWeights, sum := input.DistKeeper.LoadRewardWeights(ctx)
-	require.Equal(t, sdk.NewDecWithPrec(3, 1), loadedWeights["aaa"])
-	require.Equal(t, sdk.NewDecWithPrec(4, 1), loadedWeights["bar"])
-	require.Equal(t, sdk.NewDecWithPrec(3, 1), loadedWeights["foo"])
-	require.Equal(t, sdk.OneDec(), sum)
+	// update reward weights
+	setRewardWeights(t, ctx, input, weights)
+
+	_, loadedWeights, sum := loadRewardsWeight(t, ctx, input)
+	require.Equal(t, math.LegacyNewDecWithPrec(3, 1), loadedWeights["aaa"])
+	require.Equal(t, math.LegacyNewDecWithPrec(4, 1), loadedWeights["bar"])
+	require.Equal(t, math.LegacyNewDecWithPrec(3, 1), loadedWeights["foo"])
+	require.Equal(t, math.LegacyOneDec(), sum)
 }
 
 func TestLoadBondedTokens(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
 	input.StakingKeeper.SetBondDenoms(ctx, []string{"foo", "bar"})
-	input.DistKeeper.SetRewardWeights(ctx, []customtypes.RewardWeight{
+
+	// update reward weights
+	// update reward weights
+	setRewardWeights(t, ctx, input, []customtypes.RewardWeight{
 		{
 			Denom:  "foo",
-			Weight: sdk.NewDecWithPrec(4, 1),
+			Weight: math.LegacyNewDecWithPrec(4, 1),
 		},
 		{
 			Denom:  "bar",
-			Weight: sdk.NewDecWithPrec(6, 1),
+			Weight: math.LegacyNewDecWithPrec(6, 1),
 		},
 	})
 
@@ -60,10 +84,10 @@ func TestLoadBondedTokens(t *testing.T) {
 		sdk.NewCoins(sdk.NewInt64Coin("foo", 100_000_000), sdk.NewInt64Coin("bar", 100_000_000)),
 		sdk.NewCoins(sdk.NewInt64Coin("foo", 5_000_000), sdk.NewInt64Coin("bar", 3_000_000)), 2)
 
-	validator1, found := input.StakingKeeper.GetValidator(ctx, valAddr1)
-	require.True(t, found)
-	validator2, found := input.StakingKeeper.GetValidator(ctx, valAddr2)
-	require.True(t, found)
+	validator1, err := input.StakingKeeper.Validator(ctx, valAddr1)
+	require.NoError(t, err)
+	validator2, err := input.StakingKeeper.Validator(ctx, valAddr2)
+	require.NoError(t, err)
 
 	valConsPk1, err := validator1.ConsPubKey()
 	require.NoError(t, err)
@@ -81,36 +105,37 @@ func TestLoadBondedTokens(t *testing.T) {
 
 	votes := []abci.VoteInfo{
 		{
-			Validator:       abciValA,
-			SignedLastBlock: true,
+			Validator:   abciValA,
+			BlockIdFlag: types.BlockIDFlagCommit,
 		},
 		{
-			Validator:       abciValB,
-			SignedLastBlock: true,
+			Validator:   abciValB,
+			BlockIdFlag: types.BlockIDFlagCommit,
 		},
 	}
 
-	_, rewardWeight, _ := input.DistKeeper.LoadRewardWeights(ctx)
-	validators, bondedTokens, bondedTokensSum := input.DistKeeper.LoadBondedTokens(ctx, votes, rewardWeight)
-	require.Equal(t, validator1, validators[string(valConsPk1.Address())])
-	require.Equal(t, validator2, validators[string(valConsPk2.Address())])
+	_, rewardWeight, _ := loadRewardsWeight(t, ctx, input)
+	validators, bondedTokens, bondedTokensSum, err := input.DistKeeper.LoadBondedTokens(ctx, votes, rewardWeight)
+	require.NoError(t, err)
+	require.Equal(t, validator1, validators[validator1.GetOperator()])
+	require.Equal(t, validator2, validators[validator2.GetOperator()])
 	for _, val := range bondedTokens["foo"] {
-		if val.ValAddr == string(valConsPk1.Address()) {
-			require.Equal(t, sdk.NewInt(3_000_000), val.Amount)
+		if val.ValAddr == validator1.GetOperator() {
+			require.Equal(t, math.NewInt(3_000_000), val.Amount)
 		} else {
-			sdk.NewInt(5_000_000)
+			require.Equal(t, math.NewInt(5_000_000), val.Amount)
 		}
 	}
 
 	for _, val := range bondedTokens["bar"] {
-		if val.ValAddr == string(valConsPk1.Address()) {
-			require.Equal(t, sdk.NewInt(5_000_000), val.Amount)
+		if val.ValAddr == validator2.GetOperator() {
+			require.Equal(t, math.NewInt(3_000_000), val.Amount)
 		} else {
-			sdk.NewInt(3_000_000)
+			require.Equal(t, math.NewInt(5_000_000), val.Amount)
 		}
 	}
-	require.Equal(t, sdk.NewInt(8_000_000), bondedTokensSum["foo"])
-	require.Equal(t, sdk.NewInt(8_000_000), bondedTokensSum["bar"])
+	require.Equal(t, math.NewInt(8_000_000), bondedTokensSum["foo"])
+	require.Equal(t, math.NewInt(8_000_000), bondedTokensSum["bar"])
 }
 
 func TestAllocateTokensToValidatorWithCommission(t *testing.T) {
@@ -118,30 +143,35 @@ func TestAllocateTokensToValidatorWithCommission(t *testing.T) {
 
 	valAddr := createValidatorWithBalance(ctx, input, 100_000_000, 1_000_000, 1)
 
-	validator, found := input.StakingKeeper.GetValidator(ctx, valAddr)
-	require.True(t, found)
+	validator, err := input.StakingKeeper.Validator(ctx, valAddr)
+	require.NoError(t, err)
 
-	tokens := sdk.DecCoins{{Denom: bondDenom, Amount: sdk.NewDec(10)}}
+	tokens := sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDec(10)}}
 	input.DistKeeper.AllocateTokensToValidatorPool(ctx, validator, bondDenom, tokens)
-	expected := customtypes.DecPools{{Denom: bondDenom, DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: sdk.NewDec(5)}}}}
+	expected := customtypes.DecPools{{Denom: bondDenom, DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDec(5)}}}}
 
 	// check commission
-	require.Equal(t, expected, input.DistKeeper.GetValidatorAccumulatedCommission(ctx, validator.GetOperator()).Commissions)
+	commission, err := input.DistKeeper.ValidatorAccumulatedCommissions.Get(ctx, valAddr)
+	require.NoError(t, err)
+	require.Equal(t, expected, commission.Commissions)
 	// check current rewards
-	require.Equal(t, expected, input.DistKeeper.GetValidatorCurrentRewards(ctx, validator.GetOperator()).Rewards)
+
+	currentRewards, err := input.DistKeeper.ValidatorCurrentRewards.Get(ctx, valAddr)
+	require.NoError(t, err)
+	require.Equal(t, expected, currentRewards.Rewards)
 }
 
 func TestAllocateTokensToManyValidators(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 	input.StakingKeeper.SetBondDenoms(ctx, []string{"foo", "bar"})
-	input.DistKeeper.SetRewardWeights(ctx, []customtypes.RewardWeight{
+	setRewardWeights(t, ctx, input, []customtypes.RewardWeight{
 		{
 			Denom:  "foo",
-			Weight: sdk.NewDecWithPrec(4, 1),
+			Weight: math.LegacyNewDecWithPrec(4, 1),
 		},
 		{
 			Denom:  "bar",
-			Weight: sdk.NewDecWithPrec(6, 1),
+			Weight: math.LegacyNewDecWithPrec(6, 1),
 		},
 	})
 
@@ -152,10 +182,10 @@ func TestAllocateTokensToManyValidators(t *testing.T) {
 		sdk.NewCoins(sdk.NewInt64Coin("foo", 100_000_000), sdk.NewInt64Coin("bar", 100_000_000)),
 		sdk.NewCoins(sdk.NewInt64Coin("foo", 5_000_000), sdk.NewInt64Coin("bar", 3_000_000)), 2)
 
-	validator1, found := input.StakingKeeper.GetValidator(ctx, valAddr1)
-	require.True(t, found)
-	validator2, found := input.StakingKeeper.GetValidator(ctx, valAddr2)
-	require.True(t, found)
+	validator1, err := input.StakingKeeper.Validator(ctx, valAddr1)
+	require.NoError(t, err)
+	validator2, err := input.StakingKeeper.Validator(ctx, valAddr2)
+	require.NoError(t, err)
 
 	valConsPk1, err := validator1.ConsPubKey()
 	require.NoError(t, err)
@@ -172,27 +202,46 @@ func TestAllocateTokensToManyValidators(t *testing.T) {
 	}
 
 	// assert initial state: zero outstanding rewards, zero community pool, zero commission, zero current rewards
-	require.True(t, input.DistKeeper.GetValidatorOutstandingRewards(ctx, valAddr1).Rewards.Sum().IsZero())
-	require.True(t, input.DistKeeper.GetValidatorOutstandingRewards(ctx, valAddr2).Rewards.Sum().IsZero())
-	require.True(t, input.DistKeeper.GetFeePool(ctx).CommunityPool.IsZero())
-	require.True(t, input.DistKeeper.GetValidatorAccumulatedCommission(ctx, valAddr1).Commissions.Sum().Empty())
-	require.True(t, input.DistKeeper.GetValidatorAccumulatedCommission(ctx, valAddr2).Commissions.Sum().Empty())
-	require.True(t, input.DistKeeper.GetValidatorCurrentRewards(ctx, valAddr1).Rewards.Sum().IsZero())
-	require.True(t, input.DistKeeper.GetValidatorCurrentRewards(ctx, valAddr2).Rewards.Sum().IsZero())
+	val1OutRewards, err := input.DistKeeper.ValidatorOutstandingRewards.Get(ctx, valAddr1)
+	require.NoError(t, err)
+	require.True(t, val1OutRewards.Rewards.Sum().IsZero())
+	val2OutRewards, err := input.DistKeeper.ValidatorOutstandingRewards.Get(ctx, valAddr2)
+	require.NoError(t, err)
+	require.True(t, val2OutRewards.Rewards.Sum().IsZero())
+
+	feePool, err := input.DistKeeper.FeePool.Get(ctx)
+	require.NoError(t, err)
+	require.True(t, feePool.CommunityPool.IsZero())
+
+	val1Commission, err := input.DistKeeper.ValidatorAccumulatedCommissions.Get(ctx, valAddr1)
+	require.NoError(t, err)
+	require.True(t, val1Commission.Commissions.Sum().Empty())
+
+	val2Commission, err := input.DistKeeper.ValidatorAccumulatedCommissions.Get(ctx, valAddr2)
+	require.NoError(t, err)
+	require.True(t, val2Commission.Commissions.Sum().Empty())
+
+	val1CurRewards, err := input.DistKeeper.ValidatorCurrentRewards.Get(ctx, valAddr1)
+	require.NoError(t, err)
+	require.True(t, val1CurRewards.Rewards.Sum().IsZero())
+
+	val2CurRewards, err := input.DistKeeper.ValidatorCurrentRewards.Get(ctx, valAddr2)
+	require.NoError(t, err)
+	require.True(t, val2CurRewards.Rewards.Sum().IsZero())
 
 	votes := []abci.VoteInfo{
 		{
-			Validator:       abciValA,
-			SignedLastBlock: true,
+			Validator:   abciValA,
+			BlockIdFlag: types.BlockIDFlagCommit,
 		},
 		{
-			Validator:       abciValB,
-			SignedLastBlock: true,
+			Validator:   abciValB,
+			BlockIdFlag: types.BlockIDFlagCommit,
 		},
 	}
 
 	// allocate tokens as if both had voted and second was proposer
-	fees := sdk.NewCoins(sdk.NewCoin(bondDenom, sdk.NewInt(100)))
+	fees := sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(100)))
 
 	feeCollector := input.AccountKeeper.GetModuleAccount(ctx, authtypes.FeeCollectorName)
 	require.NotNil(t, feeCollector)
@@ -201,48 +250,62 @@ func TestAllocateTokensToManyValidators(t *testing.T) {
 	input.DistKeeper.AllocateTokens(ctx, 200, votes)
 
 	// 98 outstanding rewards (100 less 2 to community pool)
+	val1OutRewards, err = input.DistKeeper.ValidatorOutstandingRewards.Get(ctx, valAddr1)
+	require.NoError(t, err)
 	require.Equal(t,
 		customtypes.DecPools{
-			{Denom: "bar", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: sdk.NewDecWithPrec(3675, 2)}}},
-			{Denom: "foo", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: sdk.NewDecWithPrec(147, 1)}}},
+			{Denom: "bar", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(3675, 2)}}},
+			{Denom: "foo", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(147, 1)}}},
 		},
-		input.DistKeeper.GetValidatorOutstandingRewards(ctx, valAddr1).Rewards)
+		val1OutRewards.Rewards)
+	val2OutRewards, err = input.DistKeeper.ValidatorOutstandingRewards.Get(ctx, valAddr2)
+	require.NoError(t, err)
 	require.Equal(t,
 		customtypes.DecPools{
-			{Denom: "bar", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: sdk.NewDecWithPrec(2205, 2)}}},
-			{Denom: "foo", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: sdk.NewDecWithPrec(245, 1)}}},
+			{Denom: "bar", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(2205, 2)}}},
+			{Denom: "foo", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(245, 1)}}},
 		},
-		input.DistKeeper.GetValidatorOutstandingRewards(ctx, valAddr2).Rewards)
+		val2OutRewards.Rewards)
 	// 2 community pool coins
-	require.Equal(t, sdk.DecCoins{{Denom: bondDenom, Amount: sdk.NewDec(2)}}, input.DistKeeper.GetFeePool(ctx).CommunityPool)
+	feePool, err = input.DistKeeper.FeePool.Get(ctx)
+	require.NoError(t, err)
+	require.Equal(t, sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDec(2)}}, feePool.CommunityPool)
 
 	// 50% commission for first proposer, (0.5 * 98%) * 100 / 2 = 24.5
+	val1Commission, err = input.DistKeeper.ValidatorAccumulatedCommissions.Get(ctx, valAddr1)
+	require.NoError(t, err)
 	require.Equal(t,
 		customtypes.DecPools{
-			{Denom: "bar", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: sdk.NewDecWithPrec(18375, 3)}}},
-			{Denom: "foo", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: sdk.NewDecWithPrec(735, 2)}}},
+			{Denom: "bar", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(18375, 3)}}},
+			{Denom: "foo", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(735, 2)}}},
 		},
-		input.DistKeeper.GetValidatorAccumulatedCommission(ctx, valAddr1).Commissions)
+		val1Commission.Commissions)
+	val2Commission, err = input.DistKeeper.ValidatorAccumulatedCommissions.Get(ctx, valAddr2)
+	require.NoError(t, err)
 	require.Equal(t,
 		customtypes.DecPools{
-			{Denom: "bar", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: sdk.NewDecWithPrec(11025, 3)}}},
-			{Denom: "foo", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: sdk.NewDecWithPrec(1225, 2)}}},
+			{Denom: "bar", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(11025, 3)}}},
+			{Denom: "foo", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(1225, 2)}}},
 		},
-		input.DistKeeper.GetValidatorAccumulatedCommission(ctx, valAddr2).Commissions)
+		val2Commission.Commissions)
 
 	// just staking.proportional for first proposer less commission = (0.5 * 98%) * 100 / 2 = 24.5
+	val1CurRewards, err = input.DistKeeper.ValidatorCurrentRewards.Get(ctx, valAddr1)
+	require.NoError(t, err)
 	require.Equal(t,
 		customtypes.DecPools{
-			{Denom: "bar", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: sdk.NewDecWithPrec(18375, 3)}}},
-			{Denom: "foo", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: sdk.NewDecWithPrec(735, 2)}}},
+			{Denom: "bar", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(18375, 3)}}},
+			{Denom: "foo", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(735, 2)}}},
 		},
-		input.DistKeeper.GetValidatorCurrentRewards(ctx, validator1.GetOperator()).Rewards)
+		val1CurRewards.Rewards)
+	val2CurRewards, err = input.DistKeeper.ValidatorCurrentRewards.Get(ctx, valAddr2)
+	require.NoError(t, err)
 	require.Equal(t,
 		customtypes.DecPools{
-			{Denom: "bar", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: sdk.NewDecWithPrec(11025, 3)}}},
-			{Denom: "foo", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: sdk.NewDecWithPrec(1225, 2)}}},
+			{Denom: "bar", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(11025, 3)}}},
+			{Denom: "foo", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(1225, 2)}}},
 		},
-		input.DistKeeper.GetValidatorCurrentRewards(ctx, validator2.GetOperator()).Rewards)
+		val2CurRewards.Rewards)
 }
 
 func TestAllocateTokensTruncation(t *testing.T) {
@@ -251,12 +314,12 @@ func TestAllocateTokensTruncation(t *testing.T) {
 	valAddr2 := createValidatorWithBalance(ctx, input, 100_000_000, 100, 2)
 	valAddr3 := createValidatorWithBalance(ctx, input, 100_000_000, 100, 3)
 
-	validator1, found := input.StakingKeeper.GetValidator(ctx, valAddr1)
-	require.True(t, found)
-	validator2, found := input.StakingKeeper.GetValidator(ctx, valAddr2)
-	require.True(t, found)
-	validator3, found := input.StakingKeeper.GetValidator(ctx, valAddr3)
-	require.True(t, found)
+	validator1, err := input.StakingKeeper.Validators.Get(ctx, valAddr1)
+	require.NoError(t, err)
+	validator2, err := input.StakingKeeper.Validators.Get(ctx, valAddr2)
+	require.NoError(t, err)
+	validator3, err := input.StakingKeeper.Validators.Get(ctx, valAddr3)
+	require.NoError(t, err)
 
 	valConsPk1, err := validator1.ConsPubKey()
 	require.NoError(t, err)
@@ -267,21 +330,21 @@ func TestAllocateTokensTruncation(t *testing.T) {
 
 	// create validator with 10% commission
 	validator1.Commission = stakingtypes.NewCommission(
-		sdk.NewDecWithPrec(1, 1),
-		sdk.NewDecWithPrec(1, 1),
-		sdk.NewDec(0),
+		math.LegacyNewDecWithPrec(1, 1),
+		math.LegacyNewDecWithPrec(1, 1),
+		math.LegacyNewDec(0),
 	)
 
 	validator2.Commission = stakingtypes.NewCommission(
-		sdk.NewDecWithPrec(1, 1),
-		sdk.NewDecWithPrec(1, 1),
-		sdk.NewDec(0),
+		math.LegacyNewDecWithPrec(1, 1),
+		math.LegacyNewDecWithPrec(1, 1),
+		math.LegacyNewDec(0),
 	)
 
 	validator3.Commission = stakingtypes.NewCommission(
-		sdk.NewDecWithPrec(1, 1),
-		sdk.NewDecWithPrec(1, 1),
-		sdk.NewDec(0),
+		math.LegacyNewDecWithPrec(1, 1),
+		math.LegacyNewDecWithPrec(1, 1),
+		math.LegacyNewDec(0),
 	)
 
 	abciValA := abci.Validator{
@@ -298,17 +361,46 @@ func TestAllocateTokensTruncation(t *testing.T) {
 	}
 
 	// assert initial state: zero outstanding rewards, zero community pool, zero commission, zero current rewards
-	require.True(t, input.DistKeeper.GetValidatorOutstandingRewards(ctx, valAddr1).Rewards.Sum().IsZero())
-	require.True(t, input.DistKeeper.GetValidatorOutstandingRewards(ctx, valAddr2).Rewards.Sum().IsZero())
-	require.True(t, input.DistKeeper.GetValidatorOutstandingRewards(ctx, valAddr2).Rewards.Sum().IsZero())
-	require.True(t, input.DistKeeper.GetFeePool(ctx).CommunityPool.IsZero())
-	require.True(t, input.DistKeeper.GetValidatorAccumulatedCommission(ctx, valAddr1).Commissions.Sum().IsZero())
-	require.True(t, input.DistKeeper.GetValidatorAccumulatedCommission(ctx, valAddr2).Commissions.Sum().IsZero())
-	require.True(t, input.DistKeeper.GetValidatorCurrentRewards(ctx, valAddr1).Rewards.Sum().IsZero())
-	require.True(t, input.DistKeeper.GetValidatorCurrentRewards(ctx, valAddr2).Rewards.Sum().IsZero())
+	val1OutRewards, err := input.DistKeeper.ValidatorOutstandingRewards.Get(ctx, valAddr1)
+	require.NoError(t, err)
+	require.True(t, val1OutRewards.Rewards.Sum().IsZero())
+	val2OutRewards, err := input.DistKeeper.ValidatorOutstandingRewards.Get(ctx, valAddr2)
+	require.NoError(t, err)
+	require.True(t, val2OutRewards.Rewards.Sum().IsZero())
+	val3OutRewards, err := input.DistKeeper.ValidatorOutstandingRewards.Get(ctx, valAddr3)
+	require.NoError(t, err)
+	require.True(t, val3OutRewards.Rewards.Sum().IsZero())
+
+	feePool, err := input.DistKeeper.FeePool.Get(ctx)
+	require.NoError(t, err)
+	require.True(t, feePool.CommunityPool.IsZero())
+
+	val1Commission, err := input.DistKeeper.ValidatorAccumulatedCommissions.Get(ctx, valAddr1)
+	require.NoError(t, err)
+	require.True(t, val1Commission.Commissions.Sum().Empty())
+
+	val2Commission, err := input.DistKeeper.ValidatorAccumulatedCommissions.Get(ctx, valAddr1)
+	require.NoError(t, err)
+	require.True(t, val2Commission.Commissions.Sum().Empty())
+
+	val3Commission, err := input.DistKeeper.ValidatorAccumulatedCommissions.Get(ctx, valAddr3)
+	require.NoError(t, err)
+	require.True(t, val3Commission.Commissions.Sum().Empty())
+
+	val1CurRewards, err := input.DistKeeper.ValidatorCurrentRewards.Get(ctx, valAddr1)
+	require.NoError(t, err)
+	require.True(t, val1CurRewards.Rewards.Sum().IsZero())
+
+	val2CurRewards, err := input.DistKeeper.ValidatorCurrentRewards.Get(ctx, valAddr2)
+	require.NoError(t, err)
+	require.True(t, val2CurRewards.Rewards.Sum().IsZero())
+
+	val3CurRewards, err := input.DistKeeper.ValidatorCurrentRewards.Get(ctx, valAddr3)
+	require.NoError(t, err)
+	require.True(t, val3CurRewards.Rewards.Sum().IsZero())
 
 	// allocate tokens as if both had voted and second was proposer
-	fees := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(634195840)))
+	fees := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, math.NewInt(634195840)))
 	feeCollector := input.AccountKeeper.GetModuleAccount(ctx, authtypes.FeeCollectorName)
 	require.NotNil(t, feeCollector)
 
@@ -320,40 +412,47 @@ func TestAllocateTokensTruncation(t *testing.T) {
 
 	votes := []abci.VoteInfo{
 		{
-			Validator:       abciValA,
-			SignedLastBlock: true,
+			Validator:   abciValA,
+			BlockIdFlag: types.BlockIDFlagCommit,
 		},
 		{
-			Validator:       abciValB,
-			SignedLastBlock: true,
+			Validator:   abciValB,
+			BlockIdFlag: types.BlockIDFlagCommit,
 		},
 		{
-			Validator:       abciValС,
-			SignedLastBlock: true,
+			Validator:   abciValС,
+			BlockIdFlag: types.BlockIDFlagCommit,
 		},
 	}
 	input.DistKeeper.AllocateTokens(ctx, 31, votes)
 
-	require.True(t, input.DistKeeper.GetValidatorOutstandingRewards(ctx, valAddr1).Rewards.Sum().IsValid())
-	require.True(t, input.DistKeeper.GetValidatorOutstandingRewards(ctx, valAddr2).Rewards.Sum().IsValid())
-	require.True(t, input.DistKeeper.GetValidatorOutstandingRewards(ctx, valAddr3).Rewards.Sum().IsValid())
+	val1OutRewards, err = input.DistKeeper.ValidatorOutstandingRewards.Get(ctx, valAddr1)
+	require.NoError(t, err)
+	val2OutRewards, err = input.DistKeeper.ValidatorOutstandingRewards.Get(ctx, valAddr2)
+	require.NoError(t, err)
+	val3OutRewards, err = input.DistKeeper.ValidatorOutstandingRewards.Get(ctx, valAddr3)
+	require.NoError(t, err)
+
+	require.True(t, val1OutRewards.Rewards.Sum().IsValid())
+	require.True(t, val2OutRewards.Rewards.Sum().IsValid())
+	require.True(t, val3OutRewards.Rewards.Sum().IsValid())
 }
 
 func Test_SwapToBase(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 	valAddr1 := createValidatorWithBalance(ctx, input, 100_000_000, 110, 1)
 
-	validator1, found := input.StakingKeeper.GetValidator(ctx, valAddr1)
-	require.True(t, found)
+	validator1, err := input.StakingKeeper.Validators.Get(ctx, valAddr1)
+	require.NoError(t, err)
 
 	valConsPk1, err := validator1.ConsPubKey()
 	require.NoError(t, err)
 
 	// create validator with 10% commission
 	validator1.Commission = stakingtypes.NewCommission(
-		sdk.NewDecWithPrec(1, 1),
-		sdk.NewDecWithPrec(1, 1),
-		sdk.NewDec(0),
+		math.LegacyNewDecWithPrec(1, 1),
+		math.LegacyNewDecWithPrec(1, 1),
+		math.LegacyNewDec(0),
 	)
 
 	abciValA := abci.Validator{
@@ -362,13 +461,21 @@ func Test_SwapToBase(t *testing.T) {
 	}
 
 	// assert initial state: zero outstanding rewards, zero community pool, zero commission, zero current rewards
-	require.True(t, input.DistKeeper.GetValidatorOutstandingRewards(ctx, valAddr1).Rewards.Sum().IsZero())
-	require.True(t, input.DistKeeper.GetFeePool(ctx).CommunityPool.IsZero())
-	require.True(t, input.DistKeeper.GetValidatorAccumulatedCommission(ctx, valAddr1).Commissions.Sum().IsZero())
-	require.True(t, input.DistKeeper.GetValidatorCurrentRewards(ctx, valAddr1).Rewards.Sum().IsZero())
+	val1OutRewards, err := input.DistKeeper.ValidatorOutstandingRewards.Get(ctx, valAddr1)
+	require.NoError(t, err)
+	require.True(t, val1OutRewards.Rewards.Sum().IsZero())
+	feePool, err := input.DistKeeper.FeePool.Get(ctx)
+	require.NoError(t, err)
+	require.True(t, feePool.CommunityPool.IsZero())
+	val1Commission, err := input.DistKeeper.ValidatorAccumulatedCommissions.Get(ctx, valAddr1)
+	require.NoError(t, err)
+	require.True(t, val1Commission.Commissions.Sum().IsZero())
+	val1CurRewards, err := input.DistKeeper.ValidatorCurrentRewards.Get(ctx, valAddr1)
+	require.NoError(t, err)
+	require.True(t, val1CurRewards.Rewards.Sum().IsZero())
 
 	// allocate tokens as if both had voted and second was proposer
-	fees := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(1_000_000_000_000)))
+	fees := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, math.NewInt(1_000_000_000_000)))
 	feeCollector := input.AccountKeeper.GetModuleAccount(ctx, authtypes.FeeCollectorName)
 	require.NotNil(t, feeCollector)
 
@@ -380,19 +487,24 @@ func Test_SwapToBase(t *testing.T) {
 
 	votes := []abci.VoteInfo{
 		{
-			Validator:       abciValA,
-			SignedLastBlock: true,
+			Validator:   abciValA,
+			BlockIdFlag: types.BlockIDFlagCommit,
 		},
 	}
 	// set dex price
-	input.DexKeeper.SetPrice(sdk.DefaultBondDenom, sdk.OneDec())
+	input.DexKeeper.SetPrice(sdk.DefaultBondDenom, math.LegacyOneDec())
 	input.DistKeeper.AllocateTokens(ctx, 31, votes)
 
-	taxRate := input.DistKeeper.GetCommunityTax(ctx)
-	baseDenom := input.MoveKeeper.BaseDenom(ctx)
+	params, err := input.DistKeeper.Params.Get(ctx)
+	require.NoError(t, err)
+	taxRate := params.CommunityTax
+	baseDenom, err := input.MoveKeeper.BaseDenom(ctx)
+	require.NoError(t, err)
 
+	val1OutRewards, err = input.DistKeeper.ValidatorOutstandingRewards.Get(ctx, valAddr1)
+	require.NoError(t, err)
 	require.Equal(t,
-		input.DistKeeper.GetValidatorOutstandingRewards(ctx, valAddr1).Rewards.CoinsOf(baseDenom),
-		sdk.NewDecCoins(sdk.NewDecCoin(baseDenom, sdk.OneDec().Sub(taxRate).MulInt(fees[0].Amount).TruncateInt())),
+		val1OutRewards.Rewards.CoinsOf(baseDenom),
+		sdk.NewDecCoins(sdk.NewDecCoin(baseDenom, math.LegacyOneDec().Sub(taxRate).MulInt(fees[0].Amount).TruncateInt())),
 	)
 }

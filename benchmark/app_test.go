@@ -9,7 +9,6 @@ import (
 
 	dbm "github.com/cometbft/cometbft-db"
 	abci "github.com/cometbft/cometbft/abci/types"
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/stretchr/testify/require"
 
 	simappparams "cosmossdk.io/simapp/params"
@@ -22,28 +21,28 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	"github.com/initia-labs/initia/app"
+	initiaapp "github.com/initia-labs/initia/app"
 )
 
 func init() {
 	sdkConfig := sdk.GetConfig()
-	sdkConfig.SetCoinType(app.CoinType)
+	sdkConfig.SetCoinType(initiaapp.CoinType)
 
-	accountPubKeyPrefix := app.AccountAddressPrefix + "pub"
-	validatorAddressPrefix := app.AccountAddressPrefix + "valoper"
-	validatorPubKeyPrefix := app.AccountAddressPrefix + "valoperpub"
-	consNodeAddressPrefix := app.AccountAddressPrefix + "valcons"
-	consNodePubKeyPrefix := app.AccountAddressPrefix + "valconspub"
+	accountPubKeyPrefix := initiaapp.AccountAddressPrefix + "pub"
+	validatorAddressPrefix := initiaapp.AccountAddressPrefix + "valoper"
+	validatorPubKeyPrefix := initiaapp.AccountAddressPrefix + "valoperpub"
+	consNodeAddressPrefix := initiaapp.AccountAddressPrefix + "valcons"
+	consNodePubKeyPrefix := initiaapp.AccountAddressPrefix + "valconspub"
 
-	sdkConfig.SetBech32PrefixForAccount(app.AccountAddressPrefix, accountPubKeyPrefix)
+	sdkConfig.SetBech32PrefixForAccount(initiaapp.AccountAddressPrefix, accountPubKeyPrefix)
 	sdkConfig.SetBech32PrefixForValidator(validatorAddressPrefix, validatorPubKeyPrefix)
 	sdkConfig.SetBech32PrefixForConsensusNode(consNodeAddressPrefix, consNodePubKeyPrefix)
-	sdkConfig.SetAddressVerifier(app.VerifyAddressLen())
+	sdkConfig.SetAddressVerifier(initiaapp.VerifyAddressLen())
 	sdkConfig.Seal()
 }
 
 type AppInfo struct {
-	App           *app.InitiaApp
+	App           *initiaapp.InitiaApp
 	MinterAddr    sdk.AccAddress
 	MinterHexAddr vmtypes.AccountAddress
 	MinterKey     *secp256k1.PrivKey
@@ -57,7 +56,7 @@ type AppInfo struct {
 
 func InitializeBenchApp(b *testing.B, db *dbm.DB, numAccounts int) AppInfo {
 	// constants
-	denom := app.BondDenom
+	denom := initiaapp.BondDenom
 	moduleName := "coin"
 
 	// initia18ndwzuhkcyzrkrkada9n7un0gauq6tmjc9y2mm <> 0x3cdae172f6c1043b0edd6f4b3f726f47780d2f72
@@ -85,12 +84,11 @@ func InitializeBenchApp(b *testing.B, db *dbm.DB, numAccounts int) AppInfo {
 		bals[i+1] = banktypes.Balance{Address: addr, Coins: sdk.NewCoins(sdk.NewInt64Coin(denom, 1_000_000_000))}
 	}
 
-	initiaApp := app.SetupWithGenesisAccounts(nil, genAccs, bals...)
+	initiaApp := initiaapp.SetupWithGenesisAccounts(nil, genAccs, bals...)
 	config := simappparams.MakeTestEncodingConfig().TxConfig
 
 	height := initiaApp.LastBlockHeight() + 1
-	initiaApp.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{Height: height, Time: time.Now()}})
-	initiaApp.EndBlock(abci.RequestEndBlock{Height: height})
+	initiaApp.FinalizeBlock(&abci.RequestFinalizeBlock{Height: height, Time: time.Now()})
 	initiaApp.Commit()
 
 	appInfo := AppInfo{

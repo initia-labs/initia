@@ -52,4 +52,7 @@ var (
 	ErrCommissionLTMinRate             = errorsmod.Register(ModuleName, 40, "commission cannot be less than min rate")
 	ErrUnbondingNotFound               = errorsmod.Register(ModuleName, 41, "unbonding operation not found")
 	ErrUnbondingOnHoldRefCountNegative = errorsmod.Register(ModuleName, 42, "cannot un-hold unbonding operation that is not on hold")
+	ErrInvalidSigner                   = errorsmod.Register(ModuleName, 43, "expected authority account as only signer for proposal message")
+	ErrBadRedelegationSrc              = errorsmod.Register(ModuleName, 44, "redelegation source validator not found")
+	ErrNoUnbondingType                 = errorsmod.Register(ModuleName, 45, "unbonding type not found")
 )

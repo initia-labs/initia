@@ -7,15 +7,16 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
-	connectiontypes "github.com/cosmos/ibc-go/v7/modules/core/03-connection/types"
-	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
-	commitmenttypes "github.com/cosmos/ibc-go/v7/modules/core/23-commitment/types"
-	host "github.com/cosmos/ibc-go/v7/modules/core/24-host"
-	"github.com/cosmos/ibc-go/v7/modules/core/exported"
-	ibctm "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
+	abci "github.com/cometbft/cometbft/abci/types"
+
+	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
+	connectiontypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	commitmenttypes "github.com/cosmos/ibc-go/v8/modules/core/23-commitment/types"
+	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
+	"github.com/cosmos/ibc-go/v8/modules/core/exported"
+	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 )
 
 // Endpoint is a which represents a channel endpoint and its associated
@@ -79,9 +80,9 @@ func (endpoint *Endpoint) QueryProofAtHeight(key []byte, height uint64) ([]byte,
 // CreateClient creates an IBC client on the endpoint. It will update the
 // clientID for the endpoint if the message is successfully executed.
 // NOTE: a solo machine client will be created with an empty diversifier.
-func (endpoint *Endpoint) CreateClient() (err error) {
+func (endpoint *Endpoint) CreateClient() {
 	// ensure counterparty has committed state
-	endpoint.Chain.Coordinator.CommitBlock(endpoint.Counterparty.Chain)
+	endpoint.Counterparty.Chain.NextBlock()
 
 	var (
 		clientState    exported.ClientState
@@ -105,11 +106,7 @@ func (endpoint *Endpoint) CreateClient() (err error) {
 		//		consensusState = solo.ConsensusState()
 
 	default:
-		err = fmt.Errorf("client type %s is not supported", endpoint.ClientConfig.GetClientType())
-	}
-
-	if err != nil {
-		return err
+		require.Fail(endpoint.Chain.T, "client type %s is not supported", endpoint.ClientConfig.GetClientType())
 	}
 
 	msg, err := clienttypes.NewMsgCreateClient(
@@ -118,14 +115,11 @@ func (endpoint *Endpoint) CreateClient() (err error) {
 	require.NoError(endpoint.Chain.T, err)
 
 	res, err := endpoint.Chain.SendMsgs(msg)
-	if err != nil {
-		return err
-	}
-
-	endpoint.ClientID, err = ParseClientIDFromEvents(res.GetEvents())
 	require.NoError(endpoint.Chain.T, err)
 
-	return nil
+	endpoint.ClientID, err = ParseClientIDFromEvents(res.Events)
+	require.NoError(endpoint.Chain.T, err)
+
 }
 
 // UpdateClient updates the IBC client associated with the endpoint.
@@ -203,11 +197,7 @@ func (endpoint *Endpoint) UpgradeChain() error {
 	endpoint.Chain.Coordinator.IncrementTime()
 	endpoint.Chain.NextBlock()
 
-	if err = endpoint.Counterparty.UpdateClient(); err != nil {
-		return err
-	}
-
-	return nil
+	return endpoint.Counterparty.UpdateClient()
 }
 
 // ConnOpenInit will construct and execute a MsgConnectionOpenInit on the associated endpoint.
@@ -223,7 +213,7 @@ func (endpoint *Endpoint) ConnOpenInit() error {
 		return err
 	}
 
-	endpoint.ConnectionID, err = ParseConnectionIDFromEvents(res.GetEvents())
+	endpoint.ConnectionID, err = ParseConnectionIDFromEvents(res.Events)
 	require.NoError(endpoint.Chain.T, err)
 
 	return nil
@@ -249,7 +239,7 @@ func (endpoint *Endpoint) ConnOpenTry() error {
 	}
 
 	if endpoint.ConnectionID == "" {
-		endpoint.ConnectionID, err = ParseConnectionIDFromEvents(res.GetEvents())
+		endpoint.ConnectionID, err = ParseConnectionIDFromEvents(res.Events)
 		require.NoError(endpoint.Chain.T, err)
 	}
 
@@ -315,7 +305,7 @@ func (endpoint *Endpoint) QueryConnectionHandshakeProof() (
 	connectionKey := host.ConnectionKey(endpoint.Counterparty.ConnectionID)
 	proofConnection, _ = endpoint.Counterparty.QueryProofAtHeight(connectionKey, proofHeight.GetRevisionHeight())
 
-	return
+	return clientState, proofClient, proofConsensus, consensusHeight, proofConnection, proofHeight
 }
 
 // ChanOpenInit will construct and execute a MsgChannelOpenInit on the associated endpoint.
@@ -331,7 +321,7 @@ func (endpoint *Endpoint) ChanOpenInit() error {
 		return err
 	}
 
-	endpoint.ChannelID, err = ParseChannelIDFromEvents(res.GetEvents())
+	endpoint.ChannelID, err = ParseChannelIDFromEvents(res.Events)
 	require.NoError(endpoint.Chain.T, err)
 
 	// update version to selected app version
@@ -362,7 +352,7 @@ func (endpoint *Endpoint) ChanOpenTry() error {
 	}
 
 	if endpoint.ChannelID == "" {
-		endpoint.ChannelID, err = ParseChannelIDFromEvents(res.GetEvents())
+		endpoint.ChannelID, err = ParseChannelIDFromEvents(res.Events)
 		require.NoError(endpoint.Chain.T, err)
 	}
 
@@ -465,7 +455,7 @@ func (endpoint *Endpoint) RecvPacket(packet channeltypes.Packet) error {
 
 // RecvPacketWithResult receives a packet on the associated endpoint and the result
 // of the transaction is returned. The counterparty client is updated.
-func (endpoint *Endpoint) RecvPacketWithResult(packet channeltypes.Packet) (*sdk.Result, error) {
+func (endpoint *Endpoint) RecvPacketWithResult(packet channeltypes.Packet) (*abci.ExecTxResult, error) {
 	// get proof of packet commitment on source
 	packetKey := host.PacketCommitmentKey(packet.GetSourcePort(), packet.GetSourceChannel(), packet.GetSequence())
 	proof, proofHeight := endpoint.Counterparty.Chain.QueryProof(packetKey)
@@ -527,8 +517,9 @@ func (endpoint *Endpoint) TimeoutPacket(packet channeltypes.Packet) error {
 		return fmt.Errorf("unsupported order type %s", endpoint.ChannelConfig.Order)
 	}
 
-	proof, proofHeight := endpoint.Counterparty.QueryProof(packetKey)
-	nextSeqRecv, found := endpoint.Counterparty.Chain.App.GetIBCKeeper().ChannelKeeper.GetNextSequenceRecv(endpoint.Counterparty.Chain.GetContext(), endpoint.ChannelConfig.PortID, endpoint.ChannelID)
+	counterparty := endpoint.Counterparty
+	proof, proofHeight := counterparty.QueryProof(packetKey)
+	nextSeqRecv, found := counterparty.Chain.App.GetIBCKeeper().ChannelKeeper.GetNextSequenceRecv(counterparty.Chain.GetContext(), counterparty.ChannelConfig.PortID, counterparty.ChannelID)
 	require.True(endpoint.Chain.T, found)
 
 	timeoutMsg := channeltypes.NewMsgTimeout(

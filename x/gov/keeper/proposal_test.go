@@ -14,22 +14,25 @@ func Test_Emergency_ActivateProposal(t *testing.T) {
 
 	now := time.Now().UTC()
 	depositEndTime := now.Add(time.Hour)
-	proposal, err := v1.NewProposal(nil, 1, now, depositEndTime, "", "", "", addrs[0])
+	proposal, err := v1.NewProposal(nil, 1, now, depositEndTime, "", "", "", addrs[0], false)
 	require.NoError(t, err)
 
-	params := input.GovKeeper.GetParams(ctx)
+	params, err := input.GovKeeper.Params.Get(ctx)
+	require.NoError(t, err)
 	proposal.TotalDeposit = params.EmergencyMinDeposit
 	input.GovKeeper.ActivateVotingPeriod(ctx, proposal)
 
-	proposal, found := input.GovKeeper.GetProposal(ctx, 1)
-	require.True(t, found)
+	proposal, err = input.GovKeeper.Proposals.Get(ctx, 1)
+	require.NoError(t, err)
 	require.Equal(t, v1.StatusVotingPeriod, proposal.Status)
 
 	i := 0
-	input.GovKeeper.IterateEmergencyProposals(ctx, func(_proposal v1.Proposal) (stop bool) {
+	input.GovKeeper.EmergencyProposals.Walk(ctx, nil, func(proposalID uint64, _ []byte) (stop bool, err error) {
+		_proposal, err := input.GovKeeper.Proposals.Get(ctx, proposalID)
+		require.NoError(t, err)
 		require.Equal(t, proposal, _proposal)
 		i++
-		return false
+		return false, nil
 	})
 	require.Equal(t, 1, i)
 }
@@ -39,19 +42,20 @@ func Test_NoEmergency_ActivateProposal(t *testing.T) {
 
 	now := time.Now().UTC()
 	depositEndTime := now.Add(time.Hour)
-	proposal, err := v1.NewProposal(nil, 1, now, depositEndTime, "", "", "", addrs[0])
+	proposal, err := v1.NewProposal(nil, 1, now, depositEndTime, "", "", "", addrs[0], false)
 	require.NoError(t, err)
 
-	params := input.GovKeeper.GetParams(ctx)
+	params, err := input.GovKeeper.Params.Get(ctx)
+	require.NoError(t, err)
 	proposal.TotalDeposit = params.MinDeposit
 	input.GovKeeper.ActivateVotingPeriod(ctx, proposal)
 
-	proposal, found := input.GovKeeper.GetProposal(ctx, 1)
-	require.True(t, found)
+	proposal, err = input.GovKeeper.Proposals.Get(ctx, 1)
+	require.NoError(t, err)
 	require.Equal(t, v1.StatusVotingPeriod, proposal.Status)
 
-	input.GovKeeper.IterateEmergencyProposals(ctx, func(_proposal v1.Proposal) (stop bool) {
+	input.GovKeeper.EmergencyProposals.Walk(ctx, nil, func(proposalID uint64, _ []byte) (stop bool, err error) {
 		require.FailNow(t, "should not enter")
-		return false
+		return false, nil
 	})
 }

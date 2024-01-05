@@ -1,6 +1,7 @@
 package types
 
 import (
+	context "context"
 	"encoding/hex"
 	"strings"
 
@@ -12,8 +13,8 @@ import (
 )
 
 type FungibleAssetKeeper interface {
-	Issuer(sdk.Context, vmtypes.AccountAddress) (vmtypes.AccountAddress, error)
-	Symbol(sdk.Context, vmtypes.AccountAddress) (string, error)
+	Issuer(context.Context, vmtypes.AccountAddress) (vmtypes.AccountAddress, error)
+	Symbol(context.Context, vmtypes.AccountAddress) (string, error)
 }
 
 const (
@@ -66,7 +67,7 @@ func MetadataAddressFromDenom(denom string) (vmtypes.AccountAddress, error) {
 }
 
 // Return denom of a metadata
-func DenomFromMetadataAddress(ctx sdk.Context, k FungibleAssetKeeper, metadata vmtypes.AccountAddress) (string, error) {
+func DenomFromMetadataAddress(ctx context.Context, k FungibleAssetKeeper, metadata vmtypes.AccountAddress) (string, error) {
 	symbol, err := k.Symbol(ctx, metadata)
 	if err != nil {
 		return "", err

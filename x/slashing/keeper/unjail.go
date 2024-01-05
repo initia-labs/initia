@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"context"
+
 	"cosmossdk.io/errors"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -9,20 +11,31 @@ import (
 
 // Unjail calls the staking Unjail function to unjail a validator if the
 // jailed period has concluded
-func (k Keeper) Unjail(ctx sdk.Context, validatorAddr sdk.ValAddress) error {
-	validator := k.sk.Validator(ctx, validatorAddr)
+func (k Keeper) Unjail(ctx context.Context, validatorAddr sdk.ValAddress) error {
+	validator, err := k.sk.Validator(ctx, validatorAddr)
+	if err != nil {
+		return err
+	}
 	if validator == nil {
 		return types.ErrNoValidatorForAddress
 	}
 
 	// cannot be unjailed if no self-delegation exists
-	selfDel := k.sk.Delegation(ctx, sdk.AccAddress(validatorAddr), validatorAddr)
+	selfDel, err := k.sk.Delegation(ctx, sdk.AccAddress(validatorAddr), validatorAddr)
+	if err != nil {
+		return err
+	}
+
 	if selfDel == nil {
 		return types.ErrMissingSelfDelegation
 	}
 
 	tokens, _ := validator.TokensFromShares(selfDel.GetShares()).TruncateDecimal()
-	vp := k.sk.VotingPower(ctx, tokens)
+	vp, err := k.sk.VotingPower(ctx, tokens)
+	if err != nil {
+		return err
+	}
+
 	cp := k.sk.VotingPowerToConsensusPower(ctx, vp)
 	if cp < 1 {
 		return errors.Wrapf(
@@ -47,19 +60,19 @@ func (k Keeper) Unjail(ctx sdk.Context, validatorAddr sdk.ValAddress) error {
 	// that the validator was never bonded and must've been jailed due to falling
 	// below their minimum self-delegation. The validator can unjail at any point
 	// assuming they've now bonded above their minimum self-delegation.
-	info, found := k.GetValidatorSigningInfo(ctx, consAddr)
-	if found {
+	info, err := k.GetValidatorSigningInfo(ctx, consAddr)
+	if err == nil {
 		// cannot be unjailed if tombstoned
 		if info.Tombstoned {
 			return types.ErrValidatorJailed
 		}
 
 		// cannot be unjailed until out of jail
-		if ctx.BlockHeader().Time.Before(info.JailedUntil) {
+		sdkCtx := sdk.UnwrapSDKContext(ctx)
+		if sdkCtx.BlockHeader().Time.Before(info.JailedUntil) {
 			return types.ErrValidatorJailed
 		}
 	}
 
-	k.sk.Unjail(ctx, consAddr)
-	return nil
+	return k.sk.Unjail(ctx, consAddr)
 }

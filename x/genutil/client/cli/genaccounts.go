@@ -1,10 +1,11 @@
-package main
+package cli
 
 import (
 	"bufio"
 	"encoding/json"
 	"fmt"
 
+	"cosmossdk.io/core/address"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -21,7 +22,7 @@ import (
 )
 
 // AddGenesisAccountCmd returns add-genesis-account cobra Command.
-func AddGenesisAccountCmd(defaultNodeHome string) *cobra.Command {
+func AddGenesisAccountCmd(defaultNodeHome string, ac address.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "add-genesis-account [address_or_key_name] [coin][,[coin]]",
 		Short: "Add a genesis account to genesis.json",
@@ -44,32 +45,42 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 				return fmt.Errorf("failed to parse coins: %w", err)
 			}
 
-			addr, err := sdk.AccAddressFromBech32(args[0])
 			isRewardModule := args[0] == rewardtypes.ModuleName
+			var addr sdk.AccAddress
 			if isRewardModule {
 				addr = authtypes.NewModuleAddress(rewardtypes.ModuleName)
-			} else if err != nil {
-				inBuf := bufio.NewReader(cmd.InOrStdin())
-				keyringBackend, err := cmd.Flags().GetString(flags.FlagKeyringBackend)
+			} else {
+				addr, err = ac.StringToBytes(args[0])
 				if err != nil {
-					return err
-				}
 
-				// attempt to lookup address from Keybase if no address was provided
-				kb, err := keyring.New(sdk.KeyringServiceName(), keyringBackend, clientCtx.HomeDir, inBuf, cdc)
-				if err != nil {
-					return err
-				}
+					inBuf := bufio.NewReader(cmd.InOrStdin())
+					keyringBackend, err := cmd.Flags().GetString(flags.FlagKeyringBackend)
+					if err != nil {
+						return err
+					}
 
-				info, err := kb.Key(args[0])
-				if err != nil {
-					return fmt.Errorf("failed to get address from Keybase: %w", err)
-				}
+					// attempt to lookup address from Keybase if no address was provided
+					kb, err := keyring.New(sdk.KeyringServiceName(), keyringBackend, clientCtx.HomeDir, inBuf, cdc)
+					if err != nil {
+						return err
+					}
 
-				addr, err = info.GetAddress()
-				if err != nil {
-					return fmt.Errorf("failed to get address from Keybase: %w", err)
+					info, err := kb.Key(args[0])
+					if err != nil {
+						return fmt.Errorf("failed to get address from Keybase: %w", err)
+					}
+
+					addr, err = info.GetAddress()
+					if err != nil {
+						return fmt.Errorf("failed to get address from Keybase: %w", err)
+					}
+
 				}
+			}
+
+			addrStr, err := ac.BytesToString(addr)
+			if err != nil {
+				return err
 			}
 
 			// create concrete account type based on input parameters
@@ -98,7 +109,7 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 				return fmt.Errorf("failed to get accounts from any: %w", err)
 			}
 
-			if accs.Contains(addr) {
+			if accs.Contains(sdk.AccAddress(addr)) {
 				return fmt.Errorf("cannot add account at existing address %s", addr)
 			}
 
@@ -121,7 +132,7 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 			appState[authtypes.ModuleName] = authGenStateBz
 
 			// bank state
-			balances := banktypes.Balance{Address: addr.String(), Coins: coins.Sort()}
+			balances := banktypes.Balance{Address: addrStr, Coins: coins.Sort()}
 			bankGenState := banktypes.GetGenesisStateFromAppState(cdc, appState)
 			bankGenState.Balances = append(bankGenState.Balances, balances)
 			bankGenState.Balances = banktypes.SanitizeGenesisBalances(bankGenState.Balances)

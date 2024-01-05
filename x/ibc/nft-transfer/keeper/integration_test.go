@@ -1,8 +1,8 @@
 package keeper_test
 
 import (
-	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
-	host "github.com/cosmos/ibc-go/v7/modules/core/24-host"
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
 
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 
@@ -38,7 +38,7 @@ func (suite *KeeperTestSuite) CreateNftClass(
 		movetypes.MoveModuleNameSimpleNft,
 		movetypes.FunctionNameSimpleNftInitialize,
 		[]vmtypes.TypeTag{},
-		[][]byte{descBz, {0}, nameBz, uriBz, {0}, {0}, {0}, {0}, {0}, {0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+		[][]byte{descBz, {0}, nameBz, uriBz, {0}, {0}, {0}, {0}, {0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
 	)
 	suite.Require().NoError(err, "MakeCollection error on chain")
 
@@ -78,7 +78,7 @@ func (suite *KeeperTestSuite) MintNft(
 		movetypes.MoveModuleNameSimpleNft,
 		movetypes.FunctionNameSimpleNftMint,
 		[]vmtypes.TypeTag{},
-		[][]byte{classNameBz, dataBz, idBz, uriBz, {0}, {0}, {0}, append([]byte{1}, receiverAddr[:]...)},
+		[][]byte{classNameBz, dataBz, idBz, uriBz, {1}, append([]byte{1}, receiverAddr[:]...)},
 	)
 	suite.Require().NoError(err, "MakeCollection error on chain")
 }
@@ -249,7 +249,7 @@ func (suite *KeeperTestSuite) transferNft(
 	suite.Require().NoError(err)
 
 	var data types.NonFungibleTokenPacketData
-	err = types.ModuleCdc.UnmarshalJSON(packet.GetData(), &data)
+	err = suite.chainA.Codec.UnmarshalJSON(packet.GetData(), &data)
 	suite.Require().NoError(err)
 
 	return packet
@@ -259,9 +259,8 @@ func (suite *KeeperTestSuite) receiverNft(
 	fromEndpoint, toEndpoint *ibctesting.Endpoint,
 	packet channeltypes.Packet,
 ) string {
-
 	var data types.NonFungibleTokenPacketData
-	err := types.ModuleCdc.UnmarshalJSON(packet.GetData(), &data)
+	err := suite.chainA.Codec.UnmarshalJSON(packet.GetData(), &data)
 	suite.Require().NoError(err)
 
 	// get proof of packet commitment from chainA

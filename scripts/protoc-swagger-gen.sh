@@ -5,7 +5,7 @@ set -eo pipefail
 # clone dependency proto files
 COSMOS_URL=github.com/cosmos/cosmos-sdk
 IBC_URL=github.com/cosmos/ibc-go
-IBC_V=v7
+IBC_V=v8
 OPINIT_URL=github.com/initia-labs/OPinit
 
 COSMOS_SDK_VERSION=$(cat ./go.mod | grep "$COSMOS_URL v" | sed -n -e "s/^.* //p")
@@ -14,8 +14,8 @@ OPINIT_VERSION=$(cat ./go.mod | grep "$OPINIT_URL v" | sed -n -e "s/^.* //p")
 
 mkdir -p ./third_party
 cd third_party
-git clone -b $COSMOS_SDK_VERSION https://$COSMOS_URL
-git clone -b $IBC_VERSION https://$IBC_URL
+# git clone -b $COSMOS_SDK_VERSION https://$COSMOS_URL
+# git clone -b $IBC_VERSION https://$IBC_URL
 git clone -b $OPINIT_VERSION https://$OPINIT_URL
 cd ..
 

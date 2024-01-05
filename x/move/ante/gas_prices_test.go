@@ -1,6 +1,7 @@
 package ante_test
 
 import (
+	"cosmossdk.io/math"
 	"github.com/initia-labs/initia/x/move/ante"
 
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
@@ -15,7 +16,7 @@ func (suite *AnteTestSuite) TestGasPricesDecorator() {
 	// keys and addresses
 	priv1, _, _ := testdata.KeyTestPubAddr()
 
-	feeAmount := sdk.NewCoins(sdk.NewCoin(baseDenom, sdk.NewInt(100)))
+	feeAmount := sdk.NewCoins(sdk.NewCoin(baseDenom, math.NewInt(100)))
 	gasLimit := uint64(200_000)
 	suite.txBuilder.SetFeeAmount(feeAmount)
 	suite.txBuilder.SetGasLimit(gasLimit)
@@ -29,7 +30,7 @@ func (suite *AnteTestSuite) TestGasPricesDecorator() {
 	// in normal mode
 	ctx, err := decorator.AnteHandle(suite.ctx, tx, false, nil)
 	suite.Require().NoError(err)
-	suite.Require().Equal(sdk.NewDecCoinsFromCoins(feeAmount...).QuoDec(sdk.NewDec(int64(gasLimit))), ctx.Value(ante.GasPricesContextKey).(sdk.DecCoins))
+	suite.Require().Equal(sdk.NewDecCoinsFromCoins(feeAmount...).QuoDec(math.LegacyNewDec(int64(gasLimit))), ctx.Value(ante.GasPricesContextKey).(sdk.DecCoins))
 
 	// in simulation mode
 	ctx, err = decorator.AnteHandle(suite.ctx, tx, true, nil)

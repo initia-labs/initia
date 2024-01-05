@@ -7,7 +7,6 @@ import (
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/initia-labs/initia/x/mstaking/keeper"
 	"github.com/initia-labs/initia/x/mstaking/types"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -26,11 +25,11 @@ func Test_SlashUnbondingDelegation(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
 	valAddr := createValidatorWithBalance(ctx, input, 100_000_000, 2_000_000, 1)
-	validator, found := input.StakingKeeper.GetValidator(ctx, valAddr)
-	require.True(t, found)
+	validator, err := input.StakingKeeper.Validators.Get(ctx, valAddr)
+	require.NoError(t, err)
 
 	ctx = ctx.WithBlockHeight(90)
-	_, err := input.StakingKeeper.Undelegate(ctx, valAddr.Bytes(), valAddr, sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, sdk.NewInt(500_000))))
+	_, _, err = input.StakingKeeper.Undelegate(ctx, valAddr.Bytes(), valAddr, sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, math.NewInt(500_000))))
 	require.NoError(t, err)
 
 	consAddr, err := validator.GetConsAddr()
@@ -39,9 +38,9 @@ func Test_SlashUnbondingDelegation(t *testing.T) {
 	ctx = ctx.WithBlockHeight(100)
 
 	// 10% slashing
-	input.StakingKeeper.Slash(ctx, consAddr, 90, sdk.NewDecWithPrec(1, 1))
-	ubd, found := input.StakingKeeper.GetUnbondingDelegation(ctx, valAddr.Bytes(), valAddr)
-	require.True(t, found)
+	input.StakingKeeper.Slash(ctx, consAddr, 90, math.LegacyNewDecWithPrec(1, 1))
+	ubd, err := input.StakingKeeper.GetUnbondingDelegation(ctx, valAddr.Bytes(), valAddr)
+	require.NoError(t, err)
 	require.Equal(t, sdk.NewCoins(sdk.NewInt64Coin(bondDenom, 450_000)), ubd.Entries[0].Balance)
 	require.Equal(t, sdk.NewInt64Coin(bondDenom, 450_000), input.BankKeeper.GetBalance(ctx, input.StakingKeeper.GetNotBondedPool(ctx).GetAddress(), bondDenom))
 }
@@ -51,27 +50,27 @@ func Test_Revocation(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
 	valAddr := createValidatorWithBalance(ctx, input, 100_000_000, 2_000_000, 1)
-	validator, found := input.StakingKeeper.GetValidator(ctx, valAddr)
-	require.True(t, found)
+	validator, err := input.StakingKeeper.Validators.Get(ctx, valAddr)
+	require.NoError(t, err)
 
 	consAddr, err := validator.GetConsAddr()
 	require.NoError(t, err)
 
 	// initial state
-	val, found := input.StakingKeeper.GetValidator(ctx, valAddr)
-	require.True(t, found)
+	val, err := input.StakingKeeper.Validators.Get(ctx, valAddr)
+	require.NoError(t, err)
 	require.False(t, val.IsJailed())
 
 	// test jail
-	input.StakingKeeper.Jail(ctx, consAddr)
-	val, found = input.StakingKeeper.GetValidator(ctx, valAddr)
-	require.True(t, found)
+	require.NoError(t, input.StakingKeeper.Jail(ctx, consAddr))
+	val, err = input.StakingKeeper.Validators.Get(ctx, valAddr)
+	require.NoError(t, err)
 	require.True(t, val.IsJailed())
 
 	// test unjail
-	input.StakingKeeper.Unjail(ctx, consAddr)
-	val, found = input.StakingKeeper.GetValidator(ctx, valAddr)
-	require.True(t, found)
+	require.NoError(t, input.StakingKeeper.Unjail(ctx, consAddr))
+	val, err = input.StakingKeeper.Validators.Get(ctx, valAddr)
+	require.NoError(t, err)
 	require.False(t, val.IsJailed())
 }
 
@@ -80,11 +79,11 @@ func Test_SlashRedelegation(t *testing.T) {
 
 	valAddr1 := createValidatorWithBalance(ctx, input, 100_000_000, 2_000_000, 1)
 	valAddr2 := createValidatorWithBalance(ctx, input, 100_000_000, 2_000_000, 2)
-	validator, found := input.StakingKeeper.GetValidator(ctx, valAddr1)
-	require.True(t, found)
+	validator, err := input.StakingKeeper.Validators.Get(ctx, valAddr1)
+	require.NoError(t, err)
 
 	ctx = ctx.WithBlockHeight(90)
-	_, err := input.StakingKeeper.BeginRedelegation(ctx, valAddr1.Bytes(), valAddr1, valAddr2, sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, sdk.NewInt(500_000))))
+	_, err = input.StakingKeeper.BeginRedelegation(ctx, valAddr1.Bytes(), valAddr1, valAddr2, sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, math.NewInt(500_000))))
 	require.NoError(t, err)
 
 	consAddr, err := validator.GetConsAddr()
@@ -93,9 +92,10 @@ func Test_SlashRedelegation(t *testing.T) {
 	ctx = ctx.WithBlockHeight(100)
 
 	// 10% slashing
-	input.StakingKeeper.Slash(ctx, consAddr, 90, sdk.NewDecWithPrec(1, 1))
-	delegation, found := input.StakingKeeper.GetDelegation(ctx, valAddr1.Bytes(), valAddr2)
-	require.True(t, found)
+	_, err = input.StakingKeeper.Slash(ctx, consAddr, 90, math.LegacyNewDecWithPrec(1, 1))
+	require.NoError(t, err)
+	delegation, err := input.StakingKeeper.GetDelegation(ctx, valAddr1.Bytes(), valAddr2)
+	require.NoError(t, err)
 	require.Equal(t, sdk.NewDecCoins(sdk.NewInt64DecCoin(bondDenom, 450_000)), delegation.Shares)
 }
 
@@ -104,13 +104,13 @@ func Test_SlashAtFutureHeight(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
 	valAddr := createValidatorWithBalance(ctx, input, 100_000_000, 2_000_000, 1)
-	validator, found := input.StakingKeeper.GetValidator(ctx, valAddr)
-	require.True(t, found)
+	validator, err := input.StakingKeeper.Validators.Get(ctx, valAddr)
+	require.NoError(t, err)
 
 	consAddr, err := validator.GetConsAddr()
 	require.NoError(t, err)
 
-	fraction := sdk.NewDecWithPrec(5, 1)
+	fraction := math.LegacyNewDecWithPrec(5, 1)
 	ctx = ctx.WithBlockHeight(1)
 	require.Panics(t, func() { input.StakingKeeper.Slash(ctx, consAddr, 2, fraction) })
 }
@@ -121,34 +121,33 @@ func Test_SlashAtNegativeHeight(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
 	valAddr := createValidatorWithBalance(ctx, input, 100_000_000, 10_000_000, 1)
-	validator, found := input.StakingKeeper.GetValidator(ctx, valAddr)
-	require.True(t, found)
+	validator, err := input.StakingKeeper.Validators.Get(ctx, valAddr)
+	require.NoError(t, err)
 
 	consAddr, err := validator.GetConsAddr()
 	require.NoError(t, err)
 
-	fraction := sdk.NewDecWithPrec(5, 1)
+	fraction := math.LegacyNewDecWithPrec(5, 1)
 
 	bondedPool := input.StakingKeeper.GetBondedPool(ctx)
 	oldBondedPoolBalances := input.BankKeeper.GetAllBalances(ctx, bondedPool.GetAddress())
 
 	input.StakingKeeper.Slash(ctx, consAddr, -2, fraction)
 
-	// read updated state
-	validator, found = input.StakingKeeper.GetValidatorByConsAddr(ctx, consAddr)
-	require.True(t, found)
-
 	// end block
 	applyValidatorSetUpdates(t, ctx, input.StakingKeeper, 1)
 
-	validator, found = input.StakingKeeper.GetValidator(ctx, validator.GetOperator())
-	require.True(t, found)
+	validator, err = input.StakingKeeper.Validators.Get(ctx, valAddr)
+	require.NoError(t, err)
 	// power decreased (-50%)
 	require.Equal(t, int64(5), validator.GetConsensusPower(input.StakingKeeper.PowerReduction(ctx)))
 
+	bondDenoms, err := input.StakingKeeper.BondDenoms(ctx)
+	require.NoError(t, err)
+
 	// pool bonded shares decreased
 	newBondedPoolBalances := input.BankKeeper.GetAllBalances(ctx, bondedPool.GetAddress())
-	diffTokens := oldBondedPoolBalances.Sub(newBondedPoolBalances...).AmountOf(input.StakingKeeper.BondDenoms(ctx)[0])
+	diffTokens := oldBondedPoolBalances.Sub(newBondedPoolBalances...).AmountOf(bondDenoms[0])
 	require.Equal(t, input.StakingKeeper.VotingPowerFromConsensusPower(ctx, 5).String(), diffTokens.String())
 }
 
@@ -157,34 +156,34 @@ func Test_SlashValidatorAtCurrentHeight(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
 	valAddr := createValidatorWithBalance(ctx, input, 100_000_000, 10_000_000, 1)
-	validator, found := input.StakingKeeper.GetValidator(ctx, valAddr)
-	require.True(t, found)
+	validator, err := input.StakingKeeper.Validators.Get(ctx, valAddr)
+	require.NoError(t, err)
 
 	consAddr, err := validator.GetConsAddr()
 	require.NoError(t, err)
 
-	fraction := sdk.NewDecWithPrec(5, 1)
+	fraction := math.LegacyNewDecWithPrec(5, 1)
 
 	bondedPool := input.StakingKeeper.GetBondedPool(ctx)
 	oldBondedPoolBalances := input.BankKeeper.GetAllBalances(ctx, bondedPool.GetAddress())
 
 	input.StakingKeeper.Slash(ctx, consAddr, ctx.BlockHeight(), fraction)
 
-	// read updated state
-	validator, found = input.StakingKeeper.GetValidatorByConsAddr(ctx, consAddr)
-	require.True(t, found)
-
 	// end block
 	applyValidatorSetUpdates(t, ctx, input.StakingKeeper, 1)
 
-	validator, found = input.StakingKeeper.GetValidator(ctx, validator.GetOperator())
-	assert.True(t, found)
+	// read updated state
+	validator, err = input.StakingKeeper.Validators.Get(ctx, valAddr)
+	require.NoError(t, err)
 	// power decreased
 	require.Equal(t, int64(5), validator.GetConsensusPower(input.StakingKeeper.PowerReduction(ctx)))
 
+	bondDenoms, err := input.StakingKeeper.BondDenoms(ctx)
+	require.NoError(t, err)
+
 	// pool bonded shares decreased
 	newBondedPoolBalances := input.BankKeeper.GetAllBalances(ctx, bondedPool.GetAddress())
-	diffTokens := oldBondedPoolBalances.Sub(newBondedPoolBalances...).AmountOf(input.StakingKeeper.BondDenoms(ctx)[0])
+	diffTokens := oldBondedPoolBalances.Sub(newBondedPoolBalances...).AmountOf(bondDenoms[0])
 	require.Equal(t, input.StakingKeeper.VotingPowerFromConsensusPower(ctx, 5).String(), diffTokens.String())
 }
 
@@ -193,32 +192,32 @@ func Test_SlashWithUnbondingDelegation(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
 	valAddr := createValidatorWithBalance(ctx, input, 100_000_000, 10_000_000, 1)
-	validator, found := input.StakingKeeper.GetValidator(ctx, valAddr)
-	require.True(t, found)
+	validator, err := input.StakingKeeper.Validators.Get(ctx, valAddr)
+	require.NoError(t, err)
 
 	consAddr, err := validator.GetConsAddr()
 	require.NoError(t, err)
 	require.Equal(t, int64(10), validator.GetConsensusPower(input.StakingKeeper.PowerReduction(ctx)))
-	fraction := sdk.NewDecWithPrec(5, 1)
+	fraction := math.LegacyNewDecWithPrec(5, 1)
 
 	ctx = ctx.WithBlockHeight(10)
-	_, err = input.StakingKeeper.Undelegate(ctx, valAddr.Bytes(), valAddr, sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, sdk.NewInt(2_000_000))))
+	_, _, err = input.StakingKeeper.Undelegate(ctx, valAddr.Bytes(), valAddr, sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, math.NewInt(2_000_000))))
 	require.NoError(t, err)
 
 	// slash validator for the first time (#1)
 	ctx = ctx.WithBlockHeight(12)
 	bondedPool := input.StakingKeeper.GetBondedPool(ctx)
 	oldBondedPoolBalances := input.BankKeeper.GetAllBalances(ctx, bondedPool.GetAddress())
-	_, found = input.StakingKeeper.GetValidatorByConsAddr(ctx, consAddr)
-	require.True(t, found)
+	_, err = input.StakingKeeper.GetValidatorByConsAddr(ctx, consAddr)
+	require.NoError(t, err)
 	input.StakingKeeper.Slash(ctx, consAddr, 10, fraction)
 
 	// end block
 	applyValidatorSetUpdates(t, ctx, input.StakingKeeper, 1)
 
 	// read updating unbonding delegation
-	ubd, found := input.StakingKeeper.GetUnbondingDelegation(ctx, valAddr.Bytes(), valAddr)
-	require.True(t, found)
+	ubd, err := input.StakingKeeper.GetUnbondingDelegation(ctx, valAddr.Bytes(), valAddr)
+	require.NoError(t, err)
 	require.Len(t, ubd.Entries, 1)
 
 	// balance decreased (-50%, 2 -> 1)
@@ -230,8 +229,8 @@ func Test_SlashWithUnbondingDelegation(t *testing.T) {
 	require.Equal(t, input.StakingKeeper.VotingPowerFromConsensusPower(ctx, 4), diffTokens)
 
 	// read updated validator
-	validator, found = input.StakingKeeper.GetValidatorByConsAddr(ctx, consAddr)
-	require.True(t, found)
+	validator, err = input.StakingKeeper.GetValidatorByConsAddr(ctx, consAddr)
+	require.NoError(t, err)
 
 	// power decreased (-50%, 8 -> 4)
 	require.Equal(t, int64(4), validator.GetConsensusPower(input.StakingKeeper.PowerReduction(ctx)))
@@ -240,12 +239,12 @@ func Test_SlashWithUnbondingDelegation(t *testing.T) {
 	ctx = ctx.WithBlockHeight(13)
 	input.StakingKeeper.Slash(ctx, consAddr, 10, fraction)
 
-	ubd, found = input.StakingKeeper.GetUnbondingDelegation(ctx, valAddr.Bytes(), valAddr)
-	require.True(t, found)
+	ubd, err = input.StakingKeeper.GetUnbondingDelegation(ctx, valAddr.Bytes(), valAddr)
+	require.NoError(t, err)
 	require.Len(t, ubd.Entries, 1)
 
 	// balance decreased again (-50%, 1 -> 0)
-	require.Equal(t, sdk.NewInt(0), ubd.Entries[0].Balance.AmountOf(bondDenom))
+	require.Equal(t, math.NewInt(0), ubd.Entries[0].Balance.AmountOf(bondDenom))
 
 	// bonded tokens burned again
 	newBondedPoolBalances = input.BankKeeper.GetAllBalances(ctx, bondedPool.GetAddress())
@@ -254,8 +253,8 @@ func Test_SlashWithUnbondingDelegation(t *testing.T) {
 	require.Equal(t, input.StakingKeeper.VotingPowerFromConsensusPower(ctx, 6), diffTokens)
 
 	// read updated validator
-	validator, found = input.StakingKeeper.GetValidatorByConsAddr(ctx, consAddr)
-	require.True(t, found)
+	validator, err = input.StakingKeeper.GetValidatorByConsAddr(ctx, consAddr)
+	require.NoError(t, err)
 
 	// end block
 	applyValidatorSetUpdates(t, ctx, input.StakingKeeper, 1)
@@ -267,22 +266,26 @@ func Test_SlashWithUnbondingDelegation(t *testing.T) {
 	ctx = ctx.WithBlockHeight(14)
 	input.StakingKeeper.Slash(ctx, consAddr, 10, fraction)
 
-	ubd, found = input.StakingKeeper.GetUnbondingDelegation(ctx, valAddr.Bytes(), valAddr)
-	require.True(t, found)
+	ubd, err = input.StakingKeeper.GetUnbondingDelegation(ctx, valAddr.Bytes(), valAddr)
+	require.NoError(t, err)
 	require.Len(t, ubd.Entries, 1)
 
 	// balance unchanged (0 -> 0)
-	require.Equal(t, sdk.NewInt(0), ubd.Entries[0].Balance.AmountOf(bondDenom))
+	require.Equal(t, math.NewInt(0), ubd.Entries[0].Balance.AmountOf(bondDenom))
+
+	bondDenoms, err := input.StakingKeeper.BondDenoms(ctx)
+	require.NoError(t, err)
 
 	// bonded tokens burned again (2 -> 1)
 	newBondedPoolBalances = input.BankKeeper.GetAllBalances(ctx, bondedPool.GetAddress())
-	diffTokens = oldBondedPoolBalances.Sub(newBondedPoolBalances...).AmountOf(input.StakingKeeper.BondDenoms(ctx)[0])
+	diffTokens = oldBondedPoolBalances.Sub(newBondedPoolBalances...).AmountOf(bondDenoms[0])
+
 	// oldBondPool = 8, newBondPool = 4 -> 2 -> 1, diff = 4 -> 6 -> 8
 	require.Equal(t, input.StakingKeeper.VotingPowerFromConsensusPower(ctx, 7), diffTokens)
 
 	// read updated validator
-	validator, found = input.StakingKeeper.GetValidatorByConsAddr(ctx, consAddr)
-	require.True(t, found)
+	validator, err = input.StakingKeeper.GetValidatorByConsAddr(ctx, consAddr)
+	require.NoError(t, err)
 
 	// power decreased by -50% again
 	require.Equal(t, int64(2), validator.GetConsensusPower(input.StakingKeeper.PowerReduction(ctx)))
@@ -291,12 +294,12 @@ func Test_SlashWithUnbondingDelegation(t *testing.T) {
 	ctx = ctx.WithBlockHeight(15)
 	input.StakingKeeper.Slash(ctx, consAddr, 10, fraction)
 
-	ubd, found = input.StakingKeeper.GetUnbondingDelegation(ctx, valAddr.Bytes(), valAddr)
-	require.True(t, found)
+	ubd, err = input.StakingKeeper.GetUnbondingDelegation(ctx, valAddr.Bytes(), valAddr)
+	require.NoError(t, err)
 	require.Len(t, ubd.Entries, 1)
 
 	// balance unchanged
-	require.Equal(t, sdk.NewInt(0), ubd.Entries[0].Balance.AmountOf(bondDenom))
+	require.Equal(t, math.NewInt(0), ubd.Entries[0].Balance.AmountOf(bondDenom))
 
 	// apply TM updates
 	applyValidatorSetUpdates(t, ctx, input.StakingKeeper, -1)
@@ -314,16 +317,16 @@ func Test_SlashWithRedelegation(t *testing.T) {
 
 	valAddr1 := createValidatorWithBalance(ctx, input, 100_000_000, 10_000_000, 1)
 	valAddr2 := createValidatorWithBalance(ctx, input, 100_000_000, 10_000_000, 2)
-	validator, found := input.StakingKeeper.GetValidator(ctx, valAddr1)
-	require.True(t, found)
+	validator, err := input.StakingKeeper.Validators.Get(ctx, valAddr1)
+	require.NoError(t, err)
 
 	consAddr, err := validator.GetConsAddr()
 	require.NoError(t, err)
-	fraction := sdk.NewDecWithPrec(5, 1)
+	fraction := math.LegacyNewDecWithPrec(5, 1)
 
 	ctx = ctx.WithBlockHeight(11)
 	// set a redelegation
-	rdTokens := sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, sdk.NewInt(6_000_000)))
+	rdTokens := sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, math.NewInt(6_000_000)))
 	_, err = input.StakingKeeper.BeginRedelegation(ctx, valAddr1.Bytes(), valAddr1, valAddr2, rdTokens)
 	require.NoError(t, err)
 
@@ -350,16 +353,16 @@ func Test_SlashWithRedelegation(t *testing.T) {
 	require.True(math.IntEq(t, oldNotBonded, notBondedPoolBalance))
 
 	// read updating redelegation
-	rd, found := input.StakingKeeper.GetRedelegation(ctx, valAddr1.Bytes(), valAddr1, valAddr2)
-	require.True(t, found)
+	rd, err := input.StakingKeeper.GetRedelegation(ctx, valAddr1.Bytes(), valAddr1, valAddr2)
+	require.NoError(t, err)
 	require.Len(t, rd.Entries, 1)
 
 	// end block
 	applyValidatorSetUpdates(t, ctx, input.StakingKeeper, 2)
 
 	// read updated validator
-	validator, found = input.StakingKeeper.GetValidatorByConsAddr(ctx, consAddr)
-	require.True(t, found)
+	validator, err = input.StakingKeeper.GetValidatorByConsAddr(ctx, consAddr)
+	require.NoError(t, err)
 	// 6 redelegation, slash -50%
 	require.Equal(t, int64(2), validator.GetConsensusPower(input.StakingKeeper.PowerReduction(ctx)))
 

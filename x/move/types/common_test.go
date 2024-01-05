@@ -9,8 +9,11 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	abci "github.com/cometbft/cometbft/abci/types"
+
 	"cosmossdk.io/math"
 
+	"github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
@@ -19,7 +22,6 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	abci "github.com/cometbft/cometbft/abci/types"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 )
 
@@ -55,13 +57,13 @@ var (
 
 	commissionRates = stakingtypes.NewCommissionRates(math.LegacyZeroDec(), math.LegacyZeroDec(), math.LegacyZeroDec())
 
-	genCoins = sdk.NewCoins(sdk.NewCoin(bondDenom, sdk.NewInt(5000000))).Sort()
-	bondCoin = sdk.NewCoin(bondDenom, sdk.NewInt(1000000))
+	genCoins = sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(5000000))).Sort()
+	bondCoin = sdk.NewCoin(bondDenom, math.NewInt(1000000))
 )
 
 func checkBalance(t *testing.T, app *initiaapp.InitiaApp, addr sdk.AccAddress, balances sdk.Coins) {
-	ctxCheck := app.BaseApp.NewContext(true, tmproto.Header{})
-	require.True(t, balances.IsEqual(app.BankKeeper.GetAllBalances(ctxCheck, addr)))
+	ctxCheck := app.BaseApp.NewContext(true)
+	require.True(t, balances.Equal(app.BankKeeper.GetAllBalances(ctxCheck, addr)))
 }
 
 func createApp(t *testing.T) *initiaapp.InitiaApp {
@@ -76,17 +78,24 @@ func createApp(t *testing.T) *initiaapp.InitiaApp {
 	checkBalance(t, app, addr1, genCoins)
 	checkBalance(t, app, addr2, genCoins)
 
+	_, err := app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1})
+	require.NoError(t, err)
+
 	// set reward weight
 	distrParams := customdistrtypes.DefaultParams()
 	distrParams.RewardWeights = []customdistrtypes.RewardWeight{
-		{Denom: bondDenom, Weight: sdk.OneDec()},
+		{Denom: bondDenom, Weight: math.LegacyOneDec()},
 	}
-	app.DistrKeeper.SetParams(app.BaseApp.NewContext(false, tmproto.Header{}), distrParams)
+	app.DistrKeeper.Params.Set(app.BaseApp.NewContext(false), distrParams)
+
+	vc := address.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix())
+	val1AddrStr, err := vc.BytesToString(addr1)
+	require.NoError(t, err)
 
 	// create validator
 	description := stakingtypes.NewDescription("foo_moniker", "", "", "", "")
 	createValidatorMsg, err := stakingtypes.NewMsgCreateValidator(
-		sdk.ValAddress(addr1), valKey.PubKey(), sdk.NewCoins(bondCoin), description, commissionRates,
+		val1AddrStr, valKey.PubKey(), sdk.NewCoins(bondCoin), description, commissionRates,
 	)
 	require.NoError(t, err)
 
@@ -95,8 +104,8 @@ func createApp(t *testing.T) *initiaapp.InitiaApp {
 
 	checkBalance(t, app, addr1, genCoins.Sub(bondCoin))
 
-	header := tmproto.Header{Height: app.LastBlockHeight() + 1}
-	app.BeginBlock(abci.RequestBeginBlock{Header: header})
+	_, err = app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1})
+	require.NoError(t, err)
 
 	return app
 }

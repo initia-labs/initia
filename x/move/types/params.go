@@ -3,6 +3,8 @@ package types
 import (
 	"fmt"
 
+	"cosmossdk.io/core/address"
+	"cosmossdk.io/math"
 	"github.com/pkg/errors"
 
 	"gopkg.in/yaml.v3"
@@ -17,8 +19,8 @@ const (
 )
 
 var (
-	DefaultBaseMinGasPrice            = sdk.NewDecWithPrec(15, 2) // 0.15
-	DefaultContractSharedRevenueRatio = sdk.NewDecWithPrec(50, 2) // 0.5
+	DefaultBaseMinGasPrice            = math.LegacyNewDecWithPrec(15, 2) // 0.15
+	DefaultContractSharedRevenueRatio = math.LegacyNewDecWithPrec(50, 2) // 0.5
 )
 
 const (
@@ -48,7 +50,7 @@ func (p Params) String() string {
 }
 
 // Validate performs basic validation on move parameters
-func (p Params) Validate() error {
+func (p Params) Validate(ac address.Codec) error {
 	if err := validateBaseDenom(p.BaseDenom); err != nil {
 		return errors.Wrap(err, "invalid base_denom")
 	}
@@ -65,7 +67,7 @@ func (p Params) Validate() error {
 		return errors.Wrap(err, "invalid shared_revenue_ratio")
 	}
 
-	if err := validateAllowedPublishers(p.AllowedPublishers); err != nil {
+	if err := validateAllowedPublishers(ac, p.AllowedPublishers); err != nil {
 		return errors.Wrap(err, "invalid allowed_publishers")
 	}
 
@@ -106,7 +108,7 @@ func validateBaseDenom(i interface{}) error {
 }
 
 func validateBaseMinGasPrice(i interface{}) error {
-	v, ok := i.(sdk.Dec)
+	v, ok := i.(math.LegacyDec)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
@@ -128,7 +130,7 @@ func validateArbitraryEnabled(i interface{}) error {
 }
 
 func validateContractSharedRatio(i interface{}) error {
-	v, ok := i.(sdk.Dec)
+	v, ok := i.(math.LegacyDec)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
@@ -137,21 +139,21 @@ func validateContractSharedRatio(i interface{}) error {
 		return fmt.Errorf("contract_share_ratio must be non-negative value: %v", v)
 	}
 
-	if v.GT(sdk.OneDec()) {
+	if v.GT(math.LegacyOneDec()) {
 		return fmt.Errorf("contract_share_ratio must be smaller than or equal to one: %v", v)
 	}
 
 	return nil
 }
 
-func validateAllowedPublishers(i interface{}) error {
+func validateAllowedPublishers(ac address.Codec, i interface{}) error {
 	allowedPublishers, ok := i.([]string)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 
 	for _, addr := range allowedPublishers {
-		if _, err := AccAddressFromString(addr); err != nil {
+		if _, err := AccAddressFromString(ac, addr); err != nil {
 			return err
 		}
 	}

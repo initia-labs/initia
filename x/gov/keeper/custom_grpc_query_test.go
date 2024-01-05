@@ -16,7 +16,8 @@ import (
 func Test_CustomGrpcQuerier_Params(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
-	params := input.GovKeeper.GetParams(ctx)
+	params, err := input.GovKeeper.Params.Get(ctx)
+	require.NoError(t, err)
 
 	qs := keeper.NewCustomQueryServer(&input.GovKeeper)
 	res, err := qs.Params(sdk.WrapSDKContext(ctx), &types.QueryParamsRequest{})
@@ -27,14 +28,14 @@ func Test_CustomGrpcQuerier_Params(t *testing.T) {
 func Test_CustomGrpcQuerier_EmergencyProposals(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
-	input.GovKeeper.InsertEmergencyProposalQueue(ctx, 1)
-	input.GovKeeper.SetProposal(ctx, v1.Proposal{Id: 1})
-	input.GovKeeper.InsertEmergencyProposalQueue(ctx, 3)
-	input.GovKeeper.SetProposal(ctx, v1.Proposal{Id: 3})
-	input.GovKeeper.InsertEmergencyProposalQueue(ctx, 5)
-	input.GovKeeper.SetProposal(ctx, v1.Proposal{Id: 5})
-	input.GovKeeper.InsertEmergencyProposalQueue(ctx, 6)
-	input.GovKeeper.SetProposal(ctx, v1.Proposal{Id: 6})
+	require.NoError(t, input.GovKeeper.EmergencyProposals.Set(ctx, 1, []byte{1}))
+	require.NoError(t, input.GovKeeper.SetProposal(ctx, v1.Proposal{Id: 1}))
+	require.NoError(t, input.GovKeeper.EmergencyProposals.Set(ctx, 3, []byte{1}))
+	require.NoError(t, input.GovKeeper.SetProposal(ctx, v1.Proposal{Id: 3}))
+	require.NoError(t, input.GovKeeper.EmergencyProposals.Set(ctx, 5, []byte{1}))
+	require.NoError(t, input.GovKeeper.SetProposal(ctx, v1.Proposal{Id: 5}))
+	require.NoError(t, input.GovKeeper.EmergencyProposals.Set(ctx, 6, []byte{1}))
+	require.NoError(t, input.GovKeeper.SetProposal(ctx, v1.Proposal{Id: 6}))
 
 	qs := keeper.NewCustomQueryServer(&input.GovKeeper)
 	res, err := qs.EmergencyProposals(sdk.WrapSDKContext(ctx), &types.QueryEmergencyProposalsRequest{})
@@ -63,7 +64,7 @@ func Test_CustomGrpcQuerier_LastEmergencyProposalTallyTimestamp(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
 	now := time.Now().UTC()
-	input.GovKeeper.SetLastEmergencyProposalTallyTimestamp(ctx, now)
+	require.NoError(t, input.GovKeeper.LastEmergencyProposalTallyTimestamp.Set(ctx, now))
 
 	qs := keeper.NewCustomQueryServer(&input.GovKeeper)
 	res, err := qs.LastEmergencyProposalTallyTimestamp(sdk.WrapSDKContext(ctx), &types.QueryLastEmergencyProposalTallyTimestampRequest{})

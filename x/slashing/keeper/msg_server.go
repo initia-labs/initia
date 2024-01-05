@@ -24,11 +24,15 @@ var _ types.MsgServer = msgServer{}
 
 // UpdateParams implements MsgServer.UpdateParams method.
 // It defines a method to update the x/slashing module parameters.
-func (k msgServer) UpdateParams(goCtx context.Context, req *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
+func (k msgServer) UpdateParams(ctx context.Context, req *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
 	if k.authority != req.Authority {
 		return nil, errors.Wrapf(govtypes.ErrInvalidSigner, "invalid authority; expected %s, got %s", k.authority, req.Authority)
 	}
-	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	if err := req.Params.Validate(); err != nil {
+		return nil, err
+	}
+
 	if err := k.SetParams(ctx, req.Params); err != nil {
 		return nil, err
 	}
@@ -39,9 +43,7 @@ func (k msgServer) UpdateParams(goCtx context.Context, req *types.MsgUpdateParam
 // Unjail implements MsgServer.Unjail method.
 // Validators must submit a transaction to unjail itself after
 // having been jailed (and thus unbonded) for downtime
-func (k msgServer) Unjail(goCtx context.Context, msg *types.MsgUnjail) (*types.MsgUnjailResponse, error) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
-
+func (k msgServer) Unjail(ctx context.Context, msg *types.MsgUnjail) (*types.MsgUnjailResponse, error) {
 	valAddr, valErr := sdk.ValAddressFromBech32(msg.ValidatorAddr)
 	if valErr != nil {
 		return nil, valErr

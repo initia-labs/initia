@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	"cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -26,11 +26,11 @@ func TestSetGenTxsInAppGenesisState(t *testing.T) {
 	)
 
 	msg1, err := stakingtypes.NewMsgCreateValidator(
-		sdk.ValAddress(valPubKeys[0].Address()), valPubKeys[0], sdk.NewCoins(bondCoin), desc, comm)
+		sdk.ValAddress(valPubKeys[0].Address()).String(), valPubKeys[0], sdk.NewCoins(bondCoin), desc, comm)
 	require.NoError(t, err)
 
 	msg2, err := stakingtypes.NewMsgCreateValidator(
-		sdk.ValAddress(valPubKeys[1].Address()), valPubKeys[1], sdk.NewCoins(bondCoin), desc, comm)
+		sdk.ValAddress(valPubKeys[1].Address()).String(), valPubKeys[1], sdk.NewCoins(bondCoin), desc, comm)
 	require.NoError(t, err)
 
 	testCases := []struct {
@@ -62,7 +62,7 @@ func TestSetGenTxsInAppGenesisState(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(fmt.Sprintf("Case %s", tc.msg), func(t *testing.T) {
-			cdc := initiaapp.MakeEncodingConfig().Marshaler
+			cdc := initiaapp.MakeEncodingConfig().Codec
 			txJSONEncoder := initiaapp.MakeEncodingConfig().TxConfig.TxJSONEncoder()
 
 			tc.malleate()
@@ -105,7 +105,7 @@ func TestValidateAccountInGenesis(t *testing.T) {
 			"account without balance in the genesis state",
 			func() {
 				coins = sdk.Coins{sdk.NewInt64Coin(bondDenom, 0)}
-				appGenesisState[banktypes.ModuleName] = setAccountBalance(t, addr2, sdk.NewCoins(sdk.NewCoin(bondDenom, sdk.NewInt(50))))
+				appGenesisState[banktypes.ModuleName] = setAccountBalance(t, addr2, sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(50))))
 			},
 			false,
 		},
@@ -113,7 +113,7 @@ func TestValidateAccountInGenesis(t *testing.T) {
 			"account without enough funds of default bond denom",
 			func() {
 				coins = sdk.Coins{sdk.NewInt64Coin(bondDenom, 50)}
-				appGenesisState[banktypes.ModuleName] = setAccountBalance(t, addr1, sdk.NewCoins(sdk.NewCoin(bondDenom, sdk.NewInt(25))))
+				appGenesisState[banktypes.ModuleName] = setAccountBalance(t, addr1, sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(25))))
 			},
 			false,
 		},
@@ -121,7 +121,7 @@ func TestValidateAccountInGenesis(t *testing.T) {
 			"account with enough funds of default bond denom",
 			func() {
 				coins = sdk.Coins{sdk.NewInt64Coin(bondDenom, 10)}
-				appGenesisState[banktypes.ModuleName] = setAccountBalance(t, addr1, sdk.NewCoins(sdk.NewCoin(bondDenom, sdk.NewInt(25))))
+				appGenesisState[banktypes.ModuleName] = setAccountBalance(t, addr1, sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(25))))
 			},
 			true,
 		},
@@ -129,8 +129,8 @@ func TestValidateAccountInGenesis(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(fmt.Sprintf("Case %s", tc.msg), func(t *testing.T) {
 			app := createApp(t)
-			ctx := app.BaseApp.NewContext(false, tmproto.Header{})
-			cdc := initiaapp.MakeEncodingConfig().Marshaler
+			ctx := app.BaseApp.NewContext(true)
+			cdc := initiaapp.MakeEncodingConfig().Codec
 
 			stakingGenesisState := app.StakingKeeper.ExportGenesis(ctx)
 			stakingGenesis, err := cdc.MarshalJSON(stakingGenesisState) // TODO switch this to use Marshaler

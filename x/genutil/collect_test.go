@@ -6,14 +6,15 @@ import (
 	"path/filepath"
 	"testing"
 
-	tmtypes "github.com/cometbft/cometbft/types"
+	"github.com/cosmos/gogoproto/proto"
 
 	"github.com/cosmos/cosmos-sdk/codec"
+	addresscodec "github.com/cosmos/cosmos-sdk/codec/address"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/server"
-	"github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	bankexported "github.com/cosmos/cosmos-sdk/x/bank/exported"
-	cosmostypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
+	"github.com/cosmos/cosmos-sdk/x/genutil/types"
 
 	"github.com/initia-labs/initia/x/genutil"
 )
@@ -22,8 +23,12 @@ type doNothingUnmarshalJSON struct {
 	codec.JSONCodec
 }
 
+func (dnj *doNothingUnmarshalJSON) UnmarshalJSON(_ []byte, _ proto.Message) error {
+	return nil
+}
+
 type doNothingIterator struct {
-	cosmostypes.GenesisBalancesIterator
+	types.GenesisBalancesIterator
 }
 
 func (dni *doNothingIterator) IterateGenesisBalances(_ codec.JSONCodec, _ map[string]json.RawMessage, _ func(bankexported.GenesisBalance) bool) {
@@ -44,7 +49,7 @@ func TestCollectTxsHandlesDirectories(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	txDecoder := types.TxDecoder(func(txBytes []byte) (types.Tx, error) {
+	txDecoder := sdk.TxDecoder(func(txBytes []byte) (sdk.Tx, error) {
 		return nil, nil
 	})
 
@@ -52,11 +57,17 @@ func TestCollectTxsHandlesDirectories(t *testing.T) {
 	srvCtx := server.NewDefaultContext()
 	_ = srvCtx
 	cdc := codec.NewProtoCodec(cdctypes.NewInterfaceRegistry())
-	gdoc := tmtypes.GenesisDoc{AppState: []byte("{}")}
+	genesis := &types.AppGenesis{AppState: []byte("{}")}
 	balItr := new(doNothingIterator)
 
 	dnc := &doNothingUnmarshalJSON{cdc}
-	if _, _, err := genutil.CollectTxs(dnc, txDecoder, "foo", testDir, gdoc, balItr); err != nil {
+	if _, _, err := genutil.CollectTxs(
+		dnc,
+		txDecoder,
+		"foo",
+		testDir, genesis, balItr, types.DefaultMessageValidator,
+		addresscodec.NewBech32Codec("cosmos"),
+		addresscodec.NewBech32Codec("cosmosvaloper")); err != nil {
 		t.Fatal(err)
 	}
 }

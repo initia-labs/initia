@@ -3,15 +3,14 @@ package types
 import (
 	"fmt"
 
+	"cosmossdk.io/math"
 	yaml "gopkg.in/yaml.v3"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 var (
-	DefaultCommunityTax        = sdk.NewDecWithPrec(2, 2) // 2%
-	DefaultBaseProposerReward  = sdk.NewDecWithPrec(1, 2) // 1%
-	DefaultBonusProposerReward = sdk.NewDecWithPrec(4, 2) // 4%
+	DefaultCommunityTax        = math.LegacyNewDecWithPrec(2, 2) // 2%
 	DefaultWithdrawAddrEnabled = true
 	DefaultRewardWeights       = []RewardWeight{}
 )
@@ -48,7 +47,7 @@ func (p Params) ValidateBasic() error {
 }
 
 func validateCommunityTax(i interface{}) error {
-	v, ok := i.(sdk.Dec)
+	v, ok := i.(math.LegacyDec)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
@@ -59,7 +58,7 @@ func validateCommunityTax(i interface{}) error {
 	if v.IsNegative() {
 		return fmt.Errorf("community tax must be positive: %s", v)
 	}
-	if v.GT(sdk.OneDec()) {
+	if v.GT(math.LegacyOneDec()) {
 		return fmt.Errorf("community tax too large: %s", v)
 	}
 

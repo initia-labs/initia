@@ -6,7 +6,6 @@ import (
 
 	"cosmossdk.io/errors"
 
-	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/query"
@@ -17,27 +16,27 @@ import (
 )
 
 type Querier struct {
-	Keeper
+	*Keeper
 }
 
 var _ types.QueryServer = &Querier{}
 
 // NewQuerier return new Querier instance
-func NewQuerier(k Keeper) Querier {
+func NewQuerier(k *Keeper) Querier {
 	return Querier{k}
 }
 
 func (q Querier) Module(context context.Context, req *types.QueryModuleRequest) (*types.QueryModuleResponse, error) {
 	ctx := sdk.UnwrapSDKContext(context)
 
-	address, err := types.AccAddressFromString(req.Address)
+	addr, err := types.AccAddressFromString(q.ac, req.Address)
 	if err != nil {
 		return nil, err
 	}
 
 	module, err := q.GetModule(
 		ctx,
-		address,
+		addr,
 		req.ModuleName,
 	)
 
@@ -49,40 +48,38 @@ func (q Querier) Module(context context.Context, req *types.QueryModuleRequest) 
 func (q Querier) Modules(context context.Context, req *types.QueryModulesRequest) (*types.QueryModulesResponse, error) {
 	ctx := sdk.UnwrapSDKContext(context)
 
-	address, err := types.AccAddressFromString(req.Address)
+	moduleAddr, err := types.AccAddressFromString(q.ac, req.Address)
 	if err != nil {
 		return nil, err
 	}
 
-	modules := make([]types.Module, 0)
-	prefixStore := prefix.NewStore(prefix.NewStore(ctx.KVStore(q.storeKey), types.PrefixKeyVMStore), types.GetModulePrefix(address))
-	pageRes, err := query.FilteredPaginate(prefixStore, req.Pagination, func(key []byte, rawBytes []byte, accumulate bool) (bool, error) {
+	prefixBytes := types.GetModulePrefix(moduleAddr)
+	modules, pageRes, err := query.CollectionPaginate(ctx, q.Keeper.VMStore, req.Pagination, func(key []byte, rawBytes []byte) (types.Module, error) {
 		bz, err := q.DecodeModuleBytes(rawBytes)
 		if err != nil {
-			return false, err
+			return types.Module{}, err
 		}
 
+		key = key[len(prefixBytes):]
 		moduleName, err := vmtypes.BcsDeserializeIdentifier(key)
 		if err != nil {
-			return false, err
+			return types.Module{}, err
 		}
 
-		if accumulate {
-			policy, err := NewCodeKeeper(&q.Keeper).GetUpgradePolicy(ctx, address, string(moduleName))
-			if err != nil {
-				return false, err
-			}
-
-			modules = append(modules, types.Module{
-				Address:       address.String(),
-				ModuleName:    string(moduleName),
-				Abi:           string(bz),
-				RawBytes:      rawBytes,
-				UpgradePolicy: policy,
-			})
+		policy, err := NewCodeKeeper(q.Keeper).GetUpgradePolicy(ctx, moduleAddr, string(moduleName))
+		if err != nil {
+			return types.Module{}, err
 		}
 
-		return true, nil
+		return types.Module{
+			Address:       moduleAddr.String(),
+			ModuleName:    string(moduleName),
+			Abi:           string(bz),
+			RawBytes:      rawBytes,
+			UpgradePolicy: policy,
+		}, nil
+	}, func(opt *query.CollectionsPaginateOptions[[]byte]) {
+		opt.Prefix = &prefixBytes
 	})
 	if err != nil {
 		return nil, err
@@ -97,7 +94,7 @@ func (q Querier) Modules(context context.Context, req *types.QueryModulesRequest
 func (q Querier) Resource(context context.Context, req *types.QueryResourceRequest) (*types.QueryResourceResponse, error) {
 	ctx := sdk.UnwrapSDKContext(context)
 
-	address, err := types.AccAddressFromString(req.Address)
+	addr, err := types.AccAddressFromString(q.ac, req.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +106,7 @@ func (q Querier) Resource(context context.Context, req *types.QueryResourceReque
 
 	resource, err := q.GetResource(
 		ctx,
-		address,
+		addr,
 		structTag,
 	)
 
@@ -121,22 +118,22 @@ func (q Querier) Resource(context context.Context, req *types.QueryResourceReque
 func (q Querier) Resources(context context.Context, req *types.QueryResourcesRequest) (*types.QueryResourcesResponse, error) {
 	ctx := sdk.UnwrapSDKContext(context)
 
-	address, err := types.AccAddressFromString(req.Address)
+	addr, err := types.AccAddressFromString(q.ac, req.Address)
 	if err != nil {
 		return nil, err
 	}
 
-	resources := make([]types.Resource, 0)
-	prefixStore := prefix.NewStore(prefix.NewStore(ctx.KVStore(q.storeKey), types.PrefixKeyVMStore), types.GetResourcePrefix(address))
-	pageRes, err := query.FilteredPaginate(prefixStore, req.Pagination, func(key []byte, rawBytes []byte, accumulate bool) (bool, error) {
+	prefixBytes := types.GetResourcePrefix(addr)
+	resources, pageRes, err := query.CollectionPaginate(ctx, q.VMStore, req.Pagination, func(key []byte, rawBytes []byte) (types.Resource, error) {
+		key = key[len(prefixBytes):]
 		structTag, err := vmtypes.BcsDeserializeStructTag(key)
 		if err != nil {
-			return false, err
+			return types.Resource{}, err
 		}
 
 		structTagStr, err := vmapi.StringifyStructTag(structTag)
 		if err != nil {
-			return false, err
+			return types.Resource{}, err
 		}
 
 		bz, err := q.DecodeMoveResource(ctx, structTag, rawBytes)
@@ -144,16 +141,14 @@ func (q Querier) Resources(context context.Context, req *types.QueryResourcesReq
 			bz = []byte(`""`)
 		}
 
-		if accumulate {
-			resources = append(resources, types.Resource{
-				Address:      address.String(),
-				StructTag:    structTagStr,
-				MoveResource: string(bz),
-				RawBytes:     rawBytes,
-			})
-		}
-
-		return true, nil
+		return types.Resource{
+			Address:      addr.String(),
+			StructTag:    structTagStr,
+			MoveResource: string(bz),
+			RawBytes:     rawBytes,
+		}, nil
+	}, func(opt *query.CollectionsPaginateOptions[[]byte]) {
+		opt.Prefix = &prefixBytes
 	})
 	if err != nil {
 		return nil, err
@@ -168,7 +163,7 @@ func (q Querier) Resources(context context.Context, req *types.QueryResourcesReq
 func (q Querier) TableInfo(context context.Context, req *types.QueryTableInfoRequest) (*types.QueryTableInfoResponse, error) {
 	ctx := sdk.UnwrapSDKContext(context)
 
-	address, err := types.AccAddressFromString(req.Address)
+	address, err := types.AccAddressFromString(q.ac, req.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -186,7 +181,7 @@ func (q Querier) TableInfo(context context.Context, req *types.QueryTableInfoReq
 func (q Querier) TableEntry(context context.Context, req *types.QueryTableEntryRequest) (*types.QueryTableEntryResponse, error) {
 	ctx := sdk.UnwrapSDKContext(context)
 
-	address, err := types.AccAddressFromString(req.Address)
+	addr, err := types.AccAddressFromString(q.ac, req.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -197,7 +192,7 @@ func (q Querier) TableEntry(context context.Context, req *types.QueryTableEntryR
 
 	tableEntry, err := q.GetTableEntry(
 		ctx,
-		address,
+		addr,
 		req.KeyBytes,
 	)
 
@@ -208,14 +203,14 @@ func (q Querier) TableEntry(context context.Context, req *types.QueryTableEntryR
 
 func (q Querier) TableEntries(context context.Context, req *types.QueryTableEntriesRequest) (*types.QueryTableEntriesResponse, error) {
 	ctx := sdk.UnwrapSDKContext(context)
-	store := prefix.NewStore(ctx.KVStore(q.storeKey), types.PrefixKeyVMStore)
+	vmStore := types.NewVMStore(ctx, q.VMStore)
 
-	address, err := types.AccAddressFromString(req.Address)
+	addr, err := types.AccAddressFromString(q.ac, req.Address)
 	if err != nil {
 		return nil, err
 	}
 
-	info, err := q.GetTableInfo(ctx, address)
+	info, err := q.GetTableInfo(ctx, addr)
 	if err != nil {
 		return nil, err
 	}
@@ -230,30 +225,28 @@ func (q Querier) TableEntries(context context.Context, req *types.QueryTableEntr
 		return nil, err
 	}
 
-	entries := make([]types.TableEntry, 0)
-	prefixStore := prefix.NewStore(store, types.GetTableEntryPrefix(address))
-	pageRes, err := query.FilteredPaginate(prefixStore, req.Pagination, func(keyBz []byte, valueBz []byte, accumulate bool) (bool, error) {
-		if accumulate {
-			keyStr, err := vmapi.DecodeMoveValue(store, keyTypeTag, keyBz)
-			if err != nil {
-				return false, err
-			}
-
-			valueStr, err := vmapi.DecodeMoveValue(store, valueTypeTag, valueBz)
-			if err != nil {
-				return false, err
-			}
-
-			entries = append(entries, types.TableEntry{
-				Address:    address.String(),
-				Key:        string(keyStr),
-				Value:      string(valueStr),
-				KeyBytes:   keyBz,
-				ValueBytes: valueBz,
-			})
+	prefixBytes := types.GetTableEntryPrefix(addr)
+	entries, pageRes, err := query.CollectionPaginate(ctx, q.VMStore, req.Pagination, func(key []byte, value []byte) (types.TableEntry, error) {
+		key = key[len(prefixBytes):]
+		keyStr, err := vmapi.DecodeMoveValue(vmStore, keyTypeTag, key)
+		if err != nil {
+			return types.TableEntry{}, err
 		}
 
-		return true, nil
+		valueStr, err := vmapi.DecodeMoveValue(vmStore, valueTypeTag, value)
+		if err != nil {
+			return types.TableEntry{}, err
+		}
+
+		return types.TableEntry{
+			Address:    addr.String(),
+			Key:        string(keyStr),
+			Value:      string(valueStr),
+			KeyBytes:   key,
+			ValueBytes: value,
+		}, nil
+	}, func(opt *query.CollectionsPaginateOptions[[]byte]) {
+		opt.Prefix = &prefixBytes
 	})
 	if err != nil {
 		return nil, err
@@ -274,7 +267,7 @@ func (q Querier) ViewFunction(context context.Context, req *types.QueryViewFunct
 
 	ctx := sdk.UnwrapSDKContext(context)
 
-	moduleAddr, err := types.AccAddressFromString(req.Address)
+	moduleAddr, err := types.AccAddressFromString(q.ac, req.Address)
 	if err != nil {
 		return
 	}
@@ -330,7 +323,10 @@ func (q Querier) ScriptABI(context context.Context, req *types.QueryScriptABIReq
 
 func (q Querier) Params(context context.Context, req *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
 	ctx := sdk.UnwrapSDKContext(context)
-	params := q.GetParams(ctx)
+	params, err := q.GetParams(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	return &types.QueryParamsResponse{
 		Params: params,

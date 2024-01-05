@@ -1,15 +1,15 @@
 package types
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
+	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
 )
 
 // define constants used for testing
@@ -42,29 +42,6 @@ var (
 	timeoutHeight = clienttypes.NewHeight(0, 10)
 )
 
-// TestMsgTransferRoute tests Route for MsgTransfer
-func TestMsgTransferRoute(t *testing.T) {
-	msg := NewMsgTransfer(validPort, validChannel, validClassId, validTokenIds, addr1, addr2, timeoutHeight, 0, "")
-
-	require.Equal(t, RouterKey, msg.Route())
-}
-
-// TestMsgTransferType tests Type for MsgTransfer
-func TestMsgTransferType(t *testing.T) {
-	msg := NewMsgTransfer(validPort, validChannel, validClassId, validTokenIds, addr1, addr2, timeoutHeight, 0, "")
-
-	require.Equal(t, "nft_transfer", msg.Type())
-}
-
-func TestMsgTransferGetSignBytes(t *testing.T) {
-	msg := NewMsgTransfer(validPort, validChannel, validClassId, validTokenIds, addr1, addr2, timeoutHeight, 0, "")
-	expected := fmt.Sprintf(`{"type":"nft-transfer/MsgTransfer","value":{"class_id":"%s","receiver":"%s","sender":"%s","source_channel":"testchannel","source_port":"testportid","timeout_height":{"revision_height":"10"},"token_ids":["1","2","3"]}}`, validClassId, addr2, addr1)
-	require.NotPanics(t, func() {
-		res := msg.GetSignBytes()
-		require.Equal(t, expected, string(res))
-	})
-}
-
 // TestMsgTransferValidation tests ValidateBasic for MsgTransfer
 func TestMsgTransferValidation(t *testing.T) {
 	testCases := []struct {
@@ -88,22 +65,13 @@ func TestMsgTransferValidation(t *testing.T) {
 		{"missing recipient address", NewMsgTransfer(validPort, validChannel, validClassId, validTokenIds, addr1, "", timeoutHeight, 0, ""), false},
 	}
 
+	ac := address.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix())
 	for i, tc := range testCases {
-		err := tc.msg.ValidateBasic()
+		err := tc.msg.Validate(ac)
 		if tc.expPass {
 			require.NoError(t, err, "valid test case %d failed: %s", i, tc.name)
 		} else {
 			require.Error(t, err, "invalid test case %d passed: %s", i, tc.name)
 		}
 	}
-}
-
-// TestMsgTransferGetSigners tests GetSigners for MsgTransfer
-func TestMsgTransferGetSigners(t *testing.T) {
-	addr := sdk.AccAddress(secp256k1.GenPrivKey().PubKey().Address())
-
-	msg := NewMsgTransfer(validPort, validChannel, validClassId, validTokenIds, addr.String(), addr2, timeoutHeight, 0, "")
-	res := msg.GetSigners()
-
-	require.Equal(t, []sdk.AccAddress{addr}, res)
 }

@@ -1,9 +1,10 @@
 package app
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"context"
+
+	upgradetypes "cosmossdk.io/x/upgrade/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 )
 
 // UpgradeHandler h for software upgrade proposal
@@ -17,7 +18,7 @@ func NewUpgradeHandler(app *InitiaApp) UpgradeHandler {
 }
 
 func (h UpgradeHandler) CreateUpgradeHandler() upgradetypes.UpgradeHandler {
-	return func(ctx sdk.Context, _ upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
-		return h.mm.RunMigrations(ctx, h.configurator, vm)
+	return func(ctx context.Context, _ upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
+		return h.ModuleManager.RunMigrations(ctx, h.configurator, vm)
 	}
 }

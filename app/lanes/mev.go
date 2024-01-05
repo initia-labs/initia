@@ -28,10 +28,17 @@ type RewardsAddressProvider struct {
 // GetRewardsAddress returns the address of the proposer of the previous block
 func (rap *RewardsAddressProvider) GetRewardsAddress(ctx sdk.Context) (sdk.AccAddress, error) {
 	// get previous proposer
-	prevProposer := rap.dk.GetPreviousProposerConsAddr(ctx)
+	prevProposer, err := rap.dk.PreviousProposerConsAddr.Get(ctx)
+	if err != nil {
+		return sdk.AccAddress{}, err
+	}
+
 	// get validator from state corresponding to proposer
-	validator := rap.sk.ValidatorByConsAddr(ctx, prevProposer)
+	valAddr, err := rap.sk.ValidatorsByConsAddr.Get(ctx, prevProposer)
+	if err != nil {
+		return sdk.AccAddress{}, err
+	}
 
 	// return validator's operator address
-	return sdk.AccAddress(validator.GetOperator()), nil
+	return sdk.AccAddress(valAddr), nil
 }

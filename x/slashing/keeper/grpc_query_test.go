@@ -29,8 +29,8 @@ func TestGRPCSigningInfo(t *testing.T) {
 
 	_, valPubKey := createValidatorWithBalanceAndGetPk(ctx, input, 100_000_000, 2_000_000, 1)
 
-	info, found := input.SlashingKeeper.GetValidatorSigningInfo(ctx, sdk.ConsAddress(valPubKey.Address()))
-	require.True(t, found)
+	info, err := input.SlashingKeeper.GetValidatorSigningInfo(ctx, sdk.ConsAddress(valPubKey.Address()))
+	require.NoError(t, err)
 
 	infoResp, err = input.SlashingKeeper.SigningInfo(sdk.WrapSDKContext(ctx),
 		&types.QuerySigningInfoRequest{ConsAddress: sdk.ConsAddress(valPubKey.Address()).String()})

@@ -1,10 +1,9 @@
 package types
 
 import (
+	context "context"
 	"encoding/hex"
 	"strings"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	vmtypes "github.com/initia-labs/initiavm/types"
 )
@@ -22,7 +21,7 @@ const (
 )
 
 type CollectionKeeper interface {
-	CollectionInfo(sdk.Context, vmtypes.AccountAddress) (
+	CollectionInfo(context.Context, vmtypes.AccountAddress) (
 		creator vmtypes.AccountAddress,
 		name string,
 		uri string,
@@ -46,7 +45,7 @@ func CollectionAddressFromClassId(classId string) (vmtypes.AccountAddress, error
 	return NamedObjectAddress(vmtypes.StdAddress, classId), nil
 }
 
-func ClassIdFromCollectionAddress(ctx sdk.Context, k CollectionKeeper, collection vmtypes.AccountAddress) (string, error) {
+func ClassIdFromCollectionAddress(ctx context.Context, k CollectionKeeper, collection vmtypes.AccountAddress) (string, error) {
 	creator, name, _, _, err := k.CollectionInfo(ctx, collection)
 	if err != nil {
 		return "", err

@@ -1,15 +1,18 @@
 package perm
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
 
+	"cosmossdk.io/collections"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
+	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 
-	clienttypes "github.com/cosmos/ibc-go/v7/modules/core/02-client/types"
-	channeltypes "github.com/cosmos/ibc-go/v7/modules/core/04-channel/types"
-	porttypes "github.com/cosmos/ibc-go/v7/modules/core/05-port/types"
-	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
+	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
+	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 
 	"github.com/initia-labs/initia/x/ibc/perm/keeper"
 )
@@ -110,8 +113,10 @@ func (im IBCMiddleware) OnAcknowledgementPacket(
 	acknowledgement []byte,
 	relayer sdk.AccAddress,
 ) error {
-	if channelRelayer := im.keeper.GetChannelRelayer(ctx, packet.DestinationChannel); channelRelayer != nil {
-		if permissionedRelayer := sdk.MustAccAddressFromBech32(channelRelayer.Relayer); !relayer.Equals(permissionedRelayer) {
+	if permissionedRelayer, err := im.keeper.ChannelRelayers.Get(ctx, packet.DestinationChannel); err != nil && !errors.Is(err, collections.ErrNotFound) {
+		return err
+	} else if err == nil {
+		if !bytes.Equal(relayer, permissionedRelayer) {
 			return fmt.Errorf(
 				"all packets of the channel `%s` should be relayed by the relayer `%s`",
 				packet.DestinationChannel,
@@ -129,8 +134,10 @@ func (im IBCMiddleware) OnTimeoutPacket(
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) error {
-	if channelRelayer := im.keeper.GetChannelRelayer(ctx, packet.DestinationChannel); channelRelayer != nil {
-		if permissionedRelayer := sdk.MustAccAddressFromBech32(channelRelayer.Relayer); !relayer.Equals(permissionedRelayer) {
+	if permissionedRelayer, err := im.keeper.ChannelRelayers.Get(ctx, packet.DestinationChannel); err != nil && !errors.Is(err, collections.ErrNotFound) {
+		return err
+	} else if err == nil {
+		if !bytes.Equal(relayer, permissionedRelayer) {
 			return fmt.Errorf(
 				"all packets of the channel `%s` should be relayed by the relayer `%s`",
 				packet.DestinationChannel,
@@ -175,17 +182,17 @@ func (im IBCMiddleware) OnRecvPacket(
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) ibcexported.Acknowledgement {
-	if channelRelayer := im.keeper.GetChannelRelayer(ctx, packet.DestinationChannel); channelRelayer != nil {
-		if permissionedRelayer := sdk.MustAccAddressFromBech32(channelRelayer.Relayer); !relayer.Equals(permissionedRelayer) {
-			return newEmitErrorAcknowledgement(
-				ctx,
-				fmt.Errorf(
-					"all packets of the channel `%s` should be relayed by the relayer `%s`",
-					packet.DestinationChannel,
-					permissionedRelayer,
-				),
-			)
-		}
+	if permissionedRelayer, err := im.keeper.ChannelRelayers.Get(ctx, packet.DestinationChannel); err != nil && !errors.Is(err, collections.ErrNotFound) {
+		return newEmitErrorAcknowledgement(ctx, err)
+	} else if err == nil && !bytes.Equal(relayer, permissionedRelayer) {
+		return newEmitErrorAcknowledgement(
+			ctx,
+			fmt.Errorf(
+				"all packets of the channel `%s` should be relayed by the relayer `%s`",
+				packet.DestinationChannel,
+				permissionedRelayer,
+			),
+		)
 	}
 
 	return im.app.OnRecvPacket(ctx, packet, relayer)
