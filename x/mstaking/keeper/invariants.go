@@ -103,7 +103,7 @@ func NonNegativePowerInvariant(k Keeper) sdk.Invariant {
 			msg    string
 			broken bool
 		)
-		k.ValidatorsByPowerIndex.Walk(ctx, nil, func(key collections.Pair[int64, []byte], _ bool) (stop bool, err error) {
+		err := k.ValidatorsByPowerIndex.Walk(ctx, nil, func(key collections.Pair[int64, []byte], _ bool) (stop bool, err error) {
 			power := key.K1()
 			valAddr := key.K2()
 
@@ -126,6 +126,9 @@ func NonNegativePowerInvariant(k Keeper) sdk.Invariant {
 
 			return false, nil
 		})
+		if err != nil {
+			panic(err)
+		}
 
 		return sdk.FormatInvariant(types.ModuleName, "nonnegative power", fmt.Sprintf("found invalid validator powers\n%s", msg)), broken
 	}

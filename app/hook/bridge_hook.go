@@ -52,7 +52,9 @@ func (h BridgeHook) BridgeCreated(
 		}
 
 		// register challenger as channel relayer
-		h.IBCPermKeeper.SetChannelRelayer(sdkCtx, channelID, challenger)
+		if err = h.IBCPermKeeper.SetChannelRelayer(sdkCtx, channelID, challenger); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -72,7 +74,9 @@ func (h BridgeHook) BridgeChallengerUpdated(
 		}
 
 		// update relayer to a new challenger
-		h.IBCPermKeeper.SetChannelRelayer(sdkCtx, channelID, challenger)
+		if err = h.IBCPermKeeper.SetChannelRelayer(sdkCtx, channelID, challenger); err != nil {
+			return err
+		}
 	}
 
 	return nil

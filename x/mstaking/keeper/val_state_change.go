@@ -244,7 +244,10 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx context.Context) (updates 
 		if !found || oldPower != newPower {
 			updates = append(updates, validator.ABCIValidatorUpdate(powerReduction))
 
-			k.SetLastValidatorPower(ctx, valAddr, newPower)
+			err = k.SetLastValidatorPower(ctx, valAddr, newPower)
+			if err != nil {
+				return true, err
+			}
 		}
 
 		delete(last, valAddrStr)
@@ -510,7 +513,7 @@ type validatorsByAddr map[string]int64
 func (k Keeper) getLastValidatorsByAddr(ctx context.Context) (validatorsByAddr, error) {
 	last := make(validatorsByAddr)
 
-	k.LastValidatorPowers.Walk(ctx, nil, func(valAddr []byte, power int64) (stop bool, err error) {
+	err := k.LastValidatorPowers.Walk(ctx, nil, func(valAddr []byte, power int64) (stop bool, err error) {
 		if valAddrStr, err := k.validatorAddressCodec.BytesToString(valAddr); err != nil {
 			return true, err
 		} else {
@@ -520,7 +523,7 @@ func (k Keeper) getLastValidatorsByAddr(ctx context.Context) (validatorsByAddr, 
 		return false, nil
 	})
 
-	return last, nil
+	return last, err
 }
 
 // given a map of remaining validators to previous bonded power

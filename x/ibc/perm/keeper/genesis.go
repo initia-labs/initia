@@ -23,10 +23,13 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genesisState types.GenesisState) {
 // ExportGenesis exports ibc-perm module's channel relayers.
 func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 	channelRelayers := []types.ChannelRelayer{}
-	k.IterateChannelRelayer(ctx, func(channelRelayer types.ChannelRelayer) (bool, error) {
+	err := k.IterateChannelRelayer(ctx, func(channelRelayer types.ChannelRelayer) (bool, error) {
 		channelRelayers = append(channelRelayers, channelRelayer)
 		return false, nil
 	})
+	if err != nil {
+		panic(err)
+	}
 
 	return &types.GenesisState{
 		ChannelRelayers: channelRelayers,
