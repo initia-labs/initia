@@ -261,13 +261,8 @@ import (
  "github.com/cometbft/cometbft/libs/log"
  dbm "github.com/cometbft/cometbft-db"
 
-<<<<<<< Updated upstream
  "github.com/cosmos/ibc-go/v8/modules/apps/transfer/simapp"
  ibctesting "github.com/cosmos/ibc-go/v8/testing"
-=======
-	"github.com/cosmos/ibc-go/v8/modules/apps/transfer/simapp"
-	ibctesting "github.com/cosmos/ibc-go/v8/testing"
->>>>>>> Stashed changes
 )
 
 func SetupTransferTestingApp() (ibctesting.TestingApp, map[string]json.RawMessage) {
