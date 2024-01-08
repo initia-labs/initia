@@ -7,13 +7,13 @@ import (
 
 	//"github.com/cometbft/cometbft/libs/rand"
 
-	dbm "github.com/cometbft/cometbft-db"
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/stretchr/testify/require"
 
 	simappparams "cosmossdk.io/simapp/params"
 	vmtypes "github.com/initia-labs/initiavm/types"
 
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"

@@ -21,7 +21,7 @@ require (
 	github.com/IGLOU-EU/go-wildcard v1.0.3
 	github.com/bits-and-blooms/bitset v1.8.0
 	github.com/cometbft/cometbft v0.38.2
-	github.com/cometbft/cometbft-db v0.9.1
+	github.com/cometbft/cometbft-db v0.9.1 // indirect
 	github.com/cosmos/cosmos-db v1.0.0
 	github.com/cosmos/cosmos-proto v1.0.0-beta.3
 	github.com/cosmos/cosmos-sdk v0.50.2
