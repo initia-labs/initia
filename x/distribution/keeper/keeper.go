@@ -178,7 +178,10 @@ func (k Keeper) WithdrawValidatorCommission(ctx context.Context, valAddr sdk.Val
 	}
 
 	commissions, remainder := accumCommission.Commissions.TruncateDecimal()
-	k.ValidatorAccumulatedCommissions.Set(ctx, valAddr, customtypes.ValidatorAccumulatedCommission{Commissions: remainder}) // leave remainder to withdraw later
+	// leave remainder to withdraw later
+	if err = k.ValidatorAccumulatedCommissions.Set(ctx, valAddr, customtypes.ValidatorAccumulatedCommission{Commissions: remainder}); err != nil {
+		return nil, err
+	}
 
 	// update outstanding
 	outstandingRewards, err := k.GetValidatorOutstandingRewards(ctx, valAddr)
@@ -219,12 +222,15 @@ func (k Keeper) WithdrawValidatorCommission(ctx context.Context, valAddr sdk.Val
 
 // GetTotalRewards returns the total amount of fee distribution rewards held in the store
 func (k Keeper) GetTotalRewards(ctx context.Context) (totalRewards sdk.DecCoins) {
-	k.ValidatorOutstandingRewards.Walk(ctx, nil,
+	err := k.ValidatorOutstandingRewards.Walk(ctx, nil,
 		func(_ []byte, rewards customtypes.ValidatorOutstandingRewards) (stop bool, err error) {
 			totalRewards = totalRewards.Add(rewards.Rewards.Sum()...)
 			return false, nil
 		},
 	)
+	if err != nil {
+		panic(err)
+	}
 
 	return totalRewards
 }

@@ -25,7 +25,10 @@ func (app *InitiaApp) ExportAppStateAndValidators(
 	height := app.LastBlockHeight() + 1
 	if forZeroHeight {
 		height = 0
-		app.prepForZeroHeightGenesis(ctx, jailAllowedAddrs)
+		err := app.prepForZeroHeightGenesis(ctx, jailAllowedAddrs)
+		if err != nil {
+			return servertypes.ExportedApp{}, err
+		}
 	}
 
 	genState, err := app.ModuleManager.ExportGenesisForModules(ctx, app.appCodec, modulesToExport)
@@ -115,10 +118,16 @@ func (app *InitiaApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs
 	}
 
 	// clear validator slash events
-	app.DistrKeeper.ValidatorSlashEvents.Clear(ctx, nil)
+	err = app.DistrKeeper.ValidatorSlashEvents.Clear(ctx, nil)
+	if err != nil {
+		return err
+	}
 
 	// clear validator historical rewards
-	app.DistrKeeper.ValidatorHistoricalRewards.Clear(ctx, nil)
+	err = app.DistrKeeper.ValidatorHistoricalRewards.Clear(ctx, nil)
+	if err != nil {
+		return err
+	}
 
 	// set context height to zero
 	height := ctx.BlockHeight()
@@ -144,7 +153,10 @@ func (app *InitiaApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs
 		}
 
 		feePool.CommunityPool = feePool.CommunityPool.Add(scraps...)
-		app.DistrKeeper.FeePool.Set(ctx, feePool)
+		err = app.DistrKeeper.FeePool.Set(ctx, feePool)
+		if err != nil {
+			return true, err
+		}
 
 		if err := app.DistrKeeper.Hooks().AfterValidatorCreated(ctx, valAddr); err != nil {
 			panic(err)
@@ -181,7 +193,7 @@ func (app *InitiaApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs
 	/* Handle staking state. */
 
 	// iterate through redelegations, reset creation height
-	app.StakingKeeper.IterateRedelegations(ctx, func(red stakingtypes.Redelegation) (stop bool, err error) {
+	err = app.StakingKeeper.IterateRedelegations(ctx, func(red stakingtypes.Redelegation) (stop bool, err error) {
 		for i := range red.Entries {
 			red.Entries[i].CreationHeight = 0
 		}
@@ -191,9 +203,12 @@ func (app *InitiaApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs
 		}
 		return false, nil
 	})
+	if err != nil {
+		return err
+	}
 
 	// iterate through unbonding delegations, reset creation height
-	app.StakingKeeper.IterateUnbondingDelegations(ctx, func(ubd stakingtypes.UnbondingDelegation) (stop bool, err error) {
+	err = app.StakingKeeper.IterateUnbondingDelegations(ctx, func(ubd stakingtypes.UnbondingDelegation) (stop bool, err error) {
 		for i := range ubd.Entries {
 			ubd.Entries[i].CreationHeight = 0
 		}
@@ -204,6 +219,9 @@ func (app *InitiaApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs
 
 		return false, nil
 	})
+	if err != nil {
+		return err
+	}
 
 	// Iterate through validators by power descending, reset bond heights, and
 	// update bond intra-tx counters.
@@ -213,7 +231,9 @@ func (app *InitiaApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs
 			validator.Jailed = true
 		}
 
-		app.StakingKeeper.SetValidator(ctx, validator)
+		if err := app.StakingKeeper.SetValidator(ctx, validator); err != nil {
+			return true, err
+		}
 		return false, nil
 	})
 	if err != nil {
@@ -231,7 +251,9 @@ func (app *InitiaApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs
 		ctx,
 		func(addr sdk.ConsAddress, info slashingtypes.ValidatorSigningInfo) (stop bool) {
 			info.StartHeight = 0
-			app.SlashingKeeper.SetValidatorSigningInfo(ctx, addr, info)
+			if err := app.SlashingKeeper.SetValidatorSigningInfo(ctx, addr, info); err != nil {
+				panic(err)
+			}
 			return false
 		},
 	)

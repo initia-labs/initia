@@ -140,7 +140,7 @@ func (k Keeper) ExportGenesis(ctx context.Context) *types.GenesisState {
 	var resources []types.Resource
 	var tableEntries []types.TableEntry
 	var tableInfos []types.TableInfo
-	k.IterateVMStore(ctx, func(
+	err = k.IterateVMStore(ctx, func(
 		module *types.Module,
 		resource *types.Resource,
 		tableInfo *types.TableInfo,
@@ -163,6 +163,9 @@ func (k Keeper) ExportGenesis(ctx context.Context) *types.GenesisState {
 		}
 
 	})
+	if err != nil {
+		panic(err)
+	}
 
 	dexKeeper := NewDexKeeper(&k)
 

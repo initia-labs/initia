@@ -92,7 +92,9 @@ func InitGenesis(ctx sdk.Context, ak types.AccountKeeper, bk types.BankKeeper, k
 		panic(fmt.Sprintf("expected module account was %s but we got %s", balance.String(), totalDeposits.String()))
 	}
 
-	k.LastEmergencyProposalTallyTimestamp.Set(ctx, data.LastEmergencyProposalTallyTimestamp)
+	if err = k.LastEmergencyProposalTallyTimestamp.Set(ctx, data.LastEmergencyProposalTallyTimestamp); err != nil {
+		panic(err)
+	}
 }
 
 // ExportGenesis - output genesis parameters

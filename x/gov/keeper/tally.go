@@ -102,7 +102,7 @@ func (keeper Keeper) Tally(ctx context.Context, proposal v1.Proposal) (quorumRea
 			return false, err
 		}
 
-		return false, keeper.Votes.Remove(ctx, collections.Join(vote.ProposalId, sdk.AccAddress(voter)))
+		return false, keeper.Votes.Remove(ctx, collections.Join(vote.ProposalId, voter))
 	})
 	if err != nil {
 		return false, false, false, tallyResults, err

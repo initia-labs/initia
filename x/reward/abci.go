@@ -64,7 +64,7 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	}
 
 	// update release rate on every year
-	if sdkCtx.BlockTime().Sub(lastDilutionTimestamp) >= time.Duration(params.DilutionPeriod) {
+	if sdkCtx.BlockTime().Sub(lastDilutionTimestamp) >= params.DilutionPeriod {
 		// dilute release rate
 		releaseRate := params.ReleaseRate.Sub(params.ReleaseRate.Mul(params.DilutionRate))
 

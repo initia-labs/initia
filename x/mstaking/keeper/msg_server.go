@@ -115,13 +115,15 @@ func (k msgServer) CreateValidator(ctx context.Context, msg *types.MsgCreateVali
 		return nil, err
 	}
 
-	k.SetValidator(ctx, validator)
-	if err := k.SetValidatorByConsAddr(ctx, validator); err != nil {
+	if err = k.SetValidator(ctx, validator); err != nil {
+		return nil, err
+	}
+	if err = k.SetValidatorByConsAddr(ctx, validator); err != nil {
 		return nil, err
 	}
 
 	// call the after-creation hook
-	if err := k.Hooks().AfterValidatorCreated(ctx, valAddr); err != nil {
+	if err = k.Hooks().AfterValidatorCreated(ctx, valAddr); err != nil {
 		return nil, err
 	}
 
@@ -183,7 +185,9 @@ func (k msgServer) EditValidator(ctx context.Context, msg *types.MsgEditValidato
 		validator.Commission = commission
 	}
 
-	k.SetValidator(ctx, validator)
+	if err = k.SetValidator(ctx, validator); err != nil {
+		return nil, err
+	}
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	sdkCtx.EventManager().EmitEvents(sdk.Events{

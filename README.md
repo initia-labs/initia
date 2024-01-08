@@ -7,13 +7,13 @@ This repository hosts `initiad`, the first implementation of a cosmos zone with 
 
 ## Documentation & Introduction
 
-You can find an introduction to the Initia and how to use the initiad binary as a delegator, validator or node operator as well as how moveVM on the Initia works in the [documentation](https://app.gitbook.com/o/f40ATI6dfRXMHEcAFnUO/s/rnGS4UFboF67ZTvcmbIH/learn).
+You can find an introduction to the Initia and how to use the initiad binary as a delegator, validator or node operator as well as how moveVM on the Initia works in the [documentation](https://app.gitbook.com/o/VC1Rsak51RJaeaQhM2YE/s/pUvrGia2zAh06hjawOb6/developers/initiad).
 
 Alternatively, whether you're new to blockchain technology or interested in getting involved, the Initia [Tutorial](https://app.gitbook.com/o/f40ATI6dfRXMHEcAFnUO/s/rnGS4UFboF67ZTvcmbIH/tutorials) will guide you through everything. The tutorial walks you through the basics of blockchain technology, to interacting, creating your own smart contract, and beyond.
 
 ## Note Operators
 
-If you're interested in running an node on the current Initia, check out the docs to [Run a Public Node](https://app.gitbook.com/o/f40ATI6dfRXMHEcAFnUO/s/rnGS4UFboF67ZTvcmbIH/nodes/run-a-public-node).
+If you're interested in running an node on the current Initia, check out the docs to [Run a Public Node](https://app.gitbook.com/o/VC1Rsak51RJaeaQhM2YE/s/pUvrGia2zAh06hjawOb6/node-operators/running-initia-node).
 
 ## Validators
 
@@ -25,8 +25,8 @@ If you still want to participate on the Initia, check out becoming a delegator. 
 
 ## Contract Developers
 
-If you want to build a move smart contract on Initia, check out becoming contract developer. Information on how to build and deploy contract can be found at the [documentation](https://app.gitbook.com/o/f40ATI6dfRXMHEcAFnUO/s/rnGS4UFboF67ZTvcmbIH/tutorials/first-move-smart-contract-with-initia).
+If you want to build a move smart contract on Initia, check out becoming contract developer. Information on how to build and deploy contract can be found at the [documentation](https://app.gitbook.com/o/VC1Rsak51RJaeaQhM2YE/s/pUvrGia2zAh06hjawOb6/developers/contracts).
 
 ## Testnet
 
-To participate in or utilize the current Initia testnet, take a look at the [initia/testnets](https://github.com/initia-labs/testnets) repository.
+To participate in or utilize the current Initia testnet, take a look at the [initia/networks](https://github.com/initia-labs/networks) repository.

@@ -143,10 +143,16 @@ func (k Keeper) Whitelist(ctx context.Context, msg types.MsgWhitelist) error {
 
 	// append denomLP reward weight to distribution keeper
 	rewardWeights = append(rewardWeights, distrtypes.RewardWeight{Denom: denomLP, Weight: msg.RewardWeight})
-	k.distrKeeper.SetRewardWeights(ctx, rewardWeights)
+	err = k.distrKeeper.SetRewardWeights(ctx, rewardWeights)
+	if err != nil {
+		return err
+	}
 
 	// store dex pair
-	dexKeeper.setDexPair(ctx, metadataQuote, metadataLP)
+	err = dexKeeper.setDexPair(ctx, metadataQuote, metadataLP)
+	if err != nil {
+		return err
+	}
 
 	// execute register if global store not found
 	if found, err := k.HasStakingState(ctx, metadataLP); err != nil {
@@ -243,11 +249,20 @@ func (k Keeper) Delist(ctx context.Context, msg types.MsgDelist) error {
 
 	// remove coinLP reward weight from the distribution reward weights
 	rewardWeights = append(rewardWeights[:rewardWeightIndex], rewardWeights[rewardWeightIndex+1:]...)
-	k.distrKeeper.SetRewardWeights(ctx, rewardWeights)
+	err = k.distrKeeper.SetRewardWeights(ctx, rewardWeights)
+	if err != nil {
+		return err
+	}
 
 	// delete dex pair
-	dexKeeper.deleteDexPair(ctx, metadataA)
-	dexKeeper.deleteDexPair(ctx, metadataB)
+	err = dexKeeper.deleteDexPair(ctx, metadataA)
+	if err != nil {
+		return err
+	}
+	err = dexKeeper.deleteDexPair(ctx, metadataB)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

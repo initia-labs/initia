@@ -120,7 +120,10 @@ func (k Keeper) AddValidatorTokensAndShares(
 		}
 
 		if votingPower.GTE(minPower) {
-			k.AddWhitelistValidator(ctx, valOut)
+			err = k.AddWhitelistValidator(ctx, valOut)
+			if err != nil {
+				return valOut, addedShares, err
+			}
 		}
 	}
 
@@ -260,7 +263,7 @@ func (k Keeper) GetBondedValidatorsByPower(ctx context.Context) ([]types.Validat
 	}
 
 	validators := make([]types.Validator, 0, maxValidators)
-	k.ValidatorsByPowerIndex.Walk(ctx, new(collections.PairRange[int64, []byte]).Descending(), func(key collections.Pair[int64, []byte], value bool) (stop bool, err error) {
+	err = k.ValidatorsByPowerIndex.Walk(ctx, new(collections.PairRange[int64, []byte]).Descending(), func(key collections.Pair[int64, []byte], value bool) (stop bool, err error) {
 		validator, err := k.GetValidator(ctx, key.K2())
 		if err != nil {
 			return true, err
@@ -273,7 +276,7 @@ func (k Keeper) GetBondedValidatorsByPower(ctx context.Context) ([]types.Validat
 		return len(validators) == int(maxValidators), nil
 	})
 
-	return validators, nil
+	return validators, err
 }
 
 // Last Validator Index

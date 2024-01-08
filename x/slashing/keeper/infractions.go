@@ -145,7 +145,10 @@ func (k Keeper) HandleValidatorSignature(ctx context.Context, addr cryptotypes.A
 			)
 
 			// Jail a validator
-			k.sk.Jail(ctx, consAddr)
+			err = k.sk.Jail(ctx, consAddr)
+			if err != nil {
+				return err
+			}
 
 			downtimeJailDur, err := k.DowntimeJailDuration(ctx)
 			if err != nil {

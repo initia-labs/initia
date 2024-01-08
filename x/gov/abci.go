@@ -150,7 +150,7 @@ func EndBlocker(ctx sdk.Context, k *keeper.Keeper) error {
 	}
 
 	if ctx.BlockTime().After(lastEmergencyProposalTallyTimestamp.Add(params.EmergencyTallyInterval)) {
-		k.EmergencyProposals.Walk(ctx, nil, func(proposalID uint64, _ []byte) (stop bool, err error) {
+		err = k.EmergencyProposals.Walk(ctx, nil, func(proposalID uint64, _ []byte) (stop bool, err error) {
 			proposal, err := k.Proposals.Get(ctx, proposalID)
 			if err != nil {
 				return false, err
@@ -179,6 +179,9 @@ func EndBlocker(ctx sdk.Context, k *keeper.Keeper) error {
 
 			return false, nil
 		})
+		if err != nil {
+			return err
+		}
 
 		if err := k.LastEmergencyProposalTallyTimestamp.Set(ctx, ctx.BlockTime()); err != nil {
 			return err
