@@ -4,15 +4,13 @@ import (
 	"bytes"
 	"testing"
 
-	dbm "github.com/cometbft/cometbft-db"
 	movetypes "github.com/initia-labs/initia/x/move/types"
 	vmtypes "github.com/initia-labs/initiavm/types"
 	"github.com/stretchr/testify/require"
 	"github.com/syndtr/goleveldb/leveldb/opt"
 
-	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
+	dbm "github.com/cosmos/cosmos-db"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 )
 
 var transferAmount, _ = vmtypes.SerializeUint64(100)
@@ -125,9 +123,9 @@ func buildLevelDB(b *testing.B) dbm.DB {
 	return levelDB
 }
 
-func bankSendMsg(info *AppInfo, _ int) ([]sdk.Msg, error) {
-	rcpt := sdk.AccAddress(secp256k1.GenPrivKey().PubKey().Address())
-	coins := sdk.Coins{sdk.NewInt64Coin(info.Denom, 100)}
-	sendMsg := banktypes.NewMsgSend(info.MinterAddr, rcpt, coins)
-	return []sdk.Msg{sendMsg}, nil
-}
+// func bankSendMsg(info *AppInfo, _ int) ([]sdk.Msg, error) {
+// 	rcpt := sdk.AccAddress(secp256k1.GenPrivKey().PubKey().Address())
+// 	coins := sdk.Coins{sdk.NewInt64Coin(info.Denom, 100)}
+// 	sendMsg := banktypes.NewMsgSend(info.MinterAddr, rcpt, coins)
+// 	return []sdk.Msg{sendMsg}, nil
+// }

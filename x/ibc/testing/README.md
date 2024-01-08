@@ -259,7 +259,7 @@ import (
  "encoding/json"
 
  "github.com/cometbft/cometbft/libs/log"
- dbm "github.com/cometbft/cometbft-db"
+ dbm "github.com/cosmos/cosmos-db"
 
 <<<<<<< Updated upstream
  "github.com/cosmos/ibc-go/v8/modules/apps/transfer/simapp"
