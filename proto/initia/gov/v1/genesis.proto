@@ -19,9 +19,9 @@ message GenesisState {
   // votes defines all the votes present at genesis.
   repeated cosmos.gov.v1.Vote votes = 3;
   // proposals defines all the proposals present at genesis.
-  repeated cosmos.gov.v1.Proposal proposals = 4;
+  repeated Proposal proposals = 4;
   // params defines all the paramaters of x/gov module.
-  initia.gov.v1.Params params = 5;
+  Params params = 5;
   // The constitution allows builders to lay a foundation and define purpose.
   // This is an immutable string set in genesis.
   // There are no amendments, to go outside of scope, just fork.
@@ -29,9 +29,4 @@ message GenesisState {
   //
   // Since: cosmos-sdk 0.50
   string constitution = 6;
-
-  // last_emergency_proposal_tally_timestamp defines the last time of
-  // tally for emergency proposals.
-  google.protobuf.Timestamp last_emergency_proposal_tally_timestamp = 91
-      [(gogoproto.stdtime) = true, (gogoproto.nullable) = false, (amino.dont_omitempty) = true];
 }

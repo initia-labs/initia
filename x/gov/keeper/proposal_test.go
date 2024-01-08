@@ -7,6 +7,8 @@ import (
 	"github.com/stretchr/testify/require"
 
 	v1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
+
+	customtypes "github.com/initia-labs/initia/x/gov/types"
 )
 
 func Test_Emergency_ActivateProposal(t *testing.T) {
@@ -14,7 +16,7 @@ func Test_Emergency_ActivateProposal(t *testing.T) {
 
 	now := time.Now().UTC()
 	depositEndTime := now.Add(time.Hour)
-	proposal, err := v1.NewProposal(nil, 1, now, depositEndTime, "", "", "", addrs[0], false)
+	proposal, err := customtypes.NewProposal(nil, 1, now, depositEndTime, "", "", "", addrs[0], false)
 	require.NoError(t, err)
 
 	params, err := input.GovKeeper.Params.Get(ctx)
@@ -42,7 +44,7 @@ func Test_NoEmergency_ActivateProposal(t *testing.T) {
 
 	now := time.Now().UTC()
 	depositEndTime := now.Add(time.Hour)
-	proposal, err := v1.NewProposal(nil, 1, now, depositEndTime, "", "", "", addrs[0], false)
+	proposal, err := customtypes.NewProposal(nil, 1, now, depositEndTime, "", "", "", addrs[0], false)
 	require.NoError(t, err)
 
 	params, err := input.GovKeeper.Params.Get(ctx)

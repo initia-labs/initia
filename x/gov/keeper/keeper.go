@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"cosmossdk.io/collections"
-	collectioncodec "cosmossdk.io/collections/codec"
 	corestoretypes "cosmossdk.io/core/store"
 	"cosmossdk.io/log"
 
@@ -50,18 +49,18 @@ type Keeper struct {
 	// should be the x/gov module account.
 	authority string
 
-	Schema                              collections.Schema
-	Constitution                        collections.Item[string]
-	Params                              collections.Item[customtypes.Params]
-	LastEmergencyProposalTallyTimestamp collections.Item[time.Time]
-	Deposits                            collections.Map[collections.Pair[uint64, sdk.AccAddress], v1.Deposit]
-	Votes                               collections.Map[collections.Pair[uint64, sdk.AccAddress], v1.Vote]
-	ProposalID                          collections.Sequence
-	Proposals                           collections.Map[uint64, v1.Proposal]
-	ActiveProposalsQueue                collections.Map[collections.Pair[time.Time, uint64], uint64] // TODO(tip): this should be simplified and go into an index.
-	InactiveProposalsQueue              collections.Map[collections.Pair[time.Time, uint64], uint64] // TODO(tip): this should be simplified and go into an index.
-	VotingPeriodProposals               collections.Map[uint64, []byte]                              // TODO(tip): this could be a keyset or index.
-	EmergencyProposals                  collections.Map[uint64, []byte]
+	Schema                  collections.Schema
+	Constitution            collections.Item[string]
+	Params                  collections.Item[customtypes.Params]
+	Deposits                collections.Map[collections.Pair[uint64, sdk.AccAddress], v1.Deposit]
+	Votes                   collections.Map[collections.Pair[uint64, sdk.AccAddress], v1.Vote]
+	ProposalID              collections.Sequence
+	Proposals               collections.Map[uint64, customtypes.Proposal]
+	ActiveProposalsQueue    collections.Map[collections.Pair[time.Time, uint64], uint64] // TODO(tip): this should be simplified and go into an index.
+	InactiveProposalsQueue  collections.Map[collections.Pair[time.Time, uint64], uint64] // TODO(tip): this should be simplified and go into an index.
+	EmergencyProposalsQueue collections.Map[collections.Pair[time.Time, uint64], uint64]
+	VotingPeriodProposals   collections.Map[uint64, []byte] // TODO(tip): this could be a keyset or index.
+	EmergencyProposals      collections.Map[uint64, []byte]
 }
 
 // NewKeeper returns a governance keeper. It handles:
@@ -92,27 +91,26 @@ func NewKeeper(
 
 	sb := collections.NewSchemaBuilder(storeService)
 	k := &Keeper{
-		cdc:                    cdc,
-		storeService:           storeService,
-		authKeeper:             authKeeper,
-		bankKeeper:             bankKeeper,
-		distrKeeper:            distrKeeper,
-		sk:                     sk,
-		router:                 router,
-		config:                 config,
-		authority:              authority,
-		Constitution:           collections.NewItem(sb, types.ConstitutionKey, "constitution", collections.StringValue),
-		Params:                 collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[customtypes.Params](cdc)),
-		Deposits:               collections.NewMap(sb, types.DepositsKeyPrefix, "deposits", collections.PairKeyCodec(collections.Uint64Key, sdk.LengthPrefixedAddressKey(sdk.AccAddressKey)), codec.CollValue[v1.Deposit](cdc)), // nolint: staticcheck // sdk.LengthPrefixedAddressKey is needed to retain state compatibility
-		Votes:                  collections.NewMap(sb, types.VotesKeyPrefix, "votes", collections.PairKeyCodec(collections.Uint64Key, sdk.LengthPrefixedAddressKey(sdk.AccAddressKey)), codec.CollValue[v1.Vote](cdc)),          // nolint: staticcheck // sdk.LengthPrefixedAddressKey is needed to retain state compatibility
-		ProposalID:             collections.NewSequence(sb, types.ProposalIDKey, "proposal_id"),
-		Proposals:              collections.NewMap(sb, types.ProposalsKeyPrefix, "proposals", collections.Uint64Key, codec.CollValue[v1.Proposal](cdc)),
-		ActiveProposalsQueue:   collections.NewMap(sb, types.ActiveProposalQueuePrefix, "active_proposals_queue", collections.PairKeyCodec(sdk.TimeKey, collections.Uint64Key), collections.Uint64Value),     // sdk.TimeKey is needed to retain state compatibility
-		InactiveProposalsQueue: collections.NewMap(sb, types.InactiveProposalQueuePrefix, "inactive_proposals_queue", collections.PairKeyCodec(sdk.TimeKey, collections.Uint64Key), collections.Uint64Value), // sdk.TimeKey is needed to retain state compatibility
-		VotingPeriodProposals:  collections.NewMap(sb, types.VotingPeriodProposalKeyPrefix, "voting_period_proposals", collections.Uint64Key, collections.BytesValue),
-
-		LastEmergencyProposalTallyTimestamp: collections.NewItem(sb, customtypes.LastEmergencyProposalTallyTimestampKey, "last_emergency_proposal_tally_timestamp", collectioncodec.KeyToValueCodec(sdk.TimeKey)),
-		EmergencyProposals:                  collections.NewMap(sb, customtypes.EmergencyProposalsPrefix, "emergency_proposals", collections.Uint64Key, collections.BytesValue),
+		cdc:                     cdc,
+		storeService:            storeService,
+		authKeeper:              authKeeper,
+		bankKeeper:              bankKeeper,
+		distrKeeper:             distrKeeper,
+		sk:                      sk,
+		router:                  router,
+		config:                  config,
+		authority:               authority,
+		Constitution:            collections.NewItem(sb, types.ConstitutionKey, "constitution", collections.StringValue),
+		Params:                  collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[customtypes.Params](cdc)),
+		Deposits:                collections.NewMap(sb, types.DepositsKeyPrefix, "deposits", collections.PairKeyCodec(collections.Uint64Key, sdk.LengthPrefixedAddressKey(sdk.AccAddressKey)), codec.CollValue[v1.Deposit](cdc)), // nolint: staticcheck // sdk.LengthPrefixedAddressKey is needed to retain state compatibility
+		Votes:                   collections.NewMap(sb, types.VotesKeyPrefix, "votes", collections.PairKeyCodec(collections.Uint64Key, sdk.LengthPrefixedAddressKey(sdk.AccAddressKey)), codec.CollValue[v1.Vote](cdc)),          // nolint: staticcheck // sdk.LengthPrefixedAddressKey is needed to retain state compatibility
+		ProposalID:              collections.NewSequence(sb, types.ProposalIDKey, "proposal_id"),
+		Proposals:               collections.NewMap(sb, types.ProposalsKeyPrefix, "proposals", collections.Uint64Key, codec.CollValue[customtypes.Proposal](cdc)),
+		ActiveProposalsQueue:    collections.NewMap(sb, types.ActiveProposalQueuePrefix, "active_proposals_queue", collections.PairKeyCodec(sdk.TimeKey, collections.Uint64Key), collections.Uint64Value),     // sdk.TimeKey is needed to retain state compatibility
+		InactiveProposalsQueue:  collections.NewMap(sb, types.InactiveProposalQueuePrefix, "inactive_proposals_queue", collections.PairKeyCodec(sdk.TimeKey, collections.Uint64Key), collections.Uint64Value), // sdk.TimeKey is needed to retain state compatibility
+		EmergencyProposalsQueue: collections.NewMap(sb, customtypes.EmergencyProposalQueuePrefix, "emergency_proposals_queue", collections.PairKeyCodec(sdk.TimeKey, collections.Uint64Key), collections.Uint64Value),
+		VotingPeriodProposals:   collections.NewMap(sb, types.VotingPeriodProposalKeyPrefix, "voting_period_proposals", collections.Uint64Key, collections.BytesValue),
+		EmergencyProposals:      collections.NewMap(sb, customtypes.EmergencyProposalsPrefix, "emergency_proposals", collections.Uint64Key, collections.BytesValue),
 	}
 	schema, err := sb.Build()
 	if err != nil {

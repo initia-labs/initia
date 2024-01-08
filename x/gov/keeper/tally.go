@@ -17,7 +17,7 @@ import (
 
 // Tally iterates over the votes and updates the tally of a proposal based on the voting power of the
 // voters
-func (keeper Keeper) Tally(ctx context.Context, proposal v1.Proposal) (quorumReached, passed bool, burnDeposits bool, tallyResults v1.TallyResult, err error) {
+func (keeper Keeper) Tally(ctx context.Context, proposal customtypes.Proposal) (quorumReached, passed bool, burnDeposits bool, tallyResults v1.TallyResult, err error) {
 	weights, err := keeper.sk.GetVotingPowerWeights(ctx)
 	if err != nil {
 		return false, false, false, tallyResults, err

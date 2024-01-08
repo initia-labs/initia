@@ -80,7 +80,7 @@ func (keeper Keeper) AddDeposit(ctx context.Context, proposalID uint64, deposito
 		return false, err
 	}
 
-	minDepositAmount := proposal.GetMinDepositFromParams(params.ToV1())
+	minDepositAmount := proposal.GetMinDepositFromParams(params)
 	minDepositRatio, err := sdkmath.LegacyNewDecFromStr(params.GetMinDepositRatio())
 	if err != nil {
 		return false, err
@@ -144,6 +144,13 @@ func (keeper Keeper) AddDeposit(ctx context.Context, proposalID uint64, deposito
 		}
 
 		activatedVotingPeriod = true
+	}
+
+	if proposal.Status == v1.StatusVotingPeriod && sdk.NewCoins(proposal.TotalDeposit...).IsAllGTE(params.EmergencyMinDeposit) {
+		err = keeper.ActiveEmergencyProposal(ctx, proposal)
+		if err != nil {
+			return false, err
+		}
 	}
 
 	// Add or update deposit object
