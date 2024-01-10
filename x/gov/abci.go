@@ -255,12 +255,14 @@ func handleTallyResult(
 		return err
 	}
 
-	if err = k.EmergencyProposalsQueue.Remove(ctx, collections.Join(*proposal.EmergencyNextTallyTime, proposal.Id)); err != nil {
-		return err
-	}
+	if proposal.Emergency {
+		if err = k.EmergencyProposalsQueue.Remove(ctx, collections.Join(*proposal.EmergencyNextTallyTime, proposal.Id)); err != nil {
+			return err
+		}
 
-	if err = k.EmergencyProposals.Remove(ctx, proposal.Id); err != nil {
-		return err
+		if err = k.EmergencyProposals.Remove(ctx, proposal.Id); err != nil {
+			return err
+		}
 	}
 
 	var tagValue, logMsg string

@@ -180,7 +180,6 @@ func (keeper Keeper) CancelProposal(ctx context.Context, proposalID uint64, prop
 			return err
 		}
 	}
-
 	err = keeper.DeleteProposal(ctx, proposal.Id)
 	if err != nil {
 		return err
@@ -236,14 +235,16 @@ func (keeper Keeper) DeleteProposal(ctx context.Context, proposalID uint64) erro
 			return err
 		}
 
-		err = keeper.EmergencyProposalsQueue.Remove(ctx, collections.Join(*proposal.EmergencyNextTallyTime, proposalID))
-		if err != nil {
-			return err
-		}
+		if proposal.Emergency {
+			err = keeper.EmergencyProposalsQueue.Remove(ctx, collections.Join(*proposal.EmergencyNextTallyTime, proposalID))
+			if err != nil {
+				return err
+			}
 
-		err = keeper.EmergencyProposals.Remove(ctx, proposalID)
-		if err != nil {
-			return err
+			err = keeper.EmergencyProposals.Remove(ctx, proposalID)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -269,6 +270,7 @@ func (keeper Keeper) ActivateVotingPeriod(ctx context.Context, proposal customty
 	endTime := proposal.VotingStartTime.Add(votingPeriod)
 	proposal.VotingEndTime = &endTime
 	proposal.Status = v1.StatusVotingPeriod
+
 	err = keeper.SetProposal(ctx, proposal)
 	if err != nil {
 		return err
@@ -286,7 +288,7 @@ func (keeper Keeper) ActivateVotingPeriod(ctx context.Context, proposal customty
 	return nil
 }
 
-func (keeper Keeper) ActiveEmergencyProposal(ctx context.Context, proposal customtypes.Proposal) error {
+func (keeper Keeper) ActivateEmergencyProposal(ctx context.Context, proposal customtypes.Proposal) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	emergencyStartTime := sdkCtx.BlockHeader().Time
 
@@ -306,6 +308,11 @@ func (keeper Keeper) ActiveEmergencyProposal(ctx context.Context, proposal custo
 	}
 
 	err = keeper.EmergencyProposals.Set(ctx, proposal.Id, []byte{1})
+	if err != nil {
+		return err
+	}
+
+	err = keeper.SetProposal(ctx, proposal)
 	if err != nil {
 		return err
 	}

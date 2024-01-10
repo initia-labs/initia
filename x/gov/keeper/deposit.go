@@ -145,9 +145,13 @@ func (keeper Keeper) AddDeposit(ctx context.Context, proposalID uint64, deposito
 
 		activatedVotingPeriod = true
 	}
+	proposal, err = keeper.Proposals.Get(ctx, proposalID)
+	if err != nil {
+		return false, err
+	}
 
 	if proposal.Status == v1.StatusVotingPeriod && sdk.NewCoins(proposal.TotalDeposit...).IsAllGTE(params.EmergencyMinDeposit) {
-		err = keeper.ActiveEmergencyProposal(ctx, proposal)
+		err = keeper.ActivateEmergencyProposal(ctx, proposal)
 		if err != nil {
 			return false, err
 		}

@@ -50,7 +50,6 @@ func (keeper Keeper) Tally(ctx context.Context, proposal customtypes.Proposal) (
 
 		votingPower, _ := stakingtypes.CalculateVotingPower(validator.GetBondedTokens(), weights)
 		stakedVotingPower = stakedVotingPower.Add(votingPower)
-
 		return false, nil
 	})
 	if err != nil {
@@ -104,6 +103,7 @@ func (keeper Keeper) Tally(ctx context.Context, proposal customtypes.Proposal) (
 
 		return false, keeper.Votes.Remove(ctx, collections.Join(vote.ProposalId, sdk.AccAddress(voter)))
 	})
+
 	if err != nil {
 		return false, false, false, tallyResults, err
 	}
@@ -129,7 +129,6 @@ func (keeper Keeper) Tally(ctx context.Context, proposal customtypes.Proposal) (
 			subPower := votingPower.Mul(math.LegacyMustNewDecFromStr(option.Weight))
 			results[option.Option] = results[option.Option].Add(subPower)
 		}
-		totalVotingPower = totalVotingPower.Add(votingPower)
 	}
 
 	params, err := keeper.Params.Get(ctx)
