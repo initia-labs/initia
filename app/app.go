@@ -8,10 +8,12 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
 	"github.com/spf13/cast"
+	"go.uber.org/zap"
 
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 	reflectionv1 "cosmossdk.io/api/cosmos/reflection/v1"
@@ -139,6 +141,7 @@ import (
 	"github.com/initia-labs/initia/x/slashing"
 	slashingkeeper "github.com/initia-labs/initia/x/slashing/keeper"
 
+	// block-sdk dependencies
 	blockabci "github.com/skip-mev/block-sdk/abci"
 	signer_extraction "github.com/skip-mev/block-sdk/adapters/signer_extraction_adapter"
 	"github.com/skip-mev/block-sdk/block"
@@ -148,6 +151,24 @@ import (
 	auctionante "github.com/skip-mev/block-sdk/x/auction/ante"
 	auctionkeeper "github.com/skip-mev/block-sdk/x/auction/keeper"
 	auctiontypes "github.com/skip-mev/block-sdk/x/auction/types"
+	// slinky oracle dependencies
+	oraclepreblock "github.com/skip-mev/slinky/abci/preblock/oracle"
+	compression "github.com/skip-mev/slinky/abci/strategies/codec"
+	"github.com/skip-mev/slinky/abci/strategies/currencypair"
+	"github.com/skip-mev/slinky/abci/ve"
+	"github.com/skip-mev/slinky/aggregator"
+	oracleconfig "github.com/skip-mev/slinky/oracle/config"
+	oraclemetrics "github.com/skip-mev/slinky/oracle/metrics"
+	oracleservice "github.com/skip-mev/slinky/service"
+	serviceclient "github.com/skip-mev/slinky/service/client"
+	servicemetrics "github.com/skip-mev/slinky/service/metrics"
+	alertskeeper "github.com/skip-mev/slinky/x/alerts/keeper"
+	alerttypes "github.com/skip-mev/slinky/x/alerts/types"
+	incentiveskeeper "github.com/skip-mev/slinky/x/incentives/keeper"
+	incentivetypes "github.com/skip-mev/slinky/x/incentives/types"
+	"github.com/skip-mev/slinky/x/oracle"
+	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
+	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
 	"github.com/initia-labs/OPinit/x/ophost"
 	ophostkeeper "github.com/initia-labs/OPinit/x/ophost/keeper"
@@ -176,6 +197,10 @@ var (
 		// x/auction's module account must be instantiated upon genesis to accrue auction rewards not
 		// distributed to proposers
 		auctiontypes.ModuleName: nil,
+		// slinky oracle permissions
+		oracletypes.ModuleName:    nil,
+		incentivetypes.ModuleName: nil,
+		alerttypes.ModuleName:     {authtypes.Burner, authtypes.Minter},
 
 		// this is only for testing
 		authtypes.Minter: {authtypes.Minter},
@@ -238,6 +263,13 @@ type InitiaApp struct {
 	MoveKeeper            *movekeeper.Keeper
 	AuctionKeeper         *auctionkeeper.Keeper // x/auction keeper used to process bids for TOB auctions
 	OPHostKeeper          *ophostkeeper.Keeper
+	OracleKeeper          *oraclekeeper.Keeper     // x/oracle keeper used for the slinky oracle
+	IncentivesKeeper      *incentiveskeeper.Keeper // x/incentives keeper used for slinky incentives
+	AlertsKeeper          *alertskeeper.Keeper     // x/alerts keeper used for slinky alerts
+
+	// other slinky oracle services
+	oraclePrometheusServer *oraclemetrics.PrometheusServer
+	oracleService          oracleservice.OracleService
 
 	// make scoped keepers public for test purposes
 	ScopedIBCKeeper           capabilitykeeper.ScopedKeeper
@@ -292,6 +324,7 @@ func NewInitiaApp(
 		authzkeeper.StoreKey, feegrant.StoreKey, icahosttypes.StoreKey,
 		icacontrollertypes.StoreKey, ibcfeetypes.StoreKey, ibcpermtypes.StoreKey,
 		movetypes.StoreKey, auctiontypes.StoreKey, ophosttypes.StoreKey,
+		oracletypes.StoreKey, incentivetypes.StoreKey, alerttypes.StoreKey,
 	)
 	tkeys := storetypes.NewTransientStoreKeys()
 	memKeys := storetypes.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
@@ -316,7 +349,8 @@ func NewInitiaApp(
 	vc := authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix())
 	cc := authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix())
 
-	authorityAddr, err := ac.BytesToString(authtypes.NewModuleAddress(govtypes.ModuleName))
+	authorityAccAddr := authtypes.NewModuleAddress(govtypes.ModuleName)
+	authorityAddr, err := ac.BytesToString(authorityAccAddr)
 	if err != nil {
 		panic(err)
 	}
@@ -489,6 +523,13 @@ func NewInitiaApp(
 		authorityAddr,
 		ac,
 	)
+
+	oracleKeeper := oraclekeeper.NewKeeper(
+		runtime.NewKVStoreService(keys[oracletypes.StoreKey]),
+		appCodec,
+		authorityAccAddr,
+	)
+	app.OracleKeeper = &oracleKeeper
 
 	////////////////////////////
 	// Transfer configuration //
@@ -750,6 +791,8 @@ func NewInitiaApp(
 		move.NewAppModule(appCodec, *app.MoveKeeper, vc),
 		auction.NewAppModule(app.appCodec, *app.AuctionKeeper),
 		ophost.NewAppModule(appCodec, *app.OPHostKeeper),
+		// slinky modules
+		oracle.NewAppModule(appCodec, *app.OracleKeeper),
 		// ibc modules
 		ibc.NewAppModule(app.IBCKeeper),
 		ibctransfer.NewAppModule(*app.TransferKeeper),
@@ -814,6 +857,7 @@ func NewInitiaApp(
 		consensusparamtypes.ModuleName, ibcexported.ModuleName, ibctransfertypes.ModuleName,
 		ibcnfttransfertypes.ModuleName, icatypes.ModuleName, icaauthtypes.ModuleName, ibcfeetypes.ModuleName,
 		ibcpermtypes.ModuleName, consensusparamtypes.ModuleName, auctiontypes.ModuleName, ophosttypes.ModuleName,
+		oracletypes.ModuleName,
 	}
 	app.ModuleManager.SetOrderInitGenesis(genesisModuleOrder...)
 	app.ModuleManager.SetOrderExportGenesis(genesisModuleOrder...)
@@ -917,6 +961,78 @@ func NewInitiaApp(
 		anteHandler,
 	)
 	app.SetCheckTx(checkTxHandler.CheckTx())
+
+	// Initialize oracle's config
+	cfg, err := oracleconfig.ReadConfigFromAppOpts(appOpts)
+	if err != nil {
+		panic(err)
+	}
+
+	oracleCfg, err := oracleconfig.ReadOracleConfigFromFile(cfg.OraclePath)
+	if err != nil {
+		panic(err)
+	}
+
+	metricsCfg, err := oracleconfig.ReadMetricsConfigFromFile(cfg.MetricsPath)
+	if err != nil {
+		panic(err)
+	}
+	metrics, consAddress, err := servicemetrics.NewServiceMetricsFromConfig(metricsCfg.AppMetrics)
+	// If app level instrumentation is enabled, then wrap the oracle service with a metrics client
+	// to get metrics on the oracle service (for ABCI++). This will allow the instrumentation to track
+	// latency in VerifyVoteExtension requests and more.
+	if metricsCfg.AppMetrics.Enabled {
+		app.oracleService = serviceclient.NewMetricsClient(app.Logger(), app.oracleService, metrics)
+	}
+	// Create the oracleService
+	zapLogger, err := zap.NewProduction()
+	if err != nil {
+		panic(err)
+	}
+	app.oracleService, err = serviceclient.NewOracleService(
+		zapLogger,
+		oracleCfg,
+		metricsCfg,
+		DefaultAPIProviderFactory(),
+		aggregator.ComputeMedian(),
+	)
+	if err != nil {
+		panic(err)
+	}
+	// Set the oracle's PreBlocker
+	oraclePreBlockHandler := oraclepreblock.NewOraclePreBlockHandler(
+		app.Logger(),
+		app.GetOracleAggregationFN(),
+		app.OracleKeeper,
+		consAddress,
+		metrics,
+		currencypair.NewDeltaCurrencyPairStrategy(app.OracleKeeper),
+		compression.NewCompressionVoteExtensionCodec(
+			compression.NewDefaultVoteExtensionCodec(),
+			compression.NewZLibCompressor(),
+		),
+		compression.NewCompressionExtendedCommitCodec(
+			compression.NewDefaultExtendedCommitCodec(),
+			compression.NewZStdCompressor(),
+		),
+	)
+	app.SetPreBlocker(oraclePreBlockHandler.PreBlocker())
+
+	// Create the vote extensions handler that will be used to extend and verify
+	// vote extensions (i.e. oracle data).
+	voteExtensionsHandler := ve.NewVoteExtensionHandler(
+		app.Logger(),
+		app.oracleService,
+		time.Second,
+		currencypair.NewDeltaCurrencyPairStrategy(app.OracleKeeper),
+		compression.NewCompressionVoteExtensionCodec(
+			compression.NewDefaultVoteExtensionCodec(),
+			compression.NewZLibCompressor(),
+		),
+		oraclePreBlockHandler.PreBlocker(),
+	)
+	app.SetExtendVoteHandler(voteExtensionsHandler.ExtendVoteHandler())
+	app.SetVerifyVoteExtensionHandler(voteExtensionsHandler.VerifyVoteExtensionHandler())
 
 	// At startup, after all modules have been registered, check that all prot
 	// annotations are correct.

@@ -5,6 +5,7 @@ import (
 
 	"github.com/initia-labs/initia/x/mstaking/types"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -46,4 +47,18 @@ func (k Keeper) burnNotBondedTokens(ctx context.Context, tokens sdk.Coins) error
 	}
 
 	return k.bankKeeper.BurnCoins(ctx, types.NotBondedPoolName, tokens)
+}
+
+// TotalBondedTokens total staking tokens supply which is bonded
+func (k Keeper) TotalBondedTokens(ctx context.Context) (math.Int, error) {
+	bondedPool := k.GetBondedPool(ctx)
+	bondDenoms, err := k.BondDenoms(ctx)
+	if err != nil {
+		return math.ZeroInt(), err
+	}
+	var total math.Int
+	for _, bondDenom := range bondDenoms {
+		total = total.Add(k.bankKeeper.GetBalance(ctx, bondedPool.GetAddress(), bondDenom).Amount)
+	}
+	return total, nil
 }
