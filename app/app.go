@@ -340,7 +340,7 @@ func NewInitiaApp(
 	app.CapabilityKeeper.Seal()
 
 	// add keepers
-	moveKeeper := &movekeeper.Keeper{}
+	app.MoveKeeper = &movekeeper.Keeper{}
 
 	accountKeeper := authkeeper.NewAccountKeeper(
 		appCodec,
@@ -357,7 +357,7 @@ func NewInitiaApp(
 		appCodec,
 		runtime.NewKVStoreService(keys[banktypes.StoreKey]),
 		app.AccountKeeper,
-		movekeeper.NewMoveBankKeeper(moveKeeper),
+		movekeeper.NewMoveBankKeeper(app.MoveKeeper),
 		app.ModuleAccountAddrs(),
 		authorityAddr,
 	)
@@ -368,7 +368,7 @@ func NewInitiaApp(
 		runtime.NewKVStoreService(keys[stakingtypes.StoreKey]),
 		app.AccountKeeper,
 		app.BankKeeper,
-		movekeeper.NewVotingPowerKeeper(moveKeeper),
+		movekeeper.NewVotingPowerKeeper(app.MoveKeeper),
 		authorityAddr,
 		vc,
 		cc,
@@ -389,7 +389,7 @@ func NewInitiaApp(
 		app.AccountKeeper,
 		app.BankKeeper,
 		app.StakingKeeper,
-		movekeeper.NewDexKeeper(moveKeeper),
+		movekeeper.NewDexKeeper(app.MoveKeeper),
 		authtypes.FeeCollectorName,
 		authorityAddr,
 	)
@@ -521,7 +521,7 @@ func NewInitiaApp(
 			transferIBCModule,
 			// ics4wrapper: not used
 			nil,
-			moveKeeper,
+			app.MoveKeeper,
 			ac,
 		)
 
@@ -558,7 +558,7 @@ func NewInitiaApp(
 			app.IBCKeeper.ChannelKeeper,
 			app.IBCKeeper.PortKeeper,
 			app.AccountKeeper,
-			movekeeper.NewNftKeeper(moveKeeper),
+			movekeeper.NewNftKeeper(app.MoveKeeper),
 			scopedNftTransferKeeper,
 			authorityAddr,
 		)
@@ -570,7 +570,7 @@ func NewInitiaApp(
 			nftTransferIBCModule,
 			// ics4wrapper: not used
 			nil,
-			moveKeeper,
+			app.MoveKeeper,
 			ac,
 		)
 
@@ -664,7 +664,7 @@ func NewInitiaApp(
 	// MoveKeeper Configuration //
 	//////////////////////////////
 
-	*moveKeeper = *movekeeper.NewKeeper(
+	*app.MoveKeeper = *movekeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[movetypes.StoreKey]),
 		app.AccountKeeper,
@@ -682,9 +682,6 @@ func NewInitiaApp(
 		ac, vc,
 	)
 
-	app.MoveKeeper = moveKeeper
-	app.StakingKeeper.SetSlashingHooks(app.MoveKeeper.Hooks())
-
 	// register the staking hooks
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
 	app.StakingKeeper.SetHooks(
@@ -693,6 +690,7 @@ func NewInitiaApp(
 			app.SlashingKeeper.Hooks(),
 		),
 	)
+	app.StakingKeeper.SetSlashingHooks(app.MoveKeeper.Hooks())
 
 	// x/auction module keeper initialization
 
@@ -1012,7 +1010,9 @@ func (app *InitiaApp) InitChainer(ctx sdk.Context, req *abci.RequestInitChain) (
 	if err := tmjson.Unmarshal(req.AppStateBytes, &genesisState); err != nil {
 		panic(err)
 	}
-	app.UpgradeKeeper.SetModuleVersionMap(ctx, app.ModuleManager.GetVersionMap())
+	if err := app.UpgradeKeeper.SetModuleVersionMap(ctx, app.ModuleManager.GetVersionMap()); err != nil {
+		panic(err)
+	}
 	return app.ModuleManager.InitGenesis(ctx, app.appCodec, genesisState)
 }
 

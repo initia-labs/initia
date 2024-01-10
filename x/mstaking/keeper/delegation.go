@@ -682,10 +682,14 @@ func (k Keeper) Delegate(
 			// do nothing
 		case (tokenSrc == types.Unbonded || tokenSrc == types.Unbonding) && validator.IsBonded():
 			// transfer pools
-			k.notBondedTokensToBonded(ctx, bondAmt)
+			if err = k.notBondedTokensToBonded(ctx, bondAmt); err != nil {
+				return nil, err
+			}
 		case tokenSrc == types.Bonded && !validator.IsBonded():
 			// transfer pools
-			k.bondedTokensToNotBonded(ctx, bondAmt)
+			if err = k.bondedTokensToNotBonded(ctx, bondAmt); err != nil {
+				return nil, err
+			}
 		default:
 			panic("unknown token source bond status")
 		}
@@ -698,10 +702,12 @@ func (k Keeper) Delegate(
 
 	// Update delegation
 	delegation.Shares = delegation.Shares.Add(newShares...)
-	k.SetDelegation(ctx, delegation)
+	if err = k.SetDelegation(ctx, delegation); err != nil {
+		return nil, err
+	}
 
 	// Call the after-modification hook
-	if err := k.Hooks().AfterDelegationModified(ctx, delAddr, valAddr); err != nil {
+	if err = k.Hooks().AfterDelegationModified(ctx, delAddr, valAddr); err != nil {
 		return newShares, err
 	}
 
@@ -759,7 +765,9 @@ func (k Keeper) Unbond(
 
 		// min self delegation is constantly one.
 		if consensusPower < 1 {
-			k.jailValidator(ctx, validator)
+			if err = k.jailValidator(ctx, validator); err != nil {
+				return nil, err
+			}
 			validator = k.mustGetValidator(ctx, valAddr)
 		}
 	}
@@ -768,7 +776,9 @@ func (k Keeper) Unbond(
 	if delegation.Shares.IsZero() {
 		err = k.RemoveDelegation(ctx, delegation)
 	} else {
-		k.SetDelegation(ctx, delegation)
+		if err = k.SetDelegation(ctx, delegation); err != nil {
+			return nil, err
+		}
 		// call the after delegation modification hook
 		err = k.Hooks().AfterDelegationModified(ctx, delegatorAddress, valAddr)
 	}

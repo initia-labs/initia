@@ -93,7 +93,7 @@ func (k Keeper) IterateDelegations(
 // return all delegations used during genesis dump
 // TODO: remove this func, change all usage for iterate functionality
 func (k Keeper) GetAllSDKDelegations(ctx context.Context) (delegations []types.Delegation, err error) {
-	k.Delegations.Walk(ctx, nil, func(key collections.Pair[[]byte, []byte], del types.Delegation) (stop bool, err error) {
+	err = k.Delegations.Walk(ctx, nil, func(key collections.Pair[[]byte, []byte], del types.Delegation) (stop bool, err error) {
 		delegations = append(delegations, del)
 		return false, nil
 	})

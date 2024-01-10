@@ -49,7 +49,7 @@ func NonNegativeOutstandingInvariant(k Keeper) sdk.Invariant {
 		var count int
 		var outstanding customtypes.DecPools
 
-		k.ValidatorOutstandingRewards.Walk(ctx, nil, func(addr []byte, rewards customtypes.ValidatorOutstandingRewards) (stop bool, err error) {
+		err := k.ValidatorOutstandingRewards.Walk(ctx, nil, func(addr []byte, rewards customtypes.ValidatorOutstandingRewards) (stop bool, err error) {
 			outstanding = rewards.GetRewards()
 			if outstanding.IsAnyNegative() {
 				count++
@@ -57,6 +57,9 @@ func NonNegativeOutstandingInvariant(k Keeper) sdk.Invariant {
 			}
 			return false, nil
 		})
+		if err != nil {
+			panic(err)
+		}
 		broken := count != 0
 
 		return sdk.FormatInvariant(types.ModuleName, "nonnegative outstanding",
@@ -127,10 +130,13 @@ func ReferenceCountInvariant(k Keeper) sdk.Invariant {
 	return func(ctx sdk.Context) (string, bool) {
 
 		valCount := uint64(0)
-		k.stakingKeeper.IterateValidators(ctx, func(val stakingtypes.ValidatorI) (stop bool, err error) {
+		err := k.stakingKeeper.IterateValidators(ctx, func(val stakingtypes.ValidatorI) (stop bool, err error) {
 			valCount++
 			return false, nil
 		})
+		if err != nil {
+			panic(err)
+		}
 
 		dels, err := k.stakingKeeper.GetAllSDKDelegations(ctx)
 		if err != nil {
@@ -138,11 +144,14 @@ func ReferenceCountInvariant(k Keeper) sdk.Invariant {
 		}
 
 		slashCount := uint64(0)
-		k.ValidatorSlashEvents.Walk(ctx, nil,
+		err = k.ValidatorSlashEvents.Walk(ctx, nil,
 			func(_ collections.Triple[[]byte, uint64, uint64], _ customtypes.ValidatorSlashEvent) (stop bool, err error) {
 				slashCount++
 				return false, nil
 			})
+		if err != nil {
+			panic(err)
+		}
 
 		// one record per validator (last tracked period), one record per
 		// delegation (previous period), one record per slash (previous period)
@@ -167,10 +176,13 @@ func ModuleAccountInvariant(k Keeper) sdk.Invariant {
 	return func(ctx sdk.Context) (string, bool) {
 
 		var expectedCoins sdk.DecCoins
-		k.ValidatorOutstandingRewards.Walk(ctx, nil, func(_ []byte, rewards customtypes.ValidatorOutstandingRewards) (stop bool, err error) {
+		err := k.ValidatorOutstandingRewards.Walk(ctx, nil, func(_ []byte, rewards customtypes.ValidatorOutstandingRewards) (stop bool, err error) {
 			expectedCoins = expectedCoins.Add(rewards.Rewards.Sum()...)
 			return false, nil
 		})
+		if err != nil {
+			panic(err)
+		}
 
 		feePool, err := k.FeePool.Get(ctx)
 		if err != nil {

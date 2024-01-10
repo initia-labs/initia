@@ -227,21 +227,27 @@ func (k Keeper) InitGenesis(
 func (k Keeper) ExportGenesis(ctx context.Context) *types.GenesisState {
 	var unbondingDelegations []types.UnbondingDelegation
 
-	k.IterateUnbondingDelegations(ctx, func(ubd types.UnbondingDelegation) (stop bool, err error) {
+	err := k.IterateUnbondingDelegations(ctx, func(ubd types.UnbondingDelegation) (stop bool, err error) {
 		unbondingDelegations = append(unbondingDelegations, ubd)
 		return false, nil
 	})
+	if err != nil {
+		panic(err)
+	}
 
 	var redelegations []types.Redelegation
 
-	k.IterateRedelegations(ctx, func(red types.Redelegation) (stop bool, err error) {
+	err = k.IterateRedelegations(ctx, func(red types.Redelegation) (stop bool, err error) {
 		redelegations = append(redelegations, red)
 		return false, nil
 	})
+	if err != nil {
+		panic(err)
+	}
 
 	var lastValidatorPowers []types.LastValidatorPower
 
-	k.IterateLastValidatorPowers(ctx, func(addr sdk.ValAddress, power int64) (stop bool, err error) {
+	err = k.IterateLastValidatorPowers(ctx, func(addr sdk.ValAddress, power int64) (stop bool, err error) {
 		valAddr, err := k.validatorAddressCodec.BytesToString(addr)
 		if err != nil {
 			return true, err
@@ -250,6 +256,9 @@ func (k Keeper) ExportGenesis(ctx context.Context) *types.GenesisState {
 		lastValidatorPowers = append(lastValidatorPowers, types.LastValidatorPower{Address: valAddr, Power: power})
 		return false, nil
 	})
+	if err != nil {
+		panic(err)
+	}
 
 	params, err := k.GetParams(ctx)
 	if err != nil {

@@ -3,13 +3,10 @@ package benchmarks
 import (
 	"testing"
 
-	// "fmt"
-
 	"github.com/stretchr/testify/require"
 
+	dbm "github.com/cosmos/cosmos-db"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-
-	dbm "github.com/cometbft/cometbft-db"
 )
 
 func BenchmarkTPS(b *testing.B) {
