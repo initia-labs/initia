@@ -63,14 +63,17 @@ func InitGenesis(ctx sdk.Context, ak types.AccountKeeper, bk types.BankKeeper, k
 				panic(err)
 			}
 		case v1.StatusVotingPeriod:
-			if sdk.NewCoins(proposal.TotalDeposit...).IsAllGTE(data.Params.EmergencyMinDeposit) {
+			err := k.ActiveProposalsQueue.Set(ctx, collections.Join(*proposal.VotingEndTime, proposal.Id), proposal.Id)
+			if err != nil {
+				panic(err)
+			}
 
-				err := k.EmergencyProposalsQueue.Set(ctx, collections.Join(*proposal.VotingEndTime, proposal.Id), proposal.Id)
+			if proposal.Emergency {
+				err := k.EmergencyProposalsQueue.Set(ctx, collections.Join(*proposal.EmergencyNextTallyTime, proposal.Id), proposal.Id)
 				if err != nil {
 					panic(err)
 				}
-			} else {
-				err := k.ActiveProposalsQueue.Set(ctx, collections.Join(*proposal.VotingEndTime, proposal.Id), proposal.Id)
+				err = k.EmergencyProposals.Set(ctx, proposal.Id, []byte{1})
 				if err != nil {
 					panic(err)
 				}

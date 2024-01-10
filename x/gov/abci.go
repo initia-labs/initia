@@ -166,7 +166,7 @@ func EndBlocker(ctx sdk.Context, k *keeper.Keeper) error {
 					return false, err
 				}
 
-				if err = k.EmergencyProposalsQueue.Remove(ctx, collections.Join(*proposal.EmergencyNextTallyTime, proposal.Id)); err != nil {
+				if err = k.EmergencyProposalsQueue.Remove(ctx, key); err != nil {
 					return false, err
 				}
 
@@ -175,27 +175,8 @@ func EndBlocker(ctx sdk.Context, k *keeper.Keeper) error {
 				}
 				return false, nil
 			}
-
-			if errors.Is(err, collections.ErrNotFound) {
-				if err = k.EmergencyProposalsQueue.Remove(ctx, collections.Join(*proposal.EmergencyNextTallyTime, proposal.Id)); err != nil {
-					return false, err
-				}
-
-				if err = k.EmergencyProposals.Remove(ctx, proposal.Id); err != nil {
-					return false, err
-				}
-			}
-
 			return false, err
 		}
-
-		if !key.K1().Equal(*proposal.EmergencyNextTallyTime) {
-			if err = k.EmergencyProposalsQueue.Remove(ctx, collections.Join(key.K1(), proposal.Id)); err != nil {
-				return false, err
-			}
-			return false, nil
-		}
-
 		cacheCtx, writeCache := ctx.CacheContext()
 
 		quorumReached, passed, burnDeposits, tallyResults, err := k.Tally(cacheCtx, proposal)
@@ -209,7 +190,7 @@ func EndBlocker(ctx sdk.Context, k *keeper.Keeper) error {
 				return false, err
 			}
 			proposal.EmergencyNextTallyTime = &nextTallyTime
-			if err = k.EmergencyProposalsQueue.Remove(ctx, collections.Join(*proposal.EmergencyNextTallyTime, proposal.Id)); err != nil {
+			if err = k.EmergencyProposalsQueue.Remove(ctx, key); err != nil {
 				return false, err
 			}
 			return false, nil
