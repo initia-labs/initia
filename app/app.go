@@ -775,6 +775,11 @@ func NewInitiaApp(
 	app.BasicModuleManager.RegisterLegacyAminoCodec(legacyAmino)
 	app.BasicModuleManager.RegisterInterfaces(interfaceRegistry)
 
+	// NOTE: upgrade module is required to be prioritized
+	app.ModuleManager.SetOrderPreBlockers(
+		upgradetypes.ModuleName,
+	)
+
 	// During begin block slashing happens after distr.BeginBlocker so that
 	// there is nothing left over in the validator fee pool, so as to keep the
 	// CanWithdrawInvariant invariant.
@@ -993,6 +998,11 @@ func (app *InitiaApp) setAnteHandler(
 
 // Name returns the name of the App
 func (app *InitiaApp) Name() string { return app.BaseApp.Name() }
+
+// PreBlocker application updates every pre block
+func (app *InitiaApp) PreBlocker(ctx sdk.Context, _ *abci.RequestFinalizeBlock) (*sdk.ResponsePreBlock, error) {
+	return app.ModuleManager.PreBlock(ctx)
+}
 
 // BeginBlocker application updates every begin block
 func (app *InitiaApp) BeginBlocker(ctx sdk.Context) (sdk.BeginBlock, error) {
