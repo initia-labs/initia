@@ -14,6 +14,8 @@ import (
 	v3 "github.com/cosmos/cosmos-sdk/x/gov/migrations/v3"
 	v1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	"github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
+
+	customtypes "github.com/initia-labs/initia/x/gov/types"
 )
 
 var _ v1.QueryServer = queryServer{}
@@ -50,12 +52,13 @@ func (q queryServer) Proposal(ctx context.Context, req *v1.QueryProposalRequest)
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &v1.QueryProposalResponse{Proposal: &proposal}, nil
+	v1Proposal := proposal.ToV1()
+	return &v1.QueryProposalResponse{Proposal: &v1Proposal}, nil
 }
 
 // Proposals implements the Query/Proposals gRPC method
 func (q queryServer) Proposals(ctx context.Context, req *v1.QueryProposalsRequest) (*v1.QueryProposalsResponse, error) {
-	filteredProposals, pageRes, err := query.CollectionFilteredPaginate(ctx, q.k.Proposals, req.Pagination, func(key uint64, p v1.Proposal) (include bool, err error) {
+	filteredProposals, pageRes, err := query.CollectionFilteredPaginate(ctx, q.k.Proposals, req.Pagination, func(key uint64, p customtypes.Proposal) (include bool, err error) {
 		matchVoter, matchDepositor, matchStatus := true, true, true
 
 		// match status (if supplied/valid)
@@ -92,7 +95,7 @@ func (q queryServer) Proposals(ctx context.Context, req *v1.QueryProposalsReques
 		}
 		// continue to next item, do not include because we're appending results above.
 		return false, nil
-	}, func(_ uint64, value v1.Proposal) (*v1.Proposal, error) {
+	}, func(_ uint64, value customtypes.Proposal) (*customtypes.Proposal, error) {
 		return &value, nil
 	})
 
@@ -100,7 +103,8 @@ func (q queryServer) Proposals(ctx context.Context, req *v1.QueryProposalsReques
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &v1.QueryProposalsResponse{Proposals: filteredProposals, Pagination: pageRes}, nil
+	v1FilteredProposals := customtypes.ProposalsToV1(filteredProposals)
+	return &v1.QueryProposalsResponse{Proposals: v1FilteredProposals, Pagination: pageRes}, nil
 }
 
 // Vote returns Voted information based on proposalID, voterAddr

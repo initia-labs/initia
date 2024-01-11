@@ -2,7 +2,6 @@ package types_test
 
 import (
 	"testing"
-	"time"
 
 	"cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
@@ -33,13 +32,13 @@ func TestValidateGenesis(t *testing.T) {
 		{
 			name: "valid",
 			genesisState: func() *types.GenesisState {
-				return types.NewGenesisState(v1.DefaultStartingProposalID, params, time.Now().UTC())
+				return types.NewGenesisState(v1.DefaultStartingProposalID, params)
 			},
 		},
 		{
 			name: "invalid StartingProposalId",
 			genesisState: func() *types.GenesisState {
-				return types.NewGenesisState(0, params, time.Now().UTC())
+				return types.NewGenesisState(0, params)
 			},
 			expErr: true,
 		},
@@ -52,7 +51,7 @@ func TestValidateGenesis(t *testing.T) {
 					Amount: math.NewInt(-100),
 				}}
 
-				return types.NewGenesisState(0, params1, time.Now().UTC())
+				return types.NewGenesisState(0, params1)
 			},
 			expErr: true,
 		},
@@ -62,7 +61,7 @@ func TestValidateGenesis(t *testing.T) {
 				params1 := params
 				params1.MaxDepositPeriod = 0
 
-				return types.NewGenesisState(0, params1, time.Now().UTC())
+				return types.NewGenesisState(0, params1)
 			},
 			expErr: true,
 		},
@@ -72,7 +71,7 @@ func TestValidateGenesis(t *testing.T) {
 				params1 := params
 				params1.Quorum = "2"
 
-				return types.NewGenesisState(0, params1, time.Now().UTC())
+				return types.NewGenesisState(0, params1)
 			},
 			expErr: true,
 		},
@@ -82,7 +81,7 @@ func TestValidateGenesis(t *testing.T) {
 				params1 := params
 				params1.Threshold = "2"
 
-				return types.NewGenesisState(0, params1, time.Now().UTC())
+				return types.NewGenesisState(0, params1)
 			},
 			expErr: true,
 		},
@@ -92,7 +91,7 @@ func TestValidateGenesis(t *testing.T) {
 				params1 := params
 				params1.VetoThreshold = "2"
 
-				return types.NewGenesisState(0, params1, time.Now().UTC())
+				return types.NewGenesisState(0, params1)
 			},
 			expErr: true,
 		},

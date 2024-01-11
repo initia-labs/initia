@@ -2,7 +2,6 @@ package types
 
 import (
 	"errors"
-	"time"
 
 	"cosmossdk.io/core/address"
 	"github.com/cosmos/cosmos-sdk/codec/types"
@@ -10,11 +9,10 @@ import (
 )
 
 // NewGenesisState creates a new genesis state for the governance module
-func NewGenesisState(startingProposalID uint64, params Params, lastEmergencyProposalTallyTimestamp time.Time) *GenesisState {
+func NewGenesisState(startingProposalID uint64, params Params) *GenesisState {
 	return &GenesisState{
-		StartingProposalId:                  startingProposalID,
-		Params:                              &params,
-		LastEmergencyProposalTallyTimestamp: lastEmergencyProposalTallyTimestamp,
+		StartingProposalId: startingProposalID,
+		Params:             &params,
 	}
 }
 
@@ -23,7 +21,6 @@ func DefaultGenesisState() *GenesisState {
 	return NewGenesisState(
 		v1.DefaultStartingProposalID,
 		DefaultParams(),
-		time.Now().UTC(),
 	)
 }
 

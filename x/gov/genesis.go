@@ -68,7 +68,11 @@ func InitGenesis(ctx sdk.Context, ak types.AccountKeeper, bk types.BankKeeper, k
 				panic(err)
 			}
 
-			if sdk.NewCoins(proposal.TotalDeposit...).IsAllGTE(data.Params.EmergencyMinDeposit) {
+			if proposal.Emergency {
+				err := k.EmergencyProposalsQueue.Set(ctx, collections.Join(*proposal.EmergencyNextTallyTime, proposal.Id), proposal.Id)
+				if err != nil {
+					panic(err)
+				}
 				err = k.EmergencyProposals.Set(ctx, proposal.Id, []byte{1})
 				if err != nil {
 					panic(err)
@@ -91,10 +95,6 @@ func InitGenesis(ctx sdk.Context, ak types.AccountKeeper, bk types.BankKeeper, k
 	if !balance.Equal(totalDeposits) {
 		panic(fmt.Sprintf("expected module account was %s but we got %s", balance.String(), totalDeposits.String()))
 	}
-
-	if err = k.LastEmergencyProposalTallyTimestamp.Set(ctx, data.LastEmergencyProposalTallyTimestamp); err != nil {
-		panic(err)
-	}
 }
 
 // ExportGenesis - output genesis parameters
@@ -104,8 +104,8 @@ func ExportGenesis(ctx sdk.Context, k *keeper.Keeper) (*customtypes.GenesisState
 		return nil, err
 	}
 
-	var proposals v1.Proposals
-	err = k.Proposals.Walk(ctx, nil, func(_ uint64, value v1.Proposal) (stop bool, err error) {
+	var proposals customtypes.Proposals
+	err = k.Proposals.Walk(ctx, nil, func(_ uint64, value customtypes.Proposal) (stop bool, err error) {
 		proposals = append(proposals, &value)
 		return false, nil
 	})
@@ -142,18 +142,12 @@ func ExportGenesis(ctx sdk.Context, k *keeper.Keeper) (*customtypes.GenesisState
 		panic(err)
 	}
 
-	lastEmergencyProposalTallyTimestamp, err := k.LastEmergencyProposalTallyTimestamp.Get(ctx)
-	if err != nil {
-		panic(err)
-	}
-
 	return &customtypes.GenesisState{
-		StartingProposalId:                  startingProposalID,
-		Deposits:                            proposalsDeposits,
-		Votes:                               proposalsVotes,
-		Proposals:                           proposals,
-		Params:                              &params,
-		Constitution:                        constitution,
-		LastEmergencyProposalTallyTimestamp: lastEmergencyProposalTallyTimestamp,
+		StartingProposalId: startingProposalID,
+		Deposits:           proposalsDeposits,
+		Votes:              proposalsVotes,
+		Proposals:          proposals,
+		Params:             &params,
+		Constitution:       constitution,
 	}, nil
 }

@@ -428,7 +428,11 @@ func _createTestInput(
 	)
 
 	require.NoError(t, govKeeper.ProposalID.Set(ctx, govtypesv1.DefaultStartingProposalID))
-	require.NoError(t, govKeeper.Params.Set(ctx, customgovtypes.DefaultParams()))
+	govParams := customgovtypes.DefaultParams()
+	govParams.MinDeposit[0].Denom = bondDenom
+	govParams.EmergencyMinDeposit[0].Denom = bondDenom
+
+	require.NoError(t, govKeeper.Params.Set(ctx, govParams))
 
 	cfg := sdk.GetConfig()
 	cfg.SetAddressVerifier(initiaapp.VerifyAddressLen())
