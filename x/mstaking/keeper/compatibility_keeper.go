@@ -48,6 +48,35 @@ func (k CompatibilityKeeper) Validator(ctx context.Context, addr sdk.ValAddress)
 	}, nil
 }
 
+func (k CompatibilityKeeper) ValidatorByConsAddr(ctx context.Context, addr sdk.ConsAddress) (cosmostypes.ValidatorI, error) {
+	val, err := k.Keeper.GetValidatorByConsAddr(ctx, addr)
+	if err != nil {
+		return nil, err
+	}
+	unbondingOnHoldRefCount := int64(0)
+	unbondingIds := []uint64{}
+	if val.UnbondingId >= types.DefaultUnbondingIdStart {
+		unbondingOnHoldRefCount++
+		unbondingIds = append(unbondingIds, val.UnbondingId)
+	}
+
+	return cosmostypes.Validator{
+		OperatorAddress:         val.OperatorAddress,
+		ConsensusPubkey:         val.ConsensusPubkey,
+		Jailed:                  val.Jailed,
+		Status:                  cosmostypes.BondStatus(val.Status),
+		Tokens:                  val.VotingPower,
+		Description:             cosmostypes.Description(val.Description),
+		UnbondingHeight:         val.UnbondingHeight,
+		UnbondingTime:           val.UnbondingTime,
+		Commission:              cosmostypes.NewCommission(val.Commission.Rate, val.Commission.MaxRate, val.Commission.MaxChangeRate),
+		MinSelfDelegation:       math.OneInt(),
+		UnbondingOnHoldRefCount: unbondingOnHoldRefCount,
+		UnbondingIds:            unbondingIds,
+		DelegatorShares:         math.LegacyZeroDec(), // not supported
+	}, nil
+}
+
 // TotalBondedTokens returns sum of voting power
 func (k CompatibilityKeeper) TotalBondedTokens(ctx context.Context) (math.Int, error) {
 	total := math.ZeroInt()

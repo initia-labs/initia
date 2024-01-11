@@ -1,16 +1,11 @@
 package app
 
 import (
-	"context"
 	"fmt"
 	"math/big"
 	"net/http"
 
 	"go.uber.org/zap"
-
-	sdkmath "cosmossdk.io/math"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
 	"github.com/skip-mev/slinky/abci/preblock/oracle/math"
 	"github.com/skip-mev/slinky/aggregator"
@@ -26,80 +21,14 @@ import (
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
 	mstakingkeeper "github.com/initia-labs/initia/x/mstaking/keeper"
-	mstakingtypes "github.com/initia-labs/initia/x/mstaking/types"
 )
-
-type wrappedStakingKeeper struct {
-	mstakingkeeper.CompatibilityKeeper
-}
-
-func (w wrappedStakingKeeper) ValidatorByConsAddr(ctx context.Context, addr sdk.ConsAddress) (stakingtypes.ValidatorI, error) {
-	val, err := w.GetValidatorByConsAddr(ctx, addr)
-	return wrappedValidator{val}, err
-}
-
-type wrappedValidator struct {
-	mstakingtypes.Validator
-}
-
-// GetMinSelfDelegation is required to fulfill the cosmos-sdk.x.staking.ValidatorI interface
-// but the oracle doesn't use it.
-func (w wrappedValidator) GetMinSelfDelegation() sdkmath.Int { panic("not implemented") }
-
-// GetStatus is required to fulfill the cosmos-sdk.x.staking.ValidatorI interface
-// but the oracle doesn't use it.
-func (w wrappedValidator) GetStatus() stakingtypes.BondStatus { panic("not implemented") }
-
-// SharesFromTokensTruncated is required to fulfill the cosmos-sdk.x.staking.ValidatorI interface
-// but the oracle doesn't use it.
-func (w wrappedValidator) SharesFromTokensTruncated(shares sdkmath.Int) (sdkmath.LegacyDec, error) {
-	panic("not implemented")
-}
-
-func (w wrappedValidator) TokensFromSharesRoundUp(dec sdkmath.LegacyDec) sdkmath.LegacyDec {
-	panic("not implemented")
-}
-
-func (w wrappedValidator) TokensFromShares(dec sdkmath.LegacyDec) sdkmath.LegacyDec {
-	panic("not implemented")
-}
-
-func (w wrappedValidator) GetTokens() sdkmath.Int {
-	panic("not implemented")
-}
-
-func (w wrappedValidator) GetDelegatorShares() sdkmath.LegacyDec {
-	panic("not implemented")
-}
-
-func (w wrappedValidator) TokensFromSharesTruncated(dec sdkmath.LegacyDec) sdkmath.LegacyDec {
-	panic("not implemented")
-}
-
-func (w wrappedValidator) GetConsAddr() ([]byte, error) {
-	panic("not implemented")
-}
-
-func (w wrappedValidator) GetBondedTokens() sdkmath.Int {
-	var tokens sdkmath.Int
-	for _, coin := range w.BondedTokens() {
-		tokens = tokens.Add(sdkmath.NewIntFromBigInt(coin.Amount.BigInt()))
-	}
-	return tokens
-}
-
-// SharesFromTokens is required to fulfill the cosmos-sdk.x.staking.ValidatorI interface
-// but the oracle doesn't use it.
-func (w wrappedValidator) SharesFromTokens(_ sdkmath.Int) (sdkmath.LegacyDec, error) {
-	panic("not implemented")
-}
 
 // GetOracleAggregationFN returns the vote aggregation function used by the oracle
 // We use the default stake weighted median w/ a required greater than 2/3 stake threshold for acceptance
 func (app *InitiaApp) GetOracleAggregationFN() aggregator.AggregateFnFromContext[string, map[oracletypes.CurrencyPair]*big.Int] {
 	return math.VoteWeightedMedianFromContext(
 		app.Logger(),
-		wrappedStakingKeeper{mstakingkeeper.NewCompatibilityKeeper(app.StakingKeeper)},
+		mstakingkeeper.NewCompatibilityKeeper(app.StakingKeeper),
 		math.DefaultPowerThreshold,
 	)
 }

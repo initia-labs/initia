@@ -151,6 +151,7 @@ import (
 	auctionante "github.com/skip-mev/block-sdk/x/auction/ante"
 	auctionkeeper "github.com/skip-mev/block-sdk/x/auction/keeper"
 	auctiontypes "github.com/skip-mev/block-sdk/x/auction/types"
+
 	// slinky oracle dependencies
 	oraclepreblock "github.com/skip-mev/slinky/abci/preblock/oracle"
 	compression "github.com/skip-mev/slinky/abci/strategies/codec"
@@ -978,6 +979,10 @@ func NewInitiaApp(
 		panic(err)
 	}
 	metrics, consAddress, err := servicemetrics.NewServiceMetricsFromConfig(metricsCfg.AppMetrics)
+	if err != nil {
+		panic(err)
+	}
+
 	// If app level instrumentation is enabled, then wrap the oracle service with a metrics client
 	// to get metrics on the oracle service (for ABCI++). This will allow the instrumentation to track
 	// latency in VerifyVoteExtension requests and more.
