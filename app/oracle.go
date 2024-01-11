@@ -30,7 +30,7 @@ import (
 )
 
 type wrappedStakingKeeper struct {
-	mstakingkeeper.Keeper
+	mstakingkeeper.CompatibilityKeeper
 }
 
 func (w wrappedStakingKeeper) ValidatorByConsAddr(ctx context.Context, addr sdk.ConsAddress) (stakingtypes.ValidatorI, error) {
@@ -99,8 +99,7 @@ func (w wrappedValidator) SharesFromTokens(_ sdkmath.Int) (sdkmath.LegacyDec, er
 func (app *InitiaApp) GetOracleAggregationFN() aggregator.AggregateFnFromContext[string, map[oracletypes.CurrencyPair]*big.Int] {
 	return math.VoteWeightedMedianFromContext(
 		app.Logger(),
-		// Their staking keeper doesn't have TotalBondedTokens method
-		wrappedStakingKeeper{*app.StakingKeeper},
+		wrappedStakingKeeper{mstakingkeeper.NewCompatibilityKeeper(app.StakingKeeper)},
 		math.DefaultPowerThreshold,
 	)
 }
