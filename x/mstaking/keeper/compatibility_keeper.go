@@ -80,9 +80,10 @@ func (k CompatibilityKeeper) ValidatorByConsAddr(ctx context.Context, addr sdk.C
 // TotalBondedTokens returns sum of voting power
 func (k CompatibilityKeeper) TotalBondedTokens(ctx context.Context) (math.Int, error) {
 	total := math.ZeroInt()
-	err := k.IterateBondedValidatorsByPower(ctx, func(val types.ValidatorI) (stop bool, err error) {
-		total = total.Add(val.GetVotingPower())
+	err := k.IterateLastValidatorPowers(ctx, func(operator sdk.ValAddress, power int64) (stop bool, err error) {
+		total = total.AddRaw(power)
 		return false, nil
 	})
+
 	return total, err
 }
