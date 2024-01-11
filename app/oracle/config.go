@@ -108,8 +108,19 @@ update_interval = "{{ .OracleConfig.UpdateInterval }}"
 # interval = "1s"  # Replace "1s" with your desired update interval duration.
 # max_queries = 5  # Replace "5" with your desired maximum number of queries per update interval.
 
+# [[providers]]
+# name = "coingecko"
+# path = "config/local/providers/coingecko.json"
+# timeout = "500ms"
+# interval = "1s"
+# max_queries = 1 # CoinGecko is atomic so it can fetch all prices in a single request.
+
 # [[oracle.currency_pairs]]
 # base = "BITCOIN"
+# quote = "USD"
+
+# [[currency_pairs]]
+# base = "ETHEREUM"
 # quote = "USD"
 
 [oracle.metrics]
