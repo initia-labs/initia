@@ -109,7 +109,7 @@ func SetupWithGenesisAccounts(
 	bondAmt := sdk.TokensFromConsensusPower(1, sdk.DefaultPowerReduction)
 	bondCoins := sdk.NewCoins(sdk.NewCoin(BondDenom, bondAmt))
 
-	for _, val := range valSet.Validators {
+	for i, val := range valSet.Validators {
 		pk, err := cryptocodec.FromCmtPubKeyInterface(val.PubKey)
 		if err != nil {
 			panic(err)
@@ -133,7 +133,7 @@ func SetupWithGenesisAccounts(
 		}
 
 		validators = append(validators, validator)
-		delegations = append(delegations, stakingtypes.NewDelegation(genAccs[0].GetAddress().String(), sdk.ValAddress(val.Address).String(), sdk.NewDecCoins(sdk.NewDecCoinFromDec(BondDenom, math.LegacyOneDec()))))
+		delegations = append(delegations, stakingtypes.NewDelegation(genAccs[i].GetAddress().String(), sdk.ValAddress(val.Address).String(), sdk.NewDecCoins(sdk.NewDecCoinFromDec(BondDenom, math.LegacyOneDec()))))
 	}
 
 	// set validators and delegations

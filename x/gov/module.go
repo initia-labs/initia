@@ -96,6 +96,7 @@ func (a AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux 
 	if err := v1.RegisterQueryHandlerClient(context.Background(), mux, v1.NewQueryClient(clientCtx)); err != nil {
 		panic(err)
 	}
+
 	if err := customtypes.RegisterQueryHandlerClient(context.Background(), mux, customtypes.NewQueryClient(clientCtx)); err != nil {
 		panic(err)
 	}

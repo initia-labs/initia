@@ -13,6 +13,8 @@ import (
 	v1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 
 	"github.com/initia-labs/initia/x/gov/keeper"
+
+	customtypes "github.com/initia-labs/initia/x/gov/types"
 )
 
 // EndBlocker called every block, process inflation, update validator set.
@@ -90,7 +92,7 @@ func EndBlocker(ctx sdk.Context, k *keeper.Keeper) error {
 			"proposal", proposal.Id,
 			"expedited", proposal.Expedited,
 			"title", proposal.Title,
-			"min_deposit", sdk.NewCoins(proposal.GetMinDepositFromParams(params.ToV1())...).String(),
+			"min_deposit", sdk.NewCoins(proposal.GetMinDepositFromParams(params)...).String(),
 			"total_deposit", sdk.NewCoins(proposal.TotalDeposit...).String(),
 		)
 
@@ -117,8 +119,13 @@ func EndBlocker(ctx sdk.Context, k *keeper.Keeper) error {
 					return false, err
 				}
 
-				if err = k.EmergencyProposals.Remove(ctx, proposal.Id); err != nil {
-					return false, err
+				if proposal.Emergency {
+					if err = k.EmergencyProposalsQueue.Remove(ctx, collections.Join(*proposal.EmergencyNextTallyTime, proposal.Id)); err != nil {
+						return false, err
+					}
+					if err = k.EmergencyProposals.Remove(ctx, proposal.Id); err != nil {
+						return false, err
+					}
 				}
 
 				return false, nil
@@ -143,58 +150,70 @@ func EndBlocker(ctx sdk.Context, k *keeper.Keeper) error {
 		return err
 	}
 
-	// periodically tally emergency proposal
-	lastEmergencyProposalTallyTimestamp, err := k.LastEmergencyProposalTallyTimestamp.Get(ctx)
-	if err != nil {
-		return err
-	}
+	err = k.EmergencyProposalsQueue.Walk(ctx, rng, func(key collections.Pair[time.Time, uint64], _ uint64) (bool, error) {
+		proposal, err := k.Proposals.Get(ctx, key.K2())
+		if err != nil {
+			// if the proposal has an encoding error, this means it cannot be processed by x/gov
+			// this could be due to some types missing their registration
+			// instead of returning an error (i.e, halting the chain), we fail the proposal
+			if errors.Is(err, collections.ErrEncoding) {
+				proposal.Id = key.K2()
+				if err := failUnsupportedProposal(ctx, k, proposal, err.Error(), true); err != nil {
+					return false, err
+				}
 
-	if ctx.BlockTime().After(lastEmergencyProposalTallyTimestamp.Add(params.EmergencyTallyInterval)) {
-		err = k.EmergencyProposals.Walk(ctx, nil, func(proposalID uint64, _ []byte) (stop bool, err error) {
-			proposal, err := k.Proposals.Get(ctx, proposalID)
-			if err != nil {
-				return false, err
-			}
+				if err = k.ActiveProposalsQueue.Remove(ctx, collections.Join(*proposal.VotingEndTime, proposal.Id)); err != nil {
+					return false, err
+				}
 
-			cacheCtx, writeCache := ctx.CacheContext()
+				if err = k.EmergencyProposalsQueue.Remove(ctx, key); err != nil {
+					return false, err
+				}
 
-			// Tally internally delete votes, so use cache context to prevent
-			// deleting votes of proposal in progress.
-			quorumReached, passed, burnDeposits, tallyResults, err := k.Tally(cacheCtx, proposal)
-			if err != nil {
-				return false, err
-			}
-			if !quorumReached {
+				if err = k.EmergencyProposals.Remove(ctx, proposal.Id); err != nil {
+					return false, err
+				}
 				return false, nil
 			}
+			return false, err
+		}
+		cacheCtx, writeCache := ctx.CacheContext()
 
-			// quorum reached; commit the state changes from k.Tally()
-			writeCache()
+		quorumReached, passed, burnDeposits, tallyResults, err := k.Tally(cacheCtx, proposal)
+		if err != nil {
+			return false, err
+		}
 
-			// handle tally result
-			err = handleTallyResult(ctx, k, proposal, passed, burnDeposits, tallyResults)
-			if err != nil {
+		if !quorumReached {
+			nextTallyTime := ctx.BlockTime().Add(params.EmergencyTallyInterval)
+			if err = k.EmergencyProposalsQueue.Set(ctx, collections.Join(nextTallyTime, proposal.Id), proposal.Id); err != nil {
 				return false, err
 			}
-
+			proposal.EmergencyNextTallyTime = &nextTallyTime
+			if err = k.EmergencyProposalsQueue.Remove(ctx, key); err != nil {
+				return false, err
+			}
 			return false, nil
-		})
+		}
+
+		// quorum reached; commit the state changes from k.Tally()
+		writeCache()
+
+		err = handleTallyResult(ctx, k, proposal, passed, burnDeposits, tallyResults)
 		if err != nil {
-			return err
+			return false, err
 		}
 
-		if err := k.LastEmergencyProposalTallyTimestamp.Set(ctx, ctx.BlockTime()); err != nil {
-			return err
-		}
-	}
+		return false, nil
+	})
 
-	return nil
+	return err
 }
 
 func handleTallyResult(
 	ctx sdk.Context,
 	k *keeper.Keeper,
-	proposal v1.Proposal,
+	proposal customtypes.Proposal,
 	passed, burnDeposits bool,
 	tallyResults v1.TallyResult,
 ) (err error) {
@@ -217,8 +236,14 @@ func handleTallyResult(
 		return err
 	}
 
-	if err = k.EmergencyProposals.Remove(ctx, proposal.Id); err != nil {
-		return err
+	if proposal.Emergency {
+		if err = k.EmergencyProposalsQueue.Remove(ctx, collections.Join(*proposal.EmergencyNextTallyTime, proposal.Id)); err != nil {
+			return err
+		}
+
+		if err = k.EmergencyProposals.Remove(ctx, proposal.Id); err != nil {
+			return err
+		}
 	}
 
 	var tagValue, logMsg string
@@ -356,7 +381,7 @@ func safeExecuteHandler(ctx sdk.Context, msg sdk.Msg, handler baseapp.MsgService
 func failUnsupportedProposal(
 	ctx sdk.Context,
 	k *keeper.Keeper,
-	proposal v1.Proposal,
+	proposal customtypes.Proposal,
 	errMsg string,
 	active bool,
 ) error {
