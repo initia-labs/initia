@@ -79,6 +79,8 @@ func DefaultConfig() WrappedOracleConfig {
 				ValidatorConsAddress: "",
 			},
 		},
+		CoinBaseConfig:  defaultCoinBaseConfig(),
+		CoinGeckoConfig: defaultCoinGeckoConfig(),
 	}
 }
 
@@ -148,36 +150,27 @@ enabled = "{{ .OracleConfig.MetricsConfig.AppMetrics.Enabled }}"
 # consensus address in order to enable app side metrics.
 validator_cons_address = "{{ .OracleConfig.MetricsConfig.AppMetrics.ValidatorConsAddress }}"
 
+[oracle.coinbase.symbol_map]
+%s
+
 [oracle.coingecko]
 # APIKey is the API key used to make requests to the CoinGecko API.
 api_key = "{{ .OracleConfig.CoinGeckoConfig.APIKey }}"
 
 # SupportedBases maps an oracle base currency to a CoinGecko base currency.
 [oracle.coingecko.supported_bases]
-"BITCOIN"  = "bitcoin"
-"ETHEREUM" = "ethereum"
-"ATOM"     = "cosmos"
-"SOLANA"   = "solana"
-"POLKADOT" = "polkadot"
-"DYDX"     = "dydx-chain"
+%s
 
 # SupportedQuotes maps an oracle quote currency to a CoinGecko quote currency.
 [oracle.coingecko.supported_quotes]
-"USD"      = "usd"
-"ETHEREUM" = "eth"
-
-[oracle.coinbase.symbol_map]
-"BITCOIN"  = "BTC"
-"USD"      = "USD"
-"ETHEREUM" = "ETH"
-"ATOM"     = "ATOM"
-"SOLANA"   = "SOL"
-"POLKADOT" = "DOT"
-"DYDX"     = "DYDX"
+%s
 
 `,
 		coinbase.Name, coinbase.Name,
 		coingecko.Name, coingecko.Name,
+		defaultCoinBaseConfig().SymbolMapString(),
+		defaultCoinGeckoConfig().SupportedBasesString(),
+		defaultCoinGeckoConfig().SupportedQuotesString(),
 	)
 )
 
