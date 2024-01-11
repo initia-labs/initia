@@ -52,6 +52,7 @@ require (
 	go.uber.org/zap v1.24.0
 	golang.org/x/crypto v0.16.0
 	golang.org/x/exp v0.0.0-20231006140011-7918f672742d
+	golang.org/x/sync v0.5.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20231212172506-995d672761c0
 	google.golang.org/grpc v1.60.1
 	google.golang.org/protobuf v1.31.0
@@ -189,7 +190,6 @@ require (
 	go.uber.org/multierr v1.10.0 // indirect
 	golang.org/x/net v0.19.0 // indirect
 	golang.org/x/oauth2 v0.15.0 // indirect
-	golang.org/x/sync v0.5.0 // indirect
 	golang.org/x/sys v0.15.0 // indirect
 	golang.org/x/term v0.15.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
@@ -211,7 +211,7 @@ replace (
 	// use cosmos fork of keyring
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
 
-	github.com/cosmos/cosmos-sdk => github.com/initia-labs/cosmos-sdk v0.0.0-20240103092915-bf1e1bc520d0
+	github.com/cosmos/cosmos-sdk => github.com/initia-labs/cosmos-sdk v0.0.0-20240110022757-882a0c35539b
 
 	// dgrijalva/jwt-go is deprecated and doesn't receive security updates.
 	// TODO: remove it: https://github.com/cosmos/cosmos-sdk/issues/13134

@@ -35,6 +35,7 @@ import (
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 
 	initiaapp "github.com/initia-labs/initia/app"
+	initiaapporacle "github.com/initia-labs/initia/app/oracle"
 	"github.com/initia-labs/initia/app/params"
 	movecmd "github.com/initia-labs/initia/cmd/move"
 	"github.com/initia-labs/initia/x/genutil"
@@ -150,7 +151,16 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig, b
 		snapshot.Cmd(a.newApp),
 	)
 
-	server.AddCommands(rootCmd, initiaapp.DefaultNodeHome, a.newApp, a.appExport, addModuleInitFlags)
+	server.AddCommandsWithOptions(
+		rootCmd,
+		initiaapp.DefaultNodeHome,
+		a.newApp,
+		a.appExport,
+		addModuleInitFlags,
+		server.StartCmdOptions{
+			PostSetup: postSetup,
+		},
+	)
 
 	// add keybase, auxiliary RPC, query, and tx child commands
 	rootCmd.AddCommand(
@@ -254,6 +264,7 @@ func (a appCreator) newApp(
 	return initiaapp.NewInitiaApp(
 		logger, db, traceStore, true,
 		moveconfig.GetConfig(appOpts),
+		initiaapporacle.ReadWrappedOracleConfig(appOpts),
 		appOpts,
 		baseappOptions...,
 	)
@@ -277,13 +288,13 @@ func (a appCreator) appExport(
 
 	var initiaApp *initiaapp.InitiaApp
 	if height != -1 {
-		initiaApp = initiaapp.NewInitiaApp(logger, db, traceStore, false, moveconfig.DefaultMoveConfig(), appOpts)
+		initiaApp = initiaapp.NewInitiaApp(logger, db, traceStore, false, moveconfig.DefaultMoveConfig(), initiaapporacle.DefaultConfig(), appOpts)
 
 		if err := initiaApp.LoadHeight(height); err != nil {
 			return servertypes.ExportedApp{}, err
 		}
 	} else {
-		initiaApp = initiaapp.NewInitiaApp(logger, db, traceStore, true, moveconfig.DefaultMoveConfig(), appOpts)
+		initiaApp = initiaapp.NewInitiaApp(logger, db, traceStore, true, moveconfig.DefaultMoveConfig(), initiaapporacle.DefaultConfig(), appOpts)
 	}
 
 	return initiaApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs, modulesToExport)

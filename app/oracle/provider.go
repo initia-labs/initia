@@ -1,4 +1,4 @@
-package app
+package oracle
 
 import (
 	"fmt"
@@ -6,6 +6,8 @@ import (
 	"net/http"
 
 	"go.uber.org/zap"
+
+	"cosmossdk.io/log"
 
 	"github.com/skip-mev/slinky/abci/preblock/oracle/math"
 	"github.com/skip-mev/slinky/aggregator"
@@ -20,15 +22,13 @@ import (
 	providertypes "github.com/skip-mev/slinky/providers/types"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
-	mstakingkeeper "github.com/initia-labs/initia/x/mstaking/keeper"
+	stakingkeeper "github.com/initia-labs/initia/x/mstaking/keeper"
 )
 
-// GetOracleAggregationFN returns the vote aggregation function used by the oracle
-// We use the default stake weighted median w/ a required greater than 2/3 stake threshold for acceptance
-func (app *InitiaApp) GetOracleAggregationFN() aggregator.AggregateFnFromContext[string, map[oracletypes.CurrencyPair]*big.Int] {
+func GetOracleAggregationFN(logger log.Logger, stakingKeeper *stakingkeeper.Keeper) aggregator.AggregateFnFromContext[string, map[oracletypes.CurrencyPair]*big.Int] {
 	return math.VoteWeightedMedianFromContext(
-		app.Logger(),
-		mstakingkeeper.NewCompatibilityKeeper(app.StakingKeeper),
+		logger,
+		stakingkeeper.NewCompatibilityKeeper(stakingKeeper),
 		math.DefaultPowerThreshold,
 	)
 }

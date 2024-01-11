@@ -22,6 +22,7 @@ import (
 	simcli "github.com/cosmos/cosmos-sdk/x/simulation/client/cli"
 
 	initiaapp "github.com/initia-labs/initia/app"
+	initiaapporacle "github.com/initia-labs/initia/app/oracle"
 	moveconfig "github.com/initia-labs/initia/x/move/config"
 	movetypes "github.com/initia-labs/initia/x/move/types"
 )
@@ -43,7 +44,7 @@ func (suite *AnteTestSuite) createTestApp(isCheckTx bool, tempDir string) (*init
 	appOptions[server.FlagInvCheckPeriod] = simcli.FlagPeriodValue
 
 	app := initiaapp.NewInitiaApp(
-		log.NewNopLogger(), dbm.NewMemDB(), nil, true, moveconfig.DefaultMoveConfig(), appOptions,
+		log.NewNopLogger(), dbm.NewMemDB(), nil, true, moveconfig.DefaultMoveConfig(), initiaapporacle.DefaultConfig(), appOptions,
 	)
 	ctx := app.BaseApp.NewContext(isCheckTx)
 	err := app.AccountKeeper.Params.Set(ctx, authtypes.DefaultParams())

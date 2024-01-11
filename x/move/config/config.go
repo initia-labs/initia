@@ -54,7 +54,7 @@ const DefaultConfigTemplate = `
 
 [move]
 # The maximum gas amount can be used in a tx simulation call.
-contract-simulation-gas-limit= "{{ .MoveConfig.ContractSimulationGasLimit }}"
+contract-simulation-gas-limit = "{{ .MoveConfig.ContractSimulationGasLimit }}"
 
 # The maximum gas amount can be spent for contract query.
 # The contract query will invoke contract execution vm,

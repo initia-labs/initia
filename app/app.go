@@ -116,6 +116,7 @@ import (
 	appante "github.com/initia-labs/initia/app/ante"
 	apphook "github.com/initia-labs/initia/app/hook"
 	applanes "github.com/initia-labs/initia/app/lanes"
+	apporacle "github.com/initia-labs/initia/app/oracle"
 	"github.com/initia-labs/initia/app/params"
 	authzmodule "github.com/initia-labs/initia/x/authz/module"
 	"github.com/initia-labs/initia/x/bank"
@@ -158,7 +159,6 @@ import (
 	"github.com/skip-mev/slinky/abci/strategies/currencypair"
 	"github.com/skip-mev/slinky/abci/ve"
 	"github.com/skip-mev/slinky/aggregator"
-	oracleconfig "github.com/skip-mev/slinky/oracle/config"
 	oraclemetrics "github.com/skip-mev/slinky/oracle/metrics"
 	oracleservice "github.com/skip-mev/slinky/service"
 	serviceclient "github.com/skip-mev/slinky/service/client"
@@ -269,8 +269,9 @@ type InitiaApp struct {
 	AlertsKeeper          *alertskeeper.Keeper     // x/alerts keeper used for slinky alerts
 
 	// other slinky oracle services
-	oraclePrometheusServer *oraclemetrics.PrometheusServer
-	oracleService          oracleservice.OracleService
+	OraclePrometheusServer *oraclemetrics.PrometheusServer
+	OracleService          oracleservice.OracleService
+	oraclePreBlockHandler  *oraclepreblock.PreBlockHandler
 
 	// make scoped keepers public for test purposes
 	ScopedIBCKeeper           capabilitykeeper.ScopedKeeper
@@ -298,6 +299,7 @@ func NewInitiaApp(
 	traceStore io.Writer,
 	loadLatest bool,
 	moveConfig moveconfig.MoveConfig,
+	wrappedOracleConfig apporacle.WrappedOracleConfig,
 	appOpts servertypes.AppOptions,
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *InitiaApp {
@@ -899,6 +901,10 @@ func NewInitiaApp(
 	app.SetPostHandler(app.MoveKeeper.GetPostHandler())
 	app.SetEndBlocker(app.EndBlocker)
 
+	//////////////////
+	/// lane start ///
+	//////////////////
+
 	// initialize and set the InitiaApp mempool. The current mempool will be the
 	// x/auction module's mempool which will extract the top bid from the current block's auction
 	// and insert the txs at the top of the block spots.
@@ -969,22 +975,44 @@ func NewInitiaApp(
 	)
 	app.SetCheckTx(checkTxHandler.CheckTx())
 
-	// Initialize oracle's config
-	cfg, err := oracleconfig.ReadConfigFromAppOpts(appOpts)
-	if err != nil {
+	////////////////
+	/// lane end ///
+	////////////////
+
+	////////////////////
+	/// oracle start ///
+	////////////////////
+
+	if err := wrappedOracleConfig.ValidateBasic(); err != nil {
 		panic(err)
 	}
 
-	oracleCfg, err := oracleconfig.ReadOracleConfigFromFile(cfg.OraclePath)
-	if err != nil {
-		panic(err)
-	}
-
-	metricsCfg, err := oracleconfig.ReadMetricsConfigFromFile(cfg.MetricsPath)
-	if err != nil {
-		panic(err)
-	}
+	oracleCfg, metricsCfg := wrappedOracleConfig.GetConfigs()
 	metrics, consAddress, err := servicemetrics.NewServiceMetricsFromConfig(metricsCfg.AppMetrics)
+	if err != nil {
+		panic(err)
+	}
+
+	var zapLogger *zap.Logger
+	if oracleCfg.Production {
+		zapLogger, err = zap.NewProduction()
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		zapLogger, err = zap.NewDevelopment()
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	app.OracleService, err = serviceclient.NewOracleService(
+		zapLogger,
+		oracleCfg,
+		metricsCfg,
+		apporacle.DefaultAPIProviderFactory(),
+		aggregator.ComputeMedian(),
+	)
 	if err != nil {
 		panic(err)
 	}
@@ -993,27 +1021,12 @@ func NewInitiaApp(
 	// to get metrics on the oracle service (for ABCI++). This will allow the instrumentation to track
 	// latency in VerifyVoteExtension requests and more.
 	if metricsCfg.AppMetrics.Enabled {
-		app.oracleService = serviceclient.NewMetricsClient(app.Logger(), app.oracleService, metrics)
+		app.OracleService = serviceclient.NewMetricsClient(app.Logger(), app.OracleService, metrics)
 	}
-	// Create the oracleService
-	zapLogger, err := zap.NewProduction()
-	if err != nil {
-		panic(err)
-	}
-	app.oracleService, err = serviceclient.NewOracleService(
-		zapLogger,
-		oracleCfg,
-		metricsCfg,
-		DefaultAPIProviderFactory(),
-		aggregator.ComputeMedian(),
-	)
-	if err != nil {
-		panic(err)
-	}
-	// Set the oracle's PreBlocker
-	oraclePreBlockHandler := oraclepreblock.NewOraclePreBlockHandler(
+
+	app.oraclePreBlockHandler = oraclepreblock.NewOraclePreBlockHandler(
 		app.Logger(),
-		app.GetOracleAggregationFN(),
+		apporacle.GetOracleAggregationFN(app.Logger(), app.StakingKeeper),
 		app.OracleKeeper,
 		consAddress,
 		metrics,
@@ -1027,23 +1040,34 @@ func NewInitiaApp(
 			compression.NewZStdCompressor(),
 		),
 	)
-	app.SetPreBlocker(oraclePreBlockHandler.PreBlocker())
 
 	// Create the vote extensions handler that will be used to extend and verify
 	// vote extensions (i.e. oracle data).
 	voteExtensionsHandler := ve.NewVoteExtensionHandler(
 		app.Logger(),
-		app.oracleService,
+		app.OracleService,
 		time.Second,
 		currencypair.NewDeltaCurrencyPairStrategy(app.OracleKeeper),
 		compression.NewCompressionVoteExtensionCodec(
 			compression.NewDefaultVoteExtensionCodec(),
 			compression.NewZLibCompressor(),
 		),
-		oraclePreBlockHandler.PreBlocker(),
+		app.oraclePreBlockHandler.PreBlocker(),
 	)
 	app.SetExtendVoteHandler(voteExtensionsHandler.ExtendVoteHandler())
 	app.SetVerifyVoteExtensionHandler(voteExtensionsHandler.VerifyVoteExtensionHandler())
+
+	// start the prometheus server if required
+	if metricsCfg.AppMetrics.Enabled || metricsCfg.OracleMetrics.Enabled {
+		app.OraclePrometheusServer, err = oraclemetrics.NewPrometheusServer(metricsCfg.PrometheusServerAddress, zapLogger)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	//////////////////
+	/// oracle end ///
+	//////////////////
 
 	// At startup, after all modules have been registered, check that all prot
 	// annotations are correct.
@@ -1122,8 +1146,14 @@ func (app *InitiaApp) setAnteHandler(
 func (app *InitiaApp) Name() string { return app.BaseApp.Name() }
 
 // PreBlocker application updates every pre block
-func (app *InitiaApp) PreBlocker(ctx sdk.Context, _ *abci.RequestFinalizeBlock) (*sdk.ResponsePreBlock, error) {
-	return app.ModuleManager.PreBlock(ctx)
+func (app *InitiaApp) PreBlocker(ctx sdk.Context, req *abci.RequestFinalizeBlock) (*sdk.ResponsePreBlock, error) {
+	res, err := app.ModuleManager.PreBlock(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = app.oraclePreBlockHandler.PreBlocker()(ctx, req)
+	return res, err
 }
 
 // BeginBlocker application updates every begin block
