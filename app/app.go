@@ -1010,7 +1010,7 @@ func NewInitiaApp(
 		zapLogger,
 		oracleCfg,
 		metricsCfg,
-		apporacle.DefaultAPIProviderFactory(),
+		apporacle.DefaultAPIProviderFactory(wrappedOracleConfig),
 		aggregator.ComputeMedian(),
 	)
 	if err != nil {

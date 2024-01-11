@@ -2,12 +2,15 @@ package oracle
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	"gopkg.in/yaml.v3"
 
 	oracleconfig "github.com/skip-mev/slinky/oracle/config"
+	"github.com/skip-mev/slinky/providers/coinbase"
+	"github.com/skip-mev/slinky/providers/coingecko"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
 	"github.com/spf13/cast"
@@ -48,6 +51,12 @@ type WrappedOracleConfig struct {
 	// MetricsConfig is the metrics configurations for the oracle. This configuration object allows for
 	// metrics tracking of the oracle and the interaction between the oracle and the app.
 	MetricsConfig oracleconfig.MetricsConfig `mapstructure:"metrics"`
+
+	// Config for the CoinGecko provider
+	CoinGeckoConfig wrappedCoinGeckoConfig `mapstructure:"coingecko"`
+
+	// Config for the CoinBase provider
+	CoinBaseConfig wrappedCoinBaseConfig `mapstructure:"coinbase"`
 }
 
 func DefaultConfig() WrappedOracleConfig {
@@ -73,8 +82,8 @@ func DefaultConfig() WrappedOracleConfig {
 	}
 }
 
-const (
-	DefaultConfigTemplate = `
+var (
+	DefaultConfigTemplate = fmt.Sprintf(`
 
 ###############################################################################
 ###                                  Oracle                                 ###
@@ -101,16 +110,16 @@ client_timeout = "{{ .OracleConfig.ClientTimeout }}"
 # UpdateInterval is the interval at which the oracle will fetch prices from providers
 update_interval = "{{ .OracleConfig.UpdateInterval }}"
 
+# Uncomment this section to enable %s price fetching.
 # [[oracle.providers]]
-# name = "coinbase"
-# path = "config/local/providers/coinbase.json"
+# name = "%s"
 # timeout = "500ms"  # Replace "500ms" with your desired timeout duration.
 # interval = "1s"  # Replace "1s" with your desired update interval duration.
 # max_queries = 5  # Replace "5" with your desired maximum number of queries per update interval.
 
+# Uncomment this section to enable %s price fetching.
 # [[providers]]
-# name = "coingecko"
-# path = "config/local/providers/coingecko.json"
+# name = "%s"
 # timeout = "500ms"
 # interval = "1s"
 # max_queries = 1 # CoinGecko is atomic so it can fetch all prices in a single request.
@@ -138,7 +147,38 @@ enabled = "{{ .OracleConfig.MetricsConfig.AppMetrics.Enabled }}"
 # ValidatorConsAddress is the validator's consensus address. Validator's must register their
 # consensus address in order to enable app side metrics.
 validator_cons_address = "{{ .OracleConfig.MetricsConfig.AppMetrics.ValidatorConsAddress }}"
-`
+
+[oracle.coingecko]
+# APIKey is the API key used to make requests to the CoinGecko API.
+api_key = "{{ .OracleConfig.CoinGeckoConfig.APIKey }}"
+
+# SupportedBases maps an oracle base currency to a CoinGecko base currency.
+[oracle.coingecko.supported_bases]
+"BITCOIN"  = "bitcoin"
+"ETHEREUM" = "ethereum"
+"ATOM"     = "cosmos"
+"SOLANA"   = "solana"
+"POLKADOT" = "polkadot"
+"DYDX"     = "dydx-chain"
+
+# SupportedQuotes maps an oracle quote currency to a CoinGecko quote currency.
+[oracle.coingecko.supported_quotes]
+"USD"      = "usd"
+"ETHEREUM" = "eth"
+
+[oracle.coinbase.symbol_map]
+"BITCOIN"  = "BTC"
+"USD"      = "USD"
+"ETHEREUM" = "ETH"
+"ATOM"     = "ATOM"
+"SOLANA"   = "SOL"
+"POLKADOT" = "DOT"
+"DYDX"     = "DYDX"
+
+`,
+		coinbase.Name, coinbase.Name,
+		coingecko.Name, coingecko.Name,
+	)
 )
 
 func ReadWrappedOracleConfig(appOpts servertypes.AppOptions) WrappedOracleConfig {
@@ -147,9 +187,20 @@ func ReadWrappedOracleConfig(appOpts servertypes.AppOptions) WrappedOracleConfig
 
 	var providers []oracleconfig.ProviderConfig
 	viper.UnmarshalKey("oracle.providers", &providers)
+	for i, p := range providers {
+		p.Path = "dummy"
+		providers[i] = p
+	}
 
 	var currencyPairs []oracletypes.CurrencyPair
 	viper.UnmarshalKey("oracle.currency_pairs", &currencyPairs)
+
+	var coingeckoSupportedBases map[string]string
+	viper.UnmarshalKey("oracle.coingecko.supported_bases", &coingeckoSupportedBases)
+	var coingeckoSupportedQuotes map[string]string
+	viper.UnmarshalKey("oracle.coingecko.supported_quotes", &coingeckoSupportedQuotes)
+	var coinbaseSymbolMap map[string]string
+	viper.UnmarshalKey("oracle.coinbase.symbol_map", &coinbaseSymbolMap)
 
 	config := WrappedOracleConfig{
 		Enabled:        cast.ToBool(appOpts.Get("oracle.enabled")),
@@ -170,6 +221,14 @@ func ReadWrappedOracleConfig(appOpts servertypes.AppOptions) WrappedOracleConfig
 				ValidatorConsAddress: cast.ToString(appOpts.Get("oracle.metrics.app_metrics.validator_cons_address")),
 			},
 		},
+		CoinGeckoConfig: wrappedCoinGeckoConfig{
+			APIKey:          cast.ToString(appOpts.Get("oracle.coingecko.api_key")),
+			SupportedBases:  coingeckoSupportedBases,
+			SupportedQuotes: coingeckoSupportedQuotes,
+		},
+		CoinBaseConfig: wrappedCoinBaseConfig{
+			SymbolMap: coinbaseSymbolMap,
+		},
 	}
 
 	bz, _ := yaml.Marshal(config)
@@ -189,6 +248,29 @@ func (c WrappedOracleConfig) GetConfigs() (oracleconfig.OracleConfig, oracleconf
 		Providers:      c.Providers,
 		CurrencyPairs:  c.CurrencyPairs,
 	}, c.MetricsConfig
+}
+
+func (c WrappedOracleConfig) GetCoinGeckoConfig() coingecko.Config {
+	return coingecko.Config{
+		APIKey:          c.CoinGeckoConfig.APIKey,
+		SupportedBases:  keyToUpperCase(c.CoinGeckoConfig.SupportedBases),
+		SupportedQuotes: keyToUpperCase(c.CoinGeckoConfig.SupportedQuotes),
+	}
+}
+
+func (c WrappedOracleConfig) GetCoinBaseConfig() coinbase.Config {
+	return coinbase.Config{
+		SymbolMap: keyToUpperCase(c.CoinBaseConfig.SymbolMap),
+	}
+}
+
+func keyToUpperCase(m map[string]string) map[string]string {
+	m2 := make(map[string]string)
+	for key, val := range m {
+		m2[strings.ToUpper(key)] = val
+	}
+
+	return m2
 }
 
 func (c WrappedOracleConfig) ValidateBasic() error {
