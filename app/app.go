@@ -849,6 +849,7 @@ func NewInitiaApp(
 
 	// initialize BaseApp
 	app.SetInitChainer(app.InitChainer)
+	app.SetPreBlocker(app.PreBlocker)
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetPostHandler(app.MoveKeeper.GetPostHandler())
 	app.SetEndBlocker(app.EndBlocker)
