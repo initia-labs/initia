@@ -158,7 +158,6 @@ import (
 	compression "github.com/skip-mev/slinky/abci/strategies/codec"
 	"github.com/skip-mev/slinky/abci/strategies/currencypair"
 	"github.com/skip-mev/slinky/abci/ve"
-	"github.com/skip-mev/slinky/aggregator"
 	oraclemetrics "github.com/skip-mev/slinky/oracle/metrics"
 	oracleservice "github.com/skip-mev/slinky/service"
 	serviceclient "github.com/skip-mev/slinky/service/client"
@@ -987,32 +986,24 @@ func NewInitiaApp(
 		panic(err)
 	}
 
-	oracleCfg, metricsCfg := wrappedOracleConfig.GetConfigs()
-	metrics, consAddress, err := servicemetrics.NewServiceMetricsFromConfig(metricsCfg.AppMetrics)
+	metrics, consAddress, err := servicemetrics.NewServiceMetricsFromConfig(
+		wrappedOracleConfig.MetricsConfig.ToAppMetricConfig(),
+	)
 	if err != nil {
 		panic(err)
 	}
 
 	var zapLogger *zap.Logger
-	if oracleCfg.Production {
+	if wrappedOracleConfig.Production {
 		zapLogger, err = zap.NewProduction()
-		if err != nil {
-			panic(err)
-		}
 	} else {
 		zapLogger, err = zap.NewDevelopment()
-		if err != nil {
-			panic(err)
-		}
+	}
+	if err != nil {
+		panic(err)
 	}
 
-	app.OracleService, err = serviceclient.NewOracleService(
-		zapLogger,
-		oracleCfg,
-		metricsCfg,
-		apporacle.DefaultAPIProviderFactory(wrappedOracleConfig),
-		aggregator.ComputeMedian(),
-	)
+	app.OracleService, err = apporacle.NewOracleService(wrappedOracleConfig)
 	if err != nil {
 		panic(err)
 	}
@@ -1020,8 +1011,12 @@ func NewInitiaApp(
 	// If app level instrumentation is enabled, then wrap the oracle service with a metrics client
 	// to get metrics on the oracle service (for ABCI++). This will allow the instrumentation to track
 	// latency in VerifyVoteExtension requests and more.
-	if metricsCfg.AppMetrics.Enabled {
+	if wrappedOracleConfig.MetricsConfig.Enabled {
 		app.OracleService = serviceclient.NewMetricsClient(app.Logger(), app.OracleService, metrics)
+		app.OraclePrometheusServer, err = oraclemetrics.NewPrometheusServer(wrappedOracleConfig.MetricsConfig.PrometheusServerAddress, zapLogger)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	app.oraclePreBlockHandler = oraclepreblock.NewOraclePreBlockHandler(
@@ -1056,14 +1051,6 @@ func NewInitiaApp(
 	)
 	app.SetExtendVoteHandler(voteExtensionsHandler.ExtendVoteHandler())
 	app.SetVerifyVoteExtensionHandler(voteExtensionsHandler.VerifyVoteExtensionHandler())
-
-	// start the prometheus server if required
-	if metricsCfg.AppMetrics.Enabled || metricsCfg.OracleMetrics.Enabled {
-		app.OraclePrometheusServer, err = oraclemetrics.NewPrometheusServer(metricsCfg.PrometheusServerAddress, zapLogger)
-		if err != nil {
-			panic(err)
-		}
-	}
 
 	//////////////////
 	/// oracle end ///
