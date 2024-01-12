@@ -241,6 +241,9 @@
           "Params": "OPHostParams"
         }
       }
+    },
+    {
+      "url": "./tmp-swagger-gen/slinky/oracle/v1/query.swagger.json"
     }
   ]
 }

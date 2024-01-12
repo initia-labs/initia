@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -155,6 +156,7 @@ import (
 
 	// slinky oracle dependencies
 	oraclepreblock "github.com/skip-mev/slinky/abci/preblock/oracle"
+	oracleproposals "github.com/skip-mev/slinky/abci/proposals"
 	compression "github.com/skip-mev/slinky/abci/strategies/codec"
 	"github.com/skip-mev/slinky/abci/strategies/currencypair"
 	"github.com/skip-mev/slinky/abci/ve"
@@ -268,8 +270,8 @@ type InitiaApp struct {
 	AlertsKeeper          *alertskeeper.Keeper     // x/alerts keeper used for slinky alerts
 
 	// other slinky oracle services
+	OracleClient           oracleservice.OracleService
 	OraclePrometheusServer *oraclemetrics.PrometheusServer
-	OracleService          oracleservice.OracleService
 	oraclePreBlockHandler  *oraclepreblock.PreBlockHandler
 
 	// make scoped keepers public for test purposes
@@ -954,16 +956,12 @@ func NewInitiaApp(
 	anteHandler := app.setAnteHandler(mevLane, freeLane)
 
 	// override the base-app's ABCI methods (CheckTx, PrepareProposal, ProcessProposal)
-	proposalHandlers := blockabci.NewProposalHandler(
+	blockProposalHandlers := blockabci.NewProposalHandler(
 		app.Logger(),
 		app.txConfig.TxDecoder(),
 		app.txConfig.TxEncoder(),
 		mempool,
 	)
-
-	// override base-app's ProcessProposal + PrepareProposal
-	app.SetPrepareProposal(proposalHandlers.PrepareProposalHandler())
-	app.SetProcessProposal(proposalHandlers.ProcessProposalHandler())
 
 	// overrde base-app's CheckTx
 	checkTxHandler := mevlane.NewCheckTxHandler(
@@ -1003,7 +1001,7 @@ func NewInitiaApp(
 		panic(err)
 	}
 
-	app.OracleService, err = apporacle.NewOracleService(wrappedOracleConfig)
+	app.OracleClient, err = apporacle.NewOracleClient(wrappedOracleConfig)
 	if err != nil {
 		panic(err)
 	}
@@ -1012,12 +1010,35 @@ func NewInitiaApp(
 	// to get metrics on the oracle service (for ABCI++). This will allow the instrumentation to track
 	// latency in VerifyVoteExtension requests and more.
 	if wrappedOracleConfig.MetricsConfig.Enabled {
-		app.OracleService = serviceclient.NewMetricsClient(app.Logger(), app.OracleService, metrics)
+		app.OracleClient = serviceclient.NewMetricsClient(app.Logger(), app.OracleClient, metrics)
 		app.OraclePrometheusServer, err = oraclemetrics.NewPrometheusServer(wrappedOracleConfig.MetricsConfig.PrometheusServerAddress, zapLogger)
 		if err != nil {
 			panic(err)
 		}
 	}
+
+	oracleProposalHandler := oracleproposals.NewProposalHandler(
+		app.Logger(),
+		blockProposalHandlers.PrepareProposalHandler(),
+		blockProposalHandlers.ProcessProposalHandler(),
+		ve.NewDefaultValidateVoteExtensionsFn(
+			app.ChainID(),
+			stakingkeeper.NewCompatibilityKeeper(app.StakingKeeper),
+		),
+		compression.NewCompressionVoteExtensionCodec(
+			compression.NewDefaultVoteExtensionCodec(),
+			compression.NewZLibCompressor(),
+		),
+		compression.NewCompressionExtendedCommitCodec(
+			compression.NewDefaultExtendedCommitCodec(),
+			compression.NewZStdCompressor(),
+		),
+		currencypair.NewDeltaCurrencyPairStrategy(app.OracleKeeper),
+	)
+
+	// override baseapp's ProcessProposal + PrepareProposal
+	app.SetPrepareProposal(oracleProposalHandler.PrepareProposalHandler())
+	app.SetProcessProposal(oracleProposalHandler.ProcessProposalHandler())
 
 	app.oraclePreBlockHandler = oraclepreblock.NewOraclePreBlockHandler(
 		app.Logger(),
@@ -1040,7 +1061,7 @@ func NewInitiaApp(
 	// vote extensions (i.e. oracle data).
 	voteExtensionsHandler := ve.NewVoteExtensionHandler(
 		app.Logger(),
-		app.OracleService,
+		app.OracleClient,
 		time.Second,
 		currencypair.NewDeltaCurrencyPairStrategy(app.OracleKeeper),
 		compression.NewCompressionVoteExtensionCodec(
@@ -1364,4 +1385,19 @@ func (app *InitiaApp) ChainID() string { // TODO: remove this method once chain 
 // DefaultGenesis returns a default genesis from the registered AppModuleBasic's.
 func (app *InitiaApp) DefaultGenesis() map[string]json.RawMessage {
 	return app.BasicModuleManager.DefaultGenesis(app.appCodec)
+}
+
+// Close closes the underlying baseapp, the oracle service, and the prometheus server if required.
+// This method blocks on the closure of both the prometheus server, and the oracle-service
+func (app *InitiaApp) Close() error {
+	if err := app.BaseApp.Close(); err != nil {
+		return err
+	}
+
+	// close the oracle service
+	if app.OracleClient != nil {
+		app.OracleClient.Stop(context.Background())
+	}
+
+	return nil
 }

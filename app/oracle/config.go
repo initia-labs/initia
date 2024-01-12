@@ -137,5 +137,9 @@ func (c WrappedOracleConfig) ValidateBasic() error {
 		return fmt.Errorf("must supply a prometheus server address if metrics are enabled")
 	}
 
+	if c.MetricsConfig.Enabled && len(c.MetricsConfig.ValidatorConsAddress) == 0 {
+		return fmt.Errorf("must supply a validator cons address if metrics are enabled")
+	}
+
 	return nil
 }

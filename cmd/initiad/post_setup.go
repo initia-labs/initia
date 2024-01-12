@@ -14,6 +14,8 @@ import (
 
 func postSetup(svrCtx *server.Context, clientCtx client.Context, ctx context.Context, g *errgroup.Group, app servertypes.Application) error {
 	initiaApp := app.(*initiaapp.InitiaApp)
+	logger := initiaApp.Logger()
+
 	g.Go(func() error {
 		if initiaApp.OraclePrometheusServer != nil {
 			go func() {
@@ -21,24 +23,12 @@ func postSetup(svrCtx *server.Context, clientCtx client.Context, ctx context.Con
 			}()
 
 			ctx.Done()
+
+			logger.Info("stopping oracle prometheus server...")
 			initiaApp.OraclePrometheusServer.Close()
 		}
 
 		return nil
-	})
-
-	g.Go(func() error {
-		errCh := make(chan error)
-		go func() {
-			errCh <- initiaApp.OracleService.Start(ctx)
-		}()
-
-		select {
-		case <-ctx.Done():
-			return initiaApp.OracleService.Stop(ctx)
-		case err := <-errCh:
-			return err
-		}
 	})
 
 	return nil

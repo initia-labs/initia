@@ -7,6 +7,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	cosmostypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
+	cmtprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
+
 	"github.com/initia-labs/initia/x/mstaking/types"
 )
 
@@ -86,4 +88,18 @@ func (k CompatibilityKeeper) TotalBondedTokens(ctx context.Context) (math.Int, e
 	})
 
 	return total, err
+}
+
+func (k CompatibilityKeeper) GetPubKeyByConsAddr(ctx context.Context, addr sdk.ConsAddress) (cmtprotocrypto.PublicKey, error) {
+	v, err := k.GetValidatorByConsAddr(ctx, addr)
+	if err != nil {
+		return cmtprotocrypto.PublicKey{}, err
+	}
+
+	pubkey, err := v.TmConsPublicKey()
+	if err != nil {
+		return cmtprotocrypto.PublicKey{}, err
+	}
+
+	return pubkey, nil
 }
