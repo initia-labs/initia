@@ -78,11 +78,11 @@ var (
 [oracle]
 
 # Enabled specifies whether the side-car oracle needs to be run.
-enabled = "{{ .OracleConfig.Enabled }}"
+enabled = {{ .OracleConfig.Enabled }}
 
 # Production specifies whether the oracle is running in production mode. This is used to
 # determine whether the oracle should be run in debug mode or not.
-production = "{{ .OracleConfig.Production }}"
+production = {{ .OracleConfig.Production }}
 
 # RemoteAddress is the address of the remote oracle server (if it is running out-of-process)
 remote_address = "{{ .OracleConfig.RemoteAddress }}"
@@ -93,7 +93,7 @@ client_timeout = "{{ .OracleConfig.ClientTimeout }}"
 [oracle.metrics]
 
 # Enabled indicates whether app side metrics should be enabled.
-enabled = "{{ .OracleConfig.MetricsConfig.Enabled }}"
+enabled = {{ .OracleConfig.MetricsConfig.Enabled }}
 
 # PrometheusServerAddress is the address of the prometheus server that the oracle will expose metrics to
 prometheus_server_address = "{{ .OracleConfig.MetricsConfig.PrometheusServerAddress }}"
