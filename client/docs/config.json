@@ -178,6 +178,9 @@
       }
     },
     {
+      "url": "./tmp-swagger-gen/ibc/applications/fetchprice/consumer/v1/query.swagger.json"
+    },
+    {
       "url": "./tmp-swagger-gen/ibc/applications/fee/v1/query.swagger.json",
       "operationIds": {
         "rename": {
