@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package ibc.applications.fetchprice.v1;
+
+option go_package = "github.com/initia-labs/initia/x/ibc/fetchprice/types";
+
+import "gogoproto/gogo.proto";
+import "ibc/applications/fetchprice/v1/types.proto";
+
+// FetchPricePacketData defines a struct for the packet payload
+// to fetch the oracle prices.
+message FetchPricePacketData {
+  // The currency id is the string with "BASE/QUOTE" format.
+  repeated string currency_ids = 1 [(gogoproto.moretags) = "yaml:\"currency_ids\""];
+  // optional memo field for future use
+  string memo = 2 [(gogoproto.moretags) = "yaml:\"memo\""];
+}
+
+// FetchPriceAckData defines a sturct for the ack payload
+// of FetchPricePacket.
+message FetchPriceAckData {
+  repeated CurrencyPrice currency_prices = 1
+      [(gogoproto.moretags) = "yaml:\"currency_prices\"", (gogoproto.nullable) = false];
+}

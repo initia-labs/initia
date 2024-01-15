@@ -14,7 +14,7 @@ import (
 func TestGRPCQueryParams(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
-	paramsResp, err := input.SlashingKeeper.Params(sdk.WrapSDKContext(ctx), &types.QueryParamsRequest{})
+	paramsResp, err := input.SlashingKeeper.Params(ctx, &types.QueryParamsRequest{})
 
 	require.NoError(t, err)
 	require.Equal(t, types.DefaultParams(), paramsResp.Params)
@@ -23,7 +23,7 @@ func TestGRPCQueryParams(t *testing.T) {
 func TestGRPCSigningInfo(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
-	infoResp, err := input.SlashingKeeper.SigningInfo(sdk.WrapSDKContext(ctx), &types.QuerySigningInfoRequest{ConsAddress: ""})
+	infoResp, err := input.SlashingKeeper.SigningInfo(ctx, &types.QuerySigningInfoRequest{ConsAddress: ""})
 	require.Error(t, err)
 	require.Nil(t, infoResp)
 
@@ -32,7 +32,7 @@ func TestGRPCSigningInfo(t *testing.T) {
 	info, err := input.SlashingKeeper.GetValidatorSigningInfo(ctx, sdk.ConsAddress(valPubKey.Address()))
 	require.NoError(t, err)
 
-	infoResp, err = input.SlashingKeeper.SigningInfo(sdk.WrapSDKContext(ctx),
+	infoResp, err = input.SlashingKeeper.SigningInfo(ctx,
 		&types.QuerySigningInfoRequest{ConsAddress: sdk.ConsAddress(valPubKey.Address()).String()})
 	require.NoError(t, err)
 	require.Equal(t, info, infoResp.ValSigningInfo)
@@ -59,12 +59,12 @@ func TestGRPCSigningInfos(t *testing.T) {
 	})
 
 	// verify all values are returned without pagination
-	infoResp, err := input.SlashingKeeper.SigningInfos(sdk.WrapSDKContext(ctx),
+	infoResp, err := input.SlashingKeeper.SigningInfos(ctx,
 		&types.QuerySigningInfosRequest{Pagination: nil})
 	require.NoError(t, err)
 	require.Equal(t, signingInfos, infoResp.Info)
 
-	infoResp, err = input.SlashingKeeper.SigningInfos(sdk.WrapSDKContext(ctx),
+	infoResp, err = input.SlashingKeeper.SigningInfos(ctx,
 		&types.QuerySigningInfosRequest{Pagination: &query.PageRequest{Limit: 1, CountTotal: true}})
 
 	require.NoError(t, err)

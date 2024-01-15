@@ -24,15 +24,20 @@ func NewMsgServerImpl(k *Keeper) MsgServer {
 }
 
 // Transfer defines a rpc handler method for MsgTransfer.
-func (k MsgServer) Transfer(goCtx context.Context, msg *types.MsgTransfer) (*types.MsgTransferResponse, error) {
+func (ms MsgServer) Transfer(goCtx context.Context, msg *types.MsgTransfer) (*types.MsgTransferResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	sender, err := k.authKeeper.AddressCodec().StringToBytes(msg.Sender)
+	ac := ms.authKeeper.AddressCodec()
+	if err := msg.Validate(ac); err != nil {
+		return nil, err
+	}
+
+	sender, err := ac.StringToBytes(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
 
-	sequence, err := k.sendNftTransfer(
+	sequence, err := ms.sendNftTransfer(
 		ctx,
 		msg.SourcePort,
 		msg.SourceChannel,
@@ -48,7 +53,7 @@ func (k MsgServer) Transfer(goCtx context.Context, msg *types.MsgTransfer) (*typ
 		return nil, err
 	}
 
-	k.Logger(ctx).Info("IBC fungible token transfer", "class id", msg.ClassId, "token ids", strings.Join(msg.TokenIds, ","), "sender", msg.Sender, "receiver", msg.Receiver)
+	ms.Logger(ctx).Info("IBC non-fungible token transfer", "class id", msg.ClassId, "token ids", strings.Join(msg.TokenIds, ","), "sender", msg.Sender, "receiver", msg.Receiver)
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -67,13 +72,18 @@ func (k MsgServer) Transfer(goCtx context.Context, msg *types.MsgTransfer) (*typ
 	return &types.MsgTransferResponse{Sequence: sequence}, nil
 }
 
-func (ms MsgServer) UpdateParams(context context.Context, req *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
-	if ms.authority != req.Authority {
-		return nil, errors.Wrapf(govtypes.ErrInvalidSigner, "invalid authority; expected %s, got %s", ms.authority, req.Authority)
+func (ms MsgServer) UpdateParams(context context.Context, msg *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
+	ac := ms.authKeeper.AddressCodec()
+	if err := msg.Validate(ac); err != nil {
+		return nil, err
+	}
+
+	if ms.authority != msg.Authority {
+		return nil, errors.Wrapf(govtypes.ErrInvalidSigner, "invalid authority; expected %s, got %s", ms.authority, msg.Authority)
 	}
 
 	ctx := sdk.UnwrapSDKContext(context)
-	if err := ms.Params.Set(ctx, req.Params); err != nil {
+	if err := ms.Params.Set(ctx, msg.Params); err != nil {
 		return nil, err
 	}
 
