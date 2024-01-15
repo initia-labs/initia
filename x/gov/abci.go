@@ -18,7 +18,7 @@ import (
 )
 
 // EndBlocker called every block, process inflation, update validator set.
-func EndBlocker(ctx sdk.Context, k *keeper.Keeper) error {
+func EndBlocker(ctx sdk.Context, k *keeper.Keeper, postHandler sdk.PostHandler) error {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyEndBlocker)
 
 	logger := k.Logger(ctx)
@@ -139,7 +139,7 @@ func EndBlocker(ctx sdk.Context, k *keeper.Keeper) error {
 			return false, err
 		}
 
-		err = handleTallyResult(ctx, k, proposal, passed, burnDeposits, tallyResults)
+		err = handleTallyResult(ctx, k, proposal, passed, burnDeposits, tallyResults, postHandler)
 		if err != nil {
 			return false, err
 		}
@@ -177,8 +177,8 @@ func EndBlocker(ctx sdk.Context, k *keeper.Keeper) error {
 			}
 			return false, err
 		}
-		cacheCtx, writeCache := ctx.CacheContext()
 
+		cacheCtx, writeCache := ctx.CacheContext()
 		quorumReached, passed, burnDeposits, tallyResults, err := k.Tally(cacheCtx, proposal)
 		if err != nil {
 			return false, err
@@ -199,7 +199,7 @@ func EndBlocker(ctx sdk.Context, k *keeper.Keeper) error {
 		// quorum reached; commit the state changes from k.Tally()
 		writeCache()
 
-		err = handleTallyResult(ctx, k, proposal, passed, burnDeposits, tallyResults)
+		err = handleTallyResult(ctx, k, proposal, passed, burnDeposits, tallyResults, postHandler)
 		if err != nil {
 			return false, err
 		}
@@ -216,6 +216,7 @@ func handleTallyResult(
 	proposal customtypes.Proposal,
 	passed, burnDeposits bool,
 	tallyResults v1.TallyResult,
+	postHandler sdk.PostHandler,
 ) (err error) {
 	// If an expedited proposal fails, we do not want to update
 	// the deposit at this point since the proposal is converted to regular.
@@ -281,6 +282,16 @@ func handleTallyResult(
 			}
 
 			events = append(events, res.GetEvents()...)
+		}
+
+		// run post handler (for move cache invalidate)
+		if postHandler != nil {
+			newCtx, err := postHandler(ctx, nil, false, err == nil)
+			if err != nil {
+				return err
+			}
+
+			ctx = newCtx
 		}
 
 		// `err == nil` when all handlers passed.

@@ -17,20 +17,15 @@ import (
 	vmtypes "github.com/initia-labs/initiavm/types"
 )
 
-func isSimulationOrCheckTx(
+func isSimulation(
 	ctx context.Context,
 ) bool {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	if sdkCtx.IsCheckTx() || sdkCtx.IsReCheckTx() {
-		return true
-	}
 
-	simulate := sdkCtx.Value(ante.SimulationFlagContextKey)
-	if simulate == nil {
-		return false
-	}
-
-	return simulate.(bool)
+	// only executed when ExecMode is
+	// * simulate
+	// * finalize
+	return sdkCtx.ExecMode() == sdk.ExecModeSimulate
 }
 
 // extract module address and module name from the compiled module bytes
@@ -157,8 +152,8 @@ func (k Keeper) ExecuteEntryFunctionWithMultiSenders(
 	gasMeter := sdkCtx.GasMeter()
 	gasForRuntime := gasMeter.Limit() - gasMeter.GasConsumedToLimit()
 
-	isSimulationOrCheckTx := isSimulationOrCheckTx(ctx)
-	if isSimulationOrCheckTx {
+	isSimulation := isSimulation(ctx)
+	if isSimulation {
 		vm = k.buildSimulationVM()
 		defer vm.Destroy()
 
@@ -182,7 +177,7 @@ func (k Keeper) ExecuteEntryFunctionWithMultiSenders(
 	)
 
 	// Mark loader cache loads new published modules.
-	if !isSimulationOrCheckTx {
+	if !isSimulation {
 		k.postHandler.SetNewPublishedModulesLoaded(execRes.NewPublishedModulesLoaded)
 	}
 
@@ -257,8 +252,8 @@ func (k Keeper) ExecuteScriptWithMultiSenders(
 	gasMeter := sdkCtx.GasMeter()
 	gasForRuntime := gasMeter.Limit() - gasMeter.GasConsumedToLimit()
 
-	isSimulationOrCheckTx := isSimulationOrCheckTx(ctx)
-	if isSimulationOrCheckTx {
+	isSimulation := isSimulation(ctx)
+	if isSimulation {
 		vm = k.buildSimulationVM()
 		defer vm.Destroy()
 
@@ -282,7 +277,7 @@ func (k Keeper) ExecuteScriptWithMultiSenders(
 	)
 
 	// Mark loader cache loads new published modules.
-	if !isSimulationOrCheckTx {
+	if !isSimulation {
 		k.postHandler.SetNewPublishedModulesLoaded(execRes.NewPublishedModulesLoaded)
 	}
 
