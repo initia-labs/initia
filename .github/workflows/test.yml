@@ -23,7 +23,7 @@ jobs:
     name: Run test and upload codecov
     env:
       # for private repo access
-      GOPRIVATE: github.com/initia-labs/*,github.com/skip-mev/slinky
+      GOPRIVATE: github.com/initia-labs,github.com/skip-mev/slinky
       GITHUB_ACCESS_TOKEN: ${{ secrets.GH_READ_TOKEN }}
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     runs-on: ubuntu-latest
