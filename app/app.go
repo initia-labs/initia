@@ -737,7 +737,7 @@ func NewInitiaApp(
 		capability.NewAppModule(appCodec, *app.CapabilityKeeper, false),
 		crisis.NewAppModule(app.CrisisKeeper, skipGenesisInvariants, nil),
 		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, *app.FeeGrantKeeper, app.interfaceRegistry),
-		gov.NewAppModule(appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper),
+		gov.NewAppModule(appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper, app.MoveKeeper.GetPostHandler()),
 		reward.NewAppModule(appCodec, *app.RewardKeeper),
 		slashing.NewAppModule(appCodec, *app.SlashingKeeper),
 		distr.NewAppModule(appCodec, *app.DistrKeeper),

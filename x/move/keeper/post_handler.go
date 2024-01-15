@@ -26,7 +26,7 @@ func (listener *PostHandler) GetNewPublishedModulesLoaded() bool {
 }
 
 // ListenDeliverTx updates the steaming service with the latest DeliverTx messages
-func (listener *PostHandler) PostHandle(ctx sdk.Context, tx sdk.Tx, simulate, success bool) (newCtx sdk.Context, err error) {
+func (listener *PostHandler) PostHandle(ctx sdk.Context, _ sdk.Tx, _, success bool) (newCtx sdk.Context, err error) {
 	// When there is no newly published modules, skip below
 	if !listener.GetNewPublishedModulesLoaded() {
 		return ctx, nil
