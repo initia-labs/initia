@@ -36,7 +36,7 @@ func (listener *PostHandler) PostHandle(ctx sdk.Context, tx sdk.Tx, simulate, su
 	listener.SetNewPublishedModulesLoaded(false)
 
 	// check tx failed
-	if success {
+	if !success {
 		// mark loader cache as invalid to flush vm cache
 		if err := listener.vm.MarkLoaderCacheAsInvalid(); err != nil {
 			return ctx, err
