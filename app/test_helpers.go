@@ -25,6 +25,7 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
+	apporacle "github.com/initia-labs/initia/app/oracle"
 	moveconfig "github.com/initia-labs/initia/x/move/config"
 )
 
@@ -61,6 +62,7 @@ func setup(db *dbm.DB, withGenesis bool) (*InitiaApp, GenesisState) {
 		nil,
 		true,
 		moveconfig.DefaultMoveConfig(),
+		apporacle.DefaultConfig(),
 		simtestutil.EmptyAppOptions{},
 	)
 

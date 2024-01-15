@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -8,10 +9,12 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
 	"github.com/spf13/cast"
+	"go.uber.org/zap"
 
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 	reflectionv1 "cosmossdk.io/api/cosmos/reflection/v1"
@@ -98,6 +101,14 @@ import (
 	solomachine "github.com/cosmos/ibc-go/v8/modules/light-clients/06-solomachine"
 	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 
+	"github.com/initia-labs/initia/x/ibc/fetchprice"
+	fetchpriceconsumer "github.com/initia-labs/initia/x/ibc/fetchprice/consumer"
+	fetchpriceconsumerkeeper "github.com/initia-labs/initia/x/ibc/fetchprice/consumer/keeper"
+	fetchpriceconsumertypes "github.com/initia-labs/initia/x/ibc/fetchprice/consumer/types"
+	fetchpriceprovider "github.com/initia-labs/initia/x/ibc/fetchprice/provider"
+	fetchpriceproviderkeeper "github.com/initia-labs/initia/x/ibc/fetchprice/provider/keeper"
+	fetchpriceprovidertypes "github.com/initia-labs/initia/x/ibc/fetchprice/provider/types"
+	fetchpricetypes "github.com/initia-labs/initia/x/ibc/fetchprice/types"
 	ibcnfttransfer "github.com/initia-labs/initia/x/ibc/nft-transfer"
 	ibcnfttransferkeeper "github.com/initia-labs/initia/x/ibc/nft-transfer/keeper"
 	ibcnfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
@@ -114,6 +125,7 @@ import (
 	appante "github.com/initia-labs/initia/app/ante"
 	apphook "github.com/initia-labs/initia/app/hook"
 	applanes "github.com/initia-labs/initia/app/lanes"
+	apporacle "github.com/initia-labs/initia/app/oracle"
 	"github.com/initia-labs/initia/app/params"
 	authzmodule "github.com/initia-labs/initia/x/authz/module"
 	"github.com/initia-labs/initia/x/bank"
@@ -139,6 +151,7 @@ import (
 	"github.com/initia-labs/initia/x/slashing"
 	slashingkeeper "github.com/initia-labs/initia/x/slashing/keeper"
 
+	// block-sdk dependencies
 	blockabci "github.com/skip-mev/block-sdk/abci"
 	signer_extraction "github.com/skip-mev/block-sdk/adapters/signer_extraction_adapter"
 	"github.com/skip-mev/block-sdk/block"
@@ -148,6 +161,24 @@ import (
 	auctionante "github.com/skip-mev/block-sdk/x/auction/ante"
 	auctionkeeper "github.com/skip-mev/block-sdk/x/auction/keeper"
 	auctiontypes "github.com/skip-mev/block-sdk/x/auction/types"
+
+	// slinky oracle dependencies
+	oraclepreblock "github.com/skip-mev/slinky/abci/preblock/oracle"
+	oracleproposals "github.com/skip-mev/slinky/abci/proposals"
+	compression "github.com/skip-mev/slinky/abci/strategies/codec"
+	"github.com/skip-mev/slinky/abci/strategies/currencypair"
+	"github.com/skip-mev/slinky/abci/ve"
+	oraclemetrics "github.com/skip-mev/slinky/oracle/metrics"
+	oracleservice "github.com/skip-mev/slinky/service"
+	serviceclient "github.com/skip-mev/slinky/service/client"
+	servicemetrics "github.com/skip-mev/slinky/service/metrics"
+	alertskeeper "github.com/skip-mev/slinky/x/alerts/keeper"
+	alerttypes "github.com/skip-mev/slinky/x/alerts/types"
+	incentiveskeeper "github.com/skip-mev/slinky/x/incentives/keeper"
+	incentivetypes "github.com/skip-mev/slinky/x/incentives/types"
+	"github.com/skip-mev/slinky/x/oracle"
+	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
+	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
 	"github.com/initia-labs/OPinit/x/ophost"
 	ophostkeeper "github.com/initia-labs/OPinit/x/ophost/keeper"
@@ -176,6 +207,10 @@ var (
 		// x/auction's module account must be instantiated upon genesis to accrue auction rewards not
 		// distributed to proposers
 		auctiontypes.ModuleName: nil,
+		// slinky oracle permissions
+		oracletypes.ModuleName:    nil,
+		incentivetypes.ModuleName: nil,
+		alerttypes.ModuleName:     {authtypes.Burner, authtypes.Minter},
 
 		// this is only for testing
 		authtypes.Minter: {authtypes.Minter},
@@ -212,40 +247,52 @@ type InitiaApp struct {
 	memKeys map[string]*storetypes.MemoryStoreKey
 
 	// keepers
-	AccountKeeper         *authkeeper.AccountKeeper
-	BankKeeper            *bankkeeper.BaseKeeper
-	CapabilityKeeper      *capabilitykeeper.Keeper
-	StakingKeeper         *stakingkeeper.Keeper
-	SlashingKeeper        *slashingkeeper.Keeper
-	RewardKeeper          *rewardkeeper.Keeper
-	DistrKeeper           *distrkeeper.Keeper
-	GovKeeper             *govkeeper.Keeper
-	CrisisKeeper          *crisiskeeper.Keeper
-	UpgradeKeeper         *upgradekeeper.Keeper
-	GroupKeeper           *groupkeeper.Keeper
-	ConsensusParamsKeeper *consensusparamkeeper.Keeper
-	IBCKeeper             *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
-	EvidenceKeeper        *evidencekeeper.Keeper
-	TransferKeeper        *ibctransferkeeper.Keeper
-	NftTransferKeeper     *ibcnfttransferkeeper.Keeper
-	AuthzKeeper           *authzkeeper.Keeper
-	FeeGrantKeeper        *feegrantkeeper.Keeper
-	ICAHostKeeper         *icahostkeeper.Keeper
-	ICAControllerKeeper   *icacontrollerkeeper.Keeper
-	ICAAuthKeeper         *icaauthkeeper.Keeper
-	IBCFeeKeeper          *ibcfeekeeper.Keeper
-	IBCPermKeeper         *ibcpermkeeper.Keeper
-	MoveKeeper            *movekeeper.Keeper
-	AuctionKeeper         *auctionkeeper.Keeper // x/auction keeper used to process bids for TOB auctions
-	OPHostKeeper          *ophostkeeper.Keeper
+	AccountKeeper            *authkeeper.AccountKeeper
+	BankKeeper               *bankkeeper.BaseKeeper
+	CapabilityKeeper         *capabilitykeeper.Keeper
+	StakingKeeper            *stakingkeeper.Keeper
+	SlashingKeeper           *slashingkeeper.Keeper
+	RewardKeeper             *rewardkeeper.Keeper
+	DistrKeeper              *distrkeeper.Keeper
+	GovKeeper                *govkeeper.Keeper
+	CrisisKeeper             *crisiskeeper.Keeper
+	UpgradeKeeper            *upgradekeeper.Keeper
+	GroupKeeper              *groupkeeper.Keeper
+	ConsensusParamsKeeper    *consensusparamkeeper.Keeper
+	IBCKeeper                *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
+	EvidenceKeeper           *evidencekeeper.Keeper
+	TransferKeeper           *ibctransferkeeper.Keeper
+	NftTransferKeeper        *ibcnfttransferkeeper.Keeper
+	AuthzKeeper              *authzkeeper.Keeper
+	FeeGrantKeeper           *feegrantkeeper.Keeper
+	ICAHostKeeper            *icahostkeeper.Keeper
+	ICAControllerKeeper      *icacontrollerkeeper.Keeper
+	ICAAuthKeeper            *icaauthkeeper.Keeper
+	IBCFeeKeeper             *ibcfeekeeper.Keeper
+	IBCPermKeeper            *ibcpermkeeper.Keeper
+	FetchPriceProviderKeeper *fetchpriceproviderkeeper.Keeper
+	FetchPriceConsumerKeeper *fetchpriceconsumerkeeper.Keeper
+	MoveKeeper               *movekeeper.Keeper
+	AuctionKeeper            *auctionkeeper.Keeper // x/auction keeper used to process bids for TOB auctions
+	OPHostKeeper             *ophostkeeper.Keeper
+	OracleKeeper             *oraclekeeper.Keeper     // x/oracle keeper used for the slinky oracle
+	IncentivesKeeper         *incentiveskeeper.Keeper // x/incentives keeper used for slinky incentives
+	AlertsKeeper             *alertskeeper.Keeper     // x/alerts keeper used for slinky alerts
+
+	// other slinky oracle services
+	OracleClient           oracleservice.OracleService
+	OraclePrometheusServer *oraclemetrics.PrometheusServer
+	oraclePreBlockHandler  *oraclepreblock.PreBlockHandler
 
 	// make scoped keepers public for test purposes
-	ScopedIBCKeeper           capabilitykeeper.ScopedKeeper
-	ScopedTransferKeeper      capabilitykeeper.ScopedKeeper
-	ScopedNftTransferKeeper   capabilitykeeper.ScopedKeeper
-	ScopedICAHostKeeper       capabilitykeeper.ScopedKeeper
-	ScopedICAControllerKeeper capabilitykeeper.ScopedKeeper
-	ScopedICAAuthKeeper       capabilitykeeper.ScopedKeeper
+	ScopedIBCKeeper                capabilitykeeper.ScopedKeeper
+	ScopedTransferKeeper           capabilitykeeper.ScopedKeeper
+	ScopedNftTransferKeeper        capabilitykeeper.ScopedKeeper
+	ScopedICAHostKeeper            capabilitykeeper.ScopedKeeper
+	ScopedICAControllerKeeper      capabilitykeeper.ScopedKeeper
+	ScopedICAAuthKeeper            capabilitykeeper.ScopedKeeper
+	ScopedFetchPricePriceKeeper    capabilitykeeper.ScopedKeeper
+	ScopedFetchPriceConsumerKeeper capabilitykeeper.ScopedKeeper
 
 	// the module manager
 	ModuleManager      *module.Manager
@@ -265,6 +312,7 @@ func NewInitiaApp(
 	traceStore io.Writer,
 	loadLatest bool,
 	moveConfig moveconfig.MoveConfig,
+	wrappedOracleConfig apporacle.WrappedOracleConfig,
 	appOpts servertypes.AppOptions,
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *InitiaApp {
@@ -292,6 +340,8 @@ func NewInitiaApp(
 		authzkeeper.StoreKey, feegrant.StoreKey, icahosttypes.StoreKey,
 		icacontrollertypes.StoreKey, ibcfeetypes.StoreKey, ibcpermtypes.StoreKey,
 		movetypes.StoreKey, auctiontypes.StoreKey, ophosttypes.StoreKey,
+		oracletypes.StoreKey, incentivetypes.StoreKey, alerttypes.StoreKey,
+		fetchpriceprovidertypes.StoreKey, fetchpriceconsumertypes.StoreKey,
 	)
 	tkeys := storetypes.NewTransientStoreKeys()
 	memKeys := storetypes.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
@@ -316,7 +366,8 @@ func NewInitiaApp(
 	vc := authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix())
 	cc := authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix())
 
-	authorityAddr, err := ac.BytesToString(authtypes.NewModuleAddress(govtypes.ModuleName))
+	authorityAccAddr := authtypes.NewModuleAddress(govtypes.ModuleName)
+	authorityAddr, err := ac.BytesToString(authorityAccAddr)
 	if err != nil {
 		panic(err)
 	}
@@ -336,6 +387,8 @@ func NewInitiaApp(
 	scopedICAHostKeeper := app.CapabilityKeeper.ScopeToModule(icahosttypes.SubModuleName)
 	scopedICAControllerKeeper := app.CapabilityKeeper.ScopeToModule(icacontrollertypes.SubModuleName)
 	scopedICAAuthKeeper := app.CapabilityKeeper.ScopeToModule(icaauthtypes.ModuleName)
+	scopedFetchPriceProviderKeeper := app.CapabilityKeeper.ScopeToModule(fetchpriceprovidertypes.SubModuleName)
+	scopedFetchPriceConsumerKeeper := app.CapabilityKeeper.ScopeToModule(fetchpriceconsumertypes.SubModuleName)
 
 	app.CapabilityKeeper.Seal()
 
@@ -489,6 +542,13 @@ func NewInitiaApp(
 		authorityAddr,
 		ac,
 	)
+
+	oracleKeeper := oraclekeeper.NewKeeper(
+		runtime.NewKVStoreService(keys[oracletypes.StoreKey]),
+		appCodec,
+		authorityAccAddr,
+	)
+	app.OracleKeeper = &oracleKeeper
 
 	////////////////////////////
 	// Transfer configuration //
@@ -646,6 +706,56 @@ func NewInitiaApp(
 		)
 	}
 
+	///////////////////////////////////////
+	// fetchprice provider configuration //
+	///////////////////////////////////////
+	var fetchpriceProviderStack porttypes.IBCModule
+	var fetchpriceConsumerStack porttypes.IBCModule
+	{
+		app.FetchPriceProviderKeeper = fetchpriceproviderkeeper.NewKeeper(
+			appCodec,
+			runtime.NewKVStoreService(keys[fetchpriceprovidertypes.StoreKey]),
+			app.OracleKeeper,
+			app.IBCKeeper.PortKeeper,
+			scopedFetchPriceProviderKeeper,
+		)
+
+		app.FetchPriceConsumerKeeper = fetchpriceconsumerkeeper.NewKeeper(
+			appCodec,
+			runtime.NewKVStoreService(keys[fetchpriceconsumertypes.StoreKey]),
+			ac,
+			// ics4wrapper: fetchprice consumer -> fee
+			app.IBCFeeKeeper,
+			app.IBCKeeper.ChannelKeeper,
+			app.IBCKeeper.PortKeeper,
+			scopedFetchPriceConsumerKeeper,
+		)
+
+		fetchpriceProviderModule := fetchpriceprovider.NewIBCModule(
+			appCodec,
+			*app.FetchPriceProviderKeeper,
+		)
+		fetchpriceProviderStack = ibcperm.NewIBCMiddleware(
+			// receive: perm -> fee -> fetchprice provider
+			ibcfee.NewIBCMiddleware(fetchpriceProviderModule, *app.IBCFeeKeeper),
+			// ics4wrapper: not used
+			nil,
+			*app.IBCPermKeeper,
+		)
+
+		fetchpriceConsumerModule := fetchpriceconsumer.NewIBCModule(
+			appCodec,
+			*app.FetchPriceConsumerKeeper,
+		)
+		fetchpriceConsumerStack = ibcperm.NewIBCMiddleware(
+			// receive: perm -> fee -> fetchprice consumer
+			ibcfee.NewIBCMiddleware(fetchpriceConsumerModule, *app.IBCFeeKeeper),
+			// ics4wrapper: not used
+			nil,
+			*app.IBCPermKeeper,
+		)
+	}
+
 	//////////////////////////////
 	// IBC router Configuration //
 	//////////////////////////////
@@ -656,7 +766,9 @@ func NewInitiaApp(
 		AddRoute(icahosttypes.SubModuleName, icaHostStack).
 		AddRoute(icacontrollertypes.SubModuleName, icaControllerStack).
 		AddRoute(icaauthtypes.ModuleName, icaControllerStack).
-		AddRoute(ibcnfttransfertypes.ModuleName, nftTransferStack)
+		AddRoute(ibcnfttransfertypes.ModuleName, nftTransferStack).
+		AddRoute(fetchpriceprovidertypes.SubModuleName, fetchpriceProviderStack).
+		AddRoute(fetchpriceconsumertypes.SubModuleName, fetchpriceConsumerStack)
 
 	app.IBCKeeper.SetRouter(ibcRouter)
 
@@ -750,6 +862,8 @@ func NewInitiaApp(
 		move.NewAppModule(appCodec, *app.MoveKeeper, vc),
 		auction.NewAppModule(app.appCodec, *app.AuctionKeeper),
 		ophost.NewAppModule(appCodec, *app.OPHostKeeper),
+		// slinky modules
+		oracle.NewAppModule(appCodec, *app.OracleKeeper),
 		// ibc modules
 		ibc.NewAppModule(app.IBCKeeper),
 		ibctransfer.NewAppModule(*app.TransferKeeper),
@@ -760,6 +874,7 @@ func NewInitiaApp(
 		ibcperm.NewAppModule(*app.IBCPermKeeper),
 		ibctm.NewAppModule(),
 		solomachine.NewAppModule(),
+		fetchprice.NewAppModule(appCodec, app.FetchPriceConsumerKeeper, app.FetchPriceProviderKeeper),
 	)
 
 	// BasicModuleManager defines the module BasicManager is in charge of setting up basic,
@@ -819,6 +934,7 @@ func NewInitiaApp(
 		consensusparamtypes.ModuleName, ibcexported.ModuleName, ibctransfertypes.ModuleName,
 		ibcnfttransfertypes.ModuleName, icatypes.ModuleName, icaauthtypes.ModuleName, ibcfeetypes.ModuleName,
 		ibcpermtypes.ModuleName, consensusparamtypes.ModuleName, auctiontypes.ModuleName, ophosttypes.ModuleName,
+		oracletypes.ModuleName, fetchpricetypes.ModuleName,
 	}
 	app.ModuleManager.SetOrderInitGenesis(genesisModuleOrder...)
 	app.ModuleManager.SetOrderExportGenesis(genesisModuleOrder...)
@@ -853,6 +969,10 @@ func NewInitiaApp(
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetPostHandler(app.MoveKeeper.GetPostHandler())
 	app.SetEndBlocker(app.EndBlocker)
+
+	//////////////////
+	/// lane start ///
+	//////////////////
 
 	// initialize and set the InitiaApp mempool. The current mempool will be the
 	// x/auction module's mempool which will extract the top bid from the current block's auction
@@ -904,16 +1024,12 @@ func NewInitiaApp(
 	anteHandler := app.setAnteHandler(mevLane, freeLane)
 
 	// override the base-app's ABCI methods (CheckTx, PrepareProposal, ProcessProposal)
-	proposalHandlers := blockabci.NewProposalHandler(
+	blockProposalHandlers := blockabci.NewProposalHandler(
 		app.Logger(),
 		app.txConfig.TxDecoder(),
 		app.txConfig.TxEncoder(),
 		mempool,
 	)
-
-	// override base-app's ProcessProposal + PrepareProposal
-	app.SetPrepareProposal(proposalHandlers.PrepareProposalHandler())
-	app.SetProcessProposal(proposalHandlers.ProcessProposalHandler())
 
 	// overrde base-app's CheckTx
 	checkTxHandler := mevlane.NewCheckTxHandler(
@@ -923,6 +1039,112 @@ func NewInitiaApp(
 		anteHandler,
 	)
 	app.SetCheckTx(checkTxHandler.CheckTx())
+
+	////////////////
+	/// lane end ///
+	////////////////
+
+	////////////////////
+	/// oracle start ///
+	////////////////////
+
+	if err := wrappedOracleConfig.ValidateBasic(); err != nil {
+		panic(err)
+	}
+
+	metrics, consAddress, err := servicemetrics.NewServiceMetricsFromConfig(
+		wrappedOracleConfig.MetricsConfig.ToAppMetricConfig(),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	var zapLogger *zap.Logger
+	if wrappedOracleConfig.Production {
+		zapLogger, err = zap.NewProduction()
+	} else {
+		zapLogger, err = zap.NewDevelopment()
+	}
+	if err != nil {
+		panic(err)
+	}
+
+	app.OracleClient, err = apporacle.NewOracleClient(wrappedOracleConfig)
+	if err != nil {
+		panic(err)
+	}
+
+	// If app level instrumentation is enabled, then wrap the oracle service with a metrics client
+	// to get metrics on the oracle service (for ABCI++). This will allow the instrumentation to track
+	// latency in VerifyVoteExtension requests and more.
+	if wrappedOracleConfig.MetricsConfig.Enabled {
+		app.OracleClient = serviceclient.NewMetricsClient(app.Logger(), app.OracleClient, metrics)
+		app.OraclePrometheusServer, err = oraclemetrics.NewPrometheusServer(wrappedOracleConfig.MetricsConfig.PrometheusServerAddress, zapLogger)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	oracleProposalHandler := oracleproposals.NewProposalHandler(
+		app.Logger(),
+		blockProposalHandlers.PrepareProposalHandler(),
+		blockProposalHandlers.ProcessProposalHandler(),
+		ve.NewDefaultValidateVoteExtensionsFn(
+			app.ChainID(),
+			stakingkeeper.NewCompatibilityKeeper(app.StakingKeeper),
+		),
+		compression.NewCompressionVoteExtensionCodec(
+			compression.NewDefaultVoteExtensionCodec(),
+			compression.NewZLibCompressor(),
+		),
+		compression.NewCompressionExtendedCommitCodec(
+			compression.NewDefaultExtendedCommitCodec(),
+			compression.NewZStdCompressor(),
+		),
+		currencypair.NewDeltaCurrencyPairStrategy(app.OracleKeeper),
+		metrics,
+	)
+
+	// override baseapp's ProcessProposal + PrepareProposal
+	app.SetPrepareProposal(oracleProposalHandler.PrepareProposalHandler())
+	app.SetProcessProposal(oracleProposalHandler.ProcessProposalHandler())
+
+	app.oraclePreBlockHandler = oraclepreblock.NewOraclePreBlockHandler(
+		app.Logger(),
+		apporacle.GetOracleAggregationFN(app.Logger(), app.StakingKeeper),
+		app.OracleKeeper,
+		consAddress,
+		metrics,
+		currencypair.NewDeltaCurrencyPairStrategy(app.OracleKeeper),
+		compression.NewCompressionVoteExtensionCodec(
+			compression.NewDefaultVoteExtensionCodec(),
+			compression.NewZLibCompressor(),
+		),
+		compression.NewCompressionExtendedCommitCodec(
+			compression.NewDefaultExtendedCommitCodec(),
+			compression.NewZStdCompressor(),
+		),
+	)
+
+	// Create the vote extensions handler that will be used to extend and verify
+	// vote extensions (i.e. oracle data).
+	voteExtensionsHandler := ve.NewVoteExtensionHandler(
+		app.Logger(),
+		app.OracleClient,
+		time.Second,
+		currencypair.NewDeltaCurrencyPairStrategy(app.OracleKeeper),
+		compression.NewCompressionVoteExtensionCodec(
+			compression.NewDefaultVoteExtensionCodec(),
+			compression.NewZLibCompressor(),
+		),
+		app.oraclePreBlockHandler.PreBlocker(),
+	)
+	app.SetExtendVoteHandler(voteExtensionsHandler.ExtendVoteHandler())
+	app.SetVerifyVoteExtensionHandler(voteExtensionsHandler.VerifyVoteExtensionHandler())
+
+	//////////////////
+	/// oracle end ///
+	//////////////////
 
 	// At startup, after all modules have been registered, check that all prot
 	// annotations are correct.
@@ -1001,8 +1223,14 @@ func (app *InitiaApp) setAnteHandler(
 func (app *InitiaApp) Name() string { return app.BaseApp.Name() }
 
 // PreBlocker application updates every pre block
-func (app *InitiaApp) PreBlocker(ctx sdk.Context, _ *abci.RequestFinalizeBlock) (*sdk.ResponsePreBlock, error) {
-	return app.ModuleManager.PreBlock(ctx)
+func (app *InitiaApp) PreBlocker(ctx sdk.Context, req *abci.RequestFinalizeBlock) (*sdk.ResponsePreBlock, error) {
+	res, err := app.ModuleManager.PreBlock(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = app.oraclePreBlockHandler.PreBlocker()(ctx, req)
+	return res, err
 }
 
 // BeginBlocker application updates every begin block
@@ -1226,4 +1454,19 @@ func (app *InitiaApp) ChainID() string { // TODO: remove this method once chain 
 // DefaultGenesis returns a default genesis from the registered AppModuleBasic's.
 func (app *InitiaApp) DefaultGenesis() map[string]json.RawMessage {
 	return app.BasicModuleManager.DefaultGenesis(app.appCodec)
+}
+
+// Close closes the underlying baseapp, the oracle service, and the prometheus server if required.
+// This method blocks on the closure of both the prometheus server, and the oracle-service
+func (app *InitiaApp) Close() error {
+	if err := app.BaseApp.Close(); err != nil {
+		return err
+	}
+
+	// close the oracle service
+	if app.OracleClient != nil {
+		app.OracleClient.Stop(context.Background())
+	}
+
+	return nil
 }

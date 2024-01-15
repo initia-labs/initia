@@ -33,6 +33,7 @@ import (
 	ibctransfer "github.com/cosmos/ibc-go/v8/modules/apps/transfer"
 	ibc "github.com/cosmos/ibc-go/v8/modules/core"
 
+	apporacle "github.com/initia-labs/initia/app/oracle"
 	"github.com/initia-labs/initia/x/bank"
 	"github.com/initia-labs/initia/x/distribution"
 	"github.com/initia-labs/initia/x/evidence"
@@ -76,7 +77,7 @@ func TestInitGenesisOnMigration(t *testing.T) {
 	db := dbm.NewMemDB()
 	logger := log.NewLogger(os.Stdout)
 	app := NewInitiaApp(
-		logger, db, nil, true, moveconfig.DefaultMoveConfig(), simtestutil.EmptyAppOptions{})
+		logger, db, nil, true, moveconfig.DefaultMoveConfig(), apporacle.DefaultConfig(), simtestutil.EmptyAppOptions{})
 	ctx := app.NewContextLegacy(true, cmtproto.Header{Height: app.LastBlockHeight()})
 
 	// Create a mock module. This module will serve as the new module we're
@@ -141,7 +142,7 @@ func TestGetKey(t *testing.T) {
 	db := dbm.NewMemDB()
 	app := NewInitiaApp(
 		log.NewLogger(os.Stdout),
-		db, nil, true, moveconfig.DefaultMoveConfig(), simtestutil.EmptyAppOptions{})
+		db, nil, true, moveconfig.DefaultMoveConfig(), apporacle.DefaultConfig(), simtestutil.EmptyAppOptions{})
 
 	require.NotEmpty(t, app.GetKey(banktypes.StoreKey))
 }

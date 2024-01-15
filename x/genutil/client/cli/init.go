@@ -11,11 +11,13 @@ import (
 	"github.com/cometbft/cometbft/libs/cli"
 	tmos "github.com/cometbft/cometbft/libs/os"
 	tmrand "github.com/cometbft/cometbft/libs/rand"
-	"github.com/cosmos/go-bip39"
+	cmttypes "github.com/cometbft/cometbft/types"
+
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
 	errorsmod "cosmossdk.io/errors"
+	"github.com/cosmos/go-bip39"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -120,8 +122,13 @@ func InitCmd(mbm module.BasicManager, defaultNodeHome string) *cobra.Command {
 			appGenesis.ChainID = chainID
 			appGenesis.AppState = appState
 			appGenesis.InitialHeight = initHeight
+
+			// set vote enable height
+			consensusParams := cmttypes.DefaultConsensusParams()
+			consensusParams.ABCI.VoteExtensionsEnableHeight = 1
 			appGenesis.Consensus = &types.ConsensusGenesis{
 				Validators: nil,
+				Params:     consensusParams,
 			}
 
 			if err = genutil.ExportGenesisFile(appGenesis, genFile); err != nil {

@@ -24,7 +24,7 @@ jobs:
   golangci:
     env:
       # for private repo access
-      GOPRIVATE: github.com/initia-labs/*
+      GOPRIVATE: github.com/initia-labs,github.com/skip-mev/slinky
       GITHUB_ACCESS_TOKEN: ${{ secrets.GH_READ_TOKEN }}
     name: golangci-lint
     runs-on: ubuntu-latest
@@ -51,7 +51,7 @@ jobs:
   tidy:
     env:
       # for private repo access
-      GOPRIVATE: github.com/initia-labs/*
+      GOPRIVATE: github.com/initia-labs,github.com/skip-mev/slinky
       GITHUB_ACCESS_TOKEN: ${{ secrets.GH_READ_TOKEN }}
     runs-on: ubuntu-latest
     name: tidy

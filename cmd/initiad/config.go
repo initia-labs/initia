@@ -9,13 +9,15 @@ import (
 	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
 
 	initiaapp "github.com/initia-labs/initia/app"
+	initiaapporacle "github.com/initia-labs/initia/app/oracle"
 	moveconfig "github.com/initia-labs/initia/x/move/config"
 )
 
 // initiaappConfig initia specify app config
 type initiaappConfig struct {
 	serverconfig.Config
-	MoveConfig moveconfig.MoveConfig `mapstructure:"move"`
+	MoveConfig   moveconfig.MoveConfig               `mapstructure:"move"`
+	OracleConfig initiaapporacle.WrappedOracleConfig `mapstructure:"oracle"`
 }
 
 // initAppConfig helps to override default appConfig template and configs.
@@ -40,11 +42,14 @@ func initAppConfig() (string, interface{}) {
 	srvCfg.MinGasPrices = fmt.Sprintf("0%s", initiaapp.BondDenom)
 
 	initiaappConfig := initiaappConfig{
-		Config:     *srvCfg,
-		MoveConfig: moveconfig.DefaultMoveConfig(),
+		Config:       *srvCfg,
+		MoveConfig:   moveconfig.DefaultMoveConfig(),
+		OracleConfig: initiaapporacle.DefaultConfig(),
 	}
 
-	initiaappTemplate := serverconfig.DefaultConfigTemplate + moveconfig.DefaultConfigTemplate
+	initiaappTemplate := serverconfig.DefaultConfigTemplate +
+		moveconfig.DefaultConfigTemplate +
+		initiaapporacle.DefaultConfigTemplate
 
 	return initiaappTemplate, initiaappConfig
 }
