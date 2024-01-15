@@ -42,6 +42,7 @@ func TestSimpleProposalPassedEndblocker(t *testing.T) {
 	ctx = ctx.WithBlockHeader(newHeader)
 
 	proposal, err = app.GovKeeper.Proposals.Get(ctx, 1)
+	require.NoError(t, err)
 	require.True(t, proposal.SubmitTime.Equal(initTime))
 	require.True(t, proposal.DepositEndTime.Equal(initTime.Add(depositPeriod)))
 	require.Equal(t, proposal.Status, v1.StatusVotingPeriod)
@@ -50,8 +51,10 @@ func TestSimpleProposalPassedEndblocker(t *testing.T) {
 
 	voteMsg := createVoteMsg(t, addrs[0], proposal.Id, v1.OptionYes)
 	_, err = govMsgSvr.Vote(ctx, voteMsg)
+	require.NoError(t, err)
 	voteMsg = createVoteMsg(t, addrs[1], proposal.Id, v1.OptionYes)
 	_, err = govMsgSvr.Vote(ctx, voteMsg)
+	require.NoError(t, err)
 	voteMsg = createVoteMsg(t, addrs[2], proposal.Id, v1.OptionYes)
 	_, err = govMsgSvr.Vote(ctx, voteMsg)
 	require.NoError(t, err)
@@ -60,7 +63,7 @@ func TestSimpleProposalPassedEndblocker(t *testing.T) {
 	newHeader.Time = ctx.BlockHeader().Time.Add(votingPeriod)
 	ctx = ctx.WithBlockHeader(newHeader)
 
-	err = gov.EndBlocker(ctx, app.GovKeeper)
+	err = gov.EndBlocker(ctx, app.GovKeeper, app.MoveKeeper.GetPostHandler())
 	require.NoError(t, err)
 
 	proposal, err = app.GovKeeper.Proposals.Get(ctx, 1)
@@ -83,6 +86,7 @@ func TestEmergencyProposalPassedEndblocker(t *testing.T) {
 	ctx = ctx.WithBlockHeader(newHeader)
 
 	proposal, err := app.GovKeeper.Proposals.Get(ctx, 1)
+	require.NoError(t, err)
 	require.True(t, proposal.Emergency)
 	require.True(t, proposal.EmergencyStartTime.Equal(ctx.BlockTime().Add(-time.Minute)))
 	require.True(t, proposal.EmergencyNextTallyTime.Equal(ctx.BlockTime().Add(emergencyTallyInterval-time.Minute)))
@@ -112,7 +116,7 @@ func TestEmergencyProposalPassedEndblocker(t *testing.T) {
 	newHeader.Time = ctx.BlockHeader().Time.Add(time.Minute)
 	ctx = ctx.WithBlockHeader(newHeader)
 
-	err = gov.EndBlocker(ctx, app.GovKeeper)
+	err = gov.EndBlocker(ctx, app.GovKeeper, app.MoveKeeper.GetPostHandler())
 	require.NoError(t, err)
 	proposal, err = app.GovKeeper.Proposals.Get(ctx, 1)
 	require.NoError(t, err)
@@ -124,16 +128,11 @@ func TestEmergencyProposalPassedEndblocker(t *testing.T) {
 
 	require.True(t, ctx.BlockHeader().Time.Equal(*proposal.EmergencyNextTallyTime))
 
-	err = gov.EndBlocker(ctx, app.GovKeeper)
+	err = gov.EndBlocker(ctx, app.GovKeeper, app.MoveKeeper.GetPostHandler())
 	require.NoError(t, err)
 	proposal, err = app.GovKeeper.Proposals.Get(ctx, 1)
 	require.NoError(t, err)
 	require.Equal(t, proposal.Status, v1.StatusPassed)
-}
-
-type tickTestResult struct {
-	status    v1.ProposalStatus
-	emergency bool
 }
 
 func TestTickSingleProposal(t *testing.T) {
@@ -250,7 +249,7 @@ func TestTickSingleProposal(t *testing.T) {
 					voteCheck = true
 				}
 
-				err = gov.EndBlocker(ctx, app.GovKeeper)
+				err = gov.EndBlocker(ctx, app.GovKeeper, app.MoveKeeper.GetPostHandler())
 				require.NoError(t, err)
 			}
 			proposal, err := app.GovKeeper.Proposals.Get(ctx, 1)

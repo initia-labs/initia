@@ -6,7 +6,6 @@ import (
 	"time"
 
 	initiaapp "github.com/initia-labs/initia/app"
-	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
 	"github.com/stretchr/testify/require"
 
 	"cosmossdk.io/math"
@@ -42,14 +41,6 @@ var (
 		sdk.AccAddress(pubKeys[4].Address()),
 	}
 
-	valAddrs = []sdk.ValAddress{
-		sdk.ValAddress(pubKeys[0].Address()),
-		sdk.ValAddress(pubKeys[1].Address()),
-		sdk.ValAddress(pubKeys[2].Address()),
-		sdk.ValAddress(pubKeys[3].Address()),
-		sdk.ValAddress(pubKeys[4].Address()),
-	}
-
 	validators = []*cmtypes.Validator{
 		cmtypes.NewValidator(pubKeys[0], 1000000),
 		cmtypes.NewValidator(pubKeys[1], 1000000),
@@ -57,8 +48,6 @@ var (
 		cmtypes.NewValidator(pubKeys[3], 1000000),
 		cmtypes.NewValidator(pubKeys[4], 1000000),
 	}
-
-	commissionRates = stakingtypes.NewCommissionRates(math.LegacyZeroDec(), math.LegacyZeroDec(), math.LegacyZeroDec())
 
 	genCoins = sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(10000000))).Sort()
 
@@ -106,6 +95,7 @@ func createAppWithSimpleValidators(t *testing.T) *initiaapp.InitiaApp {
 	params.VotingPeriod = votingPeriod
 	params.EmergencyTallyInterval = emergencyTallyInterval
 	err = app.GovKeeper.Params.Set(ctx, params)
+	require.NoError(t, err)
 	_, err = app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1})
 	require.NoError(t, err)
 	return app
