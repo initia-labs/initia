@@ -57,6 +57,7 @@ import (
 	cosmosante "github.com/cosmos/cosmos-sdk/x/auth/ante"
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
+	"github.com/cosmos/cosmos-sdk/x/auth/posthandler"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/authz"
@@ -849,7 +850,7 @@ func NewInitiaApp(
 		capability.NewAppModule(appCodec, *app.CapabilityKeeper, false),
 		crisis.NewAppModule(app.CrisisKeeper, skipGenesisInvariants, nil),
 		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, *app.FeeGrantKeeper, app.interfaceRegistry),
-		gov.NewAppModule(appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper, app.MoveKeeper.GetPostHandler()),
+		gov.NewAppModule(appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper),
 		reward.NewAppModule(appCodec, *app.RewardKeeper),
 		slashing.NewAppModule(appCodec, *app.SlashingKeeper),
 		distr.NewAppModule(appCodec, *app.DistrKeeper),
@@ -967,7 +968,7 @@ func NewInitiaApp(
 	app.SetInitChainer(app.InitChainer)
 	app.SetPreBlocker(app.PreBlocker)
 	app.SetBeginBlocker(app.BeginBlocker)
-	app.SetPostHandler(app.MoveKeeper.GetPostHandler())
+	app.setPostHandler()
 	app.SetEndBlocker(app.EndBlocker)
 
 	//////////////////
@@ -1217,6 +1218,17 @@ func (app *InitiaApp) setAnteHandler(
 
 	app.SetAnteHandler(anteHandler)
 	return anteHandler
+}
+
+func (app *InitiaApp) setPostHandler() {
+	postHandler, err := posthandler.NewPostHandler(
+		posthandler.HandlerOptions{},
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	app.SetPostHandler(postHandler)
 }
 
 // Name returns the name of the App
