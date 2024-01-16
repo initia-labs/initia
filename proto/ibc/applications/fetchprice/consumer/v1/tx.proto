@@ -23,7 +23,7 @@ service Msg {
 // MsgFetchPrice defines a msg to fetch a oracle price from provider chain
 message MsgFetchPrice {
   option (cosmos.msg.v1.signer) = "sender";
-  option (amino.name)           = "nft-transfer/MsgFetchPrice";
+  option (amino.name)           = "fetchprice/MsgFetchPrice";
 
   option (gogoproto.equal)           = false;
   option (gogoproto.goproto_getters) = false;
