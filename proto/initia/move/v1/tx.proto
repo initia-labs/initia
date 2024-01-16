@@ -203,8 +203,7 @@ message MsgWhitelist {
   // Dex coin LP metadata address
   string metadata_lp = 2 [(gogoproto.customname) = "MetadataLP"];
   // RewardWeight is registered to distribution's Params
-  string reward_weight = 3
-      [(gogoproto.customtype) = "cosmossdk.io/math.LegacyDec", (gogoproto.nullable) = false];
+  string reward_weight = 3 [(gogoproto.customtype) = "cosmossdk.io/math.LegacyDec", (gogoproto.nullable) = false];
 }
 
 // MsgWhitelistResponse returns result data.
