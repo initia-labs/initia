@@ -131,8 +131,6 @@ type AppModule struct {
 	keeper        *keeper.Keeper
 	accountKeeper types.AccountKeeper
 	bankKeeper    types.BankKeeper
-
-	postHandler sdk.PostHandler
 }
 
 // NewAppModule creates a new AppModule object
@@ -141,14 +139,12 @@ func NewAppModule(
 	keeper *keeper.Keeper,
 	ak types.AccountKeeper,
 	bk types.BankKeeper,
-	postHandler sdk.PostHandler,
 ) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{cdc: cdc},
 		keeper:         keeper,
 		accountKeeper:  ak,
 		bankKeeper:     bk,
-		postHandler:    postHandler,
 	}
 }
 
@@ -178,7 +174,6 @@ type ModuleInputs struct {
 	BankKeeper         types.BankKeeper
 	StakingKeeper      customtypes.StakingKeeper
 	DistributionKeeper types.DistributionKeeper
-	PostHandler        sdk.PostHandler
 }
 
 type ModuleOutputs struct {
@@ -213,7 +208,7 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 		authority.String(),
 	)
 
-	m := NewAppModule(in.Cdc, k, in.AccountKeeper, in.BankKeeper, in.PostHandler)
+	m := NewAppModule(in.Cdc, k, in.AccountKeeper, in.BankKeeper)
 	hr := v1beta1.HandlerRoute{Handler: v1beta1.ProposalHandler, RouteKey: types.RouterKey}
 
 	return ModuleOutputs{Module: m, Keeper: k, HandlerRoute: hr}
@@ -310,5 +305,5 @@ func (AppModule) ConsensusVersion() uint64 { return ConsensusVersion }
 // updates.
 func (am AppModule) EndBlock(ctx context.Context) error {
 	c := sdk.UnwrapSDKContext(ctx)
-	return EndBlocker(c, am.keeper, am.postHandler)
+	return EndBlocker(c, am.keeper)
 }

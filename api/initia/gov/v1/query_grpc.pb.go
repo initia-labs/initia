@@ -19,9 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Query_Params_FullMethodName                              = "/initia.gov.v1.Query/Params"
-	Query_EmergencyProposals_FullMethodName                  = "/initia.gov.v1.Query/EmergencyProposals"
-	Query_LastEmergencyProposalTallyTimestamp_FullMethodName = "/initia.gov.v1.Query/LastEmergencyProposalTallyTimestamp"
+	Query_Params_FullMethodName             = "/initia.gov.v1.Query/Params"
+	Query_EmergencyProposals_FullMethodName = "/initia.gov.v1.Query/EmergencyProposals"
+	Query_Proposal_FullMethodName           = "/initia.gov.v1.Query/Proposal"
+	Query_Proposals_FullMethodName          = "/initia.gov.v1.Query/Proposals"
 )
 
 // QueryClient is the client API for Query service.
@@ -32,8 +33,10 @@ type QueryClient interface {
 	Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error)
 	// EmergencyProposals queries emergency proposals.
 	EmergencyProposals(ctx context.Context, in *QueryEmergencyProposalsRequest, opts ...grpc.CallOption) (*QueryEmergencyProposalsResponse, error)
-	// LastEmergencyProposalTallyTimestamp queries last emergency proposal tally time.
-	LastEmergencyProposalTallyTimestamp(ctx context.Context, in *QueryLastEmergencyProposalTallyTimestampRequest, opts ...grpc.CallOption) (*QueryLastEmergencyProposalTallyTimestampResponse, error)
+	// Proposal queries proposal details based on ProposalID.
+	Proposal(ctx context.Context, in *QueryProposalRequest, opts ...grpc.CallOption) (*QueryProposalResponse, error)
+	// Proposals queries all proposals based on given status.
+	Proposals(ctx context.Context, in *QueryProposalsRequest, opts ...grpc.CallOption) (*QueryProposalsResponse, error)
 }
 
 type queryClient struct {
@@ -62,9 +65,18 @@ func (c *queryClient) EmergencyProposals(ctx context.Context, in *QueryEmergency
 	return out, nil
 }
 
-func (c *queryClient) LastEmergencyProposalTallyTimestamp(ctx context.Context, in *QueryLastEmergencyProposalTallyTimestampRequest, opts ...grpc.CallOption) (*QueryLastEmergencyProposalTallyTimestampResponse, error) {
-	out := new(QueryLastEmergencyProposalTallyTimestampResponse)
-	err := c.cc.Invoke(ctx, Query_LastEmergencyProposalTallyTimestamp_FullMethodName, in, out, opts...)
+func (c *queryClient) Proposal(ctx context.Context, in *QueryProposalRequest, opts ...grpc.CallOption) (*QueryProposalResponse, error) {
+	out := new(QueryProposalResponse)
+	err := c.cc.Invoke(ctx, Query_Proposal_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) Proposals(ctx context.Context, in *QueryProposalsRequest, opts ...grpc.CallOption) (*QueryProposalsResponse, error) {
+	out := new(QueryProposalsResponse)
+	err := c.cc.Invoke(ctx, Query_Proposals_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -79,8 +91,10 @@ type QueryServer interface {
 	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
 	// EmergencyProposals queries emergency proposals.
 	EmergencyProposals(context.Context, *QueryEmergencyProposalsRequest) (*QueryEmergencyProposalsResponse, error)
-	// LastEmergencyProposalTallyTimestamp queries last emergency proposal tally time.
-	LastEmergencyProposalTallyTimestamp(context.Context, *QueryLastEmergencyProposalTallyTimestampRequest) (*QueryLastEmergencyProposalTallyTimestampResponse, error)
+	// Proposal queries proposal details based on ProposalID.
+	Proposal(context.Context, *QueryProposalRequest) (*QueryProposalResponse, error)
+	// Proposals queries all proposals based on given status.
+	Proposals(context.Context, *QueryProposalsRequest) (*QueryProposalsResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -94,8 +108,11 @@ func (UnimplementedQueryServer) Params(context.Context, *QueryParamsRequest) (*Q
 func (UnimplementedQueryServer) EmergencyProposals(context.Context, *QueryEmergencyProposalsRequest) (*QueryEmergencyProposalsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method EmergencyProposals not implemented")
 }
-func (UnimplementedQueryServer) LastEmergencyProposalTallyTimestamp(context.Context, *QueryLastEmergencyProposalTallyTimestampRequest) (*QueryLastEmergencyProposalTallyTimestampResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method LastEmergencyProposalTallyTimestamp not implemented")
+func (UnimplementedQueryServer) Proposal(context.Context, *QueryProposalRequest) (*QueryProposalResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Proposal not implemented")
+}
+func (UnimplementedQueryServer) Proposals(context.Context, *QueryProposalsRequest) (*QueryProposalsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Proposals not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 
@@ -146,20 +163,38 @@ func _Query_EmergencyProposals_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_LastEmergencyProposalTallyTimestamp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryLastEmergencyProposalTallyTimestampRequest)
+func _Query_Proposal_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryProposalRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).LastEmergencyProposalTallyTimestamp(ctx, in)
+		return srv.(QueryServer).Proposal(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Query_LastEmergencyProposalTallyTimestamp_FullMethodName,
+		FullMethod: Query_Proposal_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).LastEmergencyProposalTallyTimestamp(ctx, req.(*QueryLastEmergencyProposalTallyTimestampRequest))
+		return srv.(QueryServer).Proposal(ctx, req.(*QueryProposalRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_Proposals_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryProposalsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).Proposals(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_Proposals_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).Proposals(ctx, req.(*QueryProposalsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -180,8 +215,12 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Query_EmergencyProposals_Handler,
 		},
 		{
-			MethodName: "LastEmergencyProposalTallyTimestamp",
-			Handler:    _Query_LastEmergencyProposalTallyTimestamp_Handler,
+			MethodName: "Proposal",
+			Handler:    _Query_Proposal_Handler,
+		},
+		{
+			MethodName: "Proposals",
+			Handler:    _Query_Proposals_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

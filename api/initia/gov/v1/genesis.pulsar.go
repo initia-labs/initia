@@ -10,7 +10,7 @@ import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoiface "google.golang.org/protobuf/runtime/protoiface"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
+	_ "google.golang.org/protobuf/types/known/timestamppb"
 	io "io"
 	reflect "reflect"
 	sync "sync"
@@ -121,7 +121,7 @@ func (x *_GenesisState_3_list) IsValid() bool {
 var _ protoreflect.List = (*_GenesisState_4_list)(nil)
 
 type _GenesisState_4_list struct {
-	list *[]*v1.Proposal
+	list *[]*Proposal
 }
 
 func (x *_GenesisState_4_list) Len() int {
@@ -137,18 +137,18 @@ func (x *_GenesisState_4_list) Get(i int) protoreflect.Value {
 
 func (x *_GenesisState_4_list) Set(i int, value protoreflect.Value) {
 	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*v1.Proposal)
+	concreteValue := valueUnwrapped.Interface().(*Proposal)
 	(*x.list)[i] = concreteValue
 }
 
 func (x *_GenesisState_4_list) Append(value protoreflect.Value) {
 	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*v1.Proposal)
+	concreteValue := valueUnwrapped.Interface().(*Proposal)
 	*x.list = append(*x.list, concreteValue)
 }
 
 func (x *_GenesisState_4_list) AppendMutable() protoreflect.Value {
-	v := new(v1.Proposal)
+	v := new(Proposal)
 	*x.list = append(*x.list, v)
 	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
@@ -161,7 +161,7 @@ func (x *_GenesisState_4_list) Truncate(n int) {
 }
 
 func (x *_GenesisState_4_list) NewElement() protoreflect.Value {
-	v := new(v1.Proposal)
+	v := new(Proposal)
 	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
 
@@ -170,13 +170,13 @@ func (x *_GenesisState_4_list) IsValid() bool {
 }
 
 var (
-	md_GenesisState                                         protoreflect.MessageDescriptor
-	fd_GenesisState_starting_proposal_id                    protoreflect.FieldDescriptor
-	fd_GenesisState_deposits                                protoreflect.FieldDescriptor
-	fd_GenesisState_votes                                   protoreflect.FieldDescriptor
-	fd_GenesisState_proposals                               protoreflect.FieldDescriptor
-	fd_GenesisState_params                                  protoreflect.FieldDescriptor
-	fd_GenesisState_last_emergency_proposal_tally_timestamp protoreflect.FieldDescriptor
+	md_GenesisState                      protoreflect.MessageDescriptor
+	fd_GenesisState_starting_proposal_id protoreflect.FieldDescriptor
+	fd_GenesisState_deposits             protoreflect.FieldDescriptor
+	fd_GenesisState_votes                protoreflect.FieldDescriptor
+	fd_GenesisState_proposals            protoreflect.FieldDescriptor
+	fd_GenesisState_params               protoreflect.FieldDescriptor
+	fd_GenesisState_constitution         protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -187,7 +187,7 @@ func init() {
 	fd_GenesisState_votes = md_GenesisState.Fields().ByName("votes")
 	fd_GenesisState_proposals = md_GenesisState.Fields().ByName("proposals")
 	fd_GenesisState_params = md_GenesisState.Fields().ByName("params")
-	fd_GenesisState_last_emergency_proposal_tally_timestamp = md_GenesisState.Fields().ByName("last_emergency_proposal_tally_timestamp")
+	fd_GenesisState_constitution = md_GenesisState.Fields().ByName("constitution")
 }
 
 var _ protoreflect.Message = (*fastReflection_GenesisState)(nil)
@@ -285,9 +285,9 @@ func (x *fastReflection_GenesisState) Range(f func(protoreflect.FieldDescriptor,
 			return
 		}
 	}
-	if x.LastEmergencyProposalTallyTimestamp != nil {
-		value := protoreflect.ValueOfMessage(x.LastEmergencyProposalTallyTimestamp.ProtoReflect())
-		if !f(fd_GenesisState_last_emergency_proposal_tally_timestamp, value) {
+	if x.Constitution != "" {
+		value := protoreflect.ValueOfString(x.Constitution)
+		if !f(fd_GenesisState_constitution, value) {
 			return
 		}
 	}
@@ -316,8 +316,8 @@ func (x *fastReflection_GenesisState) Has(fd protoreflect.FieldDescriptor) bool 
 		return len(x.Proposals) != 0
 	case "initia.gov.v1.GenesisState.params":
 		return x.Params != nil
-	case "initia.gov.v1.GenesisState.last_emergency_proposal_tally_timestamp":
-		return x.LastEmergencyProposalTallyTimestamp != nil
+	case "initia.gov.v1.GenesisState.constitution":
+		return x.Constitution != ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.GenesisState"))
@@ -344,8 +344,8 @@ func (x *fastReflection_GenesisState) Clear(fd protoreflect.FieldDescriptor) {
 		x.Proposals = nil
 	case "initia.gov.v1.GenesisState.params":
 		x.Params = nil
-	case "initia.gov.v1.GenesisState.last_emergency_proposal_tally_timestamp":
-		x.LastEmergencyProposalTallyTimestamp = nil
+	case "initia.gov.v1.GenesisState.constitution":
+		x.Constitution = ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.GenesisState"))
@@ -386,9 +386,9 @@ func (x *fastReflection_GenesisState) Get(descriptor protoreflect.FieldDescripto
 	case "initia.gov.v1.GenesisState.params":
 		value := x.Params
 		return protoreflect.ValueOfMessage(value.ProtoReflect())
-	case "initia.gov.v1.GenesisState.last_emergency_proposal_tally_timestamp":
-		value := x.LastEmergencyProposalTallyTimestamp
-		return protoreflect.ValueOfMessage(value.ProtoReflect())
+	case "initia.gov.v1.GenesisState.constitution":
+		value := x.Constitution
+		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.GenesisState"))
@@ -425,8 +425,8 @@ func (x *fastReflection_GenesisState) Set(fd protoreflect.FieldDescriptor, value
 		x.Proposals = *clv.list
 	case "initia.gov.v1.GenesisState.params":
 		x.Params = value.Message().Interface().(*Params)
-	case "initia.gov.v1.GenesisState.last_emergency_proposal_tally_timestamp":
-		x.LastEmergencyProposalTallyTimestamp = value.Message().Interface().(*timestamppb.Timestamp)
+	case "initia.gov.v1.GenesisState.constitution":
+		x.Constitution = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.GenesisState"))
@@ -461,7 +461,7 @@ func (x *fastReflection_GenesisState) Mutable(fd protoreflect.FieldDescriptor) p
 		return protoreflect.ValueOfList(value)
 	case "initia.gov.v1.GenesisState.proposals":
 		if x.Proposals == nil {
-			x.Proposals = []*v1.Proposal{}
+			x.Proposals = []*Proposal{}
 		}
 		value := &_GenesisState_4_list{list: &x.Proposals}
 		return protoreflect.ValueOfList(value)
@@ -470,13 +470,10 @@ func (x *fastReflection_GenesisState) Mutable(fd protoreflect.FieldDescriptor) p
 			x.Params = new(Params)
 		}
 		return protoreflect.ValueOfMessage(x.Params.ProtoReflect())
-	case "initia.gov.v1.GenesisState.last_emergency_proposal_tally_timestamp":
-		if x.LastEmergencyProposalTallyTimestamp == nil {
-			x.LastEmergencyProposalTallyTimestamp = new(timestamppb.Timestamp)
-		}
-		return protoreflect.ValueOfMessage(x.LastEmergencyProposalTallyTimestamp.ProtoReflect())
 	case "initia.gov.v1.GenesisState.starting_proposal_id":
 		panic(fmt.Errorf("field starting_proposal_id of message initia.gov.v1.GenesisState is not mutable"))
+	case "initia.gov.v1.GenesisState.constitution":
+		panic(fmt.Errorf("field constitution of message initia.gov.v1.GenesisState is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.GenesisState"))
@@ -499,14 +496,13 @@ func (x *fastReflection_GenesisState) NewField(fd protoreflect.FieldDescriptor) 
 		list := []*v1.Vote{}
 		return protoreflect.ValueOfList(&_GenesisState_3_list{list: &list})
 	case "initia.gov.v1.GenesisState.proposals":
-		list := []*v1.Proposal{}
+		list := []*Proposal{}
 		return protoreflect.ValueOfList(&_GenesisState_4_list{list: &list})
 	case "initia.gov.v1.GenesisState.params":
 		m := new(Params)
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
-	case "initia.gov.v1.GenesisState.last_emergency_proposal_tally_timestamp":
-		m := new(timestamppb.Timestamp)
-		return protoreflect.ValueOfMessage(m.ProtoReflect())
+	case "initia.gov.v1.GenesisState.constitution":
+		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.GenesisState"))
@@ -601,8 +597,8 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 			l = options.Size(x.Params)
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		if x.LastEmergencyProposalTallyTimestamp != nil {
-			l = options.Size(x.LastEmergencyProposalTallyTimestamp)
+		l = len(x.Constitution)
+		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
 		if x.unknownFields != nil {
@@ -634,17 +630,10 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
 		}
-		if x.LastEmergencyProposalTallyTimestamp != nil {
-			encoded, err := options.Marshal(x.LastEmergencyProposalTallyTimestamp)
-			if err != nil {
-				return protoiface.MarshalOutput{
-					NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-					Buf:               input.Buf,
-				}, err
-			}
-			i -= len(encoded)
-			copy(dAtA[i:], encoded)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+		if len(x.Constitution) > 0 {
+			i -= len(x.Constitution)
+			copy(dAtA[i:], x.Constitution)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Constitution)))
 			i--
 			dAtA[i] = 0x32
 		}
@@ -880,7 +869,7 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.Proposals = append(x.Proposals, &v1.Proposal{})
+				x.Proposals = append(x.Proposals, &Proposal{})
 				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.Proposals[len(x.Proposals)-1]); err != nil {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
 				}
@@ -923,9 +912,9 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 				iNdEx = postIndex
 			case 6:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field LastEmergencyProposalTallyTimestamp", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Constitution", wireType)
 				}
-				var msglen int
+				var stringLen uint64
 				for shift := uint(0); ; shift += 7 {
 					if shift >= 64 {
 						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
@@ -935,27 +924,23 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					msglen |= int(b&0x7F) << shift
+					stringLen |= uint64(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
 				}
-				if msglen < 0 {
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
 				}
-				postIndex := iNdEx + msglen
+				postIndex := iNdEx + intStringLen
 				if postIndex < 0 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
 				}
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				if x.LastEmergencyProposalTallyTimestamp == nil {
-					x.LastEmergencyProposalTallyTimestamp = &timestamppb.Timestamp{}
-				}
-				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.LastEmergencyProposalTallyTimestamp); err != nil {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
-				}
+				x.Constitution = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
@@ -1018,12 +1003,16 @@ type GenesisState struct {
 	// votes defines all the votes present at genesis.
 	Votes []*v1.Vote `protobuf:"bytes,3,rep,name=votes,proto3" json:"votes,omitempty"`
 	// proposals defines all the proposals present at genesis.
-	Proposals []*v1.Proposal `protobuf:"bytes,4,rep,name=proposals,proto3" json:"proposals,omitempty"`
+	Proposals []*Proposal `protobuf:"bytes,4,rep,name=proposals,proto3" json:"proposals,omitempty"`
 	// params defines all the paramaters of x/gov module.
 	Params *Params `protobuf:"bytes,5,opt,name=params,proto3" json:"params,omitempty"`
-	// last_emergency_proposal_tally_timestamp defines the last time of
-	// tally for emergency proposals.
-	LastEmergencyProposalTallyTimestamp *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=last_emergency_proposal_tally_timestamp,json=lastEmergencyProposalTallyTimestamp,proto3" json:"last_emergency_proposal_tally_timestamp,omitempty"`
+	// The constitution allows builders to lay a foundation and define purpose.
+	// This is an immutable string set in genesis.
+	// There are no amendments, to go outside of scope, just fork.
+	// constitution is an immutable string in genesis for a chain builder to lay out their vision, ideas and ideals.
+	//
+	// Since: cosmos-sdk 0.50
+	Constitution string `protobuf:"bytes,6,opt,name=constitution,proto3" json:"constitution,omitempty"`
 }
 
 func (x *GenesisState) Reset() {
@@ -1067,7 +1056,7 @@ func (x *GenesisState) GetVotes() []*v1.Vote {
 	return nil
 }
 
-func (x *GenesisState) GetProposals() []*v1.Proposal {
+func (x *GenesisState) GetProposals() []*Proposal {
 	if x != nil {
 		return x.Proposals
 	}
@@ -1081,11 +1070,11 @@ func (x *GenesisState) GetParams() *Params {
 	return nil
 }
 
-func (x *GenesisState) GetLastEmergencyProposalTallyTimestamp() *timestamppb.Timestamp {
+func (x *GenesisState) GetConstitution() string {
 	if x != nil {
-		return x.LastEmergencyProposalTallyTimestamp
+		return x.Constitution
 	}
-	return nil
+	return ""
 }
 
 var File_initia_gov_v1_genesis_proto protoreflect.FileDescriptor
@@ -1101,7 +1090,7 @@ var file_initia_gov_v1_genesis_proto_rawDesc = []byte{
 	0x76, 0x31, 0x2f, 0x67, 0x6f, 0x76, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x17, 0x69, 0x6e,
 	0x69, 0x74, 0x69, 0x61, 0x2f, 0x67, 0x6f, 0x76, 0x2f, 0x76, 0x31, 0x2f, 0x67, 0x6f, 0x76, 0x2e,
 	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x11, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2f, 0x61, 0x6d, 0x69,
-	0x6e, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x86, 0x03, 0x0a, 0x0c, 0x47, 0x65, 0x6e,
+	0x6e, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xa9, 0x02, 0x0a, 0x0c, 0x47, 0x65, 0x6e,
 	0x65, 0x73, 0x69, 0x73, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12, 0x30, 0x0a, 0x14, 0x73, 0x74, 0x61,
 	0x72, 0x74, 0x69, 0x6e, 0x67, 0x5f, 0x70, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x5f, 0x69,
 	0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x12, 0x73, 0x74, 0x61, 0x72, 0x74, 0x69, 0x6e,
@@ -1113,30 +1102,24 @@ var file_initia_gov_v1_genesis_proto_rawDesc = []byte{
 	0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x67, 0x6f, 0x76, 0x2e, 0x76, 0x31, 0x2e, 0x56,
 	0x6f, 0x74, 0x65, 0x52, 0x05, 0x76, 0x6f, 0x74, 0x65, 0x73, 0x12, 0x35, 0x0a, 0x09, 0x70, 0x72,
 	0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x73, 0x18, 0x04, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x17, 0x2e,
-	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x67, 0x6f, 0x76, 0x2e, 0x76, 0x31, 0x2e, 0x50, 0x72,
+	0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x67, 0x6f, 0x76, 0x2e, 0x76, 0x31, 0x2e, 0x50, 0x72,
 	0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x52, 0x09, 0x70, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c,
 	0x73, 0x12, 0x2d, 0x0a, 0x06, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x18, 0x05, 0x20, 0x01, 0x28,
 	0x0b, 0x32, 0x15, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x67, 0x6f, 0x76, 0x2e, 0x76,
 	0x31, 0x2e, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x52, 0x06, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x73,
-	0x12, 0x7f, 0x0a, 0x27, 0x6c, 0x61, 0x73, 0x74, 0x5f, 0x65, 0x6d, 0x65, 0x72, 0x67, 0x65, 0x6e,
-	0x63, 0x79, 0x5f, 0x70, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x5f, 0x74, 0x61, 0x6c, 0x6c,
-	0x79, 0x5f, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x18, 0x06, 0x20, 0x01, 0x28,
-	0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x42, 0x0d, 0xc8,
-	0xde, 0x1f, 0x00, 0x90, 0xdf, 0x1f, 0x01, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x23, 0x6c, 0x61,
-	0x73, 0x74, 0x45, 0x6d, 0x65, 0x72, 0x67, 0x65, 0x6e, 0x63, 0x79, 0x50, 0x72, 0x6f, 0x70, 0x6f,
-	0x73, 0x61, 0x6c, 0x54, 0x61, 0x6c, 0x6c, 0x79, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d,
-	0x70, 0x42, 0x9d, 0x01, 0x0a, 0x11, 0x63, 0x6f, 0x6d, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61,
-	0x2e, 0x67, 0x6f, 0x76, 0x2e, 0x76, 0x31, 0x42, 0x0c, 0x47, 0x65, 0x6e, 0x65, 0x73, 0x69, 0x73,
-	0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x24, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73,
-	0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61,
-	0x2f, 0x67, 0x6f, 0x76, 0x2f, 0x76, 0x31, 0x3b, 0x67, 0x6f, 0x76, 0x76, 0x31, 0xa2, 0x02, 0x03,
-	0x49, 0x47, 0x58, 0xaa, 0x02, 0x0d, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x47, 0x6f, 0x76,
-	0x2e, 0x56, 0x31, 0xca, 0x02, 0x0d, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x5c, 0x47, 0x6f, 0x76,
-	0x5c, 0x56, 0x31, 0xe2, 0x02, 0x19, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x5c, 0x47, 0x6f, 0x76,
-	0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea,
-	0x02, 0x0f, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x3a, 0x3a, 0x47, 0x6f, 0x76, 0x3a, 0x3a, 0x56,
-	0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x12, 0x22, 0x0a, 0x0c, 0x63, 0x6f, 0x6e, 0x73, 0x74, 0x69, 0x74, 0x75, 0x74, 0x69, 0x6f, 0x6e,
+	0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x63, 0x6f, 0x6e, 0x73, 0x74, 0x69, 0x74, 0x75,
+	0x74, 0x69, 0x6f, 0x6e, 0x42, 0x9d, 0x01, 0x0a, 0x11, 0x63, 0x6f, 0x6d, 0x2e, 0x69, 0x6e, 0x69,
+	0x74, 0x69, 0x61, 0x2e, 0x67, 0x6f, 0x76, 0x2e, 0x76, 0x31, 0x42, 0x0c, 0x47, 0x65, 0x6e, 0x65,
+	0x73, 0x69, 0x73, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x24, 0x63, 0x6f, 0x73, 0x6d,
+	0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x69, 0x6e, 0x69,
+	0x74, 0x69, 0x61, 0x2f, 0x67, 0x6f, 0x76, 0x2f, 0x76, 0x31, 0x3b, 0x67, 0x6f, 0x76, 0x76, 0x31,
+	0xa2, 0x02, 0x03, 0x49, 0x47, 0x58, 0xaa, 0x02, 0x0d, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e,
+	0x47, 0x6f, 0x76, 0x2e, 0x56, 0x31, 0xca, 0x02, 0x0d, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x5c,
+	0x47, 0x6f, 0x76, 0x5c, 0x56, 0x31, 0xe2, 0x02, 0x19, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x5c,
+	0x47, 0x6f, 0x76, 0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61,
+	0x74, 0x61, 0xea, 0x02, 0x0f, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x3a, 0x3a, 0x47, 0x6f, 0x76,
+	0x3a, 0x3a, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -1153,24 +1136,22 @@ func file_initia_gov_v1_genesis_proto_rawDescGZIP() []byte {
 
 var file_initia_gov_v1_genesis_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_initia_gov_v1_genesis_proto_goTypes = []interface{}{
-	(*GenesisState)(nil),          // 0: initia.gov.v1.GenesisState
-	(*v1.Deposit)(nil),            // 1: cosmos.gov.v1.Deposit
-	(*v1.Vote)(nil),               // 2: cosmos.gov.v1.Vote
-	(*v1.Proposal)(nil),           // 3: cosmos.gov.v1.Proposal
-	(*Params)(nil),                // 4: initia.gov.v1.Params
-	(*timestamppb.Timestamp)(nil), // 5: google.protobuf.Timestamp
+	(*GenesisState)(nil), // 0: initia.gov.v1.GenesisState
+	(*v1.Deposit)(nil),   // 1: cosmos.gov.v1.Deposit
+	(*v1.Vote)(nil),      // 2: cosmos.gov.v1.Vote
+	(*Proposal)(nil),     // 3: initia.gov.v1.Proposal
+	(*Params)(nil),       // 4: initia.gov.v1.Params
 }
 var file_initia_gov_v1_genesis_proto_depIdxs = []int32{
 	1, // 0: initia.gov.v1.GenesisState.deposits:type_name -> cosmos.gov.v1.Deposit
 	2, // 1: initia.gov.v1.GenesisState.votes:type_name -> cosmos.gov.v1.Vote
-	3, // 2: initia.gov.v1.GenesisState.proposals:type_name -> cosmos.gov.v1.Proposal
+	3, // 2: initia.gov.v1.GenesisState.proposals:type_name -> initia.gov.v1.Proposal
 	4, // 3: initia.gov.v1.GenesisState.params:type_name -> initia.gov.v1.Params
-	5, // 4: initia.gov.v1.GenesisState.last_emergency_proposal_tally_timestamp:type_name -> google.protobuf.Timestamp
-	5, // [5:5] is the sub-list for method output_type
-	5, // [5:5] is the sub-list for method input_type
-	5, // [5:5] is the sub-list for extension type_name
-	5, // [5:5] is the sub-list for extension extendee
-	0, // [0:5] is the sub-list for field type_name
+	4, // [4:4] is the sub-list for method output_type
+	4, // [4:4] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_initia_gov_v1_genesis_proto_init() }
