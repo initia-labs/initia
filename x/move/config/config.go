@@ -41,6 +41,7 @@ func DefaultMoveConfig() MoveConfig {
 // GetConfig load config values from the app options
 func GetConfig(appOpts servertypes.AppOptions) MoveConfig {
 	return MoveConfig{
+		CacheCapacity:              cast.ToUint64(appOpts.Get(flagCacheCapacity)),
 		ContractSimulationGasLimit: cast.ToUint64(appOpts.Get(flagContractSimulationGasLimit)),
 		ContractQueryGasLimit:      cast.ToUint64(appOpts.Get(flagContractQueryGasLimit)),
 	}
@@ -48,6 +49,7 @@ func GetConfig(appOpts servertypes.AppOptions) MoveConfig {
 
 // AddConfigFlags implements servertypes.MoveConfigFlags interface.
 func AddConfigFlags(startCmd *cobra.Command) {
+	startCmd.Flags().Uint64(flagCacheCapacity, DefaultCacheCapacity, "Set the max simulation gas for move contract execution")
 	startCmd.Flags().Uint64(flagContractSimulationGasLimit, DefaultContractSimulationGasLimit, "Set the max simulation gas for move contract execution")
 	startCmd.Flags().Uint64(flagContractQueryGasLimit, DefaultContractQueryGasLimit, "Set the max gas that can be spent on executing a query with a Move contract")
 }

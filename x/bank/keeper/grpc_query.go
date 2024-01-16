@@ -226,6 +226,10 @@ func (k BaseKeeper) DenomOwners(
 	return nil, status.Errorf(codes.Unimplemented, "not supported")
 }
 
+func (k BaseKeeper) DenomOwnersByQuery(ctx context.Context, req *types.QueryDenomOwnersByQueryRequest) (*types.QueryDenomOwnersByQueryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "not supported")
+}
+
 func (k BaseKeeper) SendEnabled(goCtx context.Context, req *types.QuerySendEnabledRequest) (*types.QuerySendEnabledResponse, error) {
 	if req == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "empty request")

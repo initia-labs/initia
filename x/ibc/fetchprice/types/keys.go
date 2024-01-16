@@ -4,7 +4,7 @@ const (
 	// ModuleName defines the IBC fetchprice name
 	ModuleName = "fetchprice"
 
-	// Version defines the current version the IBC nft-transfer
+	// Version defines the current version the IBC fetchprice
 	// module supports
 	Version = "fetchprice-1"
 
