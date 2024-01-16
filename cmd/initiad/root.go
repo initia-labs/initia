@@ -78,7 +78,8 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	initClientCtx := client.Context{}.
 		WithCodec(encodingConfig.Codec).
 		WithInterfaceRegistry(encodingConfig.InterfaceRegistry).
-		WithTxConfig(encodingConfig.TxConfig).
+		// client tx config to avoid tx decode failure
+		WithTxConfig(params.NewClientTxConfig(encodingConfig.Codec)).
 		WithLegacyAmino(encodingConfig.Amino).
 		WithInput(os.Stdin).
 		WithAccountRetriever(types.AccountRetriever{}).
