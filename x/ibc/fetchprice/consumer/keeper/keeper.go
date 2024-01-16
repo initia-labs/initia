@@ -69,7 +69,7 @@ func (k Keeper) Codec() codec.Codec {
 	return k.cdc
 }
 
-// IsBound checks if the nft-transfer module is already bound to the desired port
+// IsBound checks if the fetchprice module is already bound to the desired port
 func (k Keeper) IsBound(ctx context.Context, portID string) bool {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	_, ok := k.scopedKeeper.GetCapability(sdkCtx, host.PortPath(portID))
@@ -90,7 +90,7 @@ func (k Keeper) AuthenticateCapability(ctx context.Context, cap *capabilitytypes
 	return k.scopedKeeper.AuthenticateCapability(sdkCtx, cap, name)
 }
 
-// ClaimCapability allows the nft-transfer module that can claim a capability that IBC module
+// ClaimCapability allows the fetchprice module that can claim a capability that IBC module
 // passes to it
 func (k Keeper) ClaimCapability(ctx context.Context, cap *capabilitytypes.Capability, name string) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
