@@ -7,6 +7,9 @@ import (
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 )
 
+// DefaultCacheCapacity the number of modules can be stay in module cache
+const DefaultCacheCapacity = uint64(1_000)
+
 // DefaultContractQueryGasLimit - default max query gas for external query
 const DefaultContractQueryGasLimit = uint64(3_000_000)
 
@@ -14,12 +17,14 @@ const DefaultContractQueryGasLimit = uint64(3_000_000)
 const DefaultContractSimulationGasLimit = uint64(3_000_000)
 
 const (
+	flagCacheCapacity              = "move.cache-capacity"
 	flagContractSimulationGasLimit = "move.contract-simulation-gas-limit"
 	flagContractQueryGasLimit      = "move.contract-query-gas-limit"
 )
 
 // MoveConfig is the extra config required for move
 type MoveConfig struct {
+	CacheCapacity              uint64 `mapstructure:"cache-capacity"`
 	ContractSimulationGasLimit uint64 `mapstructure:"contract-simulation-gas-limit"`
 	ContractQueryGasLimit      uint64 `mapstructure:"contract-query-gas-limit"`
 }
@@ -27,6 +32,7 @@ type MoveConfig struct {
 // DefaultMoveConfig returns the default settings for MoveConfig
 func DefaultMoveConfig() MoveConfig {
 	return MoveConfig{
+		CacheCapacity:              DefaultCacheCapacity,
 		ContractSimulationGasLimit: DefaultContractSimulationGasLimit,
 		ContractQueryGasLimit:      DefaultContractQueryGasLimit,
 	}
@@ -53,6 +59,9 @@ const DefaultConfigTemplate = `
 ###############################################################################
 
 [move]
+# The number of modules can be live in module cache.
+cache-capacity = "{{ .MoveConfig.CacheCapacity }}"
+
 # The maximum gas amount can be used in a tx simulation call.
 contract-simulation-gas-limit = "{{ .MoveConfig.ContractSimulationGasLimit }}"
 

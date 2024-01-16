@@ -39,5 +39,4 @@ type VMEngine interface {
 		senders []vmtypes.AccountAddress,
 		payload vmtypes.Script,
 	) (vmtypes.ExecutionResult, error)
-	MarkLoaderCacheAsInvalid() error
 }

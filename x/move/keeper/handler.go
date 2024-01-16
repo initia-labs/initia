@@ -143,20 +143,11 @@ func (k Keeper) ExecuteEntryFunctionWithMultiSenders(
 		return err
 	}
 
-	// prepare vm
-	// if the tx is in (re)check tx or simulation, use simulation vm
-	// else use normal vm
-
-	vm := k.moveVM
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	gasMeter := sdkCtx.GasMeter()
 	gasForRuntime := gasMeter.Limit() - gasMeter.GasConsumedToLimit()
 
-	isSimulation := isSimulation(ctx)
-	if isSimulation {
-		vm = k.buildSimulationVM()
-		defer vm.Destroy()
-
+	if isSimulation(ctx) {
 		gasForRuntime = k.config.ContractSimulationGasLimit
 	} else if gasMeter.Limit() == 0 {
 		// infinite gas meter
@@ -167,7 +158,7 @@ func (k Keeper) ExecuteEntryFunctionWithMultiSenders(
 	sdkCtx = sdkCtx.WithGasMeter(storetypes.NewInfiniteGasMeter())
 
 	// run vm
-	execRes, err := vm.ExecuteEntryFunction(
+	execRes, err := k.moveVM.ExecuteEntryFunction(
 		types.NewVMStore(sdkCtx, k.VMStore),
 		NewApi(k, sdkCtx),
 		types.NewEnv(sdkCtx, ac, ec),
@@ -175,11 +166,6 @@ func (k Keeper) ExecuteEntryFunctionWithMultiSenders(
 		senders,
 		payload,
 	)
-
-	// Mark loader cache loads new published modules.
-	if !isSimulation {
-		k.postHandler.SetNewPublishedModulesLoaded(execRes.NewPublishedModulesLoaded)
-	}
 
 	// consume gas first and check error
 	gasMeter.ConsumeGas(execRes.GasUsed, "move runtime")
@@ -243,20 +229,11 @@ func (k Keeper) ExecuteScriptWithMultiSenders(
 		return err
 	}
 
-	// prepare vm
-	// if the tx is in (re)check tx or simulation, use simulation vm.
-	// else use normal vm.
-
-	vm := k.moveVM
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	gasMeter := sdkCtx.GasMeter()
 	gasForRuntime := gasMeter.Limit() - gasMeter.GasConsumedToLimit()
 
-	isSimulation := isSimulation(ctx)
-	if isSimulation {
-		vm = k.buildSimulationVM()
-		defer vm.Destroy()
-
+	if isSimulation(ctx) {
 		gasForRuntime = k.config.ContractSimulationGasLimit
 	} else if gasMeter.Limit() == 0 {
 		// infinite gas meter
@@ -267,7 +244,7 @@ func (k Keeper) ExecuteScriptWithMultiSenders(
 	sdkCtx = sdkCtx.WithGasMeter(storetypes.NewInfiniteGasMeter())
 
 	// run vm
-	execRes, err := vm.ExecuteScript(
+	execRes, err := k.moveVM.ExecuteScript(
 		types.NewVMStore(sdkCtx, k.VMStore),
 		NewApi(k, sdkCtx),
 		types.NewEnv(sdkCtx, ac, ec),
@@ -275,11 +252,6 @@ func (k Keeper) ExecuteScriptWithMultiSenders(
 		senders,
 		payload,
 	)
-
-	// Mark loader cache loads new published modules.
-	if !isSimulation {
-		k.postHandler.SetNewPublishedModulesLoaded(execRes.NewPublishedModulesLoaded)
-	}
 
 	// consume gas first and check error
 	gasMeter.ConsumeGas(execRes.GasUsed, "move runtime")

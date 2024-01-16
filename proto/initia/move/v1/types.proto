@@ -56,15 +56,6 @@ message RawParams {
   ];
 }
 
-// Resource is data for the stored move resource
-// ex) 0000000000000000000000000000000000000002/1/0x1::BasicCoin::Coin<0x1::BasicCoin::Initia>
-message Resource {
-  string address       = 1;
-  string struct_tag    = 2;
-  string move_resource = 3;
-  bytes  raw_bytes     = 4;
-}
-
 // Module is data for the uploaded contract move code
 // ex) 0000000000000000000000000000000000000001/0/BasicCoin
 message Module {
@@ -73,6 +64,15 @@ message Module {
   string        abi            = 3;
   bytes         raw_bytes      = 4;
   UpgradePolicy upgrade_policy = 5;
+}
+
+// Resource is data for the stored move resource
+// ex) 0000000000000000000000000000000000000002/2/0x1::BasicCoin::Coin<0x1::BasicCoin::Initia>
+message Resource {
+  string address       = 1;
+  string struct_tag    = 2;
+  string move_resource = 3;
+  bytes  raw_bytes     = 4;
 }
 
 // TableInfo is data stored under Table address

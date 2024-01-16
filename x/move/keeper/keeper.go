@@ -11,6 +11,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"golang.org/x/crypto/sha3"
 
 	moveconfig "github.com/initia-labs/initia/x/move/config"
 	"github.com/initia-labs/initia/x/move/types"
@@ -40,8 +41,7 @@ type Keeper struct {
 	config moveconfig.MoveConfig
 
 	// moveVM instance
-	moveVM      types.VMEngine
-	postHandler *PostHandler
+	moveVM types.VMEngine
 
 	feeCollector string
 	authority    string
@@ -76,6 +76,10 @@ func NewKeeper(
 		panic("authority is not a valid acc address")
 	}
 
+	if moveConfig.CacheCapacity == 0 {
+		moveConfig.CacheCapacity = moveconfig.DefaultCacheCapacity
+	}
+
 	if moveConfig.ContractSimulationGasLimit == 0 {
 		moveConfig.ContractSimulationGasLimit = moveconfig.DefaultContractSimulationGasLimit
 	}
@@ -84,8 +88,7 @@ func NewKeeper(
 		moveConfig.ContractQueryGasLimit = moveconfig.DefaultContractQueryGasLimit
 	}
 
-	moveVM := vm.NewVM()
-	postHandler := newPostHandler(&moveVM)
+	moveVM := vm.NewVM(moveConfig.CacheCapacity)
 
 	sb := collections.NewSchemaBuilder(storeService)
 	k := &Keeper{
@@ -96,7 +99,6 @@ func NewKeeper(
 		msgRouter:           msgRouter,
 		config:              moveConfig,
 		moveVM:              &moveVM,
-		postHandler:         &postHandler,
 		bankKeeper:          bankKeeper,
 		distrKeeper:         distrKeeper,
 		StakingKeeper:       stakingKeeper,
@@ -131,19 +133,6 @@ func (k Keeper) Logger(ctx context.Context) log.Logger {
 	return sdkCtx.Logger().With("module", "x/"+types.ModuleName)
 }
 
-// GetPostHandler return PostHandler pointer
-func (k Keeper) GetPostHandler() sdk.PostHandler {
-	return k.postHandler.PostHandle
-}
-
-// Build simulation vm to avoid moveVM loader cache corruption.
-// Currently moveVM does not support cache delegation, so the
-// simulation requires whole loader cache flush.
-func (k Keeper) buildSimulationVM() types.VMEngine {
-	vm := vm.NewVM()
-	return &vm
-}
-
 // GetExecutionCounter get execution counter for genesis
 func (k Keeper) GetExecutionCounter(
 	ctx context.Context,
@@ -166,12 +155,20 @@ func (k Keeper) SetModule(
 	moduleName string,
 	moduleBytes []byte,
 ) error {
-	bz, err := types.GetModuleKey(addr, moduleName)
-	if err != nil {
+	if moduleKey, err := types.GetModuleKey(addr, moduleName); err != nil {
+		return err
+	} else if err := k.VMStore.Set(ctx, moduleKey, moduleBytes); err != nil {
 		return err
 	}
 
-	return k.VMStore.Set(ctx, bz, moduleBytes)
+	checksum := sha3.Sum256(moduleBytes)
+	if checksumKey, err := types.GetChecksumKey(addr, moduleName); err != nil {
+		return err
+	} else if err := k.VMStore.Set(ctx, checksumKey, checksum[:]); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // GetModule return Module of the given account address and name
@@ -538,6 +535,8 @@ func (k Keeper) IterateVMStore(ctx context.Context, cb func(*types.Module, *type
 				KeyBytes:   key[cursor:],
 				ValueBytes: value,
 			})
+		} else if separator == types.ChecksumSeparator {
+			// ignore checksum
 		} else {
 			return true, errors.New("unknown prefix")
 		}

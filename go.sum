@@ -721,8 +721,8 @@ github.com/initia-labs/OPinit v0.2.0-beta.0 h1:h2XFGYbEoTfgZPGoBdCY9pO8THkC1M3cY
 github.com/initia-labs/OPinit v0.2.0-beta.0/go.mod h1:1dn1iseG1S4wfXUtnb4mUkraJdL9/lWBQPpI+HbVzL0=
 github.com/initia-labs/cosmos-sdk v0.0.0-20240110022757-882a0c35539b h1:a5M4fSnilOq0yGJtn5Tfl7ol8kIjoDIbkrtqllIrG0Y=
 github.com/initia-labs/cosmos-sdk v0.0.0-20240110022757-882a0c35539b/go.mod h1:n/WQqDh73qdtBmY9Op3sYgiBgTujSfGSd6CNh6GfqvQ=
-github.com/initia-labs/initiavm v0.1.2-beta.8 h1:W3scI7Zxkh8p0bttuFN7a8OFcfFOU4Y8H0ndsbYeDwo=
-github.com/initia-labs/initiavm v0.1.2-beta.8/go.mod h1:6LNXn8eRv2jBzvM1gyQMgA1GRzZJh65VGVKCYDtbh18=
+github.com/initia-labs/initiavm v0.1.2-beta.9 h1:FvcID3hf13MxQ/i43+i+zW8a6WKfr5Bx4+suDwfm7Do=
+github.com/initia-labs/initiavm v0.1.2-beta.9/go.mod h1:6LNXn8eRv2jBzvM1gyQMgA1GRzZJh65VGVKCYDtbh18=
 github.com/initia-labs/slinky v0.0.0-20240116092207-9fc17d676ce6 h1:DvTDry1vmOjMHBSNzWjhFCsXV2AF5qJs8L3UwtjjK0I=
 github.com/initia-labs/slinky v0.0.0-20240116092207-9fc17d676ce6/go.mod h1:f3w62f6W4Dzz16mwi/+pnWvulFustXSo4JX1Cg9Fv8o=
 github.com/jhump/protoreflect v1.15.3 h1:6SFRuqU45u9hIZPJAoZ8c28T3nK64BNdp9w6jFonzls=
