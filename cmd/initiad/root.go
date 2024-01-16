@@ -157,9 +157,7 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig, b
 		a.newApp,
 		a.appExport,
 		addModuleInitFlags,
-		server.StartCmdOptions{
-			PostSetup: postSetup,
-		},
+		startCmdOptions,
 	)
 
 	// add keybase, auxiliary RPC, query, and tx child commands

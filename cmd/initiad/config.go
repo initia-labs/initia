@@ -11,13 +11,16 @@ import (
 	initiaapp "github.com/initia-labs/initia/app"
 	initiaapporacle "github.com/initia-labs/initia/app/oracle"
 	moveconfig "github.com/initia-labs/initia/x/move/config"
+
+	indexerconfig "github.com/initia-labs/indexer/config"
 )
 
 // initiaappConfig initia specify app config
 type initiaappConfig struct {
 	serverconfig.Config
-	MoveConfig   moveconfig.MoveConfig               `mapstructure:"move"`
-	OracleConfig initiaapporacle.WrappedOracleConfig `mapstructure:"oracle"`
+	MoveConfig    moveconfig.MoveConfig               `mapstructure:"move"`
+	OracleConfig  initiaapporacle.WrappedOracleConfig `mapstructure:"oracle"`
+	IndexerConfig indexerconfig.IndexerConfig         `mapstructure:"indexer"`
 }
 
 // initAppConfig helps to override default appConfig template and configs.
@@ -42,14 +45,13 @@ func initAppConfig() (string, interface{}) {
 	srvCfg.MinGasPrices = fmt.Sprintf("0%s", initiaapp.BondDenom)
 
 	initiaappConfig := initiaappConfig{
-		Config:       *srvCfg,
-		MoveConfig:   moveconfig.DefaultMoveConfig(),
-		OracleConfig: initiaapporacle.DefaultConfig(),
+		Config:        *srvCfg,
+		MoveConfig:    moveconfig.DefaultMoveConfig(),
+		OracleConfig:  initiaapporacle.DefaultConfig(),
+		IndexerConfig: indexerconfig.DefaultIndexerConfig(),
 	}
 
-	initiaappTemplate := serverconfig.DefaultConfigTemplate +
-		moveconfig.DefaultConfigTemplate +
-		initiaapporacle.DefaultConfigTemplate
+	initiaappTemplate := serverconfig.DefaultConfigTemplate + moveconfig.DefaultConfigTemplate + initiaapporacle.DefaultConfigTemplate + indexerconfig.DefaultConfigTemplate
 
 	return initiaappTemplate, initiaappConfig
 }
