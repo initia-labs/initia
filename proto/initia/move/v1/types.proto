@@ -31,12 +31,10 @@ message Params {
     (amino.dont_omitempty) = true
   ];
 
-  // It is a list of addresses with permission to distribute contracts, 
+  // It is a list of addresses with permission to distribute contracts,
   // and an empty list is interpreted as allowing anyone to distribute.
-  repeated string allowed_publishers = 5 [
-    (gogoproto.moretags)   = "yaml:\"allowed_publishers\"",
-    (amino.dont_omitempty) = true
-  ];
+  repeated string allowed_publishers = 5
+      [(gogoproto.moretags) = "yaml:\"allowed_publishers\"", (amino.dont_omitempty) = true];
 }
 
 // RawParams defines the raw params to store.

@@ -24,16 +24,15 @@ service Query {
     option (google.api.http).get = "/initia/gov/v1/emergency_proposals";
   }
 
-    // Proposal queries proposal details based on ProposalID.
-    rpc Proposal(QueryProposalRequest) returns (QueryProposalResponse) {
-      option (google.api.http).get = "/initia/gov/v1/proposals/{proposal_id}";
-    }
-  
-    // Proposals queries all proposals based on given status.
-    rpc Proposals(QueryProposalsRequest) returns (QueryProposalsResponse) {
-      option (google.api.http).get = "/initia/gov/v1/proposals";
-    }
+  // Proposal queries proposal details based on ProposalID.
+  rpc Proposal(QueryProposalRequest) returns (QueryProposalResponse) {
+    option (google.api.http).get = "/initia/gov/v1/proposals/{proposal_id}";
+  }
 
+  // Proposals queries all proposals based on given status.
+  rpc Proposals(QueryProposalsRequest) returns (QueryProposalsResponse) {
+    option (google.api.http).get = "/initia/gov/v1/proposals";
+  }
 }
 
 // QueryParamsRequest is the request type for the Query/Params RPC method.

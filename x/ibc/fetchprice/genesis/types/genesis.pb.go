@@ -25,7 +25,7 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// GenesisState defines the ibc nft-transfer genesis state
+// GenesisState defines the ibc fetch-price genesis state
 type GenesisState struct {
 	ConsumerGenesisState types.GenesisState  `protobuf:"bytes,1,opt,name=consumer_genesis_state,json=consumerGenesisState,proto3" json:"consumer_genesis_state" yaml:"consumer_genesis_state"`
 	ProviderGenesisState types1.GenesisState `protobuf:"bytes,2,opt,name=provider_genesis_state,json=providerGenesisState,proto3" json:"provider_genesis_state" yaml:"provider_genesis_state"`

@@ -8,7 +8,7 @@ import "ibc/applications/fetchprice/provider/v1/genesis.proto";
 
 option go_package = "github.com/initia-labs/initia/x/ibc/fetchprice/genesis/types";
 
-// GenesisState defines the ibc nft-transfer genesis state
+// GenesisState defines the ibc fetch-price genesis state
 message GenesisState {
   ibc.applications.fetchprice.consumer.v1.GenesisState consumer_genesis_state = 1
       [(gogoproto.moretags) = "yaml:\"consumer_genesis_state\"", (gogoproto.nullable) = false];
