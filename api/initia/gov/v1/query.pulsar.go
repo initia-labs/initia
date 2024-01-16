@@ -13,7 +13,7 @@ import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoiface "google.golang.org/protobuf/runtime/protoiface"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
+	_ "google.golang.org/protobuf/types/known/timestamppb"
 	io "io"
 	reflect "reflect"
 	sync "sync"
@@ -1248,7 +1248,7 @@ func (x *fastReflection_QueryEmergencyProposalsRequest) ProtoMethods() *protoifa
 var _ protoreflect.List = (*_QueryEmergencyProposalsResponse_1_list)(nil)
 
 type _QueryEmergencyProposalsResponse_1_list struct {
-	list *[]*v1.Proposal
+	list *[]*Proposal
 }
 
 func (x *_QueryEmergencyProposalsResponse_1_list) Len() int {
@@ -1264,18 +1264,18 @@ func (x *_QueryEmergencyProposalsResponse_1_list) Get(i int) protoreflect.Value 
 
 func (x *_QueryEmergencyProposalsResponse_1_list) Set(i int, value protoreflect.Value) {
 	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*v1.Proposal)
+	concreteValue := valueUnwrapped.Interface().(*Proposal)
 	(*x.list)[i] = concreteValue
 }
 
 func (x *_QueryEmergencyProposalsResponse_1_list) Append(value protoreflect.Value) {
 	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*v1.Proposal)
+	concreteValue := valueUnwrapped.Interface().(*Proposal)
 	*x.list = append(*x.list, concreteValue)
 }
 
 func (x *_QueryEmergencyProposalsResponse_1_list) AppendMutable() protoreflect.Value {
-	v := new(v1.Proposal)
+	v := new(Proposal)
 	*x.list = append(*x.list, v)
 	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
@@ -1288,7 +1288,7 @@ func (x *_QueryEmergencyProposalsResponse_1_list) Truncate(n int) {
 }
 
 func (x *_QueryEmergencyProposalsResponse_1_list) NewElement() protoreflect.Value {
-	v := new(v1.Proposal)
+	v := new(Proposal)
 	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
 
@@ -1498,7 +1498,7 @@ func (x *fastReflection_QueryEmergencyProposalsResponse) Mutable(fd protoreflect
 	switch fd.FullName() {
 	case "initia.gov.v1.QueryEmergencyProposalsResponse.proposals":
 		if x.Proposals == nil {
-			x.Proposals = []*v1.Proposal{}
+			x.Proposals = []*Proposal{}
 		}
 		value := &_QueryEmergencyProposalsResponse_1_list{list: &x.Proposals}
 		return protoreflect.ValueOfList(value)
@@ -1521,7 +1521,7 @@ func (x *fastReflection_QueryEmergencyProposalsResponse) Mutable(fd protoreflect
 func (x *fastReflection_QueryEmergencyProposalsResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
 	case "initia.gov.v1.QueryEmergencyProposalsResponse.proposals":
-		list := []*v1.Proposal{}
+		list := []*Proposal{}
 		return protoreflect.ValueOfList(&_QueryEmergencyProposalsResponse_1_list{list: &list})
 	case "initia.gov.v1.QueryEmergencyProposalsResponse.pagination":
 		m := new(v1beta1.PageResponse)
@@ -1742,7 +1742,7 @@ func (x *fastReflection_QueryEmergencyProposalsResponse) ProtoMethods() *protoif
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.Proposals = append(x.Proposals, &v1.Proposal{})
+				x.Proposals = append(x.Proposals, &Proposal{})
 				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.Proposals[len(x.Proposals)-1]); err != nil {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
 				}
@@ -1819,23 +1819,25 @@ func (x *fastReflection_QueryEmergencyProposalsResponse) ProtoMethods() *protoif
 }
 
 var (
-	md_QueryLastEmergencyProposalTallyTimestampRequest protoreflect.MessageDescriptor
+	md_QueryProposalRequest             protoreflect.MessageDescriptor
+	fd_QueryProposalRequest_proposal_id protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_initia_gov_v1_query_proto_init()
-	md_QueryLastEmergencyProposalTallyTimestampRequest = File_initia_gov_v1_query_proto.Messages().ByName("QueryLastEmergencyProposalTallyTimestampRequest")
+	md_QueryProposalRequest = File_initia_gov_v1_query_proto.Messages().ByName("QueryProposalRequest")
+	fd_QueryProposalRequest_proposal_id = md_QueryProposalRequest.Fields().ByName("proposal_id")
 }
 
-var _ protoreflect.Message = (*fastReflection_QueryLastEmergencyProposalTallyTimestampRequest)(nil)
+var _ protoreflect.Message = (*fastReflection_QueryProposalRequest)(nil)
 
-type fastReflection_QueryLastEmergencyProposalTallyTimestampRequest QueryLastEmergencyProposalTallyTimestampRequest
+type fastReflection_QueryProposalRequest QueryProposalRequest
 
-func (x *QueryLastEmergencyProposalTallyTimestampRequest) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_QueryLastEmergencyProposalTallyTimestampRequest)(x)
+func (x *QueryProposalRequest) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_QueryProposalRequest)(x)
 }
 
-func (x *QueryLastEmergencyProposalTallyTimestampRequest) slowProtoReflect() protoreflect.Message {
+func (x *QueryProposalRequest) slowProtoReflect() protoreflect.Message {
 	mi := &file_initia_gov_v1_query_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -1847,43 +1849,43 @@ func (x *QueryLastEmergencyProposalTallyTimestampRequest) slowProtoReflect() pro
 	return mi.MessageOf(x)
 }
 
-var _fastReflection_QueryLastEmergencyProposalTallyTimestampRequest_messageType fastReflection_QueryLastEmergencyProposalTallyTimestampRequest_messageType
-var _ protoreflect.MessageType = fastReflection_QueryLastEmergencyProposalTallyTimestampRequest_messageType{}
+var _fastReflection_QueryProposalRequest_messageType fastReflection_QueryProposalRequest_messageType
+var _ protoreflect.MessageType = fastReflection_QueryProposalRequest_messageType{}
 
-type fastReflection_QueryLastEmergencyProposalTallyTimestampRequest_messageType struct{}
+type fastReflection_QueryProposalRequest_messageType struct{}
 
-func (x fastReflection_QueryLastEmergencyProposalTallyTimestampRequest_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_QueryLastEmergencyProposalTallyTimestampRequest)(nil)
+func (x fastReflection_QueryProposalRequest_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_QueryProposalRequest)(nil)
 }
-func (x fastReflection_QueryLastEmergencyProposalTallyTimestampRequest_messageType) New() protoreflect.Message {
-	return new(fastReflection_QueryLastEmergencyProposalTallyTimestampRequest)
+func (x fastReflection_QueryProposalRequest_messageType) New() protoreflect.Message {
+	return new(fastReflection_QueryProposalRequest)
 }
-func (x fastReflection_QueryLastEmergencyProposalTallyTimestampRequest_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_QueryLastEmergencyProposalTallyTimestampRequest
+func (x fastReflection_QueryProposalRequest_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_QueryProposalRequest
 }
 
 // Descriptor returns message descriptor, which contains only the protobuf
 // type information for the message.
-func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampRequest) Descriptor() protoreflect.MessageDescriptor {
-	return md_QueryLastEmergencyProposalTallyTimestampRequest
+func (x *fastReflection_QueryProposalRequest) Descriptor() protoreflect.MessageDescriptor {
+	return md_QueryProposalRequest
 }
 
 // Type returns the message type, which encapsulates both Go and protobuf
 // type information. If the Go type information is not needed,
 // it is recommended that the message descriptor be used instead.
-func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampRequest) Type() protoreflect.MessageType {
-	return _fastReflection_QueryLastEmergencyProposalTallyTimestampRequest_messageType
+func (x *fastReflection_QueryProposalRequest) Type() protoreflect.MessageType {
+	return _fastReflection_QueryProposalRequest_messageType
 }
 
 // New returns a newly allocated and mutable empty message.
-func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampRequest) New() protoreflect.Message {
-	return new(fastReflection_QueryLastEmergencyProposalTallyTimestampRequest)
+func (x *fastReflection_QueryProposalRequest) New() protoreflect.Message {
+	return new(fastReflection_QueryProposalRequest)
 }
 
 // Interface unwraps the message reflection interface and
 // returns the underlying ProtoMessage interface.
-func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampRequest) Interface() protoreflect.ProtoMessage {
-	return (*QueryLastEmergencyProposalTallyTimestampRequest)(x)
+func (x *fastReflection_QueryProposalRequest) Interface() protoreflect.ProtoMessage {
+	return (*QueryProposalRequest)(x)
 }
 
 // Range iterates over every populated field in an undefined order,
@@ -1891,7 +1893,13 @@ func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampRequest) Interfa
 // Range returns immediately if f returns false.
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
-func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampRequest) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+func (x *fastReflection_QueryProposalRequest) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.ProposalId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.ProposalId)
+		if !f(fd_QueryProposalRequest_proposal_id, value) {
+			return
+		}
+	}
 }
 
 // Has reports whether a field is populated.
@@ -1905,13 +1913,15 @@ func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampRequest) Range(f
 // In other cases (aside from the nullable cases above),
 // a proto3 scalar field is populated if it contains a non-zero value, and
 // a repeated field is populated if it is non-empty.
-func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampRequest) Has(fd protoreflect.FieldDescriptor) bool {
+func (x *fastReflection_QueryProposalRequest) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
+	case "initia.gov.v1.QueryProposalRequest.proposal_id":
+		return x.ProposalId != uint64(0)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.QueryLastEmergencyProposalTallyTimestampRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.QueryProposalRequest"))
 		}
-		panic(fmt.Errorf("message initia.gov.v1.QueryLastEmergencyProposalTallyTimestampRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message initia.gov.v1.QueryProposalRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1921,13 +1931,15 @@ func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampRequest) Has(fd 
 // associated with the given field number.
 //
 // Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampRequest) Clear(fd protoreflect.FieldDescriptor) {
+func (x *fastReflection_QueryProposalRequest) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
+	case "initia.gov.v1.QueryProposalRequest.proposal_id":
+		x.ProposalId = uint64(0)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.QueryLastEmergencyProposalTallyTimestampRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.QueryProposalRequest"))
 		}
-		panic(fmt.Errorf("message initia.gov.v1.QueryLastEmergencyProposalTallyTimestampRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message initia.gov.v1.QueryProposalRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1937,13 +1949,16 @@ func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampRequest) Clear(f
 // the default value of a bytes scalar is guaranteed to be a copy.
 // For unpopulated composite types, it returns an empty, read-only view
 // of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampRequest) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_QueryProposalRequest) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
+	case "initia.gov.v1.QueryProposalRequest.proposal_id":
+		value := x.ProposalId
+		return protoreflect.ValueOfUint64(value)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.QueryLastEmergencyProposalTallyTimestampRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.QueryProposalRequest"))
 		}
-		panic(fmt.Errorf("message initia.gov.v1.QueryLastEmergencyProposalTallyTimestampRequest does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message initia.gov.v1.QueryProposalRequest does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -1957,13 +1972,15 @@ func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampRequest) Get(des
 // empty, read-only value, then it panics.
 //
 // Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampRequest) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+func (x *fastReflection_QueryProposalRequest) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
+	case "initia.gov.v1.QueryProposalRequest.proposal_id":
+		x.ProposalId = value.Uint()
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.QueryLastEmergencyProposalTallyTimestampRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.QueryProposalRequest"))
 		}
-		panic(fmt.Errorf("message initia.gov.v1.QueryLastEmergencyProposalTallyTimestampRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message initia.gov.v1.QueryProposalRequest does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1977,36 +1994,40 @@ func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampRequest) Set(fd 
 // It panics if the field does not contain a composite type.
 //
 // Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampRequest) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_QueryProposalRequest) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
+	case "initia.gov.v1.QueryProposalRequest.proposal_id":
+		panic(fmt.Errorf("field proposal_id of message initia.gov.v1.QueryProposalRequest is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.QueryLastEmergencyProposalTallyTimestampRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.QueryProposalRequest"))
 		}
-		panic(fmt.Errorf("message initia.gov.v1.QueryLastEmergencyProposalTallyTimestampRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message initia.gov.v1.QueryProposalRequest does not contain field %s", fd.FullName()))
 	}
 }
 
 // NewField returns a new value that is assignable to the field
 // for the given descriptor. For scalars, this returns the default value.
 // For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampRequest) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_QueryProposalRequest) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
+	case "initia.gov.v1.QueryProposalRequest.proposal_id":
+		return protoreflect.ValueOfUint64(uint64(0))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.QueryLastEmergencyProposalTallyTimestampRequest"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.QueryProposalRequest"))
 		}
-		panic(fmt.Errorf("message initia.gov.v1.QueryLastEmergencyProposalTallyTimestampRequest does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message initia.gov.v1.QueryProposalRequest does not contain field %s", fd.FullName()))
 	}
 }
 
 // WhichOneof reports which field within the oneof is populated,
 // returning nil if none are populated.
 // It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampRequest) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+func (x *fastReflection_QueryProposalRequest) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in initia.gov.v1.QueryLastEmergencyProposalTallyTimestampRequest", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in initia.gov.v1.QueryProposalRequest", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -2014,7 +2035,7 @@ func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampRequest) WhichOn
 // GetUnknown retrieves the entire list of unknown fields.
 // The caller may only mutate the contents of the RawFields
 // if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampRequest) GetUnknown() protoreflect.RawFields {
+func (x *fastReflection_QueryProposalRequest) GetUnknown() protoreflect.RawFields {
 	return x.unknownFields
 }
 
@@ -2025,7 +2046,7 @@ func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampRequest) GetUnkn
 // An empty RawFields may be passed to clear the fields.
 //
 // SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampRequest) SetUnknown(fields protoreflect.RawFields) {
+func (x *fastReflection_QueryProposalRequest) SetUnknown(fields protoreflect.RawFields) {
 	x.unknownFields = fields
 }
 
@@ -2037,7 +2058,7 @@ func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampRequest) SetUnkn
 // message type, but the details are implementation dependent.
 // Validity is not part of the protobuf data model, and may not
 // be preserved in marshaling or other operations.
-func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampRequest) IsValid() bool {
+func (x *fastReflection_QueryProposalRequest) IsValid() bool {
 	return x != nil
 }
 
@@ -2047,9 +2068,9 @@ func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampRequest) IsValid
 // The returned methods type is identical to
 // "google.golang.org/protobuf/runtime/protoiface".Methods.
 // Consult the protoiface package documentation for details.
-func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampRequest) ProtoMethods() *protoiface.Methods {
+func (x *fastReflection_QueryProposalRequest) ProtoMethods() *protoiface.Methods {
 	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*QueryLastEmergencyProposalTallyTimestampRequest)
+		x := input.Message.Interface().(*QueryProposalRequest)
 		if x == nil {
 			return protoiface.SizeOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -2061,6 +2082,9 @@ func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampRequest) ProtoMe
 		var n int
 		var l int
 		_ = l
+		if x.ProposalId != 0 {
+			n += 1 + runtime.Sov(uint64(x.ProposalId))
+		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
 		}
@@ -2071,7 +2095,7 @@ func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampRequest) ProtoMe
 	}
 
 	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*QueryLastEmergencyProposalTallyTimestampRequest)
+		x := input.Message.Interface().(*QueryProposalRequest)
 		if x == nil {
 			return protoiface.MarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -2090,6 +2114,11 @@ func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampRequest) ProtoMe
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
 		}
+		if x.ProposalId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.ProposalId))
+			i--
+			dAtA[i] = 0x8
+		}
 		if input.Buf != nil {
 			input.Buf = append(input.Buf, dAtA...)
 		} else {
@@ -2101,7 +2130,7 @@ func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampRequest) ProtoMe
 		}, nil
 	}
 	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*QueryLastEmergencyProposalTallyTimestampRequest)
+		x := input.Message.Interface().(*QueryProposalRequest)
 		if x == nil {
 			return protoiface.UnmarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -2133,12 +2162,31 @@ func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampRequest) ProtoMe
 			fieldNum := int32(wire >> 3)
 			wireType := int(wire & 0x7)
 			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: QueryLastEmergencyProposalTallyTimestampRequest: wiretype end group for non-group")
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: QueryProposalRequest: wiretype end group for non-group")
 			}
 			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: QueryLastEmergencyProposalTallyTimestampRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: QueryProposalRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 			}
 			switch fieldNum {
+			case 1:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field ProposalId", wireType)
+				}
+				x.ProposalId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.ProposalId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -2175,25 +2223,25 @@ func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampRequest) ProtoMe
 }
 
 var (
-	md_QueryLastEmergencyProposalTallyTimestampResponse                 protoreflect.MessageDescriptor
-	fd_QueryLastEmergencyProposalTallyTimestampResponse_tally_timestamp protoreflect.FieldDescriptor
+	md_QueryProposalResponse          protoreflect.MessageDescriptor
+	fd_QueryProposalResponse_proposal protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_initia_gov_v1_query_proto_init()
-	md_QueryLastEmergencyProposalTallyTimestampResponse = File_initia_gov_v1_query_proto.Messages().ByName("QueryLastEmergencyProposalTallyTimestampResponse")
-	fd_QueryLastEmergencyProposalTallyTimestampResponse_tally_timestamp = md_QueryLastEmergencyProposalTallyTimestampResponse.Fields().ByName("tally_timestamp")
+	md_QueryProposalResponse = File_initia_gov_v1_query_proto.Messages().ByName("QueryProposalResponse")
+	fd_QueryProposalResponse_proposal = md_QueryProposalResponse.Fields().ByName("proposal")
 }
 
-var _ protoreflect.Message = (*fastReflection_QueryLastEmergencyProposalTallyTimestampResponse)(nil)
+var _ protoreflect.Message = (*fastReflection_QueryProposalResponse)(nil)
 
-type fastReflection_QueryLastEmergencyProposalTallyTimestampResponse QueryLastEmergencyProposalTallyTimestampResponse
+type fastReflection_QueryProposalResponse QueryProposalResponse
 
-func (x *QueryLastEmergencyProposalTallyTimestampResponse) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_QueryLastEmergencyProposalTallyTimestampResponse)(x)
+func (x *QueryProposalResponse) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_QueryProposalResponse)(x)
 }
 
-func (x *QueryLastEmergencyProposalTallyTimestampResponse) slowProtoReflect() protoreflect.Message {
+func (x *QueryProposalResponse) slowProtoReflect() protoreflect.Message {
 	mi := &file_initia_gov_v1_query_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -2205,43 +2253,43 @@ func (x *QueryLastEmergencyProposalTallyTimestampResponse) slowProtoReflect() pr
 	return mi.MessageOf(x)
 }
 
-var _fastReflection_QueryLastEmergencyProposalTallyTimestampResponse_messageType fastReflection_QueryLastEmergencyProposalTallyTimestampResponse_messageType
-var _ protoreflect.MessageType = fastReflection_QueryLastEmergencyProposalTallyTimestampResponse_messageType{}
+var _fastReflection_QueryProposalResponse_messageType fastReflection_QueryProposalResponse_messageType
+var _ protoreflect.MessageType = fastReflection_QueryProposalResponse_messageType{}
 
-type fastReflection_QueryLastEmergencyProposalTallyTimestampResponse_messageType struct{}
+type fastReflection_QueryProposalResponse_messageType struct{}
 
-func (x fastReflection_QueryLastEmergencyProposalTallyTimestampResponse_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_QueryLastEmergencyProposalTallyTimestampResponse)(nil)
+func (x fastReflection_QueryProposalResponse_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_QueryProposalResponse)(nil)
 }
-func (x fastReflection_QueryLastEmergencyProposalTallyTimestampResponse_messageType) New() protoreflect.Message {
-	return new(fastReflection_QueryLastEmergencyProposalTallyTimestampResponse)
+func (x fastReflection_QueryProposalResponse_messageType) New() protoreflect.Message {
+	return new(fastReflection_QueryProposalResponse)
 }
-func (x fastReflection_QueryLastEmergencyProposalTallyTimestampResponse_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_QueryLastEmergencyProposalTallyTimestampResponse
+func (x fastReflection_QueryProposalResponse_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_QueryProposalResponse
 }
 
 // Descriptor returns message descriptor, which contains only the protobuf
 // type information for the message.
-func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampResponse) Descriptor() protoreflect.MessageDescriptor {
-	return md_QueryLastEmergencyProposalTallyTimestampResponse
+func (x *fastReflection_QueryProposalResponse) Descriptor() protoreflect.MessageDescriptor {
+	return md_QueryProposalResponse
 }
 
 // Type returns the message type, which encapsulates both Go and protobuf
 // type information. If the Go type information is not needed,
 // it is recommended that the message descriptor be used instead.
-func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampResponse) Type() protoreflect.MessageType {
-	return _fastReflection_QueryLastEmergencyProposalTallyTimestampResponse_messageType
+func (x *fastReflection_QueryProposalResponse) Type() protoreflect.MessageType {
+	return _fastReflection_QueryProposalResponse_messageType
 }
 
 // New returns a newly allocated and mutable empty message.
-func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampResponse) New() protoreflect.Message {
-	return new(fastReflection_QueryLastEmergencyProposalTallyTimestampResponse)
+func (x *fastReflection_QueryProposalResponse) New() protoreflect.Message {
+	return new(fastReflection_QueryProposalResponse)
 }
 
 // Interface unwraps the message reflection interface and
 // returns the underlying ProtoMessage interface.
-func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampResponse) Interface() protoreflect.ProtoMessage {
-	return (*QueryLastEmergencyProposalTallyTimestampResponse)(x)
+func (x *fastReflection_QueryProposalResponse) Interface() protoreflect.ProtoMessage {
+	return (*QueryProposalResponse)(x)
 }
 
 // Range iterates over every populated field in an undefined order,
@@ -2249,10 +2297,10 @@ func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampResponse) Interf
 // Range returns immediately if f returns false.
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
-func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampResponse) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
-	if x.TallyTimestamp != nil {
-		value := protoreflect.ValueOfMessage(x.TallyTimestamp.ProtoReflect())
-		if !f(fd_QueryLastEmergencyProposalTallyTimestampResponse_tally_timestamp, value) {
+func (x *fastReflection_QueryProposalResponse) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.Proposal != nil {
+		value := protoreflect.ValueOfMessage(x.Proposal.ProtoReflect())
+		if !f(fd_QueryProposalResponse_proposal, value) {
 			return
 		}
 	}
@@ -2269,15 +2317,15 @@ func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampResponse) Range(
 // In other cases (aside from the nullable cases above),
 // a proto3 scalar field is populated if it contains a non-zero value, and
 // a repeated field is populated if it is non-empty.
-func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampResponse) Has(fd protoreflect.FieldDescriptor) bool {
+func (x *fastReflection_QueryProposalResponse) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "initia.gov.v1.QueryLastEmergencyProposalTallyTimestampResponse.tally_timestamp":
-		return x.TallyTimestamp != nil
+	case "initia.gov.v1.QueryProposalResponse.proposal":
+		return x.Proposal != nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.QueryLastEmergencyProposalTallyTimestampResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.QueryProposalResponse"))
 		}
-		panic(fmt.Errorf("message initia.gov.v1.QueryLastEmergencyProposalTallyTimestampResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message initia.gov.v1.QueryProposalResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2287,15 +2335,15 @@ func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampResponse) Has(fd
 // associated with the given field number.
 //
 // Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampResponse) Clear(fd protoreflect.FieldDescriptor) {
+func (x *fastReflection_QueryProposalResponse) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "initia.gov.v1.QueryLastEmergencyProposalTallyTimestampResponse.tally_timestamp":
-		x.TallyTimestamp = nil
+	case "initia.gov.v1.QueryProposalResponse.proposal":
+		x.Proposal = nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.QueryLastEmergencyProposalTallyTimestampResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.QueryProposalResponse"))
 		}
-		panic(fmt.Errorf("message initia.gov.v1.QueryLastEmergencyProposalTallyTimestampResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message initia.gov.v1.QueryProposalResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2305,16 +2353,16 @@ func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampResponse) Clear(
 // the default value of a bytes scalar is guaranteed to be a copy.
 // For unpopulated composite types, it returns an empty, read-only view
 // of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_QueryProposalResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "initia.gov.v1.QueryLastEmergencyProposalTallyTimestampResponse.tally_timestamp":
-		value := x.TallyTimestamp
+	case "initia.gov.v1.QueryProposalResponse.proposal":
+		value := x.Proposal
 		return protoreflect.ValueOfMessage(value.ProtoReflect())
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.QueryLastEmergencyProposalTallyTimestampResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.QueryProposalResponse"))
 		}
-		panic(fmt.Errorf("message initia.gov.v1.QueryLastEmergencyProposalTallyTimestampResponse does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message initia.gov.v1.QueryProposalResponse does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -2328,15 +2376,15 @@ func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampResponse) Get(de
 // empty, read-only value, then it panics.
 //
 // Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+func (x *fastReflection_QueryProposalResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "initia.gov.v1.QueryLastEmergencyProposalTallyTimestampResponse.tally_timestamp":
-		x.TallyTimestamp = value.Message().Interface().(*timestamppb.Timestamp)
+	case "initia.gov.v1.QueryProposalResponse.proposal":
+		x.Proposal = value.Message().Interface().(*Proposal)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.QueryLastEmergencyProposalTallyTimestampResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.QueryProposalResponse"))
 		}
-		panic(fmt.Errorf("message initia.gov.v1.QueryLastEmergencyProposalTallyTimestampResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message initia.gov.v1.QueryProposalResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2350,44 +2398,44 @@ func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampResponse) Set(fd
 // It panics if the field does not contain a composite type.
 //
 // Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_QueryProposalResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "initia.gov.v1.QueryLastEmergencyProposalTallyTimestampResponse.tally_timestamp":
-		if x.TallyTimestamp == nil {
-			x.TallyTimestamp = new(timestamppb.Timestamp)
+	case "initia.gov.v1.QueryProposalResponse.proposal":
+		if x.Proposal == nil {
+			x.Proposal = new(Proposal)
 		}
-		return protoreflect.ValueOfMessage(x.TallyTimestamp.ProtoReflect())
+		return protoreflect.ValueOfMessage(x.Proposal.ProtoReflect())
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.QueryLastEmergencyProposalTallyTimestampResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.QueryProposalResponse"))
 		}
-		panic(fmt.Errorf("message initia.gov.v1.QueryLastEmergencyProposalTallyTimestampResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message initia.gov.v1.QueryProposalResponse does not contain field %s", fd.FullName()))
 	}
 }
 
 // NewField returns a new value that is assignable to the field
 // for the given descriptor. For scalars, this returns the default value.
 // For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_QueryProposalResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "initia.gov.v1.QueryLastEmergencyProposalTallyTimestampResponse.tally_timestamp":
-		m := new(timestamppb.Timestamp)
+	case "initia.gov.v1.QueryProposalResponse.proposal":
+		m := new(Proposal)
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.QueryLastEmergencyProposalTallyTimestampResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.QueryProposalResponse"))
 		}
-		panic(fmt.Errorf("message initia.gov.v1.QueryLastEmergencyProposalTallyTimestampResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message initia.gov.v1.QueryProposalResponse does not contain field %s", fd.FullName()))
 	}
 }
 
 // WhichOneof reports which field within the oneof is populated,
 // returning nil if none are populated.
 // It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+func (x *fastReflection_QueryProposalResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in initia.gov.v1.QueryLastEmergencyProposalTallyTimestampResponse", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in initia.gov.v1.QueryProposalResponse", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -2395,7 +2443,7 @@ func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampResponse) WhichO
 // GetUnknown retrieves the entire list of unknown fields.
 // The caller may only mutate the contents of the RawFields
 // if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampResponse) GetUnknown() protoreflect.RawFields {
+func (x *fastReflection_QueryProposalResponse) GetUnknown() protoreflect.RawFields {
 	return x.unknownFields
 }
 
@@ -2406,7 +2454,7 @@ func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampResponse) GetUnk
 // An empty RawFields may be passed to clear the fields.
 //
 // SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampResponse) SetUnknown(fields protoreflect.RawFields) {
+func (x *fastReflection_QueryProposalResponse) SetUnknown(fields protoreflect.RawFields) {
 	x.unknownFields = fields
 }
 
@@ -2418,7 +2466,7 @@ func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampResponse) SetUnk
 // message type, but the details are implementation dependent.
 // Validity is not part of the protobuf data model, and may not
 // be preserved in marshaling or other operations.
-func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampResponse) IsValid() bool {
+func (x *fastReflection_QueryProposalResponse) IsValid() bool {
 	return x != nil
 }
 
@@ -2428,9 +2476,9 @@ func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampResponse) IsVali
 // The returned methods type is identical to
 // "google.golang.org/protobuf/runtime/protoiface".Methods.
 // Consult the protoiface package documentation for details.
-func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampResponse) ProtoMethods() *protoiface.Methods {
+func (x *fastReflection_QueryProposalResponse) ProtoMethods() *protoiface.Methods {
 	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*QueryLastEmergencyProposalTallyTimestampResponse)
+		x := input.Message.Interface().(*QueryProposalResponse)
 		if x == nil {
 			return protoiface.SizeOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -2442,8 +2490,8 @@ func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampResponse) ProtoM
 		var n int
 		var l int
 		_ = l
-		if x.TallyTimestamp != nil {
-			l = options.Size(x.TallyTimestamp)
+		if x.Proposal != nil {
+			l = options.Size(x.Proposal)
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
 		if x.unknownFields != nil {
@@ -2456,7 +2504,7 @@ func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampResponse) ProtoM
 	}
 
 	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*QueryLastEmergencyProposalTallyTimestampResponse)
+		x := input.Message.Interface().(*QueryProposalResponse)
 		if x == nil {
 			return protoiface.MarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -2475,8 +2523,8 @@ func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampResponse) ProtoM
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
 		}
-		if x.TallyTimestamp != nil {
-			encoded, err := options.Marshal(x.TallyTimestamp)
+		if x.Proposal != nil {
+			encoded, err := options.Marshal(x.Proposal)
 			if err != nil {
 				return protoiface.MarshalOutput{
 					NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -2500,7 +2548,7 @@ func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampResponse) ProtoM
 		}, nil
 	}
 	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*QueryLastEmergencyProposalTallyTimestampResponse)
+		x := input.Message.Interface().(*QueryProposalResponse)
 		if x == nil {
 			return protoiface.UnmarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -2532,15 +2580,15 @@ func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampResponse) ProtoM
 			fieldNum := int32(wire >> 3)
 			wireType := int(wire & 0x7)
 			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: QueryLastEmergencyProposalTallyTimestampResponse: wiretype end group for non-group")
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: QueryProposalResponse: wiretype end group for non-group")
 			}
 			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: QueryLastEmergencyProposalTallyTimestampResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: QueryProposalResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 			}
 			switch fieldNum {
 			case 1:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TallyTimestamp", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Proposal", wireType)
 				}
 				var msglen int
 				for shift := uint(0); ; shift += 7 {
@@ -2567,10 +2615,1194 @@ func (x *fastReflection_QueryLastEmergencyProposalTallyTimestampResponse) ProtoM
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				if x.TallyTimestamp == nil {
-					x.TallyTimestamp = &timestamppb.Timestamp{}
+				if x.Proposal == nil {
+					x.Proposal = &Proposal{}
 				}
-				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.TallyTimestamp); err != nil {
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.Proposal); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var (
+	md_QueryProposalsRequest                 protoreflect.MessageDescriptor
+	fd_QueryProposalsRequest_proposal_status protoreflect.FieldDescriptor
+	fd_QueryProposalsRequest_voter           protoreflect.FieldDescriptor
+	fd_QueryProposalsRequest_depositor       protoreflect.FieldDescriptor
+	fd_QueryProposalsRequest_pagination      protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_initia_gov_v1_query_proto_init()
+	md_QueryProposalsRequest = File_initia_gov_v1_query_proto.Messages().ByName("QueryProposalsRequest")
+	fd_QueryProposalsRequest_proposal_status = md_QueryProposalsRequest.Fields().ByName("proposal_status")
+	fd_QueryProposalsRequest_voter = md_QueryProposalsRequest.Fields().ByName("voter")
+	fd_QueryProposalsRequest_depositor = md_QueryProposalsRequest.Fields().ByName("depositor")
+	fd_QueryProposalsRequest_pagination = md_QueryProposalsRequest.Fields().ByName("pagination")
+}
+
+var _ protoreflect.Message = (*fastReflection_QueryProposalsRequest)(nil)
+
+type fastReflection_QueryProposalsRequest QueryProposalsRequest
+
+func (x *QueryProposalsRequest) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_QueryProposalsRequest)(x)
+}
+
+func (x *QueryProposalsRequest) slowProtoReflect() protoreflect.Message {
+	mi := &file_initia_gov_v1_query_proto_msgTypes[6]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_QueryProposalsRequest_messageType fastReflection_QueryProposalsRequest_messageType
+var _ protoreflect.MessageType = fastReflection_QueryProposalsRequest_messageType{}
+
+type fastReflection_QueryProposalsRequest_messageType struct{}
+
+func (x fastReflection_QueryProposalsRequest_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_QueryProposalsRequest)(nil)
+}
+func (x fastReflection_QueryProposalsRequest_messageType) New() protoreflect.Message {
+	return new(fastReflection_QueryProposalsRequest)
+}
+func (x fastReflection_QueryProposalsRequest_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_QueryProposalsRequest
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_QueryProposalsRequest) Descriptor() protoreflect.MessageDescriptor {
+	return md_QueryProposalsRequest
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_QueryProposalsRequest) Type() protoreflect.MessageType {
+	return _fastReflection_QueryProposalsRequest_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_QueryProposalsRequest) New() protoreflect.Message {
+	return new(fastReflection_QueryProposalsRequest)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_QueryProposalsRequest) Interface() protoreflect.ProtoMessage {
+	return (*QueryProposalsRequest)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_QueryProposalsRequest) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.ProposalStatus != 0 {
+		value := protoreflect.ValueOfEnum((protoreflect.EnumNumber)(x.ProposalStatus))
+		if !f(fd_QueryProposalsRequest_proposal_status, value) {
+			return
+		}
+	}
+	if x.Voter != "" {
+		value := protoreflect.ValueOfString(x.Voter)
+		if !f(fd_QueryProposalsRequest_voter, value) {
+			return
+		}
+	}
+	if x.Depositor != "" {
+		value := protoreflect.ValueOfString(x.Depositor)
+		if !f(fd_QueryProposalsRequest_depositor, value) {
+			return
+		}
+	}
+	if x.Pagination != nil {
+		value := protoreflect.ValueOfMessage(x.Pagination.ProtoReflect())
+		if !f(fd_QueryProposalsRequest_pagination, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_QueryProposalsRequest) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "initia.gov.v1.QueryProposalsRequest.proposal_status":
+		return x.ProposalStatus != 0
+	case "initia.gov.v1.QueryProposalsRequest.voter":
+		return x.Voter != ""
+	case "initia.gov.v1.QueryProposalsRequest.depositor":
+		return x.Depositor != ""
+	case "initia.gov.v1.QueryProposalsRequest.pagination":
+		return x.Pagination != nil
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.QueryProposalsRequest"))
+		}
+		panic(fmt.Errorf("message initia.gov.v1.QueryProposalsRequest does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_QueryProposalsRequest) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "initia.gov.v1.QueryProposalsRequest.proposal_status":
+		x.ProposalStatus = 0
+	case "initia.gov.v1.QueryProposalsRequest.voter":
+		x.Voter = ""
+	case "initia.gov.v1.QueryProposalsRequest.depositor":
+		x.Depositor = ""
+	case "initia.gov.v1.QueryProposalsRequest.pagination":
+		x.Pagination = nil
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.QueryProposalsRequest"))
+		}
+		panic(fmt.Errorf("message initia.gov.v1.QueryProposalsRequest does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_QueryProposalsRequest) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "initia.gov.v1.QueryProposalsRequest.proposal_status":
+		value := x.ProposalStatus
+		return protoreflect.ValueOfEnum((protoreflect.EnumNumber)(value))
+	case "initia.gov.v1.QueryProposalsRequest.voter":
+		value := x.Voter
+		return protoreflect.ValueOfString(value)
+	case "initia.gov.v1.QueryProposalsRequest.depositor":
+		value := x.Depositor
+		return protoreflect.ValueOfString(value)
+	case "initia.gov.v1.QueryProposalsRequest.pagination":
+		value := x.Pagination
+		return protoreflect.ValueOfMessage(value.ProtoReflect())
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.QueryProposalsRequest"))
+		}
+		panic(fmt.Errorf("message initia.gov.v1.QueryProposalsRequest does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_QueryProposalsRequest) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "initia.gov.v1.QueryProposalsRequest.proposal_status":
+		x.ProposalStatus = (v1.ProposalStatus)(value.Enum())
+	case "initia.gov.v1.QueryProposalsRequest.voter":
+		x.Voter = value.Interface().(string)
+	case "initia.gov.v1.QueryProposalsRequest.depositor":
+		x.Depositor = value.Interface().(string)
+	case "initia.gov.v1.QueryProposalsRequest.pagination":
+		x.Pagination = value.Message().Interface().(*v1beta1.PageRequest)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.QueryProposalsRequest"))
+		}
+		panic(fmt.Errorf("message initia.gov.v1.QueryProposalsRequest does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_QueryProposalsRequest) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "initia.gov.v1.QueryProposalsRequest.pagination":
+		if x.Pagination == nil {
+			x.Pagination = new(v1beta1.PageRequest)
+		}
+		return protoreflect.ValueOfMessage(x.Pagination.ProtoReflect())
+	case "initia.gov.v1.QueryProposalsRequest.proposal_status":
+		panic(fmt.Errorf("field proposal_status of message initia.gov.v1.QueryProposalsRequest is not mutable"))
+	case "initia.gov.v1.QueryProposalsRequest.voter":
+		panic(fmt.Errorf("field voter of message initia.gov.v1.QueryProposalsRequest is not mutable"))
+	case "initia.gov.v1.QueryProposalsRequest.depositor":
+		panic(fmt.Errorf("field depositor of message initia.gov.v1.QueryProposalsRequest is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.QueryProposalsRequest"))
+		}
+		panic(fmt.Errorf("message initia.gov.v1.QueryProposalsRequest does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_QueryProposalsRequest) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "initia.gov.v1.QueryProposalsRequest.proposal_status":
+		return protoreflect.ValueOfEnum(0)
+	case "initia.gov.v1.QueryProposalsRequest.voter":
+		return protoreflect.ValueOfString("")
+	case "initia.gov.v1.QueryProposalsRequest.depositor":
+		return protoreflect.ValueOfString("")
+	case "initia.gov.v1.QueryProposalsRequest.pagination":
+		m := new(v1beta1.PageRequest)
+		return protoreflect.ValueOfMessage(m.ProtoReflect())
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.QueryProposalsRequest"))
+		}
+		panic(fmt.Errorf("message initia.gov.v1.QueryProposalsRequest does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_QueryProposalsRequest) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in initia.gov.v1.QueryProposalsRequest", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_QueryProposalsRequest) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_QueryProposalsRequest) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_QueryProposalsRequest) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_QueryProposalsRequest) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*QueryProposalsRequest)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.ProposalStatus != 0 {
+			n += 1 + runtime.Sov(uint64(x.ProposalStatus))
+		}
+		l = len(x.Voter)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.Depositor)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.Pagination != nil {
+			l = options.Size(x.Pagination)
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*QueryProposalsRequest)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if x.Pagination != nil {
+			encoded, err := options.Marshal(x.Pagination)
+			if err != nil {
+				return protoiface.MarshalOutput{
+					NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+					Buf:               input.Buf,
+				}, err
+			}
+			i -= len(encoded)
+			copy(dAtA[i:], encoded)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+			i--
+			dAtA[i] = 0x22
+		}
+		if len(x.Depositor) > 0 {
+			i -= len(x.Depositor)
+			copy(dAtA[i:], x.Depositor)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Depositor)))
+			i--
+			dAtA[i] = 0x1a
+		}
+		if len(x.Voter) > 0 {
+			i -= len(x.Voter)
+			copy(dAtA[i:], x.Voter)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Voter)))
+			i--
+			dAtA[i] = 0x12
+		}
+		if x.ProposalStatus != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.ProposalStatus))
+			i--
+			dAtA[i] = 0x8
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*QueryProposalsRequest)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: QueryProposalsRequest: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: QueryProposalsRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field ProposalStatus", wireType)
+				}
+				x.ProposalStatus = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.ProposalStatus |= v1.ProposalStatus(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 2:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Voter", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Voter = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 3:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Depositor", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Depositor = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 4:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Pagination", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if x.Pagination == nil {
+					x.Pagination = &v1beta1.PageRequest{}
+				}
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.Pagination); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var _ protoreflect.List = (*_QueryProposalsResponse_1_list)(nil)
+
+type _QueryProposalsResponse_1_list struct {
+	list *[]*Proposal
+}
+
+func (x *_QueryProposalsResponse_1_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_QueryProposalsResponse_1_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfMessage((*x.list)[i].ProtoReflect())
+}
+
+func (x *_QueryProposalsResponse_1_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*Proposal)
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_QueryProposalsResponse_1_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*Proposal)
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_QueryProposalsResponse_1_list) AppendMutable() protoreflect.Value {
+	v := new(Proposal)
+	*x.list = append(*x.list, v)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_QueryProposalsResponse_1_list) Truncate(n int) {
+	for i := n; i < len(*x.list); i++ {
+		(*x.list)[i] = nil
+	}
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_QueryProposalsResponse_1_list) NewElement() protoreflect.Value {
+	v := new(Proposal)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_QueryProposalsResponse_1_list) IsValid() bool {
+	return x.list != nil
+}
+
+var (
+	md_QueryProposalsResponse            protoreflect.MessageDescriptor
+	fd_QueryProposalsResponse_proposals  protoreflect.FieldDescriptor
+	fd_QueryProposalsResponse_pagination protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_initia_gov_v1_query_proto_init()
+	md_QueryProposalsResponse = File_initia_gov_v1_query_proto.Messages().ByName("QueryProposalsResponse")
+	fd_QueryProposalsResponse_proposals = md_QueryProposalsResponse.Fields().ByName("proposals")
+	fd_QueryProposalsResponse_pagination = md_QueryProposalsResponse.Fields().ByName("pagination")
+}
+
+var _ protoreflect.Message = (*fastReflection_QueryProposalsResponse)(nil)
+
+type fastReflection_QueryProposalsResponse QueryProposalsResponse
+
+func (x *QueryProposalsResponse) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_QueryProposalsResponse)(x)
+}
+
+func (x *QueryProposalsResponse) slowProtoReflect() protoreflect.Message {
+	mi := &file_initia_gov_v1_query_proto_msgTypes[7]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_QueryProposalsResponse_messageType fastReflection_QueryProposalsResponse_messageType
+var _ protoreflect.MessageType = fastReflection_QueryProposalsResponse_messageType{}
+
+type fastReflection_QueryProposalsResponse_messageType struct{}
+
+func (x fastReflection_QueryProposalsResponse_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_QueryProposalsResponse)(nil)
+}
+func (x fastReflection_QueryProposalsResponse_messageType) New() protoreflect.Message {
+	return new(fastReflection_QueryProposalsResponse)
+}
+func (x fastReflection_QueryProposalsResponse_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_QueryProposalsResponse
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_QueryProposalsResponse) Descriptor() protoreflect.MessageDescriptor {
+	return md_QueryProposalsResponse
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_QueryProposalsResponse) Type() protoreflect.MessageType {
+	return _fastReflection_QueryProposalsResponse_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_QueryProposalsResponse) New() protoreflect.Message {
+	return new(fastReflection_QueryProposalsResponse)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_QueryProposalsResponse) Interface() protoreflect.ProtoMessage {
+	return (*QueryProposalsResponse)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_QueryProposalsResponse) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if len(x.Proposals) != 0 {
+		value := protoreflect.ValueOfList(&_QueryProposalsResponse_1_list{list: &x.Proposals})
+		if !f(fd_QueryProposalsResponse_proposals, value) {
+			return
+		}
+	}
+	if x.Pagination != nil {
+		value := protoreflect.ValueOfMessage(x.Pagination.ProtoReflect())
+		if !f(fd_QueryProposalsResponse_pagination, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_QueryProposalsResponse) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "initia.gov.v1.QueryProposalsResponse.proposals":
+		return len(x.Proposals) != 0
+	case "initia.gov.v1.QueryProposalsResponse.pagination":
+		return x.Pagination != nil
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.QueryProposalsResponse"))
+		}
+		panic(fmt.Errorf("message initia.gov.v1.QueryProposalsResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_QueryProposalsResponse) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "initia.gov.v1.QueryProposalsResponse.proposals":
+		x.Proposals = nil
+	case "initia.gov.v1.QueryProposalsResponse.pagination":
+		x.Pagination = nil
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.QueryProposalsResponse"))
+		}
+		panic(fmt.Errorf("message initia.gov.v1.QueryProposalsResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_QueryProposalsResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "initia.gov.v1.QueryProposalsResponse.proposals":
+		if len(x.Proposals) == 0 {
+			return protoreflect.ValueOfList(&_QueryProposalsResponse_1_list{})
+		}
+		listValue := &_QueryProposalsResponse_1_list{list: &x.Proposals}
+		return protoreflect.ValueOfList(listValue)
+	case "initia.gov.v1.QueryProposalsResponse.pagination":
+		value := x.Pagination
+		return protoreflect.ValueOfMessage(value.ProtoReflect())
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.QueryProposalsResponse"))
+		}
+		panic(fmt.Errorf("message initia.gov.v1.QueryProposalsResponse does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_QueryProposalsResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "initia.gov.v1.QueryProposalsResponse.proposals":
+		lv := value.List()
+		clv := lv.(*_QueryProposalsResponse_1_list)
+		x.Proposals = *clv.list
+	case "initia.gov.v1.QueryProposalsResponse.pagination":
+		x.Pagination = value.Message().Interface().(*v1beta1.PageResponse)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.QueryProposalsResponse"))
+		}
+		panic(fmt.Errorf("message initia.gov.v1.QueryProposalsResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_QueryProposalsResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "initia.gov.v1.QueryProposalsResponse.proposals":
+		if x.Proposals == nil {
+			x.Proposals = []*Proposal{}
+		}
+		value := &_QueryProposalsResponse_1_list{list: &x.Proposals}
+		return protoreflect.ValueOfList(value)
+	case "initia.gov.v1.QueryProposalsResponse.pagination":
+		if x.Pagination == nil {
+			x.Pagination = new(v1beta1.PageResponse)
+		}
+		return protoreflect.ValueOfMessage(x.Pagination.ProtoReflect())
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.QueryProposalsResponse"))
+		}
+		panic(fmt.Errorf("message initia.gov.v1.QueryProposalsResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_QueryProposalsResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "initia.gov.v1.QueryProposalsResponse.proposals":
+		list := []*Proposal{}
+		return protoreflect.ValueOfList(&_QueryProposalsResponse_1_list{list: &list})
+	case "initia.gov.v1.QueryProposalsResponse.pagination":
+		m := new(v1beta1.PageResponse)
+		return protoreflect.ValueOfMessage(m.ProtoReflect())
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.QueryProposalsResponse"))
+		}
+		panic(fmt.Errorf("message initia.gov.v1.QueryProposalsResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_QueryProposalsResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in initia.gov.v1.QueryProposalsResponse", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_QueryProposalsResponse) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_QueryProposalsResponse) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_QueryProposalsResponse) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_QueryProposalsResponse) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*QueryProposalsResponse)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if len(x.Proposals) > 0 {
+			for _, e := range x.Proposals {
+				l = options.Size(e)
+				n += 1 + l + runtime.Sov(uint64(l))
+			}
+		}
+		if x.Pagination != nil {
+			l = options.Size(x.Pagination)
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*QueryProposalsResponse)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if x.Pagination != nil {
+			encoded, err := options.Marshal(x.Pagination)
+			if err != nil {
+				return protoiface.MarshalOutput{
+					NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+					Buf:               input.Buf,
+				}, err
+			}
+			i -= len(encoded)
+			copy(dAtA[i:], encoded)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+			i--
+			dAtA[i] = 0x12
+		}
+		if len(x.Proposals) > 0 {
+			for iNdEx := len(x.Proposals) - 1; iNdEx >= 0; iNdEx-- {
+				encoded, err := options.Marshal(x.Proposals[iNdEx])
+				if err != nil {
+					return protoiface.MarshalOutput{
+						NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+						Buf:               input.Buf,
+					}, err
+				}
+				i -= len(encoded)
+				copy(dAtA[i:], encoded)
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+				i--
+				dAtA[i] = 0xa
+			}
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*QueryProposalsResponse)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: QueryProposalsResponse: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: QueryProposalsResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Proposals", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Proposals = append(x.Proposals, &Proposal{})
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.Proposals[len(x.Proposals)-1]); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			case 2:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Pagination", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if x.Pagination == nil {
+					x.Pagination = &v1beta1.PageResponse{}
+				}
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.Pagination); err != nil {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
 				}
 				iNdEx = postIndex
@@ -2731,7 +3963,7 @@ type QueryEmergencyProposalsResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Proposals []*v1.Proposal `protobuf:"bytes,1,rep,name=proposals,proto3" json:"proposals,omitempty"`
+	Proposals []*Proposal `protobuf:"bytes,1,rep,name=proposals,proto3" json:"proposals,omitempty"`
 	// pagination defines the pagination in the response.
 	Pagination *v1beta1.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
@@ -2756,7 +3988,7 @@ func (*QueryEmergencyProposalsResponse) Descriptor() ([]byte, []int) {
 	return file_initia_gov_v1_query_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *QueryEmergencyProposalsResponse) GetProposals() []*v1.Proposal {
+func (x *QueryEmergencyProposalsResponse) GetProposals() []*Proposal {
 	if x != nil {
 		return x.Proposals
 	}
@@ -2770,16 +4002,18 @@ func (x *QueryEmergencyProposalsResponse) GetPagination() *v1beta1.PageResponse 
 	return nil
 }
 
-// QueryLastEmergencyProposalTallyTimestampRequest is the request
-// type for the Query/LastEmergencyProposalTallyTimestamp RPC method.
-type QueryLastEmergencyProposalTallyTimestampRequest struct {
+// QueryProposalRequest is the request type for the Query/Proposal RPC method.
+type QueryProposalRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
+
+	// proposal_id defines the unique id of the proposal.
+	ProposalId uint64 `protobuf:"varint,1,opt,name=proposal_id,json=proposalId,proto3" json:"proposal_id,omitempty"`
 }
 
-func (x *QueryLastEmergencyProposalTallyTimestampRequest) Reset() {
-	*x = QueryLastEmergencyProposalTallyTimestampRequest{}
+func (x *QueryProposalRequest) Reset() {
+	*x = QueryProposalRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_initia_gov_v1_query_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -2787,29 +4021,36 @@ func (x *QueryLastEmergencyProposalTallyTimestampRequest) Reset() {
 	}
 }
 
-func (x *QueryLastEmergencyProposalTallyTimestampRequest) String() string {
+func (x *QueryProposalRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*QueryLastEmergencyProposalTallyTimestampRequest) ProtoMessage() {}
+func (*QueryProposalRequest) ProtoMessage() {}
 
-// Deprecated: Use QueryLastEmergencyProposalTallyTimestampRequest.ProtoReflect.Descriptor instead.
-func (*QueryLastEmergencyProposalTallyTimestampRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use QueryProposalRequest.ProtoReflect.Descriptor instead.
+func (*QueryProposalRequest) Descriptor() ([]byte, []int) {
 	return file_initia_gov_v1_query_proto_rawDescGZIP(), []int{4}
 }
 
-// QueryLastEmergencyProposalTallyTimestampResponse is the response type for the
-// Query/LastEmergencyProposalTallyTimestamp RPC method.
-type QueryLastEmergencyProposalTallyTimestampResponse struct {
+func (x *QueryProposalRequest) GetProposalId() uint64 {
+	if x != nil {
+		return x.ProposalId
+	}
+	return 0
+}
+
+// QueryProposalResponse is the response type for the Query/Proposal RPC method.
+type QueryProposalResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	TallyTimestamp *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=tally_timestamp,json=tallyTimestamp,proto3" json:"tally_timestamp,omitempty"`
+	// proposal is the requested governance proposal.
+	Proposal *Proposal `protobuf:"bytes,1,opt,name=proposal,proto3" json:"proposal,omitempty"`
 }
 
-func (x *QueryLastEmergencyProposalTallyTimestampResponse) Reset() {
-	*x = QueryLastEmergencyProposalTallyTimestampResponse{}
+func (x *QueryProposalResponse) Reset() {
+	*x = QueryProposalResponse{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_initia_gov_v1_query_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -2817,20 +4058,131 @@ func (x *QueryLastEmergencyProposalTallyTimestampResponse) Reset() {
 	}
 }
 
-func (x *QueryLastEmergencyProposalTallyTimestampResponse) String() string {
+func (x *QueryProposalResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*QueryLastEmergencyProposalTallyTimestampResponse) ProtoMessage() {}
+func (*QueryProposalResponse) ProtoMessage() {}
 
-// Deprecated: Use QueryLastEmergencyProposalTallyTimestampResponse.ProtoReflect.Descriptor instead.
-func (*QueryLastEmergencyProposalTallyTimestampResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use QueryProposalResponse.ProtoReflect.Descriptor instead.
+func (*QueryProposalResponse) Descriptor() ([]byte, []int) {
 	return file_initia_gov_v1_query_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *QueryLastEmergencyProposalTallyTimestampResponse) GetTallyTimestamp() *timestamppb.Timestamp {
+func (x *QueryProposalResponse) GetProposal() *Proposal {
 	if x != nil {
-		return x.TallyTimestamp
+		return x.Proposal
+	}
+	return nil
+}
+
+// QueryProposalsRequest is the request type for the Query/Proposals RPC method.
+type QueryProposalsRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// proposal_status defines the status of the proposals.
+	ProposalStatus v1.ProposalStatus `protobuf:"varint,1,opt,name=proposal_status,json=proposalStatus,proto3,enum=cosmos.gov.v1.ProposalStatus" json:"proposal_status,omitempty"`
+	// voter defines the voter address for the proposals.
+	Voter string `protobuf:"bytes,2,opt,name=voter,proto3" json:"voter,omitempty"`
+	// depositor defines the deposit addresses from the proposals.
+	Depositor string `protobuf:"bytes,3,opt,name=depositor,proto3" json:"depositor,omitempty"`
+	// pagination defines an optional pagination for the request.
+	Pagination *v1beta1.PageRequest `protobuf:"bytes,4,opt,name=pagination,proto3" json:"pagination,omitempty"`
+}
+
+func (x *QueryProposalsRequest) Reset() {
+	*x = QueryProposalsRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_initia_gov_v1_query_proto_msgTypes[6]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *QueryProposalsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*QueryProposalsRequest) ProtoMessage() {}
+
+// Deprecated: Use QueryProposalsRequest.ProtoReflect.Descriptor instead.
+func (*QueryProposalsRequest) Descriptor() ([]byte, []int) {
+	return file_initia_gov_v1_query_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *QueryProposalsRequest) GetProposalStatus() v1.ProposalStatus {
+	if x != nil {
+		return x.ProposalStatus
+	}
+	return v1.ProposalStatus(0)
+}
+
+func (x *QueryProposalsRequest) GetVoter() string {
+	if x != nil {
+		return x.Voter
+	}
+	return ""
+}
+
+func (x *QueryProposalsRequest) GetDepositor() string {
+	if x != nil {
+		return x.Depositor
+	}
+	return ""
+}
+
+func (x *QueryProposalsRequest) GetPagination() *v1beta1.PageRequest {
+	if x != nil {
+		return x.Pagination
+	}
+	return nil
+}
+
+// QueryProposalsResponse is the response type for the Query/Proposals RPC
+// method.
+type QueryProposalsResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// proposals defines all the requested governance proposals.
+	Proposals []*Proposal `protobuf:"bytes,1,rep,name=proposals,proto3" json:"proposals,omitempty"`
+	// pagination defines the pagination in the response.
+	Pagination *v1beta1.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+}
+
+func (x *QueryProposalsResponse) Reset() {
+	*x = QueryProposalsResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_initia_gov_v1_query_proto_msgTypes[7]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *QueryProposalsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*QueryProposalsResponse) ProtoMessage() {}
+
+// Deprecated: Use QueryProposalsResponse.ProtoReflect.Descriptor instead.
+func (*QueryProposalsResponse) Descriptor() ([]byte, []int) {
+	return file_initia_gov_v1_query_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *QueryProposalsResponse) GetProposals() []*Proposal {
+	if x != nil {
+		return x.Proposals
+	}
+	return nil
+}
+
+func (x *QueryProposalsResponse) GetPagination() *v1beta1.PageResponse {
+	if x != nil {
+		return x.Pagination
 	}
 	return nil
 }
@@ -2871,69 +4223,94 @@ var file_initia_gov_v1_query_proto_rawDesc = []byte{
 	0x01, 0x22, 0xa7, 0x01, 0x0a, 0x1f, 0x51, 0x75, 0x65, 0x72, 0x79, 0x45, 0x6d, 0x65, 0x72, 0x67,
 	0x65, 0x6e, 0x63, 0x79, 0x50, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x73, 0x52, 0x65, 0x73,
 	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x3b, 0x0a, 0x09, 0x70, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61,
-	0x6c, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x17, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f,
-	0x73, 0x2e, 0x67, 0x6f, 0x76, 0x2e, 0x76, 0x31, 0x2e, 0x50, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61,
+	0x6c, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x17, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69,
+	0x61, 0x2e, 0x67, 0x6f, 0x76, 0x2e, 0x76, 0x31, 0x2e, 0x50, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61,
 	0x6c, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x09, 0x70, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61,
 	0x6c, 0x73, 0x12, 0x47, 0x0a, 0x0a, 0x70, 0x61, 0x67, 0x69, 0x6e, 0x61, 0x74, 0x69, 0x6f, 0x6e,
 	0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x27, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e,
 	0x62, 0x61, 0x73, 0x65, 0x2e, 0x71, 0x75, 0x65, 0x72, 0x79, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74,
 	0x61, 0x31, 0x2e, 0x50, 0x61, 0x67, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x52,
-	0x0a, 0x70, 0x61, 0x67, 0x69, 0x6e, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x22, 0x31, 0x0a, 0x2f, 0x51,
-	0x75, 0x65, 0x72, 0x79, 0x4c, 0x61, 0x73, 0x74, 0x45, 0x6d, 0x65, 0x72, 0x67, 0x65, 0x6e, 0x63,
-	0x79, 0x50, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x54, 0x61, 0x6c, 0x6c, 0x79, 0x54, 0x69,
-	0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x22, 0x86,
-	0x01, 0x0a, 0x30, 0x51, 0x75, 0x65, 0x72, 0x79, 0x4c, 0x61, 0x73, 0x74, 0x45, 0x6d, 0x65, 0x72,
-	0x67, 0x65, 0x6e, 0x63, 0x79, 0x50, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x54, 0x61, 0x6c,
-	0x6c, 0x79, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x65, 0x73, 0x70, 0x6f,
-	0x6e, 0x73, 0x65, 0x12, 0x52, 0x0a, 0x0f, 0x74, 0x61, 0x6c, 0x6c, 0x79, 0x5f, 0x74, 0x69, 0x6d,
-	0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67,
-	0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54,
-	0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x42, 0x0d, 0xc8, 0xde, 0x1f, 0x00, 0x90, 0xdf,
-	0x1f, 0x01, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x0e, 0x74, 0x61, 0x6c, 0x6c, 0x79, 0x54, 0x69,
-	0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x32, 0x82, 0x04, 0x0a, 0x05, 0x51, 0x75, 0x65, 0x72,
-	0x79, 0x12, 0x6e, 0x0a, 0x06, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x12, 0x21, 0x2e, 0x69, 0x6e,
-	0x69, 0x74, 0x69, 0x61, 0x2e, 0x67, 0x6f, 0x76, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72,
-	0x79, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x22,
-	0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x67, 0x6f, 0x76, 0x2e, 0x76, 0x31, 0x2e, 0x51,
-	0x75, 0x65, 0x72, 0x79, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
-	0x73, 0x65, 0x22, 0x1d, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x17, 0x12, 0x15, 0x2f, 0x69, 0x6e, 0x69,
-	0x74, 0x69, 0x61, 0x2f, 0x67, 0x6f, 0x76, 0x2f, 0x76, 0x31, 0x2f, 0x70, 0x61, 0x72, 0x61, 0x6d,
-	0x73, 0x12, 0x9f, 0x01, 0x0a, 0x12, 0x45, 0x6d, 0x65, 0x72, 0x67, 0x65, 0x6e, 0x63, 0x79, 0x50,
-	0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x73, 0x12, 0x2d, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69,
-	0x61, 0x2e, 0x67, 0x6f, 0x76, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x45, 0x6d,
+	0x0a, 0x70, 0x61, 0x67, 0x69, 0x6e, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x22, 0x37, 0x0a, 0x14, 0x51,
+	0x75, 0x65, 0x72, 0x79, 0x50, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x12, 0x1f, 0x0a, 0x0b, 0x70, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x5f,
+	0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0a, 0x70, 0x72, 0x6f, 0x70, 0x6f, 0x73,
+	0x61, 0x6c, 0x49, 0x64, 0x22, 0x4c, 0x0a, 0x15, 0x51, 0x75, 0x65, 0x72, 0x79, 0x50, 0x72, 0x6f,
+	0x70, 0x6f, 0x73, 0x61, 0x6c, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x33, 0x0a,
+	0x08, 0x70, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x17, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x67, 0x6f, 0x76, 0x2e, 0x76, 0x31, 0x2e,
+	0x50, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x52, 0x08, 0x70, 0x72, 0x6f, 0x70, 0x6f, 0x73,
+	0x61, 0x6c, 0x22, 0x8f, 0x02, 0x0a, 0x15, 0x51, 0x75, 0x65, 0x72, 0x79, 0x50, 0x72, 0x6f, 0x70,
+	0x6f, 0x73, 0x61, 0x6c, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x46, 0x0a, 0x0f,
+	0x70, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x5f, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x1d, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x67,
+	0x6f, 0x76, 0x2e, 0x76, 0x31, 0x2e, 0x50, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x53, 0x74,
+	0x61, 0x74, 0x75, 0x73, 0x52, 0x0e, 0x70, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x53, 0x74,
+	0x61, 0x74, 0x75, 0x73, 0x12, 0x2e, 0x0a, 0x05, 0x76, 0x6f, 0x74, 0x65, 0x72, 0x18, 0x02, 0x20,
+	0x01, 0x28, 0x09, 0x42, 0x18, 0xd2, 0xb4, 0x2d, 0x14, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e,
+	0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x52, 0x05, 0x76,
+	0x6f, 0x74, 0x65, 0x72, 0x12, 0x36, 0x0a, 0x09, 0x64, 0x65, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x6f,
+	0x72, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x42, 0x18, 0xd2, 0xb4, 0x2d, 0x14, 0x63, 0x6f, 0x73,
+	0x6d, 0x6f, 0x73, 0x2e, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x53, 0x74, 0x72, 0x69, 0x6e,
+	0x67, 0x52, 0x09, 0x64, 0x65, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x6f, 0x72, 0x12, 0x46, 0x0a, 0x0a,
+	0x70, 0x61, 0x67, 0x69, 0x6e, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x26, 0x2e, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x71,
+	0x75, 0x65, 0x72, 0x79, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x50, 0x61, 0x67,
+	0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x52, 0x0a, 0x70, 0x61, 0x67, 0x69, 0x6e, 0x61,
+	0x74, 0x69, 0x6f, 0x6e, 0x22, 0x98, 0x01, 0x0a, 0x16, 0x51, 0x75, 0x65, 0x72, 0x79, 0x50, 0x72,
+	0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
+	0x35, 0x0a, 0x09, 0x70, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x73, 0x18, 0x01, 0x20, 0x03,
+	0x28, 0x0b, 0x32, 0x17, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x67, 0x6f, 0x76, 0x2e,
+	0x76, 0x31, 0x2e, 0x50, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x52, 0x09, 0x70, 0x72, 0x6f,
+	0x70, 0x6f, 0x73, 0x61, 0x6c, 0x73, 0x12, 0x47, 0x0a, 0x0a, 0x70, 0x61, 0x67, 0x69, 0x6e, 0x61,
+	0x74, 0x69, 0x6f, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x27, 0x2e, 0x63, 0x6f, 0x73,
+	0x6d, 0x6f, 0x73, 0x2e, 0x62, 0x61, 0x73, 0x65, 0x2e, 0x71, 0x75, 0x65, 0x72, 0x79, 0x2e, 0x76,
+	0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x50, 0x61, 0x67, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f,
+	0x6e, 0x73, 0x65, 0x52, 0x0a, 0x70, 0x61, 0x67, 0x69, 0x6e, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x32,
+	0x9d, 0x04, 0x0a, 0x05, 0x51, 0x75, 0x65, 0x72, 0x79, 0x12, 0x6e, 0x0a, 0x06, 0x50, 0x61, 0x72,
+	0x61, 0x6d, 0x73, 0x12, 0x21, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x67, 0x6f, 0x76,
+	0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x52,
+	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x22, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e,
+	0x67, 0x6f, 0x76, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x50, 0x61, 0x72, 0x61,
+	0x6d, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x1d, 0x82, 0xd3, 0xe4, 0x93,
+	0x02, 0x17, 0x12, 0x15, 0x2f, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2f, 0x67, 0x6f, 0x76, 0x2f,
+	0x76, 0x31, 0x2f, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x12, 0x9f, 0x01, 0x0a, 0x12, 0x45, 0x6d,
 	0x65, 0x72, 0x67, 0x65, 0x6e, 0x63, 0x79, 0x50, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x73,
-	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x2e, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61,
-	0x2e, 0x67, 0x6f, 0x76, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x45, 0x6d, 0x65,
-	0x72, 0x67, 0x65, 0x6e, 0x63, 0x79, 0x50, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x73, 0x52,
-	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x2a, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x24, 0x12,
-	0x22, 0x2f, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2f, 0x67, 0x6f, 0x76, 0x2f, 0x76, 0x31, 0x2f,
-	0x65, 0x6d, 0x65, 0x72, 0x67, 0x65, 0x6e, 0x63, 0x79, 0x5f, 0x70, 0x72, 0x6f, 0x70, 0x6f, 0x73,
-	0x61, 0x6c, 0x73, 0x12, 0xe6, 0x01, 0x0a, 0x23, 0x4c, 0x61, 0x73, 0x74, 0x45, 0x6d, 0x65, 0x72,
-	0x67, 0x65, 0x6e, 0x63, 0x79, 0x50, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x54, 0x61, 0x6c,
-	0x6c, 0x79, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x12, 0x3e, 0x2e, 0x69, 0x6e,
-	0x69, 0x74, 0x69, 0x61, 0x2e, 0x67, 0x6f, 0x76, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72,
-	0x79, 0x4c, 0x61, 0x73, 0x74, 0x45, 0x6d, 0x65, 0x72, 0x67, 0x65, 0x6e, 0x63, 0x79, 0x50, 0x72,
-	0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x54, 0x61, 0x6c, 0x6c, 0x79, 0x54, 0x69, 0x6d, 0x65, 0x73,
-	0x74, 0x61, 0x6d, 0x70, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x3f, 0x2e, 0x69, 0x6e,
-	0x69, 0x74, 0x69, 0x61, 0x2e, 0x67, 0x6f, 0x76, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72,
-	0x79, 0x4c, 0x61, 0x73, 0x74, 0x45, 0x6d, 0x65, 0x72, 0x67, 0x65, 0x6e, 0x63, 0x79, 0x50, 0x72,
-	0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x54, 0x61, 0x6c, 0x6c, 0x79, 0x54, 0x69, 0x6d, 0x65, 0x73,
-	0x74, 0x61, 0x6d, 0x70, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x3e, 0x82, 0xd3,
-	0xe4, 0x93, 0x02, 0x38, 0x12, 0x36, 0x2f, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2f, 0x67, 0x6f,
-	0x76, 0x2f, 0x76, 0x31, 0x2f, 0x6c, 0x61, 0x73, 0x74, 0x5f, 0x65, 0x6d, 0x65, 0x72, 0x67, 0x65,
-	0x6e, 0x63, 0x79, 0x5f, 0x70, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x5f, 0x74, 0x61, 0x6c,
-	0x6c, 0x79, 0x5f, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x42, 0x9b, 0x01, 0x0a,
-	0x11, 0x63, 0x6f, 0x6d, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x67, 0x6f, 0x76, 0x2e,
-	0x76, 0x31, 0x42, 0x0a, 0x51, 0x75, 0x65, 0x72, 0x79, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01,
-	0x5a, 0x24, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x61,
-	0x70, 0x69, 0x2f, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2f, 0x67, 0x6f, 0x76, 0x2f, 0x76, 0x31,
-	0x3b, 0x67, 0x6f, 0x76, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x49, 0x47, 0x58, 0xaa, 0x02, 0x0d, 0x49,
-	0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x47, 0x6f, 0x76, 0x2e, 0x56, 0x31, 0xca, 0x02, 0x0d, 0x49,
-	0x6e, 0x69, 0x74, 0x69, 0x61, 0x5c, 0x47, 0x6f, 0x76, 0x5c, 0x56, 0x31, 0xe2, 0x02, 0x19, 0x49,
-	0x6e, 0x69, 0x74, 0x69, 0x61, 0x5c, 0x47, 0x6f, 0x76, 0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42,
-	0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x0f, 0x49, 0x6e, 0x69, 0x74, 0x69,
-	0x61, 0x3a, 0x3a, 0x47, 0x6f, 0x76, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x33,
+	0x12, 0x2d, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x67, 0x6f, 0x76, 0x2e, 0x76, 0x31,
+	0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x45, 0x6d, 0x65, 0x72, 0x67, 0x65, 0x6e, 0x63, 0x79, 0x50,
+	0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a,
+	0x2e, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x67, 0x6f, 0x76, 0x2e, 0x76, 0x31, 0x2e,
+	0x51, 0x75, 0x65, 0x72, 0x79, 0x45, 0x6d, 0x65, 0x72, 0x67, 0x65, 0x6e, 0x63, 0x79, 0x50, 0x72,
+	0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22,
+	0x2a, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x24, 0x12, 0x22, 0x2f, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61,
+	0x2f, 0x67, 0x6f, 0x76, 0x2f, 0x76, 0x31, 0x2f, 0x65, 0x6d, 0x65, 0x72, 0x67, 0x65, 0x6e, 0x63,
+	0x79, 0x5f, 0x70, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x73, 0x12, 0x85, 0x01, 0x0a, 0x08,
+	0x50, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x12, 0x23, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69,
+	0x61, 0x2e, 0x67, 0x6f, 0x76, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x50, 0x72,
+	0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x24, 0x2e,
+	0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x67, 0x6f, 0x76, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75,
+	0x65, 0x72, 0x79, 0x50, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x52, 0x65, 0x73, 0x70, 0x6f,
+	0x6e, 0x73, 0x65, 0x22, 0x2e, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x28, 0x12, 0x26, 0x2f, 0x69, 0x6e,
+	0x69, 0x74, 0x69, 0x61, 0x2f, 0x67, 0x6f, 0x76, 0x2f, 0x76, 0x31, 0x2f, 0x70, 0x72, 0x6f, 0x70,
+	0x6f, 0x73, 0x61, 0x6c, 0x73, 0x2f, 0x7b, 0x70, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x5f,
+	0x69, 0x64, 0x7d, 0x12, 0x7a, 0x0a, 0x09, 0x50, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x73,
+	0x12, 0x24, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x67, 0x6f, 0x76, 0x2e, 0x76, 0x31,
+	0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x50, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x73, 0x52,
+	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x25, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e,
+	0x67, 0x6f, 0x76, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x50, 0x72, 0x6f, 0x70,
+	0x6f, 0x73, 0x61, 0x6c, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x20, 0x82,
+	0xd3, 0xe4, 0x93, 0x02, 0x1a, 0x12, 0x18, 0x2f, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2f, 0x67,
+	0x6f, 0x76, 0x2f, 0x76, 0x31, 0x2f, 0x70, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x73, 0x42,
+	0x9b, 0x01, 0x0a, 0x11, 0x63, 0x6f, 0x6d, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x67,
+	0x6f, 0x76, 0x2e, 0x76, 0x31, 0x42, 0x0a, 0x51, 0x75, 0x65, 0x72, 0x79, 0x50, 0x72, 0x6f, 0x74,
+	0x6f, 0x50, 0x01, 0x5a, 0x24, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69,
+	0x6f, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2f, 0x67, 0x6f, 0x76,
+	0x2f, 0x76, 0x31, 0x3b, 0x67, 0x6f, 0x76, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x49, 0x47, 0x58, 0xaa,
+	0x02, 0x0d, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x47, 0x6f, 0x76, 0x2e, 0x56, 0x31, 0xca,
+	0x02, 0x0d, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x5c, 0x47, 0x6f, 0x76, 0x5c, 0x56, 0x31, 0xe2,
+	0x02, 0x19, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x5c, 0x47, 0x6f, 0x76, 0x5c, 0x56, 0x31, 0x5c,
+	0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x0f, 0x49, 0x6e,
+	0x69, 0x74, 0x69, 0x61, 0x3a, 0x3a, 0x47, 0x6f, 0x76, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x06, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -2948,37 +4325,45 @@ func file_initia_gov_v1_query_proto_rawDescGZIP() []byte {
 	return file_initia_gov_v1_query_proto_rawDescData
 }
 
-var file_initia_gov_v1_query_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_initia_gov_v1_query_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_initia_gov_v1_query_proto_goTypes = []interface{}{
-	(*QueryParamsRequest)(nil),                               // 0: initia.gov.v1.QueryParamsRequest
-	(*QueryParamsResponse)(nil),                              // 1: initia.gov.v1.QueryParamsResponse
-	(*QueryEmergencyProposalsRequest)(nil),                   // 2: initia.gov.v1.QueryEmergencyProposalsRequest
-	(*QueryEmergencyProposalsResponse)(nil),                  // 3: initia.gov.v1.QueryEmergencyProposalsResponse
-	(*QueryLastEmergencyProposalTallyTimestampRequest)(nil),  // 4: initia.gov.v1.QueryLastEmergencyProposalTallyTimestampRequest
-	(*QueryLastEmergencyProposalTallyTimestampResponse)(nil), // 5: initia.gov.v1.QueryLastEmergencyProposalTallyTimestampResponse
-	(*Params)(nil),                // 6: initia.gov.v1.Params
-	(*v1beta1.PageRequest)(nil),   // 7: cosmos.base.query.v1beta1.PageRequest
-	(*v1.Proposal)(nil),           // 8: cosmos.gov.v1.Proposal
-	(*v1beta1.PageResponse)(nil),  // 9: cosmos.base.query.v1beta1.PageResponse
-	(*timestamppb.Timestamp)(nil), // 10: google.protobuf.Timestamp
+	(*QueryParamsRequest)(nil),              // 0: initia.gov.v1.QueryParamsRequest
+	(*QueryParamsResponse)(nil),             // 1: initia.gov.v1.QueryParamsResponse
+	(*QueryEmergencyProposalsRequest)(nil),  // 2: initia.gov.v1.QueryEmergencyProposalsRequest
+	(*QueryEmergencyProposalsResponse)(nil), // 3: initia.gov.v1.QueryEmergencyProposalsResponse
+	(*QueryProposalRequest)(nil),            // 4: initia.gov.v1.QueryProposalRequest
+	(*QueryProposalResponse)(nil),           // 5: initia.gov.v1.QueryProposalResponse
+	(*QueryProposalsRequest)(nil),           // 6: initia.gov.v1.QueryProposalsRequest
+	(*QueryProposalsResponse)(nil),          // 7: initia.gov.v1.QueryProposalsResponse
+	(*Params)(nil),                          // 8: initia.gov.v1.Params
+	(*v1beta1.PageRequest)(nil),             // 9: cosmos.base.query.v1beta1.PageRequest
+	(*Proposal)(nil),                        // 10: initia.gov.v1.Proposal
+	(*v1beta1.PageResponse)(nil),            // 11: cosmos.base.query.v1beta1.PageResponse
+	(v1.ProposalStatus)(0),                  // 12: cosmos.gov.v1.ProposalStatus
 }
 var file_initia_gov_v1_query_proto_depIdxs = []int32{
-	6,  // 0: initia.gov.v1.QueryParamsResponse.params:type_name -> initia.gov.v1.Params
-	7,  // 1: initia.gov.v1.QueryEmergencyProposalsRequest.pagination:type_name -> cosmos.base.query.v1beta1.PageRequest
-	8,  // 2: initia.gov.v1.QueryEmergencyProposalsResponse.proposals:type_name -> cosmos.gov.v1.Proposal
-	9,  // 3: initia.gov.v1.QueryEmergencyProposalsResponse.pagination:type_name -> cosmos.base.query.v1beta1.PageResponse
-	10, // 4: initia.gov.v1.QueryLastEmergencyProposalTallyTimestampResponse.tally_timestamp:type_name -> google.protobuf.Timestamp
-	0,  // 5: initia.gov.v1.Query.Params:input_type -> initia.gov.v1.QueryParamsRequest
-	2,  // 6: initia.gov.v1.Query.EmergencyProposals:input_type -> initia.gov.v1.QueryEmergencyProposalsRequest
-	4,  // 7: initia.gov.v1.Query.LastEmergencyProposalTallyTimestamp:input_type -> initia.gov.v1.QueryLastEmergencyProposalTallyTimestampRequest
-	1,  // 8: initia.gov.v1.Query.Params:output_type -> initia.gov.v1.QueryParamsResponse
-	3,  // 9: initia.gov.v1.Query.EmergencyProposals:output_type -> initia.gov.v1.QueryEmergencyProposalsResponse
-	5,  // 10: initia.gov.v1.Query.LastEmergencyProposalTallyTimestamp:output_type -> initia.gov.v1.QueryLastEmergencyProposalTallyTimestampResponse
-	8,  // [8:11] is the sub-list for method output_type
-	5,  // [5:8] is the sub-list for method input_type
-	5,  // [5:5] is the sub-list for extension type_name
-	5,  // [5:5] is the sub-list for extension extendee
-	0,  // [0:5] is the sub-list for field type_name
+	8,  // 0: initia.gov.v1.QueryParamsResponse.params:type_name -> initia.gov.v1.Params
+	9,  // 1: initia.gov.v1.QueryEmergencyProposalsRequest.pagination:type_name -> cosmos.base.query.v1beta1.PageRequest
+	10, // 2: initia.gov.v1.QueryEmergencyProposalsResponse.proposals:type_name -> initia.gov.v1.Proposal
+	11, // 3: initia.gov.v1.QueryEmergencyProposalsResponse.pagination:type_name -> cosmos.base.query.v1beta1.PageResponse
+	10, // 4: initia.gov.v1.QueryProposalResponse.proposal:type_name -> initia.gov.v1.Proposal
+	12, // 5: initia.gov.v1.QueryProposalsRequest.proposal_status:type_name -> cosmos.gov.v1.ProposalStatus
+	9,  // 6: initia.gov.v1.QueryProposalsRequest.pagination:type_name -> cosmos.base.query.v1beta1.PageRequest
+	10, // 7: initia.gov.v1.QueryProposalsResponse.proposals:type_name -> initia.gov.v1.Proposal
+	11, // 8: initia.gov.v1.QueryProposalsResponse.pagination:type_name -> cosmos.base.query.v1beta1.PageResponse
+	0,  // 9: initia.gov.v1.Query.Params:input_type -> initia.gov.v1.QueryParamsRequest
+	2,  // 10: initia.gov.v1.Query.EmergencyProposals:input_type -> initia.gov.v1.QueryEmergencyProposalsRequest
+	4,  // 11: initia.gov.v1.Query.Proposal:input_type -> initia.gov.v1.QueryProposalRequest
+	6,  // 12: initia.gov.v1.Query.Proposals:input_type -> initia.gov.v1.QueryProposalsRequest
+	1,  // 13: initia.gov.v1.Query.Params:output_type -> initia.gov.v1.QueryParamsResponse
+	3,  // 14: initia.gov.v1.Query.EmergencyProposals:output_type -> initia.gov.v1.QueryEmergencyProposalsResponse
+	5,  // 15: initia.gov.v1.Query.Proposal:output_type -> initia.gov.v1.QueryProposalResponse
+	7,  // 16: initia.gov.v1.Query.Proposals:output_type -> initia.gov.v1.QueryProposalsResponse
+	13, // [13:17] is the sub-list for method output_type
+	9,  // [9:13] is the sub-list for method input_type
+	9,  // [9:9] is the sub-list for extension type_name
+	9,  // [9:9] is the sub-list for extension extendee
+	0,  // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_initia_gov_v1_query_proto_init() }
@@ -3037,7 +4422,7 @@ func file_initia_gov_v1_query_proto_init() {
 			}
 		}
 		file_initia_gov_v1_query_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*QueryLastEmergencyProposalTallyTimestampRequest); i {
+			switch v := v.(*QueryProposalRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3049,7 +4434,31 @@ func file_initia_gov_v1_query_proto_init() {
 			}
 		}
 		file_initia_gov_v1_query_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*QueryLastEmergencyProposalTallyTimestampResponse); i {
+			switch v := v.(*QueryProposalResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_initia_gov_v1_query_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*QueryProposalsRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_initia_gov_v1_query_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*QueryProposalsResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3067,7 +4476,7 @@ func file_initia_gov_v1_query_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_initia_gov_v1_query_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

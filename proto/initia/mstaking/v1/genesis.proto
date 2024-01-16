@@ -32,7 +32,7 @@ message GenesisState {
   // unbonding_delegations defines the unbonding delegations active at genesis.
   repeated UnbondingDelegation unbonding_delegations = 5 [
     (gogoproto.nullable)   = false,
-    (amino.dont_omitempty) = true, 
+    (amino.dont_omitempty) = true,
     (gogoproto.moretags)   = "yaml:\"unbonding_delegations\""
   ];
 
