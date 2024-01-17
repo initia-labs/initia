@@ -51,7 +51,7 @@ func (api GoApi) GetAccountInfo(addr vmtypes.AccountAddress) (bool /* found */, 
 
 // AmountToShare convert amount to share
 func (api GoApi) AmountToShare(valBz []byte, metadata vmtypes.AccountAddress, amount uint64) (uint64, error) {
-	valAddr, err := sdk.ValAddressFromBech32(string(valBz))
+	valAddr, err := api.vc.StringToBytes(string(valBz))
 	if err != nil {
 		return 0, err
 	}
@@ -67,7 +67,7 @@ func (api GoApi) AmountToShare(valBz []byte, metadata vmtypes.AccountAddress, am
 
 // ShareToAmount convert share to amount
 func (api GoApi) ShareToAmount(valBz []byte, metadata vmtypes.AccountAddress, share uint64) (uint64, error) {
-	valAddr, err := sdk.ValAddressFromBech32(string(valBz))
+	valAddr, err := api.vc.StringToBytes(string(valBz))
 	if err != nil {
 		return 0, err
 	}
