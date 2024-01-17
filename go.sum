@@ -725,10 +725,8 @@ github.com/initia-labs/OPinit v0.2.0-beta.0 h1:h2XFGYbEoTfgZPGoBdCY9pO8THkC1M3cY
 github.com/initia-labs/OPinit v0.2.0-beta.0/go.mod h1:1dn1iseG1S4wfXUtnb4mUkraJdL9/lWBQPpI+HbVzL0=
 github.com/initia-labs/cosmos-sdk v0.0.0-20240116115600-110a2328c217 h1:lp7GBF9EggJkXhcHJweIPBPyVdVdtQNPacHP2cSPckI=
 github.com/initia-labs/cosmos-sdk v0.0.0-20240116115600-110a2328c217/go.mod h1:tlrkY1sntOt1q0OX/rqF0zRJtmXNoffAS6VFTcky+w8=
-github.com/initia-labs/indexer v0.1.0-beta.20.0.20240116101537-e202d4125761 h1:BSnCqfrssK2kX6YuzCYgX7KI1srAPost8cRKQ+An2oc=
-github.com/initia-labs/indexer v0.1.0-beta.20.0.20240116101537-e202d4125761/go.mod h1:5H96xVMCXl9Gwd8mhStVPZqw85Gkuxj1/QHS+O+jCVY=
-github.com/initia-labs/indexer v0.1.0-beta.20.0.20240116132127-6134e04c008b h1:+2lq2MmeDzOiFF6r+WFySYo3tnkZXA+LWBL6+IDoRNc=
-github.com/initia-labs/indexer v0.1.0-beta.20.0.20240116132127-6134e04c008b/go.mod h1:opDC41KZERVHGD4ty1u9958wwVOcazloHGO1YdExtKs=
+github.com/initia-labs/indexer v0.1.0-beta.20.0.20240117031148-3fb59520be17 h1:3dVyQwqlewLEEVtB4FDmOxv7IFPMWUDEuDgPpXLb7As=
+github.com/initia-labs/indexer v0.1.0-beta.20.0.20240117031148-3fb59520be17/go.mod h1:opDC41KZERVHGD4ty1u9958wwVOcazloHGO1YdExtKs=
 github.com/initia-labs/initiavm v0.1.2-beta.9 h1:FvcID3hf13MxQ/i43+i+zW8a6WKfr5Bx4+suDwfm7Do=
 github.com/initia-labs/initiavm v0.1.2-beta.9/go.mod h1:6LNXn8eRv2jBzvM1gyQMgA1GRzZJh65VGVKCYDtbh18=
 github.com/initia-labs/slinky v0.0.0-20240116092207-9fc17d676ce6 h1:DvTDry1vmOjMHBSNzWjhFCsXV2AF5qJs8L3UwtjjK0I=
