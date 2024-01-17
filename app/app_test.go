@@ -13,6 +13,7 @@ import (
 
 	"cosmossdk.io/log"
 	dbm "github.com/cosmos/cosmos-db"
+	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/testutil/mock"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
@@ -145,4 +146,14 @@ func TestGetKey(t *testing.T) {
 		db, nil, true, moveconfig.DefaultMoveConfig(), apporacle.DefaultConfig(), simtestutil.EmptyAppOptions{})
 
 	require.NotEmpty(t, app.GetKey(banktypes.StoreKey))
+}
+
+func TestChainID(t *testing.T) {
+	chainid := "test-chain-id-initia"
+	db := dbm.NewMemDB()
+	app := NewInitiaApp(
+		log.NewLogger(os.Stdout),
+		db, nil, true, moveconfig.DefaultMoveConfig(), apporacle.DefaultConfig(), simtestutil.EmptyAppOptions{}, baseapp.SetChainID(chainid),
+	)
+	require.Equal(t, chainid, app.ChainID())
 }
