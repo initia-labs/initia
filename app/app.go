@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"reflect"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -1454,13 +1453,6 @@ func (app *InitiaApp) GetScopedIBCKeeper() capabilitykeeper.ScopedKeeper {
 // TxConfig implements the TestingApp interface.
 func (app *InitiaApp) TxConfig() client.TxConfig {
 	return app.txConfig
-}
-
-// ChainID gets chainID from private fields of BaseApp
-// Should be removed once SDK 0.50.x will be adopted
-func (app *InitiaApp) ChainID() string { // TODO: remove this method once chain updates to v0.50.x
-	field := reflect.ValueOf(app.BaseApp).Elem().FieldByName("chainID")
-	return field.String()
 }
 
 // DefaultGenesis returns a default genesis from the registered AppModuleBasic's.
