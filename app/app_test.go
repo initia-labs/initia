@@ -27,7 +27,6 @@ import (
 
 	feegrantmodule "cosmossdk.io/x/feegrant/module"
 	"cosmossdk.io/x/upgrade"
-	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	"github.com/cosmos/cosmos-sdk/x/slashing"
 
 	ica "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts"
@@ -78,7 +77,7 @@ func TestInitGenesisOnMigration(t *testing.T) {
 	db := dbm.NewMemDB()
 	logger := log.NewLogger(os.Stdout)
 	app := NewInitiaApp(
-		logger, db, nil, true, moveconfig.DefaultMoveConfig(), apporacle.DefaultConfig(), simtestutil.EmptyAppOptions{})
+		logger, db, nil, true, moveconfig.DefaultMoveConfig(), apporacle.DefaultConfig(), EmptyAppOptions{})
 	ctx := app.NewContextLegacy(true, cmtproto.Header{Height: app.LastBlockHeight()})
 
 	// Create a mock module. This module will serve as the new module we're
@@ -143,7 +142,7 @@ func TestGetKey(t *testing.T) {
 	db := dbm.NewMemDB()
 	app := NewInitiaApp(
 		log.NewLogger(os.Stdout),
-		db, nil, true, moveconfig.DefaultMoveConfig(), apporacle.DefaultConfig(), simtestutil.EmptyAppOptions{})
+		db, nil, true, moveconfig.DefaultMoveConfig(), apporacle.DefaultConfig(), EmptyAppOptions{})
 
 	require.NotEmpty(t, app.GetKey(banktypes.StoreKey))
 }
@@ -153,7 +152,7 @@ func TestChainID(t *testing.T) {
 	db := dbm.NewMemDB()
 	app := NewInitiaApp(
 		log.NewLogger(os.Stdout),
-		db, nil, true, moveconfig.DefaultMoveConfig(), apporacle.DefaultConfig(), simtestutil.EmptyAppOptions{}, baseapp.SetChainID(chainid),
+		db, nil, true, moveconfig.DefaultMoveConfig(), apporacle.DefaultConfig(), EmptyAppOptions{}, baseapp.SetChainID(chainid),
 	)
 	require.Equal(t, chainid, app.ChainID())
 }

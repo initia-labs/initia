@@ -20,7 +20,6 @@ import (
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
-	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -63,7 +62,7 @@ func setup(db *dbm.DB, withGenesis bool) (*InitiaApp, GenesisState) {
 		true,
 		moveconfig.DefaultMoveConfig(),
 		apporacle.DefaultConfig(),
-		simtestutil.EmptyAppOptions{},
+		EmptyAppOptions{},
 	)
 
 	if withGenesis {
