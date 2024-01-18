@@ -19,7 +19,7 @@ require (
 	cosmossdk.io/x/tx v0.13.0
 	cosmossdk.io/x/upgrade v0.1.1
 	github.com/IGLOU-EU/go-wildcard v1.0.3
-	github.com/bits-and-blooms/bitset v1.12.0
+	github.com/bits-and-blooms/bitset v1.13.0
 	github.com/cometbft/cometbft v0.38.2
 	github.com/cosmos/cosmos-db v1.0.0
 	github.com/cosmos/cosmos-proto v1.0.0-beta.3
@@ -34,15 +34,15 @@ require (
 	github.com/gorilla/mux v1.8.1
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/hashicorp/go-metrics v0.5.2
-	github.com/initia-labs/OPinit v0.2.0-beta.0
+	github.com/initia-labs/OPinit v0.2.0-beta.1
 	// we also need to update `LIBINITIAVM_VERSION` of images/private/Dockerfile#5
-	github.com/initia-labs/initiavm v0.2.0-beta.0
+	github.com/initia-labs/initiavm v0.2.0-beta.1
 	github.com/novifinancial/serde-reflection/serde-generate/runtime/golang v0.0.0-20220519162058-e5cd3c3b3f3a
 	github.com/pelletier/go-toml v1.9.5
 	github.com/pkg/errors v0.9.1
 	github.com/rakyll/statik v0.1.7
 	github.com/skip-mev/block-sdk v0.0.0-20231213233341-deceeb0e993b
-	github.com/skip-mev/slinky v0.1.0-alpha.0.0.20240113034931-de4a28ffa013
+	github.com/skip-mev/slinky v0.0.0-20240117193954-22f7433da9a4
 	github.com/spf13/cast v1.6.0
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
@@ -59,7 +59,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 )
 
-require github.com/initia-labs/indexer v0.1.0-beta.20.0.20240117133433-73e2a019c2c4
+require github.com/initia-labs/indexer v0.1.0-beta.20.0.20240118062742-884c3fffe4ae
 
 require (
 	cloud.google.com/go v0.110.10 // indirect
@@ -232,8 +232,6 @@ replace (
 	// Fix upstream GHSA-h395-qcrw-5vmq vulnerability.
 	// TODO Remove it: https://github.com/cosmos/cosmos-sdk/issues/10409
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.9.1
-
-	github.com/skip-mev/slinky => github.com/initia-labs/slinky v0.0.0-20240116092207-9fc17d676ce6
 
 	// Downgraded to avoid bugs in following commits which caused simulations to fail.
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
