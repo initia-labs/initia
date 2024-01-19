@@ -22,7 +22,7 @@ func postSetup(svrCtx *server.Context, clientCtx client.Context, ctx context.Con
 				initiaApp.OraclePrometheusServer.Start()
 			}()
 
-			ctx.Done()
+			<-ctx.Done()
 
 			logger.Info("stopping oracle prometheus server...")
 			initiaApp.OraclePrometheusServer.Close()
