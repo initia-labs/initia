@@ -5,8 +5,8 @@ import (
 	"cosmossdk.io/core/appmodule"
 	"cosmossdk.io/log"
 	dbm "github.com/cosmos/cosmos-db"
+	"github.com/cosmos/cosmos-sdk/client/flags"
 	runtimeservices "github.com/cosmos/cosmos-sdk/runtime/services"
-	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
@@ -17,7 +17,7 @@ import (
 )
 
 func MakeEncodingConfig() params.EncodingConfig {
-	tempApp := NewInitiaApp(log.NewNopLogger(), dbm.NewMemDB(), nil, true, moveconfig.DefaultMoveConfig(), apporacle.DefaultConfig(), simtestutil.EmptyAppOptions{})
+	tempApp := NewInitiaApp(log.NewNopLogger(), dbm.NewMemDB(), nil, true, moveconfig.DefaultMoveConfig(), apporacle.DefaultConfig(), EmptyAppOptions{})
 	encodingConfig := params.EncodingConfig{
 		InterfaceRegistry: tempApp.InterfaceRegistry(),
 		Codec:             tempApp.AppCodec(),
@@ -29,7 +29,7 @@ func MakeEncodingConfig() params.EncodingConfig {
 }
 
 func AutoCliOpts() autocli.AppOptions {
-	tempApp := NewInitiaApp(log.NewNopLogger(), dbm.NewMemDB(), nil, true, moveconfig.DefaultMoveConfig(), apporacle.DefaultConfig(), simtestutil.EmptyAppOptions{})
+	tempApp := NewInitiaApp(log.NewNopLogger(), dbm.NewMemDB(), nil, true, moveconfig.DefaultMoveConfig(), apporacle.DefaultConfig(), EmptyAppOptions{})
 	modules := make(map[string]appmodule.AppModule, 0)
 	for _, m := range tempApp.ModuleManager.Modules {
 		if moduleWithName, ok := m.(module.HasName); ok {
@@ -50,6 +50,18 @@ func AutoCliOpts() autocli.AppOptions {
 }
 
 func BasicManager() module.BasicManager {
-	tempApp := NewInitiaApp(log.NewNopLogger(), dbm.NewMemDB(), nil, true, moveconfig.DefaultMoveConfig(), apporacle.DefaultConfig(), simtestutil.EmptyAppOptions{})
+	tempApp := NewInitiaApp(log.NewNopLogger(), dbm.NewMemDB(), nil, true, moveconfig.DefaultMoveConfig(), apporacle.DefaultConfig(), EmptyAppOptions{})
 	return tempApp.BasicModuleManager
+}
+
+// EmptyAppOptions is a stub implementing AppOptions
+type EmptyAppOptions struct{}
+
+// Get implements AppOptions
+func (ao EmptyAppOptions) Get(o string) interface{} {
+	if o == flags.FlagHome {
+		return DefaultNodeHome
+	}
+
+	return nil
 }
