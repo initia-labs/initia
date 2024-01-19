@@ -18,6 +18,7 @@ func TestExportImportState(t *testing.T) {
 
 	genesisState := customtypes.DefaultGenesisState()
 	genesisState.Params.MinDeposit[0].Denom = bondDenom
+	genesisState.Params.ExpeditedMinDeposit[0].Denom = bondDenom
 	genesisState.Params.EmergencyMinDeposit[0].Denom = bondDenom
 
 	require.Equal(t, exportedState, genesisState)
