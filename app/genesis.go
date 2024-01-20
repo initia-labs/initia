@@ -58,6 +58,7 @@ func (genState GenesisState) ConfigureBondDenom(cdc codec.JSONCodec, bondDenom s
 	var govGenState customgovtypes.GenesisState
 	cdc.MustUnmarshalJSON(genState[govtypes.ModuleName], &govGenState)
 	govGenState.Params.MinDeposit[0].Denom = bondDenom
+	govGenState.Params.ExpeditedMinDeposit[0].Denom = bondDenom
 	govGenState.Params.EmergencyMinDeposit[0].Denom = bondDenom
 	genState[govtypes.ModuleName] = cdc.MustMarshalJSON(&govGenState)
 
