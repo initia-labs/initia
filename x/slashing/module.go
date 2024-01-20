@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/spf13/cobra"
 
 	"cosmossdk.io/core/appmodule"
 
@@ -16,6 +17,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/slashing/types"
 
+	"github.com/initia-labs/initia/x/slashing/client/cli"
 	"github.com/initia-labs/initia/x/slashing/keeper"
 )
 
@@ -75,6 +77,16 @@ func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *r
 	if err := types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(clientCtx)); err != nil {
 		panic(err)
 	}
+}
+
+// GetTxCmd returns no root tx command for the mint module.
+func (b AppModuleBasic) GetTxCmd() *cobra.Command {
+	return cli.NewTxCmd(b.cdc.InterfaceRegistry().SigningContext().ValidatorAddressCodec())
+}
+
+// GetQueryCmd returns the root query command for the mint module.
+func (AppModuleBasic) GetQueryCmd() *cobra.Command {
+	return nil
 }
 
 // AppModule implements an application module for the slashing module.
