@@ -1,16 +1,19 @@
 package benchmarks
 
 import (
+	"bytes"
 	"math/rand"
 	"testing"
 	"time"
 
-	//"github.com/cometbft/cometbft/libs/rand"
+	"github.com/stretchr/testify/require"
+	"github.com/syndtr/goleveldb/leveldb/opt"
 
 	abci "github.com/cometbft/cometbft/abci/types"
-	"github.com/stretchr/testify/require"
 
 	simappparams "cosmossdk.io/simapp/params"
+	initiaapp "github.com/initia-labs/initia/app"
+	movetypes "github.com/initia-labs/initia/x/move/types"
 	vmtypes "github.com/initia-labs/initiavm/types"
 
 	dbm "github.com/cosmos/cosmos-db"
@@ -20,8 +23,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-
-	initiaapp "github.com/initia-labs/initia/app"
 )
 
 func init() {
@@ -89,7 +90,6 @@ func InitializeBenchApp(b *testing.B, db *dbm.DB, numAccounts int) AppInfo {
 
 	height := initiaApp.LastBlockHeight() + 1
 	initiaApp.FinalizeBlock(&abci.RequestFinalizeBlock{Height: height, Time: time.Now()})
-	initiaApp.Commit()
 
 	appInfo := AppInfo{
 		App:           initiaApp,
@@ -119,7 +119,7 @@ func GenSequenceOfTxs(b *testing.B, info *AppInfo, msgGen func(*AppInfo, int) ([
 			info.TxConfig,
 			msgs,
 			fees,
-			1_000_000,
+			3_000_000,
 			"",
 			[]uint64{info.AccNum},
 			[]uint64{info.Sequence},
@@ -129,4 +129,40 @@ func GenSequenceOfTxs(b *testing.B, info *AppInfo, msgGen func(*AppInfo, int) ([
 		info.Sequence += 1
 	}
 	return txs
+}
+
+var transferAmount, _ = vmtypes.SerializeUint64(100)
+
+func coinTransferMsg(info *AppInfo, idx int) ([]sdk.Msg, error) {
+	rcpt := info.AccKeys[idx%len(info.AccKeys)].PubKey().Address()
+	mt, err := movetypes.MetadataAddressFromDenom("uinit")
+	if err != nil {
+		return nil, err
+	}
+
+	msgTransfer := &movetypes.MsgExecute{
+		Sender:        info.MinterAddr.String(),
+		ModuleAddress: movetypes.StdAddr.String(),
+		ModuleName:    movetypes.MoveModuleNameCoin,
+		FunctionName:  movetypes.FunctionNameCoinTransfer,
+		TypeArgs:      []string{},
+		Args:          [][]byte{append(bytes.Repeat([]byte{0}, 12), rcpt...), mt[:], transferAmount},
+	}
+	return []sdk.Msg{msgTransfer}, nil
+}
+
+func buildTxFromMsg(builder func(*AppInfo, int) ([]sdk.Msg, error), numTxs int) func(b *testing.B, info *AppInfo) []sdk.Tx {
+	return func(b *testing.B, info *AppInfo) []sdk.Tx {
+		return GenSequenceOfTxs(b, info, builder, b.N*numTxs)
+	}
+}
+
+func buildMemDB(b *testing.B) dbm.DB {
+	return dbm.NewMemDB()
+}
+
+func buildLevelDB(b *testing.B) dbm.DB {
+	levelDB, err := dbm.NewGoLevelDBWithOpts("testing", b.TempDir(), &opt.Options{BlockCacher: opt.NoCacher})
+	require.NoError(b, err)
+	return levelDB
 }
