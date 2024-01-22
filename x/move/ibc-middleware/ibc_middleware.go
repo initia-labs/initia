@@ -265,5 +265,5 @@ func (im IBCMiddleware) execMsg(ctx sdk.Context, msg *movetypes.MsgExecute) (*mo
 	}
 
 	moveMsgServer := movekeeper.NewMsgServerImpl(*im.moveKeeper)
-	return moveMsgServer.Execute(sdk.WrapSDKContext(ctx), msg)
+	return moveMsgServer.Execute(ctx, msg)
 }
