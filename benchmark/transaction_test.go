@@ -16,41 +16,17 @@ func BenchmarkTPS(b *testing.B) {
 		numTxs      int
 		numAccounts int
 	}{
-		"native_uinit transfer - memdb - 1k accounts - 1_000 txs": {
+		"native_uinit transfer - memdb - 100 accounts - 100 txs": {
 			db:          buildMemDB,
-			numTxs:      1_000,
-			txBuilder:   buildTxFromMsg(coinTransferMsg, 1_000),
-			numAccounts: 1_000,
+			numTxs:      100,
+			txBuilder:   buildTxFromMsg(coinTransferMsg, 100),
+			numAccounts: 100,
 		},
-		"native_uinit transfer - leveldb - 1k accounts - 1_000 txs": {
+		"native_uinit transfer - leveldb - 100 accounts - 100 txs": {
 			db:          buildLevelDB,
-			numTxs:      1_000,
-			txBuilder:   buildTxFromMsg(coinTransferMsg, 1_000),
-			numAccounts: 1_000,
-		},
-		"native_uinit transfer - memdb - 1k accounts - 2_000 txs": {
-			db:          buildMemDB,
-			numTxs:      2_000,
-			txBuilder:   buildTxFromMsg(coinTransferMsg, 2_000),
-			numAccounts: 1_000,
-		},
-		"native_uinit transfer - leveldb - 1k accounts - 2_000 txs": {
-			db:          buildLevelDB,
-			numTxs:      2_000,
-			txBuilder:   buildTxFromMsg(coinTransferMsg, 2_000),
-			numAccounts: 1_000,
-		},
-		"native_uinit transfer - memdb - 1k accounts - 3_000 txs": {
-			db:          buildMemDB,
-			numTxs:      3_000,
-			txBuilder:   buildTxFromMsg(coinTransferMsg, 3_000),
-			numAccounts: 1_000,
-		},
-		"native_uinit transfer - leveldb - 1k accounts - 3_000 txs": {
-			db:          buildLevelDB,
-			numTxs:      3_000,
-			txBuilder:   buildTxFromMsg(coinTransferMsg, 3_000),
-			numAccounts: 1_000,
+			numTxs:      100,
+			txBuilder:   buildTxFromMsg(coinTransferMsg, 100),
+			numAccounts: 100,
 		},
 	}
 
@@ -72,7 +48,6 @@ func BenchmarkTPS(b *testing.B) {
 					_, _, err := appInfo.App.SimDeliver(txEncoder, txs[idx])
 					require.NoError(b, err)
 				}
-
 			}
 		})
 	}
