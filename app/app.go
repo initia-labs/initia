@@ -741,7 +741,7 @@ func NewInitiaApp(
 			app.IBCKeeper.PortKeeper,
 			app.ScopedICQKeeper,
 			bApp.GRPCQueryRouter(),
-			authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+			authorityAddr,
 		)
 		app.ICQKeeper = &icqKeeper
 
