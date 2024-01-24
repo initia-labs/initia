@@ -29,6 +29,41 @@ func ConvertToSDKMessage(
 	vc address.Codec,
 ) (sdk.Msg, error) {
 	switch msg := msg.(type) {
+	case *vmtypes.CosmosMessage__Move:
+		switch msg := msg.Value.(type) {
+		case *vmtypes.MoveMessage__Execute:
+			sender, err := ac.BytesToString(ConvertVMAddressToSDKAddress(msg.Sender))
+			if err != nil {
+				return nil, err
+			}
+
+			moduleAddress, err := ac.BytesToString(ConvertVMAddressToSDKAddress(msg.ModuleAddress))
+			if err != nil {
+				return nil, err
+			}
+
+			return NewMsgExecute(
+				sender,
+				moduleAddress,
+				msg.ModuleName,
+				msg.FunctionName,
+				msg.TypeArgs,
+				msg.Args,
+			), nil
+		case *vmtypes.MoveMessage__Script:
+			sender, err := ac.BytesToString(ConvertVMAddressToSDKAddress(msg.Sender))
+			if err != nil {
+				return nil, err
+			}
+
+			return NewMsgScript(
+				sender,
+				msg.CodeBytes,
+				msg.TypeArgs,
+				msg.Args,
+			), nil
+		}
+
 	case *vmtypes.CosmosMessage__Staking:
 		switch msg := msg.Value.(type) {
 		case *vmtypes.StakingMessage__Delegate:
