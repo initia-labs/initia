@@ -3,6 +3,7 @@ package app
 import (
 	"encoding/json"
 
+	icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v8/types"
 	icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
 	icagenesistypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/genesis/types"
 	icahosttypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/host/types"
@@ -78,6 +79,15 @@ func (genState GenesisState) ConfigureBondDenom(cdc codec.JSONCodec, bondDenom s
 	auctionGenState.Params.ReserveFee.Denom = bondDenom
 	auctionGenState.Params.MinBidIncrement.Denom = bondDenom
 	genState[auctiontypes.ModuleName] = cdc.MustMarshalJSON(&auctionGenState)
+
+	var icqGenSate icqtypes.GenesisState
+	cdc.MustUnmarshalJSON(genState[icqtypes.ModuleName], &icqGenSate)
+	icqGenSate.Params.HostEnabled = true
+	icqGenSate.Params.AllowQueries = []string{
+		"/slinky.oracle.v1.Query/GetPrices",
+		"/slinky.oracle.v1.Query/GetPrice",
+	}
+	genState[icqtypes.ModuleName] = cdc.MustMarshalJSON(&icqGenSate)
 
 	return genState
 }

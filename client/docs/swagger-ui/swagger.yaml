@@ -5058,6 +5058,170 @@ paths:
           type: boolean
       tags:
         - Query
+  /cosmos/bank/v1beta1/denom_owners_by_query:
+    get:
+      summary: >-
+        DenomOwnersByQuery queries for all account addresses that own a
+        particular token
+
+        denomination.
+      description: 'Since: cosmos-sdk 0.50.3'
+      operationId: DenomOwnersByQuery
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              denom_owners:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    address:
+                      type: string
+                      description: >-
+                        address defines the address that owns a particular
+                        denomination.
+                    balance:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                  description: >-
+                    DenomOwner defines structure representing an account that
+                    owns or holds a
+
+                    particular denominated token. It contains the account
+                    address and account
+
+                    balance of the denominated token.
+
+
+                    Since: cosmos-sdk 0.46
+              pagination:
+                description: pagination defines the pagination in the response.
+                type: object
+                properties:
+                  next_key:
+                    type: string
+                    format: byte
+                    description: |-
+                      next_key is the key to be passed to PageRequest.key to
+                      query the next page most efficiently. It will be empty if
+                      there are no more results.
+                  total:
+                    type: string
+                    format: uint64
+                    title: >-
+                      total is total number of results available if
+                      PageRequest.count_total
+
+                      was set, its value is undefined otherwise
+            description: >-
+              QueryDenomOwnersByQueryResponse defines the RPC response of a
+              DenomOwnersByQuery RPC query.
+
+
+              Since: cosmos-sdk 0.50.3
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: denom
+          description: >-
+            denom defines the coin denomination to query all account holders
+            for.
+          in: query
+          required: false
+          type: string
+        - name: pagination.key
+          description: |-
+            key is a value returned in PageResponse.next_key to begin
+            querying the next page most efficiently. Only one of offset or key
+            should be set.
+          in: query
+          required: false
+          type: string
+          format: byte
+        - name: pagination.offset
+          description: >-
+            offset is a numeric offset that can be used when key is unavailable.
+
+            It is less efficient than using key. Only one of offset or key
+            should
+
+            be set.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.limit
+          description: >-
+            limit is the total number of results to be returned in the result
+            page.
+
+            If left empty it will default to a value to be set by each app.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.count_total
+          description: >-
+            count_total is set to true  to indicate that the result set should
+            include
+
+            a count of the total number of items available for pagination in
+            UIs.
+
+            count_total is only respected when offset is used. It is ignored
+            when key
+
+            is set.
+          in: query
+          required: false
+          type: boolean
+        - name: pagination.reverse
+          description: >-
+            reverse is set to true if results are to be returned in the
+            descending order.
+
+
+            Since: cosmos-sdk 0.43
+          in: query
+          required: false
+          type: boolean
+      tags:
+        - Query
   /cosmos/bank/v1beta1/denoms_metadata:
     get:
       summary: |-
@@ -5271,7 +5435,7 @@ paths:
         - Query
   /cosmos/bank/v1beta1/denoms_metadata/{denom}:
     get:
-      summary: DenomsMetadata queries the client metadata of a given coin denomination.
+      summary: DenomMetadata queries the client metadata of a given coin denomination.
       operationId: DenomMetadata
       responses:
         '200':
@@ -5405,7 +5569,9 @@ paths:
         - Query
   /cosmos/bank/v1beta1/denoms_metadata_by_query_string:
     get:
-      summary: DenomsMetadata queries the client metadata of a given coin denomination.
+      summary: >-
+        DenomMetadataByQueryString queries the client metadata of a given coin
+        denomination.
       operationId: DenomMetadataByQueryString
       responses:
         '200':
@@ -37926,348 +38092,6 @@ paths:
                       format: byte
       tags:
         - Query
-  /ibc/apps/fetchprice/consumer/v1/prices:
-    get:
-      summary: Prices queries prices.
-      operationId: Prices
-      responses:
-        '200':
-          description: A successful response.
-          schema:
-            type: object
-            properties:
-              prices:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    currency_id:
-                      type: string
-                      description: The currency id is the string with "BASE/QUOTE" format.
-                    quote_price:
-                      type: object
-                      properties:
-                        price:
-                          type: string
-                        decimals:
-                          type: string
-                          format: uint64
-                          description: >-
-                            decimals represents the number of decimals that the
-                            quote-price is
-
-                            represented in. For Pairs where ETHEREUM is the
-                            quote this will be 18,
-
-                            otherwise it will be 8.
-                        block_timestamp:
-                          type: string
-                          format: date-time
-                          description: >-
-                            BlockTimestamp tracks the block height associated
-                            with this price update.
-
-                            We include block timestamp alongside the price to
-                            ensure that smart
-
-                            contracts and applications are not utilizing stale
-                            oracle prices.
-                        block_height:
-                          type: string
-                          format: uint64
-                          description: BlockHeight is block height of provider chain.
-                      title: >-
-                        QuotePrice is the representation of the aggregated
-                        prices for a CurrencyPair,
-
-                        where price represents the price of Base in terms of
-                        Quote
-                  description: >-
-                    CurrencyPrice is the information necessary for
-                    initialization of a
-
-                    CurrencyPrice.
-            description: |-
-              QueryPricesResponse is the response type for the Query/Prices RPC
-              method.
-        default:
-          description: An unexpected error response.
-          schema:
-            type: object
-            properties:
-              error:
-                type: string
-              code:
-                type: integer
-                format: int32
-              message:
-                type: string
-              details:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    type_url:
-                      type: string
-                    value:
-                      type: string
-                      format: byte
-      parameters:
-        - name: currency_ids
-          in: query
-          required: false
-          type: array
-          items:
-            type: string
-          collectionFormat: multi
-      tags:
-        - Query
-  /ibc/apps/fetchprice/consumer/v1/prices/all:
-    get:
-      summary: AllPrices queries all prices.
-      operationId: AllPrices
-      responses:
-        '200':
-          description: A successful response.
-          schema:
-            type: object
-            properties:
-              prices:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    currency_id:
-                      type: string
-                      description: The currency id is the string with "BASE/QUOTE" format.
-                    quote_price:
-                      type: object
-                      properties:
-                        price:
-                          type: string
-                        decimals:
-                          type: string
-                          format: uint64
-                          description: >-
-                            decimals represents the number of decimals that the
-                            quote-price is
-
-                            represented in. For Pairs where ETHEREUM is the
-                            quote this will be 18,
-
-                            otherwise it will be 8.
-                        block_timestamp:
-                          type: string
-                          format: date-time
-                          description: >-
-                            BlockTimestamp tracks the block height associated
-                            with this price update.
-
-                            We include block timestamp alongside the price to
-                            ensure that smart
-
-                            contracts and applications are not utilizing stale
-                            oracle prices.
-                        block_height:
-                          type: string
-                          format: uint64
-                          description: BlockHeight is block height of provider chain.
-                      title: >-
-                        QuotePrice is the representation of the aggregated
-                        prices for a CurrencyPair,
-
-                        where price represents the price of Base in terms of
-                        Quote
-                  description: >-
-                    CurrencyPrice is the information necessary for
-                    initialization of a
-
-                    CurrencyPrice.
-                description: class_traces returns all class id traces information.
-              pagination:
-                description: pagination defines the pagination in the response.
-                type: object
-                properties:
-                  next_key:
-                    type: string
-                    format: byte
-                    description: |-
-                      next_key is the key to be passed to PageRequest.key to
-                      query the next page most efficiently. It will be empty if
-                      there are no more results.
-                  total:
-                    type: string
-                    format: uint64
-                    title: >-
-                      total is total number of results available if
-                      PageRequest.count_total
-
-                      was set, its value is undefined otherwise
-            description: >-
-              QueryAllPricesResponse is the response type for the
-              Query/AllPrices RPC
-
-              method.
-        default:
-          description: An unexpected error response.
-          schema:
-            type: object
-            properties:
-              error:
-                type: string
-              code:
-                type: integer
-                format: int32
-              message:
-                type: string
-              details:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    type_url:
-                      type: string
-                    value:
-                      type: string
-                      format: byte
-      parameters:
-        - name: pagination.key
-          description: |-
-            key is a value returned in PageResponse.next_key to begin
-            querying the next page most efficiently. Only one of offset or key
-            should be set.
-          in: query
-          required: false
-          type: string
-          format: byte
-        - name: pagination.offset
-          description: >-
-            offset is a numeric offset that can be used when key is unavailable.
-
-            It is less efficient than using key. Only one of offset or key
-            should
-
-            be set.
-          in: query
-          required: false
-          type: string
-          format: uint64
-        - name: pagination.limit
-          description: >-
-            limit is the total number of results to be returned in the result
-            page.
-
-            If left empty it will default to a value to be set by each app.
-          in: query
-          required: false
-          type: string
-          format: uint64
-        - name: pagination.count_total
-          description: >-
-            count_total is set to true  to indicate that the result set should
-            include
-
-            a count of the total number of items available for pagination in
-            UIs.
-
-            count_total is only respected when offset is used. It is ignored
-            when key
-
-            is set.
-          in: query
-          required: false
-          type: boolean
-        - name: pagination.reverse
-          description: >-
-            reverse is set to true if results are to be returned in the
-            descending order.
-
-
-            Since: cosmos-sdk 0.43
-          in: query
-          required: false
-          type: boolean
-      tags:
-        - Query
-  /ibc/apps/fetchprice/consumer/v1/prices/{currency_id}:
-    get:
-      summary: Price queries a price information.
-      operationId: Price
-      responses:
-        '200':
-          description: A successful response.
-          schema:
-            type: object
-            properties:
-              price:
-                type: object
-                properties:
-                  price:
-                    type: string
-                  decimals:
-                    type: string
-                    format: uint64
-                    description: >-
-                      decimals represents the number of decimals that the
-                      quote-price is
-
-                      represented in. For Pairs where ETHEREUM is the quote this
-                      will be 18,
-
-                      otherwise it will be 8.
-                  block_timestamp:
-                    type: string
-                    format: date-time
-                    description: >-
-                      BlockTimestamp tracks the block height associated with
-                      this price update.
-
-                      We include block timestamp alongside the price to ensure
-                      that smart
-
-                      contracts and applications are not utilizing stale oracle
-                      prices.
-                  block_height:
-                    type: string
-                    format: uint64
-                    description: BlockHeight is block height of provider chain.
-                title: >-
-                  QuotePrice is the representation of the aggregated prices for
-                  a CurrencyPair,
-
-                  where price represents the price of Base in terms of Quote
-            description: |-
-              QueryPriceResponse is the response type for the Query/Price RPC
-              method.
-        default:
-          description: An unexpected error response.
-          schema:
-            type: object
-            properties:
-              error:
-                type: string
-              code:
-                type: integer
-                format: int32
-              message:
-                type: string
-              details:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    type_url:
-                      type: string
-                    value:
-                      type: string
-                      format: byte
-      parameters:
-        - name: currency_id
-          in: path
-          required: true
-          type: string
-      tags:
-        - Query
   /ibc/apps/fee/v1/channels/{channel_id}/ports/{port_id}/fee_enabled:
     get:
       summary: >-
@@ -41127,6 +40951,100 @@ paths:
           required: false
           type: string
           format: uint64
+      tags:
+        - Query
+  /ibc/apps/packetforward/v1/params:
+    get:
+      summary: Params queries all parameters of the packetforward module.
+      operationId: PFMParams
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              params:
+                description: params defines the parameters of the module.
+                type: object
+                properties:
+                  fee_percentage:
+                    type: string
+            description: >-
+              QueryParamsResponse is the response type for the Query/Params RPC
+              method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      tags:
+        - Query
+  /async-icq/v1/params:
+    get:
+      summary: Params queries all parameters of the ICQ module.
+      operationId: FeeParams
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              params:
+                description: params defines the parameters of the module.
+                type: object
+                properties:
+                  host_enabled:
+                    type: boolean
+                    description: host_enabled enables or disables the host submodule.
+                  allow_queries:
+                    type: array
+                    items:
+                      type: string
+                    description: >-
+                      allow_queries defines a list of query paths allowed to be
+                      queried on a host chain.
+            description: >-
+              QueryParamsResponse is the response type for the Query/Params RPC
+              method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
       tags:
         - Query
   /inter-tx/interchain_account/owner/{owner}/connection/{connection_id}:
@@ -50005,7 +49923,7 @@ paths:
                     Resource is data for the stored move resource
 
                     ex)
-                    0000000000000000000000000000000000000002/1/0x1::BasicCoin::Coin<0x1::BasicCoin::Initia>
+                    0000000000000000000000000000000000000002/2/0x1::BasicCoin::Coin<0x1::BasicCoin::Initia>
               pagination:
                 description: pagination defines the pagination in the response.
                 type: object
@@ -50142,7 +50060,7 @@ paths:
                   Resource is data for the stored move resource
 
                   ex)
-                  0000000000000000000000000000000000000002/1/0x1::BasicCoin::Coin<0x1::BasicCoin::Initia>
+                  0000000000000000000000000000000000000002/2/0x1::BasicCoin::Coin<0x1::BasicCoin::Initia>
             title: >-
               QueryResourceResponse is the response type for the Query/Resource
               RPC
@@ -50212,7 +50130,7 @@ paths:
                       type: string
                     description: >-
                       It is a list of addresses with permission to distribute
-                      contracts, 
+                      contracts,
 
                       and an empty list is interpreted as allowing anyone to
                       distribute.
@@ -54508,6 +54426,68 @@ definitions:
       Query/DenomMetadata RPC
 
       method.
+  cosmos.bank.v1beta1.QueryDenomOwnersByQueryResponse:
+    type: object
+    properties:
+      denom_owners:
+        type: array
+        items:
+          type: object
+          properties:
+            address:
+              type: string
+              description: address defines the address that owns a particular denomination.
+            balance:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+          description: >-
+            DenomOwner defines structure representing an account that owns or
+            holds a
+
+            particular denominated token. It contains the account address and
+            account
+
+            balance of the denominated token.
+
+
+            Since: cosmos-sdk 0.46
+      pagination:
+        description: pagination defines the pagination in the response.
+        type: object
+        properties:
+          next_key:
+            type: string
+            format: byte
+            description: |-
+              next_key is the key to be passed to PageRequest.key to
+              query the next page most efficiently. It will be empty if
+              there are no more results.
+          total:
+            type: string
+            format: uint64
+            title: >-
+              total is total number of results available if
+              PageRequest.count_total
+
+              was set, its value is undefined otherwise
+    description: >-
+      QueryDenomOwnersByQueryResponse defines the RPC response of a
+      DenomOwnersByQuery RPC query.
+
+
+      Since: cosmos-sdk 0.50.3
   cosmos.bank.v1beta1.QueryDenomOwnersResponse:
     type: object
     properties:
@@ -76891,250 +76871,6 @@ definitions:
               receive_enabled enables or disables all cross-chain token
               transfers to this chain.
     description: QueryParamsResponse is the response type for the Query/Params RPC method.
-  ibc.applications.fetchprice.consumer.v1.QueryAllPricesResponse:
-    type: object
-    properties:
-      prices:
-        type: array
-        items:
-          type: object
-          properties:
-            currency_id:
-              type: string
-              description: The currency id is the string with "BASE/QUOTE" format.
-            quote_price:
-              type: object
-              properties:
-                price:
-                  type: string
-                decimals:
-                  type: string
-                  format: uint64
-                  description: >-
-                    decimals represents the number of decimals that the
-                    quote-price is
-
-                    represented in. For Pairs where ETHEREUM is the quote this
-                    will be 18,
-
-                    otherwise it will be 8.
-                block_timestamp:
-                  type: string
-                  format: date-time
-                  description: >-
-                    BlockTimestamp tracks the block height associated with this
-                    price update.
-
-                    We include block timestamp alongside the price to ensure
-                    that smart
-
-                    contracts and applications are not utilizing stale oracle
-                    prices.
-                block_height:
-                  type: string
-                  format: uint64
-                  description: BlockHeight is block height of provider chain.
-              title: >-
-                QuotePrice is the representation of the aggregated prices for a
-                CurrencyPair,
-
-                where price represents the price of Base in terms of Quote
-          description: |-
-            CurrencyPrice is the information necessary for initialization of a
-            CurrencyPrice.
-        description: class_traces returns all class id traces information.
-      pagination:
-        description: pagination defines the pagination in the response.
-        type: object
-        properties:
-          next_key:
-            type: string
-            format: byte
-            description: |-
-              next_key is the key to be passed to PageRequest.key to
-              query the next page most efficiently. It will be empty if
-              there are no more results.
-          total:
-            type: string
-            format: uint64
-            title: >-
-              total is total number of results available if
-              PageRequest.count_total
-
-              was set, its value is undefined otherwise
-    description: |-
-      QueryAllPricesResponse is the response type for the Query/AllPrices RPC
-      method.
-  ibc.applications.fetchprice.consumer.v1.QueryPriceResponse:
-    type: object
-    properties:
-      price:
-        type: object
-        properties:
-          price:
-            type: string
-          decimals:
-            type: string
-            format: uint64
-            description: >-
-              decimals represents the number of decimals that the quote-price is
-
-              represented in. For Pairs where ETHEREUM is the quote this will be
-              18,
-
-              otherwise it will be 8.
-          block_timestamp:
-            type: string
-            format: date-time
-            description: >-
-              BlockTimestamp tracks the block height associated with this price
-              update.
-
-              We include block timestamp alongside the price to ensure that
-              smart
-
-              contracts and applications are not utilizing stale oracle prices.
-          block_height:
-            type: string
-            format: uint64
-            description: BlockHeight is block height of provider chain.
-        title: >-
-          QuotePrice is the representation of the aggregated prices for a
-          CurrencyPair,
-
-          where price represents the price of Base in terms of Quote
-    description: |-
-      QueryPriceResponse is the response type for the Query/Price RPC
-      method.
-  ibc.applications.fetchprice.consumer.v1.QueryPricesResponse:
-    type: object
-    properties:
-      prices:
-        type: array
-        items:
-          type: object
-          properties:
-            currency_id:
-              type: string
-              description: The currency id is the string with "BASE/QUOTE" format.
-            quote_price:
-              type: object
-              properties:
-                price:
-                  type: string
-                decimals:
-                  type: string
-                  format: uint64
-                  description: >-
-                    decimals represents the number of decimals that the
-                    quote-price is
-
-                    represented in. For Pairs where ETHEREUM is the quote this
-                    will be 18,
-
-                    otherwise it will be 8.
-                block_timestamp:
-                  type: string
-                  format: date-time
-                  description: >-
-                    BlockTimestamp tracks the block height associated with this
-                    price update.
-
-                    We include block timestamp alongside the price to ensure
-                    that smart
-
-                    contracts and applications are not utilizing stale oracle
-                    prices.
-                block_height:
-                  type: string
-                  format: uint64
-                  description: BlockHeight is block height of provider chain.
-              title: >-
-                QuotePrice is the representation of the aggregated prices for a
-                CurrencyPair,
-
-                where price represents the price of Base in terms of Quote
-          description: |-
-            CurrencyPrice is the information necessary for initialization of a
-            CurrencyPrice.
-    description: |-
-      QueryPricesResponse is the response type for the Query/Prices RPC
-      method.
-  ibc.applications.fetchprice.v1.CurrencyPrice:
-    type: object
-    properties:
-      currency_id:
-        type: string
-        description: The currency id is the string with "BASE/QUOTE" format.
-      quote_price:
-        type: object
-        properties:
-          price:
-            type: string
-          decimals:
-            type: string
-            format: uint64
-            description: >-
-              decimals represents the number of decimals that the quote-price is
-
-              represented in. For Pairs where ETHEREUM is the quote this will be
-              18,
-
-              otherwise it will be 8.
-          block_timestamp:
-            type: string
-            format: date-time
-            description: >-
-              BlockTimestamp tracks the block height associated with this price
-              update.
-
-              We include block timestamp alongside the price to ensure that
-              smart
-
-              contracts and applications are not utilizing stale oracle prices.
-          block_height:
-            type: string
-            format: uint64
-            description: BlockHeight is block height of provider chain.
-        title: >-
-          QuotePrice is the representation of the aggregated prices for a
-          CurrencyPair,
-
-          where price represents the price of Base in terms of Quote
-    description: |-
-      CurrencyPrice is the information necessary for initialization of a
-      CurrencyPrice.
-  ibc.applications.fetchprice.v1.QuotePrice:
-    type: object
-    properties:
-      price:
-        type: string
-      decimals:
-        type: string
-        format: uint64
-        description: |-
-          decimals represents the number of decimals that the quote-price is
-          represented in. For Pairs where ETHEREUM is the quote this will be 18,
-          otherwise it will be 8.
-      block_timestamp:
-        type: string
-        format: date-time
-        description: >-
-          BlockTimestamp tracks the block height associated with this price
-          update.
-
-          We include block timestamp alongside the price to ensure that smart
-
-          contracts and applications are not utilizing stale oracle prices.
-      block_height:
-        type: string
-        format: uint64
-        description: BlockHeight is block height of provider chain.
-    title: >-
-      QuotePrice is the representation of the aggregated prices for a
-      CurrencyPair,
-
-      where price represents the price of Base in terms of Quote
   ibc.applications.fee.v1.Fee:
     type: object
     properties:
@@ -77882,6 +77618,54 @@ definitions:
       PacketId is an identifer for a unique Packet
       Source chains refer to packets by source port/channel
       Destination chains refer to packets by destination port/channel
+  packetforward.v1.Params:
+    type: object
+    properties:
+      fee_percentage:
+        type: string
+    description: Params defines the set of packetforward parameters.
+  packetforward.v1.QueryParamsResponse:
+    type: object
+    properties:
+      params:
+        description: params defines the parameters of the module.
+        type: object
+        properties:
+          fee_percentage:
+            type: string
+    description: QueryParamsResponse is the response type for the Query/Params RPC method.
+  icq.v1.Params:
+    type: object
+    properties:
+      host_enabled:
+        type: boolean
+        description: host_enabled enables or disables the host submodule.
+      allow_queries:
+        type: array
+        items:
+          type: string
+        description: >-
+          allow_queries defines a list of query paths allowed to be queried on a
+          host chain.
+    description: Params defines the set of on-chain interchain query parameters.
+  icq.v1.QueryParamsResponse:
+    type: object
+    properties:
+      params:
+        description: params defines the parameters of the module.
+        type: object
+        properties:
+          host_enabled:
+            type: boolean
+            description: host_enabled enables or disables the host submodule.
+          allow_queries:
+            type: array
+            items:
+              type: string
+            description: >-
+              allow_queries defines a list of query paths allowed to be queried
+              on a host chain.
+    description: QueryParamsResponse is the response type for the Query/Params RPC method.
   initia.intertx.v1.QueryInterchainAccountResponse:
     type: object
     properties:
@@ -83432,7 +83216,7 @@ definitions:
         items:
           type: string
         description: |-
-          It is a list of addresses with permission to distribute contracts, 
+          It is a list of addresses with permission to distribute contracts,
           and an empty list is interpreted as allowing anyone to distribute.
     description: Params defines the set of move parameters.
   initia.move.v1.QueryModuleResponse:
@@ -83556,10 +83340,8 @@ definitions:
             type: array
             items:
               type: string
-            description: >-
-              It is a list of addresses with permission to distribute
-              contracts, 
-
+            description: |-
+              It is a list of addresses with permission to distribute contracts,
               and an empty list is interpreted as allowing anyone to distribute.
     description: QueryParamsResponse is the response type for the Query/Params RPC method.
   initia.move.v1.QueryResourceResponse:
@@ -83581,7 +83363,7 @@ definitions:
           Resource is data for the stored move resource
 
           ex)
-          0000000000000000000000000000000000000002/1/0x1::BasicCoin::Coin<0x1::BasicCoin::Initia>
+          0000000000000000000000000000000000000002/2/0x1::BasicCoin::Coin<0x1::BasicCoin::Initia>
     title: |-
       QueryResourceResponse is the response type for the Query/Resource RPC
       method
@@ -83606,7 +83388,7 @@ definitions:
             Resource is data for the stored move resource
 
             ex)
-            0000000000000000000000000000000000000002/1/0x1::BasicCoin::Coin<0x1::BasicCoin::Initia>
+            0000000000000000000000000000000000000002/2/0x1::BasicCoin::Coin<0x1::BasicCoin::Initia>
       pagination:
         description: pagination defines the pagination in the response.
         type: object
@@ -83786,7 +83568,7 @@ definitions:
       Resource is data for the stored move resource
 
       ex)
-      0000000000000000000000000000000000000002/1/0x1::BasicCoin::Coin<0x1::BasicCoin::Initia>
+      0000000000000000000000000000000000000002/2/0x1::BasicCoin::Coin<0x1::BasicCoin::Initia>
   initia.move.v1.TableEntry:
     type: object
     properties:
