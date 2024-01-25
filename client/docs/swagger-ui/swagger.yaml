@@ -40953,6 +40953,57 @@ paths:
           format: uint64
       tags:
         - Query
+  /ibc/apps/fetchprice/v1/params:
+    get:
+      summary: Params queries all parameters of the ibc-transfer module.
+      operationId: FetchPriceParams
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              params:
+                description: params defines the parameters of the module.
+                type: object
+                properties:
+                  fetch_enabled:
+                    type: boolean
+                    description: >-
+                      fetch_enabled enables or disables cross-chain oracle price
+                      icq query from this chain.
+                  fetch_activated:
+                    type: boolean
+                  timeout_duration:
+                    type: string
+                    title: duration of the fetchprice timeout
+            description: >-
+              QueryParamsResponse is the response type for the Query/Params RPC
+              method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      tags:
+        - Query
   /ibc/apps/packetforward/v1/params:
     get:
       summary: Params queries all parameters of the packetforward module.
@@ -77618,6 +77669,38 @@ definitions:
       PacketId is an identifer for a unique Packet
       Source chains refer to packets by source port/channel
       Destination chains refer to packets by destination port/channel
+  ibc.applications.fetchprice.v1.Params:
+    type: object
+    properties:
+      fetch_enabled:
+        type: boolean
+        description: >-
+          fetch_enabled enables or disables cross-chain oracle price icq query
+          from this chain.
+      fetch_activated:
+        type: boolean
+      timeout_duration:
+        type: string
+        title: duration of the fetchprice timeout
+    description: Params defines the set of IBC fetchprice parameters.
+  ibc.applications.fetchprice.v1.QueryParamsResponse:
+    type: object
+    properties:
+      params:
+        description: params defines the parameters of the module.
+        type: object
+        properties:
+          fetch_enabled:
+            type: boolean
+            description: >-
+              fetch_enabled enables or disables cross-chain oracle price icq
+              query from this chain.
+          fetch_activated:
+            type: boolean
+          timeout_duration:
+            type: string
+            title: duration of the fetchprice timeout
+    description: QueryParamsResponse is the response type for the Query/Params RPC method.
   packetforward.v1.Params:
     type: object
     properties:

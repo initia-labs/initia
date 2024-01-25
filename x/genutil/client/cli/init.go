@@ -97,9 +97,7 @@ func InitCmd(mbm module.BasicManager, defaultNodeHome string) *cobra.Command {
 			}
 
 			appState, err := json.MarshalIndent(
-				initiaapp.GenesisState(mbm.DefaultGenesis(cdc)).
-					ConfigureBondDenom(cdc, initiaapp.BondDenom).
-					ConfigureICA(cdc), "", " ",
+				initiaapp.NewDefaultGenesisState(cdc, initiaapp.BondDenom), "", " ",
 			)
 			if err != nil {
 				return errors.Wrap(err, "Failed to marshall default genesis state")

@@ -107,6 +107,9 @@ import (
 	solomachine "github.com/cosmos/ibc-go/v8/modules/light-clients/06-solomachine"
 	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 
+	fetchprice "github.com/initia-labs/initia/x/ibc/fetchprice"
+	fetchpricekeeper "github.com/initia-labs/initia/x/ibc/fetchprice/keeper"
+	fetchpricetypes "github.com/initia-labs/initia/x/ibc/fetchprice/types"
 	ibcnfttransfer "github.com/initia-labs/initia/x/ibc/nft-transfer"
 	ibcnfttransferkeeper "github.com/initia-labs/initia/x/ibc/nft-transfer/keeper"
 	ibcnfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
@@ -277,6 +280,9 @@ type InitiaApp struct {
 	IncentivesKeeper      *incentiveskeeper.Keeper // x/incentives keeper used for slinky incentives
 	AlertsKeeper          *alertskeeper.Keeper     // x/alerts keeper used for slinky alerts
 
+	// testing purpose
+	FetchPriceKeeper *fetchpricekeeper.Keeper
+
 	// other slinky oracle services
 	OracleClient           oracleservice.OracleService
 	OraclePrometheusServer *oraclemetrics.PrometheusServer
@@ -290,6 +296,7 @@ type InitiaApp struct {
 	ScopedICAControllerKeeper capabilitykeeper.ScopedKeeper
 	ScopedICAAuthKeeper       capabilitykeeper.ScopedKeeper
 	ScopedICQKeeper           capabilitykeeper.ScopedKeeper
+	ScopedFetchPriceKeeper    capabilitykeeper.ScopedKeeper
 
 	// the module manager
 	ModuleManager      *module.Manager
@@ -338,7 +345,7 @@ func NewInitiaApp(
 		icacontrollertypes.StoreKey, ibcfeetypes.StoreKey, ibcpermtypes.StoreKey,
 		movetypes.StoreKey, auctiontypes.StoreKey, ophosttypes.StoreKey,
 		oracletypes.StoreKey, incentivetypes.StoreKey, alerttypes.StoreKey,
-		packetforwardtypes.StoreKey, icqtypes.StoreKey,
+		packetforwardtypes.StoreKey, icqtypes.StoreKey, fetchpricetypes.StoreKey,
 	)
 	tkeys := storetypes.NewTransientStoreKeys()
 	memKeys := storetypes.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
@@ -385,6 +392,7 @@ func NewInitiaApp(
 	app.ScopedICAControllerKeeper = app.CapabilityKeeper.ScopeToModule(icacontrollertypes.SubModuleName)
 	app.ScopedICAAuthKeeper = app.CapabilityKeeper.ScopeToModule(icaauthtypes.ModuleName)
 	app.ScopedICQKeeper = app.CapabilityKeeper.ScopeToModule(icqtypes.ModuleName)
+	app.ScopedFetchPriceKeeper = app.CapabilityKeeper.ScopeToModule(fetchpricetypes.ModuleName)
 
 	app.CapabilityKeeper.Seal()
 
@@ -757,6 +765,34 @@ func NewInitiaApp(
 	}
 
 	//////////////////////////////
+	// FetchPrice configuration //
+	//////////////////////////////
+
+	var fetchpriceStack porttypes.IBCModule
+	{
+		app.FetchPriceKeeper = fetchpricekeeper.NewKeeper(
+			appCodec,
+			runtime.NewKVStoreService(app.keys[fetchpricetypes.StoreKey]),
+			// ics4wrapper: fetchprice -> fee -> channel
+			app.IBCFeeKeeper,
+			app.IBCKeeper.ChannelKeeper,
+			app.IBCKeeper.PortKeeper,
+			app.AccountKeeper,
+			app.OracleKeeper,
+			app.ScopedFetchPriceKeeper,
+			authorityAddr,
+		)
+
+		// Create FetchPrice module
+		fetchpriceModule := fetchprice.NewIBCModule(*app.FetchPriceKeeper)
+		fetchpriceStack = ibcfee.NewIBCMiddleware(
+			// receive: fee -> fetchprice
+			fetchpriceModule,
+			*app.IBCFeeKeeper,
+		)
+	}
+
+	//////////////////////////////
 	// IBC router Configuration //
 	//////////////////////////////
 
@@ -767,7 +803,8 @@ func NewInitiaApp(
 		AddRoute(icacontrollertypes.SubModuleName, icaControllerStack).
 		AddRoute(icaauthtypes.ModuleName, icaControllerStack).
 		AddRoute(ibcnfttransfertypes.ModuleName, nftTransferStack).
-		AddRoute(icqtypes.ModuleName, icqStack)
+		AddRoute(icqtypes.ModuleName, icqStack).
+		AddRoute(fetchpricetypes.ModuleName, fetchpriceStack)
 	app.IBCKeeper.SetRouter(ibcRouter)
 
 	//////////////////////////////
@@ -874,6 +911,7 @@ func NewInitiaApp(
 		solomachine.NewAppModule(),
 		packetforward.NewAppModule(app.PacketForwardKeeper, nil),
 		icq.NewAppModule(*app.ICQKeeper, nil),
+		fetchprice.NewAppModule(appCodec, *app.FetchPriceKeeper),
 	)
 
 	// BasicModuleManager defines the module BasicManager is in charge of setting up basic,
@@ -933,7 +971,7 @@ func NewInitiaApp(
 		consensusparamtypes.ModuleName, ibcexported.ModuleName, ibctransfertypes.ModuleName,
 		ibcnfttransfertypes.ModuleName, icatypes.ModuleName, icaauthtypes.ModuleName, ibcfeetypes.ModuleName,
 		ibcpermtypes.ModuleName, consensusparamtypes.ModuleName, auctiontypes.ModuleName, ophosttypes.ModuleName,
-		oracletypes.ModuleName, packetforwardtypes.ModuleName, icqtypes.ModuleName,
+		oracletypes.ModuleName, packetforwardtypes.ModuleName, icqtypes.ModuleName, fetchpricetypes.ModuleName,
 	}
 	app.ModuleManager.SetOrderInitGenesis(genesisModuleOrder...)
 	app.ModuleManager.SetOrderExportGenesis(genesisModuleOrder...)

@@ -186,6 +186,14 @@
       }
     },
     {
+      "url": "./tmp-swagger-gen/ibc/applications/fetchprice/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "FetchPriceParams"
+        }
+      }
+    },
+    {
       "url": "./tmp-swagger-gen/packetforward/v1/query.swagger.json",
       "operationIds": {
         "rename": {

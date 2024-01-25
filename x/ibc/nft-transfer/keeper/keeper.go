@@ -36,7 +36,7 @@ type Keeper struct {
 	ClassTraces collections.Map[[]byte, types.ClassTrace]
 }
 
-// NewKeeper creates a new IBC transfer Keeper instance
+// NewKeeper creates a new IBC nft-transfer Keeper instance
 func NewKeeper(
 	cdc codec.Codec, storeService store.KVStoreService, ics4Wrapper types.ICS4Wrapper,
 	channelKeeper types.ChannelKeeper, portKeeper types.PortKeeper,

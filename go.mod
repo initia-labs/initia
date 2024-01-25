@@ -215,6 +215,9 @@ replace (
 
 	github.com/cosmos/cosmos-sdk => github.com/initia-labs/cosmos-sdk v0.0.0-20240123082052-77e8b246064a
 
+	github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8 => github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8 v8.0.1-0.20240124225747-f055ce5b405c
+	github.com/cosmos/ibc-apps/modules/async-icq/v8 => github.com/cosmos/ibc-apps/modules/async-icq/v8 v8.0.1-0.20240124225747-f055ce5b405c
+
 	// dgrijalva/jwt-go is deprecated and doesn't receive security updates.
 	// TODO: remove it: https://github.com/cosmos/cosmos-sdk/issues/13134
 	github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.4.2
