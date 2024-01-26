@@ -14,10 +14,32 @@ Move hooks is an IBC middleware that parses an ICS20 transfer, and if the `memo`
 
 ### Move Contract Execution Format
 
-Before we dive into the IBC metadata format, we show the move execute message format, so the reader has a sense of what are the fields we need to be setting in.
-The move `MsgExecute` is defined [here](https://github.com/initia-labs/initia/blob/27ceb2b535bfe355062b6770ebd1463aa0028ffc/x/move/types/tx.pb.go#L119-L135) as the following type:
+Before we dive into the IBC metadata format, we show the hook data format, so the reader has a sense of what are the fields we need to be setting in.
+The move `MsgExecute` is defined [here](../../move/types/tx.pb.go) and other types are defined [here](./message.go) as the following type:
 
 ```go
+// HookData defines a wrapper for move execute message
+// and async callback.
+type HookData struct {
+ // Message is a move execute message which will be executed
+ // at `OnRecvPacket` from receiver chain.
+ Message movetypes.MsgExecute `json:"message"`
+
+ // AsyncCallback is a callback message which will be executed
+ // at `OnTimeoutPacket` and `OnAcknowledgementPacket` from
+ // sender chain.
+ AsyncCallback *AsyncCallback `json:"async_callback,omitempty"`
+}
+
+// AsyncCallback is data wrapper which is required
+// when we implement async callback.
+type AsyncCallback struct {
+ // callback id should be issued form the executor contract
+ Id            uint64 `json:"id"`
+ ModuleAddress string `json:"module_address"`
+ ModuleName    string `json:"module_name"`
+}
+
 type MsgExecute struct {
  // Sender is the that actor that signed the messages
  Sender string `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
@@ -85,11 +107,22 @@ ICS20 is JSON native, so we use JSON for the memo format.
     "receiver": "ModuleAddr::ModuleName::FunctionName",
     "memo": {
       "move": {
-        "module_address": "0x1",
-        "module_name": "dex",
-        "function_name": "swap",
-        "type_args": ["0x1::native_uinit::Coin", "0x1::native_uusdc::Coin"],
-        "args": ["base64 encoded bytes array"]
+        {
+          // execute message on receive packet
+          "message": {
+            "module_address": "0x1",
+            "module_name": "dex",
+            "function_name": "swap",
+            "type_args": ["0x1::native_uinit::Coin", "0x1::native_uusdc::Coin"],
+            "args": ["base64 encoded bytes array"]
+          },
+          // optional field to get async callback (ack and timeout)
+          "async_callback": {
+            "id": 1,
+            "module_address": "0x1",
+            "module_name": "dex"
+          }
+        }
       }
     }
   }
@@ -101,7 +134,7 @@ An ICS20 packet is formatted correctly for movehooks iff the following all hold:
 - `memo` is not blank
 - `memo` is valid JSON
 - `memo` has at least one key, with value `"move"`
-- `memo["move"]` has exactly five entries, `"module_address"`, `"module_name"`, `"function_name"`, `"type_args"` and `"args"`
+- `memo["move"]["message"]` has exactly five entries, `"module_address"`, `"module_name"`, `"function_name"`, `"type_args"` and `"args"`
 - `receiver` == "" || `receiver` == "module_address::module_name::function_name"
 
 We consider an ICS20 packet as directed towards movehooks iff all of the following hold:
@@ -132,6 +165,28 @@ In move hooks, post packet execution:
 - if move message has error, return ErrAck
 - otherwise continue through middleware
 
-### Testing strategy
+### Async Callback
 
-See go tests.
+A contract that sends an IBC transfer, may need to listen for the ACK from that packet.
+To allow contracts to listen on the ack of specific packets, we provide Ack callbacks.
+The contract, which wants to receive ack callback, have to implement two functions.
+
+- ibc_ack
+- ibc_timeout
+
+```move
+public entry fun ibc_ack(
+  callback_id: u64,
+  success:     bool,
+)
+
+public entry fun ibc_timeout(
+  callback_id: u64,
+)
+```
+
+Also when a contract make IBC transfer request, it should provide async callback data through memo field.
+
+- AsyncCallback.Id: the async callback id is assigned from the contract. so later it will be passed as argument of `ibc_ack` and `ibc_timeout`.
+- AsyncCallback.ModuleAddress: The address of module which defines the callback function.
+- AsyncCallback.ModuleName: The name of module which defines the callback function.
