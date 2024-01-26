@@ -19,6 +19,8 @@ import (
 	"github.com/initia-labs/initia/x/ibc/fetchprice/types"
 )
 
+const ConsensusVersion = 1
+
 var (
 	_ module.AppModule           = (*AppModule)(nil)
 	_ module.AppModuleBasic      = (*AppModuleBasic)(nil)
@@ -112,4 +114,4 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 }
 
 // ConsensusVersion implements AppModule/ConsensusVersion.
-func (AppModule) ConsensusVersion() uint64 { return 3 }
+func (AppModule) ConsensusVersion() uint64 { return ConsensusVersion }
