@@ -187,6 +187,6 @@ public entry fun ibc_timeout(
 
 Also when a contract make IBC transfer request, it should provide async callback data through memo field.
 
-- AsyncCallback.Id: the async callback id is assigned from the contract. so later it will be passed as argument of `ibc_ack` and `ibc_timeout`.
-- AsyncCallback.ModuleAddress: The address of module which defines the callback function.
-- AsyncCallback.ModuleName: The name of module which defines the callback function.
+- `memo['move']['async_callback']['id']`:  the async callback id is assigned from the contract. so later it will be passed as argument of `ibc_ack` and `ibc_timeout`.
+- `memo['move']['async_callback']['module_address']`: The address of module which defines the callback function.
+- `memo['move']['async_callback']['module_name']`: The name of module which defines the callback function.
