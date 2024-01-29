@@ -157,12 +157,12 @@ func (im IBCMiddleware) OnAcknowledgementPacket(
 ) error {
 	isIcs20, ics20Data := isIcs20Packet(packet.GetData())
 	if isIcs20 {
-		return im.onAckIcs20Packet(ctx, packet, relayer, acknowledgement, ics20Data)
+		return im.onAckIcs20Packet(ctx, packet, acknowledgement, relayer, ics20Data)
 	}
 
 	isIcs721, ics721Data := isIcs721Packet(packet.GetData())
 	if isIcs721 {
-		return im.onAckIcs721Packet(ctx, packet, relayer, acknowledgement, ics721Data)
+		return im.onAckIcs721Packet(ctx, packet, acknowledgement, relayer, ics721Data)
 	}
 
 	return im.app.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
