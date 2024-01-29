@@ -78,18 +78,18 @@ msg := MsgExecuteContract{
  // Sender is the that actor that signed the messages
  Sender: "init1-hash-of-channel-and-sender",
  // ModuleAddress is the address of the module deployer
- ModuleAddress: packet.data.memo["move"]["module_address"],
+ ModuleAddress: packet.data.memo["move"]["message"]["module_address"],
     // ModuleName is the name of module to execute
- ModuleName: packet.data.memo["move"]["module_name"],
+ ModuleName: packet.data.memo["move"]["message"]["module_name"],
     // FunctionName is the name of a function to execute
- FunctionName: packet.data.memo["move"]["function_name"],
+ FunctionName: packet.data.memo["move"]["message"]["function_name"],
  // TypeArgs is the type arguments of a function to execute
  // ex) "0x1::BasicCoin::Initia", "bool", "u8", "u64"
- TypeArgs: packet.data.memo["move"]["type_args"],
+ TypeArgs: packet.data.memo["move"]["message"]["type_args"],
  // Args is the arguments of a function to execute
  // - number: little endian
  // - string: base64 bytes
- Args: packet.data.memo["move"]["args"]}
+ Args: packet.data.memo["move"]["message"]["args"]}
 ```
 
 ### ICS20 packet structure
@@ -107,7 +107,6 @@ ICS20 is JSON native, so we use JSON for the memo format.
     "receiver": "ModuleAddr::ModuleName::FunctionName",
     "memo": {
       "move": {
-        {
           // execute message on receive packet
           "message": {
             "module_address": "0x1",
