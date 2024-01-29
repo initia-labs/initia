@@ -3,6 +3,7 @@ package app
 import (
 	"encoding/json"
 
+	icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v8/types"
 	icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
 	icagenesistypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/genesis/types"
 	icahosttypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/host/types"
@@ -16,6 +17,7 @@ import (
 
 	customdistrtypes "github.com/initia-labs/initia/x/distribution/types"
 	customgovtypes "github.com/initia-labs/initia/x/gov/types"
+	fetchpricetypes "github.com/initia-labs/initia/x/ibc/fetchprice/types"
 	movetypes "github.com/initia-labs/initia/x/move/types"
 	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
 	rewardtypes "github.com/initia-labs/initia/x/reward/types"
@@ -33,8 +35,12 @@ import (
 type GenesisState map[string]json.RawMessage
 
 // NewDefaultGenesisState generates the default state for the application.
-func NewDefaultGenesisState(cdc codec.JSONCodec) GenesisState {
-	return BasicManager().DefaultGenesis(cdc)
+func NewDefaultGenesisState(cdc codec.JSONCodec, bondDenom string) GenesisState {
+	return GenesisState(BasicManager().DefaultGenesis(cdc)).
+		ConfigureBondDenom(cdc, bondDenom).
+		ConfigureICA(cdc).
+		ConfigureICQ(cdc).
+		DisableFetchPrice(cdc)
 }
 
 // ConfigureBondDenom generates the default state for the application.
@@ -79,6 +85,27 @@ func (genState GenesisState) ConfigureBondDenom(cdc codec.JSONCodec, bondDenom s
 	auctionGenState.Params.MinBidIncrement.Denom = bondDenom
 	genState[auctiontypes.ModuleName] = cdc.MustMarshalJSON(&auctionGenState)
 
+	return genState
+}
+
+func (genState GenesisState) ConfigureICQ(cdc codec.JSONCodec) GenesisState {
+	var icqGenSate icqtypes.GenesisState
+	cdc.MustUnmarshalJSON(genState[icqtypes.ModuleName], &icqGenSate)
+	icqGenSate.Params.HostEnabled = true
+	icqGenSate.Params.AllowQueries = []string{
+		"/slinky.oracle.v1.Query/GetPrices",
+		"/slinky.oracle.v1.Query/GetPrice",
+	}
+	genState[icqtypes.ModuleName] = cdc.MustMarshalJSON(&icqGenSate)
+
+	return genState
+}
+
+func (genState GenesisState) DisableFetchPrice(cdc codec.JSONCodec) GenesisState {
+	var fetchpriceGenSate fetchpricetypes.GenesisState
+	cdc.MustUnmarshalJSON(genState[fetchpricetypes.ModuleName], &fetchpriceGenSate)
+	fetchpriceGenSate.Params.FetchEnabled = false
+	genState[fetchpricetypes.ModuleName] = cdc.MustMarshalJSON(&fetchpriceGenSate)
 	return genState
 }
 
