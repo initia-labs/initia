@@ -49,7 +49,7 @@ func Test_isIcs721Packet(t *testing.T) {
 	require.False(t, ok)
 }
 
-func Test_validateAndParseMemo(t *testing.T) {
+func Test_validateAndParseMemo_without_callback(t *testing.T) {
 
 	argBz, err := vmtypes.SerializeUint64(100)
 	require.NoError(t, err)
@@ -57,41 +57,91 @@ func Test_validateAndParseMemo(t *testing.T) {
 	memo := fmt.Sprintf(
 		`{
 			"move" : {
-				"module_address": "0x1",
-				"module_name": "dex",
-				"function_name": "swap",
-				"type_args": ["0x1::native_uinit::Coin", "0x1::native_uusdc::Coin"],
-				"args": ["%s"]
+				"message": {
+					"module_address": "0x1",
+					"module_name": "dex",
+					"function_name": "swap",
+					"type_args": ["0x1::native_uinit::Coin", "0x1::native_uusdc::Coin"],
+					"args": ["%s"]
+				}
 			}
 		}`, base64.StdEncoding.EncodeToString(argBz))
-	isMoveRouted, msg, err := validateAndParseMemo(memo, "0x1::dex::swap")
+	isMoveRouted, hookData, err := validateAndParseMemo(memo)
 	require.True(t, isMoveRouted)
 	require.NoError(t, err)
-	require.Equal(t, movetypes.MsgExecute{
-		ModuleAddress: "0x1",
-		ModuleName:    "dex",
-		FunctionName:  "swap",
-		TypeArgs:      []string{"0x1::native_uinit::Coin", "0x1::native_uusdc::Coin"},
-		Args:          [][]byte{argBz},
-	}, msg)
+	require.Equal(t, HookData{
+		Message: movetypes.MsgExecute{
+			ModuleAddress: "0x1",
+			ModuleName:    "dex",
+			FunctionName:  "swap",
+			TypeArgs:      []string{"0x1::native_uinit::Coin", "0x1::native_uusdc::Coin"},
+			Args:          [][]byte{argBz},
+		},
+		AsyncCallback: nil,
+	}, hookData)
+	require.NoError(t, validateReceiver(&hookData.Message, "0x1::dex::swap"))
 
-	isMoveRouted, msg, err = validateAndParseMemo(memo, "0x1::dex::swap")
+	isMoveRouted, hookData, err = validateAndParseMemo(memo)
 	require.True(t, isMoveRouted)
 	require.NoError(t, err)
-	require.Equal(t, movetypes.MsgExecute{
-		ModuleAddress: "0x1",
-		ModuleName:    "dex",
-		FunctionName:  "swap",
-		TypeArgs:      []string{"0x1::native_uinit::Coin", "0x1::native_uusdc::Coin"},
-		Args:          [][]byte{argBz},
-	}, msg)
+	require.Equal(t, HookData{
+		Message: movetypes.MsgExecute{
+			ModuleAddress: "0x1",
+			ModuleName:    "dex",
+			FunctionName:  "swap",
+			TypeArgs:      []string{"0x1::native_uinit::Coin", "0x1::native_uusdc::Coin"},
+			Args:          [][]byte{argBz},
+		},
+	}, hookData)
+	require.NoError(t, validateReceiver(&hookData.Message, "0x1::dex::swap"))
 
 	// invalid receiver
-	isMoveRouted, _, err = validateAndParseMemo(memo, "0x2::dex::swap")
-	require.True(t, isMoveRouted)
-	require.Error(t, err)
+	require.NoError(t, err)
+	require.Error(t, validateReceiver(&hookData.Message, "0x2::dex::swap"))
 
-	isMoveRouted, _, err = validateAndParseMemo("hihi", "0x2::dex::swap")
+	isMoveRouted, _, err = validateAndParseMemo("hihi")
 	require.False(t, isMoveRouted)
 	require.NoError(t, err)
+}
+
+func Test_validateAndParseMemo_with_callback(t *testing.T) {
+
+	argBz, err := vmtypes.SerializeUint64(100)
+	require.NoError(t, err)
+
+	memo := fmt.Sprintf(
+		`{
+			"move" : {
+				"message": {
+					"module_address": "0x1",
+					"module_name": "dex",
+					"function_name": "swap",
+					"type_args": ["0x1::native_uinit::Coin", "0x1::native_uusdc::Coin"],
+					"args": ["%s"]
+				},
+				"async_callback": {
+					"id": 1,
+					"module_address": "0x1",
+					"module_name": "dex"
+				}
+			}			
+		}`, base64.StdEncoding.EncodeToString(argBz))
+	isMoveRouted, hookData, err := validateAndParseMemo(memo)
+	require.True(t, isMoveRouted)
+	require.NoError(t, err)
+	require.Equal(t, HookData{
+		Message: movetypes.MsgExecute{
+			ModuleAddress: "0x1",
+			ModuleName:    "dex",
+			FunctionName:  "swap",
+			TypeArgs:      []string{"0x1::native_uinit::Coin", "0x1::native_uusdc::Coin"},
+			Args:          [][]byte{argBz},
+		},
+		AsyncCallback: &AsyncCallback{
+			Id:            1,
+			ModuleAddress: "0x1",
+			ModuleName:    "dex",
+		},
+	}, hookData)
+	require.NoError(t, validateReceiver(&hookData.Message, "0x1::dex::swap"))
 }
