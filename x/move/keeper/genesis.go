@@ -3,8 +3,6 @@ package keeper
 import (
 	"context"
 
-	abci "github.com/cometbft/cometbft/abci/types"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/initia-labs/initia/x/move/types"
@@ -59,43 +57,43 @@ func (k Keeper) Initialize(
 }
 
 // InitGenesis sets supply information for genesis.
-func (k Keeper) InitGenesis(ctx context.Context, genState types.GenesisState) ([]abci.ValidatorUpdate, error) {
+func (k Keeper) InitGenesis(ctx context.Context, genState types.GenesisState) error {
 	k.authKeeper.GetModuleAccount(ctx, types.MoveStakingModuleName)
 
 	params := genState.GetParams()
 	if err := k.SetRawParams(ctx, params.ToRaw()); err != nil {
-		return nil, err
+		return err
 	}
 	if err := k.ExecutionCounter.Set(ctx, genState.ExecutionCounter); err != nil {
-		return nil, err
+		return err
 	}
 
 	if len(genState.GetModules()) == 0 {
 		if err := k.Initialize(ctx, genState.GetStdlibs(), params.ArbitraryEnabled, params.AllowedPublishers); err != nil {
-			return nil, err
+			return err
 		}
 	}
 
 	for _, module := range genState.GetModules() {
 		addr, err := types.AccAddressFromString(k.ac, module.Address)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		if err := k.SetModule(ctx, addr, module.ModuleName, module.RawBytes); err != nil {
-			return nil, err
+			return err
 		}
 	}
 
 	for _, resource := range genState.GetResources() {
 		addr, err := types.AccAddressFromString(k.ac, resource.Address)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		structTag, err := vmapi.ParseStructTag(resource.StructTag)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		_ = k.SetResource(ctx, addr, structTag, resource.RawBytes)
@@ -104,14 +102,14 @@ func (k Keeper) InitGenesis(ctx context.Context, genState types.GenesisState) ([
 	for _, tableInfo := range genState.GetTableInfos() {
 		err := k.SetTableInfo(ctx, tableInfo)
 		if err != nil {
-			return nil, err
+			return err
 		}
 	}
 
 	for _, tableEntry := range genState.GetTableEntries() {
 		err := k.SetTableEntry(ctx, tableEntry)
 		if err != nil {
-			return nil, err
+			return err
 		}
 	}
 
@@ -119,11 +117,11 @@ func (k Keeper) InitGenesis(ctx context.Context, genState types.GenesisState) ([
 	for _, dexPair := range genState.GetDexPairs() {
 		err := dexKeeper.SetDexPair(ctx, dexPair)
 		if err != nil {
-			return nil, err
+			return err
 		}
 	}
 
-	return nil, nil
+	return nil
 }
 
 // ExportGenesis export genesis state
