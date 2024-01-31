@@ -437,8 +437,9 @@ func Test_grpcPool(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, res.Pool, types.Pool{
-		NotBondedTokens: sdk.NewCoins(),
-		BondedTokens:    sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(2_000_000))),
+		NotBondedTokens:    sdk.NewCoins(),
+		BondedTokens:       sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(2_000_000))),
+		VotingPowerWeights: sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, math.OneInt())),
 	})
 }
 

@@ -376,10 +376,15 @@ func (q Querier) DelegatorValidators(ctx context.Context, req *types.QueryDelega
 func (q Querier) Pool(ctx context.Context, _ *types.QueryPoolRequest) (*types.QueryPoolResponse, error) {
 	bondedPool := q.GetBondedPool(ctx)
 	notBondedPool := q.GetNotBondedPool(ctx)
+	powerPowerWeights, err := q.GetVotingPowerWeights(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	pool := types.NewPool(
 		q.bankKeeper.GetAllBalances(ctx, notBondedPool.GetAddress()),
 		q.bankKeeper.GetAllBalances(ctx, bondedPool.GetAddress()),
+		powerPowerWeights,
 	)
 
 	return &types.QueryPoolResponse{Pool: pool}, nil
