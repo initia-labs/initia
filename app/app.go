@@ -1403,14 +1403,6 @@ func (app *InitiaApp) RegisterNodeService(clientCtx client.Context, cfg config.C
 	nodeservice.RegisterNodeService(clientCtx, app.GRPCQueryRouter(), cfg)
 }
 
-// RegisterUpgradeHandlers returns upgrade handlers
-func (app *InitiaApp) RegisterUpgradeHandlers(cfg module.Configurator) {
-	app.UpgradeKeeper.SetUpgradeHandler(
-		UpgradeName,
-		NewUpgradeHandler(app).CreateUpgradeHandler(),
-	)
-}
-
 // RegisterSwaggerAPI registers swagger route with API Server
 func RegisterSwaggerAPI(rtr *mux.Router) {
 	statikFS, err := fs.New()
