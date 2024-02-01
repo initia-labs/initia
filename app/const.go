@@ -60,7 +60,4 @@ const (
 	moveMsgPublishModuleBundle           = "/initia.move.v1.MsgPublish"
 	moveMsgExecuteEntryFunction          = "/initia.move.v1.MsgExecute"
 	moveMsgExecuteScript                 = "/initia.move.v1.MsgScript"
-
-	// UpgradeName gov proposal name
-	UpgradeName = "0.0.0"
 )

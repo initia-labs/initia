@@ -815,15 +815,16 @@ func NewInitiaApp(
 		appCodec,
 		runtime.NewKVStoreService(keys[movetypes.StoreKey]),
 		app.AccountKeeper,
-		app.DistrKeeper,
+		app.BankKeeper,
+		app.OracleKeeper,
 		// app.NftTransferKeeper,
 		app.BaseApp.MsgServiceRouter(),
 		moveConfig,
 		// staking feature
-		app.BankKeeper,
 		app.DistrKeeper,
 		app.StakingKeeper,
 		app.RewardKeeper,
+		app.DistrKeeper,
 		authtypes.FeeCollectorName,
 		authorityAddr,
 		ac, vc,
@@ -985,7 +986,7 @@ func NewInitiaApp(
 	}
 
 	// register upgrade handler for later use
-	// app.RegisterUpgradeHandlers(app.configurator)
+	app.RegisterUpgradeHandlers(app.configurator)
 
 	autocliv1.RegisterQueryServer(app.GRPCQueryRouter(), runtimeservices.NewAutoCLIQueryService(app.ModuleManager.Modules))
 
@@ -1401,14 +1402,6 @@ func (app *InitiaApp) RegisterTendermintService(clientCtx client.Context) {
 
 func (app *InitiaApp) RegisterNodeService(clientCtx client.Context, cfg config.Config) {
 	nodeservice.RegisterNodeService(clientCtx, app.GRPCQueryRouter(), cfg)
-}
-
-// RegisterUpgradeHandlers returns upgrade handlers
-func (app *InitiaApp) RegisterUpgradeHandlers(cfg module.Configurator) {
-	app.UpgradeKeeper.SetUpgradeHandler(
-		UpgradeName,
-		NewUpgradeHandler(app).CreateUpgradeHandler(),
-	)
 }
 
 // RegisterSwaggerAPI registers swagger route with API Server
