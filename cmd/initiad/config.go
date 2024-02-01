@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	oracleconfig "github.com/skip-mev/slinky/oracle/config"
 	"time"
 
 	tmcfg "github.com/cometbft/cometbft/config"
@@ -16,8 +17,8 @@ import (
 // initiaappConfig initia specify app config
 type initiaappConfig struct {
 	serverconfig.Config
-	MoveConfig   moveconfig.MoveConfig               `mapstructure:"move"`
-	OracleConfig initiaapporacle.WrappedOracleConfig `mapstructure:"oracle"`
+	MoveConfig   moveconfig.MoveConfig  `mapstructure:"move"`
+	OracleConfig oracleconfig.AppConfig `mapstructure:"oracle"`
 }
 
 // initAppConfig helps to override default appConfig template and configs.
@@ -49,7 +50,7 @@ func initAppConfig() (string, interface{}) {
 
 	initiaappTemplate := serverconfig.DefaultConfigTemplate +
 		moveconfig.DefaultConfigTemplate +
-		initiaapporacle.DefaultConfigTemplate
+		oracleconfig.DefaultConfigTemplate
 
 	return initiaappTemplate, initiaappConfig
 }
