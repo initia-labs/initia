@@ -257,6 +257,8 @@ github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d/go.mod h1:rBZYJk5
 github.com/antihax/optional v1.0.0/go.mod h1:uupD/76wgC+ih3iEmQUL+0Ugr19nfwCT1kdvxnR2qWY=
 github.com/apache/thrift v0.12.0/go.mod h1:cp2SuWMxlEZw2r+iP2GNCdIi4C1qmUzdZFSVb+bacwQ=
 github.com/apache/thrift v0.13.0/go.mod h1:cp2SuWMxlEZw2r+iP2GNCdIi4C1qmUzdZFSVb+bacwQ=
+github.com/aptos-labs/serde-reflection/serde-generate/runtime/golang v0.0.0-20231213012317-73b6bbf74833 h1:/OtHsUoaVegyyGQ9/Ycm5vrC3xTTyj4+N/HsJ0wwAGA=
+github.com/aptos-labs/serde-reflection/serde-generate/runtime/golang v0.0.0-20231213012317-73b6bbf74833/go.mod h1:zUz5maIUAS+tl1lC+lJR7HUf0vVnHk6W7bCvN+DzjME=
 github.com/armon/circbuf v0.0.0-20150827004946-bbbad097214e/go.mod h1:3U/XgcO3hCbHZ8TKRvWD2dDTCfh9M9ya+I9JpbB7O8o=
 github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6/go.mod h1:grANhF5doyWs3UAsr3K4I6qtAmlQcZDesFNEHPZAzj8=
 github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da/go.mod h1:Q73ZrmVTwzkszR9V5SSuryQ31EELlFMUz1kKyl939pY=
@@ -723,8 +725,8 @@ github.com/initia-labs/OPinit v0.2.0-beta.1 h1:98LhxGZ3ZOcqziSGJgcasq6Wh4tp1KqHk
 github.com/initia-labs/OPinit v0.2.0-beta.1/go.mod h1:1dn1iseG1S4wfXUtnb4mUkraJdL9/lWBQPpI+HbVzL0=
 github.com/initia-labs/cosmos-sdk v0.0.0-20240123082052-77e8b246064a h1:wD9ynlE7z9u3YxP/D9fEvbQ1CCD+ojqb6o+zrMdr2gY=
 github.com/initia-labs/cosmos-sdk v0.0.0-20240123082052-77e8b246064a/go.mod h1:tlrkY1sntOt1q0OX/rqF0zRJtmXNoffAS6VFTcky+w8=
-github.com/initia-labs/initiavm v0.2.0-beta.1 h1:IEJrJu38qXSdcoWNqaj9BiXos/WswnjzmJDxnK7snI8=
-github.com/initia-labs/initiavm v0.2.0-beta.1/go.mod h1:6LNXn8eRv2jBzvM1gyQMgA1GRzZJh65VGVKCYDtbh18=
+github.com/initia-labs/initiavm v0.2.0-beta.2 h1:q9rBcPbbL1VWQHsX9fpStiMyqKdD2AqbcdSIypntAgA=
+github.com/initia-labs/initiavm v0.2.0-beta.2/go.mod h1:KTdC3W2wgeOiL0YYIu6MEvK4j8envSpLjH14sMKMD6k=
 github.com/jhump/protoreflect v1.15.3 h1:6SFRuqU45u9hIZPJAoZ8c28T3nK64BNdp9w6jFonzls=
 github.com/jhump/protoreflect v1.15.3/go.mod h1:4ORHmSBmlCW8fh3xHmJMGyul1zNqZK4Elxc8qKP+p1k=
 github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af/go.mod h1:Nht3zPeWKUH0NzdCt2Blrr5ys8VGpn0CEB0cQHVjt7k=

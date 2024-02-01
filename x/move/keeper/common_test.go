@@ -75,6 +75,10 @@ import (
 	vmapi "github.com/initia-labs/initiavm/api"
 	"github.com/initia-labs/initiavm/precompile"
 	vmtypes "github.com/initia-labs/initiavm/types"
+
+	"github.com/skip-mev/slinky/x/oracle"
+	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
+	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 )
 
 var ModuleBasics = module.NewBasicManager(
@@ -86,6 +90,7 @@ var ModuleBasics = module.NewBasicManager(
 	gov.AppModuleBasic{},
 	slashing.AppModuleBasic{},
 	move.AppModuleBasic{},
+	oracle.AppModuleBasic{},
 )
 
 // Bond denom should be set for staking test
@@ -223,6 +228,7 @@ type TestKeepers struct {
 	BankKeeper     bankkeeper.Keeper
 	GovKeeper      govkeeper.Keeper
 	MoveKeeper     movekeeper.Keeper
+	OracleKeeper   oraclekeeper.Keeper
 	EncodingConfig initiaappparams.EncodingConfig
 	Faucet         *TestFaucet
 	MultiStore     storetypes.CommitMultiStore
@@ -263,7 +269,7 @@ func _createTestInput(
 	keys := storetypes.NewKVStoreKeys(
 		authtypes.StoreKey, banktypes.StoreKey, stakingtypes.StoreKey,
 		rewardtypes.StoreKey, distributiontypes.StoreKey, slashingtypes.StoreKey,
-		govtypes.StoreKey, authzkeeper.StoreKey, movetypes.StoreKey,
+		govtypes.StoreKey, authzkeeper.StoreKey, movetypes.StoreKey, oracletypes.StoreKey,
 	)
 	ms := store.NewCommitMultiStore(db, log.NewNopLogger(), metrics.NewNoOpMetrics())
 	for _, v := range keys {
@@ -373,17 +379,24 @@ func _createTestInput(
 
 	accountKeeper.GetModuleAccount(ctx, movetypes.MoveStakingModuleName)
 
+	oracleKeeper := oraclekeeper.NewKeeper(
+		runtime.NewKVStoreService(keys[oracletypes.StoreKey]),
+		appCodec,
+		authtypes.NewModuleAddress(govtypes.ModuleName),
+	)
+
 	*moveKeeper = *movekeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[movetypes.StoreKey]),
 		accountKeeper,
-		distKeeper,
+		bankKeeper,
+		oracleKeeper,
 		TestMsgRouter{},
 		moveConfig,
-		bankKeeper,
 		distKeeper,
 		stakingKeeper,
 		rewardKeeper,
+		distKeeper,
 		authtypes.FeeCollectorName,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		ac, vc,
@@ -444,6 +457,7 @@ func _createTestInput(
 		MoveKeeper:    *moveKeeper,
 		BankKeeper:    bankKeeper,
 		GovKeeper:     *govKeeper,
+		OracleKeeper:  oracleKeeper,
 		// NftTransferKeeper: nftTransferKeeper,
 		EncodingConfig: encodingConfig,
 		Faucet:         faucet,

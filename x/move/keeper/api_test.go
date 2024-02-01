@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -14,6 +15,8 @@ import (
 	stakingkeeper "github.com/initia-labs/initia/x/mstaking/keeper"
 
 	vmtypes "github.com/initia-labs/initiavm/types"
+
+	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 )
 
 func Test_GetAccountInfo(t *testing.T) {
@@ -173,4 +176,36 @@ func Test_UnbondTimestamp(t *testing.T) {
 
 	resTimestamp := api.UnbondTimestamp()
 	require.Equal(t, uint64(now.Unix()+60*60*24*7), resTimestamp)
+}
+
+func Test_GetPrice(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+
+	pairId := "BITCOIN/USD"
+	cp, err := oracletypes.CurrencyPairFromString(pairId)
+	require.NoError(t, err)
+
+	price := math.NewInt(111111).MulRaw(1_000_000_000).MulRaw(1_000_000_000).MulRaw(1_000_000_000)
+	now := time.Now()
+
+	err = input.OracleKeeper.SetPriceForCurrencyPair(ctx, cp, oracletypes.QuotePrice{
+		Price:          price,
+		BlockTimestamp: now,
+		BlockHeight:    100,
+	})
+	require.NoError(t, err)
+
+	pairIdArg, err := vmtypes.SerializeString(pairId)
+	require.NoError(t, err)
+
+	res, err := input.MoveKeeper.ExecuteViewFunction(
+		ctx,
+		vmtypes.StdAddress,
+		"oracle",
+		"get_price",
+		[]vmtypes.TypeTag{},
+		[][]byte{pairIdArg},
+	)
+	require.NoError(t, err)
+	require.Equal(t, fmt.Sprintf("[\"%s\",\"%d\",\"%d\"]", price.String(), now.Unix(), cp.Decimals()), res)
 }
