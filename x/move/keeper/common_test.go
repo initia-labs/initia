@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"encoding/binary"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"strings"
@@ -507,6 +508,44 @@ func (router TestMsgRouter) Handler(msg sdk.Msg) baseapp.MsgServiceHandler {
 
 func (router TestMsgRouter) HandlerByTypeURL(typeURL string) baseapp.MsgServiceHandler {
 	switch typeURL {
+	case sdk.MsgTypeURL(&movetypes.MsgExecute{}):
+		return func(ctx sdk.Context, _msg sdk.Msg) (*sdk.Result, error) {
+			msg := _msg.(*movetypes.MsgExecute)
+
+			argStrs := []string{}
+			for _, arg := range msg.Args {
+				argStrs = append(argStrs, string(arg))
+			}
+
+			ctx.EventManager().EmitEvent(sdk.NewEvent("move_execute",
+				sdk.NewAttribute("sender", msg.Sender),
+				sdk.NewAttribute("module_addr", msg.ModuleAddress),
+				sdk.NewAttribute("module_name", msg.ModuleName),
+				sdk.NewAttribute("function_name", msg.FunctionName),
+				sdk.NewAttribute("type_args", strings.Join(msg.TypeArgs, ",")),
+				sdk.NewAttribute("args", strings.Join(argStrs, ",")),
+			))
+
+			return sdk.WrapServiceResult(ctx, &stakingtypes.MsgDelegateResponse{}, nil)
+		}
+	case sdk.MsgTypeURL(&movetypes.MsgScript{}):
+		return func(ctx sdk.Context, _msg sdk.Msg) (*sdk.Result, error) {
+			msg := _msg.(*movetypes.MsgScript)
+
+			argStrs := []string{}
+			for _, arg := range msg.Args {
+				argStrs = append(argStrs, string(arg))
+			}
+
+			ctx.EventManager().EmitEvent(sdk.NewEvent("move_script",
+				sdk.NewAttribute("sender", msg.Sender),
+				sdk.NewAttribute("code_bytes", hex.EncodeToString(msg.CodeBytes)),
+				sdk.NewAttribute("type_args", strings.Join(msg.TypeArgs, ",")),
+				sdk.NewAttribute("args", strings.Join(argStrs, ",")),
+			))
+
+			return sdk.WrapServiceResult(ctx, &stakingtypes.MsgDelegateResponse{}, nil)
+		}
 	case sdk.MsgTypeURL(&stakingtypes.MsgDelegate{}):
 		return func(ctx sdk.Context, _msg sdk.Msg) (*sdk.Result, error) {
 			msg := _msg.(*stakingtypes.MsgDelegate)
