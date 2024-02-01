@@ -368,6 +368,11 @@ message Pool {
     (gogoproto.nullable)     = false,
     (gogoproto.moretags)     = "yaml:\"bonded_tokens\""
   ];
+  repeated cosmos.base.v1beta1.DecCoin voting_power_weights = 3 [
+    (gogoproto.moretags)     = "yaml:\"voting_power_weights\"",
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins",
+    (gogoproto.nullable)     = false
+  ];
 }
 
 // Infraction indicates the infraction a validator commited.
