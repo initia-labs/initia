@@ -985,7 +985,7 @@ func NewInitiaApp(
 	}
 
 	// register upgrade handler for later use
-	// app.RegisterUpgradeHandlers(app.configurator)
+	app.RegisterUpgradeHandlers(app.configurator)
 
 	autocliv1.RegisterQueryServer(app.GRPCQueryRouter(), runtimeservices.NewAutoCLIQueryService(app.ModuleManager.Modules))
 

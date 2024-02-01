@@ -19,6 +19,10 @@ func NewUpgradeHandler(app *InitiaApp) UpgradeHandler {
 
 func (h UpgradeHandler) CreateUpgradeHandler() upgradetypes.UpgradeHandler {
 	return func(ctx context.Context, _ upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
+
+		// remove fetchprice ibc module from version map
+		delete(vm, "fetchprice")
+
 		return h.ModuleManager.RunMigrations(ctx, h.configurator, vm)
 	}
 }

@@ -62,5 +62,5 @@ const (
 	moveMsgExecuteScript                 = "/initia.move.v1.MsgScript"
 
 	// UpgradeName gov proposal name
-	UpgradeName = "0.0.0"
+	UpgradeName = "0.2.0-beta.7"
 )
