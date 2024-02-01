@@ -37,14 +37,9 @@ func ConvertToSDKMessage(
 				return nil, err
 			}
 
-			moduleAddress, err := ac.BytesToString(ConvertVMAddressToSDKAddress(msg.ModuleAddress))
-			if err != nil {
-				return nil, err
-			}
-
 			return NewMsgExecute(
 				sender,
-				moduleAddress,
+				msg.ModuleAddress.String(),
 				msg.ModuleName,
 				msg.FunctionName,
 				msg.TypeArgs,
