@@ -1,11 +1,8 @@
 package types
 
 const (
-	EventTypePacket     = "fetchprice_packet"
-	EventTypeFetchPrice = "fetchprice"
+	EventTypePacket = "fetchprice_packet"
 
-	AttributeKeyCurrencyIds = "currency_ids"
-	AttributeKeyMemo        = "memo"
-	AttributeKeyAckSuccess  = "success"
-	AttributeKeyAckError    = "error"
+	AttributeKeyAckError   = "error"
+	AttributeKeyAckSuccess = "success"
 )

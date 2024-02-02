@@ -4,17 +4,14 @@ import (
 	errorsmod "cosmossdk.io/errors"
 )
 
-// IBC transfer sentinel errors
+// IBC nft transfer sentinel errors
 var (
-	ErrInvalidPacketTimeout = errorsmod.Register(ModuleName, 2, "invalid packet timeout")
-	ErrInvalidVersion       = errorsmod.Register(ModuleName, 3, "invalid packet version")
-	ErrFailedToFetchPrice   = errorsmod.Register(ModuleName, 4, "failed to fetch price")
-	ErrMaxTransferChannels  = errorsmod.Register(ModuleName, 5, "max transfer channels")
-	ErrInvalidMemo          = errorsmod.Register(ModuleName, 6, "invalid memo")
-	ErrInvalidConsumerPort  = errorsmod.Register(ModuleName, 7, "invalid consumer port")
-	ErrInvalidProviderPort  = errorsmod.Register(ModuleName, 8, "invalid provider port")
-	ErrInvalidChannelFlow   = errorsmod.Register(ModuleName, 9, "invalid message sent to channel end")
-	ErrInvalidCurrencyId    = errorsmod.Register(ModuleName, 10, "invalid currency id")
-	ErrInvalidQuotePrice    = errorsmod.Register(ModuleName, 11, "invalid quote price")
-	ErrInvalidOutgoingData  = errorsmod.Register(ModuleName, 12, "invalid outgoing packet data")
+	ErrInvalidPacketTimeout    = errorsmod.Register(ModuleName, 2, "invalid packet timeout")
+	ErrInvalidVersion          = errorsmod.Register(ModuleName, 3, "invalid fetchprice version")
+	ErrInvalidPacket           = errorsmod.Register(ModuleName, 4, "invalid fetchprice packet")
+	ErrFetchDisabled           = errorsmod.Register(ModuleName, 5, "price fetching from this chain is disabled")
+	ErrFetchAlreadyActivated   = errorsmod.Register(ModuleName, 6, "price fetching from this chain is already activated")
+	ErrInvalidFetchPricePortID = errorsmod.Register(ModuleName, 7, "invalid fetchprice port id")
+	ErrInvalidICQPortID        = errorsmod.Register(ModuleName, 8, "invalid ICQ port id")
+	ErrInvalidChannelFlow      = errorsmod.Register(ModuleName, 9, "invalid message sent to channel end")
 )

@@ -47,32 +47,41 @@ func isIcs721Packet(packetData []byte) (isIcs721 bool, ics721data nfttransfertyp
 	return true, data
 }
 
-func validateAndParseMemo(memo, receiver string) (isMoveRouted bool, msg movetypes.MsgExecute, err error) {
-	isMoveRouted, metadata := jsonStringHasKey(memo, "move")
+func validateAndParseMemo(memo string) (
+	isMoveRouted bool,
+	hookData HookData,
+	err error,
+) {
+	isMoveRouted, metadata := jsonStringHasKey(memo, moveHookMemoKey)
 	if !isMoveRouted {
 		return
 	}
 
-	moveRaw := metadata["move"]
-	bz, err := json.Marshal(moveRaw)
+	moveHookRaw := metadata[moveHookMemoKey]
+
+	// parse move raw bytes to execute message
+	bz, err := json.Marshal(moveHookRaw)
 	if err != nil {
 		err = errors.Wrap(channeltypes.ErrInvalidPacket, err.Error())
 		return
 	}
 
-	err = json.Unmarshal(bz, &msg)
+	err = json.Unmarshal(bz, &hookData)
 	if err != nil {
 		err = errors.Wrap(channeltypes.ErrInvalidPacket, err.Error())
-		return
-	}
-
-	functionIdentifier := fmt.Sprintf("%s::%s::%s", msg.ModuleAddress, msg.ModuleName, msg.FunctionName)
-	if receiver != functionIdentifier {
-		err = errors.Wrap(channeltypes.ErrInvalidPacket, "receiver is not properly set")
 		return
 	}
 
 	return
+}
+
+func validateReceiver(msg *movetypes.MsgExecute, receiver string) error {
+	functionIdentifier := fmt.Sprintf("%s::%s::%s", msg.ModuleAddress, msg.ModuleName, msg.FunctionName)
+	if receiver != functionIdentifier {
+		return errors.Wrap(channeltypes.ErrInvalidPacket, "receiver is not properly set")
+	}
+
+	return nil
 }
 
 // jsonStringHasKey parses the memo as a json object and checks if it contains the key.
@@ -109,4 +118,14 @@ func newEmitErrorAcknowledgement(ctx sdk.Context, err error) channeltypes.Acknow
 			Error: fmt.Sprintf("ibc move hook error: %s", err.Error()),
 		},
 	}
+}
+
+// isAckError checks an IBC acknowledgement to see if it's an error.
+// This is a replacement for ack.Success() which is currently not working on some circumstances
+func isAckError(acknowledgement []byte) bool {
+	var ackErr channeltypes.Acknowledgement_Error
+	if err := json.Unmarshal(acknowledgement, &ackErr); err == nil && len(ackErr.Error) > 0 {
+		return true
+	}
+	return false
 }

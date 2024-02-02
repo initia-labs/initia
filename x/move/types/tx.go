@@ -49,6 +49,27 @@ func (msg MsgPublish) Validate(ac address.Codec) error {
 	return nil
 }
 
+// NewMsgExecute creates a new MsgExecute instance.
+//
+//nolint:interfacer
+func NewMsgExecute(
+	sender string,
+	moduleAddress string,
+	moduleName string,
+	functionName string,
+	typeArgs []string,
+	args [][]byte,
+) *MsgExecute {
+	return &MsgExecute{
+		Sender:        sender,
+		ModuleAddress: moduleAddress,
+		ModuleName:    moduleName,
+		FunctionName:  functionName,
+		TypeArgs:      typeArgs,
+		Args:          args,
+	}
+}
+
 /* MsgExecute */
 
 // Validate performs basic MsgExecute message validation.
@@ -102,6 +123,23 @@ func (msg MsgExecute) Validate(ac address.Codec) error {
 	}
 
 	return nil
+}
+
+// NewMsgScript creates a new MsgScript instance.
+//
+//nolint:interfacer
+func NewMsgScript(
+	sender string,
+	codeBytes []byte,
+	typeArgs []string,
+	args [][]byte,
+) *MsgScript {
+	return &MsgScript{
+		Sender:    sender,
+		CodeBytes: codeBytes,
+		TypeArgs:  typeArgs,
+		Args:      args,
+	}
 }
 
 /* MsgScript */

@@ -75,7 +75,7 @@ func SetupTestingApp(t *testing.T) (TestingApp, map[string]json.RawMessage) {
 	db := dbm.NewMemDB()
 	encCdc := initiaapp.MakeEncodingConfig()
 	app := initiaapp.NewInitiaApp(log.NewNopLogger(), db, nil, true, moveconfig.DefaultMoveConfig(), initiaapporacle.DefaultConfig(), testutilsims.EmptyAppOptions{})
-	return app, initiaapp.NewDefaultGenesisState(encCdc.Codec).ConfigureBondDenom(encCdc.Codec, sdk.DefaultBondDenom)
+	return app, initiaapp.NewDefaultGenesisState(encCdc.Codec, sdk.DefaultBondDenom)
 }
 
 // SetupWithGenesisValSet initializes a new SimApp with a validator set and genesis accounts
