@@ -1289,620 +1289,6 @@ func (x *fastReflection_RawParams) ProtoMethods() *protoiface.Methods {
 }
 
 var (
-	md_Resource               protoreflect.MessageDescriptor
-	fd_Resource_address       protoreflect.FieldDescriptor
-	fd_Resource_struct_tag    protoreflect.FieldDescriptor
-	fd_Resource_move_resource protoreflect.FieldDescriptor
-	fd_Resource_raw_bytes     protoreflect.FieldDescriptor
-)
-
-func init() {
-	file_initia_move_v1_types_proto_init()
-	md_Resource = File_initia_move_v1_types_proto.Messages().ByName("Resource")
-	fd_Resource_address = md_Resource.Fields().ByName("address")
-	fd_Resource_struct_tag = md_Resource.Fields().ByName("struct_tag")
-	fd_Resource_move_resource = md_Resource.Fields().ByName("move_resource")
-	fd_Resource_raw_bytes = md_Resource.Fields().ByName("raw_bytes")
-}
-
-var _ protoreflect.Message = (*fastReflection_Resource)(nil)
-
-type fastReflection_Resource Resource
-
-func (x *Resource) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_Resource)(x)
-}
-
-func (x *Resource) slowProtoReflect() protoreflect.Message {
-	mi := &file_initia_move_v1_types_proto_msgTypes[2]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-var _fastReflection_Resource_messageType fastReflection_Resource_messageType
-var _ protoreflect.MessageType = fastReflection_Resource_messageType{}
-
-type fastReflection_Resource_messageType struct{}
-
-func (x fastReflection_Resource_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_Resource)(nil)
-}
-func (x fastReflection_Resource_messageType) New() protoreflect.Message {
-	return new(fastReflection_Resource)
-}
-func (x fastReflection_Resource_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_Resource
-}
-
-// Descriptor returns message descriptor, which contains only the protobuf
-// type information for the message.
-func (x *fastReflection_Resource) Descriptor() protoreflect.MessageDescriptor {
-	return md_Resource
-}
-
-// Type returns the message type, which encapsulates both Go and protobuf
-// type information. If the Go type information is not needed,
-// it is recommended that the message descriptor be used instead.
-func (x *fastReflection_Resource) Type() protoreflect.MessageType {
-	return _fastReflection_Resource_messageType
-}
-
-// New returns a newly allocated and mutable empty message.
-func (x *fastReflection_Resource) New() protoreflect.Message {
-	return new(fastReflection_Resource)
-}
-
-// Interface unwraps the message reflection interface and
-// returns the underlying ProtoMessage interface.
-func (x *fastReflection_Resource) Interface() protoreflect.ProtoMessage {
-	return (*Resource)(x)
-}
-
-// Range iterates over every populated field in an undefined order,
-// calling f for each field descriptor and value encountered.
-// Range returns immediately if f returns false.
-// While iterating, mutating operations may only be performed
-// on the current field descriptor.
-func (x *fastReflection_Resource) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
-	if x.Address != "" {
-		value := protoreflect.ValueOfString(x.Address)
-		if !f(fd_Resource_address, value) {
-			return
-		}
-	}
-	if x.StructTag != "" {
-		value := protoreflect.ValueOfString(x.StructTag)
-		if !f(fd_Resource_struct_tag, value) {
-			return
-		}
-	}
-	if x.MoveResource != "" {
-		value := protoreflect.ValueOfString(x.MoveResource)
-		if !f(fd_Resource_move_resource, value) {
-			return
-		}
-	}
-	if len(x.RawBytes) != 0 {
-		value := protoreflect.ValueOfBytes(x.RawBytes)
-		if !f(fd_Resource_raw_bytes, value) {
-			return
-		}
-	}
-}
-
-// Has reports whether a field is populated.
-//
-// Some fields have the property of nullability where it is possible to
-// distinguish between the default value of a field and whether the field
-// was explicitly populated with the default value. Singular message fields,
-// member fields of a oneof, and proto2 scalar fields are nullable. Such
-// fields are populated only if explicitly set.
-//
-// In other cases (aside from the nullable cases above),
-// a proto3 scalar field is populated if it contains a non-zero value, and
-// a repeated field is populated if it is non-empty.
-func (x *fastReflection_Resource) Has(fd protoreflect.FieldDescriptor) bool {
-	switch fd.FullName() {
-	case "initia.move.v1.Resource.address":
-		return x.Address != ""
-	case "initia.move.v1.Resource.struct_tag":
-		return x.StructTag != ""
-	case "initia.move.v1.Resource.move_resource":
-		return x.MoveResource != ""
-	case "initia.move.v1.Resource.raw_bytes":
-		return len(x.RawBytes) != 0
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.move.v1.Resource"))
-		}
-		panic(fmt.Errorf("message initia.move.v1.Resource does not contain field %s", fd.FullName()))
-	}
-}
-
-// Clear clears the field such that a subsequent Has call reports false.
-//
-// Clearing an extension field clears both the extension type and value
-// associated with the given field number.
-//
-// Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_Resource) Clear(fd protoreflect.FieldDescriptor) {
-	switch fd.FullName() {
-	case "initia.move.v1.Resource.address":
-		x.Address = ""
-	case "initia.move.v1.Resource.struct_tag":
-		x.StructTag = ""
-	case "initia.move.v1.Resource.move_resource":
-		x.MoveResource = ""
-	case "initia.move.v1.Resource.raw_bytes":
-		x.RawBytes = nil
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.move.v1.Resource"))
-		}
-		panic(fmt.Errorf("message initia.move.v1.Resource does not contain field %s", fd.FullName()))
-	}
-}
-
-// Get retrieves the value for a field.
-//
-// For unpopulated scalars, it returns the default value, where
-// the default value of a bytes scalar is guaranteed to be a copy.
-// For unpopulated composite types, it returns an empty, read-only view
-// of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_Resource) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
-	switch descriptor.FullName() {
-	case "initia.move.v1.Resource.address":
-		value := x.Address
-		return protoreflect.ValueOfString(value)
-	case "initia.move.v1.Resource.struct_tag":
-		value := x.StructTag
-		return protoreflect.ValueOfString(value)
-	case "initia.move.v1.Resource.move_resource":
-		value := x.MoveResource
-		return protoreflect.ValueOfString(value)
-	case "initia.move.v1.Resource.raw_bytes":
-		value := x.RawBytes
-		return protoreflect.ValueOfBytes(value)
-	default:
-		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.move.v1.Resource"))
-		}
-		panic(fmt.Errorf("message initia.move.v1.Resource does not contain field %s", descriptor.FullName()))
-	}
-}
-
-// Set stores the value for a field.
-//
-// For a field belonging to a oneof, it implicitly clears any other field
-// that may be currently set within the same oneof.
-// For extension fields, it implicitly stores the provided ExtensionType.
-// When setting a composite type, it is unspecified whether the stored value
-// aliases the source's memory in any way. If the composite value is an
-// empty, read-only value, then it panics.
-//
-// Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_Resource) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
-	switch fd.FullName() {
-	case "initia.move.v1.Resource.address":
-		x.Address = value.Interface().(string)
-	case "initia.move.v1.Resource.struct_tag":
-		x.StructTag = value.Interface().(string)
-	case "initia.move.v1.Resource.move_resource":
-		x.MoveResource = value.Interface().(string)
-	case "initia.move.v1.Resource.raw_bytes":
-		x.RawBytes = value.Bytes()
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.move.v1.Resource"))
-		}
-		panic(fmt.Errorf("message initia.move.v1.Resource does not contain field %s", fd.FullName()))
-	}
-}
-
-// Mutable returns a mutable reference to a composite type.
-//
-// If the field is unpopulated, it may allocate a composite value.
-// For a field belonging to a oneof, it implicitly clears any other field
-// that may be currently set within the same oneof.
-// For extension fields, it implicitly stores the provided ExtensionType
-// if not already stored.
-// It panics if the field does not contain a composite type.
-//
-// Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_Resource) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
-	switch fd.FullName() {
-	case "initia.move.v1.Resource.address":
-		panic(fmt.Errorf("field address of message initia.move.v1.Resource is not mutable"))
-	case "initia.move.v1.Resource.struct_tag":
-		panic(fmt.Errorf("field struct_tag of message initia.move.v1.Resource is not mutable"))
-	case "initia.move.v1.Resource.move_resource":
-		panic(fmt.Errorf("field move_resource of message initia.move.v1.Resource is not mutable"))
-	case "initia.move.v1.Resource.raw_bytes":
-		panic(fmt.Errorf("field raw_bytes of message initia.move.v1.Resource is not mutable"))
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.move.v1.Resource"))
-		}
-		panic(fmt.Errorf("message initia.move.v1.Resource does not contain field %s", fd.FullName()))
-	}
-}
-
-// NewField returns a new value that is assignable to the field
-// for the given descriptor. For scalars, this returns the default value.
-// For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_Resource) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
-	switch fd.FullName() {
-	case "initia.move.v1.Resource.address":
-		return protoreflect.ValueOfString("")
-	case "initia.move.v1.Resource.struct_tag":
-		return protoreflect.ValueOfString("")
-	case "initia.move.v1.Resource.move_resource":
-		return protoreflect.ValueOfString("")
-	case "initia.move.v1.Resource.raw_bytes":
-		return protoreflect.ValueOfBytes(nil)
-	default:
-		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.move.v1.Resource"))
-		}
-		panic(fmt.Errorf("message initia.move.v1.Resource does not contain field %s", fd.FullName()))
-	}
-}
-
-// WhichOneof reports which field within the oneof is populated,
-// returning nil if none are populated.
-// It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_Resource) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
-	switch d.FullName() {
-	default:
-		panic(fmt.Errorf("%s is not a oneof field in initia.move.v1.Resource", d.FullName()))
-	}
-	panic("unreachable")
-}
-
-// GetUnknown retrieves the entire list of unknown fields.
-// The caller may only mutate the contents of the RawFields
-// if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_Resource) GetUnknown() protoreflect.RawFields {
-	return x.unknownFields
-}
-
-// SetUnknown stores an entire list of unknown fields.
-// The raw fields must be syntactically valid according to the wire format.
-// An implementation may panic if this is not the case.
-// Once stored, the caller must not mutate the content of the RawFields.
-// An empty RawFields may be passed to clear the fields.
-//
-// SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_Resource) SetUnknown(fields protoreflect.RawFields) {
-	x.unknownFields = fields
-}
-
-// IsValid reports whether the message is valid.
-//
-// An invalid message is an empty, read-only value.
-//
-// An invalid message often corresponds to a nil pointer of the concrete
-// message type, but the details are implementation dependent.
-// Validity is not part of the protobuf data model, and may not
-// be preserved in marshaling or other operations.
-func (x *fastReflection_Resource) IsValid() bool {
-	return x != nil
-}
-
-// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
-// This method may return nil.
-//
-// The returned methods type is identical to
-// "google.golang.org/protobuf/runtime/protoiface".Methods.
-// Consult the protoiface package documentation for details.
-func (x *fastReflection_Resource) ProtoMethods() *protoiface.Methods {
-	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*Resource)
-		if x == nil {
-			return protoiface.SizeOutput{
-				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-				Size:              0,
-			}
-		}
-		options := runtime.SizeInputToOptions(input)
-		_ = options
-		var n int
-		var l int
-		_ = l
-		l = len(x.Address)
-		if l > 0 {
-			n += 1 + l + runtime.Sov(uint64(l))
-		}
-		l = len(x.StructTag)
-		if l > 0 {
-			n += 1 + l + runtime.Sov(uint64(l))
-		}
-		l = len(x.MoveResource)
-		if l > 0 {
-			n += 1 + l + runtime.Sov(uint64(l))
-		}
-		l = len(x.RawBytes)
-		if l > 0 {
-			n += 1 + l + runtime.Sov(uint64(l))
-		}
-		if x.unknownFields != nil {
-			n += len(x.unknownFields)
-		}
-		return protoiface.SizeOutput{
-			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-			Size:              n,
-		}
-	}
-
-	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*Resource)
-		if x == nil {
-			return protoiface.MarshalOutput{
-				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-				Buf:               input.Buf,
-			}, nil
-		}
-		options := runtime.MarshalInputToOptions(input)
-		_ = options
-		size := options.Size(x)
-		dAtA := make([]byte, size)
-		i := len(dAtA)
-		_ = i
-		var l int
-		_ = l
-		if x.unknownFields != nil {
-			i -= len(x.unknownFields)
-			copy(dAtA[i:], x.unknownFields)
-		}
-		if len(x.RawBytes) > 0 {
-			i -= len(x.RawBytes)
-			copy(dAtA[i:], x.RawBytes)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.RawBytes)))
-			i--
-			dAtA[i] = 0x22
-		}
-		if len(x.MoveResource) > 0 {
-			i -= len(x.MoveResource)
-			copy(dAtA[i:], x.MoveResource)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.MoveResource)))
-			i--
-			dAtA[i] = 0x1a
-		}
-		if len(x.StructTag) > 0 {
-			i -= len(x.StructTag)
-			copy(dAtA[i:], x.StructTag)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.StructTag)))
-			i--
-			dAtA[i] = 0x12
-		}
-		if len(x.Address) > 0 {
-			i -= len(x.Address)
-			copy(dAtA[i:], x.Address)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Address)))
-			i--
-			dAtA[i] = 0xa
-		}
-		if input.Buf != nil {
-			input.Buf = append(input.Buf, dAtA...)
-		} else {
-			input.Buf = dAtA
-		}
-		return protoiface.MarshalOutput{
-			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-			Buf:               input.Buf,
-		}, nil
-	}
-	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*Resource)
-		if x == nil {
-			return protoiface.UnmarshalOutput{
-				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-				Flags:             input.Flags,
-			}, nil
-		}
-		options := runtime.UnmarshalInputToOptions(input)
-		_ = options
-		dAtA := input.Buf
-		l := len(dAtA)
-		iNdEx := 0
-		for iNdEx < l {
-			preIndex := iNdEx
-			var wire uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				wire |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			fieldNum := int32(wire >> 3)
-			wireType := int(wire & 0x7)
-			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: Resource: wiretype end group for non-group")
-			}
-			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: Resource: illegal tag %d (wire type %d)", fieldNum, wire)
-			}
-			switch fieldNum {
-			case 1:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
-				}
-				var stringLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					stringLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				intStringLen := int(stringLen)
-				if intStringLen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + intStringLen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				x.Address = string(dAtA[iNdEx:postIndex])
-				iNdEx = postIndex
-			case 2:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field StructTag", wireType)
-				}
-				var stringLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					stringLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				intStringLen := int(stringLen)
-				if intStringLen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + intStringLen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				x.StructTag = string(dAtA[iNdEx:postIndex])
-				iNdEx = postIndex
-			case 3:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field MoveResource", wireType)
-				}
-				var stringLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					stringLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				intStringLen := int(stringLen)
-				if intStringLen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + intStringLen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				x.MoveResource = string(dAtA[iNdEx:postIndex])
-				iNdEx = postIndex
-			case 4:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field RawBytes", wireType)
-				}
-				var byteLen int
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					byteLen |= int(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				if byteLen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + byteLen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				x.RawBytes = append(x.RawBytes[:0], dAtA[iNdEx:postIndex]...)
-				if x.RawBytes == nil {
-					x.RawBytes = []byte{}
-				}
-				iNdEx = postIndex
-			default:
-				iNdEx = preIndex
-				skippy, err := runtime.Skip(dAtA[iNdEx:])
-				if err != nil {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
-				}
-				if (skippy < 0) || (iNdEx+skippy) < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if (iNdEx + skippy) > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				if !options.DiscardUnknown {
-					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
-				}
-				iNdEx += skippy
-			}
-		}
-
-		if iNdEx > l {
-			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-		}
-		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
-	}
-	return &protoiface.Methods{
-		NoUnkeyedLiterals: struct{}{},
-		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
-		Size:              size,
-		Marshal:           marshal,
-		Unmarshal:         unmarshal,
-		Merge:             nil,
-		CheckInitialized:  nil,
-	}
-}
-
-var (
 	md_Module                protoreflect.MessageDescriptor
 	fd_Module_address        protoreflect.FieldDescriptor
 	fd_Module_module_name    protoreflect.FieldDescriptor
@@ -1930,7 +1316,7 @@ func (x *Module) ProtoReflect() protoreflect.Message {
 }
 
 func (x *Module) slowProtoReflect() protoreflect.Message {
-	mi := &file_initia_move_v1_types_proto_msgTypes[3]
+	mi := &file_initia_move_v1_types_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2529,6 +1915,620 @@ func (x *fastReflection_Module) ProtoMethods() *protoiface.Methods {
 						break
 					}
 				}
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var (
+	md_Resource               protoreflect.MessageDescriptor
+	fd_Resource_address       protoreflect.FieldDescriptor
+	fd_Resource_struct_tag    protoreflect.FieldDescriptor
+	fd_Resource_move_resource protoreflect.FieldDescriptor
+	fd_Resource_raw_bytes     protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_initia_move_v1_types_proto_init()
+	md_Resource = File_initia_move_v1_types_proto.Messages().ByName("Resource")
+	fd_Resource_address = md_Resource.Fields().ByName("address")
+	fd_Resource_struct_tag = md_Resource.Fields().ByName("struct_tag")
+	fd_Resource_move_resource = md_Resource.Fields().ByName("move_resource")
+	fd_Resource_raw_bytes = md_Resource.Fields().ByName("raw_bytes")
+}
+
+var _ protoreflect.Message = (*fastReflection_Resource)(nil)
+
+type fastReflection_Resource Resource
+
+func (x *Resource) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_Resource)(x)
+}
+
+func (x *Resource) slowProtoReflect() protoreflect.Message {
+	mi := &file_initia_move_v1_types_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_Resource_messageType fastReflection_Resource_messageType
+var _ protoreflect.MessageType = fastReflection_Resource_messageType{}
+
+type fastReflection_Resource_messageType struct{}
+
+func (x fastReflection_Resource_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_Resource)(nil)
+}
+func (x fastReflection_Resource_messageType) New() protoreflect.Message {
+	return new(fastReflection_Resource)
+}
+func (x fastReflection_Resource_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_Resource
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_Resource) Descriptor() protoreflect.MessageDescriptor {
+	return md_Resource
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_Resource) Type() protoreflect.MessageType {
+	return _fastReflection_Resource_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_Resource) New() protoreflect.Message {
+	return new(fastReflection_Resource)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_Resource) Interface() protoreflect.ProtoMessage {
+	return (*Resource)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_Resource) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.Address != "" {
+		value := protoreflect.ValueOfString(x.Address)
+		if !f(fd_Resource_address, value) {
+			return
+		}
+	}
+	if x.StructTag != "" {
+		value := protoreflect.ValueOfString(x.StructTag)
+		if !f(fd_Resource_struct_tag, value) {
+			return
+		}
+	}
+	if x.MoveResource != "" {
+		value := protoreflect.ValueOfString(x.MoveResource)
+		if !f(fd_Resource_move_resource, value) {
+			return
+		}
+	}
+	if len(x.RawBytes) != 0 {
+		value := protoreflect.ValueOfBytes(x.RawBytes)
+		if !f(fd_Resource_raw_bytes, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_Resource) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "initia.move.v1.Resource.address":
+		return x.Address != ""
+	case "initia.move.v1.Resource.struct_tag":
+		return x.StructTag != ""
+	case "initia.move.v1.Resource.move_resource":
+		return x.MoveResource != ""
+	case "initia.move.v1.Resource.raw_bytes":
+		return len(x.RawBytes) != 0
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.move.v1.Resource"))
+		}
+		panic(fmt.Errorf("message initia.move.v1.Resource does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_Resource) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "initia.move.v1.Resource.address":
+		x.Address = ""
+	case "initia.move.v1.Resource.struct_tag":
+		x.StructTag = ""
+	case "initia.move.v1.Resource.move_resource":
+		x.MoveResource = ""
+	case "initia.move.v1.Resource.raw_bytes":
+		x.RawBytes = nil
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.move.v1.Resource"))
+		}
+		panic(fmt.Errorf("message initia.move.v1.Resource does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_Resource) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "initia.move.v1.Resource.address":
+		value := x.Address
+		return protoreflect.ValueOfString(value)
+	case "initia.move.v1.Resource.struct_tag":
+		value := x.StructTag
+		return protoreflect.ValueOfString(value)
+	case "initia.move.v1.Resource.move_resource":
+		value := x.MoveResource
+		return protoreflect.ValueOfString(value)
+	case "initia.move.v1.Resource.raw_bytes":
+		value := x.RawBytes
+		return protoreflect.ValueOfBytes(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.move.v1.Resource"))
+		}
+		panic(fmt.Errorf("message initia.move.v1.Resource does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_Resource) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "initia.move.v1.Resource.address":
+		x.Address = value.Interface().(string)
+	case "initia.move.v1.Resource.struct_tag":
+		x.StructTag = value.Interface().(string)
+	case "initia.move.v1.Resource.move_resource":
+		x.MoveResource = value.Interface().(string)
+	case "initia.move.v1.Resource.raw_bytes":
+		x.RawBytes = value.Bytes()
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.move.v1.Resource"))
+		}
+		panic(fmt.Errorf("message initia.move.v1.Resource does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_Resource) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "initia.move.v1.Resource.address":
+		panic(fmt.Errorf("field address of message initia.move.v1.Resource is not mutable"))
+	case "initia.move.v1.Resource.struct_tag":
+		panic(fmt.Errorf("field struct_tag of message initia.move.v1.Resource is not mutable"))
+	case "initia.move.v1.Resource.move_resource":
+		panic(fmt.Errorf("field move_resource of message initia.move.v1.Resource is not mutable"))
+	case "initia.move.v1.Resource.raw_bytes":
+		panic(fmt.Errorf("field raw_bytes of message initia.move.v1.Resource is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.move.v1.Resource"))
+		}
+		panic(fmt.Errorf("message initia.move.v1.Resource does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_Resource) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "initia.move.v1.Resource.address":
+		return protoreflect.ValueOfString("")
+	case "initia.move.v1.Resource.struct_tag":
+		return protoreflect.ValueOfString("")
+	case "initia.move.v1.Resource.move_resource":
+		return protoreflect.ValueOfString("")
+	case "initia.move.v1.Resource.raw_bytes":
+		return protoreflect.ValueOfBytes(nil)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.move.v1.Resource"))
+		}
+		panic(fmt.Errorf("message initia.move.v1.Resource does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_Resource) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in initia.move.v1.Resource", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_Resource) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_Resource) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_Resource) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_Resource) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*Resource)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		l = len(x.Address)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.StructTag)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.MoveResource)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.RawBytes)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*Resource)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.RawBytes) > 0 {
+			i -= len(x.RawBytes)
+			copy(dAtA[i:], x.RawBytes)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.RawBytes)))
+			i--
+			dAtA[i] = 0x22
+		}
+		if len(x.MoveResource) > 0 {
+			i -= len(x.MoveResource)
+			copy(dAtA[i:], x.MoveResource)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.MoveResource)))
+			i--
+			dAtA[i] = 0x1a
+		}
+		if len(x.StructTag) > 0 {
+			i -= len(x.StructTag)
+			copy(dAtA[i:], x.StructTag)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.StructTag)))
+			i--
+			dAtA[i] = 0x12
+		}
+		if len(x.Address) > 0 {
+			i -= len(x.Address)
+			copy(dAtA[i:], x.Address)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Address)))
+			i--
+			dAtA[i] = 0xa
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*Resource)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: Resource: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: Resource: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Address = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 2:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field StructTag", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.StructTag = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 3:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field MoveResource", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.MoveResource = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 4:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field RawBytes", wireType)
+				}
+				var byteLen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					byteLen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if byteLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + byteLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.RawBytes = append(x.RawBytes[:0], dAtA[iNdEx:postIndex]...)
+				if x.RawBytes == nil {
+					x.RawBytes = []byte{}
+				}
+				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -5485,67 +5485,6 @@ func (x *RawParams) GetContractSharedRevenueRatio() string {
 	return ""
 }
 
-// Resource is data for the stored move resource
-// ex) 0000000000000000000000000000000000000002/1/0x1::BasicCoin::Coin<0x1::BasicCoin::Initia>
-type Resource struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Address      string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
-	StructTag    string `protobuf:"bytes,2,opt,name=struct_tag,json=structTag,proto3" json:"struct_tag,omitempty"`
-	MoveResource string `protobuf:"bytes,3,opt,name=move_resource,json=moveResource,proto3" json:"move_resource,omitempty"`
-	RawBytes     []byte `protobuf:"bytes,4,opt,name=raw_bytes,json=rawBytes,proto3" json:"raw_bytes,omitempty"`
-}
-
-func (x *Resource) Reset() {
-	*x = Resource{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_initia_move_v1_types_proto_msgTypes[2]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Resource) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Resource) ProtoMessage() {}
-
-// Deprecated: Use Resource.ProtoReflect.Descriptor instead.
-func (*Resource) Descriptor() ([]byte, []int) {
-	return file_initia_move_v1_types_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *Resource) GetAddress() string {
-	if x != nil {
-		return x.Address
-	}
-	return ""
-}
-
-func (x *Resource) GetStructTag() string {
-	if x != nil {
-		return x.StructTag
-	}
-	return ""
-}
-
-func (x *Resource) GetMoveResource() string {
-	if x != nil {
-		return x.MoveResource
-	}
-	return ""
-}
-
-func (x *Resource) GetRawBytes() []byte {
-	if x != nil {
-		return x.RawBytes
-	}
-	return nil
-}
-
 // Module is data for the uploaded contract move code
 // ex) 0000000000000000000000000000000000000001/0/BasicCoin
 type Module struct {
@@ -5563,7 +5502,7 @@ type Module struct {
 func (x *Module) Reset() {
 	*x = Module{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_initia_move_v1_types_proto_msgTypes[3]
+		mi := &file_initia_move_v1_types_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5577,7 +5516,7 @@ func (*Module) ProtoMessage() {}
 
 // Deprecated: Use Module.ProtoReflect.Descriptor instead.
 func (*Module) Descriptor() ([]byte, []int) {
-	return file_initia_move_v1_types_proto_rawDescGZIP(), []int{3}
+	return file_initia_move_v1_types_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *Module) GetAddress() string {
@@ -5613,6 +5552,67 @@ func (x *Module) GetUpgradePolicy() UpgradePolicy {
 		return x.UpgradePolicy
 	}
 	return UpgradePolicy_ARBITRARY
+}
+
+// Resource is data for the stored move resource
+// ex) 0000000000000000000000000000000000000002/2/0x1::BasicCoin::Coin<0x1::BasicCoin::Initia>
+type Resource struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Address      string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+	StructTag    string `protobuf:"bytes,2,opt,name=struct_tag,json=structTag,proto3" json:"struct_tag,omitempty"`
+	MoveResource string `protobuf:"bytes,3,opt,name=move_resource,json=moveResource,proto3" json:"move_resource,omitempty"`
+	RawBytes     []byte `protobuf:"bytes,4,opt,name=raw_bytes,json=rawBytes,proto3" json:"raw_bytes,omitempty"`
+}
+
+func (x *Resource) Reset() {
+	*x = Resource{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_initia_move_v1_types_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Resource) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Resource) ProtoMessage() {}
+
+// Deprecated: Use Resource.ProtoReflect.Descriptor instead.
+func (*Resource) Descriptor() ([]byte, []int) {
+	return file_initia_move_v1_types_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *Resource) GetAddress() string {
+	if x != nil {
+		return x.Address
+	}
+	return ""
+}
+
+func (x *Resource) GetStructTag() string {
+	if x != nil {
+		return x.StructTag
+	}
+	return ""
+}
+
+func (x *Resource) GetMoveResource() string {
+	if x != nil {
+		return x.MoveResource
+	}
+	return ""
+}
+
+func (x *Resource) GetRawBytes() []byte {
+	if x != nil {
+		return x.RawBytes
+	}
+	return nil
 }
 
 // TableInfo is data stored under Table address
@@ -5927,27 +5927,27 @@ var file_initia_move_v1_types_proto_rawDesc = []byte{
 	0x61, 0x63, 0x74, 0x5f, 0x73, 0x68, 0x61, 0x72, 0x65, 0x64, 0x5f, 0x72, 0x65, 0x76, 0x65, 0x6e,
 	0x75, 0x65, 0x5f, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x22, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x1a,
 	0x63, 0x6f, 0x6e, 0x74, 0x72, 0x61, 0x63, 0x74, 0x53, 0x68, 0x61, 0x72, 0x65, 0x64, 0x52, 0x65,
-	0x76, 0x65, 0x6e, 0x75, 0x65, 0x52, 0x61, 0x74, 0x69, 0x6f, 0x22, 0x85, 0x01, 0x0a, 0x08, 0x52,
-	0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65,
-	0x73, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73,
-	0x73, 0x12, 0x1d, 0x0a, 0x0a, 0x73, 0x74, 0x72, 0x75, 0x63, 0x74, 0x5f, 0x74, 0x61, 0x67, 0x18,
-	0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x73, 0x74, 0x72, 0x75, 0x63, 0x74, 0x54, 0x61, 0x67,
-	0x12, 0x23, 0x0a, 0x0d, 0x6d, 0x6f, 0x76, 0x65, 0x5f, 0x72, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63,
-	0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x6d, 0x6f, 0x76, 0x65, 0x52, 0x65, 0x73,
-	0x6f, 0x75, 0x72, 0x63, 0x65, 0x12, 0x1b, 0x0a, 0x09, 0x72, 0x61, 0x77, 0x5f, 0x62, 0x79, 0x74,
-	0x65, 0x73, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x08, 0x72, 0x61, 0x77, 0x42, 0x79, 0x74,
-	0x65, 0x73, 0x22, 0xb8, 0x01, 0x0a, 0x06, 0x4d, 0x6f, 0x64, 0x75, 0x6c, 0x65, 0x12, 0x18, 0x0a,
-	0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07,
-	0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x1f, 0x0a, 0x0b, 0x6d, 0x6f, 0x64, 0x75, 0x6c,
-	0x65, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x6d, 0x6f,
-	0x64, 0x75, 0x6c, 0x65, 0x4e, 0x61, 0x6d, 0x65, 0x12, 0x10, 0x0a, 0x03, 0x61, 0x62, 0x69, 0x18,
-	0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x61, 0x62, 0x69, 0x12, 0x1b, 0x0a, 0x09, 0x72, 0x61,
-	0x77, 0x5f, 0x62, 0x79, 0x74, 0x65, 0x73, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x08, 0x72,
-	0x61, 0x77, 0x42, 0x79, 0x74, 0x65, 0x73, 0x12, 0x44, 0x0a, 0x0e, 0x75, 0x70, 0x67, 0x72, 0x61,
-	0x64, 0x65, 0x5f, 0x70, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0e, 0x32,
-	0x1d, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x6d, 0x6f, 0x76, 0x65, 0x2e, 0x76, 0x31,
-	0x2e, 0x55, 0x70, 0x67, 0x72, 0x61, 0x64, 0x65, 0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x52, 0x0d,
-	0x75, 0x70, 0x67, 0x72, 0x61, 0x64, 0x65, 0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x22, 0x5f, 0x0a,
+	0x76, 0x65, 0x6e, 0x75, 0x65, 0x52, 0x61, 0x74, 0x69, 0x6f, 0x22, 0xb8, 0x01, 0x0a, 0x06, 0x4d,
+	0x6f, 0x64, 0x75, 0x6c, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12,
+	0x1f, 0x0a, 0x0b, 0x6d, 0x6f, 0x64, 0x75, 0x6c, 0x65, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x6d, 0x6f, 0x64, 0x75, 0x6c, 0x65, 0x4e, 0x61, 0x6d, 0x65,
+	0x12, 0x10, 0x0a, 0x03, 0x61, 0x62, 0x69, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x61,
+	0x62, 0x69, 0x12, 0x1b, 0x0a, 0x09, 0x72, 0x61, 0x77, 0x5f, 0x62, 0x79, 0x74, 0x65, 0x73, 0x18,
+	0x04, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x08, 0x72, 0x61, 0x77, 0x42, 0x79, 0x74, 0x65, 0x73, 0x12,
+	0x44, 0x0a, 0x0e, 0x75, 0x70, 0x67, 0x72, 0x61, 0x64, 0x65, 0x5f, 0x70, 0x6f, 0x6c, 0x69, 0x63,
+	0x79, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x1d, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61,
+	0x2e, 0x6d, 0x6f, 0x76, 0x65, 0x2e, 0x76, 0x31, 0x2e, 0x55, 0x70, 0x67, 0x72, 0x61, 0x64, 0x65,
+	0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x52, 0x0d, 0x75, 0x70, 0x67, 0x72, 0x61, 0x64, 0x65, 0x50,
+	0x6f, 0x6c, 0x69, 0x63, 0x79, 0x22, 0x85, 0x01, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x6f, 0x75, 0x72,
+	0x63, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x1d, 0x0a, 0x0a,
+	0x73, 0x74, 0x72, 0x75, 0x63, 0x74, 0x5f, 0x74, 0x61, 0x67, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x09, 0x73, 0x74, 0x72, 0x75, 0x63, 0x74, 0x54, 0x61, 0x67, 0x12, 0x23, 0x0a, 0x0d, 0x6d,
+	0x6f, 0x76, 0x65, 0x5f, 0x72, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x18, 0x03, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x0c, 0x6d, 0x6f, 0x76, 0x65, 0x52, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65,
+	0x12, 0x1b, 0x0a, 0x09, 0x72, 0x61, 0x77, 0x5f, 0x62, 0x79, 0x74, 0x65, 0x73, 0x18, 0x04, 0x20,
+	0x01, 0x28, 0x0c, 0x52, 0x08, 0x72, 0x61, 0x77, 0x42, 0x79, 0x74, 0x65, 0x73, 0x22, 0x5f, 0x0a,
 	0x09, 0x54, 0x61, 0x62, 0x6c, 0x65, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x18, 0x0a, 0x07, 0x61, 0x64,
 	0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x61, 0x64, 0x64,
 	0x72, 0x65, 0x73, 0x73, 0x12, 0x19, 0x0a, 0x08, 0x6b, 0x65, 0x79, 0x5f, 0x74, 0x79, 0x70, 0x65,
@@ -6019,8 +6019,8 @@ var file_initia_move_v1_types_proto_goTypes = []interface{}{
 	(UpgradePolicy)(0),               // 0: initia.move.v1.UpgradePolicy
 	(*Params)(nil),                   // 1: initia.move.v1.Params
 	(*RawParams)(nil),                // 2: initia.move.v1.RawParams
-	(*Resource)(nil),                 // 3: initia.move.v1.Resource
-	(*Module)(nil),                   // 4: initia.move.v1.Module
+	(*Module)(nil),                   // 3: initia.move.v1.Module
+	(*Resource)(nil),                 // 4: initia.move.v1.Resource
 	(*TableInfo)(nil),                // 5: initia.move.v1.TableInfo
 	(*TableEntry)(nil),               // 6: initia.move.v1.TableEntry
 	(*UpgradePolicyProto)(nil),       // 7: initia.move.v1.UpgradePolicyProto
@@ -6068,7 +6068,7 @@ func file_initia_move_v1_types_proto_init() {
 			}
 		}
 		file_initia_move_v1_types_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Resource); i {
+			switch v := v.(*Module); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -6080,7 +6080,7 @@ func file_initia_move_v1_types_proto_init() {
 			}
 		}
 		file_initia_move_v1_types_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Module); i {
+			switch v := v.(*Resource); i {
 			case 0:
 				return &v.state
 			case 1:

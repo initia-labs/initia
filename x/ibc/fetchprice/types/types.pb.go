@@ -4,13 +4,13 @@
 package types
 
 import (
-	cosmossdk_io_math "cosmossdk.io/math"
 	fmt "fmt"
 	_ "github.com/cosmos/cosmos-proto"
+	_ "github.com/cosmos/cosmos-sdk/types/tx/amino"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
 	github_com_cosmos_gogoproto_types "github.com/cosmos/gogoproto/types"
-	_ "google.golang.org/protobuf/types/known/timestamppb"
+	_ "google.golang.org/protobuf/types/known/durationpb"
 	io "io"
 	math "math"
 	math_bits "math/bits"
@@ -29,26 +29,26 @@ var _ = time.Kitchen
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// CurrencyPrice is the information necessary for initialization of a
-// CurrencyPrice.
-type CurrencyPrice struct {
-	// The currency id is the string with "BASE/QUOTE" format.
-	CurrencyId string     `protobuf:"bytes,1,opt,name=currency_id,json=currencyId,proto3" json:"currency_id,omitempty"`
-	QuotePrice QuotePrice `protobuf:"bytes,2,opt,name=quote_price,json=quotePrice,proto3" json:"quote_price"`
+// Params defines the set of IBC fetchprice parameters.
+type Params struct {
+	// fetch_enabled enables or disables cross-chain oracle price icq query from this chain.
+	FetchEnabled   bool `protobuf:"varint,1,opt,name=fetch_enabled,json=fetchEnabled,proto3" json:"fetch_enabled,omitempty" yaml:"fetch_enabled"`
+	FetchActivated bool `protobuf:"varint,2,opt,name=fetch_activated,json=fetchActivated,proto3" json:"fetch_activated,omitempty" yaml:"fetch_activated"`
+	// duration of the fetchprice timeout
+	TimeoutDuration time.Duration `protobuf:"bytes,3,opt,name=timeout_duration,json=timeoutDuration,proto3,stdduration" json:"timeout_duration"`
 }
 
-func (m *CurrencyPrice) Reset()         { *m = CurrencyPrice{} }
-func (m *CurrencyPrice) String() string { return proto.CompactTextString(m) }
-func (*CurrencyPrice) ProtoMessage()    {}
-func (*CurrencyPrice) Descriptor() ([]byte, []int) {
+func (m *Params) Reset()      { *m = Params{} }
+func (*Params) ProtoMessage() {}
+func (*Params) Descriptor() ([]byte, []int) {
 	return fileDescriptor_853a8402b4739f0c, []int{0}
 }
-func (m *CurrencyPrice) XXX_Unmarshal(b []byte) error {
+func (m *Params) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *CurrencyPrice) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *Params) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_CurrencyPrice.Marshal(b, m, deterministic)
+		return xxx_messageInfo_Params.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -58,105 +58,41 @@ func (m *CurrencyPrice) XXX_Marshal(b []byte, deterministic bool) ([]byte, error
 		return b[:n], nil
 	}
 }
-func (m *CurrencyPrice) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_CurrencyPrice.Merge(m, src)
+func (m *Params) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Params.Merge(m, src)
 }
-func (m *CurrencyPrice) XXX_Size() int {
+func (m *Params) XXX_Size() int {
 	return m.Size()
 }
-func (m *CurrencyPrice) XXX_DiscardUnknown() {
-	xxx_messageInfo_CurrencyPrice.DiscardUnknown(m)
+func (m *Params) XXX_DiscardUnknown() {
+	xxx_messageInfo_Params.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_CurrencyPrice proto.InternalMessageInfo
+var xxx_messageInfo_Params proto.InternalMessageInfo
 
-func (m *CurrencyPrice) GetCurrencyId() string {
+func (m *Params) GetFetchEnabled() bool {
 	if m != nil {
-		return m.CurrencyId
+		return m.FetchEnabled
 	}
-	return ""
+	return false
 }
 
-func (m *CurrencyPrice) GetQuotePrice() QuotePrice {
+func (m *Params) GetFetchActivated() bool {
 	if m != nil {
-		return m.QuotePrice
+		return m.FetchActivated
 	}
-	return QuotePrice{}
+	return false
 }
 
-// QuotePrice is the representation of the aggregated prices for a CurrencyPair,
-// where price represents the price of Base in terms of Quote
-type QuotePrice struct {
-	Price cosmossdk_io_math.Int `protobuf:"bytes,1,opt,name=price,proto3,customtype=cosmossdk.io/math.Int" json:"price"`
-	// decimals represents the number of decimals that the quote-price is
-	// represented in. For Pairs where ETHEREUM is the quote this will be 18,
-	// otherwise it will be 8.
-	Decimals uint64 `protobuf:"varint,2,opt,name=decimals,proto3" json:"decimals,omitempty"`
-	// BlockTimestamp tracks the block height associated with this price update.
-	// We include block timestamp alongside the price to ensure that smart
-	// contracts and applications are not utilizing stale oracle prices.
-	BlockTimestamp time.Time `protobuf:"bytes,3,opt,name=block_timestamp,json=blockTimestamp,proto3,stdtime" json:"block_timestamp"`
-	// BlockHeight is block height of provider chain.
-	BlockHeight uint64 `protobuf:"varint,4,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
-}
-
-func (m *QuotePrice) Reset()         { *m = QuotePrice{} }
-func (m *QuotePrice) String() string { return proto.CompactTextString(m) }
-func (*QuotePrice) ProtoMessage()    {}
-func (*QuotePrice) Descriptor() ([]byte, []int) {
-	return fileDescriptor_853a8402b4739f0c, []int{1}
-}
-func (m *QuotePrice) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *QuotePrice) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_QuotePrice.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *QuotePrice) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QuotePrice.Merge(m, src)
-}
-func (m *QuotePrice) XXX_Size() int {
-	return m.Size()
-}
-func (m *QuotePrice) XXX_DiscardUnknown() {
-	xxx_messageInfo_QuotePrice.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_QuotePrice proto.InternalMessageInfo
-
-func (m *QuotePrice) GetDecimals() uint64 {
+func (m *Params) GetTimeoutDuration() time.Duration {
 	if m != nil {
-		return m.Decimals
-	}
-	return 0
-}
-
-func (m *QuotePrice) GetBlockTimestamp() time.Time {
-	if m != nil {
-		return m.BlockTimestamp
-	}
-	return time.Time{}
-}
-
-func (m *QuotePrice) GetBlockHeight() uint64 {
-	if m != nil {
-		return m.BlockHeight
+		return m.TimeoutDuration
 	}
 	return 0
 }
 
 func init() {
-	proto.RegisterType((*CurrencyPrice)(nil), "ibc.applications.fetchprice.v1.CurrencyPrice")
-	proto.RegisterType((*QuotePrice)(nil), "ibc.applications.fetchprice.v1.QuotePrice")
+	proto.RegisterType((*Params)(nil), "ibc.applications.fetchprice.v1.Params")
 }
 
 func init() {
@@ -164,76 +100,63 @@ func init() {
 }
 
 var fileDescriptor_853a8402b4739f0c = []byte{
-	// 401 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x7c, 0x52, 0xbd, 0xce, 0xd3, 0x30,
-	0x14, 0x8d, 0xa1, 0xa0, 0x0f, 0x87, 0x1f, 0x29, 0x02, 0x29, 0x64, 0x48, 0x3e, 0x3a, 0x55, 0x45,
-	0xb5, 0x55, 0xe0, 0x05, 0x08, 0x0b, 0x1d, 0x40, 0x34, 0x62, 0x62, 0x89, 0x12, 0xc7, 0x4d, 0xac,
-	0x26, 0x71, 0x1a, 0x3b, 0x15, 0x9d, 0x79, 0x81, 0x3e, 0x0c, 0x0f, 0xd1, 0xb1, 0x62, 0x42, 0x48,
-	0x14, 0xd4, 0xbe, 0x08, 0x8a, 0x9d, 0xa6, 0x9d, 0xd8, 0x7c, 0xcf, 0x3d, 0xc7, 0xe7, 0xdc, 0xab,
-	0x0b, 0xc7, 0x2c, 0x26, 0x38, 0xaa, 0xaa, 0x9c, 0x91, 0x48, 0x32, 0x5e, 0x0a, 0xbc, 0xa0, 0x92,
-	0x64, 0x55, 0xcd, 0x08, 0xc5, 0xeb, 0x29, 0x96, 0x9b, 0x8a, 0x0a, 0x54, 0xd5, 0x5c, 0x72, 0xcb,
-	0x65, 0x31, 0x41, 0xd7, 0x5c, 0x74, 0xe1, 0xa2, 0xf5, 0xd4, 0x79, 0x9a, 0xf2, 0x94, 0x2b, 0x2a,
-	0x6e, 0x5f, 0x5a, 0xe5, 0x3c, 0x27, 0x5c, 0x14, 0x5c, 0x84, 0xba, 0xa1, 0x8b, 0xae, 0xe5, 0xa5,
-	0x9c, 0xa7, 0x39, 0xc5, 0xaa, 0x8a, 0x9b, 0x05, 0x96, 0xac, 0xa0, 0x42, 0x46, 0x45, 0xa5, 0x09,
-	0xc3, 0x6f, 0x00, 0x3e, 0x7a, 0xd7, 0xd4, 0x35, 0x2d, 0xc9, 0xe6, 0x53, 0x6b, 0x63, 0x79, 0xd0,
-	0x24, 0x1d, 0x10, 0xb2, 0xc4, 0x06, 0xb7, 0x60, 0xf4, 0x20, 0x80, 0x67, 0x68, 0x96, 0x58, 0x73,
-	0x68, 0xae, 0x1a, 0x2e, 0x69, 0xa8, 0x62, 0xd9, 0x77, 0x6e, 0xc1, 0xc8, 0x7c, 0x35, 0x46, 0xff,
-	0x8f, 0x8e, 0xe6, 0xad, 0x44, 0x39, 0xf8, 0x83, 0xdd, 0xc1, 0x33, 0x02, 0xb8, 0xea, 0x91, 0xe1,
-	0x6f, 0x00, 0xe1, 0x85, 0x60, 0xbd, 0x85, 0xf7, 0xf4, 0xdf, 0xca, 0xdc, 0x7f, 0xd9, 0xf2, 0x7f,
-	0x1d, 0xbc, 0x67, 0x7a, 0x34, 0x91, 0x2c, 0x11, 0xe3, 0xb8, 0x88, 0x64, 0x86, 0x66, 0xa5, 0xfc,
-	0xf1, 0x7d, 0x02, 0xbb, 0x99, 0x67, 0xa5, 0x0c, 0xb4, 0xd2, 0x72, 0xe0, 0x4d, 0x42, 0x09, 0x2b,
-	0xa2, 0x5c, 0xa8, 0x84, 0x83, 0xa0, 0xaf, 0xad, 0x0f, 0xf0, 0x49, 0x9c, 0x73, 0xb2, 0x0c, 0xfb,
-	0x65, 0xd8, 0x77, 0xd5, 0x10, 0x0e, 0xd2, 0xeb, 0x42, 0xe7, 0x75, 0xa1, 0xcf, 0x67, 0x86, 0x7f,
-	0xd3, 0x86, 0xd8, 0xfe, 0xf1, 0x40, 0xf0, 0x58, 0x89, 0xfb, 0x8e, 0xf5, 0x02, 0x3e, 0xd4, 0xdf,
-	0x65, 0x94, 0xa5, 0x99, 0xb4, 0x07, 0xca, 0xce, 0x54, 0xd8, 0x7b, 0x05, 0xf9, 0x1f, 0x77, 0x47,
-	0x17, 0xec, 0x8f, 0x2e, 0xf8, 0x7b, 0x74, 0xc1, 0xf6, 0xe4, 0x1a, 0xfb, 0x93, 0x6b, 0xfc, 0x3c,
-	0xb9, 0xc6, 0x97, 0x37, 0x29, 0x93, 0x59, 0x13, 0x23, 0xc2, 0x0b, 0xcc, 0x4a, 0x26, 0x59, 0x34,
-	0xc9, 0xa3, 0x58, 0x74, 0x6f, 0xfc, 0x15, 0xb7, 0xd7, 0x73, 0x75, 0x30, 0xea, 0x5a, 0xe2, 0xfb,
-	0x2a, 0xe0, 0xeb, 0x7f, 0x01, 0x00, 0x00, 0xff, 0xff, 0x61, 0x7d, 0xf6, 0xf4, 0x5c, 0x02, 0x00,
-	0x00,
+	// 364 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x54, 0x91, 0x3d, 0x6f, 0xe2, 0x30,
+	0x18, 0xc7, 0xe3, 0x3b, 0x09, 0xa1, 0xdc, 0x0b, 0x47, 0x84, 0x4e, 0x81, 0xc1, 0x41, 0x99, 0x10,
+	0xd2, 0xd9, 0xe2, 0xda, 0x09, 0xa9, 0x43, 0x69, 0xbb, 0xa2, 0x8a, 0xb1, 0x0b, 0x72, 0x8c, 0x09,
+	0x96, 0x92, 0x38, 0x4a, 0x1c, 0x54, 0xbe, 0x42, 0xa7, 0x8e, 0x8c, 0x7c, 0x84, 0x7e, 0x0c, 0x46,
+	0xc6, 0x4e, 0xb4, 0x82, 0xa1, 0x9d, 0x99, 0x3b, 0x54, 0xd8, 0x49, 0x9b, 0x2e, 0x96, 0xff, 0xcf,
+	0xff, 0xf7, 0xbc, 0xe9, 0x31, 0xbb, 0xdc, 0xa3, 0x98, 0xc4, 0x71, 0xc0, 0x29, 0x91, 0x5c, 0x44,
+	0x29, 0x9e, 0x32, 0x49, 0x67, 0x71, 0xc2, 0x29, 0xc3, 0xf3, 0x1e, 0x96, 0x8b, 0x98, 0xa5, 0x28,
+	0x4e, 0x84, 0x14, 0x16, 0xe4, 0x1e, 0x45, 0x65, 0x16, 0x7d, 0xb2, 0x68, 0xde, 0x6b, 0x35, 0x7c,
+	0xe1, 0x0b, 0x85, 0xe2, 0xe3, 0x4f, 0x67, 0xb5, 0xea, 0x24, 0xe4, 0x91, 0xc0, 0xea, 0xcd, 0x43,
+	0x4d, 0x2a, 0xd2, 0x50, 0xa4, 0x63, 0xcd, 0x6a, 0x91, 0x5b, 0xd0, 0x17, 0xc2, 0x0f, 0x18, 0x56,
+	0xca, 0xcb, 0xa6, 0x78, 0x92, 0x25, 0xaa, 0x99, 0xf6, 0xdd, 0x37, 0x60, 0x56, 0xae, 0x49, 0x42,
+	0xc2, 0xd4, 0x3a, 0x33, 0x7f, 0xa9, 0xfe, 0x63, 0x16, 0x11, 0x2f, 0x60, 0x13, 0x1b, 0xb4, 0x41,
+	0xa7, 0x3a, 0xb0, 0x0f, 0x5b, 0xa7, 0xb1, 0x20, 0x61, 0xd0, 0x77, 0xbf, 0xd8, 0xee, 0xe8, 0xa7,
+	0xd2, 0x57, 0x5a, 0x5a, 0x17, 0x66, 0x4d, 0xfb, 0x84, 0x4a, 0x3e, 0x27, 0x92, 0x4d, 0xec, 0x6f,
+	0xaa, 0x40, 0xeb, 0xb0, 0x75, 0xfe, 0x96, 0x0b, 0x7c, 0x00, 0xee, 0xe8, 0xb7, 0x8a, 0x9c, 0x17,
+	0x01, 0x6b, 0x68, 0xfe, 0x91, 0x3c, 0x64, 0x22, 0x93, 0xe3, 0x62, 0x50, 0xfb, 0x7b, 0x1b, 0x74,
+	0x7e, 0xfc, 0x6f, 0x22, 0xbd, 0x09, 0x2a, 0x36, 0x41, 0x97, 0x39, 0x30, 0xa8, 0xae, 0xb7, 0x8e,
+	0xb1, 0x7c, 0x72, 0xc0, 0xa8, 0x96, 0x27, 0x17, 0x56, 0x1f, 0x2e, 0x57, 0x8e, 0xf1, 0xba, 0x72,
+	0xc0, 0xdd, 0xcb, 0x43, 0xb7, 0x5e, 0x3a, 0x85, 0xde, 0x79, 0x30, 0x5c, 0xef, 0x20, 0xd8, 0xec,
+	0x20, 0x78, 0xde, 0x41, 0x70, 0xbf, 0x87, 0xc6, 0x66, 0x0f, 0x8d, 0xc7, 0x3d, 0x34, 0x6e, 0x4e,
+	0x7d, 0x2e, 0x67, 0x99, 0x87, 0xa8, 0x08, 0x31, 0x8f, 0xb8, 0xe4, 0xe4, 0x5f, 0x40, 0xbc, 0x34,
+	0xff, 0xe3, 0x5b, 0x7c, 0x3c, 0x74, 0xa9, 0xa0, 0x3a, 0xac, 0x57, 0x51, 0xd3, 0x9d, 0xbc, 0x07,
+	0x00, 0x00, 0xff, 0xff, 0xe1, 0x57, 0x96, 0x09, 0x07, 0x02, 0x00, 0x00,
 }
 
-func (m *CurrencyPrice) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
+func (this *Params) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
 	}
-	return dAtA[:n], nil
-}
 
-func (m *CurrencyPrice) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *CurrencyPrice) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	{
-		size, err := m.QuotePrice.MarshalToSizedBuffer(dAtA[:i])
-		if err != nil {
-			return 0, err
+	that1, ok := that.(*Params)
+	if !ok {
+		that2, ok := that.(Params)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
 		}
-		i -= size
-		i = encodeVarintTypes(dAtA, i, uint64(size))
 	}
-	i--
-	dAtA[i] = 0x12
-	if len(m.CurrencyId) > 0 {
-		i -= len(m.CurrencyId)
-		copy(dAtA[i:], m.CurrencyId)
-		i = encodeVarintTypes(dAtA, i, uint64(len(m.CurrencyId)))
-		i--
-		dAtA[i] = 0xa
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
 	}
-	return len(dAtA) - i, nil
+	if this.FetchEnabled != that1.FetchEnabled {
+		return false
+	}
+	if this.FetchActivated != that1.FetchActivated {
+		return false
+	}
+	if this.TimeoutDuration != that1.TimeoutDuration {
+		return false
+	}
+	return true
 }
-
-func (m *QuotePrice) Marshal() (dAtA []byte, err error) {
+func (m *Params) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -243,44 +166,44 @@ func (m *QuotePrice) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *QuotePrice) MarshalTo(dAtA []byte) (int, error) {
+func (m *Params) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *QuotePrice) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *Params) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if m.BlockHeight != 0 {
-		i = encodeVarintTypes(dAtA, i, uint64(m.BlockHeight))
-		i--
-		dAtA[i] = 0x20
+	n1, err1 := github_com_cosmos_gogoproto_types.StdDurationMarshalTo(m.TimeoutDuration, dAtA[i-github_com_cosmos_gogoproto_types.SizeOfStdDuration(m.TimeoutDuration):])
+	if err1 != nil {
+		return 0, err1
 	}
-	n2, err2 := github_com_cosmos_gogoproto_types.StdTimeMarshalTo(m.BlockTimestamp, dAtA[i-github_com_cosmos_gogoproto_types.SizeOfStdTime(m.BlockTimestamp):])
-	if err2 != nil {
-		return 0, err2
-	}
-	i -= n2
-	i = encodeVarintTypes(dAtA, i, uint64(n2))
+	i -= n1
+	i = encodeVarintTypes(dAtA, i, uint64(n1))
 	i--
 	dAtA[i] = 0x1a
-	if m.Decimals != 0 {
-		i = encodeVarintTypes(dAtA, i, uint64(m.Decimals))
+	if m.FetchActivated {
+		i--
+		if m.FetchActivated {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
 		i--
 		dAtA[i] = 0x10
 	}
-	{
-		size := m.Price.Size()
-		i -= size
-		if _, err := m.Price.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
+	if m.FetchEnabled {
+		i--
+		if m.FetchEnabled {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
 		}
-		i = encodeVarintTypes(dAtA, i, uint64(size))
+		i--
+		dAtA[i] = 0x8
 	}
-	i--
-	dAtA[i] = 0xa
 	return len(dAtA) - i, nil
 }
 
@@ -295,37 +218,20 @@ func encodeVarintTypes(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *CurrencyPrice) Size() (n int) {
+func (m *Params) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	l = len(m.CurrencyId)
-	if l > 0 {
-		n += 1 + l + sovTypes(uint64(l))
+	if m.FetchEnabled {
+		n += 2
 	}
-	l = m.QuotePrice.Size()
+	if m.FetchActivated {
+		n += 2
+	}
+	l = github_com_cosmos_gogoproto_types.SizeOfStdDuration(m.TimeoutDuration)
 	n += 1 + l + sovTypes(uint64(l))
-	return n
-}
-
-func (m *QuotePrice) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = m.Price.Size()
-	n += 1 + l + sovTypes(uint64(l))
-	if m.Decimals != 0 {
-		n += 1 + sovTypes(uint64(m.Decimals))
-	}
-	l = github_com_cosmos_gogoproto_types.SizeOfStdTime(m.BlockTimestamp)
-	n += 1 + l + sovTypes(uint64(l))
-	if m.BlockHeight != 0 {
-		n += 1 + sovTypes(uint64(m.BlockHeight))
-	}
 	return n
 }
 
@@ -335,7 +241,7 @@ func sovTypes(x uint64) (n int) {
 func sozTypes(x uint64) (n int) {
 	return sovTypes(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *CurrencyPrice) Unmarshal(dAtA []byte) error {
+func (m *Params) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -358,17 +264,17 @@ func (m *CurrencyPrice) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: CurrencyPrice: wiretype end group for non-group")
+			return fmt.Errorf("proto: Params: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: CurrencyPrice: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: Params: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field CurrencyId", wireType)
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field FetchEnabled", wireType)
 			}
-			var stringLen uint64
+			var v int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTypes
@@ -378,146 +284,17 @@ func (m *CurrencyPrice) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
+				v |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTypes
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTypes
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.CurrencyId = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field QuotePrice", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTypes
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthTypes
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthTypes
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.QuotePrice.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTypes(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTypes
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *QuotePrice) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTypes
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: QuotePrice: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QuotePrice: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Price", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTypes
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTypes
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTypes
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.Price.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
+			m.FetchEnabled = bool(v != 0)
 		case 2:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Decimals", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field FetchActivated", wireType)
 			}
-			m.Decimals = 0
+			var v int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTypes
@@ -527,14 +304,15 @@ func (m *QuotePrice) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.Decimals |= uint64(b&0x7F) << shift
+				v |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
+			m.FetchActivated = bool(v != 0)
 		case 3:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field BlockTimestamp", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field TimeoutDuration", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -561,29 +339,10 @@ func (m *QuotePrice) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := github_com_cosmos_gogoproto_types.StdTimeUnmarshal(&m.BlockTimestamp, dAtA[iNdEx:postIndex]); err != nil {
+			if err := github_com_cosmos_gogoproto_types.StdDurationUnmarshal(&m.TimeoutDuration, dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
-		case 4:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field BlockHeight", wireType)
-			}
-			m.BlockHeight = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTypes
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.BlockHeight |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTypes(dAtA[iNdEx:])

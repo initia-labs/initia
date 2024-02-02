@@ -1,7 +1,9 @@
 package keeper_test
 
 import (
+	"encoding/hex"
 	"fmt"
+	"strings"
 	"testing"
 
 	"cosmossdk.io/math"
@@ -306,6 +308,97 @@ func TestDispatchPayFeeMessage(t *testing.T) {
 		sdk.NewAttribute("ack_fee", sdk.NewCoins(sdk.NewCoin(ackFeeDenom, ackFeeAmount)).String()),
 		sdk.NewAttribute("timeout_fee", sdk.NewCoins(sdk.NewCoin(timeoutFeeDenom, timeoutFeeAmount)).String()),
 		sdk.NewAttribute("relayers", ""),
+	), event)
+}
+
+func TestDispatchFundMoveExecute(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+
+	sender := addrs[0]
+	senderAddr, err := vmtypes.NewAccountAddressFromBytes(sender)
+	require.NoError(t, err)
+
+	moduleAddr := vmtypes.StdAddress
+	moduleName := "module_name"
+	moduleNameBz, err := vmtypes.SerializeString(moduleName)
+	require.NoError(t, err)
+
+	functionName := "function_name"
+	functionNameBz, err := vmtypes.SerializeString(functionName)
+	require.NoError(t, err)
+
+	typeArgs := []string{"type_arg1", "type_arg2"}
+	typeArgsBz, err := vmtypes.SerializeStringVector(typeArgs)
+	require.NoError(t, err)
+
+	args := []string{"arg1", "arg2"}
+	argsBz, err := vmtypes.SerializeStringVector(args)
+	require.NoError(t, err)
+
+	err = input.MoveKeeper.ExecuteEntryFunction(ctx, senderAddr, vmtypes.StdAddress,
+		"cosmos",
+		"move_execute",
+		[]vmtypes.TypeTag{},
+		[][]byte{
+			moduleAddr[:],
+			moduleNameBz,
+			functionNameBz,
+			typeArgsBz,
+			argsBz,
+		})
+	require.NoError(t, err)
+
+	events := ctx.EventManager().Events()
+	event := events[len(events)-1]
+
+	require.Equal(t, sdk.NewEvent("move_execute",
+		sdk.NewAttribute("sender", sender.String()),
+		sdk.NewAttribute("module_addr", moduleAddr.String()),
+		sdk.NewAttribute("module_name", moduleName),
+		sdk.NewAttribute("function_name", functionName),
+		sdk.NewAttribute("type_args", strings.Join(typeArgs, ",")),
+		sdk.NewAttribute("args", strings.Join(args, ",")),
+	), event)
+}
+
+func TestDispatchFundMoveScript(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+
+	sender := addrs[0]
+	senderAddr, err := vmtypes.NewAccountAddressFromBytes(sender)
+	require.NoError(t, err)
+
+	codeBytes := []byte{1, 2, 3, 4, 5, 6, 1, 2, 4, 5, 6}
+	codeBytesBz, err := vmtypes.SerializeBytes(codeBytes)
+	require.NoError(t, err)
+
+	typeArgs := []string{"type_arg1", "type_arg2"}
+	typeArgsBz, err := vmtypes.SerializeStringVector(typeArgs)
+	require.NoError(t, err)
+
+	args := []string{"arg1", "arg2"}
+	argsBz, err := vmtypes.SerializeStringVector(args)
+	require.NoError(t, err)
+
+	err = input.MoveKeeper.ExecuteEntryFunction(ctx, senderAddr, vmtypes.StdAddress,
+		"cosmos",
+		"move_script",
+		[]vmtypes.TypeTag{},
+		[][]byte{
+			codeBytesBz,
+			typeArgsBz,
+			argsBz,
+		})
+	require.NoError(t, err)
+
+	events := ctx.EventManager().Events()
+	event := events[len(events)-1]
+
+	require.Equal(t, sdk.NewEvent("move_script",
+		sdk.NewAttribute("sender", sender.String()),
+		sdk.NewAttribute("code_bytes", hex.EncodeToString(codeBytes)),
+		sdk.NewAttribute("type_args", strings.Join(typeArgs, ",")),
+		sdk.NewAttribute("args", strings.Join(args, ",")),
 	), event)
 }
 

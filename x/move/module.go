@@ -6,7 +6,6 @@ import (
 
 	"cosmossdk.io/core/address"
 	"cosmossdk.io/core/appmodule"
-	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 
@@ -25,7 +24,7 @@ const ConsensusVersion = 1
 
 var (
 	_ module.AppModuleBasic      = AppModule{}
-	_ module.HasABCIGenesis      = AppModule{}
+	_ module.HasGenesis          = AppModule{}
 	_ module.HasServices         = AppModule{}
 	_ module.HasConsensusVersion = AppModule{}
 	_ module.HasName             = AppModule{}
@@ -130,16 +129,13 @@ func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {}
 
 // InitGenesis performs genesis initialization for the move module. It returns
 // no validator updates.
-func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.RawMessage) []abci.ValidatorUpdate {
+func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.RawMessage) {
 	var genesisState types.GenesisState
 	cdc.MustUnmarshalJSON(data, &genesisState)
 
-	validators, err := am.keeper.InitGenesis(ctx, genesisState)
-	if err != nil {
+	if err := am.keeper.InitGenesis(ctx, genesisState); err != nil {
 		panic(err)
 	}
-
-	return validators
 }
 
 // ExportGenesis returns the exported genesis state as raw bytes for the move

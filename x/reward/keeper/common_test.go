@@ -352,13 +352,14 @@ func _createTestInput(
 		appCodec,
 		runtime.NewKVStoreService(keys[movetypes.StoreKey]),
 		accountKeeper,
-		distKeeper,
-		nil,
-		moveConfig,
 		bankKeeper,
+		nil, // oracle keeper unused
+		nil, // msg router unused
+		moveConfig,
 		distKeeper,
 		stakingKeeper,
 		rewardKeeper,
+		distKeeper,
 		authtypes.FeeCollectorName,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		ac, vc,
