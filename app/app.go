@@ -1492,7 +1492,9 @@ func (app *InitiaApp) Close() error {
 
 	// close the oracle service
 	if app.OracleClient != nil {
-		app.OracleClient.Stop(context.Background())
+		if err := app.OracleClient.Stop(context.Background()); err != nil {
+			return err
+		}
 	}
 
 	return nil
