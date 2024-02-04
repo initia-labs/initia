@@ -59,7 +59,7 @@ func NewKeeper(
 		scopedKeeper:  scopedKeeper,
 		authority:     authority,
 
-		PortID:      collections.NewItem(sb, types.PortKey, "port_Id", collections.StringValue),
+		PortID:      collections.NewItem(sb, types.PortKey, "port_id", collections.StringValue),
 		Params:      collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
 		ClassTraces: collections.NewMap(sb, types.ClassTraceKey, "class_traces", collections.BytesKey, codec.CollValue[types.ClassTrace](cdc)),
 	}

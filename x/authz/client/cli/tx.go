@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 	"time"
 
@@ -217,7 +217,7 @@ Where authzItems.json contains:
 						return fmt.Errorf("items file path is empty")
 					}
 					var itemsBytes []byte
-					itemsBytes, err = ioutil.ReadFile(items)
+					itemsBytes, err = os.ReadFile(items)
 					if err != nil {
 						return err
 					}
