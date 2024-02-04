@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	oracleconfig "github.com/skip-mev/slinky/oracle/config"
 	"time"
+
+	oracleconfig "github.com/skip-mev/slinky/oracle/config"
 
 	tmcfg "github.com/cometbft/cometbft/config"
 
@@ -17,8 +18,8 @@ import (
 // initiaappConfig initia specify app config
 type initiaappConfig struct {
 	serverconfig.Config
-	MoveConfig   moveconfig.MoveConfig  `mapstructure:"move"`
-	OracleConfig oracleconfig.AppConfig `mapstructure:"oracle"`
+	MoveConfig moveconfig.MoveConfig  `mapstructure:"move"`
+	Oracle     oracleconfig.AppConfig `mapstructure:"oracle"`
 }
 
 // initAppConfig helps to override default appConfig template and configs.
@@ -43,9 +44,9 @@ func initAppConfig() (string, interface{}) {
 	srvCfg.MinGasPrices = fmt.Sprintf("0%s", initiaapp.BondDenom)
 
 	initiaappConfig := initiaappConfig{
-		Config:       *srvCfg,
-		MoveConfig:   moveconfig.DefaultMoveConfig(),
-		OracleConfig: initiaapporacle.DefaultConfig(),
+		Config:     *srvCfg,
+		MoveConfig: moveconfig.DefaultMoveConfig(),
+		Oracle:     initiaapporacle.DefaultConfig(),
 	}
 
 	initiaappTemplate := serverconfig.DefaultConfigTemplate +
