@@ -263,7 +263,7 @@ func (a appCreator) newApp(
 	return initiaapp.NewInitiaApp(
 		logger, db, traceStore, true,
 		moveconfig.GetConfig(appOpts),
-		initiaapporacle.ReadOracleConfig(appOpts),
+		initiaapporacle.ReadWrappedOracleConfig(appOpts),
 		appOpts,
 		baseappOptions...,
 	)

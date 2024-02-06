@@ -83,7 +83,7 @@ func (k Keeper) sendICQ(
 	reqs := make([]abcitypes.RequestQuery, len(pairs))
 	for i, pair := range pairs {
 
-		pairIds[i] = pair.String()
+		pairIds[i] = pair.ToString()
 
 		// TODO change this to GetPrices
 		reqs[i] = abcitypes.RequestQuery{
