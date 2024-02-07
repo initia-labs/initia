@@ -12,7 +12,7 @@ import (
 	initiaapporacle "github.com/initia-labs/initia/app/oracle"
 	moveconfig "github.com/initia-labs/initia/x/move/config"
 
-	indexerconfig "github.com/initia-labs/indexer/config"
+	audienceconfig "github.com/initia-labs/audience/config"
 )
 
 // initiaappConfig initia specify app config
@@ -20,7 +20,7 @@ type initiaappConfig struct {
 	serverconfig.Config
 	MoveConfig    moveconfig.MoveConfig               `mapstructure:"move"`
 	OracleConfig  initiaapporacle.WrappedOracleConfig `mapstructure:"oracle"`
-	IndexerConfig indexerconfig.IndexerConfig         `mapstructure:"indexer"`
+	IndexerConfig audienceconfig.AudienceConfig       `mapstructure:"indexer"`
 }
 
 // initAppConfig helps to override default appConfig template and configs.
@@ -48,13 +48,13 @@ func initAppConfig() (string, interface{}) {
 		Config:        *srvCfg,
 		MoveConfig:    moveconfig.DefaultMoveConfig(),
 		OracleConfig:  initiaapporacle.DefaultConfig(),
-		IndexerConfig: indexerconfig.DefaultIndexerConfig(),
+		IndexerConfig: audienceconfig.DefaultAudienceConfig(),
 	}
 
 	initiaappTemplate := serverconfig.DefaultConfigTemplate +
 		moveconfig.DefaultConfigTemplate +
 		initiaapporacle.DefaultConfigTemplate +
-		indexerconfig.DefaultConfigTemplate
+		audienceconfig.DefaultConfigTemplate
 
 	return initiaappTemplate, initiaappConfig
 }

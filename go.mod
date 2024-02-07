@@ -37,6 +37,8 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/hashicorp/go-metrics v0.5.2
 	github.com/initia-labs/OPinit v0.2.0-beta.1
+	github.com/initia-labs/audience v0.0.0-20240207053956-989c5bc1bc86
+	github.com/initia-labs/indexer v0.1.0-beta.20.0.20240207061452-d27aab03e75a
 	// we also need to update `LIBINITIAVM_VERSION` of images/private/Dockerfile#5
 	github.com/initia-labs/initiavm v0.2.0-beta.2
 	github.com/novifinancial/serde-reflection/serde-generate/runtime/golang v0.0.0-20220519162058-e5cd3c3b3f3a
@@ -60,8 +62,6 @@ require (
 	google.golang.org/protobuf v1.32.0
 	gopkg.in/yaml.v3 v3.0.1
 )
-
-require github.com/initia-labs/indexer v0.1.0-beta.20.0.20240205050453-dfae3094a615
 
 require (
 	cloud.google.com/go v0.110.10 // indirect

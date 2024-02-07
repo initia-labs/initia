@@ -11,24 +11,23 @@ import (
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/initia-labs/indexer"
-	indexercfg "github.com/initia-labs/indexer/config"
+	"github.com/initia-labs/audience"
+	audiencecfg "github.com/initia-labs/audience/config"
+	"github.com/initia-labs/indexer/cron/validator"
+	"github.com/initia-labs/indexer/service/collector"
+	"github.com/initia-labs/indexer/service/dashboard"
 	initiaapp "github.com/initia-labs/initia/app"
 )
 
-const (
-	FlagIndexer = "indexer"
-)
-
 func addIndexFlag(cmd *cobra.Command) {
-	indexercfg.AddIndexerFlag(cmd)
+	audiencecfg.AddAudienceFlag(cmd)
 }
 
 func preSetupIndexer(svrCtx *server.Context, clientCtx client.Context, ctx context.Context, g *errgroup.Group, _app types.Application) error {
 	app := _app.(*initiaapp.InitiaApp)
 
 	// if indexer is disabled, it returns nil
-	idxer, err := indexer.NewIndexer(svrCtx.Viper, app)
+	idxer, err := audience.NewAudience(svrCtx.Viper, app)
 	if err != nil {
 		return err
 	}
@@ -42,7 +41,20 @@ func preSetupIndexer(svrCtx *server.Context, clientCtx client.Context, ctx conte
 		return err
 	}
 
-	err = idxer.Start()
+	err = idxer.GetHandler().RegisterService(collector.CollectorSvc)
+	if err != nil {
+		return err
+	}
+	err = idxer.GetHandler().RegisterService(dashboard.DashboardSvc)
+	if err != nil {
+		return err
+	}
+	err = idxer.GetHandler().RegisterCronjob(validator.Tag, validator.Expr, validator.JobInit, validator.JobFunc)
+	if err != nil {
+		return err
+	}
+
+	err = idxer.Start(nil)
 	if err != nil {
 		return err
 	}
