@@ -37,7 +37,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/hashicorp/go-metrics v0.5.2
 	github.com/initia-labs/OPinit v0.2.0-beta.1
-	github.com/initia-labs/audience v0.0.0-20240207053956-989c5bc1bc86
+	github.com/initia-labs/audience v0.0.0-20240207064158-46dce1a86ca8
 	github.com/initia-labs/indexer v0.1.0-beta.20.0.20240207061452-d27aab03e75a
 	// we also need to update `LIBINITIAVM_VERSION` of images/private/Dockerfile#5
 	github.com/initia-labs/initiavm v0.2.0-beta.2
