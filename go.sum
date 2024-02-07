@@ -727,10 +727,8 @@ github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLf
 github.com/influxdata/influxdb1-client v0.0.0-20191209144304-8bf82d3c094d/go.mod h1:qj24IKcXYK6Iy9ceXlo3Tc+vtHo9lIhSX5JddghvEPo=
 github.com/initia-labs/OPinit v0.2.0-beta.1 h1:98LhxGZ3ZOcqziSGJgcasq6Wh4tp1KqHkM1CwsGKyQ0=
 github.com/initia-labs/OPinit v0.2.0-beta.1/go.mod h1:1dn1iseG1S4wfXUtnb4mUkraJdL9/lWBQPpI+HbVzL0=
-github.com/initia-labs/audience v0.0.0-20240207053956-989c5bc1bc86 h1:c151nf432lcDs+yH8y5VxNnQnnMiqErQ+Oxl0hVr1tQ=
-github.com/initia-labs/audience v0.0.0-20240207053956-989c5bc1bc86/go.mod h1:Su8oxZTALjXHlfmJkqWg81/LXjXZkLsrzRLVPaKgM3Y=
-github.com/initia-labs/audience v0.0.0-20240207064158-46dce1a86ca8 h1:ryD+D1063TLDEP6OkVN7aqK7gynd8xudDcfdSGRaUdk=
-github.com/initia-labs/audience v0.0.0-20240207064158-46dce1a86ca8/go.mod h1:Su8oxZTALjXHlfmJkqWg81/LXjXZkLsrzRLVPaKgM3Y=
+github.com/initia-labs/audience v0.0.0-20240207091527-64bb370f0406 h1:4UxNxhpGy370LaZF17KdQ7KDf/U4Bw/77V/uRDMz7fc=
+github.com/initia-labs/audience v0.0.0-20240207091527-64bb370f0406/go.mod h1:Su8oxZTALjXHlfmJkqWg81/LXjXZkLsrzRLVPaKgM3Y=
 github.com/initia-labs/cosmos-sdk v0.0.0-20240123082052-77e8b246064a h1:wD9ynlE7z9u3YxP/D9fEvbQ1CCD+ojqb6o+zrMdr2gY=
 github.com/initia-labs/cosmos-sdk v0.0.0-20240123082052-77e8b246064a/go.mod h1:tlrkY1sntOt1q0OX/rqF0zRJtmXNoffAS6VFTcky+w8=
 github.com/initia-labs/indexer v0.1.0-beta.20.0.20240207061452-d27aab03e75a h1:13eNH0Dn3IdZ9NGBUOYiXH6OB+7NkrOKY3EycA0QGJQ=
