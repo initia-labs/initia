@@ -136,9 +136,16 @@ func (c *GRPCClient) Prices(
 	ctx context.Context,
 	req *oracleservertypes.QueryPricesRequest,
 	_ ...grpc.CallOption,
-) (*oracleservertypes.QueryPricesResponse, error) {
+) (resp *oracleservertypes.QueryPricesResponse, err error) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
+
+	start := time.Now()
+	defer func() {
+		// Observe the duration of the call as well as the error.
+		c.metrics.ObserveOracleResponseLatency(time.Since(start))
+		c.metrics.AddOracleResponse(metrics.StatusFromError(err))
+	}()
 
 	// set deadline on the context
 	ctx, cancel := context.WithTimeout(ctx, c.timeout)
@@ -187,10 +194,8 @@ func (c *GRPCClient) createConnection(ctx context.Context) error {
 		return fmt.Errorf("failed to dial oracle gRPC server: %w", err)
 	}
 
-	c.mutex.Lock()
 	c.client = oracleservertypes.NewOracleClient(conn)
 	c.conn = conn
-	c.mutex.Unlock()
 
 	c.logger.Info("oracle client started")
 
