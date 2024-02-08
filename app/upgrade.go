@@ -10,6 +10,9 @@ import (
 	icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v8/types"
 
 	fetchpricetypes "github.com/initia-labs/initia/x/ibc/fetchprice/types"
+
+	alertstypes "github.com/skip-mev/slinky/x/alerts/types"
+	incentivestypes "github.com/skip-mev/slinky/x/incentives/types"
 )
 
 const upgradeName = "0.2.0-beta.7"
@@ -35,13 +38,15 @@ func (app *InitiaApp) RegisterUpgradeHandlers(cfg module.Configurator) {
 	if upgradeInfo.Name == upgradeName && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
 		storeUpgrades := storetypes.StoreUpgrades{
 			Added: []string{
-				fetchpricetypes.ModuleName,
-				packetforwardtypes.ModuleName,
-				icqtypes.ModuleName,
+				fetchpricetypes.StoreKey,
+				packetforwardtypes.StoreKey,
+				icqtypes.StoreKey,
 			},
 			Deleted: []string{
 				"fetchpriceconsumer",
 				"fetchpriceprovider",
+				alertstypes.StoreKey,
+				incentivestypes.StoreKey,
 			},
 		}
 

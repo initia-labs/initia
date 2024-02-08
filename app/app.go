@@ -172,10 +172,6 @@ import (
 	oracleclient "github.com/skip-mev/slinky/service/clients/oracle"
 	servicemetrics "github.com/skip-mev/slinky/service/metrics"
 	"github.com/skip-mev/slinky/service/servers/prometheus"
-	alertskeeper "github.com/skip-mev/slinky/x/alerts/keeper"
-	alerttypes "github.com/skip-mev/slinky/x/alerts/types"
-	incentiveskeeper "github.com/skip-mev/slinky/x/incentives/keeper"
-	incentivetypes "github.com/skip-mev/slinky/x/incentives/types"
 	"github.com/skip-mev/slinky/x/oracle"
 	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
@@ -208,9 +204,7 @@ var (
 		// distributed to proposers
 		auctiontypes.ModuleName: nil,
 		// slinky oracle permissions
-		oracletypes.ModuleName:    nil,
-		incentivetypes.ModuleName: nil,
-		alerttypes.ModuleName:     {authtypes.Burner, authtypes.Minter},
+		oracletypes.ModuleName: nil,
 
 		// this is only for testing
 		authtypes.Minter: {authtypes.Minter},
@@ -275,9 +269,7 @@ type InitiaApp struct {
 	MoveKeeper            *movekeeper.Keeper
 	AuctionKeeper         *auctionkeeper.Keeper // x/auction keeper used to process bids for TOB auctions
 	OPHostKeeper          *ophostkeeper.Keeper
-	OracleKeeper          *oraclekeeper.Keeper     // x/oracle keeper used for the slinky oracle
-	IncentivesKeeper      *incentiveskeeper.Keeper // x/incentives keeper used for slinky incentives
-	AlertsKeeper          *alertskeeper.Keeper     // x/alerts keeper used for slinky alerts
+	OracleKeeper          *oraclekeeper.Keeper // x/oracle keeper used for the slinky oracle
 
 	// testing purpose
 	FetchPriceKeeper *fetchpricekeeper.Keeper
@@ -343,8 +335,8 @@ func NewInitiaApp(
 		authzkeeper.StoreKey, feegrant.StoreKey, icahosttypes.StoreKey,
 		icacontrollertypes.StoreKey, ibcfeetypes.StoreKey, ibcpermtypes.StoreKey,
 		movetypes.StoreKey, auctiontypes.StoreKey, ophosttypes.StoreKey,
-		oracletypes.StoreKey, incentivetypes.StoreKey, alerttypes.StoreKey,
-		packetforwardtypes.StoreKey, icqtypes.StoreKey, fetchpricetypes.StoreKey,
+		oracletypes.StoreKey, packetforwardtypes.StoreKey, icqtypes.StoreKey,
+		fetchpricetypes.StoreKey,
 	)
 	tkeys := storetypes.NewTransientStoreKeys()
 	memKeys := storetypes.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
