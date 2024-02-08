@@ -267,22 +267,6 @@
       }
     },
     {
-      "url": "./tmp-swagger-gen/slinky/alerts/v1/query.swagger.json",
-      "operationIds": {
-        "rename": {
-          "Params": "AlertsParams"
-        }
-      }
-    },
-    {
-      "url": "./tmp-swagger-gen/slinky/incentives/v1/query.swagger.json",
-      "operationIds": {
-        "rename": {
-          "Params": "IncentivesParams"
-        }
-      }
-    },
-    {
       "url": "./tmp-swagger-gen/slinky/oracle/v1/query.swagger.json"
     }
   ]
