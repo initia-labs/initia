@@ -125,6 +125,7 @@ import (
 	appante "github.com/initia-labs/initia/app/ante"
 	apphook "github.com/initia-labs/initia/app/hook"
 	applanes "github.com/initia-labs/initia/app/lanes"
+	apporacle "github.com/initia-labs/initia/app/oracle"
 	"github.com/initia-labs/initia/app/params"
 	authzmodule "github.com/initia-labs/initia/x/authz/module"
 	"github.com/initia-labs/initia/x/bank"
@@ -1089,7 +1090,7 @@ func NewInitiaApp(
 		panic(err)
 	}
 
-	app.OracleClient, err = oracleclient.NewClientFromConfig(
+	app.OracleClient, err = apporacle.NewClientFromConfig(
 		oracleConfig,
 		app.Logger(),
 		serviceMetrics,
