@@ -83,7 +83,7 @@ func (k Keeper) sendICQ(
 	reqs := make([]abcitypes.RequestQuery, len(pairs))
 	for i, pair := range pairs {
 
-		pairIds[i] = pair.ToString()
+		pairIds[i] = pair.String()
 
 		// TODO change this to GetPrices
 		reqs[i] = abcitypes.RequestQuery{
@@ -150,6 +150,16 @@ func (k Keeper) OnAcknowledgementPacketSuccess(ctx sdk.Context, packet channelty
 		return err
 	}
 
+	var icqPacketData icqtypes.InterchainQueryPacketData
+	if err := k.cdc.UnmarshalJSON(packet.Data, &icqPacketData); err != nil {
+		return err
+	}
+
+	reqs, err := icqtypes.DeserializeCosmosQuery(icqPacketData.Data)
+	if err != nil {
+		return err
+	}
+
 	resps, err := icqtypes.DeserializeCosmosResponse(ack.Data)
 	if err != nil {
 		k.Logger(ctx).Error("failed to parse icq response to cosmos responses")
@@ -157,9 +167,15 @@ func (k Keeper) OnAcknowledgementPacketSuccess(ctx sdk.Context, packet channelty
 	}
 
 	// store fetched prices to store
-	for _, resp := range resps {
+	for i, resp := range resps {
 		if resp.Code != abcitypes.CodeTypeOK {
 			continue
+		}
+
+		var oracleReq oracletypes.GetPriceRequest
+		if err := k.cdc.Unmarshal(reqs[i].Data, &oracleReq); err != nil {
+			k.Logger(ctx).Error("failed to parse icq request")
+			return err
 		}
 
 		var oracleRes oracletypes.GetPriceResponse
@@ -168,13 +184,13 @@ func (k Keeper) OnAcknowledgementPacketSuccess(ctx sdk.Context, packet channelty
 			return err
 		}
 
-		cp, ok := k.oracleKeeper.GetCurrencyPairFromID(ctx, oracleRes.Id)
-		if !ok {
+		if oracleRes.Price == nil {
 			continue
 		}
 
-		if oracleRes.Price == nil {
-			continue
+		cp, err := oracletypes.CurrencyPairFromString(oracleReq.GetCurrencyPairId())
+		if err != nil {
+			return err
 		}
 
 		// ICQ connection is UNORDERED, so old query response can be relayed

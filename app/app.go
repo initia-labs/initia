@@ -1,7 +1,6 @@
 package app
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -165,18 +164,15 @@ import (
 
 	// slinky oracle dependencies
 	oraclepreblock "github.com/skip-mev/slinky/abci/preblock/oracle"
+	oraclemath "github.com/skip-mev/slinky/abci/preblock/oracle/math"
 	oracleproposals "github.com/skip-mev/slinky/abci/proposals"
 	compression "github.com/skip-mev/slinky/abci/strategies/codec"
 	"github.com/skip-mev/slinky/abci/strategies/currencypair"
 	"github.com/skip-mev/slinky/abci/ve"
-	oraclemetrics "github.com/skip-mev/slinky/oracle/metrics"
-	oracleservice "github.com/skip-mev/slinky/service"
-	serviceclient "github.com/skip-mev/slinky/service/client"
+	oracleconfig "github.com/skip-mev/slinky/oracle/config"
+	oracleclient "github.com/skip-mev/slinky/service/clients/oracle"
 	servicemetrics "github.com/skip-mev/slinky/service/metrics"
-	alertskeeper "github.com/skip-mev/slinky/x/alerts/keeper"
-	alerttypes "github.com/skip-mev/slinky/x/alerts/types"
-	incentiveskeeper "github.com/skip-mev/slinky/x/incentives/keeper"
-	incentivetypes "github.com/skip-mev/slinky/x/incentives/types"
+	"github.com/skip-mev/slinky/service/servers/prometheus"
 	"github.com/skip-mev/slinky/x/oracle"
 	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
@@ -209,9 +205,7 @@ var (
 		// distributed to proposers
 		auctiontypes.ModuleName: nil,
 		// slinky oracle permissions
-		oracletypes.ModuleName:    nil,
-		incentivetypes.ModuleName: nil,
-		alerttypes.ModuleName:     {authtypes.Burner, authtypes.Minter},
+		oracletypes.ModuleName: nil,
 
 		// this is only for testing
 		authtypes.Minter: {authtypes.Minter},
@@ -276,16 +270,14 @@ type InitiaApp struct {
 	MoveKeeper            *movekeeper.Keeper
 	AuctionKeeper         *auctionkeeper.Keeper // x/auction keeper used to process bids for TOB auctions
 	OPHostKeeper          *ophostkeeper.Keeper
-	OracleKeeper          *oraclekeeper.Keeper     // x/oracle keeper used for the slinky oracle
-	IncentivesKeeper      *incentiveskeeper.Keeper // x/incentives keeper used for slinky incentives
-	AlertsKeeper          *alertskeeper.Keeper     // x/alerts keeper used for slinky alerts
+	OracleKeeper          *oraclekeeper.Keeper // x/oracle keeper used for the slinky oracle
 
 	// testing purpose
 	FetchPriceKeeper *fetchpricekeeper.Keeper
 
 	// other slinky oracle services
-	OracleClient           oracleservice.OracleService
-	OraclePrometheusServer *oraclemetrics.PrometheusServer
+	OracleClient           oracleclient.OracleClient
+	OraclePrometheusServer *prometheus.PrometheusServer
 	oraclePreBlockHandler  *oraclepreblock.PreBlockHandler
 
 	// make scoped keepers public for test purposes
@@ -316,7 +308,7 @@ func NewInitiaApp(
 	traceStore io.Writer,
 	loadLatest bool,
 	moveConfig moveconfig.MoveConfig,
-	wrappedOracleConfig apporacle.WrappedOracleConfig,
+	oracleConfig oracleconfig.AppConfig,
 	appOpts servertypes.AppOptions,
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *InitiaApp {
@@ -344,8 +336,8 @@ func NewInitiaApp(
 		authzkeeper.StoreKey, feegrant.StoreKey, icahosttypes.StoreKey,
 		icacontrollertypes.StoreKey, ibcfeetypes.StoreKey, ibcpermtypes.StoreKey,
 		movetypes.StoreKey, auctiontypes.StoreKey, ophosttypes.StoreKey,
-		oracletypes.StoreKey, incentivetypes.StoreKey, alerttypes.StoreKey,
-		packetforwardtypes.StoreKey, icqtypes.StoreKey, fetchpricetypes.StoreKey,
+		oracletypes.StoreKey, packetforwardtypes.StoreKey, icqtypes.StoreKey,
+		fetchpricetypes.StoreKey,
 	)
 	tkeys := storetypes.NewTransientStoreKeys()
 	memKeys := storetypes.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
@@ -1086,28 +1078,23 @@ func NewInitiaApp(
 	/// oracle start ///
 	////////////////////
 
-	if err := wrappedOracleConfig.ValidateBasic(); err != nil {
+	if err := oracleConfig.ValidateBasic(); err != nil {
 		panic(err)
 	}
 
-	metrics, consAddress, err := servicemetrics.NewServiceMetricsFromConfig(
-		wrappedOracleConfig.MetricsConfig.ToAppMetricConfig(),
+	serviceMetrics, err := servicemetrics.NewMetricsFromConfig(
+		oracleConfig,
+		app.ChainID(),
 	)
 	if err != nil {
 		panic(err)
 	}
 
-	var zapLogger *zap.Logger
-	if wrappedOracleConfig.Production {
-		zapLogger, err = zap.NewProduction()
-	} else {
-		zapLogger, err = zap.NewDevelopment()
-	}
-	if err != nil {
-		panic(err)
-	}
-
-	app.OracleClient, err = apporacle.NewOracleClient(wrappedOracleConfig)
+	app.OracleClient, err = apporacle.NewClientFromConfig(
+		oracleConfig,
+		app.Logger(),
+		serviceMetrics,
+	)
 	if err != nil {
 		panic(err)
 	}
@@ -1115,9 +1102,12 @@ func NewInitiaApp(
 	// If app level instrumentation is enabled, then wrap the oracle service with a metrics client
 	// to get metrics on the oracle service (for ABCI++). This will allow the instrumentation to track
 	// latency in VerifyVoteExtension requests and more.
-	if wrappedOracleConfig.MetricsConfig.Enabled {
-		app.OracleClient = serviceclient.NewMetricsClient(app.Logger(), app.OracleClient, metrics)
-		app.OraclePrometheusServer, err = oraclemetrics.NewPrometheusServer(wrappedOracleConfig.MetricsConfig.PrometheusServerAddress, zapLogger)
+	if oracleConfig.MetricsEnabled {
+		zapLogger, err := zap.NewProduction()
+		if err != nil {
+			panic(err)
+		}
+		app.OraclePrometheusServer, err = prometheus.NewPrometheusServer(oracleConfig.PrometheusServerAddress, zapLogger)
 		if err != nil {
 			panic(err)
 		}
@@ -1140,7 +1130,7 @@ func NewInitiaApp(
 			compression.NewZStdCompressor(),
 		),
 		currencypair.NewDeltaCurrencyPairStrategy(app.OracleKeeper),
-		metrics,
+		serviceMetrics,
 	)
 
 	// override baseapp's ProcessProposal + PrepareProposal
@@ -1149,10 +1139,12 @@ func NewInitiaApp(
 
 	app.oraclePreBlockHandler = oraclepreblock.NewOraclePreBlockHandler(
 		app.Logger(),
-		apporacle.GetOracleAggregationFN(app.Logger(), app.StakingKeeper),
+		oraclemath.VoteWeightedMedianFromContext(
+			app.Logger(),
+			stakingkeeper.NewCompatibilityKeeper(app.StakingKeeper),
+			oraclemath.DefaultPowerThreshold),
 		app.OracleKeeper,
-		consAddress,
-		metrics,
+		serviceMetrics,
 		currencypair.NewDeltaCurrencyPairStrategy(app.OracleKeeper),
 		compression.NewCompressionVoteExtensionCodec(
 			compression.NewDefaultVoteExtensionCodec(),
@@ -1176,6 +1168,7 @@ func NewInitiaApp(
 			compression.NewZLibCompressor(),
 		),
 		app.oraclePreBlockHandler.PreBlocker(),
+		serviceMetrics,
 	)
 	app.SetExtendVoteHandler(voteExtensionsHandler.ExtendVoteHandler())
 	app.SetVerifyVoteExtensionHandler(voteExtensionsHandler.VerifyVoteExtensionHandler())
@@ -1492,7 +1485,7 @@ func (app *InitiaApp) Close() error {
 
 	// close the oracle service
 	if app.OracleClient != nil {
-		app.OracleClient.Stop(context.Background())
+		app.OracleClient.Stop()
 	}
 
 	return nil

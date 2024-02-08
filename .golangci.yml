@@ -1,17 +1,20 @@
 linters:
-  disable-all: true
-  enable:
-    - errcheck
+  disable-all: false
+  disable:
+    - thelper
+    - varnamelen
+    - tagliatelle
+    - interfacer
+    - wrapcheck
+    - deadcode
+    - exhaustivestruct
     - golint
-    - ineffassign
-    - unconvert
-    - misspell
-    - govet
-    # - unused
-    # - deadcode
-    - goconst
-    - gosec
-    # - staticcheck
+    - ifshort
+    - maligned
+    - nosnakecase
+    - scopelint
+    - structcheck
+    - varcheck
 linters-settings:
   gocyclo:
     min-complexity: 11

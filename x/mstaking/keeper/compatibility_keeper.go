@@ -96,7 +96,7 @@ func (k CompatibilityKeeper) GetPubKeyByConsAddr(ctx context.Context, addr sdk.C
 		return cmtprotocrypto.PublicKey{}, err
 	}
 
-	pubkey, err := v.TmConsPublicKey()
+	pubkey, err := v.CmtConsPublicKey()
 	if err != nil {
 		return cmtprotocrypto.PublicKey{}, err
 	}

@@ -11,7 +11,8 @@ import (
 )
 
 var (
-	amino     = codec.NewLegacyAmino()
+	amino = codec.NewLegacyAmino()
+	//nolint:staticcheck
 	ModuleCdc = codec.NewAminoCodec(amino)
 )
 
