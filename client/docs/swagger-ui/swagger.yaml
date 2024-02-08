@@ -44697,6 +44697,24 @@ paths:
                         custom method
 
                         signatures required by gogoproto.
+                  voting_power_weights:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        DecCoin defines a token with a denomination and a
+                        decimal amount.
+
+
+                        NOTE: The amount field is an Dec which implements the
+                        custom method
+
+                        signatures required by gogoproto.
             description: QueryPoolResponse is response type for the Query/Pool RPC method.
         default:
           description: An unexpected error response.
@@ -51301,6 +51319,858 @@ paths:
                       format: byte
       tags:
         - Query
+  /slinky/alerts/v1/alerts:
+    get:
+      summary: |-
+        Alerts gets all alerts in state under the given status. If no status is
+        given, all Alerts are returned
+      operationId: Alerts
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              alerts:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    height:
+                      type: string
+                      format: uint64
+                      description: >-
+                        height represents the height for which the alert is
+                        filed.
+                    signer:
+                      type: string
+                      description: >-
+                        signer is the signer of this alert, this is the address
+                        that will receive
+
+                        the reward in the case of a positive conclusion, or
+                        whose bond will get
+
+                        slashed in the event of a negative conclusion.
+                    currency_pair:
+                      description: >-
+                        currency_pair is the currency-pair that this claim
+                        asserts is deviating
+
+                        from the price off-chain.
+                      type: object
+                      properties:
+                        Base:
+                          type: string
+                        Quote:
+                          type: string
+                      title: >-
+                        CurrencyPair is the standard representation of a pair of
+                        assets, where one
+
+                        (Base) is priced in terms of the other (Quote)
+                  description: >-
+                    Alert defines the basic meta-data necessary for the alerts
+                    module to resolve
+
+                    a claim that the price of a CurrencyPair on-chain is
+                    deviating from the price
+
+                    off-chain.
+            description: >-
+              AlertsResponse is the response type for the Query.Alerts RPC
+              method, it
+
+              contains the list of Alerts that are being tracked by the alerts
+              module.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                      description: >-
+                        A URL/resource name that uniquely identifies the type of
+                        the serialized
+
+                        protocol buffer message. This string must contain at
+                        least
+
+                        one "/" character. The last segment of the URL's path
+                        must represent
+
+                        the fully qualified name of the type (as in
+
+                        `path/google.protobuf.Duration`). The name should be in
+                        a canonical form
+
+                        (e.g., leading "." is not accepted).
+
+
+                        In practice, teams usually precompile into the binary
+                        all types that they
+
+                        expect it to use in the context of Any. However, for
+                        URLs which use the
+
+                        scheme `http`, `https`, or no scheme, one can optionally
+                        set up a type
+
+                        server that maps type URLs to message definitions as
+                        follows:
+
+
+                        * If no scheme is provided, `https` is assumed.
+
+                        * An HTTP GET on the URL must yield a
+                        [google.protobuf.Type][]
+                          value in binary format, or produce an error.
+                        * Applications are allowed to cache lookup results based
+                        on the
+                          URL, or have them precompiled into a binary to avoid any
+                          lookup. Therefore, binary compatibility needs to be preserved
+                          on changes to types. (Use versioned type names to manage
+                          breaking changes.)
+
+                        Note: this functionality is not currently available in
+                        the official
+
+                        protobuf release, and it is not used for type URLs
+                        beginning with
+
+                        type.googleapis.com.
+
+
+                        Schemes other than `http`, `https` (or the empty scheme)
+                        might be
+
+                        used with implementation specific semantics.
+                    value:
+                      type: string
+                      format: byte
+                      description: >-
+                        Must be a valid serialized protocol buffer of the above
+                        specified type.
+                  description: >-
+                    `Any` contains an arbitrary serialized protocol buffer
+                    message along with a
+
+                    URL that describes the type of the serialized message.
+
+
+                    Protobuf library provides support to pack/unpack Any values
+                    in the form
+
+                    of utility functions or additional generated methods of the
+                    Any type.
+
+
+                    Example 1: Pack and unpack a message in C++.
+
+                        Foo foo = ...;
+                        Any any;
+                        any.PackFrom(foo);
+                        ...
+                        if (any.UnpackTo(&foo)) {
+                          ...
+                        }
+
+                    Example 2: Pack and unpack a message in Java.
+
+                        Foo foo = ...;
+                        Any any = Any.pack(foo);
+                        ...
+                        if (any.is(Foo.class)) {
+                          foo = any.unpack(Foo.class);
+                        }
+                        // or ...
+                        if (any.isSameTypeAs(Foo.getDefaultInstance())) {
+                          foo = any.unpack(Foo.getDefaultInstance());
+                        }
+
+                    Example 3: Pack and unpack a message in Python.
+
+                        foo = Foo(...)
+                        any = Any()
+                        any.Pack(foo)
+                        ...
+                        if any.Is(Foo.DESCRIPTOR):
+                          any.Unpack(foo)
+                          ...
+
+                    Example 4: Pack and unpack a message in Go
+
+                         foo := &pb.Foo{...}
+                         any, err := anypb.New(foo)
+                         if err != nil {
+                           ...
+                         }
+                         ...
+                         foo := &pb.Foo{}
+                         if err := any.UnmarshalTo(foo); err != nil {
+                           ...
+                         }
+
+                    The pack methods provided by protobuf library will by
+                    default use
+
+                    'type.googleapis.com/full.type.name' as the type URL and the
+                    unpack
+
+                    methods only use the fully qualified type name after the
+                    last '/'
+
+                    in the type URL, for example "foo.bar.com/x/y.z" will yield
+                    type
+
+                    name "y.z".
+
+
+                    JSON
+
+
+                    The JSON representation of an `Any` value uses the regular
+
+                    representation of the deserialized, embedded message, with
+                    an
+
+                    additional field `@type` which contains the type URL.
+                    Example:
+
+                        package google.profile;
+                        message Person {
+                          string first_name = 1;
+                          string last_name = 2;
+                        }
+
+                        {
+                          "@type": "type.googleapis.com/google.profile.Person",
+                          "firstName": <string>,
+                          "lastName": <string>
+                        }
+
+                    If the embedded message type is well-known and has a custom
+                    JSON
+
+                    representation, that representation will be embedded adding
+                    a field
+
+                    `value` which holds the custom JSON in addition to the
+                    `@type`
+
+                    field. Example (for message [google.protobuf.Duration][]):
+
+                        {
+                          "@type": "type.googleapis.com/google.protobuf.Duration",
+                          "value": "1.212s"
+                        }
+      parameters:
+        - name: status
+          in: query
+          required: false
+          type: string
+          enum:
+            - CONCLUSION_STATUS_UNSPECIFIED
+            - CONCLUSION_STATUS_UNCONCLUDED
+            - CONCLUSION_STATUS_CONCLUDED
+          default: CONCLUSION_STATUS_UNSPECIFIED
+      tags:
+        - Query
+  /slinky/alerts/v1/params:
+    get:
+      operationId: AlertsParams
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              params:
+                type: object
+                properties:
+                  alert_params:
+                    description: >-
+                      AlertParams is the set of parameters for the x/Alerts
+                      module's Alerting.
+                    type: object
+                    properties:
+                      enabled:
+                        type: boolean
+                        title: >-
+                          Enabled is a boolean defining whether or not Alerts
+                          can be submitted
+
+                          to the module
+                      bond_amount:
+                        title: >-
+                          BondAmount is the minimum amount of bond required to
+                          submit an
+
+                          Alert
+                        type: object
+                        properties:
+                          denom:
+                            type: string
+                          amount:
+                            type: string
+                        description: >-
+                          Coin defines a token with a denomination and an
+                          amount.
+
+
+                          NOTE: The amount field is an Int which implements the
+                          custom method
+
+                          signatures required by gogoproto.
+                      max_block_age:
+                        type: string
+                        format: uint64
+                        description: >-
+                          MaxBlockAge defines the maximum age of an Alert before
+                          it is pruned, notice
+
+                          this is defined wrt. the height that the Alert
+                          references, i.e Alerts are
+
+                          only relevant until Alert.Height + MaxBlockAge is
+                          reached.
+                  conclusion_verification_params:
+                    type: object
+                    properties:
+                      type_url:
+                        type: string
+                        description: >-
+                          A URL/resource name that uniquely identifies the type
+                          of the serialized
+
+                          protocol buffer message. This string must contain at
+                          least
+
+                          one "/" character. The last segment of the URL's path
+                          must represent
+
+                          the fully qualified name of the type (as in
+
+                          `path/google.protobuf.Duration`). The name should be
+                          in a canonical form
+
+                          (e.g., leading "." is not accepted).
+
+
+                          In practice, teams usually precompile into the binary
+                          all types that they
+
+                          expect it to use in the context of Any. However, for
+                          URLs which use the
+
+                          scheme `http`, `https`, or no scheme, one can
+                          optionally set up a type
+
+                          server that maps type URLs to message definitions as
+                          follows:
+
+
+                          * If no scheme is provided, `https` is assumed.
+
+                          * An HTTP GET on the URL must yield a
+                          [google.protobuf.Type][]
+                            value in binary format, or produce an error.
+                          * Applications are allowed to cache lookup results
+                          based on the
+                            URL, or have them precompiled into a binary to avoid any
+                            lookup. Therefore, binary compatibility needs to be preserved
+                            on changes to types. (Use versioned type names to manage
+                            breaking changes.)
+
+                          Note: this functionality is not currently available in
+                          the official
+
+                          protobuf release, and it is not used for type URLs
+                          beginning with
+
+                          type.googleapis.com.
+
+
+                          Schemes other than `http`, `https` (or the empty
+                          scheme) might be
+
+                          used with implementation specific semantics.
+                      value:
+                        type: string
+                        format: byte
+                        description: >-
+                          Must be a valid serialized protocol buffer of the
+                          above specified type.
+                    description: >-
+                      `Any` contains an arbitrary serialized protocol buffer
+                      message along with a
+
+                      URL that describes the type of the serialized message.
+
+
+                      Protobuf library provides support to pack/unpack Any
+                      values in the form
+
+                      of utility functions or additional generated methods of
+                      the Any type.
+
+
+                      Example 1: Pack and unpack a message in C++.
+
+                          Foo foo = ...;
+                          Any any;
+                          any.PackFrom(foo);
+                          ...
+                          if (any.UnpackTo(&foo)) {
+                            ...
+                          }
+
+                      Example 2: Pack and unpack a message in Java.
+
+                          Foo foo = ...;
+                          Any any = Any.pack(foo);
+                          ...
+                          if (any.is(Foo.class)) {
+                            foo = any.unpack(Foo.class);
+                          }
+                          // or ...
+                          if (any.isSameTypeAs(Foo.getDefaultInstance())) {
+                            foo = any.unpack(Foo.getDefaultInstance());
+                          }
+
+                      Example 3: Pack and unpack a message in Python.
+
+                          foo = Foo(...)
+                          any = Any()
+                          any.Pack(foo)
+                          ...
+                          if any.Is(Foo.DESCRIPTOR):
+                            any.Unpack(foo)
+                            ...
+
+                      Example 4: Pack and unpack a message in Go
+
+                           foo := &pb.Foo{...}
+                           any, err := anypb.New(foo)
+                           if err != nil {
+                             ...
+                           }
+                           ...
+                           foo := &pb.Foo{}
+                           if err := any.UnmarshalTo(foo); err != nil {
+                             ...
+                           }
+
+                      The pack methods provided by protobuf library will by
+                      default use
+
+                      'type.googleapis.com/full.type.name' as the type URL and
+                      the unpack
+
+                      methods only use the fully qualified type name after the
+                      last '/'
+
+                      in the type URL, for example "foo.bar.com/x/y.z" will
+                      yield type
+
+                      name "y.z".
+
+
+                      JSON
+
+
+                      The JSON representation of an `Any` value uses the regular
+
+                      representation of the deserialized, embedded message, with
+                      an
+
+                      additional field `@type` which contains the type URL.
+                      Example:
+
+                          package google.profile;
+                          message Person {
+                            string first_name = 1;
+                            string last_name = 2;
+                          }
+
+                          {
+                            "@type": "type.googleapis.com/google.profile.Person",
+                            "firstName": <string>,
+                            "lastName": <string>
+                          }
+
+                      If the embedded message type is well-known and has a
+                      custom JSON
+
+                      representation, that representation will be embedded
+                      adding a field
+
+                      `value` which holds the custom JSON in addition to the
+                      `@type`
+
+                      field. Example (for message [google.protobuf.Duration][]):
+
+                          {
+                            "@type": "type.googleapis.com/google.protobuf.Duration",
+                            "value": "1.212s"
+                          }
+                  pruning_params:
+                    description: >-
+                      PruningParams is the set of parameters for the x/Alerts
+                      module's pruning.
+                    type: object
+                    properties:
+                      enabled:
+                        type: boolean
+                        title: Enabled defines whether Alerts are to be pruned
+                      blocks_to_prune:
+                        type: string
+                        format: uint64
+                        description: >-
+                          BlocksToPrune defines the number of blocks until an
+                          Alert will be pruned
+
+                          from state, notice this is defined wrt. the current
+                          block height, i.e
+
+                          Alerts will be stored in state until current_height +
+                          BlocksToPrune is
+
+                          reached.
+                description: Params is the set of parameters for the x/Alerts module.
+            description: >-
+              ParamsResponse is the response type for the Query.Params RPC
+              method, it
+
+              contains the Params of the module.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                      description: >-
+                        A URL/resource name that uniquely identifies the type of
+                        the serialized
+
+                        protocol buffer message. This string must contain at
+                        least
+
+                        one "/" character. The last segment of the URL's path
+                        must represent
+
+                        the fully qualified name of the type (as in
+
+                        `path/google.protobuf.Duration`). The name should be in
+                        a canonical form
+
+                        (e.g., leading "." is not accepted).
+
+
+                        In practice, teams usually precompile into the binary
+                        all types that they
+
+                        expect it to use in the context of Any. However, for
+                        URLs which use the
+
+                        scheme `http`, `https`, or no scheme, one can optionally
+                        set up a type
+
+                        server that maps type URLs to message definitions as
+                        follows:
+
+
+                        * If no scheme is provided, `https` is assumed.
+
+                        * An HTTP GET on the URL must yield a
+                        [google.protobuf.Type][]
+                          value in binary format, or produce an error.
+                        * Applications are allowed to cache lookup results based
+                        on the
+                          URL, or have them precompiled into a binary to avoid any
+                          lookup. Therefore, binary compatibility needs to be preserved
+                          on changes to types. (Use versioned type names to manage
+                          breaking changes.)
+
+                        Note: this functionality is not currently available in
+                        the official
+
+                        protobuf release, and it is not used for type URLs
+                        beginning with
+
+                        type.googleapis.com.
+
+
+                        Schemes other than `http`, `https` (or the empty scheme)
+                        might be
+
+                        used with implementation specific semantics.
+                    value:
+                      type: string
+                      format: byte
+                      description: >-
+                        Must be a valid serialized protocol buffer of the above
+                        specified type.
+                  description: >-
+                    `Any` contains an arbitrary serialized protocol buffer
+                    message along with a
+
+                    URL that describes the type of the serialized message.
+
+
+                    Protobuf library provides support to pack/unpack Any values
+                    in the form
+
+                    of utility functions or additional generated methods of the
+                    Any type.
+
+
+                    Example 1: Pack and unpack a message in C++.
+
+                        Foo foo = ...;
+                        Any any;
+                        any.PackFrom(foo);
+                        ...
+                        if (any.UnpackTo(&foo)) {
+                          ...
+                        }
+
+                    Example 2: Pack and unpack a message in Java.
+
+                        Foo foo = ...;
+                        Any any = Any.pack(foo);
+                        ...
+                        if (any.is(Foo.class)) {
+                          foo = any.unpack(Foo.class);
+                        }
+                        // or ...
+                        if (any.isSameTypeAs(Foo.getDefaultInstance())) {
+                          foo = any.unpack(Foo.getDefaultInstance());
+                        }
+
+                    Example 3: Pack and unpack a message in Python.
+
+                        foo = Foo(...)
+                        any = Any()
+                        any.Pack(foo)
+                        ...
+                        if any.Is(Foo.DESCRIPTOR):
+                          any.Unpack(foo)
+                          ...
+
+                    Example 4: Pack and unpack a message in Go
+
+                         foo := &pb.Foo{...}
+                         any, err := anypb.New(foo)
+                         if err != nil {
+                           ...
+                         }
+                         ...
+                         foo := &pb.Foo{}
+                         if err := any.UnmarshalTo(foo); err != nil {
+                           ...
+                         }
+
+                    The pack methods provided by protobuf library will by
+                    default use
+
+                    'type.googleapis.com/full.type.name' as the type URL and the
+                    unpack
+
+                    methods only use the fully qualified type name after the
+                    last '/'
+
+                    in the type URL, for example "foo.bar.com/x/y.z" will yield
+                    type
+
+                    name "y.z".
+
+
+                    JSON
+
+
+                    The JSON representation of an `Any` value uses the regular
+
+                    representation of the deserialized, embedded message, with
+                    an
+
+                    additional field `@type` which contains the type URL.
+                    Example:
+
+                        package google.profile;
+                        message Person {
+                          string first_name = 1;
+                          string last_name = 2;
+                        }
+
+                        {
+                          "@type": "type.googleapis.com/google.profile.Person",
+                          "firstName": <string>,
+                          "lastName": <string>
+                        }
+
+                    If the embedded message type is well-known and has a custom
+                    JSON
+
+                    representation, that representation will be embedded adding
+                    a field
+
+                    `value` which holds the custom JSON in addition to the
+                    `@type`
+
+                    field. Example (for message [google.protobuf.Duration][]):
+
+                        {
+                          "@type": "type.googleapis.com/google.protobuf.Duration",
+                          "value": "1.212s"
+                        }
+      tags:
+        - Query
+  /slinky/incentives/v1/get_all_incentives:
+    get:
+      summary: GetAllIncentives returns all incentives.
+      operationId: GetAllIncentives
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              registry:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    incentive_type:
+                      type: string
+                      description: >-
+                        IncentiveType is the incentive type i.e.
+                        (BadPriceIncentiveType,
+
+                        GoodPriceIncentiveType).
+                    entries:
+                      type: array
+                      items:
+                        type: string
+                        format: byte
+                      description: Entries is a list of incentive bytes.
+                  description: >-
+                    IncentivesByType encapsulates a list of incentives by type.
+                    Each of the
+
+                    entries here must correspond to the same incentive type
+                    defined here.
+                description: Registry is the list of all incentives, grouped by type.
+            description: >-
+              GetAllIncentivesResponse is the response type for the
+              Query/GetAllIncentives
+
+              RPC method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      tags:
+        - Query
+  /slinky/incentives/v1/get_incentives_by_type/{incentive_type}:
+    get:
+      summary: >-
+        GetIncentivesByType returns all incentives of a given type. If the type
+        is
+
+        not registered with the module, an error is returned.
+      operationId: GetIncentivesByType
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              entries:
+                type: array
+                items:
+                  type: string
+                  format: byte
+                description: Entries is the list of incentives of the given type.
+            description: |-
+              GetIncentivesByTypeResponse is the response type for the
+              Query/GetIncentivesByType RPC method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: incentive_type
+          description: |-
+            IncentiveType is the incentive type i.e. (BadPriceIncentiveType,
+            GoodPriceIncentiveType).
+          in: path
+          required: true
+          type: string
+      tags:
+        - Query
   /slinky/oracle/v1/get_all_tickers:
     get:
       summary: >-
@@ -51454,14 +52324,114 @@ paths:
           required: false
           type: string
         - name: currency_pair_id
-          description: >-
-            stringified representation of the CurrencyPair (notice, this must be
-            the
-
-            result of CurrencyPair.ToString()).
+          description: string representation of the CurrencyPair.
           in: query
           required: false
           type: string
+      tags:
+        - Query
+  /slinky/oracle/v1/get_prices:
+    get:
+      operationId: GetPrices
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              prices:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    price:
+                      title: >-
+                        QuotePrice represents the quote-price for the
+                        CurrencyPair given in
+
+                        GetPriceRequest (possibly nil if no update has been
+                        made)
+                      type: object
+                      properties:
+                        price:
+                          type: string
+                        block_timestamp:
+                          type: string
+                          format: date-time
+                          title: >-
+                            BlockTimestamp tracks the block height associated
+                            with this price update.
+
+                            We include block timestamp alongside the price to
+                            ensure that smart
+
+                            contracts and applications are not utilizing stale
+                            oracle prices
+                        block_height:
+                          type: string
+                          format: uint64
+                          title: BlockHeight is height of block mentioned above
+                    nonce:
+                      type: string
+                      format: uint64
+                      title: >-
+                        nonce represents the nonce for the CurrencyPair if it
+                        exists in state
+                    decimals:
+                      type: string
+                      format: uint64
+                      description: >-
+                        decimals represents the number of decimals that the
+                        quote-price is
+
+                        represented in. For Pairs where ETHEREUM is the quote
+                        this will be 18,
+
+                        otherwise it will be 8.
+                    id:
+                      type: string
+                      format: uint64
+                      description: ID represents the identifier for the CurrencyPair.
+                  title: >-
+                    GetPriceResponse is the response from the GetPrice grpc
+                    method exposed from
+
+                    the x/oracle query service
+            title: >-
+              GetPricesResponse is the response from the GetPrices grpc method
+              exposed from
+
+              the x/oracle query service
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: currency_pair_ids
+          in: query
+          required: false
+          type: array
+          items:
+            type: string
+          collectionFormat: multi
       tags:
         - Query
 definitions:
@@ -78486,6 +79456,20 @@ definitions:
 
             NOTE: The amount field is an Int which implements the custom method
             signatures required by gogoproto.
+      voting_power_weights:
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            DecCoin defines a token with a denomination and a decimal amount.
+
+            NOTE: The amount field is an Dec which implements the custom method
+            signatures required by gogoproto.
     description: |-
       Pool is used for tracking bonded and not-bonded token supply of the bond
       denomination.
@@ -79580,6 +80564,24 @@ definitions:
 
 
                 NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+          voting_power_weights:
+            type: array
+            items:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                DecCoin defines a token with a denomination and a decimal
+                amount.
+
+
+                NOTE: The amount field is an Dec which implements the custom
                 method
 
                 signatures required by gogoproto.
@@ -84059,6 +85061,648 @@ definitions:
       l2_denom:
         type: string
     title: TokenPair defines l1 and l2 token pair
+  slinky.alerts.v1.Alert:
+    type: object
+    properties:
+      height:
+        type: string
+        format: uint64
+        description: height represents the height for which the alert is filed.
+      signer:
+        type: string
+        description: >-
+          signer is the signer of this alert, this is the address that will
+          receive
+
+          the reward in the case of a positive conclusion, or whose bond will
+          get
+
+          slashed in the event of a negative conclusion.
+      currency_pair:
+        description: >-
+          currency_pair is the currency-pair that this claim asserts is
+          deviating
+
+          from the price off-chain.
+        type: object
+        properties:
+          Base:
+            type: string
+          Quote:
+            type: string
+        title: >-
+          CurrencyPair is the standard representation of a pair of assets, where
+          one
+
+          (Base) is priced in terms of the other (Quote)
+    description: >-
+      Alert defines the basic meta-data necessary for the alerts module to
+      resolve
+
+      a claim that the price of a CurrencyPair on-chain is deviating from the
+      price
+
+      off-chain.
+  slinky.alerts.v1.AlertParams:
+    type: object
+    properties:
+      enabled:
+        type: boolean
+        title: |-
+          Enabled is a boolean defining whether or not Alerts can be submitted
+          to the module
+      bond_amount:
+        title: |-
+          BondAmount is the minimum amount of bond required to submit an
+          Alert
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+      max_block_age:
+        type: string
+        format: uint64
+        description: >-
+          MaxBlockAge defines the maximum age of an Alert before it is pruned,
+          notice
+
+          this is defined wrt. the height that the Alert references, i.e Alerts
+          are
+
+          only relevant until Alert.Height + MaxBlockAge is reached.
+    description: >-
+      AlertParams is the set of parameters for the x/Alerts module's Alerting.
+      It
+
+      defines whether or not Alerts can be submitted, and if so, the minimum
+
+      bond amount required to submit an Alert.
+  slinky.alerts.v1.AlertStatusID:
+    type: string
+    enum:
+      - CONCLUSION_STATUS_UNSPECIFIED
+      - CONCLUSION_STATUS_UNCONCLUDED
+      - CONCLUSION_STATUS_CONCLUDED
+    default: CONCLUSION_STATUS_UNSPECIFIED
+    description: >-
+      AlertStatus is the type for the status of an Alert, it can be Unconcluded
+      or
+
+      Concluded.
+  slinky.alerts.v1.AlertsResponse:
+    type: object
+    properties:
+      alerts:
+        type: array
+        items:
+          type: object
+          properties:
+            height:
+              type: string
+              format: uint64
+              description: height represents the height for which the alert is filed.
+            signer:
+              type: string
+              description: >-
+                signer is the signer of this alert, this is the address that
+                will receive
+
+                the reward in the case of a positive conclusion, or whose bond
+                will get
+
+                slashed in the event of a negative conclusion.
+            currency_pair:
+              description: >-
+                currency_pair is the currency-pair that this claim asserts is
+                deviating
+
+                from the price off-chain.
+              type: object
+              properties:
+                Base:
+                  type: string
+                Quote:
+                  type: string
+              title: >-
+                CurrencyPair is the standard representation of a pair of assets,
+                where one
+
+                (Base) is priced in terms of the other (Quote)
+          description: >-
+            Alert defines the basic meta-data necessary for the alerts module to
+            resolve
+
+            a claim that the price of a CurrencyPair on-chain is deviating from
+            the price
+
+            off-chain.
+    description: |-
+      AlertsResponse is the response type for the Query.Alerts RPC method, it
+      contains the list of Alerts that are being tracked by the alerts module.
+  slinky.alerts.v1.Params:
+    type: object
+    properties:
+      alert_params:
+        description: >-
+          AlertParams is the set of parameters for the x/Alerts module's
+          Alerting.
+        type: object
+        properties:
+          enabled:
+            type: boolean
+            title: >-
+              Enabled is a boolean defining whether or not Alerts can be
+              submitted
+
+              to the module
+          bond_amount:
+            title: |-
+              BondAmount is the minimum amount of bond required to submit an
+              Alert
+            type: object
+            properties:
+              denom:
+                type: string
+              amount:
+                type: string
+            description: >-
+              Coin defines a token with a denomination and an amount.
+
+
+              NOTE: The amount field is an Int which implements the custom
+              method
+
+              signatures required by gogoproto.
+          max_block_age:
+            type: string
+            format: uint64
+            description: >-
+              MaxBlockAge defines the maximum age of an Alert before it is
+              pruned, notice
+
+              this is defined wrt. the height that the Alert references, i.e
+              Alerts are
+
+              only relevant until Alert.Height + MaxBlockAge is reached.
+      conclusion_verification_params:
+        type: object
+        properties:
+          type_url:
+            type: string
+            description: >-
+              A URL/resource name that uniquely identifies the type of the
+              serialized
+
+              protocol buffer message. This string must contain at least
+
+              one "/" character. The last segment of the URL's path must
+              represent
+
+              the fully qualified name of the type (as in
+
+              `path/google.protobuf.Duration`). The name should be in a
+              canonical form
+
+              (e.g., leading "." is not accepted).
+
+
+              In practice, teams usually precompile into the binary all types
+              that they
+
+              expect it to use in the context of Any. However, for URLs which
+              use the
+
+              scheme `http`, `https`, or no scheme, one can optionally set up a
+              type
+
+              server that maps type URLs to message definitions as follows:
+
+
+              * If no scheme is provided, `https` is assumed.
+
+              * An HTTP GET on the URL must yield a [google.protobuf.Type][]
+                value in binary format, or produce an error.
+              * Applications are allowed to cache lookup results based on the
+                URL, or have them precompiled into a binary to avoid any
+                lookup. Therefore, binary compatibility needs to be preserved
+                on changes to types. (Use versioned type names to manage
+                breaking changes.)
+
+              Note: this functionality is not currently available in the
+              official
+
+              protobuf release, and it is not used for type URLs beginning with
+
+              type.googleapis.com.
+
+
+              Schemes other than `http`, `https` (or the empty scheme) might be
+
+              used with implementation specific semantics.
+          value:
+            type: string
+            format: byte
+            description: >-
+              Must be a valid serialized protocol buffer of the above specified
+              type.
+        description: >-
+          `Any` contains an arbitrary serialized protocol buffer message along
+          with a
+
+          URL that describes the type of the serialized message.
+
+
+          Protobuf library provides support to pack/unpack Any values in the
+          form
+
+          of utility functions or additional generated methods of the Any type.
+
+
+          Example 1: Pack and unpack a message in C++.
+
+              Foo foo = ...;
+              Any any;
+              any.PackFrom(foo);
+              ...
+              if (any.UnpackTo(&foo)) {
+                ...
+              }
+
+          Example 2: Pack and unpack a message in Java.
+
+              Foo foo = ...;
+              Any any = Any.pack(foo);
+              ...
+              if (any.is(Foo.class)) {
+                foo = any.unpack(Foo.class);
+              }
+              // or ...
+              if (any.isSameTypeAs(Foo.getDefaultInstance())) {
+                foo = any.unpack(Foo.getDefaultInstance());
+              }
+
+          Example 3: Pack and unpack a message in Python.
+
+              foo = Foo(...)
+              any = Any()
+              any.Pack(foo)
+              ...
+              if any.Is(Foo.DESCRIPTOR):
+                any.Unpack(foo)
+                ...
+
+          Example 4: Pack and unpack a message in Go
+
+               foo := &pb.Foo{...}
+               any, err := anypb.New(foo)
+               if err != nil {
+                 ...
+               }
+               ...
+               foo := &pb.Foo{}
+               if err := any.UnmarshalTo(foo); err != nil {
+                 ...
+               }
+
+          The pack methods provided by protobuf library will by default use
+
+          'type.googleapis.com/full.type.name' as the type URL and the unpack
+
+          methods only use the fully qualified type name after the last '/'
+
+          in the type URL, for example "foo.bar.com/x/y.z" will yield type
+
+          name "y.z".
+
+
+          JSON
+
+
+          The JSON representation of an `Any` value uses the regular
+
+          representation of the deserialized, embedded message, with an
+
+          additional field `@type` which contains the type URL. Example:
+
+              package google.profile;
+              message Person {
+                string first_name = 1;
+                string last_name = 2;
+              }
+
+              {
+                "@type": "type.googleapis.com/google.profile.Person",
+                "firstName": <string>,
+                "lastName": <string>
+              }
+
+          If the embedded message type is well-known and has a custom JSON
+
+          representation, that representation will be embedded adding a field
+
+          `value` which holds the custom JSON in addition to the `@type`
+
+          field. Example (for message [google.protobuf.Duration][]):
+
+              {
+                "@type": "type.googleapis.com/google.protobuf.Duration",
+                "value": "1.212s"
+              }
+      pruning_params:
+        description: >-
+          PruningParams is the set of parameters for the x/Alerts module's
+          pruning.
+        type: object
+        properties:
+          enabled:
+            type: boolean
+            title: Enabled defines whether Alerts are to be pruned
+          blocks_to_prune:
+            type: string
+            format: uint64
+            description: >-
+              BlocksToPrune defines the number of blocks until an Alert will be
+              pruned
+
+              from state, notice this is defined wrt. the current block height,
+              i.e
+
+              Alerts will be stored in state until current_height +
+              BlocksToPrune is
+
+              reached.
+    description: Params is the set of parameters for the x/Alerts module.
+  slinky.alerts.v1.ParamsResponse:
+    type: object
+    properties:
+      params:
+        type: object
+        properties:
+          alert_params:
+            description: >-
+              AlertParams is the set of parameters for the x/Alerts module's
+              Alerting.
+            type: object
+            properties:
+              enabled:
+                type: boolean
+                title: >-
+                  Enabled is a boolean defining whether or not Alerts can be
+                  submitted
+
+                  to the module
+              bond_amount:
+                title: |-
+                  BondAmount is the minimum amount of bond required to submit an
+                  Alert
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  Coin defines a token with a denomination and an amount.
+
+
+                  NOTE: The amount field is an Int which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+              max_block_age:
+                type: string
+                format: uint64
+                description: >-
+                  MaxBlockAge defines the maximum age of an Alert before it is
+                  pruned, notice
+
+                  this is defined wrt. the height that the Alert references, i.e
+                  Alerts are
+
+                  only relevant until Alert.Height + MaxBlockAge is reached.
+          conclusion_verification_params:
+            type: object
+            properties:
+              type_url:
+                type: string
+                description: >-
+                  A URL/resource name that uniquely identifies the type of the
+                  serialized
+
+                  protocol buffer message. This string must contain at least
+
+                  one "/" character. The last segment of the URL's path must
+                  represent
+
+                  the fully qualified name of the type (as in
+
+                  `path/google.protobuf.Duration`). The name should be in a
+                  canonical form
+
+                  (e.g., leading "." is not accepted).
+
+
+                  In practice, teams usually precompile into the binary all
+                  types that they
+
+                  expect it to use in the context of Any. However, for URLs
+                  which use the
+
+                  scheme `http`, `https`, or no scheme, one can optionally set
+                  up a type
+
+                  server that maps type URLs to message definitions as follows:
+
+
+                  * If no scheme is provided, `https` is assumed.
+
+                  * An HTTP GET on the URL must yield a [google.protobuf.Type][]
+                    value in binary format, or produce an error.
+                  * Applications are allowed to cache lookup results based on
+                  the
+                    URL, or have them precompiled into a binary to avoid any
+                    lookup. Therefore, binary compatibility needs to be preserved
+                    on changes to types. (Use versioned type names to manage
+                    breaking changes.)
+
+                  Note: this functionality is not currently available in the
+                  official
+
+                  protobuf release, and it is not used for type URLs beginning
+                  with
+
+                  type.googleapis.com.
+
+
+                  Schemes other than `http`, `https` (or the empty scheme) might
+                  be
+
+                  used with implementation specific semantics.
+              value:
+                type: string
+                format: byte
+                description: >-
+                  Must be a valid serialized protocol buffer of the above
+                  specified type.
+            description: >-
+              `Any` contains an arbitrary serialized protocol buffer message
+              along with a
+
+              URL that describes the type of the serialized message.
+
+
+              Protobuf library provides support to pack/unpack Any values in the
+              form
+
+              of utility functions or additional generated methods of the Any
+              type.
+
+
+              Example 1: Pack and unpack a message in C++.
+
+                  Foo foo = ...;
+                  Any any;
+                  any.PackFrom(foo);
+                  ...
+                  if (any.UnpackTo(&foo)) {
+                    ...
+                  }
+
+              Example 2: Pack and unpack a message in Java.
+
+                  Foo foo = ...;
+                  Any any = Any.pack(foo);
+                  ...
+                  if (any.is(Foo.class)) {
+                    foo = any.unpack(Foo.class);
+                  }
+                  // or ...
+                  if (any.isSameTypeAs(Foo.getDefaultInstance())) {
+                    foo = any.unpack(Foo.getDefaultInstance());
+                  }
+
+              Example 3: Pack and unpack a message in Python.
+
+                  foo = Foo(...)
+                  any = Any()
+                  any.Pack(foo)
+                  ...
+                  if any.Is(Foo.DESCRIPTOR):
+                    any.Unpack(foo)
+                    ...
+
+              Example 4: Pack and unpack a message in Go
+
+                   foo := &pb.Foo{...}
+                   any, err := anypb.New(foo)
+                   if err != nil {
+                     ...
+                   }
+                   ...
+                   foo := &pb.Foo{}
+                   if err := any.UnmarshalTo(foo); err != nil {
+                     ...
+                   }
+
+              The pack methods provided by protobuf library will by default use
+
+              'type.googleapis.com/full.type.name' as the type URL and the
+              unpack
+
+              methods only use the fully qualified type name after the last '/'
+
+              in the type URL, for example "foo.bar.com/x/y.z" will yield type
+
+              name "y.z".
+
+
+              JSON
+
+
+              The JSON representation of an `Any` value uses the regular
+
+              representation of the deserialized, embedded message, with an
+
+              additional field `@type` which contains the type URL. Example:
+
+                  package google.profile;
+                  message Person {
+                    string first_name = 1;
+                    string last_name = 2;
+                  }
+
+                  {
+                    "@type": "type.googleapis.com/google.profile.Person",
+                    "firstName": <string>,
+                    "lastName": <string>
+                  }
+
+              If the embedded message type is well-known and has a custom JSON
+
+              representation, that representation will be embedded adding a
+              field
+
+              `value` which holds the custom JSON in addition to the `@type`
+
+              field. Example (for message [google.protobuf.Duration][]):
+
+                  {
+                    "@type": "type.googleapis.com/google.protobuf.Duration",
+                    "value": "1.212s"
+                  }
+          pruning_params:
+            description: >-
+              PruningParams is the set of parameters for the x/Alerts module's
+              pruning.
+            type: object
+            properties:
+              enabled:
+                type: boolean
+                title: Enabled defines whether Alerts are to be pruned
+              blocks_to_prune:
+                type: string
+                format: uint64
+                description: >-
+                  BlocksToPrune defines the number of blocks until an Alert will
+                  be pruned
+
+                  from state, notice this is defined wrt. the current block
+                  height, i.e
+
+                  Alerts will be stored in state until current_height +
+                  BlocksToPrune is
+
+                  reached.
+        description: Params is the set of parameters for the x/Alerts module.
+    description: |-
+      ParamsResponse is the response type for the Query.Params RPC method, it
+      contains the Params of the module.
+  slinky.alerts.v1.PruningParams:
+    type: object
+    properties:
+      enabled:
+        type: boolean
+        title: Enabled defines whether Alerts are to be pruned
+      blocks_to_prune:
+        type: string
+        format: uint64
+        description: >-
+          BlocksToPrune defines the number of blocks until an Alert will be
+          pruned
+
+          from state, notice this is defined wrt. the current block height, i.e
+
+          Alerts will be stored in state until current_height + BlocksToPrune is
+
+          reached.
+    description: PruningParams defines the criterion for pruning Alerts from the state.
   slinky.oracle.v1.CurrencyPair:
     type: object
     properties:
@@ -84069,6 +85713,66 @@ definitions:
     title: |-
       CurrencyPair is the standard representation of a pair of assets, where one
       (Base) is priced in terms of the other (Quote)
+  slinky.incentives.v1.GetAllIncentivesResponse:
+    type: object
+    properties:
+      registry:
+        type: array
+        items:
+          type: object
+          properties:
+            incentive_type:
+              type: string
+              description: |-
+                IncentiveType is the incentive type i.e. (BadPriceIncentiveType,
+                GoodPriceIncentiveType).
+            entries:
+              type: array
+              items:
+                type: string
+                format: byte
+              description: Entries is a list of incentive bytes.
+          description: >-
+            IncentivesByType encapsulates a list of incentives by type. Each of
+            the
+
+            entries here must correspond to the same incentive type defined
+            here.
+        description: Registry is the list of all incentives, grouped by type.
+    description: >-
+      GetAllIncentivesResponse is the response type for the
+      Query/GetAllIncentives
+
+      RPC method.
+  slinky.incentives.v1.GetIncentivesByTypeResponse:
+    type: object
+    properties:
+      entries:
+        type: array
+        items:
+          type: string
+          format: byte
+        description: Entries is the list of incentives of the given type.
+    description: |-
+      GetIncentivesByTypeResponse is the response type for the
+      Query/GetIncentivesByType RPC method.
+  slinky.incentives.v1.IncentivesByType:
+    type: object
+    properties:
+      incentive_type:
+        type: string
+        description: |-
+          IncentiveType is the incentive type i.e. (BadPriceIncentiveType,
+          GoodPriceIncentiveType).
+      entries:
+        type: array
+        items:
+          type: string
+          format: byte
+        description: Entries is a list of incentive bytes.
+    description: |-
+      IncentivesByType encapsulates a list of incentives by type. Each of the
+      entries here must correspond to the same incentive type defined here.
   slinky.oracle.v1.GetAllCurrencyPairsResponse:
     type: object
     properties:
@@ -84132,6 +85836,71 @@ definitions:
         description: ID represents the identifier for the CurrencyPair.
     title: >-
       GetPriceResponse is the response from the GetPrice grpc method exposed
+      from
+
+      the x/oracle query service
+  slinky.oracle.v1.GetPricesResponse:
+    type: object
+    properties:
+      prices:
+        type: array
+        items:
+          type: object
+          properties:
+            price:
+              title: >-
+                QuotePrice represents the quote-price for the CurrencyPair given
+                in
+
+                GetPriceRequest (possibly nil if no update has been made)
+              type: object
+              properties:
+                price:
+                  type: string
+                block_timestamp:
+                  type: string
+                  format: date-time
+                  title: >-
+                    BlockTimestamp tracks the block height associated with this
+                    price update.
+
+                    We include block timestamp alongside the price to ensure
+                    that smart
+
+                    contracts and applications are not utilizing stale oracle
+                    prices
+                block_height:
+                  type: string
+                  format: uint64
+                  title: BlockHeight is height of block mentioned above
+            nonce:
+              type: string
+              format: uint64
+              title: >-
+                nonce represents the nonce for the CurrencyPair if it exists in
+                state
+            decimals:
+              type: string
+              format: uint64
+              description: >-
+                decimals represents the number of decimals that the quote-price
+                is
+
+                represented in. For Pairs where ETHEREUM is the quote this will
+                be 18,
+
+                otherwise it will be 8.
+            id:
+              type: string
+              format: uint64
+              description: ID represents the identifier for the CurrencyPair.
+          title: >-
+            GetPriceResponse is the response from the GetPrice grpc method
+            exposed from
+
+            the x/oracle query service
+    title: >-
+      GetPricesResponse is the response from the GetPrices grpc method exposed
       from
 
       the x/oracle query service

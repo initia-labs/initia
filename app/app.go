@@ -172,8 +172,10 @@ import (
 	oracleclient "github.com/skip-mev/slinky/service/clients/oracle"
 	servicemetrics "github.com/skip-mev/slinky/service/metrics"
 	"github.com/skip-mev/slinky/service/servers/prometheus"
+	"github.com/skip-mev/slinky/x/alerts"
 	alertskeeper "github.com/skip-mev/slinky/x/alerts/keeper"
-	alerttypes "github.com/skip-mev/slinky/x/alerts/types"
+	alertstypes "github.com/skip-mev/slinky/x/alerts/types"
+	incentive "github.com/skip-mev/slinky/x/incentives"
 	incentiveskeeper "github.com/skip-mev/slinky/x/incentives/keeper"
 	incentivetypes "github.com/skip-mev/slinky/x/incentives/types"
 	"github.com/skip-mev/slinky/x/oracle"
@@ -210,7 +212,7 @@ var (
 		// slinky oracle permissions
 		oracletypes.ModuleName:    nil,
 		incentivetypes.ModuleName: nil,
-		alerttypes.ModuleName:     {authtypes.Burner, authtypes.Minter},
+		alertstypes.ModuleName:    {authtypes.Burner, authtypes.Minter},
 
 		// this is only for testing
 		authtypes.Minter: {authtypes.Minter},
@@ -343,7 +345,7 @@ func NewInitiaApp(
 		authzkeeper.StoreKey, feegrant.StoreKey, icahosttypes.StoreKey,
 		icacontrollertypes.StoreKey, ibcfeetypes.StoreKey, ibcpermtypes.StoreKey,
 		movetypes.StoreKey, auctiontypes.StoreKey, ophosttypes.StoreKey,
-		oracletypes.StoreKey, incentivetypes.StoreKey, alerttypes.StoreKey,
+		oracletypes.StoreKey, incentivetypes.StoreKey, alertstypes.StoreKey,
 		packetforwardtypes.StoreKey, icqtypes.StoreKey, fetchpricetypes.StoreKey,
 	)
 	tkeys := storetypes.NewTransientStoreKeys()
@@ -898,6 +900,8 @@ func NewInitiaApp(
 		auction.NewAppModule(app.appCodec, *app.AuctionKeeper),
 		ophost.NewAppModule(appCodec, *app.OPHostKeeper),
 		// slinky modules
+		alerts.NewAppModule(appCodec, *app.AlertsKeeper),
+		incentive.NewAppModule(appCodec, *app.IncentivesKeeper),
 		oracle.NewAppModule(appCodec, *app.OracleKeeper),
 		// ibc modules
 		ibc.NewAppModule(app.IBCKeeper),
@@ -972,6 +976,7 @@ func NewInitiaApp(
 		ibcnfttransfertypes.ModuleName, icatypes.ModuleName, icaauthtypes.ModuleName, ibcfeetypes.ModuleName,
 		ibcpermtypes.ModuleName, consensusparamtypes.ModuleName, auctiontypes.ModuleName, ophosttypes.ModuleName,
 		oracletypes.ModuleName, packetforwardtypes.ModuleName, icqtypes.ModuleName, fetchpricetypes.ModuleName,
+		alertstypes.ModuleName, incentivetypes.ModuleName,
 	}
 	app.ModuleManager.SetOrderInitGenesis(genesisModuleOrder...)
 	app.ModuleManager.SetOrderExportGenesis(genesisModuleOrder...)
