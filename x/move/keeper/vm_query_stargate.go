@@ -21,6 +21,6 @@ func DefaultStargateQueryWhiteList() StargateQueryWhiteList {
 	return res
 }
 
-func EmptyStargateWhitelist() StargateQueryWhiteList {
+func EmptyStargateQueryWhitelist() StargateQueryWhiteList {
 	return make(StargateQueryWhiteList)
 }

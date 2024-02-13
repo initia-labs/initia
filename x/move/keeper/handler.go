@@ -11,6 +11,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
+	"github.com/cosmos/gogoproto/proto"
 	"github.com/initia-labs/initia/x/move/ante"
 	"github.com/initia-labs/initia/x/move/types"
 	vmapi "github.com/initia-labs/initiavm/api"
@@ -337,9 +338,15 @@ func (k Keeper) handleExecuteResponse(
 func (k Keeper) DispatchMessages(ctx context.Context, messages []vmtypes.CosmosMessage) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	for _, message := range messages {
-		msg, err := types.ConvertToSDKMessage(ctx, NewMoveBankKeeper(&k), NewNftKeeper(&k), message, k.ac, k.vc)
-		if err != nil {
-			return err
+		var msg proto.Message
+		var err error
+		if stargateMsg, ok := message.(*vmtypes.CosmosMessage__Stargate); ok {
+			msg, err = k.HandleVMStargateMsg(ctx, &stargateMsg.Value)
+		} else {
+			msg, err = types.ConvertToSDKMessage(ctx, NewMoveBankKeeper(&k), NewNftKeeper(&k), message, k.ac, k.vc)
+			if err != nil {
+				return err
+			}
 		}
 
 		// validate msg

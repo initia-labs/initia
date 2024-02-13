@@ -57,7 +57,8 @@ type Keeper struct {
 	ac address.Codec
 	vc address.Codec
 
-	vmQueryWhiteList *VMQueryWhiteList
+	vmStargateMsgWhiteList StargateMsgWhiteList
+	vmQueryWhiteList       *VMQueryWhiteList
 }
 
 func NewKeeper(
@@ -122,7 +123,8 @@ func NewKeeper(
 		ac: ac,
 		vc: vc,
 
-		vmQueryWhiteList: DefaultVMQueryWhiteList(),
+		vmStargateMsgWhiteList: DefaultStargateMsgWhiteList(),
+		vmQueryWhiteList:       DefaultVMQueryWhiteList(),
 	}
 	schema, err := sb.Build()
 	if err != nil {
