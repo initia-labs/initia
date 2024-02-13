@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"cosmossdk.io/collections"
 	moderrors "cosmossdk.io/errors"
@@ -11,6 +12,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
+	cosmosbanktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
 	banktypes "github.com/initia-labs/initia/x/bank/types"
 	"github.com/initia-labs/initia/x/move/types"
@@ -27,6 +29,56 @@ type MoveBankKeeper struct {
 // NewMoveBankKeeper return new MoveBankKeeper instance
 func NewMoveBankKeeper(k *Keeper) MoveBankKeeper {
 	return MoveBankKeeper{k}
+}
+
+// GetMetadata interpret move fungible asset metadata
+// to cosmos metadata.
+func (k MoveBankKeeper) GetMetadata(
+	ctx context.Context,
+	denom string,
+) (cosmosbanktypes.Metadata, error) {
+	metadata, err := types.MetadataAddressFromDenom(denom)
+	if err != nil {
+		return cosmosbanktypes.Metadata{}, err
+	}
+
+	bz, err := k.GetResourceBytes(ctx, metadata, vmtypes.StructTag{
+		Address:  vmtypes.StdAddress,
+		Module:   types.MoveModuleNameFungibleAsset,
+		Name:     types.ResourceNameMetadata,
+		TypeArgs: []vmtypes.TypeTag{},
+	})
+	if err != nil {
+		return cosmosbanktypes.Metadata{}, err
+	}
+
+	name, symbol, decimals := types.ReadFungibleAssetMetadata(bz)
+	denomUnits := []*cosmosbanktypes.DenomUnit{
+		{
+			Denom:    symbol,
+			Exponent: uint32(decimals),
+		},
+	}
+
+	base := denom
+	display := symbol
+	if decimals == 0 {
+		if symbol[0] == 'u' || symbol[0] == 'm' {
+			display = strings.ToUpper(symbol[1:])
+			denomUnits = append(denomUnits, &cosmosbanktypes.DenomUnit{
+				Denom:    display,
+				Exponent: 0,
+			})
+		}
+	}
+
+	return cosmosbanktypes.Metadata{
+		Name:       name,
+		Symbol:     symbol,
+		Base:       base,
+		Display:    display,
+		DenomUnits: denomUnits,
+	}, nil
 }
 
 // GetBalance return move coin balance
