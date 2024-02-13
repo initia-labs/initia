@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 	"errors"
+	"strings"
 
 	"cosmossdk.io/collections"
 	"cosmossdk.io/math"
@@ -97,24 +98,17 @@ func (k MoveBankKeeper) GetMetadata(
 		},
 	}
 
-	if denom != symbol {
-		denomUnits = append(denomUnits, &cosmosbanktypes.DenomUnit{
-			Denom:    symbol,
-			Exponent: uint32(decimals),
-		})
-	}
-
 	base := denom
-	display := symbol
+	display := denom
 	if decimals == 0 {
-		if symbol[0] == 'u' {
-			display = symbol[1:]
+		if !strings.Contains(denom, "/") && denom[0] == 'u' {
+			display = denom[1:]
 			denomUnits = append(denomUnits, &cosmosbanktypes.DenomUnit{
 				Denom:    display,
 				Exponent: 6,
 			})
-		} else if symbol[0] == 'm' {
-			display = symbol[1:]
+		} else if !strings.Contains(denom, "/") && denom[0] == 'm' {
+			display = denom[1:]
 			denomUnits = append(denomUnits, &cosmosbanktypes.DenomUnit{
 				Denom:    display,
 				Exponent: 3,
