@@ -163,7 +163,7 @@ func Test_GetMetadata(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, "uinit", metadata.Base)
-	require.Equal(t, "INIT", metadata.Display)
+	require.Equal(t, "init", metadata.Display)
 	require.Equal(t, "uinit Coin", metadata.Name)
 	require.Equal(t, []*cosmosbanktypes.DenomUnit{
 		{
@@ -171,7 +171,7 @@ func Test_GetMetadata(t *testing.T) {
 			Exponent: 0,
 		},
 		{
-			Denom:    "INIT",
+			Denom:    "init",
 			Exponent: 6,
 		},
 	}, metadata.DenomUnits)
