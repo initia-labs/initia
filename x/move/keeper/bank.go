@@ -63,11 +63,17 @@ func (k MoveBankKeeper) GetMetadata(
 	base := denom
 	display := symbol
 	if decimals == 0 {
-		if symbol[0] == 'u' || symbol[0] == 'm' {
+		if symbol[0] == 'u' {
 			display = strings.ToUpper(symbol[1:])
 			denomUnits = append(denomUnits, &cosmosbanktypes.DenomUnit{
 				Denom:    display,
-				Exponent: 0,
+				Exponent: 6,
+			})
+		} else if symbol[0] == 'm' {
+			display = strings.ToUpper(symbol[1:])
+			denomUnits = append(denomUnits, &cosmosbanktypes.DenomUnit{
+				Denom:    display,
+				Exponent: 3,
 			})
 		}
 	}

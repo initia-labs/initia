@@ -10,6 +10,7 @@ import (
 
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	cosmosbanktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
 	"github.com/initia-labs/initia/x/move/keeper"
 )
@@ -152,4 +153,26 @@ func Test_SendCoins(t *testing.T) {
 
 	require.Equal(t, sdk.NewCoin(bondDenom, sdkmath.ZeroInt()), input.BankKeeper.GetBalance(ctx, twoAddr, bondDenom))
 	require.Equal(t, amount, sdk.NewCoins(input.BankKeeper.GetBalance(ctx, threeAddr, bondDenom)))
+}
+
+func Test_GetMetadata(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+	moveBankKeeper := keeper.NewMoveBankKeeper(&input.MoveKeeper)
+
+	metadata, err := moveBankKeeper.GetMetadata(ctx, bondDenom)
+	require.NoError(t, err)
+
+	require.Equal(t, "uinit", metadata.Base)
+	require.Equal(t, "INIT", metadata.Display)
+	require.Equal(t, "uinit Coin", metadata.Name)
+	require.Equal(t, []*cosmosbanktypes.DenomUnit{
+		{
+			Denom:    bondDenom,
+			Exponent: 0,
+		},
+		{
+			Denom:    "INIT",
+			Exponent: 6,
+		},
+	}, metadata.DenomUnits)
 }
