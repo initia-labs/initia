@@ -36,7 +36,8 @@ type Keeper struct {
 	communityPoolKeeper types.CommunityPoolKeeper
 
 	// Msg server router
-	msgRouter baseapp.MessageRouter
+	msgRouter  baseapp.MessageRouter
+	grpcRouter *baseapp.GRPCQueryRouter
 
 	config moveconfig.MoveConfig
 
@@ -54,6 +55,8 @@ type Keeper struct {
 
 	ac address.Codec
 	vc address.Codec
+
+	vmQueryWhiteList *VMQueryWhiteList
 }
 
 func NewKeeper(
@@ -62,6 +65,7 @@ func NewKeeper(
 	authKeeper types.AccountKeeper,
 	communityPoolKeeper types.CommunityPoolKeeper,
 	msgRouter baseapp.MessageRouter,
+	grpcRouter *baseapp.GRPCQueryRouter,
 	moveConfig moveconfig.MoveConfig,
 	bankKeeper types.BankKeeper,
 	distrKeeper types.DistributionKeeper, // can be nil, if staking not used
@@ -97,14 +101,16 @@ func NewKeeper(
 		authKeeper:          authKeeper,
 		communityPoolKeeper: communityPoolKeeper,
 		msgRouter:           msgRouter,
+		grpcRouter:          grpcRouter,
 		config:              moveConfig,
 		moveVM:              &moveVM,
 		bankKeeper:          bankKeeper,
 		distrKeeper:         distrKeeper,
 		StakingKeeper:       stakingKeeper,
 		RewardKeeper:        rewardKeeper,
-		feeCollector:        feeCollector,
-		authority:           authority,
+
+		feeCollector: feeCollector,
+		authority:    authority,
 
 		ExecutionCounter: collections.NewSequence(sb, types.ExecutionCounterKey, "execution_counter"),
 		Params:           collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.RawParams](cdc)),
@@ -113,6 +119,8 @@ func NewKeeper(
 
 		ac: ac,
 		vc: vc,
+
+		vmQueryWhiteList: DefaultVMQueryWhiteList(),
 	}
 	schema, err := sb.Build()
 	if err != nil {

@@ -818,6 +818,7 @@ func NewInitiaApp(
 		app.DistrKeeper,
 		// app.NftTransferKeeper,
 		app.BaseApp.MsgServiceRouter(),
+		app.BaseApp.GRPCQueryRouter(),
 		moveConfig,
 		// staking feature
 		app.BankKeeper,

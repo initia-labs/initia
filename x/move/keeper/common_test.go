@@ -379,6 +379,7 @@ func _createTestInput(
 		accountKeeper,
 		distKeeper,
 		TestMsgRouter{},
+		nil,
 		moveConfig,
 		bankKeeper,
 		distKeeper,

@@ -32,4 +32,13 @@ var (
 
 	// ErrInvalidRequest error raised when the request is invalid
 	ErrInvalidRequest = errorsmod.Register(ModuleName, 10, "invalid request")
+
+	// ErrInvalidQueryRequest error raised when the query request is invalid
+	ErrInvalidQueryRequest = errorsmod.Register(ModuleName, 11, "invalid query request")
+
+	// ErrNotSupportedCustomQuery error raised when the custom request is not supported
+	ErrNotSupportedCustomQuery = errorsmod.Register(ModuleName, 12, "not supported custom query")
+
+	// ErrNotSupportedStargateQuery error raised when the stargate request is not supported or accepted
+	ErrNotSupportedStargateQuery = errorsmod.Register(ModuleName, 13, "not supported stargate query")
 )

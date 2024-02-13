@@ -23,6 +23,10 @@ func NewApi(k Keeper, ctx context.Context) GoApi {
 	return GoApi{k, ctx}
 }
 
+func (api GoApi) Query(req vmtypes.QueryRequest) ([]byte, error) {
+	return api.Keeper.HandleVMQuery(sdk.UnwrapSDKContext(api.ctx), &req)
+}
+
 // GetAccountInfo return account info (account number, sequence)
 func (api GoApi) GetAccountInfo(addr vmtypes.AccountAddress) (bool /* found */, uint64 /* account number */, uint64 /* sequence */, uint8 /* account_type */) {
 	sdkAddr := types.ConvertVMAddressToSDKAddress(addr)

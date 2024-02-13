@@ -399,6 +399,7 @@ func _createTestInput(
 		accountKeeper,
 		distKeeper,
 		nil,
+		nil,
 		moveConfig,
 		bankKeeper,
 		distKeeper,
