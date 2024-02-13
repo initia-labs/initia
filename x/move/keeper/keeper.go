@@ -26,14 +26,15 @@ type Keeper struct {
 	storeService corestoretypes.KVStoreService
 
 	// used only for staking feature
-	bankKeeper    types.BankKeeper
-	distrKeeper   types.DistributionKeeper
-	StakingKeeper types.StakingKeeper
-	RewardKeeper  types.RewardKeeper
+	distrKeeper         types.DistributionKeeper
+	StakingKeeper       types.StakingKeeper
+	RewardKeeper        types.RewardKeeper
+	communityPoolKeeper types.CommunityPoolKeeper
 
 	// required keepers
-	authKeeper          types.AccountKeeper
-	communityPoolKeeper types.CommunityPoolKeeper
+	authKeeper   types.AccountKeeper
+	bankKeeper   types.BankKeeper
+	oracleKeeper types.OracleKeeper
 
 	// Msg server router
 	msgRouter  baseapp.MessageRouter
@@ -63,14 +64,15 @@ func NewKeeper(
 	cdc codec.Codec,
 	storeService corestoretypes.KVStoreService,
 	authKeeper types.AccountKeeper,
-	communityPoolKeeper types.CommunityPoolKeeper,
+	bankKeeper types.BankKeeper,
+	oracleKeeper types.OracleKeeper,
 	msgRouter baseapp.MessageRouter,
 	grpcRouter *baseapp.GRPCQueryRouter,
 	moveConfig moveconfig.MoveConfig,
-	bankKeeper types.BankKeeper,
 	distrKeeper types.DistributionKeeper, // can be nil, if staking not used
 	stakingKeeper types.StakingKeeper, // can be nil, if staking not used
 	rewardKeeper types.RewardKeeper, // can be nil, if staking not used
+	communityPoolKeeper types.CommunityPoolKeeper, // can be nil, if staking not used
 	feeCollector string,
 	authority string,
 	ac, vc address.Codec,
@@ -99,18 +101,18 @@ func NewKeeper(
 		cdc:                 cdc,
 		storeService:        storeService,
 		authKeeper:          authKeeper,
-		communityPoolKeeper: communityPoolKeeper,
+		bankKeeper:          bankKeeper,
+		oracleKeeper:        oracleKeeper,
 		msgRouter:           msgRouter,
 		grpcRouter:          grpcRouter,
 		config:              moveConfig,
 		moveVM:              &moveVM,
-		bankKeeper:          bankKeeper,
 		distrKeeper:         distrKeeper,
 		StakingKeeper:       stakingKeeper,
 		RewardKeeper:        rewardKeeper,
-
-		feeCollector: feeCollector,
-		authority:    authority,
+		communityPoolKeeper: communityPoolKeeper,
+		feeCollector:        feeCollector,
+		authority:           authority,
 
 		ExecutionCounter: collections.NewSequence(sb, types.ExecutionCounterKey, "execution_counter"),
 		Params:           collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.RawParams](cdc)),

@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"encoding/binary"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"strings"
@@ -75,6 +76,10 @@ import (
 	vmapi "github.com/initia-labs/initiavm/api"
 	"github.com/initia-labs/initiavm/precompile"
 	vmtypes "github.com/initia-labs/initiavm/types"
+
+	"github.com/skip-mev/slinky/x/oracle"
+	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
+	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 )
 
 var ModuleBasics = module.NewBasicManager(
@@ -86,6 +91,7 @@ var ModuleBasics = module.NewBasicManager(
 	gov.AppModuleBasic{},
 	slashing.AppModuleBasic{},
 	move.AppModuleBasic{},
+	oracle.AppModuleBasic{},
 )
 
 // Bond denom should be set for staking test
@@ -223,6 +229,7 @@ type TestKeepers struct {
 	BankKeeper     bankkeeper.Keeper
 	GovKeeper      govkeeper.Keeper
 	MoveKeeper     movekeeper.Keeper
+	OracleKeeper   oraclekeeper.Keeper
 	EncodingConfig initiaappparams.EncodingConfig
 	Faucet         *TestFaucet
 	MultiStore     storetypes.CommitMultiStore
@@ -263,7 +270,7 @@ func _createTestInput(
 	keys := storetypes.NewKVStoreKeys(
 		authtypes.StoreKey, banktypes.StoreKey, stakingtypes.StoreKey,
 		rewardtypes.StoreKey, distributiontypes.StoreKey, slashingtypes.StoreKey,
-		govtypes.StoreKey, authzkeeper.StoreKey, movetypes.StoreKey,
+		govtypes.StoreKey, authzkeeper.StoreKey, movetypes.StoreKey, oracletypes.StoreKey,
 	)
 	ms := store.NewCommitMultiStore(db, log.NewNopLogger(), metrics.NewNoOpMetrics())
 	for _, v := range keys {
@@ -373,18 +380,25 @@ func _createTestInput(
 
 	accountKeeper.GetModuleAccount(ctx, movetypes.MoveStakingModuleName)
 
+	oracleKeeper := oraclekeeper.NewKeeper(
+		runtime.NewKVStoreService(keys[oracletypes.StoreKey]),
+		appCodec,
+		authtypes.NewModuleAddress(govtypes.ModuleName),
+	)
+
 	*moveKeeper = *movekeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[movetypes.StoreKey]),
 		accountKeeper,
-		distKeeper,
+		bankKeeper,
+		oracleKeeper,
 		TestMsgRouter{},
 		nil,
 		moveConfig,
-		bankKeeper,
 		distKeeper,
 		stakingKeeper,
 		rewardKeeper,
+		distKeeper,
 		authtypes.FeeCollectorName,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		ac, vc,
@@ -445,6 +459,7 @@ func _createTestInput(
 		MoveKeeper:    *moveKeeper,
 		BankKeeper:    bankKeeper,
 		GovKeeper:     *govKeeper,
+		OracleKeeper:  oracleKeeper,
 		// NftTransferKeeper: nftTransferKeeper,
 		EncodingConfig: encodingConfig,
 		Faucet:         faucet,
@@ -494,6 +509,44 @@ func (router TestMsgRouter) Handler(msg sdk.Msg) baseapp.MsgServiceHandler {
 
 func (router TestMsgRouter) HandlerByTypeURL(typeURL string) baseapp.MsgServiceHandler {
 	switch typeURL {
+	case sdk.MsgTypeURL(&movetypes.MsgExecute{}):
+		return func(ctx sdk.Context, _msg sdk.Msg) (*sdk.Result, error) {
+			msg := _msg.(*movetypes.MsgExecute)
+
+			argStrs := []string{}
+			for _, arg := range msg.Args {
+				argStrs = append(argStrs, string(arg))
+			}
+
+			ctx.EventManager().EmitEvent(sdk.NewEvent("move_execute",
+				sdk.NewAttribute("sender", msg.Sender),
+				sdk.NewAttribute("module_addr", msg.ModuleAddress),
+				sdk.NewAttribute("module_name", msg.ModuleName),
+				sdk.NewAttribute("function_name", msg.FunctionName),
+				sdk.NewAttribute("type_args", strings.Join(msg.TypeArgs, ",")),
+				sdk.NewAttribute("args", strings.Join(argStrs, ",")),
+			))
+
+			return sdk.WrapServiceResult(ctx, &stakingtypes.MsgDelegateResponse{}, nil)
+		}
+	case sdk.MsgTypeURL(&movetypes.MsgScript{}):
+		return func(ctx sdk.Context, _msg sdk.Msg) (*sdk.Result, error) {
+			msg := _msg.(*movetypes.MsgScript)
+
+			argStrs := []string{}
+			for _, arg := range msg.Args {
+				argStrs = append(argStrs, string(arg))
+			}
+
+			ctx.EventManager().EmitEvent(sdk.NewEvent("move_script",
+				sdk.NewAttribute("sender", msg.Sender),
+				sdk.NewAttribute("code_bytes", hex.EncodeToString(msg.CodeBytes)),
+				sdk.NewAttribute("type_args", strings.Join(msg.TypeArgs, ",")),
+				sdk.NewAttribute("args", strings.Join(argStrs, ",")),
+			))
+
+			return sdk.WrapServiceResult(ctx, &stakingtypes.MsgDelegateResponse{}, nil)
+		}
 	case sdk.MsgTypeURL(&stakingtypes.MsgDelegate{}):
 		return func(ctx sdk.Context, _msg sdk.Msg) (*sdk.Result, error) {
 			msg := _msg.(*stakingtypes.MsgDelegate)

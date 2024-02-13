@@ -14,8 +14,8 @@ SLINKY_URL=github.com/skip-mev/slinky
 
 COSMOS_SDK_VERSION=$(cat ./go.mod | grep "$COSMOS_URL v" | sed -n -e "s/^.* //p")
 IBC_VERSION=$(cat ./go.mod | grep "$IBC_URL/$IBC_V v" | sed -n -e "s/^.* //p")
-PFM_VERSION=$(cat ./go.mod | grep "$PFM_URL/$IBC_V v" | sed -n -e "s/^.* //p")
-ICQ_VERSION=$(cat ./go.mod | grep "$ICQ_URL/$IBC_V v" | sed -n -e "s/^.* //p")
+PFM_VERSION=$(cat ./go.mod | grep "$PFM_URL/$IBC_V v" | sed -n -e "s/^.* //p" | head -1)
+ICQ_VERSION=$(cat ./go.mod | grep "$ICQ_URL/$IBC_V v" | sed -n -e "s/^.* //p" | head -1)
 OPINIT_VERSION=$(cat ./go.mod | grep "$OPINIT_URL v" | sed -n -e "s/^.* //p")
 SLINKY_VERSION=$(cat ./go.mod | grep "$SLINKY_URL v" | sed -n -e "s/^.* //p")
 
