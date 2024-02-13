@@ -44697,6 +44697,24 @@ paths:
                         custom method
 
                         signatures required by gogoproto.
+                  voting_power_weights:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        DecCoin defines a token with a denomination and a
+                        decimal amount.
+
+
+                        NOTE: The amount field is an Dec which implements the
+                        custom method
+
+                        signatures required by gogoproto.
             description: QueryPoolResponse is response type for the Query/Pool RPC method.
         default:
           description: An unexpected error response.
@@ -51454,14 +51472,114 @@ paths:
           required: false
           type: string
         - name: currency_pair_id
-          description: >-
-            stringified representation of the CurrencyPair (notice, this must be
-            the
-
-            result of CurrencyPair.ToString()).
+          description: string representation of the CurrencyPair.
           in: query
           required: false
           type: string
+      tags:
+        - Query
+  /slinky/oracle/v1/get_prices:
+    get:
+      operationId: GetPrices
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              prices:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    price:
+                      title: >-
+                        QuotePrice represents the quote-price for the
+                        CurrencyPair given in
+
+                        GetPriceRequest (possibly nil if no update has been
+                        made)
+                      type: object
+                      properties:
+                        price:
+                          type: string
+                        block_timestamp:
+                          type: string
+                          format: date-time
+                          title: >-
+                            BlockTimestamp tracks the block height associated
+                            with this price update.
+
+                            We include block timestamp alongside the price to
+                            ensure that smart
+
+                            contracts and applications are not utilizing stale
+                            oracle prices
+                        block_height:
+                          type: string
+                          format: uint64
+                          title: BlockHeight is height of block mentioned above
+                    nonce:
+                      type: string
+                      format: uint64
+                      title: >-
+                        nonce represents the nonce for the CurrencyPair if it
+                        exists in state
+                    decimals:
+                      type: string
+                      format: uint64
+                      description: >-
+                        decimals represents the number of decimals that the
+                        quote-price is
+
+                        represented in. For Pairs where ETHEREUM is the quote
+                        this will be 18,
+
+                        otherwise it will be 8.
+                    id:
+                      type: string
+                      format: uint64
+                      description: ID represents the identifier for the CurrencyPair.
+                  title: >-
+                    GetPriceResponse is the response from the GetPrice grpc
+                    method exposed from
+
+                    the x/oracle query service
+            title: >-
+              GetPricesResponse is the response from the GetPrices grpc method
+              exposed from
+
+              the x/oracle query service
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: currency_pair_ids
+          in: query
+          required: false
+          type: array
+          items:
+            type: string
+          collectionFormat: multi
       tags:
         - Query
 definitions:
@@ -78486,6 +78604,20 @@ definitions:
 
             NOTE: The amount field is an Int which implements the custom method
             signatures required by gogoproto.
+      voting_power_weights:
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            DecCoin defines a token with a denomination and a decimal amount.
+
+            NOTE: The amount field is an Dec which implements the custom method
+            signatures required by gogoproto.
     description: |-
       Pool is used for tracking bonded and not-bonded token supply of the bond
       denomination.
@@ -79580,6 +79712,24 @@ definitions:
 
 
                 NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+          voting_power_weights:
+            type: array
+            items:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                DecCoin defines a token with a denomination and a decimal
+                amount.
+
+
+                NOTE: The amount field is an Dec which implements the custom
                 method
 
                 signatures required by gogoproto.
@@ -84132,6 +84282,71 @@ definitions:
         description: ID represents the identifier for the CurrencyPair.
     title: >-
       GetPriceResponse is the response from the GetPrice grpc method exposed
+      from
+
+      the x/oracle query service
+  slinky.oracle.v1.GetPricesResponse:
+    type: object
+    properties:
+      prices:
+        type: array
+        items:
+          type: object
+          properties:
+            price:
+              title: >-
+                QuotePrice represents the quote-price for the CurrencyPair given
+                in
+
+                GetPriceRequest (possibly nil if no update has been made)
+              type: object
+              properties:
+                price:
+                  type: string
+                block_timestamp:
+                  type: string
+                  format: date-time
+                  title: >-
+                    BlockTimestamp tracks the block height associated with this
+                    price update.
+
+                    We include block timestamp alongside the price to ensure
+                    that smart
+
+                    contracts and applications are not utilizing stale oracle
+                    prices
+                block_height:
+                  type: string
+                  format: uint64
+                  title: BlockHeight is height of block mentioned above
+            nonce:
+              type: string
+              format: uint64
+              title: >-
+                nonce represents the nonce for the CurrencyPair if it exists in
+                state
+            decimals:
+              type: string
+              format: uint64
+              description: >-
+                decimals represents the number of decimals that the quote-price
+                is
+
+                represented in. For Pairs where ETHEREUM is the quote this will
+                be 18,
+
+                otherwise it will be 8.
+            id:
+              type: string
+              format: uint64
+              description: ID represents the identifier for the CurrencyPair.
+          title: >-
+            GetPriceResponse is the response from the GetPrice grpc method
+            exposed from
+
+            the x/oracle query service
+    title: >-
+      GetPricesResponse is the response from the GetPrices grpc method exposed
       from
 
       the x/oracle query service
