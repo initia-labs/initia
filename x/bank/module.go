@@ -49,6 +49,7 @@ func (AppModuleBasic) Name() string { return types.ModuleName }
 // RegisterLegacyAminoCodec registers the bank module's types on the LegacyAmino codec.
 func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	types.RegisterLegacyAminoCodec(cdc)
+	customtypes.RegisterLegacyAminoCodec(cdc)
 }
 
 // DefaultGenesis returns default genesis state as raw bytes for the bank
@@ -81,6 +82,7 @@ func (b AppModuleBasic) GetTxCmd() *cobra.Command {
 
 // RegisterInterfaces registers interfaces and implementations of the bank module.
 func (AppModuleBasic) RegisterInterfaces(registry codectypes.InterfaceRegistry) {
+	customtypes.RegisterInterfaces(registry)
 	types.RegisterInterfaces(registry)
 }
 

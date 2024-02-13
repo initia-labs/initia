@@ -139,7 +139,7 @@ func TestQueryDenomMetadata(t *testing.T) {
 	require.NoError(t, err)
 	metadata := res.Metadata
 	require.Equal(t, "uinit", metadata.Base)
-	require.Equal(t, "INIT", metadata.Display)
+	require.Equal(t, "init", metadata.Display)
 	require.Equal(t, "uinit Coin", metadata.Name)
 	require.Equal(t, []*types.DenomUnit{
 		{
@@ -147,7 +147,7 @@ func TestQueryDenomMetadata(t *testing.T) {
 			Exponent: 0,
 		},
 		{
-			Denom:    "INIT",
+			Denom:    "init",
 			Exponent: 6,
 		},
 	}, metadata.DenomUnits)
