@@ -40,10 +40,10 @@ func TestExportGenesis(t *testing.T) {
 }
 
 func getTestBalancesAndSupply(faucetAddr sdk.AccAddress) ([]types.Balance, sdk.Coins) {
-	addr2, _ := sdk.AccAddressFromBech32("cosmos1f9xjhxm0plzrh9cskf4qee4pc2xwp0n0556gh0")
-	addr1, _ := sdk.AccAddressFromBech32("cosmos1t5u0jfg3ljsjrh2m9e47d4ny2hea7eehxrzdgd")
-	addr1Balance := sdk.Coins{sdk.NewInt64Coin(bondDenom, 10)}
-	addr2Balance := sdk.Coins{sdk.NewInt64Coin(bondDenom, 32), sdk.NewInt64Coin(testDenoms[0], 34)}.Sort()
+	addr1 := sdk.AccAddress([]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1})
+	addr2 := sdk.AccAddress([]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2})
+	addr1Balance := sdk.NewCoins(sdk.NewInt64Coin(bondDenom, 10))
+	addr2Balance := sdk.NewCoins(sdk.NewInt64Coin(bondDenom, 32), sdk.NewInt64Coin(testDenoms[0], 34))
 	faucetBalance := initialTotalSupply()
 
 	totalSupply := addr1Balance
@@ -51,8 +51,8 @@ func getTestBalancesAndSupply(faucetAddr sdk.AccAddress) ([]types.Balance, sdk.C
 	totalSupply = totalSupply.Add(faucetBalance...)
 
 	return []types.Balance{
-		{Address: addr2.String(), Coins: addr2Balance},
 		{Address: addr1.String(), Coins: addr1Balance},
+		{Address: addr2.String(), Coins: addr2Balance},
 		{Address: faucetAddr.String(), Coins: faucetBalance},
 	}, totalSupply
 }
