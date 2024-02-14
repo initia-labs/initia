@@ -13,6 +13,8 @@ import (
 	vmapi "github.com/initia-labs/initiavm/api"
 	vmtypes "github.com/initia-labs/initiavm/types"
 
+	storetypes "cosmossdk.io/store/types"
+
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 )
 
@@ -27,8 +29,12 @@ func NewApi(k Keeper, ctx context.Context) GoApi {
 	return GoApi{k, ctx}
 }
 
-func (api GoApi) Query(req vmtypes.QueryRequest) ([]byte, error) {
-	return api.Keeper.HandleVMQuery(sdk.UnwrapSDKContext(api.ctx), &req)
+func (api GoApi) Query(req vmtypes.QueryRequest, gasBalance uint64) ([]byte, uint64, error) {
+	sdkCtx := sdk.UnwrapSDKContext(api.ctx)
+	sdkCtx = sdkCtx.WithGasMeter(storetypes.NewInfiniteGasMeter())
+	res, err := api.Keeper.HandleVMQuery(sdkCtx, &req)
+	usedGas := sdkCtx.GasMeter().GasConsumed()
+	return res, usedGas, err
 }
 
 // GetAccountInfo return account info (account number, sequence)
