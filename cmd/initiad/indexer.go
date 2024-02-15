@@ -13,6 +13,8 @@ import (
 
 	"github.com/initia-labs/indexer"
 	indexercfg "github.com/initia-labs/indexer/config"
+	"github.com/initia-labs/indexer/service/collector"
+	"github.com/initia-labs/indexer/service/cron/validator"
 	initiaapp "github.com/initia-labs/initia/app"
 )
 
@@ -36,6 +38,9 @@ func preSetupIndexer(svrCtx *server.Context, clientCtx client.Context, ctx conte
 	if idxer == nil {
 		return nil
 	}
+
+	idxer.GetHandler().RegisterService(collector.CollectorSvc)
+	idxer.GetHandler().RegisterCronjob(validator.Tag, validator.Expr, validator.JobInit, validator.JobFunc)
 
 	err = idxer.Validate()
 	if err != nil {
