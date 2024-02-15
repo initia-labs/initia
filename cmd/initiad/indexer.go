@@ -42,7 +42,7 @@ func preSetupIndexer(svrCtx *server.Context, clientCtx client.Context, ctx conte
 		return err
 	}
 
-	err = idxer.Start()
+	err = idxer.Start(nil)
 	if err != nil {
 		return err
 	}

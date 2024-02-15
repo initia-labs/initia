@@ -729,8 +729,8 @@ github.com/initia-labs/cosmos-sdk v0.0.0-20240123082052-77e8b246064a h1:wD9ynlE7
 github.com/initia-labs/cosmos-sdk v0.0.0-20240123082052-77e8b246064a/go.mod h1:tlrkY1sntOt1q0OX/rqF0zRJtmXNoffAS6VFTcky+w8=
 github.com/initia-labs/iavl v0.0.0-20240208034922-5d81c449d4c0 h1:GQ7/UD5mB6q104roqZK5jxb6ff9sBk0/uwFxgERQIaU=
 github.com/initia-labs/iavl v0.0.0-20240208034922-5d81c449d4c0/go.mod h1:CmTGqMnRnucjxbjduneZXT+0vPgNElYvdefjX2q9tYc=
-github.com/initia-labs/indexer v0.1.0-beta.20.0.20240205050453-dfae3094a615 h1:77WyID+fNWaknI9ffQCMvoKM84cYWuh6aGwg6VxgvpY=
-github.com/initia-labs/indexer v0.1.0-beta.20.0.20240205050453-dfae3094a615/go.mod h1:QZYq8sSnLhzWoRDzMUHzBySikOec7PIMpQlZF6Kk1n0=
+github.com/initia-labs/indexer v0.1.0-beta.20.0.20240214030844-d2b34c0e3410 h1:2a+JrsYIwEHBiwgqIn0gNA9knLANOVRAI104lbvMAxk=
+github.com/initia-labs/indexer v0.1.0-beta.20.0.20240214030844-d2b34c0e3410/go.mod h1://ocf/IIsndNnH/0Ck+xUp+/+SXdywvrIDmO9XB6pHI=
 github.com/initia-labs/initiavm v0.2.0-beta.2 h1:aSUZok4fQAWVJF9RA5mkF2mrdZq1gtqDllCHgBPjV58=
 github.com/initia-labs/initiavm v0.2.0-beta.2/go.mod h1:KTdC3W2wgeOiL0YYIu6MEvK4j8envSpLjH14sMKMD6k=
 github.com/jackc/pgpassfile v1.0.0 h1:/6Hmqy13Ss2zCq62VdNG8tM1wchn8zjSGOBJ6icpsIM=
