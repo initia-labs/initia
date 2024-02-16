@@ -230,7 +230,7 @@ replace (
 
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 
-	github.com/initia-labs/initiavm => github.com/initia-labs/initiavm v0.2.0-beta.2.0.20240201084548-c1e4e7843d77
+	github.com/initia-labs/initiavm => github.com/initia-labs/initiavm v0.2.0-beta.2.1.0.20240216100531-8cf24388583e
 
 	// Downgraded to avoid bugs in following commits which caused simulations to fail.
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
