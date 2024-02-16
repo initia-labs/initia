@@ -729,10 +729,10 @@ github.com/initia-labs/cosmos-sdk v0.0.0-20240123082052-77e8b246064a h1:wD9ynlE7
 github.com/initia-labs/cosmos-sdk v0.0.0-20240123082052-77e8b246064a/go.mod h1:tlrkY1sntOt1q0OX/rqF0zRJtmXNoffAS6VFTcky+w8=
 github.com/initia-labs/iavl v0.0.0-20240208034922-5d81c449d4c0 h1:GQ7/UD5mB6q104roqZK5jxb6ff9sBk0/uwFxgERQIaU=
 github.com/initia-labs/iavl v0.0.0-20240208034922-5d81c449d4c0/go.mod h1:CmTGqMnRnucjxbjduneZXT+0vPgNElYvdefjX2q9tYc=
-github.com/initia-labs/indexer v0.1.0-beta.20.0.20240214030844-d2b34c0e3410 h1:2a+JrsYIwEHBiwgqIn0gNA9knLANOVRAI104lbvMAxk=
-github.com/initia-labs/indexer v0.1.0-beta.20.0.20240214030844-d2b34c0e3410/go.mod h1://ocf/IIsndNnH/0Ck+xUp+/+SXdywvrIDmO9XB6pHI=
-github.com/initia-labs/initiavm v0.2.0-beta.2 h1:aSUZok4fQAWVJF9RA5mkF2mrdZq1gtqDllCHgBPjV58=
-github.com/initia-labs/initiavm v0.2.0-beta.2/go.mod h1:KTdC3W2wgeOiL0YYIu6MEvK4j8envSpLjH14sMKMD6k=
+github.com/initia-labs/indexer v0.1.0-beta.20.0.20240216042435-50651cab58ea h1:7eTvhavLAYb4HCJpm7WCGQfWxbBagNmjNDOEJ8sDuMc=
+github.com/initia-labs/indexer v0.1.0-beta.20.0.20240216042435-50651cab58ea/go.mod h1:a9va02OLrj2o3Tt43rsl63PmLPBxkUqz0hgIBe6JbQQ=
+github.com/initia-labs/initiavm v0.2.0-beta.2.1 h1:L6UHFS5LB/somGfgMO0N2tpkas0v+lTBIMkDvZw+S1M=
+github.com/initia-labs/initiavm v0.2.0-beta.2.1/go.mod h1:KTdC3W2wgeOiL0YYIu6MEvK4j8envSpLjH14sMKMD6k=
 github.com/jackc/pgpassfile v1.0.0 h1:/6Hmqy13Ss2zCq62VdNG8tM1wchn8zjSGOBJ6icpsIM=
 github.com/jackc/pgpassfile v1.0.0/go.mod h1:CEx0iS5ambNFdcRtxPj5JhEz+xB6uRky5eyVu/W2HEg=
 github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a h1:bbPeKD0xmW/Y25WS6cokEszi5g+S0QxI/d45PkRi7Nk=
