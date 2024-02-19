@@ -50548,7 +50548,7 @@ paths:
           format: byte
       tags:
         - Query
-  /initia/hook/v1/acls:
+  /initia/ibchooks/v1/acls:
     get:
       summary: ACLs gets ACL entries.
       operationId: ACLs
@@ -50671,7 +50671,7 @@ paths:
           type: boolean
       tags:
         - Query
-  /initia/hook/v1/acls/{address}:
+  /initia/ibchooks/v1/acls/{address}:
     get:
       summary: ACL gets ACL entry of an address.
       operationId: ACL
@@ -50724,7 +50724,7 @@ paths:
           type: string
       tags:
         - Query
-  /initia/hook/v1/params:
+  /initia/ibchooks/v1/params:
     get:
       summary: Params queries all parameters.
       operationId: IBCHooksParams

@@ -15,17 +15,17 @@ option (gogoproto.goproto_getters_all) = false;
 service Query {
   // ACL gets ACL entry of an address.
   rpc ACL(QueryACLRequest) returns (QueryACLResponse) {
-    option (google.api.http).get = "/initia/hook/v1/acls/{address}";
+    option (google.api.http).get = "/initia/ibchooks/v1/acls/{address}";
   }
 
   // ACLs gets ACL entries.
   rpc ACLs(QueryACLsRequest) returns (QueryACLsResponse) {
-    option (google.api.http).get = "/initia/hook/v1/acls";
+    option (google.api.http).get = "/initia/ibchooks/v1/acls";
   }
 
   // Params queries all parameters.
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
-    option (google.api.http).get = "/initia/hook/v1/params";
+    option (google.api.http).get = "/initia/ibchooks/v1/params";
   }
 }
 
