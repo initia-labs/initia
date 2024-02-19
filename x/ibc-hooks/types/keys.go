@@ -2,7 +2,7 @@ package types
 
 const (
 	// ModuleName is the name of the hook module
-	ModuleName = "hook"
+	ModuleName = "ibc_hooks"
 
 	// StoreKey is the string store representation
 	StoreKey = ModuleName
