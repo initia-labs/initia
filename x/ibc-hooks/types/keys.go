@@ -5,7 +5,8 @@ const (
 	ModuleName = "ibchooks"
 
 	// StoreKey is the string store representation
-	StoreKey = ModuleName
+	// not using the module name because of collisions with key "ibc"
+	StoreKey = "hooks-for-ibc"
 
 	// TStoreKey is the string transient store representation
 	TStoreKey = "transient_" + ModuleName
@@ -21,5 +22,5 @@ const (
 // Items are stored with the following key: values
 var (
 	ACLPrefix = []byte{0x11} // prefix for allowed
-	ParamsKey = []byte{0x31} // prefix for parameters for module x/hook
+	ParamsKey = []byte{0x21} // prefix for parameters for module x/hook
 )
