@@ -129,26 +129,3 @@ func TestQueryParams(t *testing.T) {
 	require.NotNil(t, res)
 	require.Equal(t, input.BankKeeper.GetParams(ctx), res.GetParams())
 }
-
-func TestQueryDenomMetadata(t *testing.T) {
-	ctx, input := createDefaultTestInput(t)
-
-	res, err := input.BankKeeper.DenomMetadata(ctx, &types.QueryDenomMetadataRequest{
-		Denom: bondDenom,
-	})
-	require.NoError(t, err)
-	metadata := res.Metadata
-	require.Equal(t, "uinit", metadata.Base)
-	require.Equal(t, "init", metadata.Display)
-	require.Equal(t, "uinit Coin", metadata.Name)
-	require.Equal(t, []*types.DenomUnit{
-		{
-			Denom:    bondDenom,
-			Exponent: 0,
-		},
-		{
-			Denom:    "init",
-			Exponent: 6,
-		},
-	}, metadata.DenomUnits)
-}

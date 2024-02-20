@@ -61,7 +61,8 @@ func MetadataAddressFromDenom(denom string) (vmtypes.AccountAddress, error) {
 		return vmtypes.NewAccountAddressFromBytes(addrBz)
 	}
 
-	// non move coins are generated from 0x1.
+	// currently no other case exists, non move coins are generated
+	// from 0x1.
 	return NamedObjectAddress(vmtypes.StdAddress, denom), nil
 }
 

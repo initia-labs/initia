@@ -20,7 +20,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank/types"
 
 	"github.com/initia-labs/initia/x/bank/keeper"
-	customtypes "github.com/initia-labs/initia/x/bank/types"
 )
 
 const ConsensusVersion = 1
@@ -49,7 +48,6 @@ func (AppModuleBasic) Name() string { return types.ModuleName }
 // RegisterLegacyAminoCodec registers the bank module's types on the LegacyAmino codec.
 func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	types.RegisterLegacyAminoCodec(cdc)
-	customtypes.RegisterLegacyAminoCodec(cdc)
 }
 
 // DefaultGenesis returns default genesis state as raw bytes for the bank
@@ -82,7 +80,6 @@ func (b AppModuleBasic) GetTxCmd() *cobra.Command {
 
 // RegisterInterfaces registers interfaces and implementations of the bank module.
 func (AppModuleBasic) RegisterInterfaces(registry codectypes.InterfaceRegistry) {
-	customtypes.RegisterInterfaces(registry)
 	types.RegisterInterfaces(registry)
 }
 
@@ -97,7 +94,6 @@ type AppModule struct {
 // RegisterServices registers module services.
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
-	customtypes.RegisterMsgServer(cfg.MsgServer(), keeper.NewCustomMsgServerImpl(am.keeper))
 	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)
 }
 

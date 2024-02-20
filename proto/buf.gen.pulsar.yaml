@@ -2,14 +2,13 @@ version: v1
 managed:
   enabled: true
   go_package_prefix:
-    default: github.com/initia-labs/initia/api
+    default: cosmossdk.io/api
     except:
       - buf.build/googleapis/googleapis
       - buf.build/cosmos/gogo-proto
       - buf.build/cosmos/cosmos-proto
       - buf.build/cosmos/ibc
     override:
-      buf.build/cosmos/cosmos-sdk: cosmossdk.io/api
 plugins:
   - name: go-pulsar
     out: ../api

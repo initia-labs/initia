@@ -2,12 +2,10 @@ package keeper
 
 import (
 	"context"
-	"errors"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"cosmossdk.io/collections"
 	"cosmossdk.io/store/prefix"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -191,13 +189,7 @@ func (k BaseKeeper) DenomMetadata(c context.Context, req *types.QueryDenomMetada
 
 	metadata, found := k.GetDenomMetaData(ctx, req.Denom)
 	if !found {
-		var err error
-		metadata, err = k.mk.GetMetadata(ctx, req.Denom)
-		if errors.Is(err, collections.ErrNotFound) {
-			return nil, status.Errorf(codes.NotFound, "client metadata for denom %s", req.Denom)
-		} else if err != nil {
-			return nil, status.Errorf(codes.Internal, err.Error())
-		}
+		return nil, status.Errorf(codes.NotFound, "client metadata for denom %s", req.Denom)
 	}
 
 	return &types.QueryDenomMetadataResponse{
