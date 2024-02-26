@@ -342,6 +342,9 @@ func (k Keeper) DispatchMessages(ctx context.Context, messages []vmtypes.CosmosM
 		var err error
 		if stargateMsg, ok := message.(*vmtypes.CosmosMessage__Stargate); ok {
 			msg, err = k.HandleVMStargateMsg(ctx, &stargateMsg.Value)
+			if err != nil {
+				return err
+			}
 		} else {
 			msg, err = types.ConvertToSDKMessage(ctx, NewMoveBankKeeper(&k), NewNftKeeper(&k), message, k.ac, k.vc)
 			if err != nil {

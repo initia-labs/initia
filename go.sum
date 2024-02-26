@@ -725,6 +725,8 @@ github.com/initia-labs/cosmos-sdk v0.0.0-20240123082052-77e8b246064a h1:wD9ynlE7
 github.com/initia-labs/cosmos-sdk v0.0.0-20240123082052-77e8b246064a/go.mod h1:tlrkY1sntOt1q0OX/rqF0zRJtmXNoffAS6VFTcky+w8=
 github.com/initia-labs/iavl v0.0.0-20240208034922-5d81c449d4c0 h1:GQ7/UD5mB6q104roqZK5jxb6ff9sBk0/uwFxgERQIaU=
 github.com/initia-labs/iavl v0.0.0-20240208034922-5d81c449d4c0/go.mod h1:CmTGqMnRnucjxbjduneZXT+0vPgNElYvdefjX2q9tYc=
+github.com/initia-labs/initiavm v0.2.0-beta.2.0.20240223042908-39f34e4dadf3 h1:jLuwprD7QMpTwNhy3qSy/fNuStjFFgurWv1zQZE3D+Y=
+github.com/initia-labs/initiavm v0.2.0-beta.2.0.20240223042908-39f34e4dadf3/go.mod h1:Yq+GksFbLNwnyNHKd84yDUTqFpzye3F1ic7Ax9sur10=
 github.com/jhump/protoreflect v1.15.3 h1:6SFRuqU45u9hIZPJAoZ8c28T3nK64BNdp9w6jFonzls=
 github.com/jhump/protoreflect v1.15.3/go.mod h1:4ORHmSBmlCW8fh3xHmJMGyul1zNqZK4Elxc8qKP+p1k=
 github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af/go.mod h1:Nht3zPeWKUH0NzdCt2Blrr5ys8VGpn0CEB0cQHVjt7k=

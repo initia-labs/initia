@@ -2,49 +2,47 @@ package keeper
 
 import (
 	"context"
+	"encoding/hex"
 
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
+	errorsmod "cosmossdk.io/errors"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/gogoproto/proto"
 
 	"github.com/initia-labs/initia/x/move/types"
 	vmtypes "github.com/initia-labs/initiavm/types"
 )
 
-type StargateMsgWhiteList map[string]proto.Message
-
-func DefaultStargateMsgWhiteList() StargateMsgWhiteList {
-	res := make(StargateMsgWhiteList)
-	res["/cosmos.gov.v1.Msg/Vote"] = &govtypes.MsgVote{}
-	return res
-}
-
-func EmptyStargateMsgWhitelist() StargateMsgWhiteList {
-	return make(StargateMsgWhiteList)
-}
-
 func (k Keeper) HandleVMStargateMsg(ctx context.Context, req *vmtypes.StargateMessage) (proto.Message, error) {
-	protoReq, exists := k.vmStargateMsgWhiteList[req.Path]
-	if !exists {
-		return nil, types.ErrNotSupportedStargateQuery
-	}
-	protoReq.Reset()
-	err := k.cdc.UnmarshalJSON(req.Data, protoReq)
+	var sdkMsg sdk.Msg
+	err := k.cdc.UnmarshalInterfaceJSON(req.Data, &sdkMsg)
 	if err != nil {
 		return nil, err
 	}
 
-	signer, err := k.ac.BytesToString(types.ConvertVMAddressToSDKAddress(req.Sender))
+	if m, ok := sdkMsg.(sdk.HasValidateBasic); ok {
+		if err := m.ValidateBasic(); err != nil {
+			return nil, err
+		}
+	}
+
+	// make sure this account can send it
+	signer := types.ConvertVMAddressToSDKAddress(req.Sender)
+	signers, _, err := k.cdc.GetMsgV1Signers(sdkMsg)
 	if err != nil {
 		return nil, err
 	}
-
-	if msg, ok := protoReq.(*types.MsgExecute); ok && msg.Sender != signer {
-		return nil, types.ErrMalformedSenderCosmosMessage
+	for _, acct := range signers {
+		if !signer.Equals(sdk.AccAddress(acct)) {
+			return nil, errorsmod.Wrapf(
+				sdkerrors.ErrUnauthorized,
+				"required signer: `%s`, given signer: `%s`",
+				hex.EncodeToString(acct),
+				hex.EncodeToString(signer),
+			)
+		}
 	}
 
-	if msg, ok := protoReq.(*types.MsgScript); ok && msg.Sender != signer {
-		return nil, types.ErrMalformedSenderCosmosMessage
-	}
-
-	return protoReq, nil
+	return sdkMsg, nil
 }
