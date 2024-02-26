@@ -376,6 +376,7 @@ func _createTestInput(
 		bankKeeper,
 		nil, // oracle keeper unused
 		nil, // msg router unused
+		nil, // query router unused
 		moveConfig,
 		distKeeper,
 		stakingKeeper,

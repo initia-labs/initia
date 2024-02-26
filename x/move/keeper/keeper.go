@@ -82,8 +82,12 @@ func NewKeeper(
 		panic("authority is not a valid acc address")
 	}
 
-	if moveConfig.CacheCapacity == 0 {
-		moveConfig.CacheCapacity = moveconfig.DefaultCacheCapacity
+	if moveConfig.ModuleCacheCapacity == 0 {
+		moveConfig.ModuleCacheCapacity = moveconfig.DefaultModuleCacheCapacity
+	}
+
+	if moveConfig.ScriptCacheCapacity == 0 {
+		moveConfig.ScriptCacheCapacity = moveconfig.DefaultScriptCacheCapacity
 	}
 
 	if moveConfig.ContractSimulationGasLimit == 0 {
@@ -94,7 +98,7 @@ func NewKeeper(
 		moveConfig.ContractQueryGasLimit = moveconfig.DefaultContractQueryGasLimit
 	}
 
-	moveVM := vm.NewVM(moveConfig.CacheCapacity)
+	moveVM := vm.NewVM(moveConfig.ModuleCacheCapacity, moveConfig.ScriptCacheCapacity)
 
 	sb := collections.NewSchemaBuilder(storeService)
 	k := &Keeper{
