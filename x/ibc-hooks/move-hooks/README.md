@@ -6,7 +6,7 @@ This module is copied from [osmosis](https://github.com/osmosis-labs/osmosis) an
 
 The move hook is an IBC middleware which is used to allow ICS-20 token transfers to initiate contract calls.
 This allows cross-chain contract calls, that involve token movement.
-This is useful for a variety of usecases.
+This is useful for a variety of use cases.
 One of primary importance is cross-chain swaps, which is an extremely powerful primitive.
 
 The mechanism enabling this is a `memo` field on every ICS20 transfer packet as of [IBC v3.4.0](https://medium.com/the-interchain-foundation/moving-beyond-simple-token-transfers-d42b2b1dc29b).

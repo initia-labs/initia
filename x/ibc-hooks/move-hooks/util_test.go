@@ -1,4 +1,4 @@
-package ibc_middleware
+package move_hooks
 
 import (
 	"encoding/base64"
@@ -70,7 +70,7 @@ func Test_validateAndParseMemo_without_callback(t *testing.T) {
 	require.True(t, isMoveRouted)
 	require.NoError(t, err)
 	require.Equal(t, HookData{
-		Message: movetypes.MsgExecute{
+		Message: &movetypes.MsgExecute{
 			ModuleAddress: "0x1",
 			ModuleName:    "dex",
 			FunctionName:  "swap",
@@ -79,13 +79,13 @@ func Test_validateAndParseMemo_without_callback(t *testing.T) {
 		},
 		AsyncCallback: nil,
 	}, hookData)
-	require.NoError(t, validateReceiver(&hookData.Message, "0x1::dex::swap"))
+	require.NoError(t, validateReceiver(hookData.Message, "0x1::dex::swap"))
 
 	isMoveRouted, hookData, err = validateAndParseMemo(memo)
 	require.True(t, isMoveRouted)
 	require.NoError(t, err)
 	require.Equal(t, HookData{
-		Message: movetypes.MsgExecute{
+		Message: &movetypes.MsgExecute{
 			ModuleAddress: "0x1",
 			ModuleName:    "dex",
 			FunctionName:  "swap",
@@ -93,11 +93,11 @@ func Test_validateAndParseMemo_without_callback(t *testing.T) {
 			Args:          [][]byte{argBz},
 		},
 	}, hookData)
-	require.NoError(t, validateReceiver(&hookData.Message, "0x1::dex::swap"))
+	require.NoError(t, validateReceiver(hookData.Message, "0x1::dex::swap"))
 
 	// invalid receiver
 	require.NoError(t, err)
-	require.Error(t, validateReceiver(&hookData.Message, "0x2::dex::swap"))
+	require.Error(t, validateReceiver(hookData.Message, "0x2::dex::swap"))
 
 	isMoveRouted, _, err = validateAndParseMemo("hihi")
 	require.False(t, isMoveRouted)
@@ -130,7 +130,7 @@ func Test_validateAndParseMemo_with_callback(t *testing.T) {
 	require.True(t, isMoveRouted)
 	require.NoError(t, err)
 	require.Equal(t, HookData{
-		Message: movetypes.MsgExecute{
+		Message: &movetypes.MsgExecute{
 			ModuleAddress: "0x1",
 			ModuleName:    "dex",
 			FunctionName:  "swap",
@@ -143,5 +143,5 @@ func Test_validateAndParseMemo_with_callback(t *testing.T) {
 			ModuleName:    "dex",
 		},
 	}, hookData)
-	require.NoError(t, validateReceiver(&hookData.Message, "0x1::dex::swap"))
+	require.NoError(t, validateReceiver(hookData.Message, "0x1::dex::swap"))
 }

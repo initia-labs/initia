@@ -1,4 +1,4 @@
-package ibc_middleware
+package move_hooks
 
 import (
 	movetypes "github.com/initia-labs/initia/x/move/types"
@@ -43,7 +43,7 @@ type AsyncCallback struct {
 type HookData struct {
 	// Message is a move execute message which will be executed
 	// at `OnRecvPacket` from receiver chain.
-	Message movetypes.MsgExecute `json:"message"`
+	Message *movetypes.MsgExecute `json:"message,omitempty"`
 
 	// AsyncCallback is a callback message which will be executed
 	// at `OnTimeoutPacket` and `OnAcknowledgementPacket` from

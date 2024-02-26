@@ -572,6 +572,27 @@ func ReadCodeModuleStore(bz []byte) (bool, []vmtypes.AccountAddress, error) {
 	return allowArbitrary, allowedPublishers, nil
 }
 
+func ReadFungibleAssetMetadata(bz []byte) (string, string, uint8) {
+	cursor := int(0)
+
+	nameLen, len := readULEB128(bz[cursor:])
+	cursor += len
+
+	name := string(bz[cursor : cursor+nameLen])
+	cursor += nameLen
+
+	symbolLen, len := readULEB128(bz[cursor:])
+	cursor += len
+
+	symbol := string(bz[cursor : cursor+symbolLen])
+	cursor += symbolLen
+
+	decimals := uint8(bz[cursor])
+	cursor += 1
+
+	return name, symbol, decimals
+}
+
 // readULEB128 converts a uleb128-encoded byte array into an int.
 func readULEB128(r []byte) (total int, len int) {
 	var shift uint64
