@@ -39,7 +39,7 @@ require (
 	github.com/hashicorp/go-metrics v0.5.2
 	github.com/initia-labs/OPinit v0.2.0-beta.1
 	// we also need to update `LIBINITIAVM_VERSION` of images/private/Dockerfile#5
-	github.com/initia-labs/initiavm v0.2.0-beta.2.1
+	github.com/initia-labs/initiavm v0.2.0-beta.2.0.20240226025020-6e778c96c52f
 	github.com/pelletier/go-toml v1.9.5
 	github.com/pkg/errors v0.9.1
 	github.com/rakyll/statik v0.1.7
@@ -229,8 +229,6 @@ replace (
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.9.1
 
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
-
-	github.com/initia-labs/initiavm => github.com/initia-labs/initiavm v0.2.0-beta.2.1.0.20240216100531-8cf24388583e
 
 	// Downgraded to avoid bugs in following commits which caused simulations to fail.
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
