@@ -11,27 +11,32 @@ import (
 )
 
 var (
-	_ sdk.Msg = &MsgUpdateChannelRelayer{}
+	_ sdk.Msg = &MsgSetPermissionedRelayer{}
 )
 
-// NewMsgUpdateChannelRelayer creates a new MsgUpdateChannelRelayer instance
-func NewMsgUpdateChannelRelayer(
-	authority, channel, relayer string,
-) *MsgUpdateChannelRelayer {
-	return &MsgUpdateChannelRelayer{
+// NewMsgSetPermissionedRelayer creates a new MsgSetPermissionedRelayer instance
+func NewMsgSetPermissionedRelayer(
+	authority, portID, channelID, relayer string,
+) *MsgSetPermissionedRelayer {
+	return &MsgSetPermissionedRelayer{
 		Authority: authority,
-		Channel:   channel,
+		PortId:    portID,
+		ChannelId: channelID,
 		Relayer:   relayer,
 	}
 }
 
-// ValidateBasic performs a basic check of the MsgUpdateChannelRelayer fields.
+// ValidateBasic performs a basic check of the MsgSetPermissionedRelayer fields.
 // NOTE: timeout height or timestamp values can be 0 to disable the timeout.
 // NOTE: The recipient addresses format is not validated as the format defined by
 // the chain is not known to IBC.
-func (msg MsgUpdateChannelRelayer) Validate(ac address.Codec) error {
-	if err := host.ChannelIdentifierValidator(msg.Channel); err != nil {
-		return errors.Wrap(err, "invalid source port ID")
+func (msg MsgSetPermissionedRelayer) Validate(ac address.Codec) error {
+	if err := host.PortIdentifierValidator(msg.PortId); err != nil {
+		return err
+	}
+
+	if err := host.ChannelIdentifierValidator(msg.ChannelId); err != nil {
+		return err
 	}
 
 	_, err := ac.StringToBytes(msg.Authority)

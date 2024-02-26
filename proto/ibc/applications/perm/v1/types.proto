@@ -4,9 +4,10 @@ package ibc.applications.perm.v1;
 
 option go_package = "github.com/initia-labs/initia/x/ibc/perm/types";
 
-// ChannelRelayer is used to specifiy the permissioned relayer for
-// the specific channel.
-message ChannelRelayer {
-  string channel = 1;
-  string relayer = 2;
+// PermissionedRelayer is used to specifiy the permissioned relayer for
+// the specific port-id:channel-id pair.
+message PermissionedRelayer {
+  string port_id    = 1;
+  string channel_id = 2;
+  string relayer    = 3;
 }

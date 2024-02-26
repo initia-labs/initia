@@ -3,7 +3,9 @@ package keeper
 import (
 	"context"
 
+	"cosmossdk.io/collections"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/query"
 
 	"github.com/initia-labs/initia/x/ibc/perm/types"
 )
@@ -18,10 +20,10 @@ func NewQueryServer(k *Keeper) QueryServerImpl {
 	return QueryServerImpl{k}
 }
 
-// ChannelRelayer implements the Query/ChannelRelayer gRPC method
-func (q QueryServerImpl) ChannelRelayer(c context.Context, req *types.QueryChannelRelayerRequest) (*types.QueryChannelRelayerResponse, error) {
+// PermissionedRelayer implements the Query/PermissionedRelayer gRPC method
+func (q QueryServerImpl) PermissionedRelayer(c context.Context, req *types.QueryPermissionedRelayerRequest) (*types.QueryPermissionedRelayerResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
-	relayer, err := q.ChannelRelayers.Get(ctx, req.GetChannel())
+	relayer, err := q.Keeper.PermissionedRelayers.Get(ctx, collections.Join(req.PortId, req.ChannelId))
 	if err != nil {
 		return nil, err
 	}
@@ -31,10 +33,38 @@ func (q QueryServerImpl) ChannelRelayer(c context.Context, req *types.QueryChann
 		return nil, err
 	}
 
-	return &types.QueryChannelRelayerResponse{
-		ChannelRelayer: &types.ChannelRelayer{
-			Channel: req.GetChannel(),
-			Relayer: relayerStr,
+	return &types.QueryPermissionedRelayerResponse{
+		PermissionedRelayer: &types.PermissionedRelayer{
+			PortId:    req.PortId,
+			ChannelId: req.ChannelId,
+			Relayer:   relayerStr,
 		},
+	}, nil
+}
+
+// PermissionedRelayers implements the Query/PermissionedRelayers gRPC method
+func (q QueryServerImpl) PermissionedRelayers(ctx context.Context, req *types.QueryPermissionedRelayersRequest) (*types.QueryPermissionedRelayersResponse, error) {
+	relayers, pageRes, err := query.CollectionPaginate(
+		ctx, q.Keeper.PermissionedRelayers, req.Pagination,
+		func(key collections.Pair[string, string], relayer []byte) (types.PermissionedRelayer, error) {
+			relayerStr, err := q.ac.BytesToString(relayer)
+			if err != nil {
+				return types.PermissionedRelayer{}, err
+			}
+
+			return types.PermissionedRelayer{
+				PortId:    key.K1(),
+				ChannelId: key.K2(),
+				Relayer:   relayerStr,
+			}, nil
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryPermissionedRelayersResponse{
+		PermissionedRelayers: relayers,
+		Pagination:           pageRes,
 	}, nil
 }
