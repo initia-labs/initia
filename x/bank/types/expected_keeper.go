@@ -7,6 +7,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
+	cosmosbanktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
 	vmtypes "github.com/initia-labs/initiavm/types"
 )
@@ -34,4 +35,5 @@ type MoveBankKeeper interface {
 	// fungible asset
 	Issuer(context.Context, vmtypes.AccountAddress) (vmtypes.AccountAddress, error)
 	Symbol(context.Context, vmtypes.AccountAddress) (string, error)
+	GetMetadata(ctx context.Context, denom string) (cosmosbanktypes.Metadata, error)
 }

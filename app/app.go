@@ -137,9 +137,12 @@ import (
 	"github.com/initia-labs/initia/x/genutil"
 	"github.com/initia-labs/initia/x/gov"
 	govkeeper "github.com/initia-labs/initia/x/gov/keeper"
+	ibchooks "github.com/initia-labs/initia/x/ibc-hooks"
+	ibchookskeeper "github.com/initia-labs/initia/x/ibc-hooks/keeper"
+	ibcmovehooks "github.com/initia-labs/initia/x/ibc-hooks/move-hooks"
+	ibchookstypes "github.com/initia-labs/initia/x/ibc-hooks/types"
 	"github.com/initia-labs/initia/x/move"
 	moveconfig "github.com/initia-labs/initia/x/move/config"
-	moveibcmiddleware "github.com/initia-labs/initia/x/move/ibc-middleware"
 	movekeeper "github.com/initia-labs/initia/x/move/keeper"
 	movetypes "github.com/initia-labs/initia/x/move/types"
 	staking "github.com/initia-labs/initia/x/mstaking"
@@ -268,6 +271,7 @@ type InitiaApp struct {
 	PacketForwardKeeper   *packetforwardkeeper.Keeper
 	ICQKeeper             *icqkeeper.Keeper
 	MoveKeeper            *movekeeper.Keeper
+	IBCHooksKeeper        *ibchookskeeper.Keeper
 	AuctionKeeper         *auctionkeeper.Keeper // x/auction keeper used to process bids for TOB auctions
 	OPHostKeeper          *ophostkeeper.Keeper
 	OracleKeeper          *oraclekeeper.Keeper // x/oracle keeper used for the slinky oracle
@@ -337,7 +341,7 @@ func NewInitiaApp(
 		icacontrollertypes.StoreKey, ibcfeetypes.StoreKey, ibcpermtypes.StoreKey,
 		movetypes.StoreKey, auctiontypes.StoreKey, ophosttypes.StoreKey,
 		oracletypes.StoreKey, packetforwardtypes.StoreKey, icqtypes.StoreKey,
-		fetchpricetypes.StoreKey,
+		fetchpricetypes.StoreKey, ibchookstypes.StoreKey,
 	)
 	tkeys := storetypes.NewTransientStoreKeys()
 	memKeys := storetypes.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
@@ -546,6 +550,13 @@ func NewInitiaApp(
 	)
 	app.OracleKeeper = &oracleKeeper
 
+	app.IBCHooksKeeper = ibchookskeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[ibchookstypes.StoreKey]),
+		authorityAddr,
+		ac,
+	)
+
 	////////////////////////////
 	// Transfer configuration //
 	////////////////////////////
@@ -596,19 +607,20 @@ func NewInitiaApp(
 		)
 
 		// create move middleware for transfer
-		moveMiddleware := moveibcmiddleware.NewIBCMiddleware(
+		hookMiddleware := ibchooks.NewIBCMiddleware(
 			// receive: move -> packet forward -> transfer
 			packetForwardMiddleware,
-			// ics4wrapper: not used
-			nil,
-			app.MoveKeeper,
-			ac,
+			ibchooks.NewICS4Middleware(
+				nil, /* ics4wrapper: not used */
+				ibcmovehooks.NewMoveHooks(app.MoveKeeper, ac),
+			),
+			app.IBCHooksKeeper,
 		)
 
 		// create ibcfee middleware for transfer
 		feeMiddleware := ibcfee.NewIBCMiddleware(
 			// receive: fee -> move -> packet forward -> transfer
-			moveMiddleware,
+			hookMiddleware,
 			// ics4wrapper: transfer -> fee -> channel
 			*app.IBCFeeKeeper,
 		)
@@ -645,20 +657,21 @@ func NewInitiaApp(
 		nftTransferIBCModule := ibcnfttransfer.NewIBCModule(*app.NftTransferKeeper)
 
 		// create move middleware for nft-transfer
-		moveMiddleware := moveibcmiddleware.NewIBCMiddleware(
+		hookMiddleware := ibchooks.NewIBCMiddleware(
 			// receive: move -> nft-transfer
 			nftTransferIBCModule,
-			// ics4wrapper: not used
-			nil,
-			app.MoveKeeper,
-			ac,
+			ibchooks.NewICS4Middleware(
+				nil, /* ics4wrapper: not used */
+				ibcmovehooks.NewMoveHooks(app.MoveKeeper, ac),
+			),
+			app.IBCHooksKeeper,
 		)
 
 		nftTransferStack = ibcperm.NewIBCMiddleware(
 			// receive: perm -> fee -> nft transfer
 			ibcfee.NewIBCMiddleware(
 				// receive: channel -> fee -> move -> nft transfer
-				moveMiddleware,
+				hookMiddleware,
 				*app.IBCFeeKeeper,
 			),
 			// ics4wrapper: not used
@@ -906,6 +919,7 @@ func NewInitiaApp(
 		packetforward.NewAppModule(app.PacketForwardKeeper, nil),
 		icq.NewAppModule(*app.ICQKeeper, nil),
 		fetchprice.NewAppModule(appCodec, *app.FetchPriceKeeper),
+		ibchooks.NewAppModule(appCodec, *app.IBCHooksKeeper),
 	)
 
 	// BasicModuleManager defines the module BasicManager is in charge of setting up basic,
@@ -966,6 +980,7 @@ func NewInitiaApp(
 		ibcnfttransfertypes.ModuleName, icatypes.ModuleName, icaauthtypes.ModuleName, ibcfeetypes.ModuleName,
 		ibcpermtypes.ModuleName, consensusparamtypes.ModuleName, auctiontypes.ModuleName, ophosttypes.ModuleName,
 		oracletypes.ModuleName, packetforwardtypes.ModuleName, icqtypes.ModuleName, fetchpricetypes.ModuleName,
+		ibchookstypes.ModuleName,
 	}
 	app.ModuleManager.SetOrderInitGenesis(genesisModuleOrder...)
 	app.ModuleManager.SetOrderExportGenesis(genesisModuleOrder...)

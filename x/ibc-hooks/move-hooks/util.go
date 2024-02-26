@@ -1,4 +1,4 @@
-package ibc_middleware
+package move_hooks
 
 import (
 	"encoding/json"

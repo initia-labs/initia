@@ -1,4 +1,4 @@
-package ibc_middleware
+package move_hooks
 
 import (
 	"encoding/json"
@@ -7,28 +7,36 @@ import (
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
+
+	ibchooks "github.com/initia-labs/initia/x/ibc-hooks"
 	nfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 	movekeeper "github.com/initia-labs/initia/x/move/keeper"
 	movetypes "github.com/initia-labs/initia/x/move/types"
 )
 
-func (im IBCMiddleware) onRecvIcs20Packet(
+func (h MoveHooks) onRecvIcs20Packet(
 	ctx sdk.Context,
+	im ibchooks.IBCMiddleware,
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 	data transfertypes.FungibleTokenPacketData,
 ) ibcexported.Acknowledgement {
 	isMoveRouted, hookData, err := validateAndParseMemo(data.GetMemo())
-	if !isMoveRouted {
-		return im.app.OnRecvPacket(ctx, packet, relayer)
+	if !isMoveRouted || hookData.Message == nil {
+		return im.App.OnRecvPacket(ctx, packet, relayer)
 	} else if err != nil {
 		return newEmitErrorAcknowledgement(ctx, err)
 	}
 
 	msg := hookData.Message
+	if allowed, err := h.checkACL(im, ctx, msg.ModuleAddress); err != nil {
+		return newEmitErrorAcknowledgement(ctx, err)
+	} else if !allowed {
+		return im.App.OnRecvPacket(ctx, packet, relayer)
+	}
 
 	// Validate whether the receiver is correctly specified or not.
-	if err := validateReceiver(&msg, data.Receiver); err != nil {
+	if err := validateReceiver(msg, data.Receiver); err != nil {
 		return newEmitErrorAcknowledgement(ctx, err)
 	}
 
@@ -48,13 +56,13 @@ func (im IBCMiddleware) onRecvIcs20Packet(
 	}
 	packet.Data = bz
 
-	ack := im.app.OnRecvPacket(ctx, packet, relayer)
+	ack := im.App.OnRecvPacket(ctx, packet, relayer)
 	if !ack.Success() {
 		return ack
 	}
 
 	msg.Sender = intermediateSender
-	_, err = im.execMsg(ctx, &msg)
+	_, err = h.execMsg(ctx, msg)
 	if err != nil {
 		return newEmitErrorAcknowledgement(ctx, err)
 	}
@@ -62,23 +70,29 @@ func (im IBCMiddleware) onRecvIcs20Packet(
 	return ack
 }
 
-func (im IBCMiddleware) onRecvIcs721Packet(
+func (h MoveHooks) onRecvIcs721Packet(
 	ctx sdk.Context,
+	im ibchooks.IBCMiddleware,
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 	data nfttransfertypes.NonFungibleTokenPacketData,
 ) ibcexported.Acknowledgement {
 	isMoveRouted, hookData, err := validateAndParseMemo(data.GetMemo())
-	if !isMoveRouted {
-		return im.app.OnRecvPacket(ctx, packet, relayer)
+	if !isMoveRouted || hookData.Message == nil {
+		return im.App.OnRecvPacket(ctx, packet, relayer)
 	} else if err != nil {
 		return newEmitErrorAcknowledgement(ctx, err)
 	}
 
 	msg := hookData.Message
+	if allowed, err := h.checkACL(im, ctx, msg.ModuleAddress); err != nil {
+		return newEmitErrorAcknowledgement(ctx, err)
+	} else if !allowed {
+		return im.App.OnRecvPacket(ctx, packet, relayer)
+	}
 
 	// Validate whether the receiver is correctly specified or not.
-	if err := validateReceiver(&msg, data.Receiver); err != nil {
+	if err := validateReceiver(msg, data.Receiver); err != nil {
 		return newEmitErrorAcknowledgement(ctx, err)
 	}
 
@@ -98,13 +112,13 @@ func (im IBCMiddleware) onRecvIcs721Packet(
 	}
 	packet.Data = bz
 
-	ack := im.app.OnRecvPacket(ctx, packet, relayer)
+	ack := im.App.OnRecvPacket(ctx, packet, relayer)
 	if !ack.Success() {
 		return ack
 	}
 
 	msg.Sender = intermediateSender
-	_, err = im.execMsg(ctx, &msg)
+	_, err = h.execMsg(ctx, msg)
 	if err != nil {
 		return newEmitErrorAcknowledgement(ctx, err)
 	}
@@ -112,11 +126,11 @@ func (im IBCMiddleware) onRecvIcs721Packet(
 	return ack
 }
 
-func (im IBCMiddleware) execMsg(ctx sdk.Context, msg *movetypes.MsgExecute) (*movetypes.MsgExecuteResponse, error) {
-	if err := msg.Validate(im.ac); err != nil {
+func (h MoveHooks) execMsg(ctx sdk.Context, msg *movetypes.MsgExecute) (*movetypes.MsgExecuteResponse, error) {
+	if err := msg.Validate(h.ac); err != nil {
 		return nil, err
 	}
 
-	moveMsgServer := movekeeper.NewMsgServerImpl(*im.moveKeeper)
+	moveMsgServer := movekeeper.NewMsgServerImpl(*h.moveKeeper)
 	return moveMsgServer.Execute(ctx, msg)
 }
