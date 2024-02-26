@@ -12,9 +12,9 @@ import (
 
 	"cosmossdk.io/core/address"
 	sdkmath "cosmossdk.io/math"
+	"github.com/aptos-labs/serde-reflection/serde-generate/runtime/golang/bcs"
+	"github.com/aptos-labs/serde-reflection/serde-generate/runtime/golang/serde"
 	"github.com/initia-labs/initia/x/move/types"
-	"github.com/novifinancial/serde-reflection/serde-generate/runtime/golang/bcs"
-	"github.com/novifinancial/serde-reflection/serde-generate/runtime/golang/serde"
 	flag "github.com/spf13/pflag"
 )
 
