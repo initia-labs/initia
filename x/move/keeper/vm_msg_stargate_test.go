@@ -33,7 +33,6 @@ func Test_HandleVMStargateMsg(t *testing.T) {
 	// unauthorized test
 	_, err = input.MoveKeeper.HandleVMStargateMsg(ctx, &vmtypes.StargateMessage{
 		Sender: addr0,
-		Path:   "/cosmos.gov.v1.MsgVote",
 		Data:   jsonData,
 	})
 	require.ErrorIs(t, err, sdkerrors.ErrUnauthorized)
@@ -41,7 +40,6 @@ func Test_HandleVMStargateMsg(t *testing.T) {
 	// valid test
 	res, err := input.MoveKeeper.HandleVMStargateMsg(ctx, &vmtypes.StargateMessage{
 		Sender: addr1,
-		Path:   "/cosmos.gov.v1.MsgVote",
 		Data:   jsonData,
 	})
 	require.NoError(t, err)
