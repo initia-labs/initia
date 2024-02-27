@@ -3,17 +3,16 @@ package keeper
 import (
 	"encoding/json"
 
-	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/initia-labs/initia/x/move/types"
-	vmtypes "github.com/initia-labs/initiavm/types"
 )
 
 type CustomQueryWhiteList map[string]CustomQuery
 
 func DefaultCustomQueryWhiteList() CustomQueryWhiteList {
 	res := make(CustomQueryWhiteList)
-	res["amount_to_share"] = AmountToShare
+	res["to_sdk_address"] = ToSDKAddress
+	res["from_sdk_address"] = FromSDKAddress
 	return res
 }
 
@@ -23,45 +22,56 @@ func EmptyCustomQueryWhiteList() CustomQueryWhiteList {
 
 type CustomQuery func(sdk.Context, []byte, *Keeper) ([]byte, error)
 
-type AmountToShareRequest struct {
-	ValAddr  string `json:"val_addr"`
-	Metadata string `json:"metadata"`
-	Amount   uint64 `json:"amount"`
+type ToSDKAddressRequest struct {
+	VMAddr string `json:"vm_addr"`
 }
 
-type AmountToShareResponse struct {
-	Share uint64 `json:"share"`
+type ToSDKAddressResponse struct {
+	SDKAddr string `json:"sdk_addr"`
 }
 
-func AmountToShare(ctx sdk.Context, req []byte, keeper *Keeper) ([]byte, error) {
-	am := AmountToShareRequest{}
-	err := json.Unmarshal(req, &am)
+func ToSDKAddress(ctx sdk.Context, req []byte, keeper *Keeper) ([]byte, error) {
+	tc := ToSDKAddressRequest{}
+	err := json.Unmarshal(req, &tc)
 	if err != nil {
 		return nil, err
 	}
 
-	valAddr, err := keeper.vc.StringToBytes(string(am.ValAddr))
+	accAddr, err := types.AccAddressFromString(keeper.ac, tc.VMAddr)
 	if err != nil {
 		return nil, err
 	}
 
-	metadata, err := vmtypes.NewAccountAddress(am.Metadata)
+	sdkAddr := types.ConvertVMAddressToSDKAddress(accAddr)
+	res := &ToSDKAddressResponse{
+		SDKAddr: sdkAddr.String(),
+	}
+	return json.Marshal(res)
+}
+
+type FromSDKAddressRequest struct {
+	SDKAddr string `json:"sdk_addr"`
+}
+
+type FromSDKAddressResponse struct {
+	VMAddr string `json:"vm_addr"`
+}
+
+func FromSDKAddress(ctx sdk.Context, req []byte, keeper *Keeper) ([]byte, error) {
+	fs := FromSDKAddressRequest{}
+	err := json.Unmarshal(req, &fs)
 	if err != nil {
 		return nil, err
 	}
 
-	denom, err := types.DenomFromMetadataAddress(ctx, NewMoveBankKeeper(keeper), metadata)
+	accAddr, err := sdk.AccAddressFromBech32(fs.SDKAddr)
 	if err != nil {
 		return nil, err
 	}
+	vmAddr := types.ConvertSDKAddressToVMAddress(accAddr)
 
-	share, err := keeper.AmountToShare(ctx, valAddr, sdk.NewCoin(denom, math.NewIntFromUint64(am.Amount)))
-	if err != nil {
-		return nil, err
-	}
-
-	res := &AmountToShareResponse{
-		Share: share.Uint64(),
+	res := &FromSDKAddressResponse{
+		VMAddr: vmAddr.CanonicalString(),
 	}
 	return json.Marshal(res)
 }

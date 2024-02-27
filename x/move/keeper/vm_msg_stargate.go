@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 	"encoding/hex"
+	"fmt"
 
 	errorsmod "cosmossdk.io/errors"
 
@@ -30,6 +31,7 @@ func (k Keeper) HandleVMStargateMsg(ctx context.Context, req *vmtypes.StargateMe
 	// make sure this account can send it
 	signer := types.ConvertVMAddressToSDKAddress(req.Sender)
 	signers, _, err := k.cdc.GetMsgV1Signers(sdkMsg)
+	fmt.Println(signer, signers)
 	if err != nil {
 		return nil, err
 	}
