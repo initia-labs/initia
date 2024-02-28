@@ -17,26 +17,28 @@ import (
 	"github.com/initia-labs/initia/x/ibc/perm/types"
 )
 
-func Test_UpdateChannelRelayer(t *testing.T) {
+func Test_SetPermissionedRelayer(t *testing.T) {
 	ctx, k := _createTestInput(t, dbm.NewMemDB())
 
-	channel := "channel-123"
+	portID := "port-123"
+	channelID := "channel-123"
 	pubKey := secp256k1.GenPrivKey().PubKey()
 	addr := sdk.AccAddress(pubKey.Address())
 
 	// should be empty
-	_, err := k.ChannelRelayers.Get(ctx, channel)
+	_, err := k.PermissionedRelayers.Get(ctx, collections.Join(portID, channelID))
 	require.ErrorIs(t, err, collections.ErrNotFound)
 
 	// set channel relayer via msg handler
 	msgServer := keeper.NewMsgServerImpl(k)
-	_, err = msgServer.UpdateChannelRelayer(sdk.WrapSDKContext(ctx), types.NewMsgUpdateChannelRelayer(
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(), channel, addr.String(),
+	_, err = msgServer.SetPermissionedRelayer(ctx, types.NewMsgSetPermissionedRelayer(
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		portID, channelID, addr.String(),
 	))
 	require.NoError(t, err)
 
 	// check properly set
-	res, err := k.ChannelRelayers.Get(ctx, channel)
+	res, err := k.PermissionedRelayers.Get(ctx, collections.Join(portID, channelID))
 	require.NoError(t, err)
 	require.Equal(t, res, addr.Bytes())
 }

@@ -17,6 +17,8 @@ func Test_ExportGenesis(t *testing.T) {
 
 	channelA := "channel-123"
 	channelB := "channel-456"
+	portA := "port-123"
+	portB := "port-456"
 
 	pubKeyA := secp256k1.GenPrivKey().PubKey()
 	pubKeyB := secp256k1.GenPrivKey().PubKey()
@@ -25,14 +27,16 @@ func Test_ExportGenesis(t *testing.T) {
 	addrB := sdk.AccAddress(pubKeyB.Address())
 
 	genState := types.NewGenesisState(
-		[]types.ChannelRelayer{
+		[]types.PermissionedRelayer{
 			{
-				Channel: channelA,
-				Relayer: addrA.String(),
+				PortId:    portA,
+				ChannelId: channelA,
+				Relayer:   addrA.String(),
 			},
 			{
-				Channel: channelB,
-				Relayer: addrB.String(),
+				PortId:    portB,
+				ChannelId: channelB,
+				Relayer:   addrB.String(),
 			},
 		},
 	)

@@ -9,6 +9,6 @@ option go_package = "github.com/initia-labs/initia/x/ibc/perm/types";
 
 // GenesisState defines the ibc perm genesis state
 message GenesisState {
-  repeated ChannelRelayer channel_relayers = 1
-      [(gogoproto.moretags) = "yaml:\"channel_relayers\"", (gogoproto.nullable) = false];
+  repeated PermissionedRelayer permissioned_relayers = 1
+      [(gogoproto.moretags) = "yaml:\"permissioned_relayers\"", (gogoproto.nullable) = false];
 }

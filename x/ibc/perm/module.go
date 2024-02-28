@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"cosmossdk.io/client/v2/autocli"
 	"cosmossdk.io/core/appmodule"
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -16,7 +16,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/initia-labs/initia/x/ibc/perm/client/cli"
 	"github.com/initia-labs/initia/x/ibc/perm/keeper"
 	"github.com/initia-labs/initia/x/ibc/perm/types"
 )
@@ -30,7 +29,8 @@ var (
 	_ module.HasConsensusVersion = AppModule{}
 	_ module.HasName             = AppModule{}
 
-	_ appmodule.AppModule = AppModule{}
+	_ appmodule.AppModule      = AppModule{}
+	_ autocli.HasAutoCLIConfig = AppModule{}
 )
 
 // AppModuleBasic is the IBC Transfer AppModuleBasic
@@ -72,16 +72,6 @@ func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *r
 	if err := types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(clientCtx)); err != nil {
 		panic(fmt.Sprintf("could not register gRPC gateway routes: %v", err))
 	}
-}
-
-// GetTxCmd implements AppModuleBasic interface
-func (AppModuleBasic) GetTxCmd() *cobra.Command {
-	return nil
-}
-
-// GetQueryCmd implements AppModuleBasic interface
-func (AppModuleBasic) GetQueryCmd() *cobra.Command {
-	return cli.GetQueryCmd()
 }
 
 // AppModule represents the AppModule for this module
