@@ -14,7 +14,7 @@ import (
 	"github.com/initia-labs/initia/x/move/types"
 	stakingkeeper "github.com/initia-labs/initia/x/mstaking/keeper"
 
-	vmtypes "github.com/initia-labs/initiavm/types"
+	vmtypes "github.com/initia-labs/movevm/types"
 
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 )

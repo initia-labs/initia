@@ -9,7 +9,7 @@ import (
 
 	distrtypes "github.com/initia-labs/initia/x/distribution/types"
 	"github.com/initia-labs/initia/x/move/types"
-	vmtypes "github.com/initia-labs/initiavm/types"
+	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 func (k Keeper) Whitelist(ctx context.Context, msg types.MsgWhitelist) error {

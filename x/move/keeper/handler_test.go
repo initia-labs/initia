@@ -15,7 +15,7 @@ import (
 
 	"github.com/initia-labs/initia/x/move/ante"
 	"github.com/initia-labs/initia/x/move/types"
-	vmtypes "github.com/initia-labs/initiavm/types"
+	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 func TestPublishModuleBundle(t *testing.T) {

@@ -8,7 +8,7 @@ import (
 
 	nfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 	"github.com/initia-labs/initia/x/move/types"
-	vmtypes "github.com/initia-labs/initiavm/types"
+	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 var _ nfttransfertypes.NftKeeper = NftKeeper{}

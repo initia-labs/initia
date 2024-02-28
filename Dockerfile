@@ -1,7 +1,7 @@
 FROM golang:1.21-alpine AS go-builder
 #ARG arch=x86_64
 
-# See https://github.com/initia-labs/initiavm/releases
+# See https://github.com/initia-labs/movevm/releases
 ENV LIBINITIAVM_VERSION=v0.2.0-beta.2.1
 
 # this comes from standard alpine nightly file
@@ -20,9 +20,9 @@ COPY . /code/
 RUN git clone --depth 1 https://github.com/microsoft/mimalloc; cd mimalloc; mkdir build; cd build; cmake ..; make -j$(nproc); make install
 ENV MIMALLOC_RESERVE_HUGE_OS_PAGES=4
 
-# See https://github.com/initia-labs/initiavm/releases
-ADD https://github.com/initia-labs/initiavm/releases/download/${LIBINITIAVM_VERSION}/libinitia_muslc.aarch64.a /lib/libinitia_muslc.aarch64.a
-ADD https://github.com/initia-labs/initiavm/releases/download/${LIBINITIAVM_VERSION}/libinitia_muslc.x86_64.a /lib/libinitia_muslc.x86_64.a
+# See https://github.com/initia-labs/movevm/releases
+ADD https://github.com/initia-labs/movevm/releases/download/${LIBINITIAVM_VERSION}/libinitia_muslc.aarch64.a /lib/libinitia_muslc.aarch64.a
+ADD https://github.com/initia-labs/movevm/releases/download/${LIBINITIAVM_VERSION}/libinitia_muslc.x86_64.a /lib/libinitia_muslc.x86_64.a
 
 # Highly recommend to verify the version hash
 # RUN sha256sum /lib/libinitia_muslc.aarch64.a | grep a5e63292ec67f5bdefab51b42c3fbc3fa307c6aefeb6b409d971f1df909c3927

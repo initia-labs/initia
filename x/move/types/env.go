@@ -8,7 +8,7 @@ import (
 	"github.com/cometbft/cometbft/crypto/tmhash"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	vmtypes "github.com/initia-labs/initiavm/types"
+	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 func NewEnv(ctx context.Context, nextAccountNumber uint64, executionCounter uint64) vmtypes.Env {

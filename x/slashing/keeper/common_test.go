@@ -73,7 +73,7 @@ import (
 	rewardtypes "github.com/initia-labs/initia/x/reward/types"
 	"github.com/initia-labs/initia/x/slashing"
 	slashingkeeper "github.com/initia-labs/initia/x/slashing/keeper"
-	"github.com/initia-labs/initiavm/precompile"
+	"github.com/initia-labs/movevm/precompile"
 )
 
 var ModuleBasics = module.NewBasicManager(

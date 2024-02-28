@@ -9,7 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/query"
 	cosmosbanktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	vmtypes "github.com/initia-labs/initiavm/types"
+	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 type MoveBankKeeper interface {

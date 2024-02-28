@@ -73,9 +73,9 @@ import (
 	rewardtypes "github.com/initia-labs/initia/x/reward/types"
 	"github.com/initia-labs/initia/x/slashing"
 
-	vmapi "github.com/initia-labs/initiavm/api"
-	"github.com/initia-labs/initiavm/precompile"
-	vmtypes "github.com/initia-labs/initiavm/types"
+	vmapi "github.com/initia-labs/movevm/api"
+	"github.com/initia-labs/movevm/precompile"
+	vmtypes "github.com/initia-labs/movevm/types"
 
 	"github.com/skip-mev/slinky/x/oracle"
 	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"

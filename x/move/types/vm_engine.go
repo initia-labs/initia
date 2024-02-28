@@ -1,8 +1,8 @@
 package types
 
 import (
-	"github.com/initia-labs/initiavm/api"
-	vmtypes "github.com/initia-labs/initiavm/types"
+	"github.com/initia-labs/movevm/api"
+	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 // VMEngine defines required VM features

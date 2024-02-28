@@ -11,7 +11,7 @@ import (
 	"github.com/cosmos/gogoproto/proto"
 
 	"github.com/initia-labs/initia/x/move/types"
-	vmtypes "github.com/initia-labs/initiavm/types"
+	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 func (k Keeper) HandleVMStargateMsg(ctx context.Context, req *vmtypes.StargateMessage) (proto.Message, error) {

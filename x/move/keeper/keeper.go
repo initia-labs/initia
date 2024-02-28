@@ -16,9 +16,9 @@ import (
 	moveconfig "github.com/initia-labs/initia/x/move/config"
 	"github.com/initia-labs/initia/x/move/types"
 
-	vm "github.com/initia-labs/initiavm"
-	vmapi "github.com/initia-labs/initiavm/api"
-	vmtypes "github.com/initia-labs/initiavm/types"
+	vm "github.com/initia-labs/movevm"
+	vmapi "github.com/initia-labs/movevm/api"
+	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 type Keeper struct {

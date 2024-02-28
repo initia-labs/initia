@@ -13,7 +13,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/codec"
 	"github.com/cosmos/cosmos-sdk/x/authz"
 
-	"github.com/initia-labs/initiavm/api"
+	"github.com/initia-labs/movevm/api"
 )
 
 // it has similar issue with gasCostPerIterarion in staking/type/authz.go

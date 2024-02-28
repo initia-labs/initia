@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/initia-labs/initia/x/move/types"
-	vmtypes "github.com/initia-labs/initiavm/types"
+	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 type CodeKeeper struct {

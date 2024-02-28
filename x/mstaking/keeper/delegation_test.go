@@ -13,7 +13,7 @@ import (
 	movekeeper "github.com/initia-labs/initia/x/move/keeper"
 	movetypes "github.com/initia-labs/initia/x/move/types"
 	"github.com/initia-labs/initia/x/mstaking/types"
-	vmtypes "github.com/initia-labs/initiavm/types"
+	vmtypes "github.com/initia-labs/movevm/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )

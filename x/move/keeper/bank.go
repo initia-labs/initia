@@ -14,7 +14,7 @@ import (
 
 	banktypes "github.com/initia-labs/initia/x/bank/types"
 	"github.com/initia-labs/initia/x/move/types"
-	vmtypes "github.com/initia-labs/initiavm/types"
+	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 var _ banktypes.MoveBankKeeper = MoveBankKeeper{}

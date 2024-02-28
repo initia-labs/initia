@@ -6,8 +6,8 @@ import (
 	"cosmossdk.io/errors"
 	"cosmossdk.io/math"
 
-	vmapi "github.com/initia-labs/initiavm/api"
-	vmtypes "github.com/initia-labs/initiavm/types"
+	vmapi "github.com/initia-labs/movevm/api"
+	vmtypes "github.com/initia-labs/movevm/types"
 
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )

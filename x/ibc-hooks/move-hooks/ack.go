@@ -8,7 +8,7 @@ import (
 	ibchooks "github.com/initia-labs/initia/x/ibc-hooks"
 	nfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 	movetypes "github.com/initia-labs/initia/x/move/types"
-	vmtypes "github.com/initia-labs/initiavm/types"
+	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 func (h MoveHooks) onAckIcs20Packet(
