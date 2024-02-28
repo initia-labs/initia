@@ -12,7 +12,7 @@ import (
 
 	"github.com/initia-labs/initia/x/move/keeper"
 	"github.com/initia-labs/initia/x/move/types"
-	vmtypes "github.com/initia-labs/initiavm/types"
+	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 func TestViewFunction(t *testing.T) {

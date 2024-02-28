@@ -11,14 +11,14 @@ COPY . /code/
 
 RUN LEDGER_ENABLED=false make build
 
-RUN cp /go/pkg/mod/github.com/initia\-labs/initiavm@v*/api/libinitia.`uname -m`.so /lib/libinitia.so
+RUN cp /go/pkg/mod/github.com/initia\-labs/initiavm@v*/api/libmovevm.`uname -m`.so /lib/libmovevm.so
 
 FROM ubuntu:20.04
 
 WORKDIR /root
 
 COPY --from=go-builder /code/build/initiad /usr/local/bin/initiad
-COPY --from=go-builder /lib/libinitia.so /lib/libinitia.so
+COPY --from=go-builder /lib/libmovevm.so /lib/libmovevm.so
 
 # rest server
 EXPOSE 1317

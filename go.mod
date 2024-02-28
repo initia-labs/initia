@@ -39,7 +39,7 @@ require (
 	github.com/hashicorp/go-metrics v0.5.2
 	github.com/initia-labs/OPinit v0.2.0-beta.1
 	// we also need to update `LIBINITIAVM_VERSION` of images/private/Dockerfile#5
-	github.com/initia-labs/initiavm v0.2.0-beta.2.0.20240226025020-6e778c96c52f
+	github.com/initia-labs/movevm v0.0.0-20240228123400-2951cc64c945
 	github.com/pelletier/go-toml v1.9.5
 	github.com/pkg/errors v0.9.1
 	github.com/rakyll/statik v0.1.7

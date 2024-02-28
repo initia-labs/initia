@@ -65,7 +65,7 @@ import (
 	rewardtypes "github.com/initia-labs/initia/x/reward/types"
 	"github.com/initia-labs/initia/x/slashing"
 
-	"github.com/initia-labs/initiavm/precompile"
+	"github.com/initia-labs/movevm/precompile"
 
 	"github.com/skip-mev/slinky/x/oracle"
 	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
@@ -373,6 +373,7 @@ func _createTestInput(
 		bankKeeper,
 		oracleKeeper,
 		nil,
+		nil,
 		moveConfig,
 		distKeeper,
 		stakingKeeper,
@@ -401,7 +402,7 @@ func _createTestInput(
 	msgRouter := baseapp.NewMsgServiceRouter()
 	msgRouter.SetInterfaceRegistry(encodingConfig.InterfaceRegistry)
 	banktypes.RegisterMsgServer(msgRouter, bankkeeper.NewMsgServerImpl(bankKeeper))
-	movetypes.RegisterMsgServer(msgRouter, movekeeper.NewMsgServerImpl(*moveKeeper))
+	movetypes.RegisterMsgServer(msgRouter, movekeeper.NewMsgServerImpl(moveKeeper))
 
 	govConfig := govtypes.DefaultConfig()
 	govKeeper := govkeeper.NewKeeper(

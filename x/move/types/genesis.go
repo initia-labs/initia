@@ -8,7 +8,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 
-	vmprecom "github.com/initia-labs/initiavm/precompile"
+	vmprecom "github.com/initia-labs/movevm/precompile"
 )
 
 // NewGenesisState creates a new GenesisState object

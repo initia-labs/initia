@@ -10,7 +10,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/telemetry"
 
-	vmtypes "github.com/initia-labs/initiavm/types"
+	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 func BeginBlocker(ctx context.Context, k keeper.Keeper, vc address.Codec) error {

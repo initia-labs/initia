@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 	"strings"
 
-	vmtypes "github.com/initia-labs/initiavm/types"
+	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 var (

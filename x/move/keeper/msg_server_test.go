@@ -16,7 +16,7 @@ func TestScriptMsg(t *testing.T) {
 
 	moduleAddr := sdk.AccAddress([]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1})
 	wrongAddr := sdk.AccAddress([]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1})
-	msgServer := keeper.NewMsgServerImpl(input.MoveKeeper)
+	msgServer := keeper.NewMsgServerImpl(&input.MoveKeeper)
 	_, err := msgServer.Publish(ctx, &types.MsgPublish{
 		Sender:        moduleAddr.String(),
 		CodeBytes:     [][]byte{basicCoinModule},

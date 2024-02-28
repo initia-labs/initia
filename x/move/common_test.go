@@ -9,7 +9,7 @@ import (
 	customdistrtypes "github.com/initia-labs/initia/x/distribution/types"
 	"github.com/initia-labs/initia/x/move/types"
 	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
-	vmtypes "github.com/initia-labs/initiavm/types"
+	vmtypes "github.com/initia-labs/movevm/types"
 
 	"github.com/stretchr/testify/require"
 

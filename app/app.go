@@ -824,6 +824,7 @@ func NewInitiaApp(
 		app.OracleKeeper,
 		// app.NftTransferKeeper,
 		app.BaseApp.MsgServiceRouter(),
+		app.BaseApp.GRPCQueryRouter(),
 		moveConfig,
 		// staking feature
 		app.DistrKeeper,

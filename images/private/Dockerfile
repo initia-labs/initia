@@ -1,8 +1,8 @@
 FROM golang:1.21-alpine AS go-builder
 #ARG arch=x86_64
 
-# See https://github.com/initia-labs/initiavm/releases
-ARG LIBINITIAVM_VERSION=v0.2.0-beta.2.1
+# See https://github.com/initia-labs/movevm/releases
+ARG LIBINITIAVM_VERSION=v0.2.0
 
 # this comes from standard alpine nightly file
 #  https://github.com/rust-lang/docker-rust-nightly/blob/master/alpine3.12/Dockerfile
@@ -24,14 +24,14 @@ ARG GITHUB_ACCESS_TOKEN
 ENV GOPRIVATE=github.com/initia-labs/*
 RUN git config --global url."https://${GITHUB_ACCESS_TOKEN}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
 
-# See https://github.com/initia-labs/initiavm/releases
+# See https://github.com/initia-labs/movevm/releases
 ADD https://github.com/gruntwork-io/fetch/releases/download/v0.4.6/fetch_linux_amd64 /usr/bin/fetch
 RUN chmod +x /usr/bin/fetch
 ENV GITHUB_OAUTH_TOKEN=$GITHUB_ACCESS_TOKEN
-RUN fetch --repo="https://github.com/initia-labs/initiavm" --tag="${LIBINITIAVM_VERSION}" --release-asset="libinitia_muslc.*.a" /lib/
-RUN cp /lib/libinitia_muslc.`uname -m`.a /lib/libinitia_muslc.a
+RUN fetch --repo="https://github.com/initia-labs/movevm" --tag="${LIBINITIAVM_VERSION}" --release-asset="libmovevm_muslc.*.a" /lib/
+RUN cp /lib/libmovevm_muslc.`uname -m`.a /lib/libmovevm_muslc.a
 
-# force it to use static lib (from above) not standard libinitia.so file
+# force it to use static lib (from above) not standard libmovevm.so file
 RUN LEDGER_ENABLED=false BUILD_TAGS=muslc LDFLAGS="-linkmode=external -extldflags \"-L/code/mimalloc/build -lmimalloc -Wl,-z,muldefs -static\"" make build
 
 FROM alpine:3.15.4

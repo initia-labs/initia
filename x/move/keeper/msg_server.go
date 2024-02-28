@@ -11,17 +11,17 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
 	"github.com/initia-labs/initia/x/move/types"
-	vmtypes "github.com/initia-labs/initiavm/types"
+	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 type MsgServer struct {
-	Keeper
+	*Keeper
 }
 
 var _ types.MsgServer = MsgServer{}
 
 // NewMsgServerImpl return MsgServer instance
-func NewMsgServerImpl(k Keeper) MsgServer {
+func NewMsgServerImpl(k *Keeper) MsgServer {
 	return MsgServer{k}
 }
 

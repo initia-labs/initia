@@ -6,8 +6,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/initia-labs/initia/x/move/types"
-	vmapi "github.com/initia-labs/initiavm/api"
-	vmtypes "github.com/initia-labs/initiavm/types"
+	vmapi "github.com/initia-labs/movevm/api"
+	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 func (k Keeper) Initialize(

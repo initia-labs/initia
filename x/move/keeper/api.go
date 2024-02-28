@@ -10,8 +10,10 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	"github.com/initia-labs/initia/x/move/types"
-	vmapi "github.com/initia-labs/initiavm/api"
-	vmtypes "github.com/initia-labs/initiavm/types"
+	vmapi "github.com/initia-labs/movevm/api"
+	vmtypes "github.com/initia-labs/movevm/types"
+
+	storetypes "cosmossdk.io/store/types"
 
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 )
@@ -116,6 +118,17 @@ func (api GoApi) GetPrice(pairId string) ([]byte, uint64, uint64, error) {
 	}
 
 	return priceBz, uint64(price.BlockTimestamp.Unix()), uint64(cp.Decimals()), nil
+}
+
+func (api GoApi) Query(req vmtypes.QueryRequest, gasBalance uint64) ([]byte, uint64, error) {
+	// use gas meter to meter gas consumption during query
+	sdkCtx := sdk.UnwrapSDKContext(api.ctx).WithGasMeter(storetypes.NewGasMeter(gasBalance))
+	res, err := api.Keeper.HandleVMQuery(sdkCtx, &req)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return res, sdkCtx.GasMeter().GasConsumed(), err
 }
 
 // convert math.Int to little endian bytes

@@ -42,7 +42,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
-	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
@@ -52,6 +51,7 @@ import (
 
 	initiaapp "github.com/initia-labs/initia/app"
 	initiaappparams "github.com/initia-labs/initia/app/params"
+	"github.com/initia-labs/initia/x/bank"
 	movebank "github.com/initia-labs/initia/x/bank/keeper"
 	"github.com/initia-labs/initia/x/distribution"
 	distrkeeper "github.com/initia-labs/initia/x/distribution/keeper"
@@ -59,8 +59,6 @@ import (
 	"github.com/initia-labs/initia/x/gov"
 	govkeeper "github.com/initia-labs/initia/x/gov/keeper"
 	customgovtypes "github.com/initia-labs/initia/x/gov/types"
-
-	// nfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 	"github.com/initia-labs/initia/x/move"
 	moveconfig "github.com/initia-labs/initia/x/move/config"
 	movekeeper "github.com/initia-labs/initia/x/move/keeper"
@@ -73,9 +71,9 @@ import (
 	rewardtypes "github.com/initia-labs/initia/x/reward/types"
 	"github.com/initia-labs/initia/x/slashing"
 
-	vmapi "github.com/initia-labs/initiavm/api"
-	"github.com/initia-labs/initiavm/precompile"
-	vmtypes "github.com/initia-labs/initiavm/types"
+	vmapi "github.com/initia-labs/movevm/api"
+	"github.com/initia-labs/movevm/precompile"
+	vmtypes "github.com/initia-labs/movevm/types"
 
 	"github.com/skip-mev/slinky/x/oracle"
 	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
@@ -386,6 +384,9 @@ func _createTestInput(
 		authtypes.NewModuleAddress(govtypes.ModuleName),
 	)
 
+	queryRouter := baseapp.NewGRPCQueryRouter()
+	queryRouter.SetInterfaceRegistry(encodingConfig.InterfaceRegistry)
+
 	*moveKeeper = *movekeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[movetypes.StoreKey]),
@@ -393,6 +394,7 @@ func _createTestInput(
 		bankKeeper,
 		oracleKeeper,
 		TestMsgRouter{},
+		queryRouter,
 		moveConfig,
 		distKeeper,
 		stakingKeeper,
@@ -429,8 +431,6 @@ func _createTestInput(
 	// register bank & move
 	msgRouter := baseapp.NewMsgServiceRouter()
 	msgRouter.SetInterfaceRegistry(encodingConfig.InterfaceRegistry)
-	banktypes.RegisterMsgServer(msgRouter, bankkeeper.NewMsgServerImpl(bankKeeper))
-	movetypes.RegisterMsgServer(msgRouter, movekeeper.NewMsgServerImpl(*moveKeeper))
 
 	govConfig := govtypes.DefaultConfig()
 	govKeeper := govkeeper.NewKeeper(
@@ -450,6 +450,16 @@ func _createTestInput(
 
 	cfg := sdk.GetConfig()
 	cfg.SetAddressVerifier(initiaapp.VerifyAddressLen())
+
+	am := module.NewManager( // minimal module set that we use for message/ query tests
+		bank.NewAppModule(appCodec, bankKeeper, accountKeeper),
+		staking.NewAppModule(appCodec, *stakingKeeper),
+		distribution.NewAppModule(appCodec, *distKeeper),
+		gov.NewAppModule(appCodec, govKeeper, accountKeeper, bankKeeper),
+	)
+	am.RegisterServices(module.NewConfigurator(appCodec, msgRouter, queryRouter)) //nolint:errcheck
+	movetypes.RegisterMsgServer(msgRouter, movekeeper.NewMsgServerImpl(moveKeeper))
+	movetypes.RegisterQueryServer(queryRouter, movekeeper.NewQuerier(moveKeeper))
 
 	keepers := TestKeepers{
 		AccountKeeper: accountKeeper,
