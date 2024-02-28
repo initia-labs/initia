@@ -78,23 +78,24 @@ func _createTestInput(
 	return ctx, permKeeper
 }
 
-func Test_GetChannelRelayer(t *testing.T) {
+func Test_GetPermissionedRelayer(t *testing.T) {
 	ctx, k := _createTestInput(t, dbm.NewMemDB())
 
-	channel := "channel-123"
+	portID := "port-123"
+	channelID := "channel-123"
 	pubKey := secp256k1.GenPrivKey().PubKey()
 	addr := sdk.AccAddress(pubKey.Address())
 
 	// should be empty
-	_, err := k.ChannelRelayers.Get(ctx, channel)
+	_, err := k.PermissionedRelayers.Get(ctx, collections.Join(portID, channelID))
 	require.ErrorIs(t, err, collections.ErrNotFound)
 
 	// set channel relayer via msg handler
-	err = k.ChannelRelayers.Set(ctx, channel, addr)
+	err = k.PermissionedRelayers.Set(ctx, collections.Join(portID, channelID), addr)
 	require.NoError(t, err)
 
 	// check properly set
-	res, err := k.ChannelRelayers.Get(ctx, channel)
+	res, err := k.PermissionedRelayers.Get(ctx, collections.Join(portID, channelID))
 	require.NoError(t, err)
 	require.Equal(t, res, addr.Bytes())
 }

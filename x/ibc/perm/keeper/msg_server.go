@@ -22,8 +22,8 @@ func NewMsgServerImpl(k *Keeper) MsgServer {
 	return MsgServer{k}
 }
 
-// UpdateChannelRelayer update channel relayer to restrict relaying operation of a channel to specific relayer.
-func (ms MsgServer) UpdateChannelRelayer(ctx context.Context, req *types.MsgUpdateChannelRelayer) (*types.MsgUpdateChannelRelayerResponse, error) {
+// SetPermissionedRelayer update channel relayer to restrict relaying operation of a channel to specific relayer.
+func (ms MsgServer) SetPermissionedRelayer(ctx context.Context, req *types.MsgSetPermissionedRelayer) (*types.MsgSetPermissionedRelayerResponse, error) {
 	if err := req.Validate(ms.Keeper.ac); err != nil {
 		return nil, err
 	}
@@ -37,17 +37,23 @@ func (ms MsgServer) UpdateChannelRelayer(ctx context.Context, req *types.MsgUpda
 		return nil, err
 	}
 
-	if err := ms.SetChannelRelayer(ctx, req.Channel, relayerAddr); err != nil {
+	if err := ms.Keeper.SetPermissionedRelayer(ctx, req.PortId, req.ChannelId, relayerAddr); err != nil {
 		return nil, err
 	}
 
-	ms.Logger(ctx).Info("IBC permissioned channel relayer", "channel id", req.Channel, "relayer", relayerAddr)
+	ms.Logger(ctx).Info(
+		"IBC permissioned channel relayer",
+		"port id", req.PortId,
+		"channel id", req.ChannelId,
+		"relayer", relayerAddr,
+	)
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	sdkCtx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
-			types.EventTypeUpdateChannelRelayer,
-			sdk.NewAttribute(types.AttributeKeyChannelId, req.Channel),
+			types.EventTypeSetPermissionedRelayer,
+			sdk.NewAttribute(types.AttributeKeyPortId, req.PortId),
+			sdk.NewAttribute(types.AttributeKeyChannelId, req.ChannelId),
 			sdk.NewAttribute(types.AttributeKeyRelayer, req.Relayer),
 		),
 		sdk.NewEvent(
@@ -56,5 +62,5 @@ func (ms MsgServer) UpdateChannelRelayer(ctx context.Context, req *types.MsgUpda
 		),
 	})
 
-	return &types.MsgUpdateChannelRelayerResponse{}, nil
+	return &types.MsgSetPermissionedRelayerResponse{}, nil
 }

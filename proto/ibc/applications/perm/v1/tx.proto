@@ -12,28 +12,26 @@ option go_package = "github.com/initia-labs/initia/x/ibc/perm/types";
 service Msg {
   option (cosmos.msg.v1.service) = true;
 
-  // UpdateChannelRelayer defines a rpc handler method for MsgUpdateChannelRelayer.
-  rpc UpdateChannelRelayer(MsgUpdateChannelRelayer) returns (MsgUpdateChannelRelayerResponse);
+  // SetPermissionedRelayer defines a rpc handler method for MsgSetPermissionedRelayer.
+  rpc SetPermissionedRelayer(MsgSetPermissionedRelayer) returns (MsgSetPermissionedRelayerResponse);
 }
 
-// MsgUpdateChannelRelayer defines msg to set permissioned relyer for
+// MsgSetPermissionedRelayer defines msg to set permissioned relyer for
 // the specific ibc channel.
-message MsgUpdateChannelRelayer {
+message MsgSetPermissionedRelayer {
   option (cosmos.msg.v1.signer) = "sender";
-  option (amino.name)           = "perm/MsgUpdateChannelRelayer";
+  option (amino.name)           = "perm/MsgSetPermissionedRelayer";
 
   option (gogoproto.equal)           = false;
   option (gogoproto.goproto_getters) = false;
 
   // authority is the address that controls the module
   // (defaults to x/gov unless overwritten).
-  string authority = 1 [(gogoproto.moretags) = "yaml:\"authority\"", (cosmos_proto.scalar) = "cosmos.AddressString"];
-  string channel   = 2 [(gogoproto.moretags) = "yaml:\"channel\""];
-  string relayer   = 3 [(gogoproto.moretags) = "yaml:\"relayer\""];
+  string authority  = 1 [(gogoproto.moretags) = "yaml:\"authority\"", (cosmos_proto.scalar) = "cosmos.AddressString"];
+  string port_id    = 2 [(gogoproto.moretags) = "yaml:\"port_id\""];
+  string channel_id = 3 [(gogoproto.moretags) = "yaml:\"channel_id\""];
+  string relayer    = 4 [(gogoproto.moretags) = "yaml:\"relayer\""];
 }
 
-// MsgUpdateChannelRelayerResponse defines the Msg/UpdateChannelRelayer response type.
-message MsgUpdateChannelRelayerResponse {
-  // sequence number of the sft transfer packet sent
-  uint64 sequence = 1;
-}
+// MsgSetPermissionedRelayerResponse defines the Msg/SetPermissionedRelayer response type.
+message MsgSetPermissionedRelayerResponse {}

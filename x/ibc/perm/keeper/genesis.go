@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"cosmossdk.io/collections"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/initia-labs/initia/x/ibc/perm/types"
@@ -8,13 +9,13 @@ import (
 
 // InitGenesis initializes the ibc-perm state.
 func (k Keeper) InitGenesis(ctx sdk.Context, genesisState types.GenesisState) {
-	for _, channelRelayer := range genesisState.ChannelRelayers {
+	for _, channelRelayer := range genesisState.PermissionedRelayers {
 		addr, err := k.ac.StringToBytes(channelRelayer.Relayer)
 		if err != nil {
 			panic(err)
 		}
 
-		if err := k.ChannelRelayers.Set(ctx, channelRelayer.Channel, addr); err != nil {
+		if err := k.PermissionedRelayers.Set(ctx, collections.Join(channelRelayer.PortId, channelRelayer.ChannelId), addr); err != nil {
 			panic(err)
 		}
 	}
@@ -22,8 +23,8 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genesisState types.GenesisState) {
 
 // ExportGenesis exports ibc-perm module's channel relayers.
 func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
-	channelRelayers := []types.ChannelRelayer{}
-	err := k.IterateChannelRelayer(ctx, func(channelRelayer types.ChannelRelayer) (bool, error) {
+	channelRelayers := []types.PermissionedRelayer{}
+	err := k.IteratePermissionedRelayers(ctx, func(channelRelayer types.PermissionedRelayer) (bool, error) {
 		channelRelayers = append(channelRelayers, channelRelayer)
 		return false, nil
 	})
@@ -32,6 +33,6 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 	}
 
 	return &types.GenesisState{
-		ChannelRelayers: channelRelayers,
+		PermissionedRelayers: channelRelayers,
 	}
 }

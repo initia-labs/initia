@@ -15,11 +15,11 @@ const (
 )
 
 var (
-	// ChannelRelayerPrefixKey defines the key to store the channel relayer in store
-	ChannelRelayerPrefixKey = []byte{0x01}
+	// PermissionedRelayerPrefixKey defines the key to store the channel relayer in store
+	PermissionedRelayerPrefixKey = []byte{0x01}
 )
 
-// GetChannelRelayerKey return channel relayer key of the channel.
-func GetChannelRelayerKey(channel string) []byte {
-	return append(ChannelRelayerPrefixKey, []byte(channel)...)
+// GetPermissionedRelayerKey return channel relayer key of the channel.
+func GetPermissionedRelayerKey(channel string) []byte {
+	return append(PermissionedRelayerPrefixKey, []byte(channel)...)
 }

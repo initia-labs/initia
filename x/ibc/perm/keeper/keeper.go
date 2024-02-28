@@ -22,8 +22,8 @@ type Keeper struct {
 
 	authority string
 
-	Schema          collections.Schema
-	ChannelRelayers collections.Map[string, []byte]
+	Schema               collections.Schema
+	PermissionedRelayers collections.Map[collections.Pair[string, string], []byte]
 }
 
 // NewKeeper creates a new IBC perm Keeper instance
@@ -39,10 +39,10 @@ func NewKeeper(
 
 	sb := collections.NewSchemaBuilder(storeService)
 	k := &Keeper{
-		cdc:             cdc,
-		authority:       authority,
-		ChannelRelayers: collections.NewMap(sb, types.ChannelRelayerPrefixKey, "channel_relayers", collections.StringKey, collections.BytesValue),
-		ac:              ac,
+		cdc:                  cdc,
+		authority:            authority,
+		PermissionedRelayers: collections.NewMap(sb, types.PermissionedRelayerPrefixKey, "channel_relayers", collections.PairKeyCodec[string, string](collections.StringKey, collections.StringKey), collections.BytesValue),
+		ac:                   ac,
 	}
 
 	schema, err := sb.Build()
@@ -60,20 +60,21 @@ func (k Keeper) Logger(ctx context.Context) log.Logger {
 	return sdkCtx.Logger().With("module", "x/"+exported.ModuleName+"-"+types.ModuleName)
 }
 
-func (k Keeper) IterateChannelRelayer(ctx context.Context, cb func(channelRelayer types.ChannelRelayer) (bool, error)) error {
-	return k.ChannelRelayers.Walk(ctx, nil, func(channel string, relayer []byte) (stop bool, err error) {
+func (k Keeper) IteratePermissionedRelayers(ctx context.Context, cb func(channelRelayer types.PermissionedRelayer) (bool, error)) error {
+	return k.PermissionedRelayers.Walk(ctx, nil, func(key collections.Pair[string, string], relayer []byte) (stop bool, err error) {
 		relayerStr, err := k.ac.BytesToString(relayer)
 		if err != nil {
 			return true, err
 		}
 
-		return cb(types.ChannelRelayer{
-			Channel: channel,
-			Relayer: relayerStr,
+		return cb(types.PermissionedRelayer{
+			PortId:    key.K1(),
+			ChannelId: key.K2(),
+			Relayer:   relayerStr,
 		})
 	})
 }
 
-func (k Keeper) SetChannelRelayer(ctx context.Context, channel string, relayer sdk.AccAddress) error {
-	return k.ChannelRelayers.Set(ctx, channel, relayer)
+func (k Keeper) SetPermissionedRelayer(ctx context.Context, portID, channelID string, relayer sdk.AccAddress) error {
+	return k.PermissionedRelayers.Set(ctx, collections.Join(portID, channelID), relayer)
 }

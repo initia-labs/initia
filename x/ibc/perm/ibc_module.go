@@ -113,18 +113,6 @@ func (im IBCMiddleware) OnAcknowledgementPacket(
 	acknowledgement []byte,
 	relayer sdk.AccAddress,
 ) error {
-	if permissionedRelayer, err := im.keeper.ChannelRelayers.Get(ctx, packet.DestinationChannel); err != nil && !errors.Is(err, collections.ErrNotFound) {
-		return err
-	} else if err == nil {
-		if !bytes.Equal(relayer, permissionedRelayer) {
-			return fmt.Errorf(
-				"all packets of the channel `%s` should be relayed by the relayer `%s`",
-				packet.DestinationChannel,
-				permissionedRelayer,
-			)
-		}
-	}
-
 	return im.app.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
 }
 
@@ -134,18 +122,6 @@ func (im IBCMiddleware) OnTimeoutPacket(
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) error {
-	if permissionedRelayer, err := im.keeper.ChannelRelayers.Get(ctx, packet.DestinationChannel); err != nil && !errors.Is(err, collections.ErrNotFound) {
-		return err
-	} else if err == nil {
-		if !bytes.Equal(relayer, permissionedRelayer) {
-			return fmt.Errorf(
-				"all packets of the channel `%s` should be relayed by the relayer `%s`",
-				packet.DestinationChannel,
-				permissionedRelayer,
-			)
-		}
-	}
-
 	return im.app.OnTimeoutPacket(ctx, packet, relayer)
 }
 
@@ -182,17 +158,29 @@ func (im IBCMiddleware) OnRecvPacket(
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) ibcexported.Acknowledgement {
-	if permissionedRelayer, err := im.keeper.ChannelRelayers.Get(ctx, packet.DestinationChannel); err != nil && !errors.Is(err, collections.ErrNotFound) {
+	if permissionedRelayer, err := im.keeper.PermissionedRelayers.Get(ctx, collections.Join(packet.DestinationPort, packet.DestinationChannel)); err != nil && !errors.Is(err, collections.ErrNotFound) {
 		return newEmitErrorAcknowledgement(ctx, err)
 	} else if err == nil && !bytes.Equal(relayer, permissionedRelayer) {
-		return newEmitErrorAcknowledgement(
-			ctx,
-			fmt.Errorf(
-				"all packets of the channel `%s` should be relayed by the relayer `%s`",
-				packet.DestinationChannel,
-				permissionedRelayer,
-			),
-		)
+		/*
+			Raise a panic to prevent abnormal relayers from disrupting operations by
+			continuously sending error acknowledgements. For instance, abnormal relaying
+			can interfere with oracle price fetching.
+
+			return newEmitErrorAcknowledgement(
+				ctx,
+				fmt.Errorf(
+					"all packets of the channel `%s` should be relayed by the relayer `%s`",
+					packet.DestinationChannel,
+					permissionedRelayer,
+				),
+			)
+		*/
+
+		panic(fmt.Errorf(
+			"all packets of the channel `%s` should be relayed by the relayer `%s`",
+			packet.DestinationChannel,
+			fmt.Sprintf("%X", permissionedRelayer),
+		))
 	}
 
 	return im.app.OnRecvPacket(ctx, packet, relayer)
