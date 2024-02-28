@@ -57,7 +57,7 @@ type Keeper struct {
 	ac address.Codec
 	vc address.Codec
 
-	vmQueryWhiteList *VMQueryWhiteList
+	vmQueryWhiteList types.VMQueryWhiteList
 }
 
 func NewKeeper(
@@ -126,7 +126,7 @@ func NewKeeper(
 		ac: ac,
 		vc: vc,
 
-		vmQueryWhiteList: DefaultVMQueryWhiteList(),
+		vmQueryWhiteList: types.DefaultVMQueryWhiteList(ac),
 	}
 	schema, err := sb.Build()
 	if err != nil {
@@ -136,9 +136,15 @@ func NewKeeper(
 	return k
 }
 
+// WithVMQueryWhitelist overrides vmQueryWhitelist
+func (k Keeper) WithVMQueryWhitelist(vmQueryWhiteList types.VMQueryWhiteList) Keeper {
+	k.vmQueryWhiteList = vmQueryWhiteList
+	return k
+}
+
 // GetAuthority returns the x/move module's authority.
-func (ak Keeper) GetAuthority() string {
-	return ak.authority
+func (k Keeper) GetAuthority() string {
+	return k.authority
 }
 
 // Logger returns a module-specific logger.

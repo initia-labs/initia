@@ -29,14 +29,6 @@ func NewApi(k Keeper, ctx context.Context) GoApi {
 	return GoApi{k, ctx}
 }
 
-func (api GoApi) Query(req vmtypes.QueryRequest, gasBalance uint64) ([]byte, uint64, error) {
-	sdkCtx := sdk.UnwrapSDKContext(api.ctx)
-	sdkCtx = sdkCtx.WithGasMeter(storetypes.NewInfiniteGasMeter())
-	res, err := api.Keeper.HandleVMQuery(sdkCtx, &req)
-	usedGas := sdkCtx.GasMeter().GasConsumed()
-	return res, usedGas, err
-}
-
 // GetAccountInfo return account info (account number, sequence)
 func (api GoApi) GetAccountInfo(addr vmtypes.AccountAddress) (bool /* found */, uint64 /* account number */, uint64 /* sequence */, uint8 /* account_type */) {
 	sdkAddr := types.ConvertVMAddressToSDKAddress(addr)
@@ -126,6 +118,17 @@ func (api GoApi) GetPrice(pairId string) ([]byte, uint64, uint64, error) {
 	}
 
 	return priceBz, uint64(price.BlockTimestamp.Unix()), uint64(cp.Decimals()), nil
+}
+
+func (api GoApi) Query(req vmtypes.QueryRequest, gasBalance uint64) ([]byte, uint64, error) {
+	// use gas meter to meter gas consumption during query
+	sdkCtx := sdk.UnwrapSDKContext(api.ctx).WithGasMeter(storetypes.NewGasMeter(gasBalance))
+	res, err := api.Keeper.HandleVMQuery(sdkCtx, &req)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return res, sdkCtx.GasMeter().GasConsumed(), err
 }
 
 // convert math.Int to little endian bytes

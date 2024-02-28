@@ -9,7 +9,9 @@ import (
 	"github.com/stretchr/testify/require"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	govtypesv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 
+	govtypes "github.com/initia-labs/initia/x/gov/types"
 	"github.com/initia-labs/initia/x/move/keeper"
 	"github.com/initia-labs/initia/x/move/types"
 	stakingkeeper "github.com/initia-labs/initia/x/mstaking/keeper"
@@ -208,4 +210,50 @@ func Test_GetPrice(t *testing.T) {
 	)
 	require.NoError(t, err)
 	require.Equal(t, fmt.Sprintf("[\"%s\",\"%d\",\"%d\"]", price.String(), now.Unix(), cp.Decimals()), res)
+}
+
+func Test_API_Query(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+
+	proposal := govtypes.Proposal{
+		Id:      1,
+		Title:   "title",
+		Summary: "summary",
+		Status:  govtypesv1.ProposalStatus_PROPOSAL_STATUS_DEPOSIT_PERIOD,
+	}
+
+	// set Proposal
+	err := input.GovKeeper.SetProposal(ctx, proposal)
+	require.NoError(t, err)
+
+	now := time.Now()
+	api := keeper.NewApi(input.MoveKeeper, ctx.WithBlockTime(now))
+
+	// out of gas
+	require.Panics(t, func() {
+		_, _, _ = api.Query(vmtypes.QueryRequest{
+			Stargate: &vmtypes.StargateQuery{
+				Path: "/initia.gov.v1.Query/Proposal",
+				Data: []byte(`{"proposal_id": "1"}`),
+			},
+		}, 100)
+	})
+
+	// valid query
+	gasBalance := uint64(2000)
+	resBz, gasUsed, err := api.Query(vmtypes.QueryRequest{
+		Stargate: &vmtypes.StargateQuery{
+			Path: "/initia.gov.v1.Query/Proposal",
+			Data: []byte(`{"proposal_id": "1"}`),
+		},
+	}, gasBalance)
+	require.NoError(t, err)
+	require.Greater(t, gasBalance, gasUsed)
+
+	// expected proposal res json bytes
+	expectedResBz, err := input.EncodingConfig.Codec.MarshalJSON(&govtypes.QueryProposalResponse{
+		Proposal: &proposal,
+	})
+	require.NoError(t, err)
+	require.Equal(t, expectedResBz, resBz)
 }

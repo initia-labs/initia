@@ -15,13 +15,13 @@ import (
 )
 
 type MsgServer struct {
-	Keeper
+	*Keeper
 }
 
 var _ types.MsgServer = MsgServer{}
 
 // NewMsgServerImpl return MsgServer instance
-func NewMsgServerImpl(k Keeper) MsgServer {
+func NewMsgServerImpl(k *Keeper) MsgServer {
 	return MsgServer{k}
 }
 
