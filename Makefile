@@ -130,7 +130,7 @@ build-linux-with-shared-library:
 	docker build --tag initia/initiad-shared ./ -f ./shared.Dockerfile
 	docker create --name temp initia/initiad-shared:latest
 	docker cp temp:/usr/local/bin/initiad $(BUILDDIR)/
-	docker cp temp:/lib/libinitia.so $(BUILDDIR)/
+	docker cp temp:/lib/libmovevm.so $(BUILDDIR)/
 	docker rm temp
 
 install: go.sum 
