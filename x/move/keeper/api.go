@@ -121,11 +121,12 @@ func (api GoApi) GetPrice(pairId string) ([]byte, uint64, uint64, error) {
 }
 
 func (api GoApi) Query(req vmtypes.QueryRequest, gasBalance uint64) ([]byte, uint64, error) {
-	// use gas meter to meter gas consumption during query
+	// use normal gas meter to meter gas consumption during query with max gas limit
 	sdkCtx := sdk.UnwrapSDKContext(api.ctx).WithGasMeter(storetypes.NewGasMeter(gasBalance))
+
 	res, err := api.Keeper.HandleVMQuery(sdkCtx, &req)
 	if err != nil {
-		return nil, 0, err
+		return nil, sdkCtx.GasMeter().GasConsumed(), err
 	}
 
 	return res, sdkCtx.GasMeter().GasConsumed(), err
