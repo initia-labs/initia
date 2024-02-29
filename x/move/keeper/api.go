@@ -125,8 +125,11 @@ func (api GoApi) Query(req vmtypes.QueryRequest, gasBalance uint64) ([]byte, uin
 	sdkCtx := sdk.UnwrapSDKContext(api.ctx).WithGasMeter(storetypes.NewGasMeter(gasBalance))
 
 	res, err := api.Keeper.HandleVMQuery(sdkCtx, &req)
-	gasUsed := sdkCtx.GasMeter().GasConsumed()
-	return res, gasUsed, err
+	if err != nil {
+		return nil, sdkCtx.GasMeter().GasConsumed(), err
+	}
+
+	return res, sdkCtx.GasMeter().GasConsumed(), err
 }
 
 // convert math.Int to little endian bytes
