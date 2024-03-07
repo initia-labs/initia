@@ -71,9 +71,14 @@ func (nftpd NonFungibleTokenPacketData) ValidateBasic() error {
 }
 
 // GetBytes is a helper for serializing
-func (nftpd NonFungibleTokenPacketData) GetBytes() []byte {
-	wrapper := nftpd.ToWrapper()
-	bz, err := json.Marshal(wrapper)
+func (nftpd NonFungibleTokenPacketData) GetBytes(counterPartyPort string) []byte {
+	var bz []byte
+	var err error
+	if isWasmPacket(counterPartyPort) {
+		bz, err = json.Marshal(nftpd.ToWasmData())
+	} else {
+		bz, err = json.Marshal(nftpd)
+	}
 	if err != nil {
 		panic(err)
 	}
@@ -82,82 +87,58 @@ func (nftpd NonFungibleTokenPacketData) GetBytes() []byte {
 }
 
 // decode packet data to NonFungibleTokenPacketData
-func DecodePacketData(packetData []byte) (NonFungibleTokenPacketData, error) {
+func DecodePacketData(packetData []byte, counterPartyPort string) (NonFungibleTokenPacketData, error) {
 	decoder := json.NewDecoder(strings.NewReader(string(packetData)))
 	decoder.DisallowUnknownFields()
 
-	var wrapper NonFungibleTokenPacketDataWrapper
-	if err := decoder.Decode(&wrapper); err != nil {
+	if isWasmPacket(counterPartyPort) {
+		var wasmData NonFungibleTokenPacketDataWasm
+		if err := decoder.Decode(&wasmData); err != nil {
+			return NonFungibleTokenPacketData{}, sdkerrors.ErrInvalidRequest.Wrap(err.Error())
+		}
+		return wasmData.ToPacketData(), nil
+	}
+
+	var data NonFungibleTokenPacketData
+	if err := decoder.Decode(&data); err != nil {
 		return NonFungibleTokenPacketData{}, sdkerrors.ErrInvalidRequest.Wrap(err.Error())
 	}
 
-	return wrapper.ToPacketData(), nil
+	return data, nil
 }
 
-func (wrapper *NonFungibleTokenPacketDataWrapper) ToPacketData() NonFungibleTokenPacketData {
+func (wasmData *NonFungibleTokenPacketDataWasm) ToPacketData() NonFungibleTokenPacketData {
 	data := NonFungibleTokenPacketData{
-		Sender:   wrapper.Sender,
-		Receiver: wrapper.Receiver,
-		Memo:     wrapper.Memo,
-	}
-
-	if len(wrapper.ClassId) != 0 {
-		data.ClassId = wrapper.ClassId
-	} else {
-		data.ClassId = wrapper.CamelClassId
-	}
-
-	if len(wrapper.ClassUri) != 0 {
-		data.ClassUri = wrapper.ClassUri
-	} else {
-		data.ClassUri = wrapper.CamelClassUri
-	}
-
-	if len(wrapper.ClassData) != 0 {
-		data.ClassData = wrapper.ClassData
-	} else {
-		data.ClassData = wrapper.CamelClassData
-	}
-
-	if len(wrapper.TokenIds) != 0 {
-		data.TokenIds = wrapper.TokenIds
-	} else {
-		data.TokenIds = wrapper.CamelTokenIds
-	}
-
-	if len(wrapper.TokenUris) != 0 {
-		data.TokenUris = wrapper.TokenUris
-	} else {
-		data.TokenUris = wrapper.CamelTokenUris
-	}
-
-	if len(wrapper.TokenData) != 0 {
-		data.TokenData = wrapper.TokenData
-	} else {
-		data.TokenData = wrapper.CamelTokenData
+		ClassId:   wasmData.ClassId,
+		ClassUri:  wasmData.ClassUri,
+		ClassData: wasmData.ClassData,
+		TokenIds:  wasmData.TokenIds,
+		TokenUris: wasmData.TokenUris,
+		TokenData: wasmData.TokenData,
+		Sender:    wasmData.Sender,
+		Receiver:  wasmData.Receiver,
+		Memo:      wasmData.Memo,
 	}
 
 	return data
 }
 
-func (data *NonFungibleTokenPacketData) ToWrapper() NonFungibleTokenPacketDataWrapper {
-	return NonFungibleTokenPacketDataWrapper{
-		ClassId:        data.ClassId,
-		ClassUri:       data.ClassUri,
-		ClassData:      data.ClassData,
-		CamelClassId:   data.ClassId,
-		CamelClassUri:  data.ClassUri,
-		CamelClassData: data.ClassData,
-
-		TokenIds:       data.TokenIds,
-		TokenUris:      data.TokenUris,
-		TokenData:      data.TokenData,
-		CamelTokenIds:  data.TokenIds,
-		CamelTokenUris: data.TokenUris,
-		CamelTokenData: data.TokenData,
-
-		Sender:   data.Sender,
-		Receiver: data.Receiver,
-		Memo:     data.Memo,
+func (data *NonFungibleTokenPacketData) ToWasmData() NonFungibleTokenPacketDataWasm {
+	return NonFungibleTokenPacketDataWasm{
+		ClassId:   data.ClassId,
+		ClassUri:  data.ClassUri,
+		ClassData: data.ClassData,
+		TokenIds:  data.TokenIds,
+		TokenUris: data.TokenUris,
+		TokenData: data.TokenData,
+		Sender:    data.Sender,
+		Receiver:  data.Receiver,
+		Memo:      data.Memo,
 	}
+}
+
+const wasmPortPrefix = "wasm."
+
+func isWasmPacket(port string) bool {
+	return strings.HasPrefix(port, wasmPortPrefix)
 }

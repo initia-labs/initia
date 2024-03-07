@@ -30,33 +30,24 @@ message NonFungibleTokenPacketData {
   string memo = 9;
 }
 
-// NonFungibleTokenPacketDataWrapper to support both camel and snake.
-message NonFungibleTokenPacketDataWrapper {
+// NonFungibleTokenPacketDataWasm to support wams nft transfer.
+message NonFungibleTokenPacketDataWasm {
   // collection id == extension struct tag
-  string class_id = 1;
+  string class_id = 1 [(gogoproto.jsontag) = "classId,omitempty"];
   // collection url
-  string class_uri = 2;
+  string class_uri = 2 [(gogoproto.jsontag) = "classUri,omitempty"];
   // collection data
-  string class_data = 3;
+  string class_data = 3 [(gogoproto.jsontag) = "classData,omitempty"];
   // nft token ids
-  repeated string token_ids = 4;
+  repeated string token_ids = 4 [(gogoproto.jsontag) = "tokenIds,omitempty"];
   // nft token uris
-  repeated string token_uris = 5;
+  repeated string token_uris = 5 [(gogoproto.jsontag) = "tokenUris,omitempty"];
   // nft token data array
-  repeated string token_data = 6;
+  repeated string token_data = 6 [(gogoproto.jsontag) = "tokenData,omitempty"];
   // sender of nft
   string sender = 7;
   // receiver of nft
   string receiver = 8;
   // optional memo field for future use
   string memo = 9;
-
-  // to support camel case
-  string camel_class_id = 91 [(gogoproto.jsontag) = "classId,omitempty"];
-  string camel_class_uri = 92 [(gogoproto.jsontag) = "classUri,omitempty"];
-  string camel_class_data = 93 [(gogoproto.jsontag) = "classData,omitempty"];
-  repeated string camel_token_ids = 94 [(gogoproto.jsontag) = "tokenIds,omitempty"];
-  repeated string camel_token_uris = 95 [(gogoproto.jsontag) = "tokenUris,omitempty"];
-  repeated string camel_token_data = 96 [(gogoproto.jsontag) = "tokenData,omitempty"];
 }
-

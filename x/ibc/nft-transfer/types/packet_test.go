@@ -1,7 +1,6 @@
 package types
 
 import (
-	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -66,7 +65,7 @@ func Test_decodePacketData(t *testing.T) {
 		"memo": "memo"
 	}`
 
-	res, err := DecodePacketData([]byte(snakeJsonStr))
+	res, err := DecodePacketData([]byte(snakeJsonStr), "ics721")
 	require.NoError(t, err)
 	require.Equal(t, data, res)
 
@@ -83,7 +82,7 @@ func Test_decodePacketData(t *testing.T) {
 		"memo": "memo"
 	}`
 
-	camelRes, err := DecodePacketData([]byte(camelJsonStr))
+	camelRes, err := DecodePacketData([]byte(camelJsonStr), "wasm.contract")
 	require.NoError(t, err)
 	require.Equal(t, data, camelRes)
 }
@@ -101,28 +100,21 @@ func Test_GetBytes(t *testing.T) {
 		Memo:      "memo",
 	}
 
-	expectedWrapper := NonFungibleTokenPacketDataWrapper{
-		ClassId:        "class_id",
-		ClassUri:       "class_uri",
-		ClassData:      "class_data",
-		CamelClassId:   "class_id",
-		CamelClassUri:  "class_uri",
-		CamelClassData: "class_data",
-
-		TokenIds:       []string{"token_id_1", "token_id_2"},
-		TokenUris:      []string{"token_uri_1", "token_uri_2"},
-		TokenData:      []string{"token_data_1", "token_data_2"},
-		CamelTokenIds:  []string{"token_id_1", "token_id_2"},
-		CamelTokenUris: []string{"token_uri_1", "token_uri_2"},
-		CamelTokenData: []string{"token_data_1", "token_data_2"},
-
-		Sender:   "sender",
-		Receiver: "receiver",
-		Memo:     "memo",
-	}
-
-	var wrapper NonFungibleTokenPacketDataWrapper
-	err := json.Unmarshal(data.GetBytes(), &wrapper)
+	// case wasm
+	wasmPortID := wasmPortPrefix + "contract"
+	_data, err := DecodePacketData(data.GetBytes(wasmPortID), wasmPortID)
 	require.NoError(t, err)
-	require.Equal(t, expectedWrapper, wrapper)
+	require.Equal(t, data, _data)
+
+	// case normal
+	portID := "ics721"
+	_data, err = DecodePacketData(data.GetBytes(portID), portID)
+	require.NoError(t, err)
+	require.Equal(t, data, _data)
+
+	// case mixed
+	_, err = DecodePacketData(data.GetBytes(wasmPortID), portID)
+	require.Error(t, err)
+	_, err = DecodePacketData(data.GetBytes(portID), wasmPortID)
+	require.Error(t, err)
 }

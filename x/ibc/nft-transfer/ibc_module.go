@@ -179,7 +179,7 @@ func (im IBCModule) OnRecvPacket(
 	var ackErr error
 	ack := channeltypes.NewResultAcknowledgement([]byte{byte(1)})
 
-	data, err := types.DecodePacketData(packet.GetData())
+	data, err := types.DecodePacketData(packet.GetData(), packet.SourcePort)
 	if err != nil {
 		ackErr = errors.Wrapf(sdkerrors.ErrInvalidType, "cannot unmarshal ICS-721 nft-transfer packet data")
 		ack = channeltypes.NewErrorAcknowledgement(ackErr)
