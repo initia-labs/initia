@@ -19,15 +19,15 @@ ICQ_VERSION=$(cat ./go.mod | grep "$ICQ_URL/$IBC_V v" | sed -n -e "s/^.* //p" | 
 OPINIT_VERSION=$(cat ./go.mod | grep "$OPINIT_URL v" | sed -n -e "s/^.* //p")
 SLINKY_VERSION=$(cat ./go.mod | grep "$SLINKY_URL v" | sed -n -e "s/^.* //p")
 
-# mkdir -p ./third_party
-# cd third_party
-# git clone -b $COSMOS_SDK_VERSION https://$COSMOS_URL
-# git clone -b $IBC_VERSION https://$IBC_URL
-# git clone -b $OPINIT_VERSION https://$OPINIT_URL
-# git clone -b $SLINKY_VERSION https://$SLINKY_URL
-# git clone -b middleware/packet-forward-middleware/$PFM_VERSION https://$IBC_APP_URL ./PFM
-# git clone -b modules/async-icq/$ICQ_VERSION https://$IBC_APP_URL ./ICQ
-# cd ..
+mkdir -p ./third_party
+cd third_party
+git clone -b $COSMOS_SDK_VERSION https://$COSMOS_URL
+git clone -b $IBC_VERSION https://$IBC_URL
+git clone -b $OPINIT_VERSION https://$OPINIT_URL
+git clone -b $SLINKY_VERSION https://$SLINKY_URL
+git clone -b middleware/packet-forward-middleware/$PFM_VERSION https://$IBC_APP_URL ./PFM
+git clone -b modules/async-icq/$ICQ_VERSION https://$IBC_APP_URL ./ICQ
+cd ..
 
 # start generating
 mkdir -p ./tmp-swagger-gen

@@ -68,6 +68,16 @@ service Query {
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/initia/move/v1/params";
   }
+
+  // Metadata converts metadata to denom
+  rpc Metadata(QueryMetadataRequest) returns (QueryMetadataResponse) {
+    option (google.api.http).get = "/initia/move/v1/metadata";
+  }
+
+  // Denom converts denom to metadata
+  rpc Denom(QueryDenomRequest) returns (QueryDenomResponse) {
+    option (google.api.http).get = "/initia/move/v1/denom";
+  }
 }
 
 // QueryModuleRequest is the request type for the Query/Module RPC
@@ -225,4 +235,24 @@ message QueryParamsRequest {}
 message QueryParamsResponse {
   // params defines the parameters of the module.
   Params params = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryMetadataRequest is the request type for the Query/Metadata RPC method.
+message QueryMetadataRequest {
+  string denom = 1;
+}
+
+// QueryMetadataResponse is the response type for the Query/Metadata RPC method.
+message QueryMetadataResponse {
+  string metadata = 1;
+}
+
+// QueryDenomRequest is the request type for the Query/Denom RPC method.
+message QueryDenomRequest {
+  string metadata = 1;
+}
+
+// QueryDenomResponse is the response type for the Query/Denom RPC method.
+message QueryDenomResponse {
+  string denom = 1;
 }

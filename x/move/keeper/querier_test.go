@@ -332,3 +332,31 @@ func TestParams(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, expectedParams, params.Params)
 }
+
+func Test_Query_Metadata(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+
+	metadata, err := types.MetadataAddressFromDenom(bondDenom)
+	require.NoError(t, err)
+
+	querier := keeper.NewQuerier(&input.MoveKeeper)
+	res, err := querier.Metadata(ctx, &types.QueryMetadataRequest{
+		Denom: bondDenom,
+	})
+	require.NoError(t, err)
+	require.Equal(t, metadata.String(), res.Metadata)
+}
+
+func Test_Query_Denom(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+
+	metadata, err := types.MetadataAddressFromDenom(bondDenom)
+	require.NoError(t, err)
+
+	querier := keeper.NewQuerier(&input.MoveKeeper)
+	res, err := querier.Denom(ctx, &types.QueryDenomRequest{
+		Metadata: metadata.String(),
+	})
+	require.NoError(t, err)
+	require.Equal(t, bondDenom, res.Denom)
+}

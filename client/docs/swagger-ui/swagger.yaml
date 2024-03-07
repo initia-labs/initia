@@ -50366,6 +50366,94 @@ paths:
           type: string
       tags:
         - Query
+  /initia/move/v1/denom:
+    get:
+      summary: Denom converts denom to metadata
+      operationId: Denom
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              denom:
+                type: string
+            description: >-
+              QueryDenomResponse is the response type for the Query/Denom RPC
+              method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: metadata
+          in: query
+          required: false
+          type: string
+      tags:
+        - Query
+  /initia/move/v1/metadata:
+    get:
+      summary: Metadata converts metadata to denom
+      operationId: Metadata
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              metadata:
+                type: string
+            description: >-
+              QueryMetadataResponse is the response type for the Query/Metadata
+              RPC method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: denom
+          in: query
+          required: false
+          type: string
+      tags:
+        - Query
   /initia/move/v1/params:
     get:
       summary: Params queries all parameters.
@@ -83944,6 +84032,20 @@ definitions:
           It is a list of addresses with permission to distribute contracts,
           and an empty list is interpreted as allowing anyone to distribute.
     description: Params defines the set of move parameters.
+  initia.move.v1.QueryDenomResponse:
+    type: object
+    properties:
+      denom:
+        type: string
+    description: QueryDenomResponse is the response type for the Query/Denom RPC method.
+  initia.move.v1.QueryMetadataResponse:
+    type: object
+    properties:
+      metadata:
+        type: string
+    description: >-
+      QueryMetadataResponse is the response type for the Query/Metadata RPC
+      method.
   initia.move.v1.QueryModuleResponse:
     type: object
     properties:
