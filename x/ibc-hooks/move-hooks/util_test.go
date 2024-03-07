@@ -81,20 +81,6 @@ func Test_validateAndParseMemo_without_callback(t *testing.T) {
 	}, hookData)
 	require.NoError(t, validateReceiver(hookData.Message, "0x1::dex::swap"))
 
-	isMoveRouted, hookData, err = validateAndParseMemo(memo)
-	require.True(t, isMoveRouted)
-	require.NoError(t, err)
-	require.Equal(t, HookData{
-		Message: &movetypes.MsgExecute{
-			ModuleAddress: "0x1",
-			ModuleName:    "dex",
-			FunctionName:  "swap",
-			TypeArgs:      []string{"0x1::native_uinit::Coin", "0x1::native_uusdc::Coin"},
-			Args:          [][]byte{argBz},
-		},
-	}, hookData)
-	require.NoError(t, validateReceiver(hookData.Message, "0x1::dex::swap"))
-
 	// invalid receiver
 	require.NoError(t, err)
 	require.Error(t, validateReceiver(hookData.Message, "0x2::dex::swap"))

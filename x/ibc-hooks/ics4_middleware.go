@@ -14,7 +14,7 @@ import (
 var _ porttypes.ICS4Wrapper = &ICS4Middleware{}
 
 type ICS4Middleware struct {
-	ics4Wrapper porttypes.ICS4Wrapper
+	ICS4Wrapper porttypes.ICS4Wrapper
 
 	// Hooks
 	Hooks Hooks
@@ -22,7 +22,7 @@ type ICS4Middleware struct {
 
 func NewICS4Middleware(ics4Wrapper porttypes.ICS4Wrapper, hooks Hooks) *ICS4Middleware {
 	return &ICS4Middleware{
-		ics4Wrapper: ics4Wrapper,
+		ICS4Wrapper: ics4Wrapper,
 		Hooks:       hooks,
 	}
 }
@@ -43,8 +43,7 @@ func (i ICS4Middleware) SendPacket(
 		hook.SendPacketBeforeHook(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data)
 	}
 
-	seq, err := i.ics4Wrapper.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data)
-
+	seq, err := i.ICS4Wrapper.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data)
 	if hook, ok := i.Hooks.(SendPacketAfterHooks); ok {
 		hook.SendPacketAfterHook(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data, err)
 	}
@@ -60,7 +59,8 @@ func (i ICS4Middleware) WriteAcknowledgement(ctx sdk.Context, chanCap *capabilit
 	if hook, ok := i.Hooks.(WriteAcknowledgementBeforeHooks); ok {
 		hook.WriteAcknowledgementBeforeHook(ctx, chanCap, packet, ack)
 	}
-	err := i.ics4Wrapper.WriteAcknowledgement(ctx, chanCap, packet, ack)
+
+	err := i.ICS4Wrapper.WriteAcknowledgement(ctx, chanCap, packet, ack)
 	if hook, ok := i.Hooks.(WriteAcknowledgementAfterHooks); ok {
 		hook.WriteAcknowledgementAfterHook(ctx, chanCap, packet, ack, err)
 	}
@@ -76,7 +76,8 @@ func (i ICS4Middleware) GetAppVersion(ctx sdk.Context, portID, channelID string)
 	if hook, ok := i.Hooks.(GetAppVersionBeforeHooks); ok {
 		hook.GetAppVersionBeforeHook(ctx, portID, channelID)
 	}
-	version, err := i.ics4Wrapper.GetAppVersion(ctx, portID, channelID)
+
+	version, err := i.ICS4Wrapper.GetAppVersion(ctx, portID, channelID)
 	if hook, ok := i.Hooks.(GetAppVersionAfterHooks); ok {
 		hook.GetAppVersionAfterHook(ctx, portID, channelID, version, err)
 	}

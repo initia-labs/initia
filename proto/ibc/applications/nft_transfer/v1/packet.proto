@@ -11,21 +11,52 @@ import "gogoproto/gogo.proto";
 // https://github.com/cosmos/ibc/tree/main/spec/app/ics-721-nft-transfer
 message NonFungibleTokenPacketData {
   // collection id == extension struct tag
-  string class_id = 1 [(gogoproto.moretags) = "yaml:\"class_id\""];
+  string class_id = 1;
   // collection url
-  string class_uri = 2 [(gogoproto.moretags) = "yaml:\"class_uri\""];
+  string class_uri = 2;
   // collection data
-  string class_data = 3 [(gogoproto.moretags) = "yaml:\"class_data\""];
+  string class_data = 3;
   // nft token ids
-  repeated string token_ids = 4 [(gogoproto.moretags) = "yaml:\"token_ids\""];
+  repeated string token_ids = 4;
   // nft token uris
-  repeated string token_uris = 5 [(gogoproto.moretags) = "yaml:\"token_uris\""];
+  repeated string token_uris = 5;
   // nft token data array
-  repeated string token_data = 6 [(gogoproto.moretags) = "yaml:\"token_data\""];
+  repeated string token_data = 6;
   // sender of nft
-  string sender = 7 [(gogoproto.moretags) = "yaml:\"sender\""];
+  string sender = 7;
   // receiver of nft
-  string receiver = 8 [(gogoproto.moretags) = "yaml:\"receiver\""];
+  string receiver = 8;
   // optional memo field for future use
-  string memo = 9 [(gogoproto.moretags) = "yaml:\"memo\""];
+  string memo = 9;
 }
+
+// NonFungibleTokenPacketDataWrapper to support both camel and snake.
+message NonFungibleTokenPacketDataWrapper {
+  // collection id == extension struct tag
+  string class_id = 1;
+  // collection url
+  string class_uri = 2;
+  // collection data
+  string class_data = 3;
+  // nft token ids
+  repeated string token_ids = 4;
+  // nft token uris
+  repeated string token_uris = 5;
+  // nft token data array
+  repeated string token_data = 6;
+  // sender of nft
+  string sender = 7;
+  // receiver of nft
+  string receiver = 8;
+  // optional memo field for future use
+  string memo = 9;
+
+  // to support camel case
+  string camel_class_id = 91 [(gogoproto.jsontag) = "classId,omitempty"];
+  string camel_class_uri = 92 [(gogoproto.jsontag) = "classUri,omitempty"];
+  string camel_class_data = 93 [(gogoproto.jsontag) = "classData,omitempty"];
+  repeated string camel_token_ids = 94 [(gogoproto.jsontag) = "tokenIds,omitempty"];
+  repeated string camel_token_uris = 95 [(gogoproto.jsontag) = "tokenUris,omitempty"];
+  repeated string camel_token_data = 96 [(gogoproto.jsontag) = "tokenData,omitempty"];
+}
+

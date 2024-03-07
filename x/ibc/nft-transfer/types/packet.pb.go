@@ -28,23 +28,23 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 // https://github.com/cosmos/ibc/tree/main/spec/app/ics-721-nft-transfer
 type NonFungibleTokenPacketData struct {
 	// collection id == extension struct tag
-	ClassId string `protobuf:"bytes,1,opt,name=class_id,json=classId,proto3" json:"class_id,omitempty" yaml:"class_id"`
+	ClassId string `protobuf:"bytes,1,opt,name=class_id,json=classId,proto3" json:"class_id,omitempty"`
 	// collection url
-	ClassUri string `protobuf:"bytes,2,opt,name=class_uri,json=classUri,proto3" json:"class_uri,omitempty" yaml:"class_uri"`
+	ClassUri string `protobuf:"bytes,2,opt,name=class_uri,json=classUri,proto3" json:"class_uri,omitempty"`
 	// collection data
-	ClassData string `protobuf:"bytes,3,opt,name=class_data,json=classData,proto3" json:"class_data,omitempty" yaml:"class_data"`
+	ClassData string `protobuf:"bytes,3,opt,name=class_data,json=classData,proto3" json:"class_data,omitempty"`
 	// nft token ids
-	TokenIds []string `protobuf:"bytes,4,rep,name=token_ids,json=tokenIds,proto3" json:"token_ids,omitempty" yaml:"token_ids"`
+	TokenIds []string `protobuf:"bytes,4,rep,name=token_ids,json=tokenIds,proto3" json:"token_ids,omitempty"`
 	// nft token uris
-	TokenUris []string `protobuf:"bytes,5,rep,name=token_uris,json=tokenUris,proto3" json:"token_uris,omitempty" yaml:"token_uris"`
+	TokenUris []string `protobuf:"bytes,5,rep,name=token_uris,json=tokenUris,proto3" json:"token_uris,omitempty"`
 	// nft token data array
-	TokenData []string `protobuf:"bytes,6,rep,name=token_data,json=tokenData,proto3" json:"token_data,omitempty" yaml:"token_data"`
+	TokenData []string `protobuf:"bytes,6,rep,name=token_data,json=tokenData,proto3" json:"token_data,omitempty"`
 	// sender of nft
-	Sender string `protobuf:"bytes,7,opt,name=sender,proto3" json:"sender,omitempty" yaml:"sender"`
+	Sender string `protobuf:"bytes,7,opt,name=sender,proto3" json:"sender,omitempty"`
 	// receiver of nft
-	Receiver string `protobuf:"bytes,8,opt,name=receiver,proto3" json:"receiver,omitempty" yaml:"receiver"`
+	Receiver string `protobuf:"bytes,8,opt,name=receiver,proto3" json:"receiver,omitempty"`
 	// optional memo field for future use
-	Memo string `protobuf:"bytes,9,opt,name=memo,proto3" json:"memo,omitempty" yaml:"memo"`
+	Memo string `protobuf:"bytes,9,opt,name=memo,proto3" json:"memo,omitempty"`
 }
 
 func (m *NonFungibleTokenPacketData) Reset()         { *m = NonFungibleTokenPacketData{} }
@@ -143,8 +143,176 @@ func (m *NonFungibleTokenPacketData) GetMemo() string {
 	return ""
 }
 
+// NonFungibleTokenPacketDataWrapper to support both camel and snake.
+type NonFungibleTokenPacketDataWrapper struct {
+	// collection id == extension struct tag
+	ClassId string `protobuf:"bytes,1,opt,name=class_id,json=classId,proto3" json:"class_id,omitempty"`
+	// collection url
+	ClassUri string `protobuf:"bytes,2,opt,name=class_uri,json=classUri,proto3" json:"class_uri,omitempty"`
+	// collection data
+	ClassData string `protobuf:"bytes,3,opt,name=class_data,json=classData,proto3" json:"class_data,omitempty"`
+	// nft token ids
+	TokenIds []string `protobuf:"bytes,4,rep,name=token_ids,json=tokenIds,proto3" json:"token_ids,omitempty"`
+	// nft token uris
+	TokenUris []string `protobuf:"bytes,5,rep,name=token_uris,json=tokenUris,proto3" json:"token_uris,omitempty"`
+	// nft token data array
+	TokenData []string `protobuf:"bytes,6,rep,name=token_data,json=tokenData,proto3" json:"token_data,omitempty"`
+	// sender of nft
+	Sender string `protobuf:"bytes,7,opt,name=sender,proto3" json:"sender,omitempty"`
+	// receiver of nft
+	Receiver string `protobuf:"bytes,8,opt,name=receiver,proto3" json:"receiver,omitempty"`
+	// optional memo field for future use
+	Memo string `protobuf:"bytes,9,opt,name=memo,proto3" json:"memo,omitempty"`
+	// to support camel case
+	CamelClassId   string   `protobuf:"bytes,91,opt,name=camel_class_id,json=camelClassId,proto3" json:"classId,omitempty"`
+	CamelClassUri  string   `protobuf:"bytes,92,opt,name=camel_class_uri,json=camelClassUri,proto3" json:"classUri,omitempty"`
+	CamelClassData string   `protobuf:"bytes,93,opt,name=camel_class_data,json=camelClassData,proto3" json:"classData,omitempty"`
+	CamelTokenIds  []string `protobuf:"bytes,94,rep,name=camel_token_ids,json=camelTokenIds,proto3" json:"tokenIds,omitempty"`
+	CamelTokenUris []string `protobuf:"bytes,95,rep,name=camel_token_uris,json=camelTokenUris,proto3" json:"tokenUris,omitempty"`
+	CamelTokenData []string `protobuf:"bytes,96,rep,name=camel_token_data,json=camelTokenData,proto3" json:"tokenData,omitempty"`
+}
+
+func (m *NonFungibleTokenPacketDataWrapper) Reset()         { *m = NonFungibleTokenPacketDataWrapper{} }
+func (m *NonFungibleTokenPacketDataWrapper) String() string { return proto.CompactTextString(m) }
+func (*NonFungibleTokenPacketDataWrapper) ProtoMessage()    {}
+func (*NonFungibleTokenPacketDataWrapper) Descriptor() ([]byte, []int) {
+	return fileDescriptor_f82fdc932b824013, []int{1}
+}
+func (m *NonFungibleTokenPacketDataWrapper) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *NonFungibleTokenPacketDataWrapper) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_NonFungibleTokenPacketDataWrapper.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *NonFungibleTokenPacketDataWrapper) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_NonFungibleTokenPacketDataWrapper.Merge(m, src)
+}
+func (m *NonFungibleTokenPacketDataWrapper) XXX_Size() int {
+	return m.Size()
+}
+func (m *NonFungibleTokenPacketDataWrapper) XXX_DiscardUnknown() {
+	xxx_messageInfo_NonFungibleTokenPacketDataWrapper.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_NonFungibleTokenPacketDataWrapper proto.InternalMessageInfo
+
+func (m *NonFungibleTokenPacketDataWrapper) GetClassId() string {
+	if m != nil {
+		return m.ClassId
+	}
+	return ""
+}
+
+func (m *NonFungibleTokenPacketDataWrapper) GetClassUri() string {
+	if m != nil {
+		return m.ClassUri
+	}
+	return ""
+}
+
+func (m *NonFungibleTokenPacketDataWrapper) GetClassData() string {
+	if m != nil {
+		return m.ClassData
+	}
+	return ""
+}
+
+func (m *NonFungibleTokenPacketDataWrapper) GetTokenIds() []string {
+	if m != nil {
+		return m.TokenIds
+	}
+	return nil
+}
+
+func (m *NonFungibleTokenPacketDataWrapper) GetTokenUris() []string {
+	if m != nil {
+		return m.TokenUris
+	}
+	return nil
+}
+
+func (m *NonFungibleTokenPacketDataWrapper) GetTokenData() []string {
+	if m != nil {
+		return m.TokenData
+	}
+	return nil
+}
+
+func (m *NonFungibleTokenPacketDataWrapper) GetSender() string {
+	if m != nil {
+		return m.Sender
+	}
+	return ""
+}
+
+func (m *NonFungibleTokenPacketDataWrapper) GetReceiver() string {
+	if m != nil {
+		return m.Receiver
+	}
+	return ""
+}
+
+func (m *NonFungibleTokenPacketDataWrapper) GetMemo() string {
+	if m != nil {
+		return m.Memo
+	}
+	return ""
+}
+
+func (m *NonFungibleTokenPacketDataWrapper) GetCamelClassId() string {
+	if m != nil {
+		return m.CamelClassId
+	}
+	return ""
+}
+
+func (m *NonFungibleTokenPacketDataWrapper) GetCamelClassUri() string {
+	if m != nil {
+		return m.CamelClassUri
+	}
+	return ""
+}
+
+func (m *NonFungibleTokenPacketDataWrapper) GetCamelClassData() string {
+	if m != nil {
+		return m.CamelClassData
+	}
+	return ""
+}
+
+func (m *NonFungibleTokenPacketDataWrapper) GetCamelTokenIds() []string {
+	if m != nil {
+		return m.CamelTokenIds
+	}
+	return nil
+}
+
+func (m *NonFungibleTokenPacketDataWrapper) GetCamelTokenUris() []string {
+	if m != nil {
+		return m.CamelTokenUris
+	}
+	return nil
+}
+
+func (m *NonFungibleTokenPacketDataWrapper) GetCamelTokenData() []string {
+	if m != nil {
+		return m.CamelTokenData
+	}
+	return nil
+}
+
 func init() {
 	proto.RegisterType((*NonFungibleTokenPacketData)(nil), "ibc.applications.nft_transfer.v1.NonFungibleTokenPacketData")
+	proto.RegisterType((*NonFungibleTokenPacketDataWrapper)(nil), "ibc.applications.nft_transfer.v1.NonFungibleTokenPacketDataWrapper")
 }
 
 func init() {
@@ -152,34 +320,38 @@ func init() {
 }
 
 var fileDescriptor_f82fdc932b824013 = []byte{
-	// 417 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x6c, 0x92, 0x41, 0x6f, 0xd3, 0x30,
-	0x14, 0xc7, 0x1b, 0x3a, 0xba, 0xd6, 0x08, 0x8d, 0x85, 0x21, 0x59, 0x3b, 0x24, 0x95, 0xb9, 0xc0,
-	0xa1, 0xb1, 0x2a, 0x10, 0x07, 0x8e, 0x13, 0x42, 0xda, 0x05, 0x4d, 0x16, 0xbb, 0x70, 0xa9, 0x9c,
-	0xc4, 0x0d, 0x4f, 0x4b, 0xec, 0xc8, 0x76, 0x2a, 0xf6, 0x2d, 0xf8, 0x58, 0x1c, 0x77, 0x41, 0xe2,
-	0x14, 0xa1, 0xf6, 0x1b, 0xe4, 0x13, 0xa0, 0xd8, 0x5d, 0x09, 0x68, 0xb7, 0x97, 0xf7, 0xff, 0xff,
-	0xde, 0xfb, 0xc7, 0x7a, 0x68, 0x01, 0x69, 0x46, 0x79, 0x5d, 0x97, 0x90, 0x71, 0x0b, 0x4a, 0x1a,
-	0x2a, 0xd7, 0x76, 0x65, 0x35, 0x97, 0x66, 0x2d, 0x34, 0xdd, 0x2c, 0x69, 0xcd, 0xb3, 0x1b, 0x61,
-	0x93, 0x5a, 0x2b, 0xab, 0xc2, 0x39, 0xa4, 0x59, 0x32, 0xb4, 0x27, 0x43, 0x7b, 0xb2, 0x59, 0x9e,
-	0x9f, 0x15, 0xaa, 0x50, 0xce, 0x4c, 0xfb, 0xca, 0x73, 0xe4, 0xe7, 0x18, 0x9d, 0x7f, 0x52, 0xf2,
-	0x63, 0x23, 0x0b, 0x48, 0x4b, 0xf1, 0x59, 0xdd, 0x08, 0x79, 0xe5, 0x06, 0x7f, 0xe0, 0x96, 0x87,
-	0x09, 0x9a, 0x66, 0x25, 0x37, 0x66, 0x05, 0x39, 0x0e, 0xe6, 0xc1, 0xab, 0xd9, 0xc5, 0xf3, 0xae,
-	0x8d, 0x4f, 0x6e, 0x79, 0x55, 0xbe, 0x27, 0xf7, 0x0a, 0x61, 0xc7, 0xae, 0xbc, 0xcc, 0xc3, 0x25,
-	0x9a, 0xf9, 0x6e, 0xa3, 0x01, 0x3f, 0x72, 0xc0, 0x59, 0xd7, 0xc6, 0xcf, 0x86, 0x40, 0xa3, 0x81,
-	0x30, 0x3f, 0xf6, 0x5a, 0x43, 0xf8, 0x16, 0x21, 0xdf, 0xcf, 0xb9, 0xe5, 0x78, 0xec, 0x98, 0x17,
-	0x5d, 0x1b, 0x9f, 0x0e, 0x99, 0x5e, 0x23, 0xcc, 0xcf, 0x76, 0xc1, 0x96, 0x68, 0x66, 0xfb, 0xac,
-	0x2b, 0xc8, 0x0d, 0x3e, 0x9a, 0x8f, 0xff, 0x5d, 0x74, 0x90, 0x08, 0x9b, 0xba, 0xfa, 0x32, 0x37,
-	0xfd, 0x22, 0xdf, 0x6f, 0x34, 0x18, 0xfc, 0xd8, 0x31, 0x83, 0x45, 0x7f, 0x35, 0xc2, 0xfc, 0xec,
-	0x6b, 0x0d, 0x03, 0xca, 0xc5, 0x9b, 0x3c, 0x4c, 0xed, 0xe3, 0xb9, 0x0f, 0x17, 0xef, 0x35, 0x9a,
-	0x18, 0x21, 0x73, 0xa1, 0xf1, 0xb1, 0xfb, 0xa1, 0xd3, 0xae, 0x8d, 0x9f, 0x7a, 0xc2, 0xf7, 0x09,
-	0xdb, 0x1b, 0x42, 0x8a, 0xa6, 0x5a, 0x64, 0x02, 0x36, 0x42, 0xe3, 0xe9, 0xff, 0x4f, 0x7c, 0xaf,
-	0x10, 0x76, 0x30, 0x85, 0x2f, 0xd1, 0x51, 0x25, 0x2a, 0x85, 0x67, 0xce, 0x7c, 0xd2, 0xb5, 0xf1,
-	0x13, 0x6f, 0xee, 0xbb, 0x84, 0x39, 0xf1, 0xe2, 0xea, 0xc7, 0x36, 0x0a, 0xee, 0xb6, 0x51, 0xf0,
-	0x7b, 0x1b, 0x05, 0xdf, 0x77, 0xd1, 0xe8, 0x6e, 0x17, 0x8d, 0x7e, 0xed, 0xa2, 0xd1, 0x97, 0x77,
-	0x05, 0xd8, 0xaf, 0x4d, 0x9a, 0x64, 0xaa, 0xa2, 0x20, 0xc1, 0x02, 0x5f, 0x94, 0x3c, 0x35, 0xfb,
-	0x9a, 0x7e, 0xa3, 0xfd, 0xe1, 0xc9, 0xb5, 0x5d, 0x1c, 0x6e, 0xcd, 0xde, 0xd6, 0xc2, 0xa4, 0x13,
-	0x77, 0x30, 0x6f, 0xfe, 0x04, 0x00, 0x00, 0xff, 0xff, 0x9e, 0xc1, 0x52, 0x6b, 0x99, 0x02, 0x00,
-	0x00,
+	// 494 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe4, 0x54, 0x4d, 0x6f, 0xd3, 0x30,
+	0x18, 0x6e, 0xf6, 0xd1, 0xb5, 0x16, 0x0c, 0x30, 0x30, 0x42, 0x27, 0xd2, 0xb2, 0x13, 0x07, 0x9a,
+	0x68, 0x42, 0xe2, 0x82, 0x84, 0xc4, 0x40, 0x48, 0xbb, 0xa0, 0x69, 0xea, 0x84, 0xc4, 0x57, 0x70,
+	0x12, 0xb7, 0x58, 0x4b, 0xec, 0xc8, 0x76, 0x2b, 0xf6, 0x2f, 0x38, 0xf1, 0x07, 0xf8, 0x33, 0x1c,
+	0x77, 0xe4, 0x54, 0xa1, 0xf6, 0xd6, 0x5f, 0x81, 0xfc, 0xba, 0x49, 0xad, 0x15, 0x7e, 0x01, 0x37,
+	0x3b, 0xcf, 0x47, 0x9e, 0xf7, 0x79, 0x25, 0xa3, 0x3e, 0x4b, 0xd2, 0x88, 0x94, 0x65, 0xce, 0x52,
+	0xa2, 0x99, 0xe0, 0x2a, 0xe2, 0x43, 0x1d, 0x6b, 0x49, 0xb8, 0x1a, 0x52, 0x19, 0x4d, 0x0e, 0xa3,
+	0x92, 0xa4, 0xe7, 0x54, 0x87, 0xa5, 0x14, 0x5a, 0xe0, 0x1e, 0x4b, 0xd2, 0xd0, 0xa5, 0x87, 0x2e,
+	0x3d, 0x9c, 0x1c, 0x76, 0xee, 0x8c, 0xc4, 0x48, 0x00, 0x39, 0x32, 0x27, 0xab, 0x3b, 0xf8, 0xbe,
+	0x81, 0x3a, 0x6f, 0x04, 0x7f, 0x3d, 0xe6, 0x23, 0x96, 0xe4, 0x74, 0x20, 0xce, 0x29, 0x3f, 0x01,
+	0xe3, 0x57, 0x44, 0x13, 0x7c, 0x1f, 0xb5, 0xd2, 0x9c, 0x28, 0x15, 0xb3, 0xcc, 0xf7, 0x7a, 0xde,
+	0xa3, 0xf6, 0xe9, 0x0e, 0xdc, 0x8f, 0x33, 0xbc, 0x8f, 0xda, 0x16, 0x1a, 0x4b, 0xe6, 0x6f, 0x00,
+	0x66, 0xb9, 0x67, 0x92, 0xe1, 0x07, 0x08, 0x59, 0x30, 0x23, 0x9a, 0xf8, 0x9b, 0x80, 0x5a, 0x3a,
+	0xd8, 0xee, 0xa3, 0xb6, 0x36, 0x7f, 0x8a, 0x59, 0xa6, 0xfc, 0xad, 0xde, 0xa6, 0xd1, 0xc2, 0x87,
+	0xe3, 0x4c, 0x19, 0xad, 0x05, 0xc7, 0x92, 0x29, 0x7f, 0x1b, 0x50, 0x4b, 0x3f, 0x93, 0xcc, 0x81,
+	0xc1, 0xba, 0xe9, 0xc0, 0x60, 0xbd, 0x87, 0x9a, 0x8a, 0xf2, 0x8c, 0x4a, 0x7f, 0x07, 0xfe, 0xba,
+	0xbc, 0xe1, 0x0e, 0x6a, 0x49, 0x9a, 0x52, 0x36, 0xa1, 0xd2, 0x6f, 0xd9, 0xb4, 0xd5, 0x1d, 0x63,
+	0xb4, 0x55, 0xd0, 0x42, 0xf8, 0x6d, 0xf8, 0x0e, 0xe7, 0x83, 0x1f, 0xdb, 0xe8, 0xe1, 0xbf, 0x8b,
+	0x79, 0x2b, 0x49, 0x59, 0x52, 0xf9, 0xff, 0xf6, 0x83, 0x9f, 0xa1, 0xdd, 0x94, 0x14, 0x34, 0x8f,
+	0xeb, 0xf9, 0xdf, 0x1b, 0xf4, 0xe8, 0xee, 0x62, 0xda, 0xbd, 0xb5, 0xec, 0xe0, 0xb1, 0x28, 0x98,
+	0xa6, 0x45, 0xa9, 0x2f, 0x4e, 0xaf, 0x01, 0xf9, 0xe5, 0xb2, 0x9b, 0xe7, 0xe8, 0x86, 0x2b, 0x36,
+	0x0d, 0x7d, 0x00, 0xf5, 0xde, 0x62, 0xda, 0xc5, 0x55, 0x4b, 0x8e, 0xfc, 0xfa, 0x4a, 0x6e, 0xea,
+	0x7b, 0x81, 0x6e, 0xba, 0x7a, 0x98, 0xf4, 0x23, 0x18, 0xdc, 0x5b, 0x4c, 0xbb, 0xb7, 0xeb, 0x22,
+	0x1d, 0x87, 0xdd, 0x95, 0x03, 0xf4, 0x50, 0x47, 0x58, 0x15, 0xfd, 0xc9, 0x74, 0x65, 0x23, 0x54,
+	0x65, 0xaf, 0x45, 0x18, 0x54, 0x5b, 0xa8, 0x23, 0x38, 0xbb, 0x88, 0xc1, 0x00, 0x22, 0xd4, 0xfb,
+	0x58, 0x8b, 0x30, 0xa8, 0x37, 0x75, 0xc5, 0x02, 0xa6, 0xf8, 0x7c, 0xc5, 0xe2, 0xaf, 0x53, 0x0c,
+	0x2a, 0xe4, 0xe8, 0xe4, 0xe7, 0x2c, 0xf0, 0x2e, 0x67, 0x81, 0xf7, 0x7b, 0x16, 0x78, 0xdf, 0xe6,
+	0x41, 0xe3, 0x72, 0x1e, 0x34, 0x7e, 0xcd, 0x83, 0xc6, 0xbb, 0xa7, 0x23, 0xa6, 0xbf, 0x8c, 0x93,
+	0x30, 0x15, 0x45, 0xc4, 0x38, 0xd3, 0x8c, 0xf4, 0x73, 0x92, 0xa8, 0xe5, 0x39, 0xfa, 0x1a, 0x99,
+	0xf7, 0x85, 0x0f, 0x75, 0xbf, 0x7e, 0x52, 0xf4, 0x45, 0x49, 0x55, 0xd2, 0x84, 0x77, 0xe1, 0xc9,
+	0x9f, 0x00, 0x00, 0x00, 0xff, 0xff, 0x8b, 0x27, 0x24, 0x5d, 0x80, 0x04, 0x00, 0x00,
 }
 
 func (m *NonFungibleTokenPacketData) Marshal() (dAtA []byte, err error) {
@@ -202,6 +374,158 @@ func (m *NonFungibleTokenPacketData) MarshalToSizedBuffer(dAtA []byte) (int, err
 	_ = i
 	var l int
 	_ = l
+	if len(m.Memo) > 0 {
+		i -= len(m.Memo)
+		copy(dAtA[i:], m.Memo)
+		i = encodeVarintPacket(dAtA, i, uint64(len(m.Memo)))
+		i--
+		dAtA[i] = 0x4a
+	}
+	if len(m.Receiver) > 0 {
+		i -= len(m.Receiver)
+		copy(dAtA[i:], m.Receiver)
+		i = encodeVarintPacket(dAtA, i, uint64(len(m.Receiver)))
+		i--
+		dAtA[i] = 0x42
+	}
+	if len(m.Sender) > 0 {
+		i -= len(m.Sender)
+		copy(dAtA[i:], m.Sender)
+		i = encodeVarintPacket(dAtA, i, uint64(len(m.Sender)))
+		i--
+		dAtA[i] = 0x3a
+	}
+	if len(m.TokenData) > 0 {
+		for iNdEx := len(m.TokenData) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.TokenData[iNdEx])
+			copy(dAtA[i:], m.TokenData[iNdEx])
+			i = encodeVarintPacket(dAtA, i, uint64(len(m.TokenData[iNdEx])))
+			i--
+			dAtA[i] = 0x32
+		}
+	}
+	if len(m.TokenUris) > 0 {
+		for iNdEx := len(m.TokenUris) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.TokenUris[iNdEx])
+			copy(dAtA[i:], m.TokenUris[iNdEx])
+			i = encodeVarintPacket(dAtA, i, uint64(len(m.TokenUris[iNdEx])))
+			i--
+			dAtA[i] = 0x2a
+		}
+	}
+	if len(m.TokenIds) > 0 {
+		for iNdEx := len(m.TokenIds) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.TokenIds[iNdEx])
+			copy(dAtA[i:], m.TokenIds[iNdEx])
+			i = encodeVarintPacket(dAtA, i, uint64(len(m.TokenIds[iNdEx])))
+			i--
+			dAtA[i] = 0x22
+		}
+	}
+	if len(m.ClassData) > 0 {
+		i -= len(m.ClassData)
+		copy(dAtA[i:], m.ClassData)
+		i = encodeVarintPacket(dAtA, i, uint64(len(m.ClassData)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.ClassUri) > 0 {
+		i -= len(m.ClassUri)
+		copy(dAtA[i:], m.ClassUri)
+		i = encodeVarintPacket(dAtA, i, uint64(len(m.ClassUri)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.ClassId) > 0 {
+		i -= len(m.ClassId)
+		copy(dAtA[i:], m.ClassId)
+		i = encodeVarintPacket(dAtA, i, uint64(len(m.ClassId)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *NonFungibleTokenPacketDataWrapper) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *NonFungibleTokenPacketDataWrapper) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *NonFungibleTokenPacketDataWrapper) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.CamelTokenData) > 0 {
+		for iNdEx := len(m.CamelTokenData) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.CamelTokenData[iNdEx])
+			copy(dAtA[i:], m.CamelTokenData[iNdEx])
+			i = encodeVarintPacket(dAtA, i, uint64(len(m.CamelTokenData[iNdEx])))
+			i--
+			dAtA[i] = 0x6
+			i--
+			dAtA[i] = 0x82
+		}
+	}
+	if len(m.CamelTokenUris) > 0 {
+		for iNdEx := len(m.CamelTokenUris) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.CamelTokenUris[iNdEx])
+			copy(dAtA[i:], m.CamelTokenUris[iNdEx])
+			i = encodeVarintPacket(dAtA, i, uint64(len(m.CamelTokenUris[iNdEx])))
+			i--
+			dAtA[i] = 0x5
+			i--
+			dAtA[i] = 0xfa
+		}
+	}
+	if len(m.CamelTokenIds) > 0 {
+		for iNdEx := len(m.CamelTokenIds) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.CamelTokenIds[iNdEx])
+			copy(dAtA[i:], m.CamelTokenIds[iNdEx])
+			i = encodeVarintPacket(dAtA, i, uint64(len(m.CamelTokenIds[iNdEx])))
+			i--
+			dAtA[i] = 0x5
+			i--
+			dAtA[i] = 0xf2
+		}
+	}
+	if len(m.CamelClassData) > 0 {
+		i -= len(m.CamelClassData)
+		copy(dAtA[i:], m.CamelClassData)
+		i = encodeVarintPacket(dAtA, i, uint64(len(m.CamelClassData)))
+		i--
+		dAtA[i] = 0x5
+		i--
+		dAtA[i] = 0xea
+	}
+	if len(m.CamelClassUri) > 0 {
+		i -= len(m.CamelClassUri)
+		copy(dAtA[i:], m.CamelClassUri)
+		i = encodeVarintPacket(dAtA, i, uint64(len(m.CamelClassUri)))
+		i--
+		dAtA[i] = 0x5
+		i--
+		dAtA[i] = 0xe2
+	}
+	if len(m.CamelClassId) > 0 {
+		i -= len(m.CamelClassId)
+		copy(dAtA[i:], m.CamelClassId)
+		i = encodeVarintPacket(dAtA, i, uint64(len(m.CamelClassId)))
+		i--
+		dAtA[i] = 0x5
+		i--
+		dAtA[i] = 0xda
+	}
 	if len(m.Memo) > 0 {
 		i -= len(m.Memo)
 		copy(dAtA[i:], m.Memo)
@@ -332,6 +656,87 @@ func (m *NonFungibleTokenPacketData) Size() (n int) {
 	l = len(m.Memo)
 	if l > 0 {
 		n += 1 + l + sovPacket(uint64(l))
+	}
+	return n
+}
+
+func (m *NonFungibleTokenPacketDataWrapper) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.ClassId)
+	if l > 0 {
+		n += 1 + l + sovPacket(uint64(l))
+	}
+	l = len(m.ClassUri)
+	if l > 0 {
+		n += 1 + l + sovPacket(uint64(l))
+	}
+	l = len(m.ClassData)
+	if l > 0 {
+		n += 1 + l + sovPacket(uint64(l))
+	}
+	if len(m.TokenIds) > 0 {
+		for _, s := range m.TokenIds {
+			l = len(s)
+			n += 1 + l + sovPacket(uint64(l))
+		}
+	}
+	if len(m.TokenUris) > 0 {
+		for _, s := range m.TokenUris {
+			l = len(s)
+			n += 1 + l + sovPacket(uint64(l))
+		}
+	}
+	if len(m.TokenData) > 0 {
+		for _, s := range m.TokenData {
+			l = len(s)
+			n += 1 + l + sovPacket(uint64(l))
+		}
+	}
+	l = len(m.Sender)
+	if l > 0 {
+		n += 1 + l + sovPacket(uint64(l))
+	}
+	l = len(m.Receiver)
+	if l > 0 {
+		n += 1 + l + sovPacket(uint64(l))
+	}
+	l = len(m.Memo)
+	if l > 0 {
+		n += 1 + l + sovPacket(uint64(l))
+	}
+	l = len(m.CamelClassId)
+	if l > 0 {
+		n += 2 + l + sovPacket(uint64(l))
+	}
+	l = len(m.CamelClassUri)
+	if l > 0 {
+		n += 2 + l + sovPacket(uint64(l))
+	}
+	l = len(m.CamelClassData)
+	if l > 0 {
+		n += 2 + l + sovPacket(uint64(l))
+	}
+	if len(m.CamelTokenIds) > 0 {
+		for _, s := range m.CamelTokenIds {
+			l = len(s)
+			n += 2 + l + sovPacket(uint64(l))
+		}
+	}
+	if len(m.CamelTokenUris) > 0 {
+		for _, s := range m.CamelTokenUris {
+			l = len(s)
+			n += 2 + l + sovPacket(uint64(l))
+		}
+	}
+	if len(m.CamelTokenData) > 0 {
+		for _, s := range m.CamelTokenData {
+			l = len(s)
+			n += 2 + l + sovPacket(uint64(l))
+		}
 	}
 	return n
 }
@@ -658,6 +1063,536 @@ func (m *NonFungibleTokenPacketData) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.Memo = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipPacket(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthPacket
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *NonFungibleTokenPacketDataWrapper) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowPacket
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: NonFungibleTokenPacketDataWrapper: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: NonFungibleTokenPacketDataWrapper: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ClassId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowPacket
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthPacket
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthPacket
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ClassId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ClassUri", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowPacket
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthPacket
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthPacket
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ClassUri = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ClassData", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowPacket
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthPacket
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthPacket
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ClassData = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TokenIds", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowPacket
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthPacket
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthPacket
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.TokenIds = append(m.TokenIds, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TokenUris", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowPacket
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthPacket
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthPacket
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.TokenUris = append(m.TokenUris, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		case 6:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TokenData", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowPacket
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthPacket
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthPacket
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.TokenData = append(m.TokenData, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		case 7:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Sender", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowPacket
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthPacket
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthPacket
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Sender = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 8:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Receiver", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowPacket
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthPacket
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthPacket
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Receiver = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 9:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Memo", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowPacket
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthPacket
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthPacket
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Memo = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 91:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CamelClassId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowPacket
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthPacket
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthPacket
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.CamelClassId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 92:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CamelClassUri", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowPacket
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthPacket
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthPacket
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.CamelClassUri = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 93:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CamelClassData", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowPacket
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthPacket
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthPacket
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.CamelClassData = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 94:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CamelTokenIds", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowPacket
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthPacket
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthPacket
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.CamelTokenIds = append(m.CamelTokenIds, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		case 95:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CamelTokenUris", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowPacket
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthPacket
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthPacket
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.CamelTokenUris = append(m.CamelTokenUris, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		case 96:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CamelTokenData", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowPacket
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthPacket
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthPacket
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.CamelTokenData = append(m.CamelTokenData, string(dAtA[iNdEx:postIndex]))
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
