@@ -2,7 +2,7 @@ FROM golang:1.21-alpine AS go-builder
 #ARG arch=x86_64
 
 # See https://github.com/initia-labs/movevm/releases
-ENV LIBINITIAVM_VERSION=v0.2.0
+ENV LIBMOVEVM_VERSION=v0.2.0
 
 # this comes from standard alpine nightly file
 #  https://github.com/rust-lang/docker-rust-nightly/blob/master/alpine3.12/Dockerfile
@@ -21,8 +21,8 @@ RUN git clone --depth 1 https://github.com/microsoft/mimalloc; cd mimalloc; mkdi
 ENV MIMALLOC_RESERVE_HUGE_OS_PAGES=4
 
 # See https://github.com/initia-labs/movevm/releases
-ADD https://github.com/initia-labs/movevm/releases/download/${LIBINITIAVM_VERSION}/libmovevm_muslc.aarch64.a /lib/libmovevm_muslc.aarch64.a
-ADD https://github.com/initia-labs/movevm/releases/download/${LIBINITIAVM_VERSION}/libmovevm_muslc.x86_64.a /lib/libmovevm_muslc.x86_64.a
+ADD https://github.com/initia-labs/movevm/releases/download/${LIBMOVEVM_VERSION}/libmovevm_muslc.aarch64.a /lib/libmovevm_muslc.aarch64.a
+ADD https://github.com/initia-labs/movevm/releases/download/${LIBMOVEVM_VERSION}/libmovevm_muslc.x86_64.a /lib/libmovevm_muslc.x86_64.a
 
 # Highly recommend to verify the version hash
 # RUN sha256sum /lib/libmovevm_muslc.aarch64.a | grep a5e63292ec67f5bdefab51b42c3fbc3fa307c6aefeb6b409d971f1df909c3927

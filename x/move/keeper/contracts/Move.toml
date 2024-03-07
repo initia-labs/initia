@@ -3,7 +3,7 @@ name = "test1"
 version = "0.0.0"
 
 [dependencies]
-InitiaStdlib = { local = "../../../../../initiavm/precompile/modules/initia_stdlib"  }
+InitiaStdlib = { local = "../../../../../movevm/precompile/modules/initia_stdlib"  }
 
 [addresses]
 initia_std = "0x1"
