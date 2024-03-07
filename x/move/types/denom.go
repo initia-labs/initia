@@ -72,11 +72,12 @@ func DenomFromMetadataAddress(ctx context.Context, k FungibleAssetKeeper, metada
 		return "", err
 	}
 
-	// If a coin is issued from move side, add `move/` prefix
+	// If the coin is issued by 0x1, then return symbol as denom
 	if NamedObjectAddress(vmtypes.StdAddress, symbol) == metadata {
 		return symbol, err
 	}
 
+	// Else, add `move/` prefix
 	return DenomTraceDenomPrefixMove + metadata.CanonicalString(), nil
 }
 

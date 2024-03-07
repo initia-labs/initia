@@ -332,3 +332,32 @@ func (q Querier) Params(context context.Context, req *types.QueryParamsRequest) 
 		Params: params,
 	}, nil
 }
+
+// Denom implements types.QueryServer.
+func (q Querier) Denom(ctx context.Context, req *types.QueryDenomRequest) (*types.QueryDenomResponse, error) {
+	metadata, err := types.AccAddressFromString(q.ac, req.Metadata)
+	if err != nil {
+		return nil, err
+	}
+
+	denom, err := types.DenomFromMetadataAddress(ctx, NewMoveBankKeeper(q.Keeper), metadata)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryDenomResponse{
+		Denom: denom,
+	}, nil
+}
+
+// Metadata implements types.QueryServer.
+func (q Querier) Metadata(ctx context.Context, req *types.QueryMetadataRequest) (*types.QueryMetadataResponse, error) {
+	metadataAddr, err := types.MetadataAddressFromDenom(req.Denom)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryMetadataResponse{
+		Metadata: metadataAddr.String(),
+	}, nil
+}
