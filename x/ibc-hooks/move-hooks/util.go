@@ -37,14 +37,12 @@ func isIcs20Packet(packetData []byte) (isIcs20 bool, ics20data transfertypes.Fun
 	return true, data
 }
 
-func isIcs721Packet(packetData []byte) (isIcs721 bool, ics721data nfttransfertypes.NonFungibleTokenPacketData) {
-	var data nfttransfertypes.NonFungibleTokenPacketData
-	decoder := json.NewDecoder(strings.NewReader(string(packetData)))
-	decoder.DisallowUnknownFields()
-	if err := decoder.Decode(&data); err != nil {
+func isIcs721Packet(packetData []byte, counterPartyPort string) (isIcs721 bool, ics721data nfttransfertypes.NonFungibleTokenPacketData) {
+	if data, err := nfttransfertypes.DecodePacketData(packetData, counterPartyPort); err != nil {
 		return false, data
+	} else {
+		return true, data
 	}
-	return true, data
 }
 
 func validateAndParseMemo(memo string) (

@@ -1,4 +1,4 @@
-package nft
+package nfttransfer
 
 import (
 	"fmt"
@@ -175,11 +175,12 @@ func (im IBCModule) OnRecvPacket(
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) ibcexported.Acknowledgement {
+
+	var ackErr error
 	ack := channeltypes.NewResultAcknowledgement([]byte{byte(1)})
 
-	var data types.NonFungibleTokenPacketData
-	var ackErr error
-	if err := im.keeper.Codec().UnmarshalJSON(packet.GetData(), &data); err != nil {
+	data, err := types.DecodePacketData(packet.GetData(), packet.SourcePort)
+	if err != nil {
 		ackErr = errors.Wrapf(sdkerrors.ErrInvalidType, "cannot unmarshal ICS-721 nft-transfer packet data")
 		ack = channeltypes.NewErrorAcknowledgement(ackErr)
 	}

@@ -9,7 +9,7 @@ This allows cross-chain contract calls, that involve token movement.
 This is useful for a variety of use cases.
 One of primary importance is cross-chain swaps, which is an extremely powerful primitive.
 
-The mechanism enabling this is a `memo` field on every ICS20 transfer packet as of [IBC v3.4.0](https://medium.com/the-interchain-foundation/moving-beyond-simple-token-transfers-d42b2b1dc29b).
+The mechanism enabling this is a `memo` field on every ICS20 of ICS721 transfer packet as of [IBC v3.4.0](https://medium.com/the-interchain-foundation/moving-beyond-simple-token-transfers-d42b2b1dc29b).
 Move hooks is an IBC middleware that parses an ICS20 transfer, and if the `memo` field is of a particular form, executes a move contract call. We now detail the `memo` format for `move` contract calls, and the execution guarantees provided.
 
 ### Move Contract Execution Format
@@ -22,11 +22,11 @@ The move `MsgExecute` is defined [here](../../move/types/tx.pb.go) and other typ
 // and async callback.
 type HookData struct {
  // Message is a move execute message which will be executed
- // at `OnRecvPacket` from receiver chain.
+ // at `OnRecvPacket` of receiver chain.
  Message movetypes.MsgExecute `json:"message"`
 
  // AsyncCallback is a callback message which will be executed
- // at `OnTimeoutPacket` and `OnAcknowledgementPacket` from
+ // at `OnTimeoutPacket` and `OnAcknowledgementPacket` of
  // sender chain.
  AsyncCallback *AsyncCallback `json:"async_callback,omitempty"`
 }

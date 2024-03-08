@@ -11,21 +11,43 @@ import "gogoproto/gogo.proto";
 // https://github.com/cosmos/ibc/tree/main/spec/app/ics-721-nft-transfer
 message NonFungibleTokenPacketData {
   // collection id == extension struct tag
-  string class_id = 1 [(gogoproto.moretags) = "yaml:\"class_id\""];
+  string class_id = 1;
   // collection url
-  string class_uri = 2 [(gogoproto.moretags) = "yaml:\"class_uri\""];
+  string class_uri = 2;
   // collection data
-  string class_data = 3 [(gogoproto.moretags) = "yaml:\"class_data\""];
+  string class_data = 3;
   // nft token ids
-  repeated string token_ids = 4 [(gogoproto.moretags) = "yaml:\"token_ids\""];
+  repeated string token_ids = 4;
   // nft token uris
-  repeated string token_uris = 5 [(gogoproto.moretags) = "yaml:\"token_uris\""];
+  repeated string token_uris = 5;
   // nft token data array
-  repeated string token_data = 6 [(gogoproto.moretags) = "yaml:\"token_data\""];
+  repeated string token_data = 6;
   // sender of nft
-  string sender = 7 [(gogoproto.moretags) = "yaml:\"sender\""];
+  string sender = 7;
   // receiver of nft
-  string receiver = 8 [(gogoproto.moretags) = "yaml:\"receiver\""];
+  string receiver = 8;
   // optional memo field for future use
-  string memo = 9 [(gogoproto.moretags) = "yaml:\"memo\""];
+  string memo = 9;
+}
+
+// NonFungibleTokenPacketDataWasm to support wams nft transfer.
+message NonFungibleTokenPacketDataWasm {
+  // collection id == extension struct tag
+  string class_id = 1 [(gogoproto.jsontag) = "classId,omitempty"];
+  // collection url
+  string class_uri = 2 [(gogoproto.jsontag) = "classUri,omitempty"];
+  // collection data
+  string class_data = 3 [(gogoproto.jsontag) = "classData,omitempty"];
+  // nft token ids
+  repeated string token_ids = 4 [(gogoproto.jsontag) = "tokenIds,omitempty"];
+  // nft token uris
+  repeated string token_uris = 5 [(gogoproto.jsontag) = "tokenUris,omitempty"];
+  // nft token data array
+  repeated string token_data = 6 [(gogoproto.jsontag) = "tokenData,omitempty"];
+  // sender of nft
+  string sender = 7;
+  // receiver of nft
+  string receiver = 8;
+  // optional memo field for future use
+  string memo = 9;
 }
