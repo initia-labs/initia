@@ -257,3 +257,25 @@ func Test_API_Query(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, expectedResBz, resBz)
 }
+
+func Test_API_CustomQuery(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+
+	err := input.MoveKeeper.PublishModuleBundle(ctx, vmtypes.TestAddress, vmtypes.NewModuleBundle(vmtypes.NewModule(testAddressModule)), types.UpgradePolicy_COMPATIBLE)
+	require.NoError(t, err)
+
+	vmAddr, err := vmtypes.NewAccountAddressFromBytes(addrs[0])
+	require.NoError(t, err)
+
+	// to sdk
+	res, err := input.MoveKeeper.ExecuteViewFunction(ctx, vmtypes.TestAddress, "TestAddress", "to_sdk", []vmtypes.TypeTag{}, [][]byte{vmAddr.Bytes()})
+	require.NoError(t, err)
+	require.Equal(t, fmt.Sprintf("\"%s\"", addrs[0].String()), res)
+
+	// from sdk
+	inputBz, err := vmtypes.SerializeString(addrs[0].String())
+	require.NoError(t, err)
+	res, err = input.MoveKeeper.ExecuteViewFunction(ctx, vmtypes.TestAddress, "TestAddress", "from_sdk", []vmtypes.TypeTag{}, [][]byte{inputBz})
+	require.NoError(t, err)
+	require.Equal(t, fmt.Sprintf("\"%s\"", vmAddr.String()), res)
+}

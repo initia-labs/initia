@@ -11,6 +11,7 @@ module std::BasicCoin {
         test: bool,
     }
 
+    #[event]
     /// Event emitted when some amount of coins are withdrawn from an Collateral.
     struct MintEvent has drop, store {
         account: address,
