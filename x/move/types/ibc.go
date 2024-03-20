@@ -1,13 +1,12 @@
 package types
 
 import (
-	"bytes"
 	"encoding/base64"
 	"encoding/json"
 )
 
 type ICS721Data struct {
-	Description ICS721DataValue `json:"initia:description"`
+	Description *ICS721DataValue `json:"initia:description,omitempty"`
 }
 
 type ICS721DataValue struct {
@@ -19,11 +18,14 @@ type ICS721DataValue struct {
 //
 // - https://github.com/cosmos/ibc/tree/main/spec/app/ics-721-nft-transfer
 func ConvertDescriptionToICS721Data(desc string) (string, error) {
-	bz, err := json.Marshal(ICS721Data{
-		Description: ICS721DataValue{
+	data := ICS721Data{}
+	if desc != "" {
+		data.Description = &ICS721DataValue{
 			Value: desc,
-		},
-	})
+		}
+	}
+
+	bz, err := json.Marshal(data)
 	if err != nil {
 		return "", err
 	}
@@ -37,14 +39,17 @@ func ConvertICS721DataToDescription(data string) (string, error) {
 		return "", err
 	}
 
-	decoder := json.NewDecoder(bytes.NewReader(bz))
-	decoder.DisallowUnknownFields()
-
+	// use normal json unmarshal to allow key not found.
 	var ics721Data ICS721Data
-	err = decoder.Decode(&ics721Data)
+	err = json.Unmarshal(bz, &ics721Data)
 	if err != nil {
 		return "", err
 	}
 
-	return ics721Data.Description.Value, nil
+	desc := ""
+	if ics721Data.Description != nil {
+		desc = ics721Data.Description.Value
+	}
+
+	return desc, nil
 }
