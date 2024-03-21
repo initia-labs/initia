@@ -18,6 +18,11 @@ func Test_ConvertDescriptionToICS721Data(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, fmt.Sprintf(`{"initia:description":{"value":"%s"}}`, desc), string(bz))
 
+	// raw data used as description
+	_data, err := types.ConvertDescriptionToICS721Data(data)
+	require.NoError(t, err)
+	require.Equal(t, data, _data)
+
 	// empty description
 	data, err = types.ConvertDescriptionToICS721Data("")
 	require.NoError(t, err)
@@ -44,5 +49,5 @@ func Test_ConvertICS721DataToDescription(t *testing.T) {
 	emptyJson := base64.StdEncoding.EncodeToString([]byte(`{}`))
 	desc, err = types.ConvertICS721DataToDescription(emptyJson)
 	require.NoError(t, err)
-	require.Equal(t, "", desc)
+	require.Equal(t, emptyJson, desc)
 }
