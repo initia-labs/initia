@@ -38,7 +38,18 @@ func (k NftKeeper) CollectionInfo(ctx context.Context, collection vmtypes.Accoun
 		return
 	}
 
-	return types.ReadCollectionInfo(bz)
+	var desc string
+	creator, name, uri, desc, err = types.ReadCollectionInfo(bz)
+	if err != nil {
+		return
+	}
+
+	data, err = types.ConvertDescriptionToICS721Data(desc)
+	if err != nil {
+		return
+	}
+
+	return
 }
 
 func (k NftKeeper) Transfer(ctx context.Context, sender, receiver, tokenAddr vmtypes.AccountAddress) error {
@@ -77,7 +88,12 @@ func (k NftKeeper) Mint(
 		return err
 	}
 
-	dataBz, err := vmtypes.SerializeString(tokenData)
+	desc, err := types.ConvertICS721DataToDescription(tokenData)
+	if err != nil {
+		return err
+	}
+
+	descBz, err := vmtypes.SerializeString(desc)
 	if err != nil {
 		return err
 	}
@@ -89,7 +105,7 @@ func (k NftKeeper) Mint(
 		types.MoveModuleNameSimpleNft,
 		types.FunctionNameSimpleNftMint,
 		[]vmtypes.TypeTag{},
-		[][]byte{collectionNameBz, dataBz, idBz, uriBz, {1}, append([]byte{1}, recipientAddr[:]...)},
+		[][]byte{collectionNameBz, descBz, idBz, uriBz, {1}, append([]byte{1}, recipientAddr[:]...)},
 	)
 }
 
@@ -136,7 +152,7 @@ func (k NftKeeper) CreateOrUpdateClass(ctx context.Context, classId, classUri, c
 	return nil
 }
 
-func (k NftKeeper) initializeCollection(ctx context.Context, collectionName, collectionUri, collectionDesc string) error {
+func (k NftKeeper) initializeCollection(ctx context.Context, collectionName, collectionUri, collectionData string) error {
 	nameBz, err := vmtypes.SerializeString(collectionName)
 	if err != nil {
 		return err
@@ -147,7 +163,12 @@ func (k NftKeeper) initializeCollection(ctx context.Context, collectionName, col
 		return err
 	}
 
-	descBz, err := vmtypes.SerializeString(collectionDesc)
+	desc, err := types.ConvertICS721DataToDescription(collectionData)
+	if err != nil {
+		return err
+	}
+
+	descBz, err := vmtypes.SerializeString(desc)
 	if err != nil {
 		return err
 	}
@@ -308,7 +329,11 @@ func (k NftKeeper) GetTokenInfos(ctx context.Context, classId string, tokenIds [
 			return nil, nil, err
 		}
 
-		_, uri, data := types.ReadNftInfo(bz)
+		_, uri, desc := types.ReadNftInfo(bz)
+		data, err := types.ConvertDescriptionToICS721Data(desc)
+		if err != nil {
+			return nil, nil, err
+		}
 
 		tokenUris[i] = uri
 		tokenData[i] = data
