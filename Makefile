@@ -131,6 +131,7 @@ build-linux-with-shared-library:
 	docker create --name temp initia/initiad-shared:latest
 	docker cp temp:/usr/local/bin/initiad $(BUILDDIR)/
 	docker cp temp:/lib/libmovevm.so $(BUILDDIR)/
+	docker cp temp:/lib/libcompiler.so $(BUILDDIR)/
 	docker rm temp
 
 install: go.sum 
