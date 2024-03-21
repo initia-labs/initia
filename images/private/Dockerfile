@@ -2,7 +2,7 @@ FROM golang:1.21-alpine AS go-builder
 #ARG arch=x86_64
 
 # See https://github.com/initia-labs/movevm/releases
-ARG LIBMOVEVM_VERSION=v0.2.1
+ARG LIBMOVEVM_VERSION=v0.2.2
 
 # this comes from standard alpine nightly file
 #  https://github.com/rust-lang/docker-rust-nightly/blob/master/alpine3.12/Dockerfile
@@ -29,9 +29,11 @@ ADD https://github.com/gruntwork-io/fetch/releases/download/v0.4.6/fetch_linux_a
 RUN chmod +x /usr/bin/fetch
 ENV GITHUB_OAUTH_TOKEN=$GITHUB_ACCESS_TOKEN
 RUN fetch --repo="https://github.com/initia-labs/movevm" --tag="${LIBMOVEVM_VERSION}" --release-asset="libmovevm_muslc.*.a" /lib/
+RUN fetch --repo="https://github.com/initia-labs/movevm" --tag="${LIBMOVEVM_VERSION}" --release-asset="libcompiler_muslc.*.a" /lib/
 RUN cp /lib/libmovevm_muslc.`uname -m`.a /lib/libmovevm_muslc.a
+RUN cp /lib/libcompiler_muslc.`uname -m`.a /lib/libcompiler_muslc.a
 
-# force it to use static lib (from above) not standard libmovevm.so file
+# force it to use static lib (from above) not standard libmovevm.so and libcompiler.so file
 RUN LEDGER_ENABLED=false BUILD_TAGS=muslc LDFLAGS="-linkmode=external -extldflags \"-L/code/mimalloc/build -lmimalloc -Wl,-z,muldefs -static\"" make build
 
 FROM alpine:3.15.4
