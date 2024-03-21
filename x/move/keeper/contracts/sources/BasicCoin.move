@@ -18,6 +18,12 @@ module std::BasicCoin {
         amount: u64,
         coin_type: string::String,
     }
+    
+    #[event]
+    /// Event emitted at view function.
+    struct ViewEvent has drop, store {
+        data: string::String,
+    }
 
     public entry fun mint<CoinType>(account: signer, value: u64) acquires Coin {
         let account_addr = signer::address_of(&account);
@@ -40,6 +46,12 @@ module std::BasicCoin {
 
     #[view]
     public fun get<CoinType>(account: address): u64 acquires Coin{
+        event::emit(
+            ViewEvent {
+                data: string::utf8(b"hello world"),
+            }
+        );
+
         let c = borrow_global<Coin<CoinType>>(account);
         c.value
     }

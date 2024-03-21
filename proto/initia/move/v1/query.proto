@@ -212,7 +212,15 @@ message QueryViewFunctionRequest {
 // QueryViewFunctionResponse is the response type for the
 // QueryyViewFunction RPC method
 message QueryViewFunctionResponse {
-  string data = 1;
+  string           data     = 1;
+  repeated VMEvent events   = 2 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+  uint64           gas_used = 3;
+}
+
+// VMEvent is the event emitted from vm.
+message VMEvent {
+  string type_tag = 1;
+  string data     = 2;
 }
 
 // QueryScriptABIRequest is the request type for the Query/ScriptABI
