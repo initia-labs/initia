@@ -15,7 +15,7 @@ import (
 	vmtypes "github.com/initia-labs/movevm/types"
 )
 
-func TestViewFunction(t *testing.T) {
+func TestView(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
 	input.Faucet.Fund(
@@ -40,9 +40,9 @@ func TestViewFunction(t *testing.T) {
 
 	querier := keeper.NewQuerier(&input.MoveKeeper)
 
-	res, err := querier.ViewFunction(
+	res, err := querier.View(
 		ctx,
-		&types.QueryViewFunctionRequest{
+		&types.QueryViewRequest{
 			Address:      vmtypes.StdAddress.String(),
 			ModuleName:   "BasicCoin",
 			FunctionName: "get",
@@ -52,6 +52,56 @@ func TestViewFunction(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "\"100\"", res.Data)
 	require.Equal(t, []types.VMEvent{{TypeTag: "0x1::BasicCoin::ViewEvent", Data: "{\"data\":\"hello world\"}"}}, res.Events)
+}
+
+func TestViewBatch(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+
+	input.Faucet.Fund(
+		ctx,
+		types.TestAddr,
+		sdk.NewCoin(bondDenom, math.NewInt(1000000)),
+	)
+
+	argBz, err := vmtypes.SerializeUint64(100)
+	require.NoError(t, err)
+
+	err = input.MoveKeeper.ExecuteEntryFunction(
+		ctx,
+		vmtypes.TestAddress,
+		vmtypes.StdAddress,
+		"BasicCoin",
+		"mint",
+		[]vmtypes.TypeTag{MustConvertStringToTypeTag("0x1::BasicCoin::Initia")},
+		[][]byte{argBz},
+	)
+	require.NoError(t, err)
+
+	querier := keeper.NewQuerier(&input.MoveKeeper)
+	res, err := querier.ViewBatch(
+		ctx,
+		&types.QueryViewBatchRequest{
+			Requests: []types.QueryViewRequest{
+				{
+					Address:      vmtypes.StdAddress.String(),
+					ModuleName:   "BasicCoin",
+					FunctionName: "get",
+					TypeArgs:     []string{"0x1::BasicCoin::Initia"},
+					Args:         [][]byte{vmtypes.TestAddress.Bytes()},
+				},
+				{
+					Address:      vmtypes.StdAddress.String(),
+					ModuleName:   "BasicCoin",
+					FunctionName: "number",
+					TypeArgs:     []string{},
+					Args:         [][]byte{},
+				},
+			},
+		})
+	require.NoError(t, err)
+	require.Len(t, res.Responses, 2)
+	require.Equal(t, "\"100\"", res.Responses[0].Data)
+	require.Equal(t, "\"123\"", res.Responses[1].Data)
 }
 
 func TestModules(t *testing.T) {

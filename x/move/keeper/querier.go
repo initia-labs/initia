@@ -258,7 +258,7 @@ func (q Querier) TableEntries(context context.Context, req *types.QueryTableEntr
 	}, nil
 }
 
-func (q Querier) ViewFunction(context context.Context, req *types.QueryViewFunctionRequest) (res *types.QueryViewFunctionResponse, err error) {
+func (q Querier) View(context context.Context, req *types.QueryViewRequest) (res *types.QueryViewResponse, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = errors.Wrap(types.ErrInvalidRequest, fmt.Sprintf("vm panic: %v", r))
@@ -306,13 +306,36 @@ func (q Querier) ViewFunction(context context.Context, req *types.QueryViewFunct
 		}
 	}
 
-	res = &types.QueryViewFunctionResponse{
+	res = &types.QueryViewResponse{
 		Data:    output.Ret,
 		Events:  events,
 		GasUsed: output.GasUsed,
 	}
 
 	return
+}
+
+// The max number of query requests can be performed in a rpc call.
+const BATCH_QUERY_LIMIT = 100
+
+func (q Querier) ViewBatch(ctx context.Context, req *types.QueryViewBatchRequest) (res *types.QueryViewBatchResponse, err error) {
+	if len(req.Requests) > BATCH_QUERY_LIMIT {
+		return nil, types.ErrLimit.Wrapf("batch query cannot exceed %d requests", BATCH_QUERY_LIMIT)
+	}
+
+	responses := make([]types.QueryViewResponse, len(req.Requests))
+	for i, req := range req.Requests {
+		res, err := q.View(ctx, &req)
+		if err != nil {
+			return nil, err
+		}
+
+		responses[i] = *res
+	}
+
+	return &types.QueryViewBatchResponse{
+		Responses: responses,
+	}, nil
 }
 
 func (q Querier) ScriptABI(context context.Context, req *types.QueryScriptABIRequest) (*types.QueryScriptABIResponse, error) {

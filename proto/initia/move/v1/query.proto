@@ -48,10 +48,18 @@ service Query {
     option (google.api.http).get = "/initia/move/v1/tables/{address}/entries";
   }
 
-  // ViewFunction execute entry function and return  the function result
-  rpc ViewFunction(QueryViewFunctionRequest) returns (QueryViewFunctionResponse) {
+  // View execute view function and return the view result
+  rpc View(QueryViewRequest) returns (QueryViewResponse) {
     option (google.api.http) = {
-      post: "/initia/move/v1/accounts/{address}/modules/{module_name}/view_functions/{function_name}"
+      post: "/initia/move/v1/view"
+      body: "*"
+    };
+  }
+
+  // ViewBatch execute multiple view functions and return the view results
+  rpc ViewBatch(QueryViewBatchRequest) returns (QueryViewBatchResponse) {
+    option (google.api.http) = {
+      post: "/initia/move/v1/view/batch"
       body: "*"
     };
   }
@@ -191,9 +199,9 @@ message QueryTableEntriesResponse {
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
-// QueryViewFunctionRequest is the request type for the QueryyViewFunction
+// QueryViewRequest is the request type for the QueryView
 // RPC method
-message QueryViewFunctionRequest {
+message QueryViewRequest {
   // Address is the owner address of the module to query
   string address = 1;
   // ModuleName is the module name of the entry function to query
@@ -209,12 +217,24 @@ message QueryViewFunctionRequest {
   repeated bytes args = 5;
 }
 
-// QueryViewFunctionResponse is the response type for the
-// QueryyViewFunction RPC method
-message QueryViewFunctionResponse {
+// QueryViewResponse is the response type for the
+// QueryView RPC method
+message QueryViewResponse {
   string           data     = 1;
   repeated VMEvent events   = 2 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
   uint64           gas_used = 3;
+}
+
+// QueryViewBatchRequest is the request type for the QueryViewBatch
+// RPC method
+message QueryViewBatchRequest {
+  repeated QueryViewRequest requests = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+}
+
+// QueryViewBatchResponse is the response type for the
+// QueryViewBatch RPC method
+message QueryViewBatchResponse {
+  repeated QueryViewResponse responses = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
 }
 
 // VMEvent is the event emitted from vm.
