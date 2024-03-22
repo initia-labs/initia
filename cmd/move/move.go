@@ -39,6 +39,7 @@ const (
 	flagTestMode               = "test"
 	flagGenerateDocs           = "doc"
 	flagGenerateABI            = "abi"
+	flagBuild                  = "build"
 	flagPackagePath            = "path" // also used by moveDeployCommand()
 	flagPackagePathShorthand   = "p"
 	flagInstallDir             = "install-dir"
@@ -368,6 +369,26 @@ func moveDeployCmd(ac address.Codec) *cobra.Command {
 		Long:  "deploy a whole move package. This command occurs a tx to publish module bundle.",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
+
+			// build package
+			flagBuild, err := cmd.Flags().GetBool(flagBuild)
+			if err != nil {
+				return err
+			}
+
+			if flagBuild {
+				arg, err := getCompilerArgument(cmd)
+				if err != nil {
+					return err
+				}
+
+				_, err = api.BuildContract(*arg)
+				if err != nil {
+					return err
+				}
+			}
+
+			// verify package
 			flagVerify, err := cmd.Flags().GetBool(flagVerify)
 			if err != nil {
 				return err
@@ -381,6 +402,7 @@ func moveDeployCmd(ac address.Codec) *cobra.Command {
 				}
 			}
 
+			// deploy package
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
 				return err
@@ -436,6 +458,7 @@ func moveDeployCmd(ac address.Codec) *cobra.Command {
 	cmd.Flags().AddFlagSet(movecli.FlagSetUpgradePolicy())
 
 	addMoveDeployFlags(cmd)
+	addMoveBuildFlags(cmd)
 	addMoveVerifyFlags(cmd, false)
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
@@ -568,7 +591,7 @@ func addMoveCleanFlags(cmd *cobra.Command) {
 }
 
 func addMoveDeployFlags(cmd *cobra.Command) {
-	cmd.Flags().StringP(flagPackagePath, flagPackagePathShorthand, defaultPackagePath, "Path to a package which the command should be run with respect to")
+	cmd.Flags().Bool(flagBuild, false, "Build package before deployment")
 	cmd.Flags().Bool(flagVerify, false, "Verify the contract compared to the onchain package")
 }
 
