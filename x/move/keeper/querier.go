@@ -285,7 +285,7 @@ func (q Querier) ViewFunction(context context.Context, req *types.QueryViewFunct
 		return nil, errors.Wrap(sdkerrors.ErrInvalidRequest, "empty function name")
 	}
 
-	data, err := q.ExecuteViewFunction(
+	output, err := q.ExecuteViewFunction(
 		ctx,
 		moduleAddr,
 		req.ModuleName,
@@ -297,9 +297,21 @@ func (q Querier) ViewFunction(context context.Context, req *types.QueryViewFunct
 		return
 	}
 
-	res = &types.QueryViewFunctionResponse{
-		Data: data,
+	events := make([]types.VMEvent, len(output.Events))
+	for i, event := range output.Events {
+		events[i].Data = event.EventData
+		events[i].TypeTag, err = vmapi.StringifyTypeTag(event.TypeTag)
+		if err != nil {
+			return
+		}
 	}
+
+	res = &types.QueryViewFunctionResponse{
+		Data:    output.Ret,
+		Events:  events,
+		GasUsed: output.GasUsed,
+	}
+
 	return
 }
 

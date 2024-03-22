@@ -50081,6 +50081,19 @@ paths:
             properties:
               data:
                 type: string
+              events:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_tag:
+                      type: string
+                    data:
+                      type: string
+                  description: VMEvent is the event emitted from vm.
+              gas_used:
+                type: string
+                format: uint64
             title: |-
               QueryViewFunctionResponse is the response type for the
               QueryyViewFunction RPC method
@@ -84376,6 +84389,19 @@ definitions:
     properties:
       data:
         type: string
+      events:
+        type: array
+        items:
+          type: object
+          properties:
+            type_tag:
+              type: string
+            data:
+              type: string
+          description: VMEvent is the event emitted from vm.
+      gas_used:
+        type: string
+        format: uint64
     title: |-
       QueryViewFunctionResponse is the response type for the
       QueryyViewFunction RPC method
@@ -84441,6 +84467,14 @@ definitions:
           a new module has (a) the same public functions (b) for existing resources, no layout change.
       * `immutable`
           Whether the modules in the package are immutable and cannot be upgraded.
+  initia.move.v1.VMEvent:
+    type: object
+    properties:
+      type_tag:
+        type: string
+      data:
+        type: string
+    description: VMEvent is the event emitted from vm.
   initia.ibchooks.v1.ACL:
     type: object
     properties:

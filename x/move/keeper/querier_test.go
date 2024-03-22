@@ -50,7 +50,8 @@ func TestViewFunction(t *testing.T) {
 			Args:         [][]byte{vmtypes.TestAddress.Bytes()},
 		})
 	require.NoError(t, err)
-	require.Equal(t, res.Data, "\"100\"")
+	require.Equal(t, "\"100\"", res.Data)
+	require.Equal(t, []types.VMEvent{{TypeTag: "0x1::BasicCoin::ViewEvent", Data: "{\"data\":\"hello world\"}"}}, res.Events)
 }
 
 func TestModules(t *testing.T) {

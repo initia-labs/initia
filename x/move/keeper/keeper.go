@@ -574,7 +574,7 @@ func (k Keeper) ExecuteViewFunction(
 	functionName string,
 	typeArgs []vmtypes.TypeTag,
 	args [][]byte,
-) (string, error) {
+) (vmtypes.ViewOutput, error) {
 	if payload, err := types.BuildExecuteViewFunctionPayload(
 		moduleAddr,
 		moduleName,
@@ -582,12 +582,12 @@ func (k Keeper) ExecuteViewFunction(
 		typeArgs,
 		args,
 	); err != nil {
-		return "", err
+		return vmtypes.ViewOutput{}, err
 	} else {
 
 		executionCounter, err := k.ExecutionCounter.Next(ctx)
 		if err != nil {
-			return "", err
+			return vmtypes.ViewOutput{}, err
 		}
 
 		api := NewApi(k, ctx)
