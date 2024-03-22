@@ -318,12 +318,9 @@ func (q Querier) View(ctx context.Context, req *types.QueryViewRequest) (res *ty
 	return
 }
 
-// The max number of query requests can be performed in a rpc call.
-const BATCH_QUERY_LIMIT = 100
-
 func (q Querier) ViewBatch(ctx context.Context, req *types.QueryViewBatchRequest) (res *types.QueryViewBatchResponse, err error) {
-	if len(req.Requests) > BATCH_QUERY_LIMIT {
-		return nil, types.ErrLimit.Wrapf("batch query cannot exceed %d requests", BATCH_QUERY_LIMIT)
+	if len(req.Requests) > int(q.config.ContractViewBatchLimit) {
+		return nil, types.ErrLimit.Wrapf("batch query cannot exceed %d requests", q.config.ContractViewBatchLimit)
 	}
 
 	responses := make([]types.QueryViewResponse, len(req.Requests))
