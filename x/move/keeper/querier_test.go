@@ -52,6 +52,20 @@ func TestView(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "\"100\"", res.Data)
 	require.Equal(t, []types.VMEvent{{TypeTag: "0x1::BasicCoin::ViewEvent", Data: "{\"data\":\"hello world\"}"}}, res.Events)
+
+	// legacy check
+	legacyRes, err := querier.LegacyView(
+		ctx,
+		&types.QueryLegacyViewRequest{
+			Address:      vmtypes.StdAddress.String(),
+			ModuleName:   "BasicCoin",
+			FunctionName: "get",
+			TypeArgs:     []string{"0x1::BasicCoin::Initia"},
+			Args:         [][]byte{vmtypes.TestAddress.Bytes()},
+		})
+	require.NoError(t, err)
+	require.Equal(t, "\"100\"", legacyRes.Data)
+	require.Equal(t, []types.VMEvent{{TypeTag: "0x1::BasicCoin::ViewEvent", Data: "{\"data\":\"hello world\"}"}}, legacyRes.Events)
 }
 
 func TestViewBatch(t *testing.T) {

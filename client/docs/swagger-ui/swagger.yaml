@@ -50069,6 +50069,110 @@ paths:
           type: string
       tags:
         - Query
+  /initia/move/v1/accounts/{address}/modules/{module_name}/view_functions/{function_name}:
+    post:
+      summary: |-
+        Deprecated.
+        LegacyView execute view function and return the view result.
+      operationId: LegacyView
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              data:
+                type: string
+              events:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_tag:
+                      type: string
+                    data:
+                      type: string
+                  description: VMEvent is the event emitted from vm.
+              gas_used:
+                type: string
+                format: uint64
+            title: |-
+              QueryLegacyViewResponse is the response type for the
+              QueryLegacyView RPC method
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: address
+          description: Address is the owner address of the module to query
+          in: path
+          required: true
+          type: string
+        - name: module_name
+          description: ModuleName is the module name of the entry function to query
+          in: path
+          required: true
+          type: string
+        - name: function_name
+          description: FunctionName is the name of a function to query
+          in: path
+          required: true
+          type: string
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              address:
+                type: string
+                title: Address is the owner address of the module to query
+              module_name:
+                type: string
+                title: ModuleName is the module name of the entry function to query
+              function_name:
+                type: string
+                title: FunctionName is the name of a function to query
+              type_args:
+                type: array
+                items:
+                  type: string
+                title: |-
+                  TypeArgs is the type arguments of a function to execute
+                  ex) "0x1::BasicCoin::Initia", "bool", "u8", "u64"
+              args:
+                type: array
+                items:
+                  type: string
+                  format: byte
+                title: |-
+                  Args is the arguments of a function to execute
+                  - number: little endian
+                  - string: base64 bytes
+            title: |-
+              QueryLegacyViewRequest is the request type for the QueryLegacyView
+              RPC method
+      tags:
+        - Query
   /initia/move/v1/accounts/{address}/resources:
     get:
       summary: Resources gets the module infos
@@ -84139,6 +84243,58 @@ definitions:
       denom:
         type: string
     description: QueryDenomResponse is the response type for the Query/Denom RPC method.
+  initia.move.v1.QueryLegacyViewRequest:
+    type: object
+    properties:
+      address:
+        type: string
+        title: Address is the owner address of the module to query
+      module_name:
+        type: string
+        title: ModuleName is the module name of the entry function to query
+      function_name:
+        type: string
+        title: FunctionName is the name of a function to query
+      type_args:
+        type: array
+        items:
+          type: string
+        title: |-
+          TypeArgs is the type arguments of a function to execute
+          ex) "0x1::BasicCoin::Initia", "bool", "u8", "u64"
+      args:
+        type: array
+        items:
+          type: string
+          format: byte
+        title: |-
+          Args is the arguments of a function to execute
+          - number: little endian
+          - string: base64 bytes
+    title: |-
+      QueryLegacyViewRequest is the request type for the QueryLegacyView
+      RPC method
+  initia.move.v1.QueryLegacyViewResponse:
+    type: object
+    properties:
+      data:
+        type: string
+      events:
+        type: array
+        items:
+          type: object
+          properties:
+            type_tag:
+              type: string
+            data:
+              type: string
+          description: VMEvent is the event emitted from vm.
+      gas_used:
+        type: string
+        format: uint64
+    title: |-
+      QueryLegacyViewResponse is the response type for the
+      QueryLegacyView RPC method
   initia.move.v1.QueryMetadataResponse:
     type: object
     properties:

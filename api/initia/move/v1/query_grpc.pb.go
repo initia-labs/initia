@@ -26,6 +26,7 @@ const (
 	Query_TableInfo_FullMethodName    = "/initia.move.v1.Query/TableInfo"
 	Query_TableEntry_FullMethodName   = "/initia.move.v1.Query/TableEntry"
 	Query_TableEntries_FullMethodName = "/initia.move.v1.Query/TableEntries"
+	Query_LegacyView_FullMethodName   = "/initia.move.v1.Query/LegacyView"
 	Query_View_FullMethodName         = "/initia.move.v1.Query/View"
 	Query_ViewBatch_FullMethodName    = "/initia.move.v1.Query/ViewBatch"
 	Query_ScriptABI_FullMethodName    = "/initia.move.v1.Query/ScriptABI"
@@ -52,6 +53,10 @@ type QueryClient interface {
 	TableEntry(ctx context.Context, in *QueryTableEntryRequest, opts ...grpc.CallOption) (*QueryTableEntryResponse, error)
 	// Query table entries with pagination
 	TableEntries(ctx context.Context, in *QueryTableEntriesRequest, opts ...grpc.CallOption) (*QueryTableEntriesResponse, error)
+	// Deprecated: Do not use.
+	// Deprecated: Use of SendEnabled in params is deprecated.
+	// LegacyView execute view function and return the view result.
+	LegacyView(ctx context.Context, in *QueryLegacyViewRequest, opts ...grpc.CallOption) (*QueryLegacyViewResponse, error)
 	// View execute view function and return the view result
 	View(ctx context.Context, in *QueryViewRequest, opts ...grpc.CallOption) (*QueryViewResponse, error)
 	// ViewBatch execute multiple view functions and return the view results
@@ -137,6 +142,16 @@ func (c *queryClient) TableEntries(ctx context.Context, in *QueryTableEntriesReq
 	return out, nil
 }
 
+// Deprecated: Do not use.
+func (c *queryClient) LegacyView(ctx context.Context, in *QueryLegacyViewRequest, opts ...grpc.CallOption) (*QueryLegacyViewResponse, error) {
+	out := new(QueryLegacyViewResponse)
+	err := c.cc.Invoke(ctx, Query_LegacyView_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *queryClient) View(ctx context.Context, in *QueryViewRequest, opts ...grpc.CallOption) (*QueryViewResponse, error) {
 	out := new(QueryViewResponse)
 	err := c.cc.Invoke(ctx, Query_View_FullMethodName, in, out, opts...)
@@ -209,6 +224,10 @@ type QueryServer interface {
 	TableEntry(context.Context, *QueryTableEntryRequest) (*QueryTableEntryResponse, error)
 	// Query table entries with pagination
 	TableEntries(context.Context, *QueryTableEntriesRequest) (*QueryTableEntriesResponse, error)
+	// Deprecated: Do not use.
+	// Deprecated: Use of SendEnabled in params is deprecated.
+	// LegacyView execute view function and return the view result.
+	LegacyView(context.Context, *QueryLegacyViewRequest) (*QueryLegacyViewResponse, error)
 	// View execute view function and return the view result
 	View(context.Context, *QueryViewRequest) (*QueryViewResponse, error)
 	// ViewBatch execute multiple view functions and return the view results
@@ -248,6 +267,9 @@ func (UnimplementedQueryServer) TableEntry(context.Context, *QueryTableEntryRequ
 }
 func (UnimplementedQueryServer) TableEntries(context.Context, *QueryTableEntriesRequest) (*QueryTableEntriesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TableEntries not implemented")
+}
+func (UnimplementedQueryServer) LegacyView(context.Context, *QueryLegacyViewRequest) (*QueryLegacyViewResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method LegacyView not implemented")
 }
 func (UnimplementedQueryServer) View(context.Context, *QueryViewRequest) (*QueryViewResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method View not implemented")
@@ -406,6 +428,24 @@ func _Query_TableEntries_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_LegacyView_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryLegacyViewRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).LegacyView(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_LegacyView_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).LegacyView(ctx, req.(*QueryLegacyViewRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Query_View_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryViewRequest)
 	if err := dec(in); err != nil {
@@ -548,6 +588,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "TableEntries",
 			Handler:    _Query_TableEntries_Handler,
+		},
+		{
+			MethodName: "LegacyView",
+			Handler:    _Query_LegacyView_Handler,
 		},
 		{
 			MethodName: "View",
