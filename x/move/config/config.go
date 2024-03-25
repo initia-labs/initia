@@ -19,11 +19,15 @@ const DefaultContractQueryGasLimit = uint64(3_000_000)
 // DefaultContractSimulationGasLimit - default max simulation gas
 const DefaultContractSimulationGasLimit = uint64(3_000_000)
 
+// DefaultContractViewBatchLimit - default max view batch limit
+const DefaultContractViewBatchLimit = uint64(10)
+
 const (
 	flagModuleCacheCapacity        = "move.module-cache-capacity"
 	flagScriptCacheCapacity        = "move.script-cache-capacity"
 	flagContractSimulationGasLimit = "move.contract-simulation-gas-limit"
 	flagContractQueryGasLimit      = "move.contract-query-gas-limit"
+	flagContractViewBatchLimit     = "move.contract-view-batch-limit"
 )
 
 // MoveConfig is the extra config required for move
@@ -32,6 +36,7 @@ type MoveConfig struct {
 	ScriptCacheCapacity        uint64 `mapstructure:"script-cache-capacity"`
 	ContractSimulationGasLimit uint64 `mapstructure:"contract-simulation-gas-limit"`
 	ContractQueryGasLimit      uint64 `mapstructure:"contract-query-gas-limit"`
+	ContractViewBatchLimit     uint64 `mapstructure:"contract-view-batch-limit"`
 }
 
 // DefaultMoveConfig returns the default settings for MoveConfig
@@ -41,6 +46,7 @@ func DefaultMoveConfig() MoveConfig {
 		ScriptCacheCapacity:        DefaultScriptCacheCapacity,
 		ContractSimulationGasLimit: DefaultContractSimulationGasLimit,
 		ContractQueryGasLimit:      DefaultContractQueryGasLimit,
+		ContractViewBatchLimit:     DefaultContractViewBatchLimit,
 	}
 }
 
@@ -51,6 +57,7 @@ func GetConfig(appOpts servertypes.AppOptions) MoveConfig {
 		ScriptCacheCapacity:        cast.ToUint64(appOpts.Get(flagScriptCacheCapacity)),
 		ContractSimulationGasLimit: cast.ToUint64(appOpts.Get(flagContractSimulationGasLimit)),
 		ContractQueryGasLimit:      cast.ToUint64(appOpts.Get(flagContractQueryGasLimit)),
+		ContractViewBatchLimit:     cast.ToUint64(appOpts.Get(flagContractViewBatchLimit)),
 	}
 }
 
@@ -60,6 +67,7 @@ func AddConfigFlags(startCmd *cobra.Command) {
 	startCmd.Flags().Uint64(flagScriptCacheCapacity, DefaultScriptCacheCapacity, "Set the number of scripts which can stay in the cache")
 	startCmd.Flags().Uint64(flagContractSimulationGasLimit, DefaultContractSimulationGasLimit, "Set the max simulation gas for move contract execution")
 	startCmd.Flags().Uint64(flagContractQueryGasLimit, DefaultContractQueryGasLimit, "Set the max gas that can be spent on executing a query with a Move contract")
+	startCmd.Flags().Uint64(flagContractViewBatchLimit, DefaultContractViewBatchLimit, "Set the maximum number of view function call requests that can be performed by a single ViewBatch gRPC call.")
 }
 
 // DefaultConfigTemplate default config template for move module
@@ -82,4 +90,10 @@ contract-simulation-gas-limit = "{{ .MoveConfig.ContractSimulationGasLimit }}"
 # The contract query will invoke contract execution vm,
 # so we need to restrict the max usage to prevent DoS attack
 contract-query-gas-limit = "{{ .MoveConfig.ContractQueryGasLimit }}"
+
+# The maximum number of view function call requests that can 
+# be performed by a single ViewBatch gRPC call. Exceeding this 
+# limit will result in an error. This limit is set to prevent 
+# overloading the system with too many requests at once.
+contract-view-batch-limit = "{{ .MoveConfig.ContractViewBatchLimit }}"
 `

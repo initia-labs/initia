@@ -338,9 +338,9 @@ $ %s query move view \
 			}
 
 			queryClient := types.NewQueryClient(clientCtx)
-			res, err := queryClient.ViewFunction(
+			res, err := queryClient.View(
 				context.Background(),
-				&types.QueryViewFunctionRequest{
+				&types.QueryViewRequest{
 					Address:      args[0],
 					ModuleName:   args[1],
 					FunctionName: args[2],

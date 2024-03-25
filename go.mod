@@ -37,8 +37,7 @@ require (
 	github.com/gorilla/mux v1.8.1
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/hashicorp/go-metrics v0.5.2
-	github.com/initia-labs/OPinit v0.2.1
-	github.com/initia-labs/indexer v0.1.0-beta.20.0.20240322034514-6caf804915f9
+	github.com/initia-labs/OPinit v0.2.2
 	// we also need to update `LIBMOVEVM_VERSION` of images/private/Dockerfile#5
 	github.com/initia-labs/movevm v0.2.2
 	github.com/pelletier/go-toml v1.9.5
@@ -61,6 +60,8 @@ require (
 	google.golang.org/protobuf v1.33.0
 	gopkg.in/yaml.v3 v3.0.1
 )
+
+require github.com/initia-labs/indexer v0.1.0-beta.20.0.20240325061103-e730a36b23f6
 
 require (
 	cloud.google.com/go v0.112.0 // indirect

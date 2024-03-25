@@ -26,9 +26,13 @@ const (
 	Query_TableInfo_FullMethodName    = "/initia.move.v1.Query/TableInfo"
 	Query_TableEntry_FullMethodName   = "/initia.move.v1.Query/TableEntry"
 	Query_TableEntries_FullMethodName = "/initia.move.v1.Query/TableEntries"
-	Query_ViewFunction_FullMethodName = "/initia.move.v1.Query/ViewFunction"
+	Query_LegacyView_FullMethodName   = "/initia.move.v1.Query/LegacyView"
+	Query_View_FullMethodName         = "/initia.move.v1.Query/View"
+	Query_ViewBatch_FullMethodName    = "/initia.move.v1.Query/ViewBatch"
 	Query_ScriptABI_FullMethodName    = "/initia.move.v1.Query/ScriptABI"
 	Query_Params_FullMethodName       = "/initia.move.v1.Query/Params"
+	Query_Metadata_FullMethodName     = "/initia.move.v1.Query/Metadata"
+	Query_Denom_FullMethodName        = "/initia.move.v1.Query/Denom"
 )
 
 // QueryClient is the client API for Query service.
@@ -49,12 +53,22 @@ type QueryClient interface {
 	TableEntry(ctx context.Context, in *QueryTableEntryRequest, opts ...grpc.CallOption) (*QueryTableEntryResponse, error)
 	// Query table entries with pagination
 	TableEntries(ctx context.Context, in *QueryTableEntriesRequest, opts ...grpc.CallOption) (*QueryTableEntriesResponse, error)
-	// ViewFunction execute entry function and return  the function result
-	ViewFunction(ctx context.Context, in *QueryViewFunctionRequest, opts ...grpc.CallOption) (*QueryViewFunctionResponse, error)
+	// Deprecated: Do not use.
+	// Deprecated: Use of SendEnabled in params is deprecated.
+	// LegacyView execute view function and return the view result.
+	LegacyView(ctx context.Context, in *QueryLegacyViewRequest, opts ...grpc.CallOption) (*QueryLegacyViewResponse, error)
+	// View execute view function and return the view result
+	View(ctx context.Context, in *QueryViewRequest, opts ...grpc.CallOption) (*QueryViewResponse, error)
+	// ViewBatch execute multiple view functions and return the view results
+	ViewBatch(ctx context.Context, in *QueryViewBatchRequest, opts ...grpc.CallOption) (*QueryViewBatchResponse, error)
 	// ScriptABI decode script bytes into ABI
 	ScriptABI(ctx context.Context, in *QueryScriptABIRequest, opts ...grpc.CallOption) (*QueryScriptABIResponse, error)
 	// Params queries all parameters.
 	Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error)
+	// Metadata converts metadata to denom
+	Metadata(ctx context.Context, in *QueryMetadataRequest, opts ...grpc.CallOption) (*QueryMetadataResponse, error)
+	// Denom converts denom to metadata
+	Denom(ctx context.Context, in *QueryDenomRequest, opts ...grpc.CallOption) (*QueryDenomResponse, error)
 }
 
 type queryClient struct {
@@ -128,9 +142,28 @@ func (c *queryClient) TableEntries(ctx context.Context, in *QueryTableEntriesReq
 	return out, nil
 }
 
-func (c *queryClient) ViewFunction(ctx context.Context, in *QueryViewFunctionRequest, opts ...grpc.CallOption) (*QueryViewFunctionResponse, error) {
-	out := new(QueryViewFunctionResponse)
-	err := c.cc.Invoke(ctx, Query_ViewFunction_FullMethodName, in, out, opts...)
+// Deprecated: Do not use.
+func (c *queryClient) LegacyView(ctx context.Context, in *QueryLegacyViewRequest, opts ...grpc.CallOption) (*QueryLegacyViewResponse, error) {
+	out := new(QueryLegacyViewResponse)
+	err := c.cc.Invoke(ctx, Query_LegacyView_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) View(ctx context.Context, in *QueryViewRequest, opts ...grpc.CallOption) (*QueryViewResponse, error) {
+	out := new(QueryViewResponse)
+	err := c.cc.Invoke(ctx, Query_View_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) ViewBatch(ctx context.Context, in *QueryViewBatchRequest, opts ...grpc.CallOption) (*QueryViewBatchResponse, error) {
+	out := new(QueryViewBatchResponse)
+	err := c.cc.Invoke(ctx, Query_ViewBatch_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -155,6 +188,24 @@ func (c *queryClient) Params(ctx context.Context, in *QueryParamsRequest, opts .
 	return out, nil
 }
 
+func (c *queryClient) Metadata(ctx context.Context, in *QueryMetadataRequest, opts ...grpc.CallOption) (*QueryMetadataResponse, error) {
+	out := new(QueryMetadataResponse)
+	err := c.cc.Invoke(ctx, Query_Metadata_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) Denom(ctx context.Context, in *QueryDenomRequest, opts ...grpc.CallOption) (*QueryDenomResponse, error) {
+	out := new(QueryDenomResponse)
+	err := c.cc.Invoke(ctx, Query_Denom_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility
@@ -173,12 +224,22 @@ type QueryServer interface {
 	TableEntry(context.Context, *QueryTableEntryRequest) (*QueryTableEntryResponse, error)
 	// Query table entries with pagination
 	TableEntries(context.Context, *QueryTableEntriesRequest) (*QueryTableEntriesResponse, error)
-	// ViewFunction execute entry function and return  the function result
-	ViewFunction(context.Context, *QueryViewFunctionRequest) (*QueryViewFunctionResponse, error)
+	// Deprecated: Do not use.
+	// Deprecated: Use of SendEnabled in params is deprecated.
+	// LegacyView execute view function and return the view result.
+	LegacyView(context.Context, *QueryLegacyViewRequest) (*QueryLegacyViewResponse, error)
+	// View execute view function and return the view result
+	View(context.Context, *QueryViewRequest) (*QueryViewResponse, error)
+	// ViewBatch execute multiple view functions and return the view results
+	ViewBatch(context.Context, *QueryViewBatchRequest) (*QueryViewBatchResponse, error)
 	// ScriptABI decode script bytes into ABI
 	ScriptABI(context.Context, *QueryScriptABIRequest) (*QueryScriptABIResponse, error)
 	// Params queries all parameters.
 	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
+	// Metadata converts metadata to denom
+	Metadata(context.Context, *QueryMetadataRequest) (*QueryMetadataResponse, error)
+	// Denom converts denom to metadata
+	Denom(context.Context, *QueryDenomRequest) (*QueryDenomResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -207,14 +268,26 @@ func (UnimplementedQueryServer) TableEntry(context.Context, *QueryTableEntryRequ
 func (UnimplementedQueryServer) TableEntries(context.Context, *QueryTableEntriesRequest) (*QueryTableEntriesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TableEntries not implemented")
 }
-func (UnimplementedQueryServer) ViewFunction(context.Context, *QueryViewFunctionRequest) (*QueryViewFunctionResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ViewFunction not implemented")
+func (UnimplementedQueryServer) LegacyView(context.Context, *QueryLegacyViewRequest) (*QueryLegacyViewResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method LegacyView not implemented")
+}
+func (UnimplementedQueryServer) View(context.Context, *QueryViewRequest) (*QueryViewResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method View not implemented")
+}
+func (UnimplementedQueryServer) ViewBatch(context.Context, *QueryViewBatchRequest) (*QueryViewBatchResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ViewBatch not implemented")
 }
 func (UnimplementedQueryServer) ScriptABI(context.Context, *QueryScriptABIRequest) (*QueryScriptABIResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ScriptABI not implemented")
 }
 func (UnimplementedQueryServer) Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Params not implemented")
+}
+func (UnimplementedQueryServer) Metadata(context.Context, *QueryMetadataRequest) (*QueryMetadataResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Metadata not implemented")
+}
+func (UnimplementedQueryServer) Denom(context.Context, *QueryDenomRequest) (*QueryDenomResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Denom not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 
@@ -355,20 +428,56 @@ func _Query_TableEntries_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_ViewFunction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryViewFunctionRequest)
+func _Query_LegacyView_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryLegacyViewRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).ViewFunction(ctx, in)
+		return srv.(QueryServer).LegacyView(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Query_ViewFunction_FullMethodName,
+		FullMethod: Query_LegacyView_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).ViewFunction(ctx, req.(*QueryViewFunctionRequest))
+		return srv.(QueryServer).LegacyView(ctx, req.(*QueryLegacyViewRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_View_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryViewRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).View(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_View_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).View(ctx, req.(*QueryViewRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_ViewBatch_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryViewBatchRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).ViewBatch(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_ViewBatch_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).ViewBatch(ctx, req.(*QueryViewBatchRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -409,6 +518,42 @@ func _Query_Params_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_Metadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryMetadataRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).Metadata(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_Metadata_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).Metadata(ctx, req.(*QueryMetadataRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_Denom_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryDenomRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).Denom(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_Denom_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).Denom(ctx, req.(*QueryDenomRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Query_ServiceDesc is the grpc.ServiceDesc for Query service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -445,8 +590,16 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Query_TableEntries_Handler,
 		},
 		{
-			MethodName: "ViewFunction",
-			Handler:    _Query_ViewFunction_Handler,
+			MethodName: "LegacyView",
+			Handler:    _Query_LegacyView_Handler,
+		},
+		{
+			MethodName: "View",
+			Handler:    _Query_View_Handler,
+		},
+		{
+			MethodName: "ViewBatch",
+			Handler:    _Query_ViewBatch_Handler,
 		},
 		{
 			MethodName: "ScriptABI",
@@ -455,6 +608,14 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Params",
 			Handler:    _Query_Params_Handler,
+		},
+		{
+			MethodName: "Metadata",
+			Handler:    _Query_Metadata_Handler,
+		},
+		{
+			MethodName: "Denom",
+			Handler:    _Query_Denom_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

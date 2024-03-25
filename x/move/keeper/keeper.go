@@ -98,6 +98,10 @@ func NewKeeper(
 		moveConfig.ContractQueryGasLimit = moveconfig.DefaultContractQueryGasLimit
 	}
 
+	if moveConfig.ContractViewBatchLimit == 0 {
+		moveConfig.ContractViewBatchLimit = moveconfig.DefaultContractViewBatchLimit
+	}
+
 	moveVM := vm.NewVM(moveConfig.ModuleCacheCapacity, moveConfig.ScriptCacheCapacity)
 
 	sb := collections.NewSchemaBuilder(storeService)
