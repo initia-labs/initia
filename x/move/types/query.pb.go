@@ -1414,6 +1414,7 @@ type QueryClient interface {
 	TableEntry(ctx context.Context, in *QueryTableEntryRequest, opts ...grpc.CallOption) (*QueryTableEntryResponse, error)
 	// Query table entries with pagination
 	TableEntries(ctx context.Context, in *QueryTableEntriesRequest, opts ...grpc.CallOption) (*QueryTableEntriesResponse, error)
+	// Deprecated: Use of SendEnabled in params is deprecated.
 	// LegacyView execute view function and return the view result.
 	LegacyView(ctx context.Context, in *QueryLegacyViewRequest, opts ...grpc.CallOption) (*QueryLegacyViewResponse, error)
 	// View execute view function and return the view result
@@ -1581,6 +1582,7 @@ type QueryServer interface {
 	TableEntry(context.Context, *QueryTableEntryRequest) (*QueryTableEntryResponse, error)
 	// Query table entries with pagination
 	TableEntries(context.Context, *QueryTableEntriesRequest) (*QueryTableEntriesResponse, error)
+	// Deprecated: Use of SendEnabled in params is deprecated.
 	// LegacyView execute view function and return the view result.
 	LegacyView(context.Context, *QueryLegacyViewRequest) (*QueryLegacyViewResponse, error)
 	// View execute view function and return the view result
