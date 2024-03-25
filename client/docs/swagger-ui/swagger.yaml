@@ -50071,8 +50071,10 @@ paths:
         - Query
   /initia/move/v1/accounts/{address}/modules/{module_name}/view_functions/{function_name}:
     post:
-      summary: ViewFunction execute entry function and return  the function result
-      operationId: ViewFunction
+      summary: |-
+        Deprecated.
+        LegacyView execute view function and return the view result.
+      operationId: LegacyView
       responses:
         '200':
           description: A successful response.
@@ -50095,8 +50097,8 @@ paths:
                 type: string
                 format: uint64
             title: |-
-              QueryViewFunctionResponse is the response type for the
-              QueryyViewFunction RPC method
+              QueryLegacyViewResponse is the response type for the
+              QueryLegacyView RPC method
         default:
           description: An unexpected error response.
           schema:
@@ -50166,10 +50168,8 @@ paths:
                   Args is the arguments of a function to execute
                   - number: little endian
                   - string: base64 bytes
-            title: >-
-              QueryViewFunctionRequest is the request type for the
-              QueryyViewFunction
-
+            title: |-
+              QueryLegacyViewRequest is the request type for the QueryLegacyView
               RPC method
       tags:
         - Query
@@ -50843,6 +50843,198 @@ paths:
           required: false
           type: string
           format: byte
+      tags:
+        - Query
+  /initia/move/v1/view:
+    post:
+      summary: View execute view function and return the view result
+      operationId: View
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              data:
+                type: string
+              events:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_tag:
+                      type: string
+                    data:
+                      type: string
+                  description: VMEvent is the event emitted from vm.
+              gas_used:
+                type: string
+                format: uint64
+            title: |-
+              QueryViewResponse is the response type for the
+              QueryView RPC method
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              address:
+                type: string
+                title: Address is the owner address of the module to query
+              module_name:
+                type: string
+                title: ModuleName is the module name of the entry function to query
+              function_name:
+                type: string
+                title: FunctionName is the name of a function to query
+              type_args:
+                type: array
+                items:
+                  type: string
+                title: |-
+                  TypeArgs is the type arguments of a function to execute
+                  ex) "0x1::BasicCoin::Initia", "bool", "u8", "u64"
+              args:
+                type: array
+                items:
+                  type: string
+                  format: byte
+                title: |-
+                  Args is the arguments of a function to execute
+                  - number: little endian
+                  - string: base64 bytes
+            title: |-
+              QueryViewRequest is the request type for the QueryView
+              RPC method
+      tags:
+        - Query
+  /initia/move/v1/view/batch:
+    post:
+      summary: ViewBatch execute multiple view functions and return the view results
+      operationId: ViewBatch
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              responses:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    data:
+                      type: string
+                    events:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          type_tag:
+                            type: string
+                          data:
+                            type: string
+                        description: VMEvent is the event emitted from vm.
+                    gas_used:
+                      type: string
+                      format: uint64
+                  title: |-
+                    QueryViewResponse is the response type for the
+                    QueryView RPC method
+            title: |-
+              QueryViewBatchResponse is the response type for the
+              QueryViewBatch RPC method
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              requests:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    address:
+                      type: string
+                      title: Address is the owner address of the module to query
+                    module_name:
+                      type: string
+                      title: >-
+                        ModuleName is the module name of the entry function to
+                        query
+                    function_name:
+                      type: string
+                      title: FunctionName is the name of a function to query
+                    type_args:
+                      type: array
+                      items:
+                        type: string
+                      title: |-
+                        TypeArgs is the type arguments of a function to execute
+                        ex) "0x1::BasicCoin::Initia", "bool", "u8", "u64"
+                    args:
+                      type: array
+                      items:
+                        type: string
+                        format: byte
+                      title: |-
+                        Args is the arguments of a function to execute
+                        - number: little endian
+                        - string: base64 bytes
+                  title: |-
+                    QueryViewRequest is the request type for the QueryView
+                    RPC method
+            title: |-
+              QueryViewBatchRequest is the request type for the QueryViewBatch
+              RPC method
       tags:
         - Query
   /initia/ibchooks/v1/acls:
@@ -84051,6 +84243,58 @@ definitions:
       denom:
         type: string
     description: QueryDenomResponse is the response type for the Query/Denom RPC method.
+  initia.move.v1.QueryLegacyViewRequest:
+    type: object
+    properties:
+      address:
+        type: string
+        title: Address is the owner address of the module to query
+      module_name:
+        type: string
+        title: ModuleName is the module name of the entry function to query
+      function_name:
+        type: string
+        title: FunctionName is the name of a function to query
+      type_args:
+        type: array
+        items:
+          type: string
+        title: |-
+          TypeArgs is the type arguments of a function to execute
+          ex) "0x1::BasicCoin::Initia", "bool", "u8", "u64"
+      args:
+        type: array
+        items:
+          type: string
+          format: byte
+        title: |-
+          Args is the arguments of a function to execute
+          - number: little endian
+          - string: base64 bytes
+    title: |-
+      QueryLegacyViewRequest is the request type for the QueryLegacyView
+      RPC method
+  initia.move.v1.QueryLegacyViewResponse:
+    type: object
+    properties:
+      data:
+        type: string
+      events:
+        type: array
+        items:
+          type: object
+          properties:
+            type_tag:
+              type: string
+            data:
+              type: string
+          description: VMEvent is the event emitted from vm.
+      gas_used:
+        type: string
+        format: uint64
+    title: |-
+      QueryLegacyViewResponse is the response type for the
+      QueryLegacyView RPC method
   initia.move.v1.QueryMetadataResponse:
     type: object
     properties:
@@ -84353,7 +84597,75 @@ definitions:
     title: |-
       QueryTableInfoResponse is the response type for the Query/TableInfo RPC
       method
-  initia.move.v1.QueryViewFunctionRequest:
+  initia.move.v1.QueryViewBatchRequest:
+    type: object
+    properties:
+      requests:
+        type: array
+        items:
+          type: object
+          properties:
+            address:
+              type: string
+              title: Address is the owner address of the module to query
+            module_name:
+              type: string
+              title: ModuleName is the module name of the entry function to query
+            function_name:
+              type: string
+              title: FunctionName is the name of a function to query
+            type_args:
+              type: array
+              items:
+                type: string
+              title: |-
+                TypeArgs is the type arguments of a function to execute
+                ex) "0x1::BasicCoin::Initia", "bool", "u8", "u64"
+            args:
+              type: array
+              items:
+                type: string
+                format: byte
+              title: |-
+                Args is the arguments of a function to execute
+                - number: little endian
+                - string: base64 bytes
+          title: |-
+            QueryViewRequest is the request type for the QueryView
+            RPC method
+    title: |-
+      QueryViewBatchRequest is the request type for the QueryViewBatch
+      RPC method
+  initia.move.v1.QueryViewBatchResponse:
+    type: object
+    properties:
+      responses:
+        type: array
+        items:
+          type: object
+          properties:
+            data:
+              type: string
+            events:
+              type: array
+              items:
+                type: object
+                properties:
+                  type_tag:
+                    type: string
+                  data:
+                    type: string
+                description: VMEvent is the event emitted from vm.
+            gas_used:
+              type: string
+              format: uint64
+          title: |-
+            QueryViewResponse is the response type for the
+            QueryView RPC method
+    title: |-
+      QueryViewBatchResponse is the response type for the
+      QueryViewBatch RPC method
+  initia.move.v1.QueryViewRequest:
     type: object
     properties:
       address:
@@ -84382,9 +84694,9 @@ definitions:
           - number: little endian
           - string: base64 bytes
     title: |-
-      QueryViewFunctionRequest is the request type for the QueryyViewFunction
+      QueryViewRequest is the request type for the QueryView
       RPC method
-  initia.move.v1.QueryViewFunctionResponse:
+  initia.move.v1.QueryViewResponse:
     type: object
     properties:
       data:
@@ -84403,8 +84715,8 @@ definitions:
         type: string
         format: uint64
     title: |-
-      QueryViewFunctionResponse is the response type for the
-      QueryyViewFunction RPC method
+      QueryViewResponse is the response type for the
+      QueryView RPC method
   initia.move.v1.Resource:
     type: object
     properties:

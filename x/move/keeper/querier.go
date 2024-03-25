@@ -6,7 +6,6 @@ import (
 
 	"cosmossdk.io/errors"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/query"
 
@@ -26,9 +25,7 @@ func NewQuerier(k *Keeper) Querier {
 	return Querier{k}
 }
 
-func (q Querier) Module(context context.Context, req *types.QueryModuleRequest) (*types.QueryModuleResponse, error) {
-	ctx := sdk.UnwrapSDKContext(context)
-
+func (q Querier) Module(ctx context.Context, req *types.QueryModuleRequest) (*types.QueryModuleResponse, error) {
 	addr, err := types.AccAddressFromString(q.ac, req.Address)
 	if err != nil {
 		return nil, err
@@ -45,9 +42,7 @@ func (q Querier) Module(context context.Context, req *types.QueryModuleRequest) 
 	}, err
 }
 
-func (q Querier) Modules(context context.Context, req *types.QueryModulesRequest) (*types.QueryModulesResponse, error) {
-	ctx := sdk.UnwrapSDKContext(context)
-
+func (q Querier) Modules(ctx context.Context, req *types.QueryModulesRequest) (*types.QueryModulesResponse, error) {
 	moduleAddr, err := types.AccAddressFromString(q.ac, req.Address)
 	if err != nil {
 		return nil, err
@@ -91,9 +86,7 @@ func (q Querier) Modules(context context.Context, req *types.QueryModulesRequest
 	}, nil
 }
 
-func (q Querier) Resource(context context.Context, req *types.QueryResourceRequest) (*types.QueryResourceResponse, error) {
-	ctx := sdk.UnwrapSDKContext(context)
-
+func (q Querier) Resource(ctx context.Context, req *types.QueryResourceRequest) (*types.QueryResourceResponse, error) {
 	addr, err := types.AccAddressFromString(q.ac, req.Address)
 	if err != nil {
 		return nil, err
@@ -115,9 +108,7 @@ func (q Querier) Resource(context context.Context, req *types.QueryResourceReque
 	}, err
 }
 
-func (q Querier) Resources(context context.Context, req *types.QueryResourcesRequest) (*types.QueryResourcesResponse, error) {
-	ctx := sdk.UnwrapSDKContext(context)
-
+func (q Querier) Resources(ctx context.Context, req *types.QueryResourcesRequest) (*types.QueryResourcesResponse, error) {
 	addr, err := types.AccAddressFromString(q.ac, req.Address)
 	if err != nil {
 		return nil, err
@@ -160,9 +151,7 @@ func (q Querier) Resources(context context.Context, req *types.QueryResourcesReq
 	}, nil
 }
 
-func (q Querier) TableInfo(context context.Context, req *types.QueryTableInfoRequest) (*types.QueryTableInfoResponse, error) {
-	ctx := sdk.UnwrapSDKContext(context)
-
+func (q Querier) TableInfo(ctx context.Context, req *types.QueryTableInfoRequest) (*types.QueryTableInfoResponse, error) {
 	address, err := types.AccAddressFromString(q.ac, req.Address)
 	if err != nil {
 		return nil, err
@@ -178,9 +167,7 @@ func (q Querier) TableInfo(context context.Context, req *types.QueryTableInfoReq
 	}, err
 }
 
-func (q Querier) TableEntry(context context.Context, req *types.QueryTableEntryRequest) (*types.QueryTableEntryResponse, error) {
-	ctx := sdk.UnwrapSDKContext(context)
-
+func (q Querier) TableEntry(ctx context.Context, req *types.QueryTableEntryRequest) (*types.QueryTableEntryResponse, error) {
 	addr, err := types.AccAddressFromString(q.ac, req.Address)
 	if err != nil {
 		return nil, err
@@ -201,8 +188,7 @@ func (q Querier) TableEntry(context context.Context, req *types.QueryTableEntryR
 	}, err
 }
 
-func (q Querier) TableEntries(context context.Context, req *types.QueryTableEntriesRequest) (*types.QueryTableEntriesResponse, error) {
-	ctx := sdk.UnwrapSDKContext(context)
+func (q Querier) TableEntries(ctx context.Context, req *types.QueryTableEntriesRequest) (*types.QueryTableEntriesResponse, error) {
 	vmStore := types.NewVMStore(ctx, q.VMStore)
 
 	addr, err := types.AccAddressFromString(q.ac, req.Address)
@@ -258,14 +244,31 @@ func (q Querier) TableEntries(context context.Context, req *types.QueryTableEntr
 	}, nil
 }
 
-func (q Querier) ViewFunction(context context.Context, req *types.QueryViewFunctionRequest) (res *types.QueryViewFunctionResponse, err error) {
+func (q Querier) LegacyView(ctx context.Context, req *types.QueryLegacyViewRequest) (*types.QueryLegacyViewResponse, error) {
+	res, err := q.View(ctx, &types.QueryViewRequest{
+		Address:      req.Address,
+		ModuleName:   req.ModuleName,
+		FunctionName: req.FunctionName,
+		TypeArgs:     req.TypeArgs,
+		Args:         req.Args,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryLegacyViewResponse{
+		Data:    res.Data,
+		Events:  res.Events,
+		GasUsed: res.GasUsed,
+	}, nil
+}
+
+func (q Querier) View(ctx context.Context, req *types.QueryViewRequest) (res *types.QueryViewResponse, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = errors.Wrap(types.ErrInvalidRequest, fmt.Sprintf("vm panic: %v", r))
 		}
 	}()
-
-	ctx := sdk.UnwrapSDKContext(context)
 
 	moduleAddr, err := types.AccAddressFromString(q.ac, req.Address)
 	if err != nil {
@@ -306,7 +309,7 @@ func (q Querier) ViewFunction(context context.Context, req *types.QueryViewFunct
 		}
 	}
 
-	res = &types.QueryViewFunctionResponse{
+	res = &types.QueryViewResponse{
 		Data:    output.Ret,
 		Events:  events,
 		GasUsed: output.GasUsed,
@@ -315,7 +318,27 @@ func (q Querier) ViewFunction(context context.Context, req *types.QueryViewFunct
 	return
 }
 
-func (q Querier) ScriptABI(context context.Context, req *types.QueryScriptABIRequest) (*types.QueryScriptABIResponse, error) {
+func (q Querier) ViewBatch(ctx context.Context, req *types.QueryViewBatchRequest) (res *types.QueryViewBatchResponse, err error) {
+	if len(req.Requests) > int(q.config.ContractViewBatchLimit) {
+		return nil, types.ErrLimit.Wrapf("batch query cannot exceed %d requests", q.config.ContractViewBatchLimit)
+	}
+
+	responses := make([]types.QueryViewResponse, len(req.Requests))
+	for i, req := range req.Requests {
+		res, err := q.View(ctx, &req)
+		if err != nil {
+			return nil, err
+		}
+
+		responses[i] = *res
+	}
+
+	return &types.QueryViewBatchResponse{
+		Responses: responses,
+	}, nil
+}
+
+func (q Querier) ScriptABI(ctx context.Context, req *types.QueryScriptABIRequest) (*types.QueryScriptABIResponse, error) {
 	if len(req.CodeBytes) == 0 {
 		return nil, errors.Wrap(sdkerrors.ErrInvalidRequest, "empty code bytes")
 	}
@@ -333,8 +356,7 @@ func (q Querier) ScriptABI(context context.Context, req *types.QueryScriptABIReq
 	}, nil
 }
 
-func (q Querier) Params(context context.Context, req *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
-	ctx := sdk.UnwrapSDKContext(context)
+func (q Querier) Params(ctx context.Context, req *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
 	params, err := q.GetParams(ctx)
 	if err != nil {
 		return nil, err
