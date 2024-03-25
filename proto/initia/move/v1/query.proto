@@ -48,7 +48,7 @@ service Query {
     option (google.api.http).get = "/initia/move/v1/tables/{address}/entries";
   }
 
-  // Deprecated: Use of SendEnabled in params is deprecated.
+  // Deprecated: Use of Query/LegacyView is deprecated.
   // LegacyView execute view function and return the view result.
   rpc LegacyView(QueryLegacyViewRequest) returns (QueryLegacyViewResponse) {
     option deprecated = true;
