@@ -50072,7 +50072,7 @@ paths:
   /initia/move/v1/accounts/{address}/modules/{module_name}/view_functions/{function_name}:
     post:
       summary: |-
-        Deprecated.
+        Deprecated: Use of Query/LegacyView is deprecated.
         LegacyView execute view function and return the view result.
       operationId: LegacyView
       responses:
