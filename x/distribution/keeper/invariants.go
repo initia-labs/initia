@@ -198,8 +198,8 @@ func ModuleAccountInvariant(k Keeper) sdk.Invariant {
 		// It is hard to block fungible asset transfer from move side,
 		// so we can't guarantee the ModuleAccount is always equal to the sum
 		// of the distribution rewards and community pool. Instead, we decide to check
-		// if the ModuleAccount is greater than or equal to the sum of the distribution rewards
-		// and community pool.
+		// if the ModuleAccount balance is greater than or equal to the sum of
+		// the distribution rewards and community pool.
 		broken := !balances.IsAllGTE(expectedInt)
 		return sdk.FormatInvariant(
 			types.ModuleName, "ModuleAccount coins",
