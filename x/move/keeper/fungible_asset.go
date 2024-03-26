@@ -69,6 +69,24 @@ func (k MoveBankKeeper) Symbol(ctx context.Context, metadata vmtypes.AccountAddr
 	}
 }
 
+// HasMetadata checks if the metadata for a fungible asset exists.
+func (k MoveBankKeeper) HasMetadata(
+	ctx context.Context,
+	denom string,
+) (bool, error) {
+	metadata, err := types.MetadataAddressFromDenom(denom)
+	if err != nil {
+		return false, err
+	}
+
+	return k.HasResource(ctx, metadata, vmtypes.StructTag{
+		Address:  vmtypes.StdAddress,
+		Module:   types.MoveModuleNameFungibleAsset,
+		Name:     types.ResourceNameMetadata,
+		TypeArgs: []vmtypes.TypeTag{},
+	})
+}
+
 // GetMetadata interprets move fungible asset metadata
 // to cosmos metadata.
 func (k MoveBankKeeper) GetMetadata(

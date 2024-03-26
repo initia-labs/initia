@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"cosmossdk.io/collections"
@@ -61,6 +62,30 @@ func NewMoveViewKeeper(
 func (k MoveViewKeeper) Logger(ctx context.Context) log.Logger {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	return sdkCtx.Logger().With("module", "x/"+types.ModuleName)
+}
+
+// GetDenomMetaData returns the metadata of a specific denomination.
+func (k MoveViewKeeper) GetDenomMetaData(ctx context.Context, denom string) (types.Metadata, error) {
+	metadata, err := k.DenomMetadata.Get(ctx, denom)
+	if err != nil && errors.Is(err, collections.ErrNotFound) {
+		return k.mk.GetMetadata(ctx, denom)
+	} else if err != nil {
+		return types.Metadata{}, err
+	}
+
+	return metadata, nil
+}
+
+// HasDenomMetaData returns whether or not the metadata for a denomination exists.
+func (k MoveViewKeeper) HasDenomMetaData(ctx context.Context, denom string) (bool, error) {
+	found, err := k.DenomMetadata.Has(ctx, denom)
+	if err != nil {
+		return false, err
+	} else if !found {
+		return k.mk.HasMetadata(ctx, denom)
+	}
+
+	return found, nil
 }
 
 // HasBalance returns whether or not an account has at least amt balance.
