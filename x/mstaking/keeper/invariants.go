@@ -79,7 +79,12 @@ func ModuleAccountInvariants(k Keeper) sdk.Invariant {
 
 		poolBonded := k.bankKeeper.GetAllBalances(ctx, bondedPool.GetAddress())
 		poolNotBonded := k.bankKeeper.GetAllBalances(ctx, notBondedPool.GetAddress())
-		broken := !poolBonded.Equal(bonded) || !poolNotBonded.Equal(notBonded)
+
+		// It is hard to block fungible asset transfer from move side,
+		// so we can't guarantee  the pool is always equal to the sum
+		// of the bonded validators. Instead, we decide to check if the pool
+		// is greater than or equal to the sum of the bonded validators.
+		broken := !poolBonded.IsAllGTE(bonded) || !poolNotBonded.IsAllGTE(notBonded)
 
 		// Bonded tokens should equal sum of tokens with bonded validators
 		// Not-bonded tokens should equal unbonding delegations	plus tokens on unbonded validators
