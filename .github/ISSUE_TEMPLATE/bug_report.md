@@ -1,38 +1,38 @@
 ---
 name: Bug report
-about: Create a report to help us improve (use this for suspected bugs only, if not sure, open a regular issue below)
+about: Create a report to help us improve
 title: ''
-labels: Bug
+labels: ''
 assignees: ''
+
 ---
 
-<!-- This issue tracker is only for technical issues related to Initia.
+**Describe the bug**
+A clear and concise description of what the bug is.
 
-General initia questions and/or support requests are best directed to the initia support team. 
-
--->
-
-<!-- Describe the issue -->
+**To Reproduce**
+Steps to reproduce the behavior:
+1. Go to '...'
+2. Click on '....'
+3. Scroll down to '....'
+4. See error
 
 **Expected behavior**
+A clear and concise description of what you expected to happen.
 
-<!--- What behavior did you expect? Describe what the software should do in response to a specific action or command.-->
+**Screenshots**
+If applicable, add screenshots to help explain your problem.
 
-**Actual behavior**
+**Desktop (please complete the following information):**
+ - OS: [e.g. iOS]
+ - Browser [e.g. chrome, safari]
+ - Version [e.g. 22]
 
-<!--- What did the software actually do when you performed the action or command? If you're unsure whether the issue is related to Initia, feel free to ask us for clarification."
- -->
+**Smartphone (please complete the following information):**
+ - Device: [e.g. iPhone6]
+ - OS: [e.g. iOS8.1]
+ - Browser [e.g. stock browser, safari]
+ - Version [e.g. 22]
 
-**To reproduce**
-
-<!--- How reliably can you reproduce the issue, what are the steps to do so? -->
-
-**System information**
-
-<!-- What version of initia are you using, where did you get it (website, self-compiled, etc)? -->
-
-<!-- What type of machine are you observing the error on (OS/CPU and disk type)? -->
-
-<!-- initia-related issue? What is your operating system and its version? If Linux, what is your desktop environment and graphical shell? -->
-
-<!-- Any extra information that might be useful in the debugging process. -->
+**Additional context**
+Add any other context about the problem here.
