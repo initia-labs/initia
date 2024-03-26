@@ -29,4 +29,5 @@ type MoveBankKeeper interface {
 
 	// fungible asset
 	GetMetadata(ctx context.Context, denom string) (cosmosbanktypes.Metadata, error)
+	HasMetadata(ctx context.Context, denom string) (bool, error)
 }
