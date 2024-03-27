@@ -7,6 +7,7 @@ import (
 
 	"cosmossdk.io/errors"
 
+	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/address"
 
@@ -110,7 +111,7 @@ func jsonStringHasKey(memo, key string) (found bool, jsonObject map[string]inter
 
 // newEmitErrorAcknowledgement creates a new error acknowledgement after having emitted an event with the
 // details of the error.
-func newEmitErrorAcknowledgement(ctx sdk.Context, err error) channeltypes.Acknowledgement {
+func newEmitErrorAcknowledgement(err error) channeltypes.Acknowledgement {
 	return channeltypes.Acknowledgement{
 		Response: &channeltypes.Acknowledgement_Error{
 			Error: fmt.Sprintf("ibc move hook error: %s", err.Error()),
@@ -119,11 +120,11 @@ func newEmitErrorAcknowledgement(ctx sdk.Context, err error) channeltypes.Acknow
 }
 
 // isAckError checks an IBC acknowledgement to see if it's an error.
-// This is a replacement for ack.Success() which is currently not working on some circumstances
-func isAckError(acknowledgement []byte) bool {
-	var ackErr channeltypes.Acknowledgement_Error
-	if err := json.Unmarshal(acknowledgement, &ackErr); err == nil && len(ackErr.Error) > 0 {
+func isAckError(appCodec codec.Codec, acknowledgement []byte) bool {
+	var ack channeltypes.Acknowledgement
+	if err := appCodec.UnmarshalJSON(acknowledgement, &ack); err == nil && !ack.Success() {
 		return true
 	}
+
 	return false
 }

@@ -41,7 +41,7 @@ func (h MoveHooks) onAckIcs20Packet(
 	if err != nil {
 		return err
 	}
-	successBz, err := vmtypes.SerializeBool(!isAckError(acknowledgement))
+	successBz, err := vmtypes.SerializeBool(!isAckError(h.codec, acknowledgement))
 	if err != nil {
 		return err
 	}
@@ -91,7 +91,7 @@ func (h MoveHooks) onAckIcs721Packet(
 	if err != nil {
 		return err
 	}
-	successBz, err := vmtypes.SerializeBool(!isAckError(acknowledgement))
+	successBz, err := vmtypes.SerializeBool(!isAckError(h.codec, acknowledgement))
 	if err != nil {
 		return err
 	}
