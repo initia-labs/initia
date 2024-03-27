@@ -2,6 +2,7 @@ package move_hooks
 
 import (
 	"cosmossdk.io/core/address"
+	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
@@ -20,14 +21,16 @@ var (
 )
 
 type MoveHooks struct {
-	moveKeeper *movekeeper.Keeper
+	codec      codec.Codec
 	ac         address.Codec
+	moveKeeper *movekeeper.Keeper
 }
 
-func NewMoveHooks(moveKeeper *movekeeper.Keeper, ac address.Codec) *MoveHooks {
+func NewMoveHooks(codec codec.Codec, ac address.Codec, moveKeeper *movekeeper.Keeper) *MoveHooks {
 	return &MoveHooks{
-		moveKeeper: moveKeeper,
+		codec:      codec,
 		ac:         ac,
+		moveKeeper: moveKeeper,
 	}
 }
 

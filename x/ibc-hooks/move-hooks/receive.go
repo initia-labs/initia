@@ -2,6 +2,7 @@ package move_hooks
 
 import (
 	"encoding/json"
+	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
@@ -32,7 +33,7 @@ func (h MoveHooks) onRecvIcs20Packet(
 	if allowed, err := h.checkACL(im, ctx, msg.ModuleAddress); err != nil {
 		return newEmitErrorAcknowledgement(err)
 	} else if !allowed {
-		return im.App.OnRecvPacket(ctx, packet, relayer)
+		return newEmitErrorAcknowledgement(fmt.Errorf("modules deployed by `%s` are not allowed to be used in ibchooks", msg.ModuleAddress))
 	}
 
 	// Validate whether the receiver is correctly specified or not.
@@ -88,7 +89,7 @@ func (h MoveHooks) onRecvIcs721Packet(
 	if allowed, err := h.checkACL(im, ctx, msg.ModuleAddress); err != nil {
 		return newEmitErrorAcknowledgement(err)
 	} else if !allowed {
-		return im.App.OnRecvPacket(ctx, packet, relayer)
+		return newEmitErrorAcknowledgement(fmt.Errorf("modules deployed by `%s` are not allowed to be used in ibchooks", msg.ModuleAddress))
 	}
 
 	// Validate whether the receiver is correctly specified or not.
