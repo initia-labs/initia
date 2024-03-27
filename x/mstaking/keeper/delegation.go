@@ -496,7 +496,7 @@ func (k Keeper) SetRedelegationEntry(
 			valDstAddrStr, creationHeight,
 			minTime, balance, sharesDst, unbondingId,
 		)
-	} else if err != nil {
+	} else {
 		return red, err
 	}
 

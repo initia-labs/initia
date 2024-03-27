@@ -60,9 +60,6 @@ func (k customMsgServer) DepositValidatorRewardsPool(ctx context.Context, msg *c
 	if err != nil {
 		return nil, err
 	}
-	if err != nil {
-		return nil, err
-	}
 
 	if err := sdk.ValidateDenom(msg.Denom); err != nil {
 		return nil, err
