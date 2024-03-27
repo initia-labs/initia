@@ -9,7 +9,7 @@ This allows cross-chain contract calls, that involve token movement.
 This is useful for a variety of use cases.
 One of primary importance is cross-chain swaps, which is an extremely powerful primitive.
 
-The mechanism enabling this is a `memo` field on every ICS20 of ICS721 transfer packet as of [IBC v3.4.0](https://medium.com/the-interchain-foundation/moving-beyond-simple-token-transfers-d42b2b1dc29b).
+The mechanism enabling this is a `memo` field on every ICS20 and ICS721 transfer packet as of [IBC v3.4.0](https://medium.com/the-interchain-foundation/moving-beyond-simple-token-transfers-d42b2b1dc29b).
 Move hooks is an IBC middleware that parses an ICS20 transfer, and if the `memo` field is of a particular form, executes a move contract call. We now detail the `memo` format for `move` contract calls, and the execution guarantees provided.
 
 ### Move Contract Execution Format
@@ -64,7 +64,7 @@ So we detail where we want to get each of these fields from:
 - Sender: We cannot trust the sender of an IBC packet, the counter-party chain has full ability to lie about it.
   We cannot risk this sender being confused for a particular user or module address on Initia.
   So we replace the sender with an account to represent the sender prefixed by the channel and a move module prefix.
-  This is done by setting the sender to `Bech32(Hash(Hash("ibc-hook-intermediary") + channelID/sender))`, where the channelId is the channel id on the local chain.
+  This is done by setting the sender to `Bech32(Hash(Hash("ibc-move-hook-intermediary") + channelID/sender))`, where the channelId is the channel id on the local chain.
 - ModuleAddress: This field should be directly obtained from the ICS-20 packet metadata
 - ModuleName: This field should be directly obtained from the ICS-20 packet metadata
 - FunctionName: This field should be directly obtained from the ICS-20 packet metadata

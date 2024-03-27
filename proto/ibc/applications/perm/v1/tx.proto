@@ -19,7 +19,7 @@ service Msg {
 // MsgSetPermissionedRelayer defines msg to set permissioned relyer for
 // the specific ibc channel.
 message MsgSetPermissionedRelayer {
-  option (cosmos.msg.v1.signer) = "sender";
+  option (cosmos.msg.v1.signer) = "authority";
   option (amino.name)           = "perm/MsgSetPermissionedRelayer";
 
   option (gogoproto.equal)           = false;
