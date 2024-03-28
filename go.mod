@@ -61,7 +61,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 )
 
-require github.com/initia-labs/indexer v0.1.0-beta.20.0.20240325061103-e730a36b23f6
+require github.com/initia-labs/indexer v0.1.0-beta.20.0.20240328104323-d2a38c181046
 
 require (
 	cloud.google.com/go v0.112.0 // indirect
