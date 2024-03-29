@@ -84,7 +84,7 @@ func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx sdkclient.Context, mux
 
 // GetTxCmd returns the root tx command for the distribution module.
 func (b AppModuleBasic) GetTxCmd() *cobra.Command {
-	return cli.NewTxCmd(b.cdc.InterfaceRegistry().SigningContext().AddressCodec(), b.cdc.InterfaceRegistry().SigningContext().ValidatorAddressCodec())
+	return cli.NewTxCmd(b.cdc.InterfaceRegistry().SigningContext().ValidatorAddressCodec(), b.cdc.InterfaceRegistry().SigningContext().AddressCodec())
 }
 
 // RegisterInterfaces implements InterfaceModule
