@@ -741,6 +741,8 @@ github.com/initia-labs/iavl v0.0.0-20240208034922-5d81c449d4c0 h1:GQ7/UD5mB6q104
 github.com/initia-labs/iavl v0.0.0-20240208034922-5d81c449d4c0/go.mod h1:CmTGqMnRnucjxbjduneZXT+0vPgNElYvdefjX2q9tYc=
 github.com/initia-labs/indexer v0.1.0-beta.20.0.20240318094756-6cc3c0652819 h1:9YZYhf3Es/xs80p5GIJ/vkHFEWYse57QZn2gyvu16xw=
 github.com/initia-labs/indexer v0.1.0-beta.20.0.20240318094756-6cc3c0652819/go.mod h1:URI4NoE2nI4gw2xLlUOTr/qOob7jnPN8mWFaXkWT96M=
+github.com/initia-labs/indexer v0.1.0-beta.20.0.20240402093738-09865972481c h1:GLXO7lKj2klm/6F+JQJcguahoq51CyFyGKrwj3+tL5g=
+github.com/initia-labs/indexer v0.1.0-beta.20.0.20240402093738-09865972481c/go.mod h1:URI4NoE2nI4gw2xLlUOTr/qOob7jnPN8mWFaXkWT96M=
 github.com/initia-labs/movevm v0.2.1 h1:r+8kBQPT9IhgcLzG9bbLaPY1an89ePd4NcaVSRieatw=
 github.com/initia-labs/movevm v0.2.1/go.mod h1:1EyJ06+Hn43MfaXZ+30a2gmhS5zjqiFF8oSF5CHai28=
 github.com/jackc/pgpassfile v1.0.0 h1:/6Hmqy13Ss2zCq62VdNG8tM1wchn8zjSGOBJ6icpsIM=

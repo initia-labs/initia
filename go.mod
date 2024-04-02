@@ -38,7 +38,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/hashicorp/go-metrics v0.5.2
 	github.com/initia-labs/OPinit v0.2.1
-	github.com/initia-labs/indexer v0.1.0-beta.20.0.20240318094756-6cc3c0652819
+	github.com/initia-labs/indexer v0.1.0-beta.20.0.20240402093738-09865972481c
 	// we also need to update `LIBMOVEVM_VERSION` of images/private/Dockerfile#5
 	github.com/initia-labs/movevm v0.2.1
 	github.com/pelletier/go-toml v1.9.5
