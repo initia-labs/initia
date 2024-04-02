@@ -1349,6 +1349,10 @@ func (app *InitiaApp) GetKey(storeKey string) *storetypes.KVStoreKey {
 	return app.keys[storeKey]
 }
 
+func (app *InitiaApp) GetKeys() map[string]*storetypes.KVStoreKey {
+	return app.keys
+}
+
 // GetTKey returns the TransientStoreKey for the provided store key.
 //
 // NOTE: This is solely to be used for testing purposes.
