@@ -116,7 +116,7 @@ func (k Keeper) ExecuteEntryFunction(
 	typeArgs []vmtypes.TypeTag,
 	args [][]byte,
 ) error {
-	return k.executeEntryFunctionWithMultiSenders(
+	return k.executeEntryFunction(
 		ctx,
 		[]vmtypes.AccountAddress{sender},
 		moduleAddr,
@@ -124,6 +124,7 @@ func (k Keeper) ExecuteEntryFunction(
 		functionName,
 		typeArgs,
 		args,
+		false,
 	)
 }
 
@@ -142,7 +143,7 @@ func (k Keeper) ExecuteEntryFunctionJSON(
 		args[i] = unsafe.Slice(unsafe.StringData(jsonArg), len(jsonArg))
 	}
 
-	return k.executeEntryFunctionWithMultiSendersWithIsJSON(
+	return k.executeEntryFunction(
 		ctx,
 		[]vmtypes.AccountAddress{sender},
 		moduleAddr,
@@ -154,28 +155,7 @@ func (k Keeper) ExecuteEntryFunctionJSON(
 	)
 }
 
-func (k Keeper) executeEntryFunctionWithMultiSenders(
-	ctx context.Context,
-	senders []vmtypes.AccountAddress,
-	moduleAddr vmtypes.AccountAddress,
-	moduleName string,
-	functionName string,
-	typeArgs []vmtypes.TypeTag,
-	args [][]byte,
-) error {
-	return k.executeEntryFunctionWithMultiSendersWithIsJSON(
-		ctx,
-		senders,
-		moduleAddr,
-		moduleName,
-		functionName,
-		typeArgs,
-		args,
-		false,
-	)
-}
-
-func (k Keeper) executeEntryFunctionWithMultiSendersWithIsJSON(
+func (k Keeper) executeEntryFunction(
 	ctx context.Context,
 	senders []vmtypes.AccountAddress,
 	moduleAddr vmtypes.AccountAddress,
@@ -261,12 +241,13 @@ func (k Keeper) ExecuteScript(
 	typeArgs []vmtypes.TypeTag,
 	args [][]byte,
 ) error {
-	return k.executeScriptWithMultiSenders(
+	return k.executeScript(
 		ctx,
 		[]vmtypes.AccountAddress{sender},
 		byteCodes,
 		typeArgs,
 		args,
+		false,
 	)
 }
 
@@ -283,7 +264,7 @@ func (k Keeper) ExecuteScriptJSON(
 		args[i] = unsafe.Slice(unsafe.StringData(jsonArg), len(jsonArg))
 	}
 
-	return k.executeScriptWithMultiSendersWithIsJSON(
+	return k.executeScript(
 		ctx,
 		[]vmtypes.AccountAddress{sender},
 		byteCodes,
@@ -293,24 +274,7 @@ func (k Keeper) ExecuteScriptJSON(
 	)
 }
 
-func (k Keeper) executeScriptWithMultiSenders(
-	ctx context.Context,
-	senders []vmtypes.AccountAddress,
-	byteCodes []byte,
-	typeArgs []vmtypes.TypeTag,
-	args [][]byte,
-) error {
-	return k.executeScriptWithMultiSendersWithIsJSON(
-		ctx,
-		senders,
-		byteCodes,
-		typeArgs,
-		args,
-		false,
-	)
-}
-
-func (k Keeper) executeScriptWithMultiSendersWithIsJSON(
+func (k Keeper) executeScript(
 	ctx context.Context,
 	senders []vmtypes.AccountAddress,
 	byteCodes []byte,
@@ -550,7 +514,7 @@ func (k Keeper) ExecuteViewFunction(
 	typeArgs []vmtypes.TypeTag,
 	args [][]byte,
 ) (vmtypes.ViewOutput, error) {
-	return k.executeViewFunctionWithIsJSON(
+	return k.executeViewFunction(
 		ctx,
 		moduleAddr,
 		moduleName,
@@ -575,7 +539,7 @@ func (k Keeper) ExecuteViewFunctionJSON(
 		args[i] = unsafe.Slice(unsafe.StringData(jsonArg), len(jsonArg))
 	}
 
-	return k.executeViewFunctionWithIsJSON(
+	return k.executeViewFunction(
 		ctx,
 		moduleAddr,
 		moduleName,
@@ -586,7 +550,7 @@ func (k Keeper) ExecuteViewFunctionJSON(
 	)
 }
 
-func (k Keeper) executeViewFunctionWithIsJSON(
+func (k Keeper) executeViewFunction(
 	ctx context.Context,
 	moduleAddr vmtypes.AccountAddress,
 	moduleName string,

@@ -48473,6 +48473,18 @@ paths:
                   emergency_tally_interval:
                     type: string
                     description: Tally interval for emergency proposal.
+                  low_threshold_functions:
+                    type: array
+                    items:
+                      type: string
+                    description: >-
+                      Low threshold functions for emergency and expedited
+                      proposal.
+
+                      These are Move function identifiers and can only be
+                      applied 
+
+                      for Move execute messages.
             description: >-
               QueryParamsResponse is the response type for the Query/Params RPC
               method.
@@ -50072,7 +50084,7 @@ paths:
   /initia/move/v1/accounts/{address}/modules/{module_name}/view_functions/{function_name}:
     post:
       summary: |-
-        Deprecated: Use of Query/LegacyView is deprecated.
+        Deprecated: Use Query/ViewJSON or Query/ViewJSONBatch
         LegacyView execute view function and return the view result.
       operationId: LegacyView
       responses:
@@ -50847,7 +50859,9 @@ paths:
         - Query
   /initia/move/v1/view:
     post:
-      summary: View execute view function and return the view result
+      summary: |-
+        Deprecated: Use Query/ViewJSON or Query/ViewJSONBatch
+        View execute view function and return the view result
       operationId: View
       responses:
         '200':
@@ -50934,7 +50948,9 @@ paths:
         - Query
   /initia/move/v1/view/batch:
     post:
-      summary: ViewBatch execute multiple view functions and return the view results
+      summary: |-
+        Deprecated: Use Query/ViewJSON or Query/ViewJSONBatch
+        ViewBatch execute multiple view functions and return the view results
       operationId: ViewBatch
       responses:
         '200':
@@ -51034,6 +51050,202 @@ paths:
                     RPC method
             title: |-
               QueryViewBatchRequest is the request type for the QueryViewBatch
+              RPC method
+      tags:
+        - Query
+  /initia/move/v1/view/json:
+    post:
+      summary: >-
+        ViewJSON execute view function with json arguemtns and return the view
+        result
+      operationId: ViewJSON
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              data:
+                type: string
+              events:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_tag:
+                      type: string
+                    data:
+                      type: string
+                  description: VMEvent is the event emitted from vm.
+              gas_used:
+                type: string
+                format: uint64
+            title: |-
+              QueryViewJSONResponse is the response type for the
+              QueryViewJSON RPC method
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              address:
+                type: string
+                title: Address is the owner address of the module to query
+              module_name:
+                type: string
+                title: ModuleName is the module name of the entry function to query
+              function_name:
+                type: string
+                title: FunctionName is the name of a function to query
+              type_args:
+                type: array
+                items:
+                  type: string
+                title: |-
+                  TypeArgs is the type arguments of a function to execute
+                  ex) "0x1::BasicCoin::Initia", "bool", "u8", "u64"
+              args:
+                type: array
+                items:
+                  type: string
+                title: >-
+                  Args is the arguments of a function to execute in json
+                  stringify format
+            title: |-
+              QueryViewJSONRequest is the request type for the QueryViewJSON
+              RPC method
+      tags:
+        - Query
+  /initia/move/v1/view/json/batch:
+    post:
+      summary: >-
+        ViewJSONBatch execute multiple view functions with json arguemtns and
+        return the view results
+      operationId: ViewJSONBatch
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              responses:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    data:
+                      type: string
+                    events:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          type_tag:
+                            type: string
+                          data:
+                            type: string
+                        description: VMEvent is the event emitted from vm.
+                    gas_used:
+                      type: string
+                      format: uint64
+                  title: |-
+                    QueryViewJSONResponse is the response type for the
+                    QueryViewJSON RPC method
+            title: |-
+              QueryViewJSONBatchResponse is the response type for the
+              QueryViewJSONBatch RPC method
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              requests:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    address:
+                      type: string
+                      title: Address is the owner address of the module to query
+                    module_name:
+                      type: string
+                      title: >-
+                        ModuleName is the module name of the entry function to
+                        query
+                    function_name:
+                      type: string
+                      title: FunctionName is the name of a function to query
+                    type_args:
+                      type: array
+                      items:
+                        type: string
+                      title: |-
+                        TypeArgs is the type arguments of a function to execute
+                        ex) "0x1::BasicCoin::Initia", "bool", "u8", "u64"
+                    args:
+                      type: array
+                      items:
+                        type: string
+                      title: >-
+                        Args is the arguments of a function to execute in json
+                        stringify format
+                  title: >-
+                    QueryViewJSONRequest is the request type for the
+                    QueryViewJSON
+
+                    RPC method
+            title: >-
+              QueryViewJSONBatchRequest is the request type for the
+              QueryViewJSONBatch
+
               RPC method
       tags:
         - Query
@@ -82816,6 +83028,14 @@ definitions:
       emergency_tally_interval:
         type: string
         description: Tally interval for emergency proposal.
+      low_threshold_functions:
+        type: array
+        items:
+          type: string
+        description: |-
+          Low threshold functions for emergency and expedited proposal.
+          These are Move function identifiers and can only be applied 
+          for Move execute messages.
     description: Params defines the parameters for the x/gov module.
   initia.gov.v1.Proposal:
     type: object
@@ -83565,6 +83785,14 @@ definitions:
           emergency_tally_interval:
             type: string
             description: Tally interval for emergency proposal.
+          low_threshold_functions:
+            type: array
+            items:
+              type: string
+            description: |-
+              Low threshold functions for emergency and expedited proposal.
+              These are Move function identifiers and can only be applied 
+              for Move execute messages.
     description: QueryParamsResponse is the response type for the Query/Params RPC method.
   initia.gov.v1.QueryProposalResponse:
     type: object
@@ -84665,6 +84893,122 @@ definitions:
     title: |-
       QueryViewBatchResponse is the response type for the
       QueryViewBatch RPC method
+  initia.move.v1.QueryViewJSONBatchRequest:
+    type: object
+    properties:
+      requests:
+        type: array
+        items:
+          type: object
+          properties:
+            address:
+              type: string
+              title: Address is the owner address of the module to query
+            module_name:
+              type: string
+              title: ModuleName is the module name of the entry function to query
+            function_name:
+              type: string
+              title: FunctionName is the name of a function to query
+            type_args:
+              type: array
+              items:
+                type: string
+              title: |-
+                TypeArgs is the type arguments of a function to execute
+                ex) "0x1::BasicCoin::Initia", "bool", "u8", "u64"
+            args:
+              type: array
+              items:
+                type: string
+              title: >-
+                Args is the arguments of a function to execute in json stringify
+                format
+          title: |-
+            QueryViewJSONRequest is the request type for the QueryViewJSON
+            RPC method
+    title: |-
+      QueryViewJSONBatchRequest is the request type for the QueryViewJSONBatch
+      RPC method
+  initia.move.v1.QueryViewJSONBatchResponse:
+    type: object
+    properties:
+      responses:
+        type: array
+        items:
+          type: object
+          properties:
+            data:
+              type: string
+            events:
+              type: array
+              items:
+                type: object
+                properties:
+                  type_tag:
+                    type: string
+                  data:
+                    type: string
+                description: VMEvent is the event emitted from vm.
+            gas_used:
+              type: string
+              format: uint64
+          title: |-
+            QueryViewJSONResponse is the response type for the
+            QueryViewJSON RPC method
+    title: |-
+      QueryViewJSONBatchResponse is the response type for the
+      QueryViewJSONBatch RPC method
+  initia.move.v1.QueryViewJSONRequest:
+    type: object
+    properties:
+      address:
+        type: string
+        title: Address is the owner address of the module to query
+      module_name:
+        type: string
+        title: ModuleName is the module name of the entry function to query
+      function_name:
+        type: string
+        title: FunctionName is the name of a function to query
+      type_args:
+        type: array
+        items:
+          type: string
+        title: |-
+          TypeArgs is the type arguments of a function to execute
+          ex) "0x1::BasicCoin::Initia", "bool", "u8", "u64"
+      args:
+        type: array
+        items:
+          type: string
+        title: >-
+          Args is the arguments of a function to execute in json stringify
+          format
+    title: |-
+      QueryViewJSONRequest is the request type for the QueryViewJSON
+      RPC method
+  initia.move.v1.QueryViewJSONResponse:
+    type: object
+    properties:
+      data:
+        type: string
+      events:
+        type: array
+        items:
+          type: object
+          properties:
+            type_tag:
+              type: string
+            data:
+              type: string
+          description: VMEvent is the event emitted from vm.
+      gas_used:
+        type: string
+        format: uint64
+    title: |-
+      QueryViewJSONResponse is the response type for the
+      QueryViewJSON RPC method
   initia.move.v1.QueryViewRequest:
     type: object
     properties:

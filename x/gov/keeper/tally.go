@@ -195,7 +195,6 @@ func IsLowThresholdProposal(params customtypes.Params, proposal customtypes.Prop
 		case *movetypes.MsgExecuteJSON:
 			fid = fmt.Sprintf("%s::%s::%s", msg.ModuleAddress, msg.ModuleName, msg.FunctionName)
 		default:
-			fmt.Println("SIBONG", msg)
 			return false
 		}
 
