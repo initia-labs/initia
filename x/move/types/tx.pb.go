@@ -207,6 +207,93 @@ func (m *MsgExecuteResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgExecuteResponse proto.InternalMessageInfo
 
+// MsgExecuteJSON is the message to execute the given module function
+type MsgExecuteJSON struct {
+	// Sender is the that actor that signed the messages
+	Sender string `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
+	// ModuleAddr is the address of the module deployer
+	ModuleAddress string `protobuf:"bytes,2,opt,name=module_address,json=moduleAddress,proto3" json:"module_address,omitempty"`
+	// ModuleName is the name of module to execute
+	ModuleName string `protobuf:"bytes,3,opt,name=module_name,json=moduleName,proto3" json:"module_name,omitempty"`
+	// FunctionName is the name of a function to execute
+	FunctionName string `protobuf:"bytes,4,opt,name=function_name,json=functionName,proto3" json:"function_name,omitempty"`
+	// TypeArgs is the type arguments of a function to execute
+	// ex) "0x1::BasicCoin::Initia", "bool", "u8", "u64"
+	TypeArgs []string `protobuf:"bytes,5,rep,name=type_args,json=typeArgs,proto3" json:"type_args,omitempty"`
+	// Args is the arguments of a function to execute in json stringify format
+	Args []string `protobuf:"bytes,6,rep,name=args,proto3" json:"args,omitempty"`
+}
+
+func (m *MsgExecuteJSON) Reset()         { *m = MsgExecuteJSON{} }
+func (m *MsgExecuteJSON) String() string { return proto.CompactTextString(m) }
+func (*MsgExecuteJSON) ProtoMessage()    {}
+func (*MsgExecuteJSON) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0fc2f2cef57f41a3, []int{4}
+}
+func (m *MsgExecuteJSON) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgExecuteJSON) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgExecuteJSON.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgExecuteJSON) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgExecuteJSON.Merge(m, src)
+}
+func (m *MsgExecuteJSON) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgExecuteJSON) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgExecuteJSON.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgExecuteJSON proto.InternalMessageInfo
+
+// MsgExecuteJSONResponse returns execution result data.
+type MsgExecuteJSONResponse struct {
+}
+
+func (m *MsgExecuteJSONResponse) Reset()         { *m = MsgExecuteJSONResponse{} }
+func (m *MsgExecuteJSONResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgExecuteJSONResponse) ProtoMessage()    {}
+func (*MsgExecuteJSONResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0fc2f2cef57f41a3, []int{5}
+}
+func (m *MsgExecuteJSONResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgExecuteJSONResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgExecuteJSONResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgExecuteJSONResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgExecuteJSONResponse.Merge(m, src)
+}
+func (m *MsgExecuteJSONResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgExecuteJSONResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgExecuteJSONResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgExecuteJSONResponse proto.InternalMessageInfo
+
 // MsgScript is the message to execute script code with sender as signer
 type MsgScript struct {
 	// Sender is the that actor that signed the messages
@@ -226,7 +313,7 @@ func (m *MsgScript) Reset()         { *m = MsgScript{} }
 func (m *MsgScript) String() string { return proto.CompactTextString(m) }
 func (*MsgScript) ProtoMessage()    {}
 func (*MsgScript) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0fc2f2cef57f41a3, []int{4}
+	return fileDescriptor_0fc2f2cef57f41a3, []int{6}
 }
 func (m *MsgScript) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -263,7 +350,7 @@ func (m *MsgScriptResponse) Reset()         { *m = MsgScriptResponse{} }
 func (m *MsgScriptResponse) String() string { return proto.CompactTextString(m) }
 func (*MsgScriptResponse) ProtoMessage()    {}
 func (*MsgScriptResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0fc2f2cef57f41a3, []int{5}
+	return fileDescriptor_0fc2f2cef57f41a3, []int{7}
 }
 func (m *MsgScriptResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -292,6 +379,89 @@ func (m *MsgScriptResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgScriptResponse proto.InternalMessageInfo
 
+// MsgScriptJSON is the message to execute script code with sender as signer
+type MsgScriptJSON struct {
+	// Sender is the that actor that signed the messages
+	Sender string `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
+	// CodeBytes is the script bytes code to execute
+	CodeBytes []byte `protobuf:"bytes,2,opt,name=code_bytes,json=codeBytes,proto3" json:"code_bytes,omitempty"`
+	// TypeArgs is the type arguments of a function to execute
+	// ex) "0x1::BasicCoin::Initia", "bool", "u8", "u64"
+	TypeArgs []string `protobuf:"bytes,3,rep,name=type_args,json=typeArgs,proto3" json:"type_args,omitempty"`
+	// Args is the arguments of a function to execute in json stringify format
+	Args []string `protobuf:"bytes,4,rep,name=args,proto3" json:"args,omitempty"`
+}
+
+func (m *MsgScriptJSON) Reset()         { *m = MsgScriptJSON{} }
+func (m *MsgScriptJSON) String() string { return proto.CompactTextString(m) }
+func (*MsgScriptJSON) ProtoMessage()    {}
+func (*MsgScriptJSON) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0fc2f2cef57f41a3, []int{8}
+}
+func (m *MsgScriptJSON) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgScriptJSON) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgScriptJSON.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgScriptJSON) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgScriptJSON.Merge(m, src)
+}
+func (m *MsgScriptJSON) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgScriptJSON) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgScriptJSON.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgScriptJSON proto.InternalMessageInfo
+
+// MsgScriptJSONResponse returns execution result data.
+type MsgScriptJSONResponse struct {
+}
+
+func (m *MsgScriptJSONResponse) Reset()         { *m = MsgScriptJSONResponse{} }
+func (m *MsgScriptJSONResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgScriptJSONResponse) ProtoMessage()    {}
+func (*MsgScriptJSONResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0fc2f2cef57f41a3, []int{9}
+}
+func (m *MsgScriptJSONResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgScriptJSONResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgScriptJSONResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgScriptJSONResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgScriptJSONResponse.Merge(m, src)
+}
+func (m *MsgScriptJSONResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgScriptJSONResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgScriptJSONResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgScriptJSONResponse proto.InternalMessageInfo
+
 // MsgGovPublish is the message to store compiled Move module via gov proposal
 type MsgGovPublish struct {
 	// authority is the address that controls the module
@@ -315,7 +485,7 @@ func (m *MsgGovPublish) Reset()         { *m = MsgGovPublish{} }
 func (m *MsgGovPublish) String() string { return proto.CompactTextString(m) }
 func (*MsgGovPublish) ProtoMessage()    {}
 func (*MsgGovPublish) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0fc2f2cef57f41a3, []int{6}
+	return fileDescriptor_0fc2f2cef57f41a3, []int{10}
 }
 func (m *MsgGovPublish) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -352,7 +522,7 @@ func (m *MsgGovPublishResponse) Reset()         { *m = MsgGovPublishResponse{} }
 func (m *MsgGovPublishResponse) String() string { return proto.CompactTextString(m) }
 func (*MsgGovPublishResponse) ProtoMessage()    {}
 func (*MsgGovPublishResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0fc2f2cef57f41a3, []int{7}
+	return fileDescriptor_0fc2f2cef57f41a3, []int{11}
 }
 func (m *MsgGovPublishResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -408,7 +578,7 @@ func (m *MsgGovExecute) Reset()         { *m = MsgGovExecute{} }
 func (m *MsgGovExecute) String() string { return proto.CompactTextString(m) }
 func (*MsgGovExecute) ProtoMessage()    {}
 func (*MsgGovExecute) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0fc2f2cef57f41a3, []int{8}
+	return fileDescriptor_0fc2f2cef57f41a3, []int{12}
 }
 func (m *MsgGovExecute) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -445,7 +615,7 @@ func (m *MsgGovExecuteResponse) Reset()         { *m = MsgGovExecuteResponse{} }
 func (m *MsgGovExecuteResponse) String() string { return proto.CompactTextString(m) }
 func (*MsgGovExecuteResponse) ProtoMessage()    {}
 func (*MsgGovExecuteResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0fc2f2cef57f41a3, []int{9}
+	return fileDescriptor_0fc2f2cef57f41a3, []int{13}
 }
 func (m *MsgGovExecuteResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -474,6 +644,97 @@ func (m *MsgGovExecuteResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgGovExecuteResponse proto.InternalMessageInfo
 
+// MsgGovExecuteJSON is the message to execute the given module
+// function via gov proposal
+type MsgGovExecuteJSON struct {
+	// authority is the address that controls the module
+	// (defaults to x/gov unless overwritten).
+	Authority string `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty"`
+	// Sender is the that actor that signed the messages
+	Sender string `protobuf:"bytes,2,opt,name=sender,proto3" json:"sender,omitempty"`
+	// ModuleAddr is the address of the module deployer
+	ModuleAddress string `protobuf:"bytes,3,opt,name=module_address,json=moduleAddress,proto3" json:"module_address,omitempty"`
+	// ModuleName is the name of module to execute
+	ModuleName string `protobuf:"bytes,4,opt,name=module_name,json=moduleName,proto3" json:"module_name,omitempty"`
+	// FunctionName is the name of a function to execute
+	FunctionName string `protobuf:"bytes,5,opt,name=function_name,json=functionName,proto3" json:"function_name,omitempty"`
+	// TypeArgs is the type arguments of a function to execute
+	// ex) "0x1::BasicCoin::Initia", "bool", "u8", "u64"
+	TypeArgs []string `protobuf:"bytes,6,rep,name=type_args,json=typeArgs,proto3" json:"type_args,omitempty"`
+	// Args is the arguments of a function to execute in json stringify format
+	Args []string `protobuf:"bytes,7,rep,name=args,proto3" json:"args,omitempty"`
+}
+
+func (m *MsgGovExecuteJSON) Reset()         { *m = MsgGovExecuteJSON{} }
+func (m *MsgGovExecuteJSON) String() string { return proto.CompactTextString(m) }
+func (*MsgGovExecuteJSON) ProtoMessage()    {}
+func (*MsgGovExecuteJSON) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0fc2f2cef57f41a3, []int{14}
+}
+func (m *MsgGovExecuteJSON) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgGovExecuteJSON) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgGovExecuteJSON.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgGovExecuteJSON) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgGovExecuteJSON.Merge(m, src)
+}
+func (m *MsgGovExecuteJSON) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgGovExecuteJSON) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgGovExecuteJSON.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgGovExecuteJSON proto.InternalMessageInfo
+
+// MsgGovExecuteJSONResponse returns execution result data.
+type MsgGovExecuteJSONResponse struct {
+}
+
+func (m *MsgGovExecuteJSONResponse) Reset()         { *m = MsgGovExecuteJSONResponse{} }
+func (m *MsgGovExecuteJSONResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgGovExecuteJSONResponse) ProtoMessage()    {}
+func (*MsgGovExecuteJSONResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0fc2f2cef57f41a3, []int{15}
+}
+func (m *MsgGovExecuteJSONResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgGovExecuteJSONResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgGovExecuteJSONResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgGovExecuteJSONResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgGovExecuteJSONResponse.Merge(m, src)
+}
+func (m *MsgGovExecuteJSONResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgGovExecuteJSONResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgGovExecuteJSONResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgGovExecuteJSONResponse proto.InternalMessageInfo
+
 // MsgGovScript is the message to execute script code with sender as signer via gov
 type MsgGovScript struct {
 	// authority is the address that controls the module
@@ -496,7 +757,7 @@ func (m *MsgGovScript) Reset()         { *m = MsgGovScript{} }
 func (m *MsgGovScript) String() string { return proto.CompactTextString(m) }
 func (*MsgGovScript) ProtoMessage()    {}
 func (*MsgGovScript) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0fc2f2cef57f41a3, []int{10}
+	return fileDescriptor_0fc2f2cef57f41a3, []int{16}
 }
 func (m *MsgGovScript) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -533,7 +794,7 @@ func (m *MsgGovScriptResponse) Reset()         { *m = MsgGovScriptResponse{} }
 func (m *MsgGovScriptResponse) String() string { return proto.CompactTextString(m) }
 func (*MsgGovScriptResponse) ProtoMessage()    {}
 func (*MsgGovScriptResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0fc2f2cef57f41a3, []int{11}
+	return fileDescriptor_0fc2f2cef57f41a3, []int{17}
 }
 func (m *MsgGovScriptResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -562,6 +823,92 @@ func (m *MsgGovScriptResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgGovScriptResponse proto.InternalMessageInfo
 
+// MsgGovScriptJSON is the message to execute script code with sender as signer via gov
+type MsgGovScriptJSON struct {
+	// authority is the address that controls the module
+	// (defaults to x/gov unless overwritten).
+	Authority string `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty"`
+	// Sender is the that actor that signed the messages
+	Sender string `protobuf:"bytes,2,opt,name=sender,proto3" json:"sender,omitempty"`
+	// CodeBytes is the script bytes code to execute
+	CodeBytes []byte `protobuf:"bytes,3,opt,name=code_bytes,json=codeBytes,proto3" json:"code_bytes,omitempty"`
+	// TypeArgs is the type arguments of a function to execute
+	// ex) "0x1::BasicCoin::Initia", "bool", "u8", "u64"
+	TypeArgs []string `protobuf:"bytes,4,rep,name=type_args,json=typeArgs,proto3" json:"type_args,omitempty"`
+	// Args is the arguments of a function to execute in json stringify format
+	Args []string `protobuf:"bytes,5,rep,name=args,proto3" json:"args,omitempty"`
+}
+
+func (m *MsgGovScriptJSON) Reset()         { *m = MsgGovScriptJSON{} }
+func (m *MsgGovScriptJSON) String() string { return proto.CompactTextString(m) }
+func (*MsgGovScriptJSON) ProtoMessage()    {}
+func (*MsgGovScriptJSON) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0fc2f2cef57f41a3, []int{18}
+}
+func (m *MsgGovScriptJSON) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgGovScriptJSON) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgGovScriptJSON.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgGovScriptJSON) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgGovScriptJSON.Merge(m, src)
+}
+func (m *MsgGovScriptJSON) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgGovScriptJSON) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgGovScriptJSON.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgGovScriptJSON proto.InternalMessageInfo
+
+// MsgGovScriptJSONResponse returns execution result data.
+type MsgGovScriptJSONResponse struct {
+}
+
+func (m *MsgGovScriptJSONResponse) Reset()         { *m = MsgGovScriptJSONResponse{} }
+func (m *MsgGovScriptJSONResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgGovScriptJSONResponse) ProtoMessage()    {}
+func (*MsgGovScriptJSONResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0fc2f2cef57f41a3, []int{19}
+}
+func (m *MsgGovScriptJSONResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgGovScriptJSONResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgGovScriptJSONResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgGovScriptJSONResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgGovScriptJSONResponse.Merge(m, src)
+}
+func (m *MsgGovScriptJSONResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgGovScriptJSONResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgGovScriptJSONResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgGovScriptJSONResponse proto.InternalMessageInfo
+
 // MsgWhitelist is a message to register a dex pair to
 // whitelist of various features.
 // - whitelist from coin register operation
@@ -581,7 +928,7 @@ func (m *MsgWhitelist) Reset()         { *m = MsgWhitelist{} }
 func (m *MsgWhitelist) String() string { return proto.CompactTextString(m) }
 func (*MsgWhitelist) ProtoMessage()    {}
 func (*MsgWhitelist) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0fc2f2cef57f41a3, []int{12}
+	return fileDescriptor_0fc2f2cef57f41a3, []int{20}
 }
 func (m *MsgWhitelist) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -618,7 +965,7 @@ func (m *MsgWhitelistResponse) Reset()         { *m = MsgWhitelistResponse{} }
 func (m *MsgWhitelistResponse) String() string { return proto.CompactTextString(m) }
 func (*MsgWhitelistResponse) ProtoMessage()    {}
 func (*MsgWhitelistResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0fc2f2cef57f41a3, []int{13}
+	return fileDescriptor_0fc2f2cef57f41a3, []int{21}
 }
 func (m *MsgWhitelistResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -661,7 +1008,7 @@ func (m *MsgDelist) Reset()         { *m = MsgDelist{} }
 func (m *MsgDelist) String() string { return proto.CompactTextString(m) }
 func (*MsgDelist) ProtoMessage()    {}
 func (*MsgDelist) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0fc2f2cef57f41a3, []int{14}
+	return fileDescriptor_0fc2f2cef57f41a3, []int{22}
 }
 func (m *MsgDelist) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -698,7 +1045,7 @@ func (m *MsgDelistResponse) Reset()         { *m = MsgDelistResponse{} }
 func (m *MsgDelistResponse) String() string { return proto.CompactTextString(m) }
 func (*MsgDelistResponse) ProtoMessage()    {}
 func (*MsgDelistResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0fc2f2cef57f41a3, []int{15}
+	return fileDescriptor_0fc2f2cef57f41a3, []int{23}
 }
 func (m *MsgDelistResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -742,7 +1089,7 @@ func (m *MsgUpdateParams) Reset()         { *m = MsgUpdateParams{} }
 func (m *MsgUpdateParams) String() string { return proto.CompactTextString(m) }
 func (*MsgUpdateParams) ProtoMessage()    {}
 func (*MsgUpdateParams) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0fc2f2cef57f41a3, []int{16}
+	return fileDescriptor_0fc2f2cef57f41a3, []int{24}
 }
 func (m *MsgUpdateParams) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -780,7 +1127,7 @@ func (m *MsgUpdateParamsResponse) Reset()         { *m = MsgUpdateParamsResponse
 func (m *MsgUpdateParamsResponse) String() string { return proto.CompactTextString(m) }
 func (*MsgUpdateParamsResponse) ProtoMessage()    {}
 func (*MsgUpdateParamsResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0fc2f2cef57f41a3, []int{17}
+	return fileDescriptor_0fc2f2cef57f41a3, []int{25}
 }
 func (m *MsgUpdateParamsResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -814,14 +1161,22 @@ func init() {
 	proto.RegisterType((*MsgPublishResponse)(nil), "initia.move.v1.MsgPublishResponse")
 	proto.RegisterType((*MsgExecute)(nil), "initia.move.v1.MsgExecute")
 	proto.RegisterType((*MsgExecuteResponse)(nil), "initia.move.v1.MsgExecuteResponse")
+	proto.RegisterType((*MsgExecuteJSON)(nil), "initia.move.v1.MsgExecuteJSON")
+	proto.RegisterType((*MsgExecuteJSONResponse)(nil), "initia.move.v1.MsgExecuteJSONResponse")
 	proto.RegisterType((*MsgScript)(nil), "initia.move.v1.MsgScript")
 	proto.RegisterType((*MsgScriptResponse)(nil), "initia.move.v1.MsgScriptResponse")
+	proto.RegisterType((*MsgScriptJSON)(nil), "initia.move.v1.MsgScriptJSON")
+	proto.RegisterType((*MsgScriptJSONResponse)(nil), "initia.move.v1.MsgScriptJSONResponse")
 	proto.RegisterType((*MsgGovPublish)(nil), "initia.move.v1.MsgGovPublish")
 	proto.RegisterType((*MsgGovPublishResponse)(nil), "initia.move.v1.MsgGovPublishResponse")
 	proto.RegisterType((*MsgGovExecute)(nil), "initia.move.v1.MsgGovExecute")
 	proto.RegisterType((*MsgGovExecuteResponse)(nil), "initia.move.v1.MsgGovExecuteResponse")
+	proto.RegisterType((*MsgGovExecuteJSON)(nil), "initia.move.v1.MsgGovExecuteJSON")
+	proto.RegisterType((*MsgGovExecuteJSONResponse)(nil), "initia.move.v1.MsgGovExecuteJSONResponse")
 	proto.RegisterType((*MsgGovScript)(nil), "initia.move.v1.MsgGovScript")
 	proto.RegisterType((*MsgGovScriptResponse)(nil), "initia.move.v1.MsgGovScriptResponse")
+	proto.RegisterType((*MsgGovScriptJSON)(nil), "initia.move.v1.MsgGovScriptJSON")
+	proto.RegisterType((*MsgGovScriptJSONResponse)(nil), "initia.move.v1.MsgGovScriptJSONResponse")
 	proto.RegisterType((*MsgWhitelist)(nil), "initia.move.v1.MsgWhitelist")
 	proto.RegisterType((*MsgWhitelistResponse)(nil), "initia.move.v1.MsgWhitelistResponse")
 	proto.RegisterType((*MsgDelist)(nil), "initia.move.v1.MsgDelist")
@@ -833,68 +1188,80 @@ func init() {
 func init() { proto.RegisterFile("initia/move/v1/tx.proto", fileDescriptor_0fc2f2cef57f41a3) }
 
 var fileDescriptor_0fc2f2cef57f41a3 = []byte{
-	// 973 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xc4, 0x56, 0xcf, 0x6f, 0xe3, 0x44,
-	0x14, 0x8e, 0x9b, 0x1f, 0x8b, 0x5f, 0x93, 0xac, 0x6a, 0xc2, 0x36, 0xf5, 0xd2, 0xa4, 0x64, 0xb7,
-	0xda, 0xaa, 0xd2, 0xc6, 0x6c, 0x91, 0x90, 0xd8, 0xdb, 0x46, 0x05, 0x16, 0xd4, 0x40, 0xe5, 0xd5,
-	0x6a, 0x11, 0x97, 0x68, 0x62, 0x0f, 0x8e, 0x45, 0x9c, 0xb1, 0x3c, 0x93, 0x6e, 0x73, 0x43, 0x1c,
-	0xe1, 0xc2, 0x99, 0xbf, 0x80, 0xcb, 0x4a, 0x3d, 0x70, 0xe6, 0x5c, 0x71, 0x5a, 0x71, 0x40, 0x88,
-	0x43, 0x05, 0xed, 0xa1, 0x37, 0xfe, 0x03, 0x24, 0x64, 0xcf, 0xf8, 0x47, 0x5c, 0x27, 0x59, 0x45,
-	0xa8, 0x7b, 0x89, 0x3c, 0xef, 0x7b, 0xef, 0xf9, 0x7d, 0xdf, 0xcc, 0x37, 0x31, 0xac, 0xdb, 0x23,
-	0x9b, 0xd9, 0x48, 0x73, 0xc8, 0x11, 0xd6, 0x8e, 0x1e, 0x68, 0xec, 0xb8, 0xed, 0x7a, 0x84, 0x11,
-	0xa5, 0xca, 0x81, 0xb6, 0x0f, 0xb4, 0x8f, 0x1e, 0xa8, 0x6b, 0xc8, 0xb1, 0x47, 0x44, 0x0b, 0x7e,
-	0x79, 0x8a, 0xba, 0x6e, 0x10, 0xea, 0x10, 0xaa, 0x39, 0xd4, 0xf2, 0x4b, 0x1d, 0x6a, 0x09, 0x60,
-	0x83, 0x03, 0xbd, 0x60, 0xa5, 0xf1, 0x85, 0x80, 0x6a, 0x16, 0xb1, 0x08, 0x8f, 0xfb, 0x4f, 0x22,
-	0xaa, 0xa6, 0xa7, 0x98, 0xb8, 0x58, 0x54, 0xb4, 0x7e, 0x95, 0x00, 0xba, 0xd4, 0x3a, 0x1c, 0xf7,
-	0x87, 0x36, 0x1d, 0x28, 0xef, 0x42, 0x89, 0xe2, 0x91, 0x89, 0xbd, 0xba, 0xb4, 0x25, 0xed, 0xc8,
-	0x9d, 0xfa, 0x6f, 0x3f, 0xdf, 0xaf, 0x89, 0x57, 0x3c, 0x32, 0x4d, 0x0f, 0x53, 0xfa, 0x84, 0x79,
-	0xf6, 0xc8, 0xd2, 0x45, 0x9e, 0xb2, 0x09, 0x60, 0x10, 0x13, 0xf7, 0xfa, 0x13, 0x86, 0x69, 0x7d,
-	0x65, 0x2b, 0xbf, 0x53, 0xd6, 0x65, 0x3f, 0xd2, 0xf1, 0x03, 0xca, 0xa7, 0x50, 0x1d, 0xbb, 0x96,
-	0x87, 0x4c, 0xdc, 0x73, 0xc9, 0xd0, 0x36, 0x26, 0xf5, 0xfc, 0x96, 0xb4, 0x53, 0xdd, 0xdb, 0x6c,
-	0x4f, 0x2b, 0xd0, 0x7e, 0xca, 0xb3, 0x0e, 0x83, 0xa4, 0x4e, 0xe1, 0xf4, 0xac, 0x29, 0xe9, 0x95,
-	0x71, 0x32, 0xf8, 0xb0, 0xf9, 0xed, 0xe5, 0xc9, 0xae, 0x78, 0xef, 0x77, 0x97, 0x27, 0xbb, 0x37,
-	0x03, 0x42, 0xf1, 0xf4, 0xad, 0x1a, 0x28, 0xf1, 0x4a, 0xc7, 0xd4, 0x25, 0x23, 0x8a, 0x5b, 0xff,
-	0x72, 0x8a, 0x1f, 0x1e, 0x63, 0x63, 0xcc, 0xf0, 0x12, 0x14, 0xb7, 0xa1, 0xea, 0x10, 0x73, 0x3c,
-	0xc4, 0x3d, 0xc4, 0xf1, 0xfa, 0x8a, 0x5f, 0xa9, 0x57, 0x78, 0x54, 0x14, 0x29, 0x4d, 0x58, 0x15,
-	0x69, 0x23, 0xe4, 0xe0, 0x80, 0xa7, 0xac, 0x03, 0x0f, 0x7d, 0x86, 0x1c, 0xac, 0xdc, 0x81, 0xca,
-	0x57, 0xe3, 0x91, 0xc1, 0x6c, 0x32, 0xe2, 0x29, 0x85, 0x20, 0xa5, 0x1c, 0x06, 0x83, 0xa4, 0xdb,
-	0x20, 0xfb, 0xfb, 0xd3, 0x43, 0x9e, 0x45, 0xeb, 0xc5, 0xad, 0xfc, 0x8e, 0xac, 0xbf, 0xe1, 0x07,
-	0x1e, 0x79, 0x16, 0x55, 0x14, 0x28, 0x04, 0xf1, 0x52, 0x20, 0x73, 0xf0, 0x3c, 0x5b, 0x15, 0x41,
-	0x58, 0xa8, 0x22, 0x56, 0x91, 0x2a, 0x2f, 0x24, 0x90, 0xbb, 0xd4, 0x7a, 0x62, 0x78, 0xb6, 0xcb,
-	0xfe, 0x87, 0x7d, 0x97, 0xa6, 0xf7, 0x7d, 0x8a, 0x46, 0x7e, 0x06, 0x8d, 0x42, 0x82, 0x46, 0x23,
-	0x45, 0xa3, 0x1a, 0xd2, 0xe0, 0x13, 0xb6, 0xde, 0x84, 0xb5, 0x68, 0x11, 0x91, 0xf8, 0x7e, 0x05,
-	0x2a, 0x5d, 0x6a, 0x7d, 0x4c, 0x8e, 0xc2, 0x03, 0xfc, 0x3e, 0xc8, 0x68, 0xcc, 0x06, 0xc4, 0xb3,
-	0xd9, 0x64, 0x21, 0x97, 0x38, 0x35, 0x21, 0xc0, 0xca, 0x52, 0x02, 0xe4, 0x17, 0x1f, 0xfc, 0xc2,
-	0xd2, 0x07, 0x7f, 0xdb, 0xd7, 0x26, 0x1e, 0xd6, 0x97, 0x47, 0x09, 0xe5, 0x89, 0xb9, 0xb7, 0xd6,
-	0xe1, 0xad, 0xa9, 0x40, 0x24, 0xd3, 0x2f, 0x91, 0x4c, 0xa1, 0x09, 0xae, 0x4f, 0xa6, 0xab, 0xe6,
-	0xc9, 0xbf, 0x82, 0x79, 0x0a, 0x8b, 0xcd, 0x53, 0x5c, 0x64, 0x9e, 0xd2, 0x8c, 0x53, 0x77, 0x23,
-	0x71, 0xea, 0x16, 0x28, 0x1b, 0x5a, 0x28, 0x52, 0x36, 0xed, 0xa2, 0x7f, 0x24, 0x28, 0x73, 0x44,
-	0x18, 0xe9, 0xf5, 0x9d, 0xbf, 0x79, 0x06, 0x2c, 0xcc, 0x90, 0xa2, 0x98, 0x90, 0xe2, 0xee, 0x55,
-	0x29, 0xd6, 0x12, 0x52, 0x08, 0x1b, 0xde, 0x82, 0x5a, 0x72, 0x1d, 0x09, 0x71, 0xc9, 0x85, 0x78,
-	0x36, 0xb0, 0x19, 0x1e, 0xda, 0x74, 0x79, 0x21, 0x34, 0x58, 0x75, 0x30, 0x43, 0x26, 0x62, 0xa8,
-	0x37, 0x74, 0x85, 0x1a, 0xd5, 0xf3, 0xb3, 0x26, 0x74, 0x45, 0xf8, 0xe0, 0x50, 0x87, 0x30, 0xe5,
-	0xc0, 0x55, 0x1e, 0x43, 0xc5, 0xc3, 0xcf, 0x91, 0x67, 0xf6, 0x9e, 0x63, 0xdb, 0x1a, 0x30, 0x7e,
-	0xbe, 0x3a, 0x77, 0x4e, 0xcf, 0x9a, 0xb9, 0x3f, 0xcf, 0x9a, 0xb7, 0xf9, 0x0b, 0xa9, 0xf9, 0x75,
-	0xdb, 0x26, 0x9a, 0x83, 0xd8, 0xa0, 0x7d, 0x80, 0x2d, 0x64, 0x4c, 0xf6, 0xb1, 0xa1, 0x97, 0x79,
-	0xe5, 0xb3, 0xa0, 0x70, 0xae, 0x02, 0x11, 0x31, 0xa1, 0x40, 0xb4, 0x8e, 0x14, 0xf8, 0x91, 0x5f,
-	0xa8, 0xfb, 0xd7, 0x4b, 0xff, 0x15, 0x87, 0xe6, 0xb7, 0xe7, 0xfe, 0xf4, 0xc4, 0x2f, 0x24, 0xb8,
-	0xd9, 0xa5, 0xd6, 0x53, 0xd7, 0x44, 0x0c, 0x1f, 0x22, 0x0f, 0x39, 0x74, 0xe9, 0xb9, 0x3f, 0x80,
-	0x92, 0x1b, 0x74, 0x08, 0x46, 0x5e, 0xdd, 0xbb, 0x95, 0xbe, 0xe6, 0x78, 0xff, 0x8e, 0xec, 0x6f,
-	0xcb, 0x4f, 0x97, 0x27, 0xbb, 0x92, 0x2e, 0x0a, 0x1e, 0xde, 0xbb, 0xca, 0xa0, 0x16, 0x32, 0x48,
-	0xce, 0xd6, 0xda, 0x80, 0xf5, 0x54, 0x28, 0xa4, 0xb2, 0xf7, 0x7b, 0x11, 0xf2, 0x5d, 0x6a, 0x29,
-	0x9f, 0xc0, 0x8d, 0xf0, 0x9f, 0x40, 0x4d, 0x4f, 0x10, 0x7f, 0x1a, 0xa8, 0xad, 0xd9, 0x58, 0xd8,
-	0xd2, 0x6f, 0x15, 0xde, 0x96, 0x59, 0xad, 0x04, 0x96, 0xd9, 0x2a, 0x75, 0x4b, 0x28, 0x1f, 0x41,
-	0x49, 0x5c, 0x0f, 0x1b, 0x19, 0xd9, 0x1c, 0x52, 0xdf, 0x99, 0x09, 0x45, 0x7d, 0x74, 0x80, 0xc4,
-	0x5f, 0xdd, 0x66, 0x46, 0x41, 0x0c, 0xab, 0xdb, 0x73, 0xe1, 0x54, 0xcf, 0x90, 0xe9, 0x8c, 0x9e,
-	0x21, 0xd9, 0xed, 0xb9, 0x70, 0xd4, 0xf3, 0x73, 0x90, 0xe3, 0x1b, 0xf1, 0xed, 0xec, 0x1a, 0xc1,
-	0xfa, 0xee, 0x3c, 0x34, 0xd9, 0x30, 0xbe, 0x59, 0xb2, 0x1a, 0x46, 0x68, 0x66, 0xc3, 0x2b, 0x66,
-	0xf5, 0x77, 0x44, 0x18, 0x35, 0x6b, 0x47, 0x38, 0x94, 0xb9, 0x23, 0xd3, 0x16, 0x52, 0xbe, 0x80,
-	0xf2, 0x94, 0x7d, 0x9a, 0x19, 0x25, 0xc9, 0x04, 0xf5, 0xde, 0x82, 0x84, 0xb0, 0xb3, 0x5a, 0xfc,
-	0xc6, 0x37, 0x49, 0xe7, 0xf1, 0xe9, 0xdf, 0x8d, 0xdc, 0xe9, 0x79, 0x43, 0x7a, 0x79, 0xde, 0x90,
-	0xfe, 0x3a, 0x6f, 0x48, 0x3f, 0x5c, 0x34, 0x72, 0x2f, 0x2f, 0x1a, 0xb9, 0x3f, 0x2e, 0x1a, 0xb9,
-	0x2f, 0x77, 0x2d, 0x9b, 0x0d, 0xc6, 0xfd, 0xb6, 0x41, 0x1c, 0x8d, 0xf7, 0xbd, 0x3f, 0x44, 0x7d,
-	0x2a, 0x9e, 0xb5, 0x63, 0xfe, 0xc9, 0x1f, 0x7c, 0xef, 0xf7, 0x4b, 0xc1, 0x07, 0xff, 0x7b, 0xff,
-	0x05, 0x00, 0x00, 0xff, 0xff, 0xf9, 0xf5, 0xa2, 0x40, 0x94, 0x0c, 0x00, 0x00,
+	// 1153 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe4, 0x58, 0xcf, 0x6f, 0x1b, 0x45,
+	0x14, 0xce, 0xda, 0x8e, 0x5b, 0xbf, 0xc4, 0x2e, 0xd9, 0xa6, 0x89, 0xb3, 0x21, 0x76, 0xea, 0x34,
+	0xd4, 0x8d, 0x54, 0x2f, 0x0d, 0x12, 0x12, 0xbd, 0xd5, 0x0a, 0x50, 0xaa, 0xa4, 0x8d, 0x36, 0x8a,
+	0x8a, 0x40, 0xc2, 0xda, 0x78, 0x87, 0xf5, 0x0a, 0xaf, 0x77, 0xb5, 0xb3, 0x4e, 0x93, 0x1b, 0x42,
+	0xe2, 0x02, 0x17, 0xce, 0xfc, 0x05, 0x5c, 0x2a, 0xe5, 0x00, 0xd7, 0x1e, 0x51, 0xc4, 0xa9, 0xe2,
+	0x84, 0x38, 0x44, 0x90, 0x1c, 0x72, 0xe3, 0xc8, 0x0d, 0x09, 0xed, 0xcc, 0xec, 0xec, 0x4f, 0xdb,
+	0x95, 0x15, 0x05, 0x89, 0x5e, 0x22, 0xcf, 0xfb, 0xe5, 0xf7, 0x7d, 0xf3, 0xe6, 0x9b, 0x89, 0x61,
+	0xde, 0xe8, 0x19, 0xae, 0xa1, 0xca, 0xa6, 0xb5, 0x8f, 0xe4, 0xfd, 0x7b, 0xb2, 0x7b, 0xd0, 0xb0,
+	0x1d, 0xcb, 0xb5, 0xc4, 0x12, 0x75, 0x34, 0x3c, 0x47, 0x63, 0xff, 0x9e, 0x34, 0xa3, 0x9a, 0x46,
+	0xcf, 0x92, 0xc9, 0x5f, 0x1a, 0x22, 0xcd, 0xb7, 0x2d, 0x6c, 0x5a, 0x58, 0x36, 0xb1, 0xee, 0xa5,
+	0x9a, 0x58, 0x67, 0x8e, 0x05, 0xea, 0x68, 0x91, 0x95, 0x4c, 0x17, 0xcc, 0x35, 0xab, 0x5b, 0xba,
+	0x45, 0xed, 0xde, 0x27, 0x66, 0x95, 0xe2, 0x5d, 0x1c, 0xda, 0x88, 0x65, 0xd4, 0x7e, 0x11, 0x00,
+	0xb6, 0xb0, 0xbe, 0xdd, 0xdf, 0xeb, 0x1a, 0xb8, 0x23, 0xbe, 0x0d, 0x79, 0x8c, 0x7a, 0x1a, 0x72,
+	0xca, 0xc2, 0xb2, 0x50, 0x2f, 0x34, 0xcb, 0xbf, 0xfe, 0x78, 0x77, 0x96, 0x7d, 0xc5, 0x03, 0x4d,
+	0x73, 0x10, 0xc6, 0x3b, 0xae, 0x63, 0xf4, 0x74, 0x85, 0xc5, 0x89, 0x4b, 0x00, 0x6d, 0x4b, 0x43,
+	0xad, 0xbd, 0x43, 0x17, 0xe1, 0x72, 0x66, 0x39, 0x5b, 0x9f, 0x56, 0x0a, 0x9e, 0xa5, 0xe9, 0x19,
+	0xc4, 0x47, 0x50, 0xea, 0xdb, 0xba, 0xa3, 0x6a, 0xa8, 0x65, 0x5b, 0x5d, 0xa3, 0x7d, 0x58, 0xce,
+	0x2e, 0x0b, 0xf5, 0xd2, 0xfa, 0x52, 0x23, 0xca, 0x40, 0x63, 0x97, 0x46, 0x6d, 0x93, 0xa0, 0x66,
+	0xee, 0xf8, 0xa4, 0x2a, 0x28, 0xc5, 0x7e, 0xd8, 0x78, 0xbf, 0xfa, 0xd5, 0xf9, 0xd1, 0x1a, 0xfb,
+	0xde, 0x6f, 0xce, 0x8f, 0xd6, 0xae, 0x11, 0x40, 0x41, 0xf7, 0xb5, 0x59, 0x10, 0x83, 0x95, 0x82,
+	0xb0, 0x6d, 0xf5, 0x30, 0xaa, 0xfd, 0x43, 0x21, 0xbe, 0x7f, 0x80, 0xda, 0x7d, 0x17, 0x8d, 0x01,
+	0x71, 0x15, 0x4a, 0xa6, 0xa5, 0xf5, 0xbb, 0xa8, 0xa5, 0x52, 0x7f, 0x39, 0xe3, 0x65, 0x2a, 0x45,
+	0x6a, 0x65, 0x49, 0x62, 0x15, 0xa6, 0x58, 0x58, 0x4f, 0x35, 0x11, 0xc1, 0x59, 0x50, 0x80, 0x9a,
+	0x1e, 0xab, 0x26, 0x12, 0x57, 0xa0, 0xf8, 0x79, 0xbf, 0xd7, 0x76, 0x0d, 0xab, 0x47, 0x43, 0x72,
+	0x24, 0x64, 0xda, 0x37, 0x92, 0xa0, 0x45, 0x28, 0x78, 0xfb, 0xd3, 0x52, 0x1d, 0x1d, 0x97, 0x27,
+	0x97, 0xb3, 0xf5, 0x82, 0x72, 0xd5, 0x33, 0x3c, 0x70, 0x74, 0x2c, 0x8a, 0x90, 0x23, 0xf6, 0x3c,
+	0xa1, 0x99, 0x7c, 0x1e, 0xcc, 0x0a, 0x03, 0xcc, 0x58, 0x61, 0x2b, 0xce, 0xca, 0xd7, 0x19, 0x28,
+	0x05, 0xe6, 0x47, 0x3b, 0x4f, 0x1e, 0xff, 0x6f, 0x98, 0x29, 0x30, 0x66, 0x56, 0x62, 0xcc, 0x5c,
+	0x8f, 0x31, 0xe3, 0x81, 0xae, 0x95, 0x61, 0x2e, 0x6a, 0xe1, 0x0c, 0x3d, 0x17, 0xa0, 0xb0, 0x85,
+	0xf5, 0x9d, 0xb6, 0x63, 0xd8, 0xee, 0x05, 0x9c, 0x0c, 0x21, 0x7a, 0x32, 0x22, 0x70, 0xb2, 0x03,
+	0xe0, 0xe4, 0x42, 0x1b, 0x5d, 0x89, 0xc1, 0x29, 0xf9, 0x70, 0x68, 0x87, 0xb5, 0xeb, 0x30, 0xc3,
+	0x17, 0x1c, 0xc4, 0x4f, 0x02, 0x14, 0xb9, 0x75, 0xcc, 0x5d, 0xbe, 0x28, 0x20, 0xfe, 0xbe, 0xd4,
+	0x62, 0x40, 0xc4, 0x28, 0x10, 0xb2, 0x2d, 0xf3, 0x70, 0x23, 0x62, 0xe0, 0x80, 0xbe, 0xcd, 0x10,
+	0x40, 0x1f, 0x5a, 0xfb, 0xbe, 0x66, 0xbd, 0x0b, 0x05, 0xb5, 0xef, 0x76, 0x2c, 0xc7, 0x70, 0x0f,
+	0x47, 0x62, 0x0a, 0x42, 0x43, 0x44, 0x64, 0xc6, 0x22, 0x22, 0x3b, 0x5a, 0xeb, 0x72, 0x63, 0x6b,
+	0xdd, 0xaa, 0xc7, 0x51, 0xd0, 0x6c, 0x84, 0xa6, 0x00, 0x3b, 0xa3, 0x29, 0x30, 0x70, 0x9a, 0x5e,
+	0x70, 0x9a, 0x7c, 0xdd, 0xbb, 0x3c, 0x9a, 0x92, 0xaa, 0x90, 0x7d, 0x05, 0x55, 0xc8, 0x8d, 0x56,
+	0x85, 0xc9, 0x51, 0xaa, 0x90, 0x1f, 0x30, 0x7d, 0x57, 0x42, 0xc7, 0x68, 0x04, 0xb3, 0xbe, 0x6a,
+	0x72, 0x66, 0xe3, 0xc2, 0xf9, 0x73, 0x86, 0x9c, 0xb3, 0xc0, 0x43, 0x4e, 0xd5, 0xeb, 0xce, 0xae,
+	0x7f, 0xb6, 0xef, 0x24, 0xd9, 0x9d, 0x4b, 0xb2, 0x4b, 0x8e, 0xf8, 0x22, 0x2c, 0x24, 0x8c, 0x9c,
+	0xe5, 0xbf, 0x04, 0x98, 0xa6, 0x5e, 0xa6, 0xbf, 0xff, 0xdd, 0x29, 0x1f, 0x26, 0x77, 0xb9, 0x01,
+	0x94, 0x4c, 0x86, 0x06, 0xee, 0x56, 0x92, 0x92, 0x99, 0x10, 0x25, 0x4c, 0xbd, 0xe7, 0x60, 0x36,
+	0xbc, 0xe6, 0x44, 0xfc, 0x2d, 0xc0, 0x1b, 0x61, 0xc7, 0x25, 0x4f, 0xdb, 0x45, 0x91, 0xe1, 0xcf,
+	0x47, 0x3d, 0x49, 0xc6, 0x8d, 0x04, 0x19, 0x64, 0x3c, 0x24, 0x28, 0xc7, 0x6d, 0x9c, 0x94, 0x73,
+	0x3a, 0x1d, 0x4f, 0x3b, 0x86, 0x8b, 0xba, 0x06, 0x1e, 0x7f, 0x3a, 0x64, 0x98, 0x32, 0x91, 0xab,
+	0x6a, 0xaa, 0xab, 0xb6, 0xba, 0x36, 0x63, 0xa5, 0x74, 0x7a, 0x52, 0x85, 0x2d, 0x66, 0xde, 0xdc,
+	0x56, 0xc0, 0x0f, 0xd9, 0xb4, 0xc5, 0x87, 0x50, 0x74, 0xd0, 0x33, 0xd5, 0xd1, 0x5a, 0xcf, 0x90,
+	0xa1, 0x77, 0x5c, 0x7a, 0xf8, 0x9a, 0x2b, 0xc7, 0x27, 0xd5, 0x89, 0xdf, 0x4f, 0xaa, 0x8b, 0xf4,
+	0x0b, 0xb1, 0xf6, 0x45, 0xc3, 0xb0, 0x64, 0x53, 0x75, 0x3b, 0x8d, 0x4d, 0xa4, 0xab, 0xed, 0xc3,
+	0x0d, 0xd4, 0x56, 0xa6, 0x69, 0xe6, 0x53, 0x92, 0x38, 0x74, 0x2c, 0x38, 0x30, 0x36, 0x16, 0x7c,
+	0xcd, 0x19, 0xf8, 0x9e, 0x3e, 0x4e, 0x36, 0x2e, 0x17, 0xfe, 0x2b, 0x36, 0x4d, 0x5f, 0x22, 0x1b,
+	0xd1, 0x8e, 0x9f, 0x0b, 0x70, 0x6d, 0x0b, 0xeb, 0xbb, 0xb6, 0xa6, 0xba, 0x68, 0x5b, 0x75, 0x54,
+	0x13, 0x8f, 0xdd, 0xf7, 0x7b, 0x90, 0xb7, 0x49, 0x05, 0xd2, 0xf2, 0xd4, 0xfa, 0x5c, 0xfc, 0x86,
+	0xa5, 0xf5, 0x9b, 0x05, 0x6f, 0x5b, 0x7e, 0x38, 0x3f, 0x5a, 0x13, 0x14, 0x96, 0x70, 0xff, 0x76,
+	0x12, 0xc1, 0xac, 0x8f, 0x20, 0xdc, 0x5b, 0x6d, 0x01, 0xe6, 0x63, 0x26, 0x1f, 0xca, 0xfa, 0x8b,
+	0xab, 0x90, 0xdd, 0xc2, 0xba, 0xf8, 0x11, 0x5c, 0xf1, 0x1f, 0x21, 0x52, 0xbc, 0x83, 0xe0, 0x1f,
+	0x11, 0xa9, 0x36, 0xd8, 0xe7, 0x97, 0xf4, 0x4a, 0xf9, 0x17, 0x75, 0x5a, 0x29, 0xe6, 0x4b, 0x2d,
+	0x15, 0xbb, 0xa0, 0xc4, 0x5d, 0x98, 0x0a, 0xdf, 0x4c, 0x95, 0xc1, 0x29, 0x9e, 0x5f, 0x7a, 0x6b,
+	0xb8, 0x9f, 0x97, 0xfd, 0x00, 0xf2, 0x4c, 0x8a, 0x17, 0x52, 0x32, 0xa8, 0x4b, 0xba, 0x39, 0xd0,
+	0xc5, 0xeb, 0x28, 0x00, 0x21, 0x25, 0x5b, 0x1a, 0x98, 0x40, 0x9a, 0x5b, 0x1d, 0xea, 0x0e, 0xd7,
+	0x0c, 0x3d, 0x08, 0xd3, 0x6a, 0x06, 0xee, 0xd4, 0x9a, 0xc9, 0x17, 0x14, 0xab, 0xe9, 0x6f, 0xca,
+	0x80, 0x9a, 0xfe, 0xbe, 0xac, 0x0e, 0x75, 0xf3, 0x9a, 0x9f, 0x41, 0x29, 0xf6, 0x6e, 0xb8, 0x39,
+	0x34, 0x91, 0x70, 0x70, 0x67, 0x64, 0x08, 0xaf, 0xff, 0x04, 0x0a, 0xc1, 0x8d, 0xf9, 0x66, 0x7a,
+	0x1e, 0xdb, 0xa9, 0x5b, 0xc3, 0xbc, 0xbc, 0xe0, 0xa7, 0x50, 0x8c, 0xde, 0x3c, 0xcb, 0xc3, 0xd2,
+	0x48, 0xbb, 0xf5, 0x51, 0x11, 0xe1, 0x6e, 0x03, 0x05, 0x4f, 0xeb, 0x96, 0x7b, 0x53, 0xbb, 0x4d,
+	0x88, 0xa2, 0x37, 0xa2, 0x4c, 0x10, 0xd3, 0x46, 0x94, 0xba, 0x52, 0x47, 0x34, 0x2a, 0x55, 0xe2,
+	0xc7, 0x30, 0x1d, 0x91, 0xa9, 0x6a, 0x4a, 0x4a, 0x38, 0x40, 0xba, 0x3d, 0x22, 0xc0, 0xaf, 0x2c,
+	0x4d, 0x7e, 0xe9, 0x89, 0x51, 0xf3, 0xe1, 0xf1, 0x9f, 0x95, 0x89, 0xe3, 0xd3, 0x8a, 0xf0, 0xf2,
+	0xb4, 0x22, 0xfc, 0x71, 0x5a, 0x11, 0xbe, 0x3b, 0xab, 0x4c, 0xbc, 0x3c, 0xab, 0x4c, 0xfc, 0x76,
+	0x56, 0x99, 0xf8, 0x64, 0x4d, 0x37, 0xdc, 0x4e, 0x7f, 0xaf, 0xd1, 0xb6, 0x4c, 0x99, 0xd6, 0xbd,
+	0xdb, 0x55, 0xf7, 0x30, 0xfb, 0x2c, 0x1f, 0xd0, 0x1f, 0x72, 0xc8, 0xaf, 0x38, 0x7b, 0x79, 0xf2,
+	0x33, 0xce, 0x3b, 0xff, 0x06, 0x00, 0x00, 0xff, 0xff, 0x99, 0x66, 0xd8, 0x27, 0x6a, 0x12, 0x00,
+	0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -911,16 +1278,28 @@ const _ = grpc.SupportPackageIsVersion4
 type MsgClient interface {
 	// Publish stores compiled Move module
 	Publish(ctx context.Context, in *MsgPublish, opts ...grpc.CallOption) (*MsgPublishResponse, error)
+	// Deprecated: Use ExecuteJSON instead
 	// Execute runs a entry function with the given message
 	Execute(ctx context.Context, in *MsgExecute, opts ...grpc.CallOption) (*MsgExecuteResponse, error)
+	// ExecuteJSON runs a entry function with the given message
+	ExecuteJSON(ctx context.Context, in *MsgExecuteJSON, opts ...grpc.CallOption) (*MsgExecuteJSONResponse, error)
+	// Deprecated: Use ScriptJSON instead
 	// Script runs a scripts with the given message
 	Script(ctx context.Context, in *MsgScript, opts ...grpc.CallOption) (*MsgScriptResponse, error)
+	// ScriptJSON runs a scripts with the given message
+	ScriptJSON(ctx context.Context, in *MsgScriptJSON, opts ...grpc.CallOption) (*MsgScriptJSONResponse, error)
 	// GovPublish stores compiled Move module via gov proposal
 	GovPublish(ctx context.Context, in *MsgGovPublish, opts ...grpc.CallOption) (*MsgGovPublishResponse, error)
+	// Deprecated: Use GovExecuteJSON instead
 	// GovExecute runs a entry function with the given message via gov proposal
 	GovExecute(ctx context.Context, in *MsgGovExecute, opts ...grpc.CallOption) (*MsgGovExecuteResponse, error)
+	// GovExecuteJSON runs a entry function with the given message via gov proposal
+	GovExecuteJSON(ctx context.Context, in *MsgGovExecuteJSON, opts ...grpc.CallOption) (*MsgGovExecuteJSONResponse, error)
+	// Deprecated: Use GovScriptJSON instead
 	// GovScript runs a scripts with the given message via gov proposal
 	GovScript(ctx context.Context, in *MsgGovScript, opts ...grpc.CallOption) (*MsgGovScriptResponse, error)
+	// GovScriptJSON runs a scripts with the given message via gov proposal
+	GovScriptJSON(ctx context.Context, in *MsgGovScriptJSON, opts ...grpc.CallOption) (*MsgGovScriptJSONResponse, error)
 	// Whitelist registers a dex pair to whitelist of various features.
 	// - whitelist from coin register operation
 	// - allow counter party denom can be used as gas fee
@@ -959,9 +1338,27 @@ func (c *msgClient) Execute(ctx context.Context, in *MsgExecute, opts ...grpc.Ca
 	return out, nil
 }
 
+func (c *msgClient) ExecuteJSON(ctx context.Context, in *MsgExecuteJSON, opts ...grpc.CallOption) (*MsgExecuteJSONResponse, error) {
+	out := new(MsgExecuteJSONResponse)
+	err := c.cc.Invoke(ctx, "/initia.move.v1.Msg/ExecuteJSON", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *msgClient) Script(ctx context.Context, in *MsgScript, opts ...grpc.CallOption) (*MsgScriptResponse, error) {
 	out := new(MsgScriptResponse)
 	err := c.cc.Invoke(ctx, "/initia.move.v1.Msg/Script", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) ScriptJSON(ctx context.Context, in *MsgScriptJSON, opts ...grpc.CallOption) (*MsgScriptJSONResponse, error) {
+	out := new(MsgScriptJSONResponse)
+	err := c.cc.Invoke(ctx, "/initia.move.v1.Msg/ScriptJSON", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -986,9 +1383,27 @@ func (c *msgClient) GovExecute(ctx context.Context, in *MsgGovExecute, opts ...g
 	return out, nil
 }
 
+func (c *msgClient) GovExecuteJSON(ctx context.Context, in *MsgGovExecuteJSON, opts ...grpc.CallOption) (*MsgGovExecuteJSONResponse, error) {
+	out := new(MsgGovExecuteJSONResponse)
+	err := c.cc.Invoke(ctx, "/initia.move.v1.Msg/GovExecuteJSON", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *msgClient) GovScript(ctx context.Context, in *MsgGovScript, opts ...grpc.CallOption) (*MsgGovScriptResponse, error) {
 	out := new(MsgGovScriptResponse)
 	err := c.cc.Invoke(ctx, "/initia.move.v1.Msg/GovScript", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) GovScriptJSON(ctx context.Context, in *MsgGovScriptJSON, opts ...grpc.CallOption) (*MsgGovScriptJSONResponse, error) {
+	out := new(MsgGovScriptJSONResponse)
+	err := c.cc.Invoke(ctx, "/initia.move.v1.Msg/GovScriptJSON", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1026,16 +1441,28 @@ func (c *msgClient) UpdateParams(ctx context.Context, in *MsgUpdateParams, opts 
 type MsgServer interface {
 	// Publish stores compiled Move module
 	Publish(context.Context, *MsgPublish) (*MsgPublishResponse, error)
+	// Deprecated: Use ExecuteJSON instead
 	// Execute runs a entry function with the given message
 	Execute(context.Context, *MsgExecute) (*MsgExecuteResponse, error)
+	// ExecuteJSON runs a entry function with the given message
+	ExecuteJSON(context.Context, *MsgExecuteJSON) (*MsgExecuteJSONResponse, error)
+	// Deprecated: Use ScriptJSON instead
 	// Script runs a scripts with the given message
 	Script(context.Context, *MsgScript) (*MsgScriptResponse, error)
+	// ScriptJSON runs a scripts with the given message
+	ScriptJSON(context.Context, *MsgScriptJSON) (*MsgScriptJSONResponse, error)
 	// GovPublish stores compiled Move module via gov proposal
 	GovPublish(context.Context, *MsgGovPublish) (*MsgGovPublishResponse, error)
+	// Deprecated: Use GovExecuteJSON instead
 	// GovExecute runs a entry function with the given message via gov proposal
 	GovExecute(context.Context, *MsgGovExecute) (*MsgGovExecuteResponse, error)
+	// GovExecuteJSON runs a entry function with the given message via gov proposal
+	GovExecuteJSON(context.Context, *MsgGovExecuteJSON) (*MsgGovExecuteJSONResponse, error)
+	// Deprecated: Use GovScriptJSON instead
 	// GovScript runs a scripts with the given message via gov proposal
 	GovScript(context.Context, *MsgGovScript) (*MsgGovScriptResponse, error)
+	// GovScriptJSON runs a scripts with the given message via gov proposal
+	GovScriptJSON(context.Context, *MsgGovScriptJSON) (*MsgGovScriptJSONResponse, error)
 	// Whitelist registers a dex pair to whitelist of various features.
 	// - whitelist from coin register operation
 	// - allow counter party denom can be used as gas fee
@@ -1058,8 +1485,14 @@ func (*UnimplementedMsgServer) Publish(ctx context.Context, req *MsgPublish) (*M
 func (*UnimplementedMsgServer) Execute(ctx context.Context, req *MsgExecute) (*MsgExecuteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Execute not implemented")
 }
+func (*UnimplementedMsgServer) ExecuteJSON(ctx context.Context, req *MsgExecuteJSON) (*MsgExecuteJSONResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ExecuteJSON not implemented")
+}
 func (*UnimplementedMsgServer) Script(ctx context.Context, req *MsgScript) (*MsgScriptResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Script not implemented")
+}
+func (*UnimplementedMsgServer) ScriptJSON(ctx context.Context, req *MsgScriptJSON) (*MsgScriptJSONResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ScriptJSON not implemented")
 }
 func (*UnimplementedMsgServer) GovPublish(ctx context.Context, req *MsgGovPublish) (*MsgGovPublishResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GovPublish not implemented")
@@ -1067,8 +1500,14 @@ func (*UnimplementedMsgServer) GovPublish(ctx context.Context, req *MsgGovPublis
 func (*UnimplementedMsgServer) GovExecute(ctx context.Context, req *MsgGovExecute) (*MsgGovExecuteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GovExecute not implemented")
 }
+func (*UnimplementedMsgServer) GovExecuteJSON(ctx context.Context, req *MsgGovExecuteJSON) (*MsgGovExecuteJSONResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GovExecuteJSON not implemented")
+}
 func (*UnimplementedMsgServer) GovScript(ctx context.Context, req *MsgGovScript) (*MsgGovScriptResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GovScript not implemented")
+}
+func (*UnimplementedMsgServer) GovScriptJSON(ctx context.Context, req *MsgGovScriptJSON) (*MsgGovScriptJSONResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GovScriptJSON not implemented")
 }
 func (*UnimplementedMsgServer) Whitelist(ctx context.Context, req *MsgWhitelist) (*MsgWhitelistResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Whitelist not implemented")
@@ -1120,6 +1559,24 @@ func _Msg_Execute_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_ExecuteJSON_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgExecuteJSON)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).ExecuteJSON(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/initia.move.v1.Msg/ExecuteJSON",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).ExecuteJSON(ctx, req.(*MsgExecuteJSON))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Msg_Script_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(MsgScript)
 	if err := dec(in); err != nil {
@@ -1134,6 +1591,24 @@ func _Msg_Script_Handler(srv interface{}, ctx context.Context, dec func(interfac
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MsgServer).Script(ctx, req.(*MsgScript))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_ScriptJSON_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgScriptJSON)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).ScriptJSON(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/initia.move.v1.Msg/ScriptJSON",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).ScriptJSON(ctx, req.(*MsgScriptJSON))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1174,6 +1649,24 @@ func _Msg_GovExecute_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_GovExecuteJSON_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgGovExecuteJSON)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).GovExecuteJSON(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/initia.move.v1.Msg/GovExecuteJSON",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).GovExecuteJSON(ctx, req.(*MsgGovExecuteJSON))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Msg_GovScript_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(MsgGovScript)
 	if err := dec(in); err != nil {
@@ -1188,6 +1681,24 @@ func _Msg_GovScript_Handler(srv interface{}, ctx context.Context, dec func(inter
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MsgServer).GovScript(ctx, req.(*MsgGovScript))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_GovScriptJSON_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgGovScriptJSON)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).GovScriptJSON(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/initia.move.v1.Msg/GovScriptJSON",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).GovScriptJSON(ctx, req.(*MsgGovScriptJSON))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1259,8 +1770,16 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 			Handler:    _Msg_Execute_Handler,
 		},
 		{
+			MethodName: "ExecuteJSON",
+			Handler:    _Msg_ExecuteJSON_Handler,
+		},
+		{
 			MethodName: "Script",
 			Handler:    _Msg_Script_Handler,
+		},
+		{
+			MethodName: "ScriptJSON",
+			Handler:    _Msg_ScriptJSON_Handler,
 		},
 		{
 			MethodName: "GovPublish",
@@ -1271,8 +1790,16 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 			Handler:    _Msg_GovExecute_Handler,
 		},
 		{
+			MethodName: "GovExecuteJSON",
+			Handler:    _Msg_GovExecuteJSON_Handler,
+		},
+		{
 			MethodName: "GovScript",
 			Handler:    _Msg_GovScript_Handler,
+		},
+		{
+			MethodName: "GovScriptJSON",
+			Handler:    _Msg_GovScriptJSON_Handler,
 		},
 		{
 			MethodName: "Whitelist",
@@ -1450,6 +1977,98 @@ func (m *MsgExecuteResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *MsgExecuteJSON) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgExecuteJSON) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgExecuteJSON) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Args) > 0 {
+		for iNdEx := len(m.Args) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.Args[iNdEx])
+			copy(dAtA[i:], m.Args[iNdEx])
+			i = encodeVarintTx(dAtA, i, uint64(len(m.Args[iNdEx])))
+			i--
+			dAtA[i] = 0x32
+		}
+	}
+	if len(m.TypeArgs) > 0 {
+		for iNdEx := len(m.TypeArgs) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.TypeArgs[iNdEx])
+			copy(dAtA[i:], m.TypeArgs[iNdEx])
+			i = encodeVarintTx(dAtA, i, uint64(len(m.TypeArgs[iNdEx])))
+			i--
+			dAtA[i] = 0x2a
+		}
+	}
+	if len(m.FunctionName) > 0 {
+		i -= len(m.FunctionName)
+		copy(dAtA[i:], m.FunctionName)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.FunctionName)))
+		i--
+		dAtA[i] = 0x22
+	}
+	if len(m.ModuleName) > 0 {
+		i -= len(m.ModuleName)
+		copy(dAtA[i:], m.ModuleName)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.ModuleName)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.ModuleAddress) > 0 {
+		i -= len(m.ModuleAddress)
+		copy(dAtA[i:], m.ModuleAddress)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.ModuleAddress)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Sender) > 0 {
+		i -= len(m.Sender)
+		copy(dAtA[i:], m.Sender)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Sender)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgExecuteJSONResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgExecuteJSONResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgExecuteJSONResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
 func (m *MsgScript) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -1521,6 +2140,84 @@ func (m *MsgScriptResponse) MarshalTo(dAtA []byte) (int, error) {
 }
 
 func (m *MsgScriptResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgScriptJSON) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgScriptJSON) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgScriptJSON) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Args) > 0 {
+		for iNdEx := len(m.Args) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.Args[iNdEx])
+			copy(dAtA[i:], m.Args[iNdEx])
+			i = encodeVarintTx(dAtA, i, uint64(len(m.Args[iNdEx])))
+			i--
+			dAtA[i] = 0x22
+		}
+	}
+	if len(m.TypeArgs) > 0 {
+		for iNdEx := len(m.TypeArgs) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.TypeArgs[iNdEx])
+			copy(dAtA[i:], m.TypeArgs[iNdEx])
+			i = encodeVarintTx(dAtA, i, uint64(len(m.TypeArgs[iNdEx])))
+			i--
+			dAtA[i] = 0x1a
+		}
+	}
+	if len(m.CodeBytes) > 0 {
+		i -= len(m.CodeBytes)
+		copy(dAtA[i:], m.CodeBytes)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.CodeBytes)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Sender) > 0 {
+		i -= len(m.Sender)
+		copy(dAtA[i:], m.Sender)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Sender)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgScriptJSONResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgScriptJSONResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgScriptJSONResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1701,6 +2398,105 @@ func (m *MsgGovExecuteResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *MsgGovExecuteJSON) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgGovExecuteJSON) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgGovExecuteJSON) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Args) > 0 {
+		for iNdEx := len(m.Args) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.Args[iNdEx])
+			copy(dAtA[i:], m.Args[iNdEx])
+			i = encodeVarintTx(dAtA, i, uint64(len(m.Args[iNdEx])))
+			i--
+			dAtA[i] = 0x3a
+		}
+	}
+	if len(m.TypeArgs) > 0 {
+		for iNdEx := len(m.TypeArgs) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.TypeArgs[iNdEx])
+			copy(dAtA[i:], m.TypeArgs[iNdEx])
+			i = encodeVarintTx(dAtA, i, uint64(len(m.TypeArgs[iNdEx])))
+			i--
+			dAtA[i] = 0x32
+		}
+	}
+	if len(m.FunctionName) > 0 {
+		i -= len(m.FunctionName)
+		copy(dAtA[i:], m.FunctionName)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.FunctionName)))
+		i--
+		dAtA[i] = 0x2a
+	}
+	if len(m.ModuleName) > 0 {
+		i -= len(m.ModuleName)
+		copy(dAtA[i:], m.ModuleName)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.ModuleName)))
+		i--
+		dAtA[i] = 0x22
+	}
+	if len(m.ModuleAddress) > 0 {
+		i -= len(m.ModuleAddress)
+		copy(dAtA[i:], m.ModuleAddress)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.ModuleAddress)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.Sender) > 0 {
+		i -= len(m.Sender)
+		copy(dAtA[i:], m.Sender)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Sender)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Authority) > 0 {
+		i -= len(m.Authority)
+		copy(dAtA[i:], m.Authority)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Authority)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgGovExecuteJSONResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgGovExecuteJSONResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgGovExecuteJSONResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
 func (m *MsgGovScript) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -1779,6 +2575,91 @@ func (m *MsgGovScriptResponse) MarshalTo(dAtA []byte) (int, error) {
 }
 
 func (m *MsgGovScriptResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgGovScriptJSON) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgGovScriptJSON) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgGovScriptJSON) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Args) > 0 {
+		for iNdEx := len(m.Args) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.Args[iNdEx])
+			copy(dAtA[i:], m.Args[iNdEx])
+			i = encodeVarintTx(dAtA, i, uint64(len(m.Args[iNdEx])))
+			i--
+			dAtA[i] = 0x2a
+		}
+	}
+	if len(m.TypeArgs) > 0 {
+		for iNdEx := len(m.TypeArgs) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.TypeArgs[iNdEx])
+			copy(dAtA[i:], m.TypeArgs[iNdEx])
+			i = encodeVarintTx(dAtA, i, uint64(len(m.TypeArgs[iNdEx])))
+			i--
+			dAtA[i] = 0x22
+		}
+	}
+	if len(m.CodeBytes) > 0 {
+		i -= len(m.CodeBytes)
+		copy(dAtA[i:], m.CodeBytes)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.CodeBytes)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.Sender) > 0 {
+		i -= len(m.Sender)
+		copy(dAtA[i:], m.Sender)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Sender)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Authority) > 0 {
+		i -= len(m.Authority)
+		copy(dAtA[i:], m.Authority)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Authority)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgGovScriptJSONResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgGovScriptJSONResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgGovScriptJSONResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -2067,6 +2948,52 @@ func (m *MsgExecuteResponse) Size() (n int) {
 	return n
 }
 
+func (m *MsgExecuteJSON) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Sender)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.ModuleAddress)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.ModuleName)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.FunctionName)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if len(m.TypeArgs) > 0 {
+		for _, s := range m.TypeArgs {
+			l = len(s)
+			n += 1 + l + sovTx(uint64(l))
+		}
+	}
+	if len(m.Args) > 0 {
+		for _, s := range m.Args {
+			l = len(s)
+			n += 1 + l + sovTx(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *MsgExecuteJSONResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
 func (m *MsgScript) Size() (n int) {
 	if m == nil {
 		return 0
@@ -2097,6 +3024,44 @@ func (m *MsgScript) Size() (n int) {
 }
 
 func (m *MsgScriptResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *MsgScriptJSON) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Sender)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.CodeBytes)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if len(m.TypeArgs) > 0 {
+		for _, s := range m.TypeArgs {
+			l = len(s)
+			n += 1 + l + sovTx(uint64(l))
+		}
+	}
+	if len(m.Args) > 0 {
+		for _, s := range m.Args {
+			l = len(s)
+			n += 1 + l + sovTx(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *MsgScriptJSONResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -2190,6 +3155,56 @@ func (m *MsgGovExecuteResponse) Size() (n int) {
 	return n
 }
 
+func (m *MsgGovExecuteJSON) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Authority)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.Sender)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.ModuleAddress)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.ModuleName)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.FunctionName)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if len(m.TypeArgs) > 0 {
+		for _, s := range m.TypeArgs {
+			l = len(s)
+			n += 1 + l + sovTx(uint64(l))
+		}
+	}
+	if len(m.Args) > 0 {
+		for _, s := range m.Args {
+			l = len(s)
+			n += 1 + l + sovTx(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *MsgGovExecuteJSONResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
 func (m *MsgGovScript) Size() (n int) {
 	if m == nil {
 		return 0
@@ -2224,6 +3239,48 @@ func (m *MsgGovScript) Size() (n int) {
 }
 
 func (m *MsgGovScriptResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *MsgGovScriptJSON) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Authority)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.Sender)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.CodeBytes)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if len(m.TypeArgs) > 0 {
+		for _, s := range m.TypeArgs {
+			l = len(s)
+			n += 1 + l + sovTx(uint64(l))
+		}
+	}
+	if len(m.Args) > 0 {
+		for _, s := range m.Args {
+			l = len(s)
+			n += 1 + l + sovTx(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *MsgGovScriptJSONResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -2791,6 +3848,298 @@ func (m *MsgExecuteResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+func (m *MsgExecuteJSON) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgExecuteJSON: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgExecuteJSON: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Sender", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Sender = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ModuleAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ModuleAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ModuleName", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ModuleName = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field FunctionName", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.FunctionName = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TypeArgs", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.TypeArgs = append(m.TypeArgs, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		case 6:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Args", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Args = append(m.Args, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgExecuteJSONResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgExecuteJSONResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgExecuteJSONResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
 func (m *MsgScript) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -2998,6 +4347,236 @@ func (m *MsgScriptResponse) Unmarshal(dAtA []byte) error {
 		}
 		if fieldNum <= 0 {
 			return fmt.Errorf("proto: MsgScriptResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgScriptJSON) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgScriptJSON: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgScriptJSON: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Sender", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Sender = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CodeBytes", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.CodeBytes = append(m.CodeBytes[:0], dAtA[iNdEx:postIndex]...)
+			if m.CodeBytes == nil {
+				m.CodeBytes = []byte{}
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TypeArgs", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.TypeArgs = append(m.TypeArgs, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Args", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Args = append(m.Args, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgScriptJSONResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgScriptJSONResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgScriptJSONResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:
@@ -3560,6 +5139,330 @@ func (m *MsgGovExecuteResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+func (m *MsgGovExecuteJSON) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgGovExecuteJSON: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgGovExecuteJSON: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Authority", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Authority = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Sender", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Sender = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ModuleAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ModuleAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ModuleName", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ModuleName = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field FunctionName", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.FunctionName = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 6:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TypeArgs", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.TypeArgs = append(m.TypeArgs, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		case 7:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Args", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Args = append(m.Args, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgGovExecuteJSONResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgGovExecuteJSONResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgGovExecuteJSONResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
 func (m *MsgGovScript) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -3799,6 +5702,268 @@ func (m *MsgGovScriptResponse) Unmarshal(dAtA []byte) error {
 		}
 		if fieldNum <= 0 {
 			return fmt.Errorf("proto: MsgGovScriptResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgGovScriptJSON) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgGovScriptJSON: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgGovScriptJSON: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Authority", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Authority = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Sender", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Sender = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CodeBytes", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.CodeBytes = append(m.CodeBytes[:0], dAtA[iNdEx:postIndex]...)
+			if m.CodeBytes == nil {
+				m.CodeBytes = []byte{}
+			}
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TypeArgs", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.TypeArgs = append(m.TypeArgs, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Args", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Args = append(m.Args, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgGovScriptJSONResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgGovScriptJSONResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgGovScriptJSONResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:

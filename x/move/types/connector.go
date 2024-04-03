@@ -110,6 +110,7 @@ func BuildExecuteEntryFunctionPayload(
 	functionName string,
 	typeArgs []vmtypes.TypeTag,
 	args [][]byte,
+	isJSON bool,
 ) (vmtypes.EntryFunction, error) {
 	if len(moduleName) == 0 {
 		return vmtypes.EntryFunction{}, errors.Wrap(sdkerrors.ErrInvalidRequest, "empty module name")
@@ -127,6 +128,7 @@ func BuildExecuteEntryFunctionPayload(
 		Function: vmtypes.Identifier(functionName),
 		TyArgs:   typeArgs,
 		Args:     args,
+		IsJson:   isJSON,
 	}, nil
 }
 
@@ -135,6 +137,7 @@ func BuildExecuteScriptPayload(
 	byteCodes []byte,
 	typeArgs []vmtypes.TypeTag,
 	args [][]byte,
+	isJSON bool,
 ) (vmtypes.Script, error) {
 	if len(byteCodes) == 0 {
 		return vmtypes.Script{}, errors.Wrap(sdkerrors.ErrInvalidRequest, "empty code bytes")
@@ -144,6 +147,7 @@ func BuildExecuteScriptPayload(
 		Code:   byteCodes,
 		TyArgs: typeArgs,
 		Args:   args,
+		IsJson: isJSON,
 	}
 
 	return payload, nil
@@ -156,6 +160,7 @@ func BuildExecuteViewFunctionPayload(
 	functionName string,
 	typeArgs []vmtypes.TypeTag,
 	args [][]byte,
+	isJSON bool,
 ) (vmtypes.ViewFunction, error) {
 	if len(moduleName) == 0 {
 		return vmtypes.ViewFunction{}, errors.Wrap(sdkerrors.ErrInvalidRequest, "empty module name")
@@ -173,6 +178,7 @@ func BuildExecuteViewFunctionPayload(
 		Function: vmtypes.Identifier(functionName),
 		TyArgs:   typeArgs,
 		Args:     args,
+		IsJson:   isJSON,
 	}, nil
 }
 

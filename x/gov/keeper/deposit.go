@@ -87,7 +87,7 @@ func (keeper Keeper) AddDeposit(ctx context.Context, proposalID uint64, deposito
 	}
 
 	// the deposit must only contain valid denoms (listed in the min deposit param)
-	if err := keeper.validateDepositDenom(ctx, params, depositAmount); err != nil {
+	if err := validateDepositDenom(params, depositAmount); err != nil {
 		return false, err
 	}
 
@@ -296,7 +296,7 @@ func (keeper Keeper) RefundAndDeleteDeposits(ctx context.Context, proposalID uin
 // validateInitialDeposit validates if initial deposit is greater than or equal to the minimum
 // required at the time of proposal submission. This threshold amount is determined by
 // the deposit parameters. Returns nil on success, error otherwise.
-func (keeper Keeper) validateInitialDeposit(ctx context.Context, params customtypes.Params, initialDeposit sdk.Coins, expedited bool) error {
+func validateInitialDeposit(params customtypes.Params, initialDeposit sdk.Coins, expedited bool) error {
 	if !initialDeposit.IsValid() || initialDeposit.IsAnyNegative() {
 		return errors.Wrap(sdkerrors.ErrInvalidCoins, initialDeposit.String())
 	}
@@ -326,7 +326,7 @@ func (keeper Keeper) validateInitialDeposit(ctx context.Context, params customty
 }
 
 // validateDepositDenom validates if the deposit denom is accepted by the governance module.
-func (keeper Keeper) validateDepositDenom(ctx context.Context, params customtypes.Params, depositAmount sdk.Coins) error {
+func validateDepositDenom(params customtypes.Params, depositAmount sdk.Coins) error {
 	denoms := []string{}
 	acceptedDenoms := make(map[string]bool, len(params.MinDeposit))
 	for _, coin := range params.MinDeposit {

@@ -2,9 +2,12 @@ package keeper
 
 import (
 	"context"
+	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"math"
 	"strings"
+	"unsafe"
 
 	sdkmath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
@@ -44,45 +47,53 @@ func (k Keeper) extractModuleIdentifier(moduleBundle vmtypes.ModuleBundle) ([]st
 	return modules, nil
 }
 
+////////////////////////////////////////
+// Publish Functions
+
 func (k Keeper) PublishModuleBundle(
 	ctx context.Context,
 	sender vmtypes.AccountAddress,
 	moduleBundle vmtypes.ModuleBundle,
 	upgradePolicy types.UpgradePolicy,
 ) error {
-
-	// build execute args
 	moduleIds, err := k.extractModuleIdentifier(moduleBundle)
 	if err != nil {
 		return err
 	}
 
-	moduleIdBz, err := vmtypes.SerializeStringVector(moduleIds)
+	moduleIdBz, err := json.Marshal(&moduleIds)
 	if err != nil {
 		return err
 	}
 
-	moduleCodeArr := make([][]byte, len(moduleBundle.Codes))
+	moduleCodes := make([]string, len(moduleBundle.Codes))
 	for i, moduleCode := range moduleBundle.Codes {
-		moduleCodeArr[i] = moduleCode.Code[:]
+		// bytes -> hex string
+		moduleCodes[i] = hex.EncodeToString(moduleCode.Code[:])
 	}
 
-	codeBz, err := vmtypes.SerializeBytesVector(moduleCodeArr)
+	moduleCodesBz, err := json.Marshal(&moduleCodes)
 	if err != nil {
 		return err
 	}
 
-	err = k.ExecuteEntryFunction(
+	upgradePolicyBz, err := json.Marshal(upgradePolicy.ToVmUpgradePolicy())
+	if err != nil {
+		return err
+	}
+
+	err = k.ExecuteEntryFunctionJSON(
 		ctx,
 		sender,
 		vmtypes.StdAddress,
 		types.MoveModuleNameCode,
 		types.FunctionNameCodePublish,
 		[]vmtypes.TypeTag{},
-		[][]byte{
-			moduleIdBz,
-			codeBz,
-			{upgradePolicy.ToVmUpgradePolicy()},
+		[]string{
+			// use unsafe method for fast conversion
+			unsafe.String(unsafe.SliceData(moduleIdBz), len(moduleIdBz)),
+			unsafe.String(unsafe.SliceData(moduleCodesBz), len(moduleCodesBz)),
+			unsafe.String(unsafe.SliceData(upgradePolicyBz), len(upgradePolicyBz)),
 		},
 	)
 	if err != nil {
@@ -92,6 +103,10 @@ func (k Keeper) PublishModuleBundle(
 	return nil
 }
 
+////////////////////////////////////////
+// Execute Functions
+
+// Deprecated: use ExecuteEntryFunctionJSON instead
 func (k Keeper) ExecuteEntryFunction(
 	ctx context.Context,
 	sender vmtypes.AccountAddress,
@@ -101,7 +116,7 @@ func (k Keeper) ExecuteEntryFunction(
 	typeArgs []vmtypes.TypeTag,
 	args [][]byte,
 ) error {
-	return k.ExecuteEntryFunctionWithMultiSenders(
+	return k.executeEntryFunctionWithMultiSenders(
 		ctx,
 		[]vmtypes.AccountAddress{sender},
 		moduleAddr,
@@ -112,7 +127,34 @@ func (k Keeper) ExecuteEntryFunction(
 	)
 }
 
-func (k Keeper) ExecuteEntryFunctionWithMultiSenders(
+func (k Keeper) ExecuteEntryFunctionJSON(
+	ctx context.Context,
+	sender vmtypes.AccountAddress,
+	moduleAddr vmtypes.AccountAddress,
+	moduleName string,
+	functionName string,
+	typeArgs []vmtypes.TypeTag,
+	jsonArgs []string,
+) error {
+	args := make([][]byte, len(jsonArgs))
+	for i, jsonArg := range jsonArgs {
+		// use unsafe method for fast conversion
+		args[i] = unsafe.Slice(unsafe.StringData(jsonArg), len(jsonArg))
+	}
+
+	return k.executeEntryFunctionWithMultiSendersWithIsJSON(
+		ctx,
+		[]vmtypes.AccountAddress{sender},
+		moduleAddr,
+		moduleName,
+		functionName,
+		typeArgs,
+		args,
+		true,
+	)
+}
+
+func (k Keeper) executeEntryFunctionWithMultiSenders(
 	ctx context.Context,
 	senders []vmtypes.AccountAddress,
 	moduleAddr vmtypes.AccountAddress,
@@ -121,13 +163,35 @@ func (k Keeper) ExecuteEntryFunctionWithMultiSenders(
 	typeArgs []vmtypes.TypeTag,
 	args [][]byte,
 ) error {
-	// prepare payload
+	return k.executeEntryFunctionWithMultiSendersWithIsJSON(
+		ctx,
+		senders,
+		moduleAddr,
+		moduleName,
+		functionName,
+		typeArgs,
+		args,
+		false,
+	)
+}
+
+func (k Keeper) executeEntryFunctionWithMultiSendersWithIsJSON(
+	ctx context.Context,
+	senders []vmtypes.AccountAddress,
+	moduleAddr vmtypes.AccountAddress,
+	moduleName string,
+	functionName string,
+	typeArgs []vmtypes.TypeTag,
+	args [][]byte,
+	isJSON bool,
+) error {
 	payload, err := types.BuildExecuteEntryFunctionPayload(
 		moduleAddr,
 		moduleName,
 		functionName,
 		typeArgs,
 		args,
+		isJSON,
 	)
 	if err != nil {
 		return err
@@ -186,6 +250,10 @@ func (k Keeper) ExecuteEntryFunctionWithMultiSenders(
 	return k.handleExecuteResponse(sdkCtx, gasMeter, execRes)
 }
 
+////////////////////////////////////////
+// Script Functions
+
+// Deprecated: use ExecuteScriptJSON instead
 func (k Keeper) ExecuteScript(
 	ctx context.Context,
 	sender vmtypes.AccountAddress,
@@ -193,7 +261,7 @@ func (k Keeper) ExecuteScript(
 	typeArgs []vmtypes.TypeTag,
 	args [][]byte,
 ) error {
-	return k.ExecuteScriptWithMultiSenders(
+	return k.executeScriptWithMultiSenders(
 		ctx,
 		[]vmtypes.AccountAddress{sender},
 		byteCodes,
@@ -202,18 +270,60 @@ func (k Keeper) ExecuteScript(
 	)
 }
 
-func (k Keeper) ExecuteScriptWithMultiSenders(
+func (k Keeper) ExecuteScriptJSON(
+	ctx context.Context,
+	sender vmtypes.AccountAddress,
+	byteCodes []byte,
+	typeArgs []vmtypes.TypeTag,
+	jsonArgs []string,
+) error {
+	args := make([][]byte, len(jsonArgs))
+	for i, jsonArg := range jsonArgs {
+		// use unsafe method for fast conversion
+		args[i] = unsafe.Slice(unsafe.StringData(jsonArg), len(jsonArg))
+	}
+
+	return k.executeScriptWithMultiSendersWithIsJSON(
+		ctx,
+		[]vmtypes.AccountAddress{sender},
+		byteCodes,
+		typeArgs,
+		args,
+		true,
+	)
+}
+
+func (k Keeper) executeScriptWithMultiSenders(
 	ctx context.Context,
 	senders []vmtypes.AccountAddress,
 	byteCodes []byte,
 	typeArgs []vmtypes.TypeTag,
 	args [][]byte,
 ) error {
+	return k.executeScriptWithMultiSendersWithIsJSON(
+		ctx,
+		senders,
+		byteCodes,
+		typeArgs,
+		args,
+		false,
+	)
+}
+
+func (k Keeper) executeScriptWithMultiSendersWithIsJSON(
+	ctx context.Context,
+	senders []vmtypes.AccountAddress,
+	byteCodes []byte,
+	typeArgs []vmtypes.TypeTag,
+	args [][]byte,
+	isJSON bool,
+) error {
 	// prepare payload
 	payload, err := types.BuildExecuteScriptPayload(
 		byteCodes,
 		typeArgs,
 		args,
+		isJSON,
 	)
 	if err != nil {
 		return err
@@ -268,6 +378,9 @@ func (k Keeper) ExecuteScriptWithMultiSenders(
 	// we still need infinite gas meter for CSR, so pass new context
 	return k.handleExecuteResponse(sdkCtx, gasMeter, execRes)
 }
+
+////////////////////////////////////////
+// Response Handler
 
 func (k Keeper) handleExecuteResponse(
 	ctx sdk.Context,
@@ -423,4 +536,93 @@ func (k Keeper) DistributeContractSharedRevenue(ctx context.Context, gasUsages [
 	}
 
 	return nil
+}
+
+////////////////////////////////////////
+// View Functions
+
+// Deprecated: use ExecuteViewFunctionJSON instead
+func (k Keeper) ExecuteViewFunction(
+	ctx context.Context,
+	moduleAddr vmtypes.AccountAddress,
+	moduleName string,
+	functionName string,
+	typeArgs []vmtypes.TypeTag,
+	args [][]byte,
+) (vmtypes.ViewOutput, error) {
+	return k.executeViewFunctionWithIsJSON(
+		ctx,
+		moduleAddr,
+		moduleName,
+		functionName,
+		typeArgs,
+		args,
+		false,
+	)
+}
+
+func (k Keeper) ExecuteViewFunctionJSON(
+	ctx context.Context,
+	moduleAddr vmtypes.AccountAddress,
+	moduleName string,
+	functionName string,
+	typeArgs []vmtypes.TypeTag,
+	jsonArgs []string,
+) (vmtypes.ViewOutput, error) {
+	args := make([][]byte, len(jsonArgs))
+	for i, jsonArg := range jsonArgs {
+		// use unsafe method for fast conversion
+		args[i] = unsafe.Slice(unsafe.StringData(jsonArg), len(jsonArg))
+	}
+
+	return k.executeViewFunctionWithIsJSON(
+		ctx,
+		moduleAddr,
+		moduleName,
+		functionName,
+		typeArgs,
+		args,
+		true,
+	)
+}
+
+func (k Keeper) executeViewFunctionWithIsJSON(
+	ctx context.Context,
+	moduleAddr vmtypes.AccountAddress,
+	moduleName string,
+	functionName string,
+	typeArgs []vmtypes.TypeTag,
+	args [][]byte,
+	isJSON bool,
+) (vmtypes.ViewOutput, error) {
+	if payload, err := types.BuildExecuteViewFunctionPayload(
+		moduleAddr,
+		moduleName,
+		functionName,
+		typeArgs,
+		args,
+		isJSON,
+	); err != nil {
+		return vmtypes.ViewOutput{}, err
+	} else {
+		executionCounter, err := k.ExecutionCounter.Next(ctx)
+		if err != nil {
+			return vmtypes.ViewOutput{}, err
+		}
+
+		api := NewApi(k, ctx)
+		env := types.NewEnv(
+			ctx,
+			types.NextAccountNumber(ctx, k.authKeeper),
+			executionCounter,
+		)
+
+		return k.moveVM.ExecuteViewFunction(
+			types.NewVMStore(ctx, k.VMStore),
+			api,
+			env,
+			k.config.ContractQueryGasLimit,
+			payload,
+		)
+	}
 }

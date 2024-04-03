@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 
 	"cosmossdk.io/collections"
 	"cosmossdk.io/math"
@@ -10,6 +11,7 @@ import (
 	v1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 
 	customtypes "github.com/initia-labs/initia/x/gov/types"
+	movetypes "github.com/initia-labs/initia/x/move/types"
 	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
 )
 
@@ -17,7 +19,7 @@ import (
 
 // Tally iterates over the votes and updates the tally of a proposal based on the voting power of the
 // voters
-func (keeper Keeper) Tally(ctx context.Context, proposal customtypes.Proposal) (quorumReached, passed bool, burnDeposits bool, tallyResults v1.TallyResult, err error) {
+func (keeper Keeper) Tally(ctx context.Context, params customtypes.Params, proposal customtypes.Proposal) (quorumReached, passed bool, burnDeposits bool, tallyResults v1.TallyResult, err error) {
 	weights, err := keeper.sk.GetVotingPowerWeights(ctx)
 	if err != nil {
 		return false, false, false, tallyResults, err
@@ -132,11 +134,6 @@ func (keeper Keeper) Tally(ctx context.Context, proposal customtypes.Proposal) (
 		totalVotingPower = totalVotingPower.Add(votingPower)
 	}
 
-	params, err := keeper.Params.Get(ctx)
-	if err != nil {
-		return false, false, false, tallyResults, err
-	}
-
 	tallyResults = v1.NewTallyResultFromMap(results)
 
 	// TODO: Upgrade the spec to cover all of these cases & remove pseudocode.
@@ -164,9 +161,9 @@ func (keeper Keeper) Tally(ctx context.Context, proposal customtypes.Proposal) (
 	}
 
 	// If more than 1/2 of non-abstaining voters vote Yes, proposal passes
-	// For expedited 2/3
+	// For expedited or emergency, 2/3
 	var thresholdStr string
-	if proposal.Expedited {
+	if (proposal.Emergency || proposal.Expedited) && !IsLowThresholdProposal(params, proposal) {
 		thresholdStr = params.GetExpeditedThreshold()
 	} else {
 		thresholdStr = params.GetThreshold()
@@ -180,4 +177,32 @@ func (keeper Keeper) Tally(ctx context.Context, proposal customtypes.Proposal) (
 
 	// If more than 1/2 of non-abstaining voters vote No, proposal fails
 	return true, false, false, tallyResults, nil
+}
+
+// IsLowThresholdProposal checks if the proposal is a low threshold proposal
+func IsLowThresholdProposal(params customtypes.Params, proposal customtypes.Proposal) bool {
+	messages, err := proposal.GetMsgs()
+	if err != nil {
+		return false
+	}
+
+	for _, msg := range messages {
+
+		var fid string
+		switch msg := msg.(type) {
+		case *movetypes.MsgExecute:
+			fid = fmt.Sprintf("%s::%s::%s", msg.ModuleAddress, msg.ModuleName, msg.FunctionName)
+		case *movetypes.MsgExecuteJSON:
+			fid = fmt.Sprintf("%s::%s::%s", msg.ModuleAddress, msg.ModuleName, msg.FunctionName)
+		default:
+			fmt.Println("SIBONG", msg)
+			return false
+		}
+
+		if !params.IsLowThresholdFunction(fid) {
+			return false
+		}
+	}
+
+	return true
 }

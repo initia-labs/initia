@@ -338,6 +338,81 @@ func (q Querier) ViewBatch(ctx context.Context, req *types.QueryViewBatchRequest
 	}, nil
 }
 
+func (q Querier) ViewJSON(ctx context.Context, req *types.QueryViewJSONRequest) (res *types.QueryViewJSONResponse, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = errors.Wrap(types.ErrInvalidRequest, fmt.Sprintf("vm panic: %v", r))
+		}
+	}()
+
+	moduleAddr, err := types.AccAddressFromString(q.ac, req.Address)
+	if err != nil {
+		return
+	}
+
+	typeTags, err := types.TypeTagsFromTypeArgs(req.TypeArgs)
+	if err != nil {
+		return
+	}
+
+	if len(req.ModuleName) == 0 {
+		return nil, errors.Wrap(sdkerrors.ErrInvalidRequest, "empty module name")
+	}
+
+	if len(req.FunctionName) == 0 {
+		return nil, errors.Wrap(sdkerrors.ErrInvalidRequest, "empty function name")
+	}
+
+	output, err := q.ExecuteViewFunctionJSON(
+		ctx,
+		moduleAddr,
+		req.ModuleName,
+		req.FunctionName,
+		typeTags,
+		req.Args,
+	)
+	if err != nil {
+		return
+	}
+
+	events := make([]types.VMEvent, len(output.Events))
+	for i, event := range output.Events {
+		events[i].Data = event.EventData
+		events[i].TypeTag, err = vmapi.StringifyTypeTag(event.TypeTag)
+		if err != nil {
+			return
+		}
+	}
+
+	res = &types.QueryViewJSONResponse{
+		Data:    output.Ret,
+		Events:  events,
+		GasUsed: output.GasUsed,
+	}
+
+	return
+}
+
+func (q Querier) ViewJSONBatch(ctx context.Context, req *types.QueryViewJSONBatchRequest) (res *types.QueryViewJSONBatchResponse, err error) {
+	if len(req.Requests) > int(q.config.ContractViewBatchLimit) {
+		return nil, types.ErrLimit.Wrapf("batch query cannot exceed %d requests", q.config.ContractViewBatchLimit)
+	}
+
+	responses := make([]types.QueryViewJSONResponse, len(req.Requests))
+	for i, req := range req.Requests {
+		res, err := q.ViewJSON(ctx, &req)
+		if err != nil {
+			return nil, err
+		}
+
+		responses[i] = *res
+	}
+
+	return &types.QueryViewJSONBatchResponse{
+		Responses: responses,
+	}, nil
+}
+
 func (q Querier) ScriptABI(ctx context.Context, req *types.QueryScriptABIRequest) (*types.QueryScriptABIResponse, error) {
 	if len(req.CodeBytes) == 0 {
 		return nil, errors.Wrap(sdkerrors.ErrInvalidRequest, "empty code bytes")

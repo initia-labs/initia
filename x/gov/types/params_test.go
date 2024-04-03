@@ -94,3 +94,11 @@ func Test_Params(t *testing.T) {
 	params.VotingPeriod = _votingPeriod
 	require.NoError(t, params.Validate(ac))
 }
+
+func Test_Params_IsLowThresholdFunction(t *testing.T) {
+	params := types.DefaultParams()
+	require.False(t, params.IsLowThresholdFunction("foo"))
+
+	params.LowThresholdFunctions = []string{"foo"}
+	require.True(t, params.IsLowThresholdFunction("foo"))
+}
