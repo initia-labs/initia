@@ -19,15 +19,19 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Msg_Publish_FullMethodName      = "/initia.move.v1.Msg/Publish"
-	Msg_Execute_FullMethodName      = "/initia.move.v1.Msg/Execute"
-	Msg_Script_FullMethodName       = "/initia.move.v1.Msg/Script"
-	Msg_GovPublish_FullMethodName   = "/initia.move.v1.Msg/GovPublish"
-	Msg_GovExecute_FullMethodName   = "/initia.move.v1.Msg/GovExecute"
-	Msg_GovScript_FullMethodName    = "/initia.move.v1.Msg/GovScript"
-	Msg_Whitelist_FullMethodName    = "/initia.move.v1.Msg/Whitelist"
-	Msg_Delist_FullMethodName       = "/initia.move.v1.Msg/Delist"
-	Msg_UpdateParams_FullMethodName = "/initia.move.v1.Msg/UpdateParams"
+	Msg_Publish_FullMethodName        = "/initia.move.v1.Msg/Publish"
+	Msg_Execute_FullMethodName        = "/initia.move.v1.Msg/Execute"
+	Msg_ExecuteJSON_FullMethodName    = "/initia.move.v1.Msg/ExecuteJSON"
+	Msg_Script_FullMethodName         = "/initia.move.v1.Msg/Script"
+	Msg_ScriptJSON_FullMethodName     = "/initia.move.v1.Msg/ScriptJSON"
+	Msg_GovPublish_FullMethodName     = "/initia.move.v1.Msg/GovPublish"
+	Msg_GovExecute_FullMethodName     = "/initia.move.v1.Msg/GovExecute"
+	Msg_GovExecuteJSON_FullMethodName = "/initia.move.v1.Msg/GovExecuteJSON"
+	Msg_GovScript_FullMethodName      = "/initia.move.v1.Msg/GovScript"
+	Msg_GovScriptJSON_FullMethodName  = "/initia.move.v1.Msg/GovScriptJSON"
+	Msg_Whitelist_FullMethodName      = "/initia.move.v1.Msg/Whitelist"
+	Msg_Delist_FullMethodName         = "/initia.move.v1.Msg/Delist"
+	Msg_UpdateParams_FullMethodName   = "/initia.move.v1.Msg/UpdateParams"
 )
 
 // MsgClient is the client API for Msg service.
@@ -36,16 +40,28 @@ const (
 type MsgClient interface {
 	// Publish stores compiled Move module
 	Publish(ctx context.Context, in *MsgPublish, opts ...grpc.CallOption) (*MsgPublishResponse, error)
+	// Deprecated: Use ExecuteJSON instead
 	// Execute runs a entry function with the given message
 	Execute(ctx context.Context, in *MsgExecute, opts ...grpc.CallOption) (*MsgExecuteResponse, error)
+	// ExecuteJSON runs a entry function with the given message
+	ExecuteJSON(ctx context.Context, in *MsgExecuteJSON, opts ...grpc.CallOption) (*MsgExecuteJSONResponse, error)
+	// Deprecated: Use ScriptJSON instead
 	// Script runs a scripts with the given message
 	Script(ctx context.Context, in *MsgScript, opts ...grpc.CallOption) (*MsgScriptResponse, error)
+	// ScriptJSON runs a scripts with the given message
+	ScriptJSON(ctx context.Context, in *MsgScriptJSON, opts ...grpc.CallOption) (*MsgScriptJSONResponse, error)
 	// GovPublish stores compiled Move module via gov proposal
 	GovPublish(ctx context.Context, in *MsgGovPublish, opts ...grpc.CallOption) (*MsgGovPublishResponse, error)
+	// Deprecated: Use GovExecuteJSON instead
 	// GovExecute runs a entry function with the given message via gov proposal
 	GovExecute(ctx context.Context, in *MsgGovExecute, opts ...grpc.CallOption) (*MsgGovExecuteResponse, error)
+	// GovExecuteJSON runs a entry function with the given message via gov proposal
+	GovExecuteJSON(ctx context.Context, in *MsgGovExecuteJSON, opts ...grpc.CallOption) (*MsgGovExecuteJSONResponse, error)
+	// Deprecated: Use GovScriptJSON instead
 	// GovScript runs a scripts with the given message via gov proposal
 	GovScript(ctx context.Context, in *MsgGovScript, opts ...grpc.CallOption) (*MsgGovScriptResponse, error)
+	// GovScriptJSON runs a scripts with the given message via gov proposal
+	GovScriptJSON(ctx context.Context, in *MsgGovScriptJSON, opts ...grpc.CallOption) (*MsgGovScriptJSONResponse, error)
 	// Whitelist registers a dex pair to whitelist of various features.
 	// - whitelist from coin register operation
 	// - allow counter party denom can be used as gas fee
@@ -84,9 +100,27 @@ func (c *msgClient) Execute(ctx context.Context, in *MsgExecute, opts ...grpc.Ca
 	return out, nil
 }
 
+func (c *msgClient) ExecuteJSON(ctx context.Context, in *MsgExecuteJSON, opts ...grpc.CallOption) (*MsgExecuteJSONResponse, error) {
+	out := new(MsgExecuteJSONResponse)
+	err := c.cc.Invoke(ctx, Msg_ExecuteJSON_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *msgClient) Script(ctx context.Context, in *MsgScript, opts ...grpc.CallOption) (*MsgScriptResponse, error) {
 	out := new(MsgScriptResponse)
 	err := c.cc.Invoke(ctx, Msg_Script_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) ScriptJSON(ctx context.Context, in *MsgScriptJSON, opts ...grpc.CallOption) (*MsgScriptJSONResponse, error) {
+	out := new(MsgScriptJSONResponse)
+	err := c.cc.Invoke(ctx, Msg_ScriptJSON_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -111,9 +145,27 @@ func (c *msgClient) GovExecute(ctx context.Context, in *MsgGovExecute, opts ...g
 	return out, nil
 }
 
+func (c *msgClient) GovExecuteJSON(ctx context.Context, in *MsgGovExecuteJSON, opts ...grpc.CallOption) (*MsgGovExecuteJSONResponse, error) {
+	out := new(MsgGovExecuteJSONResponse)
+	err := c.cc.Invoke(ctx, Msg_GovExecuteJSON_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *msgClient) GovScript(ctx context.Context, in *MsgGovScript, opts ...grpc.CallOption) (*MsgGovScriptResponse, error) {
 	out := new(MsgGovScriptResponse)
 	err := c.cc.Invoke(ctx, Msg_GovScript_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) GovScriptJSON(ctx context.Context, in *MsgGovScriptJSON, opts ...grpc.CallOption) (*MsgGovScriptJSONResponse, error) {
+	out := new(MsgGovScriptJSONResponse)
+	err := c.cc.Invoke(ctx, Msg_GovScriptJSON_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -153,16 +205,28 @@ func (c *msgClient) UpdateParams(ctx context.Context, in *MsgUpdateParams, opts 
 type MsgServer interface {
 	// Publish stores compiled Move module
 	Publish(context.Context, *MsgPublish) (*MsgPublishResponse, error)
+	// Deprecated: Use ExecuteJSON instead
 	// Execute runs a entry function with the given message
 	Execute(context.Context, *MsgExecute) (*MsgExecuteResponse, error)
+	// ExecuteJSON runs a entry function with the given message
+	ExecuteJSON(context.Context, *MsgExecuteJSON) (*MsgExecuteJSONResponse, error)
+	// Deprecated: Use ScriptJSON instead
 	// Script runs a scripts with the given message
 	Script(context.Context, *MsgScript) (*MsgScriptResponse, error)
+	// ScriptJSON runs a scripts with the given message
+	ScriptJSON(context.Context, *MsgScriptJSON) (*MsgScriptJSONResponse, error)
 	// GovPublish stores compiled Move module via gov proposal
 	GovPublish(context.Context, *MsgGovPublish) (*MsgGovPublishResponse, error)
+	// Deprecated: Use GovExecuteJSON instead
 	// GovExecute runs a entry function with the given message via gov proposal
 	GovExecute(context.Context, *MsgGovExecute) (*MsgGovExecuteResponse, error)
+	// GovExecuteJSON runs a entry function with the given message via gov proposal
+	GovExecuteJSON(context.Context, *MsgGovExecuteJSON) (*MsgGovExecuteJSONResponse, error)
+	// Deprecated: Use GovScriptJSON instead
 	// GovScript runs a scripts with the given message via gov proposal
 	GovScript(context.Context, *MsgGovScript) (*MsgGovScriptResponse, error)
+	// GovScriptJSON runs a scripts with the given message via gov proposal
+	GovScriptJSON(context.Context, *MsgGovScriptJSON) (*MsgGovScriptJSONResponse, error)
 	// Whitelist registers a dex pair to whitelist of various features.
 	// - whitelist from coin register operation
 	// - allow counter party denom can be used as gas fee
@@ -186,8 +250,14 @@ func (UnimplementedMsgServer) Publish(context.Context, *MsgPublish) (*MsgPublish
 func (UnimplementedMsgServer) Execute(context.Context, *MsgExecute) (*MsgExecuteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Execute not implemented")
 }
+func (UnimplementedMsgServer) ExecuteJSON(context.Context, *MsgExecuteJSON) (*MsgExecuteJSONResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ExecuteJSON not implemented")
+}
 func (UnimplementedMsgServer) Script(context.Context, *MsgScript) (*MsgScriptResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Script not implemented")
+}
+func (UnimplementedMsgServer) ScriptJSON(context.Context, *MsgScriptJSON) (*MsgScriptJSONResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ScriptJSON not implemented")
 }
 func (UnimplementedMsgServer) GovPublish(context.Context, *MsgGovPublish) (*MsgGovPublishResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GovPublish not implemented")
@@ -195,8 +265,14 @@ func (UnimplementedMsgServer) GovPublish(context.Context, *MsgGovPublish) (*MsgG
 func (UnimplementedMsgServer) GovExecute(context.Context, *MsgGovExecute) (*MsgGovExecuteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GovExecute not implemented")
 }
+func (UnimplementedMsgServer) GovExecuteJSON(context.Context, *MsgGovExecuteJSON) (*MsgGovExecuteJSONResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GovExecuteJSON not implemented")
+}
 func (UnimplementedMsgServer) GovScript(context.Context, *MsgGovScript) (*MsgGovScriptResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GovScript not implemented")
+}
+func (UnimplementedMsgServer) GovScriptJSON(context.Context, *MsgGovScriptJSON) (*MsgGovScriptJSONResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GovScriptJSON not implemented")
 }
 func (UnimplementedMsgServer) Whitelist(context.Context, *MsgWhitelist) (*MsgWhitelistResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Whitelist not implemented")
@@ -256,6 +332,24 @@ func _Msg_Execute_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_ExecuteJSON_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgExecuteJSON)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).ExecuteJSON(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_ExecuteJSON_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).ExecuteJSON(ctx, req.(*MsgExecuteJSON))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Msg_Script_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(MsgScript)
 	if err := dec(in); err != nil {
@@ -270,6 +364,24 @@ func _Msg_Script_Handler(srv interface{}, ctx context.Context, dec func(interfac
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MsgServer).Script(ctx, req.(*MsgScript))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_ScriptJSON_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgScriptJSON)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).ScriptJSON(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_ScriptJSON_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).ScriptJSON(ctx, req.(*MsgScriptJSON))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -310,6 +422,24 @@ func _Msg_GovExecute_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_GovExecuteJSON_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgGovExecuteJSON)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).GovExecuteJSON(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_GovExecuteJSON_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).GovExecuteJSON(ctx, req.(*MsgGovExecuteJSON))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Msg_GovScript_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(MsgGovScript)
 	if err := dec(in); err != nil {
@@ -324,6 +454,24 @@ func _Msg_GovScript_Handler(srv interface{}, ctx context.Context, dec func(inter
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MsgServer).GovScript(ctx, req.(*MsgGovScript))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_GovScriptJSON_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgGovScriptJSON)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).GovScriptJSON(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_GovScriptJSON_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).GovScriptJSON(ctx, req.(*MsgGovScriptJSON))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -398,8 +546,16 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Msg_Execute_Handler,
 		},
 		{
+			MethodName: "ExecuteJSON",
+			Handler:    _Msg_ExecuteJSON_Handler,
+		},
+		{
 			MethodName: "Script",
 			Handler:    _Msg_Script_Handler,
+		},
+		{
+			MethodName: "ScriptJSON",
+			Handler:    _Msg_ScriptJSON_Handler,
 		},
 		{
 			MethodName: "GovPublish",
@@ -410,8 +566,16 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Msg_GovExecute_Handler,
 		},
 		{
+			MethodName: "GovExecuteJSON",
+			Handler:    _Msg_GovExecuteJSON_Handler,
+		},
+		{
 			MethodName: "GovScript",
 			Handler:    _Msg_GovScript_Handler,
+		},
+		{
+			MethodName: "GovScriptJSON",
+			Handler:    _Msg_GovScriptJSON_Handler,
 		},
 		{
 			MethodName: "Whitelist",

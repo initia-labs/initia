@@ -14,7 +14,7 @@ comment:
   behavior: default  # update if exists else create new
 
 ignore:
-  - "api"
+  - "api/"
   - "*.md"
   - "*.rst"
   - "cmd/"

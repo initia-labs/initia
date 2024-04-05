@@ -571,46 +571,6 @@ func (k Keeper) IterateVMStore(ctx context.Context, cb func(*types.Module, *type
 	return err
 }
 
-func (k Keeper) ExecuteViewFunction(
-	ctx context.Context,
-	moduleAddr vmtypes.AccountAddress,
-	moduleName string,
-	functionName string,
-	typeArgs []vmtypes.TypeTag,
-	args [][]byte,
-) (vmtypes.ViewOutput, error) {
-	if payload, err := types.BuildExecuteViewFunctionPayload(
-		moduleAddr,
-		moduleName,
-		functionName,
-		typeArgs,
-		args,
-	); err != nil {
-		return vmtypes.ViewOutput{}, err
-	} else {
-
-		executionCounter, err := k.ExecutionCounter.Next(ctx)
-		if err != nil {
-			return vmtypes.ViewOutput{}, err
-		}
-
-		api := NewApi(k, ctx)
-		env := types.NewEnv(
-			ctx,
-			types.NextAccountNumber(ctx, k.authKeeper),
-			executionCounter,
-		)
-
-		return k.moveVM.ExecuteViewFunction(
-			types.NewVMStore(ctx, k.VMStore),
-			api,
-			env,
-			k.config.ContractQueryGasLimit,
-			payload,
-		)
-	}
-}
-
 // DecodeMoveResource decode raw move resource bytes
 // into `MoveResource` json string
 func (k Keeper) DecodeMoveResource(

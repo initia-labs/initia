@@ -56,10 +56,6 @@ func EndBlocker(ctx sdk.Context, k *keeper.Keeper) error {
 			return false, err
 		}
 
-		params, err := k.Params.Get(ctx)
-		if err != nil {
-			return false, err
-		}
 		if !params.BurnProposalDepositPrevote {
 			err = k.RefundAndDeleteDeposits(ctx, proposal.Id) // refund deposit if proposal got removed without getting 100% of the proposal
 		} else {
@@ -134,7 +130,7 @@ func EndBlocker(ctx sdk.Context, k *keeper.Keeper) error {
 			return false, err
 		}
 
-		_, passed, burnDeposits, tallyResults, err := k.Tally(ctx, proposal)
+		_, passed, burnDeposits, tallyResults, err := k.Tally(ctx, params, proposal)
 		if err != nil {
 			return false, err
 		}
@@ -179,7 +175,7 @@ func EndBlocker(ctx sdk.Context, k *keeper.Keeper) error {
 		}
 
 		cacheCtx, writeCache := ctx.CacheContext()
-		quorumReached, passed, burnDeposits, tallyResults, err := k.Tally(cacheCtx, proposal)
+		quorumReached, passed, burnDeposits, tallyResults, err := k.Tally(cacheCtx, params, proposal)
 		if err != nil {
 			return false, err
 		}

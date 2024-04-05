@@ -12,10 +12,14 @@ import (
 var (
 	_ sdk.Msg = &MsgPublish{}
 	_ sdk.Msg = &MsgExecute{}
+	_ sdk.Msg = &MsgExecuteJSON{}
 	_ sdk.Msg = &MsgScript{}
+	_ sdk.Msg = &MsgScriptJSON{}
 	_ sdk.Msg = &MsgGovPublish{}
 	_ sdk.Msg = &MsgGovExecute{}
+	_ sdk.Msg = &MsgGovExecuteJSON{}
 	_ sdk.Msg = &MsgGovScript{}
+	_ sdk.Msg = &MsgGovScriptJSON{}
 	_ sdk.Msg = &MsgWhitelist{}
 	_ sdk.Msg = &MsgDelist{}
 	_ sdk.Msg = &MsgUpdateParams{}
@@ -121,6 +125,72 @@ func (msg MsgExecute) Validate(ac address.Codec) error {
 		)
 	}
 
+	if len(msg.Args) > NumArgumentsHardLimit {
+		return errors.Wrapf(
+			sdkerrors.ErrInvalidRequest,
+			"number of argument over hard limit %d",
+			NumArgumentsHardLimit,
+		)
+	}
+
+	return nil
+}
+
+// NewMsgExecuteJSON creates a new MsgExecuteJSON instance.
+func NewMsgExecuteJSON(
+	sender string,
+	moduleAddress string,
+	moduleName string,
+	functionName string,
+	typeArgs []string,
+	args []string,
+) *MsgExecuteJSON {
+	return &MsgExecuteJSON{
+		Sender:        sender,
+		ModuleAddress: moduleAddress,
+		ModuleName:    moduleName,
+		FunctionName:  functionName,
+		TypeArgs:      typeArgs,
+		Args:          args,
+	}
+}
+
+/* MsgExecuteJSON */
+
+// Validate performs basic MsgExecuteJSON message validation.
+func (msg MsgExecuteJSON) Validate(ac address.Codec) error {
+	if _, err := ac.StringToBytes(msg.Sender); err != nil {
+		return err
+	}
+
+	if _, err := AccAddressFromString(ac, msg.ModuleAddress); err != nil {
+		return err
+	}
+
+	if len(msg.ModuleName) == 0 {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "empty module name")
+	}
+
+	if len(msg.ModuleName) > ModuleNameLengthHardLimit {
+		return errors.Wrapf(
+			sdkerrors.ErrInvalidRequest,
+			"module name length over hard limit %d",
+			ModuleNameLengthHardLimit,
+		)
+	}
+
+	if len(msg.FunctionName) == 0 {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "empty function name")
+	}
+
+	if len(msg.FunctionName) > FunctionNameLengthHardLimit {
+		return errors.Wrapf(
+			sdkerrors.ErrInvalidRequest,
+			"function name length over hard limit %d",
+			FunctionNameLengthHardLimit,
+		)
+	}
+
 	if len(msg.TypeArgs) > NumArgumentsHardLimit {
 		return errors.Wrapf(
 			sdkerrors.ErrInvalidRequest,
@@ -129,12 +199,18 @@ func (msg MsgExecute) Validate(ac address.Codec) error {
 		)
 	}
 
+	if len(msg.Args) > NumArgumentsHardLimit {
+		return errors.Wrapf(
+			sdkerrors.ErrInvalidRequest,
+			"number of argument over hard limit %d",
+			NumArgumentsHardLimit,
+		)
+	}
+
 	return nil
 }
 
 // NewMsgScript creates a new MsgScript instance.
-//
-//nolint:interfacer
 func NewMsgScript(
 	sender string,
 	codeBytes []byte,
@@ -177,10 +253,64 @@ func (msg MsgScript) Validate(ac address.Codec) error {
 		)
 	}
 
+	if len(msg.Args) > NumArgumentsHardLimit {
+		return errors.Wrapf(
+			sdkerrors.ErrInvalidRequest,
+			"number of argument over hard limit %d",
+			NumArgumentsHardLimit,
+		)
+	}
+
+	return nil
+}
+
+// NewMsgScriptJSON creates a new MsgScriptJSON instance.
+func NewMsgScriptJSON(
+	sender string,
+	codeBytes []byte,
+	typeArgs []string,
+	args []string,
+) *MsgScriptJSON {
+	return &MsgScriptJSON{
+		Sender:    sender,
+		CodeBytes: codeBytes,
+		TypeArgs:  typeArgs,
+		Args:      args,
+	}
+}
+
+/* MsgScriptJSON */
+
+// Validate performs basic MsgScriptJSON message validation.
+func (msg MsgScriptJSON) Validate(ac address.Codec) error {
+	if _, err := ac.StringToBytes(msg.Sender); err != nil {
+		return err
+	}
+
+	if len(msg.CodeBytes) == 0 {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "empty code bytes")
+	}
+
+	if len(msg.CodeBytes) > ModuleSizeHardLimit {
+		return errors.Wrapf(
+			sdkerrors.ErrInvalidRequest,
+			"module size length over hard limit %d",
+			ModuleSizeHardLimit,
+		)
+	}
+
 	if len(msg.TypeArgs) > NumArgumentsHardLimit {
 		return errors.Wrapf(
 			sdkerrors.ErrInvalidRequest,
 			"number of type argument over hard limit %d",
+			NumArgumentsHardLimit,
+		)
+	}
+
+	if len(msg.Args) > NumArgumentsHardLimit {
+		return errors.Wrapf(
+			sdkerrors.ErrInvalidRequest,
+			"number of argument over hard limit %d",
 			NumArgumentsHardLimit,
 		)
 	}
@@ -268,10 +398,67 @@ func (msg MsgGovExecute) Validate(ac address.Codec) error {
 		)
 	}
 
+	if len(msg.Args) > NumArgumentsHardLimit {
+		return errors.Wrapf(
+			sdkerrors.ErrInvalidRequest,
+			"number of argument over hard limit %d",
+			NumArgumentsHardLimit,
+		)
+	}
+
+	return nil
+}
+
+// Validate performs basic MsgGovExecuteJSON message validation.
+func (msg MsgGovExecuteJSON) Validate(ac address.Codec) error {
+	if _, err := ac.StringToBytes(msg.Authority); err != nil {
+		return sdkerrors.ErrInvalidAddress.Wrapf("invalid authority address: %s", err)
+	}
+
+	if _, err := ac.StringToBytes(msg.Sender); err != nil {
+		return err
+	}
+
+	if _, err := AccAddressFromString(ac, msg.ModuleAddress); err != nil {
+		return err
+	}
+
+	if len(msg.ModuleName) == 0 {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "empty module name")
+	}
+
+	if len(msg.ModuleName) > ModuleNameLengthHardLimit {
+		return errors.Wrapf(
+			sdkerrors.ErrInvalidRequest,
+			"module name length over hard limit %d",
+			ModuleNameLengthHardLimit,
+		)
+	}
+
+	if len(msg.FunctionName) == 0 {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "empty function name")
+	}
+
+	if len(msg.FunctionName) > FunctionNameLengthHardLimit {
+		return errors.Wrapf(
+			sdkerrors.ErrInvalidRequest,
+			"function name length over hard limit %d",
+			FunctionNameLengthHardLimit,
+		)
+	}
+
 	if len(msg.TypeArgs) > NumArgumentsHardLimit {
 		return errors.Wrapf(
 			sdkerrors.ErrInvalidRequest,
 			"number of type argument over hard limit %d",
+			NumArgumentsHardLimit,
+		)
+	}
+
+	if len(msg.Args) > NumArgumentsHardLimit {
+		return errors.Wrapf(
+			sdkerrors.ErrInvalidRequest,
+			"number of argument over hard limit %d",
 			NumArgumentsHardLimit,
 		)
 	}
@@ -311,10 +498,53 @@ func (msg MsgGovScript) Validate(ac address.Codec) error {
 		)
 	}
 
+	if len(msg.Args) > NumArgumentsHardLimit {
+		return errors.Wrapf(
+			sdkerrors.ErrInvalidRequest,
+			"number of argument over hard limit %d",
+			NumArgumentsHardLimit,
+		)
+	}
+
+	return nil
+}
+
+/* MsgGovScriptJSON */
+
+// Validate performs basic MsgGovScriptJSON message validation.
+func (msg MsgGovScriptJSON) Validate(ac address.Codec) error {
+	if _, err := ac.StringToBytes(msg.Authority); err != nil {
+		return sdkerrors.ErrInvalidAddress.Wrapf("invalid authority address: %s", err)
+	}
+
+	if _, err := ac.StringToBytes(msg.Sender); err != nil {
+		return err
+	}
+
+	if len(msg.CodeBytes) == 0 {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "empty code bytes")
+	}
+
+	if len(msg.CodeBytes) > ModuleSizeHardLimit {
+		return errors.Wrapf(
+			sdkerrors.ErrInvalidRequest,
+			"module size length over hard limit %d",
+			ModuleSizeHardLimit,
+		)
+	}
+
 	if len(msg.TypeArgs) > NumArgumentsHardLimit {
 		return errors.Wrapf(
 			sdkerrors.ErrInvalidRequest,
 			"number of type argument over hard limit %d",
+			NumArgumentsHardLimit,
+		)
+	}
+
+	if len(msg.Args) > NumArgumentsHardLimit {
+		return errors.Wrapf(
+			sdkerrors.ErrInvalidRequest,
+			"number of argument over hard limit %d",
 			NumArgumentsHardLimit,
 		)
 	}

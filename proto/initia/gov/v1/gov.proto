@@ -94,6 +94,11 @@ message Params {
   // Tally interval for emergency proposal.
   google.protobuf.Duration emergency_tally_interval = 92
       [(gogoproto.stdduration) = true, (gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+
+  // Low threshold functions for emergency and expedited proposal.
+  // These are Move function identifiers and can only be applied 
+  // for Move execute messages.
+  repeated string low_threshold_functions = 93;
 }
 
 // Proposal defines the core field members of a governance proposal.

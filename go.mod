@@ -1,6 +1,8 @@
 module github.com/initia-labs/initia
 
-go 1.21.5
+go 1.22
+
+toolchain go1.22.2
 
 require (
 	cosmossdk.io/api v0.7.3
@@ -39,7 +41,7 @@ require (
 	github.com/hashicorp/go-metrics v0.5.2
 	github.com/initia-labs/OPinit v0.2.2
 	// we also need to update `LIBMOVEVM_VERSION` of images/private/Dockerfile#5
-	github.com/initia-labs/movevm v0.2.2
+	github.com/initia-labs/movevm v0.2.4
 	github.com/pelletier/go-toml v1.9.5
 	github.com/pkg/errors v0.9.1
 	github.com/rakyll/statik v0.1.7
@@ -233,10 +235,6 @@ replace (
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.9.1
 
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
-
-	// TODO - remove this replace once the movevm PR is merged
-	// - https://github.com/initia-labs/movevm/pull/25 
-	github.com/initia-labs/movevm => ../movevm
 
 	// Downgraded to avoid bugs in following commits which caused simulations to fail.
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7

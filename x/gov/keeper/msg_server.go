@@ -78,11 +78,11 @@ func (k msgServer) SubmitProposal(goCtx context.Context, msg *v1.MsgSubmitPropos
 		return nil, fmt.Errorf("failed to get governance parameters: %w", err)
 	}
 
-	if err := k.validateInitialDeposit(ctx, params, initialDeposit, msg.Expedited); err != nil {
+	if err := validateInitialDeposit(params, initialDeposit, msg.Expedited); err != nil {
 		return nil, err
 	}
 
-	if err := k.validateDepositDenom(ctx, params, initialDeposit); err != nil {
+	if err := validateDepositDenom(params, initialDeposit); err != nil {
 		return nil, err
 	}
 

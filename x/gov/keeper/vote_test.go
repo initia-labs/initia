@@ -48,6 +48,7 @@ func TestVoteToInvalidProposer(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
 	proposal, err := input.GovKeeper.SubmitProposal(ctx, nil, "", "", "", addrs[0], false)
+	require.NoError(t, err)
 
 	proposal.Status = v1.StatusDepositPeriod
 	err = input.GovKeeper.Proposals.Set(ctx, proposal.Id, proposal)
