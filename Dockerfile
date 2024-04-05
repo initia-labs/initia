@@ -2,7 +2,7 @@ FROM golang:1.21-alpine AS go-builder
 #ARG arch=x86_64
 
 # See https://github.com/initia-labs/movevm/releases
-ENV LIBMOVEVM_VERSION=v0.2.2
+ENV LIBMOVEVM_VERSION=v0.2.4
 
 # this comes from standard alpine nightly file
 #  https://github.com/rust-lang/docker-rust-nightly/blob/master/alpine3.12/Dockerfile
