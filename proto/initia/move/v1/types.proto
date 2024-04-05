@@ -21,10 +21,9 @@ message Params {
     (gogoproto.nullable)   = false,
     (amino.dont_omitempty) = true
   ];
-  bool arbitrary_enabled = 3;
 
   // CSR: Percentage of fees distributed to developers
-  string contract_shared_revenue_ratio = 4 [
+  string contract_shared_revenue_ratio = 3 [
     (gogoproto.moretags)   = "yaml:\"contract_shared_revenue_ratio\"",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable)   = false,
@@ -33,7 +32,7 @@ message Params {
 
   // It is a list of addresses with permission to distribute contracts,
   // and an empty list is interpreted as allowing anyone to distribute.
-  repeated string allowed_publishers = 5
+  repeated string allowed_publishers = 4
       [(gogoproto.moretags) = "yaml:\"allowed_publishers\"", (amino.dont_omitempty) = true];
 }
 
@@ -92,20 +91,15 @@ message TableEntry {
 }
 
 // UpgradePolicy
-// * `arbitrary`
-//     Whether unconditional code upgrade with no compatibility check is allowed. This
-//     publication mode should only be used for modules which aren't shared with user others.
-//     The developer is responsible for not breaking memory layout of any resources he already
-//     stored on chain.
 // * `compatible`
 //     Whether a compatibility check should be performed for upgrades. The check only passes if
 //     a new module has (a) the same public functions (b) for existing resources, no layout change.
 // * `immutable`
 //     Whether the modules in the package are immutable and cannot be upgraded.
 enum UpgradePolicy {
-  ARBITRARY  = 0;
-  COMPATIBLE = 1;
-  IMMUTABLE  = 2;
+  UNSPECIFIED = 0;
+  COMPATIBLE  = 1;
+  IMMUTABLE   = 2;
 }
 
 // proto wrapper to store the value

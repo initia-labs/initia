@@ -12,7 +12,6 @@ type VMEngine interface {
 		goApi api.GoAPI,
 		env vmtypes.Env,
 		moduleBundle vmtypes.ModuleBundle,
-		allowArbitrary bool,
 		allowedPublishers []vmtypes.AccountAddress,
 	) error
 	Destroy()

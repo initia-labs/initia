@@ -50,7 +50,6 @@ func (k Keeper) PublishModuleBundle(
 	moduleBundle vmtypes.ModuleBundle,
 	upgradePolicy types.UpgradePolicy,
 ) error {
-
 	// build execute args
 	moduleIds, err := k.extractModuleIdentifier(moduleBundle)
 	if err != nil {

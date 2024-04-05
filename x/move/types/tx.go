@@ -46,6 +46,13 @@ func (msg MsgPublish) Validate(ac address.Codec) error {
 		}
 	}
 
+	if msg.UpgradePolicy == UpgradePolicy_UNSPECIFIED {
+		return errors.Wrapf(
+			sdkerrors.ErrInvalidRequest,
+			"upgrade policy not specified",
+		)
+	}
+
 	return nil
 }
 

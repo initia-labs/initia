@@ -29,17 +29,15 @@ func TestPublishModuleBundle(t *testing.T) {
 	require.NoError(t, err)
 
 	// republish not allowed
-	err = input.MoveKeeper.PublishModuleBundle(ctx, vmtypes.StdAddress, vmtypes.NewModuleBundle(vmtypes.NewModule(basicCoinModule)), types.UpgradePolicy_ARBITRARY)
+	err = input.MoveKeeper.PublishModuleBundle(ctx, vmtypes.StdAddress, vmtypes.NewModuleBundle(vmtypes.NewModule(basicCoinModule)), types.UpgradePolicy_COMPATIBLE)
 	require.Error(t, err)
 }
 
 func TestPublishModuleBundle_ArbitraryNotEnabled(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
-	input.MoveKeeper.SetArbitraryEnabled(ctx, false)
-
-	// arbitrary not allowed
-	err := input.MoveKeeper.PublishModuleBundle(ctx, vmtypes.StdAddress, vmtypes.NewModuleBundle(vmtypes.NewModule(basicCoinModule)), types.UpgradePolicy_ARBITRARY)
+	// unspecified not allowed
+	err := input.MoveKeeper.PublishModuleBundle(ctx, vmtypes.StdAddress, vmtypes.NewModuleBundle(vmtypes.NewModule(basicCoinModule)), types.UpgradePolicy_UNSPECIFIED)
 	require.Error(t, err)
 
 	err = input.MoveKeeper.PublishModuleBundle(ctx, vmtypes.StdAddress, vmtypes.NewModuleBundle(vmtypes.NewModule(basicCoinModule)), types.UpgradePolicy_COMPATIBLE)

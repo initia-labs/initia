@@ -14,8 +14,7 @@ import (
 
 // Default parameter values
 const (
-	DefaultBaseDenom        = "uinit"
-	DefaultArbitraryEnabled = true
+	DefaultBaseDenom = "uinit"
 )
 
 var (
@@ -35,7 +34,6 @@ func DefaultParams() Params {
 	return Params{
 		BaseDenom:                  DefaultBaseDenom,
 		BaseMinGasPrice:            DefaultBaseMinGasPrice,
-		ArbitraryEnabled:           DefaultArbitraryEnabled,
 		ContractSharedRevenueRatio: DefaultContractSharedRevenueRatio,
 		AllowedPublishers:          nil,
 	}
@@ -59,10 +57,6 @@ func (p Params) Validate(ac address.Codec) error {
 		return errors.Wrap(err, "invalid base_min_gas_price")
 	}
 
-	if err := validateArbitraryEnabled(p.ArbitraryEnabled); err != nil {
-		return errors.Wrap(err, "invalid arbitrary_enabled")
-	}
-
 	if err := validateContractSharedRatio(p.ContractSharedRevenueRatio); err != nil {
 		return errors.Wrap(err, "invalid shared_revenue_ratio")
 	}
@@ -84,11 +78,10 @@ func (p Params) ToRaw() RawParams {
 }
 
 // ToParams return Params from the RawParams
-func (p RawParams) ToParams(allowArbitrary bool, allowedPublishers []string) Params {
+func (p RawParams) ToParams(allowedPublishers []string) Params {
 	return Params{
 		BaseDenom:                  p.BaseDenom,
 		BaseMinGasPrice:            p.BaseMinGasPrice,
-		ArbitraryEnabled:           allowArbitrary,
 		ContractSharedRevenueRatio: p.ContractSharedRevenueRatio,
 		AllowedPublishers:          allowedPublishers,
 	}
@@ -115,15 +108,6 @@ func validateBaseMinGasPrice(i interface{}) error {
 
 	if v.IsNegative() {
 		return fmt.Errorf("base_min_gas_price must be non-negative value: %v", v)
-	}
-
-	return nil
-}
-
-func validateArbitraryEnabled(i interface{}) error {
-	_, ok := i.(bool)
-	if !ok {
-		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 
 	return nil
