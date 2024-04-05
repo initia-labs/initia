@@ -45,7 +45,7 @@ func TestRawParams(t *testing.T) {
 	require.NoError(t, p1.Validate(ac))
 
 	rp := p1.ToRaw()
-	p2 := rp.ToParams(p1.ArbitraryEnabled, p1.AllowedPublishers)
+	p2 := rp.ToParams(p1.AllowedPublishers)
 	require.NoError(t, p2.Validate(ac))
 	require.Equal(t, p1, p2)
 }

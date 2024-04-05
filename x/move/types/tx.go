@@ -46,6 +46,13 @@ func (msg MsgPublish) Validate(ac address.Codec) error {
 		}
 	}
 
+	if msg.UpgradePolicy == UpgradePolicy_UNSPECIFIED {
+		return errors.Wrapf(
+			sdkerrors.ErrInvalidRequest,
+			"upgrade policy not specified",
+		)
+	}
+
 	return nil
 }
 
@@ -191,6 +198,13 @@ func (msg MsgGovPublish) Validate(ac address.Codec) error {
 
 	if _, err := ac.StringToBytes(msg.Sender); err != nil {
 		return err
+	}
+
+	if msg.UpgradePolicy == UpgradePolicy_UNSPECIFIED {
+		return errors.Wrapf(
+			sdkerrors.ErrInvalidRequest,
+			"upgrade policy not specified",
+		)
 	}
 
 	for _, module := range msg.CodeBytes {

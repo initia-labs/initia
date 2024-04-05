@@ -49860,17 +49860,12 @@ paths:
                     upgrade_policy:
                       type: string
                       enum:
-                        - ARBITRARY
+                        - UNSPECIFIED
                         - COMPATIBLE
                         - IMMUTABLE
-                      default: ARBITRARY
+                      default: UNSPECIFIED
                       description: |-
                         UpgradePolicy
-                        * `arbitrary`
-                            Whether unconditional code upgrade with no compatibility check is allowed. This
-                            publication mode should only be used for modules which aren't shared with user others.
-                            The developer is responsible for not breaking memory layout of any resources he already
-                            stored on chain.
                         * `compatible`
                             Whether a compatibility check should be performed for upgrades. The check only passes if
                             a new module has (a) the same public functions (b) for existing resources, no layout change.
@@ -50012,17 +50007,12 @@ paths:
                   upgrade_policy:
                     type: string
                     enum:
-                      - ARBITRARY
+                      - UNSPECIFIED
                       - COMPATIBLE
                       - IMMUTABLE
-                    default: ARBITRARY
+                    default: UNSPECIFIED
                     description: |-
                       UpgradePolicy
-                      * `arbitrary`
-                          Whether unconditional code upgrade with no compatibility check is allowed. This
-                          publication mode should only be used for modules which aren't shared with user others.
-                          The developer is responsible for not breaking memory layout of any resources he already
-                          stored on chain.
                       * `compatible`
                           Whether a compatibility check should be performed for upgrades. The check only passes if
                           a new module has (a) the same public functions (b) for existing resources, no layout change.
@@ -50485,8 +50475,6 @@ paths:
                     type: string
                   base_min_gas_price:
                     type: string
-                  arbitrary_enabled:
-                    type: boolean
                   contract_shared_revenue_ratio:
                     type: string
                     title: 'CSR: Percentage of fees distributed to developers'
@@ -84198,17 +84186,12 @@ definitions:
       upgrade_policy:
         type: string
         enum:
-          - ARBITRARY
+          - UNSPECIFIED
           - COMPATIBLE
           - IMMUTABLE
-        default: ARBITRARY
+        default: UNSPECIFIED
         description: |-
           UpgradePolicy
-          * `arbitrary`
-              Whether unconditional code upgrade with no compatibility check is allowed. This
-              publication mode should only be used for modules which aren't shared with user others.
-              The developer is responsible for not breaking memory layout of any resources he already
-              stored on chain.
           * `compatible`
               Whether a compatibility check should be performed for upgrades. The check only passes if
               a new module has (a) the same public functions (b) for existing resources, no layout change.
@@ -84224,8 +84207,6 @@ definitions:
         type: string
       base_min_gas_price:
         type: string
-      arbitrary_enabled:
-        type: boolean
       contract_shared_revenue_ratio:
         type: string
         title: 'CSR: Percentage of fees distributed to developers'
@@ -84321,17 +84302,12 @@ definitions:
           upgrade_policy:
             type: string
             enum:
-              - ARBITRARY
+              - UNSPECIFIED
               - COMPATIBLE
               - IMMUTABLE
-            default: ARBITRARY
+            default: UNSPECIFIED
             description: |-
               UpgradePolicy
-              * `arbitrary`
-                  Whether unconditional code upgrade with no compatibility check is allowed. This
-                  publication mode should only be used for modules which aren't shared with user others.
-                  The developer is responsible for not breaking memory layout of any resources he already
-                  stored on chain.
               * `compatible`
                   Whether a compatibility check should be performed for upgrades. The check only passes if
                   a new module has (a) the same public functions (b) for existing resources, no layout change.
@@ -84363,17 +84339,12 @@ definitions:
             upgrade_policy:
               type: string
               enum:
-                - ARBITRARY
+                - UNSPECIFIED
                 - COMPATIBLE
                 - IMMUTABLE
-              default: ARBITRARY
+              default: UNSPECIFIED
               description: |-
                 UpgradePolicy
-                * `arbitrary`
-                    Whether unconditional code upgrade with no compatibility check is allowed. This
-                    publication mode should only be used for modules which aren't shared with user others.
-                    The developer is responsible for not breaking memory layout of any resources he already
-                    stored on chain.
                 * `compatible`
                     Whether a compatibility check should be performed for upgrades. The check only passes if
                     a new module has (a) the same public functions (b) for existing resources, no layout change.
@@ -84415,8 +84386,6 @@ definitions:
             type: string
           base_min_gas_price:
             type: string
-          arbitrary_enabled:
-            type: boolean
           contract_shared_revenue_ratio:
             type: string
             title: 'CSR: Percentage of fees distributed to developers'
@@ -84763,17 +84732,12 @@ definitions:
   initia.move.v1.UpgradePolicy:
     type: string
     enum:
-      - ARBITRARY
+      - UNSPECIFIED
       - COMPATIBLE
       - IMMUTABLE
-    default: ARBITRARY
+    default: UNSPECIFIED
     description: |-
       UpgradePolicy
-      * `arbitrary`
-          Whether unconditional code upgrade with no compatibility check is allowed. This
-          publication mode should only be used for modules which aren't shared with user others.
-          The developer is responsible for not breaking memory layout of any resources he already
-          stored on chain.
       * `compatible`
           Whether a compatibility check should be performed for upgrades. The check only passes if
           a new module has (a) the same public functions (b) for existing resources, no layout change.
