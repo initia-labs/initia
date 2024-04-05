@@ -1,4 +1,4 @@
-FROM golang:1.21-alpine AS go-builder
+FROM golang:1.22-alpine AS go-builder
 #ARG arch=x86_64
 
 # See https://github.com/initia-labs/movevm/releases
