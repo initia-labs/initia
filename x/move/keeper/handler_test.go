@@ -29,17 +29,15 @@ func TestPublishModuleBundle(t *testing.T) {
 	require.NoError(t, err)
 
 	// republish not allowed
-	err = input.MoveKeeper.PublishModuleBundle(ctx, vmtypes.StdAddress, vmtypes.NewModuleBundle(vmtypes.NewModule(basicCoinModule)), types.UpgradePolicy_ARBITRARY)
+	err = input.MoveKeeper.PublishModuleBundle(ctx, vmtypes.StdAddress, vmtypes.NewModuleBundle(vmtypes.NewModule(basicCoinModule)), types.UpgradePolicy_COMPATIBLE)
 	require.Error(t, err)
 }
 
-func TestPublishModuleBundle_ArbitraryNotEnabled(t *testing.T) {
+func TestPublishModuleBundle_UnspecifiedNotEnabled(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
-	input.MoveKeeper.SetArbitraryEnabled(ctx, false)
-
-	// arbitrary not allowed
-	err := input.MoveKeeper.PublishModuleBundle(ctx, vmtypes.StdAddress, vmtypes.NewModuleBundle(vmtypes.NewModule(basicCoinModule)), types.UpgradePolicy_ARBITRARY)
+	// unspecified not allowed
+	err := input.MoveKeeper.PublishModuleBundle(ctx, vmtypes.StdAddress, vmtypes.NewModuleBundle(vmtypes.NewModule(basicCoinModule)), types.UpgradePolicy_UNSPECIFIED)
 	require.Error(t, err)
 
 	err = input.MoveKeeper.PublishModuleBundle(ctx, vmtypes.StdAddress, vmtypes.NewModuleBundle(vmtypes.NewModule(basicCoinModule)), types.UpgradePolicy_COMPATIBLE)
@@ -62,6 +60,16 @@ func TestPublishModuleBundle_AllowedPublishers(t *testing.T) {
 
 	err = input.MoveKeeper.PublishModuleBundle(ctx, vmtypes.TestAddress, vmtypes.NewModuleBundle(vmtypes.NewModule(tableGeneratorModule)), types.UpgradePolicy_COMPATIBLE)
 	require.NoError(t, err)
+
+	// remove vmtypes.TestAddr to the allowed list
+	err = input.MoveKeeper.SetAllowedPublishers(ctx, []vmtypes.AccountAddress{vmtypes.StdAddress})
+	require.NoError(t, err)
+
+	err = input.MoveKeeper.PublishModuleBundle(ctx, vmtypes.StdAddress, vmtypes.NewModuleBundle(vmtypes.NewModule(basicCoinModule)), types.UpgradePolicy_COMPATIBLE)
+	require.NoError(t, err)
+
+	err = input.MoveKeeper.PublishModuleBundle(ctx, vmtypes.TestAddress, vmtypes.NewModuleBundle(vmtypes.NewModule(tableGeneratorModule)), types.UpgradePolicy_COMPATIBLE)
+	require.Error(t, err)
 }
 
 func TestExecuteEntryFunction(t *testing.T) {

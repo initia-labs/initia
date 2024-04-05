@@ -95,7 +95,7 @@ func TestGetTableEntry(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
 	// publish test module
-	err := input.MoveKeeper.PublishModuleBundle(ctx, vmtypes.TestAddress, vmtypes.NewModuleBundle(vmtypes.NewModule(tableGeneratorModule)), 0)
+	err := input.MoveKeeper.PublishModuleBundle(ctx, vmtypes.TestAddress, vmtypes.NewModuleBundle(vmtypes.NewModule(tableGeneratorModule)), types.UpgradePolicy_COMPATIBLE)
 	require.NoError(t, err)
 
 	threeBz, err := vmtypes.SerializeUint64(3)

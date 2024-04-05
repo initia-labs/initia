@@ -22,7 +22,10 @@ func NewVotingPowerKeeper(k *Keeper) VotingPowerKeeper {
 	return VotingPowerKeeper{k}
 }
 
-// returns voting power weights of bond denoms
+// returns voting power weights of bond denoms.
+// if denom is base denom, weight is 1.
+// if denom is not base denom, weight = locked base balance / total share,
+// which means we only consider locked base balance for voting power.
 func (k VotingPowerKeeper) GetVotingPowerWeights(ctx context.Context, bondDenoms []string) (sdk.DecCoins, error) {
 	baseDenom, err := k.BaseDenom(ctx)
 	if err != nil {
@@ -41,7 +44,7 @@ func (k VotingPowerKeeper) GetVotingPowerWeights(ctx context.Context, bondDenoms
 				continue
 			}
 
-			balanceBase, _, weightBase, weightQuote, err := NewDexKeeper(k.Keeper).getPoolInfo(ctx, metadataLP)
+			balanceBase, _, err := NewDexKeeper(k.Keeper).getPoolBalances(ctx, metadataLP)
 			if err != nil {
 				// ignore error to avoid chain halt due to wrong denom
 				continue
@@ -53,15 +56,13 @@ func (k VotingPowerKeeper) GetVotingPowerWeights(ctx context.Context, bondDenoms
 				continue
 			}
 
-			if balanceBase.IsZero() || totalShare.IsZero() ||
-				weightBase.IsZero() || weightQuote.IsZero() {
+			// if balance is zero, use zero power
+			if balanceBase.IsZero() || totalShare.IsZero() {
 				continue
 			}
 
 			// weight = balanceBase / totalShare => compute locked base balance
-			//          * (weightBase + weightQuote) / weightBase => dilute weight
-			powerWeight = math.LegacyNewDecFromInt(balanceBase).QuoInt(totalShare).
-				Quo(weightBase).Mul(weightBase.Add(weightQuote))
+			powerWeight = math.LegacyNewDecFromInt(balanceBase).QuoInt(totalShare)
 		}
 
 		powerWeights = powerWeights.Add(sdk.NewDecCoinFromDec(denom, powerWeight))

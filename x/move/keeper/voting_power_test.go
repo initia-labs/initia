@@ -44,6 +44,7 @@ func Test_GetVotingPowerWeights(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, sdk.NewDecCoins(
 		sdk.NewDecCoin(bondDenom, math.NewInt(1)),
-		sdk.NewDecCoinFromDec(denomLP, math.LegacyNewDecWithPrec(5, 1))),
+		// only locked base coin amount is considered
+		sdk.NewDecCoinFromDec(denomLP, math.LegacyNewDecWithPrec(4, 1))),
 		votingPowerWeights)
 }

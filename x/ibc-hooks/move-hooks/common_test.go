@@ -309,7 +309,7 @@ func _createTestInput(
 	if initialize {
 		stdlib, err := vmprecom.ReadStdlib()
 		require.NoError(t, err)
-		require.NoError(t, moveKeeper.Initialize(ctx, stdlib, moveParams.ArbitraryEnabled, moveParams.AllowedPublishers))
+		require.NoError(t, moveKeeper.Initialize(ctx, stdlib, moveParams.AllowedPublishers))
 	}
 
 	faucet := NewTestFaucet(t, ctx, bankKeeper, authtypes.Minter, initialTotalSupply()...)

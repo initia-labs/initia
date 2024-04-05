@@ -64,7 +64,6 @@ const (
 	// function names for code
 	FunctionNameCodePublish              = "publish"
 	FunctionNameCodeInitGenesis          = "init_genesis"
-	FunctionNameCodeSetAllowArbitrary    = "set_allow_arbitrary"
 	FunctionNameCodeSetAllowedPublishers = "set_allowed_publishers"
 
 	// resource names
@@ -236,7 +235,7 @@ func TypeTagToStructTag(coinType vmtypes.TypeTag) (vmtypes.StructTag, error) {
 
 // convert UpgradePolicy to vm UpgradePolicy
 func (policy UpgradePolicy) ToVmUpgradePolicy() uint8 {
-	// 0 => Arbitrary
+	// 0 => Unspecified
 	// 1 => Compatible
 	// 2 => Immutable
 	return uint8(policy)
@@ -555,11 +554,8 @@ func ReadStakingStatesTableHandleFromModuleStore(bz []byte) (vmtypes.AccountAddr
 	return ReadTableHandleFromTable(bz[cursor : cursor+AddressBytesLength+8])
 }
 
-func ReadCodeModuleStore(bz []byte) (bool, []vmtypes.AccountAddress, error) {
+func ReadCodeModuleStore(bz []byte) ([]vmtypes.AccountAddress, error) {
 	cursor := int(0)
-
-	allowArbitrary := bz[cursor] == 1
-	cursor += 1
 
 	addrsLen, len := readULEB128(bz[cursor:])
 	cursor += len
@@ -569,13 +565,13 @@ func ReadCodeModuleStore(bz []byte) (bool, []vmtypes.AccountAddress, error) {
 		var err error
 		allowedPublishers[i], err = vmtypes.NewAccountAddressFromBytes(bz[cursor : cursor+AddressBytesLength])
 		if err != nil {
-			return false, nil, err
+			return nil, err
 		}
 
 		cursor += AddressBytesLength
 	}
 
-	return allowArbitrary, allowedPublishers, nil
+	return allowedPublishers, nil
 }
 
 func ReadFungibleAssetMetadata(bz []byte) (string, string, uint8) {
