@@ -155,24 +155,25 @@ import (
 	slashingkeeper "github.com/initia-labs/initia/x/slashing/keeper"
 
 	// block-sdk dependencies
-	blockabci "github.com/skip-mev/block-sdk/abci"
-	signer_extraction "github.com/skip-mev/block-sdk/adapters/signer_extraction_adapter"
-	"github.com/skip-mev/block-sdk/block"
-	blockbase "github.com/skip-mev/block-sdk/block/base"
-	mevlane "github.com/skip-mev/block-sdk/lanes/mev"
-	"github.com/skip-mev/block-sdk/x/auction"
-	auctionante "github.com/skip-mev/block-sdk/x/auction/ante"
-	auctionkeeper "github.com/skip-mev/block-sdk/x/auction/keeper"
-	auctiontypes "github.com/skip-mev/block-sdk/x/auction/types"
+	blockabci "github.com/skip-mev/block-sdk/v2/abci"
+	blockchecktx "github.com/skip-mev/block-sdk/v2/abci/checktx"
+	signer_extraction "github.com/skip-mev/block-sdk/v2/adapters/signer_extraction_adapter"
+	"github.com/skip-mev/block-sdk/v2/block"
+	blockbase "github.com/skip-mev/block-sdk/v2/block/base"
+	mevlane "github.com/skip-mev/block-sdk/v2/lanes/mev"
+	"github.com/skip-mev/block-sdk/v2/x/auction"
+	auctionante "github.com/skip-mev/block-sdk/v2/x/auction/ante"
+	auctionkeeper "github.com/skip-mev/block-sdk/v2/x/auction/keeper"
+	auctiontypes "github.com/skip-mev/block-sdk/v2/x/auction/types"
 
 	// slinky oracle dependencies
 	oraclepreblock "github.com/skip-mev/slinky/abci/preblock/oracle"
-	oraclemath "github.com/skip-mev/slinky/abci/preblock/oracle/math"
 	oracleproposals "github.com/skip-mev/slinky/abci/proposals"
 	compression "github.com/skip-mev/slinky/abci/strategies/codec"
 	"github.com/skip-mev/slinky/abci/strategies/currencypair"
 	"github.com/skip-mev/slinky/abci/ve"
 	oracleconfig "github.com/skip-mev/slinky/oracle/config"
+	"github.com/skip-mev/slinky/pkg/math/voteweighted"
 	oracleclient "github.com/skip-mev/slinky/service/clients/oracle"
 	servicemetrics "github.com/skip-mev/slinky/service/metrics"
 	"github.com/skip-mev/slinky/service/servers/prometheus"
@@ -302,7 +303,7 @@ type InitiaApp struct {
 	configurator module.Configurator
 
 	// Override of BaseApp's CheckTx
-	checkTxHandler mevlane.CheckTx
+	checkTxHandler blockchecktx.CheckTx
 }
 
 // NewInitiaApp returns a reference to an initialized Initia.
@@ -546,6 +547,7 @@ func NewInitiaApp(
 	oracleKeeper := oraclekeeper.NewKeeper(
 		runtime.NewKVStoreService(keys[oracletypes.StoreKey]),
 		appCodec,
+		nil, // put MarketMapKeeper in near future
 		authorityAccAddr,
 	)
 	app.OracleKeeper = &oracleKeeper
@@ -954,6 +956,7 @@ func NewInitiaApp(
 		authz.ModuleName,
 		movetypes.ModuleName,
 		ibcexported.ModuleName,
+		oracletypes.ModuleName,
 	)
 
 	app.ModuleManager.SetOrderEndBlockers(
@@ -964,6 +967,7 @@ func NewInitiaApp(
 		authz.ModuleName,
 		feegrant.ModuleName,
 		group.ModuleName,
+		oracletypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -1029,23 +1033,23 @@ func NewInitiaApp(
 		Logger:          app.Logger(),
 		TxEncoder:       app.txConfig.TxEncoder(),
 		TxDecoder:       app.txConfig.TxDecoder(),
-		MaxBlockSpace:   math.LegacyZeroDec(),
-		MaxTxs:          100,
+		MaxBlockSpace:   math.LegacyMustNewDecFromStr("0.2"),
+		MaxTxs:          1000,
 		SignerExtractor: signerExtractor,
 	}
-	factor := mevlane.NewDefaultAuctionFactory(app.txConfig.TxDecoder(), signerExtractor)
+	factory := mevlane.NewDefaultAuctionFactory(app.txConfig.TxDecoder(), signerExtractor)
 	mevLane := mevlane.NewMEVLane(
 		mevConfig,
-		factor,
-		factor.MatchHandler(),
+		factory,
+		factory.MatchHandler(),
 	)
 
 	freeConfig := blockbase.LaneConfig{
 		Logger:          app.Logger(),
 		TxEncoder:       app.txConfig.TxEncoder(),
 		TxDecoder:       app.txConfig.TxDecoder(),
-		MaxBlockSpace:   math.LegacyZeroDec(),
-		MaxTxs:          100,
+		MaxBlockSpace:   math.LegacyMustNewDecFromStr("0.2"),
+		MaxTxs:          1000,
 		SignerExtractor: signerExtractor,
 	}
 	freeLane := applanes.NewFreeLane(freeConfig, applanes.FreeLaneMatchHandler())
@@ -1054,8 +1058,8 @@ func NewInitiaApp(
 		Logger:          app.Logger(),
 		TxEncoder:       app.txConfig.TxEncoder(),
 		TxDecoder:       app.txConfig.TxDecoder(),
-		MaxBlockSpace:   math.LegacyZeroDec(),
-		MaxTxs:          0,
+		MaxBlockSpace:   math.LegacyMustNewDecFromStr("0.6"),
+		MaxTxs:          1000,
 		SignerExtractor: signerExtractor,
 	}
 	defaultLane := applanes.NewDefaultLane(defaultLaneConfig)
@@ -1066,8 +1070,27 @@ func NewInitiaApp(
 		panic(err)
 	}
 
+	// The application's mempool is now powered by the Block SDK!
 	app.SetMempool(mempool)
 	anteHandler := app.setAnteHandler(mevLane, freeLane)
+
+	// NOTE seems this optional, to reduce mempool logic cost
+	// skip this for now
+	//
+	// set the ante handler for each lane
+	//
+	// opt := []blockbase.LaneOption{
+	// 	blockbase.WithAnteHandler(anteHandler),
+	// }
+	// mevLane.WithOptions(
+	// 	opt...,
+	// )
+	// freeLane.(*blockbase.BaseLane).WithOptions(
+	// 	opt...,
+	// )
+	// defaultLane.(*blockbase.BaseLane).WithOptions(
+	// 	opt...,
+	// )
 
 	// override the base-app's ABCI methods (CheckTx, PrepareProposal, ProcessProposal)
 	blockProposalHandlers := blockabci.NewProposalHandler(
@@ -1078,11 +1101,16 @@ func NewInitiaApp(
 	)
 
 	// overrde base-app's CheckTx
-	checkTxHandler := mevlane.NewCheckTxHandler(
+	mevCheckTx := blockchecktx.NewMEVCheckTxHandler(
 		app.BaseApp,
 		app.txConfig.TxDecoder(),
 		mevLane,
 		anteHandler,
+		app.BaseApp.CheckTx,
+	)
+	checkTxHandler := blockchecktx.NewMempoolParityCheckTx(
+		app.Logger(), mempool,
+		app.txConfig.TxDecoder(), mevCheckTx.CheckTx(),
 	)
 	app.SetCheckTx(checkTxHandler.CheckTx())
 
@@ -1134,7 +1162,6 @@ func NewInitiaApp(
 		blockProposalHandlers.PrepareProposalHandler(),
 		blockProposalHandlers.ProcessProposalHandler(),
 		ve.NewDefaultValidateVoteExtensionsFn(
-			app.ChainID(),
 			stakingkeeper.NewCompatibilityKeeper(app.StakingKeeper),
 		),
 		compression.NewCompressionVoteExtensionCodec(
@@ -1155,10 +1182,10 @@ func NewInitiaApp(
 
 	app.oraclePreBlockHandler = oraclepreblock.NewOraclePreBlockHandler(
 		app.Logger(),
-		oraclemath.VoteWeightedMedianFromContext(
+		voteweighted.MedianFromContext(
 			app.Logger(),
 			stakingkeeper.NewCompatibilityKeeper(app.StakingKeeper),
-			oraclemath.DefaultPowerThreshold),
+			voteweighted.DefaultPowerThreshold),
 		app.OracleKeeper,
 		serviceMetrics,
 		currencypair.NewDeltaCurrencyPairStrategy(app.OracleKeeper),
@@ -1226,7 +1253,7 @@ func (app *InitiaApp) CheckTx(req *abci.RequestCheckTx) (*abci.ResponseCheckTx, 
 }
 
 // SetCheckTx sets the checkTxHandler for the app.
-func (app *InitiaApp) SetCheckTx(handler mevlane.CheckTx) {
+func (app *InitiaApp) SetCheckTx(handler blockchecktx.CheckTx) {
 	app.checkTxHandler = handler
 }
 

@@ -89,9 +89,7 @@ func (k Keeper) sendICQ(
 		reqs[i] = abcitypes.RequestQuery{
 			Path: "/slinky.oracle.v1.Query/GetPrice",
 			Data: k.cdc.MustMarshal(&oracletypes.GetPriceRequest{
-				CurrencyPairSelector: &oracletypes.GetPriceRequest_CurrencyPairId{
-					CurrencyPairId: pairIds[i],
-				},
+				CurrencyPair: pair,
 			}),
 		}
 	}
@@ -188,10 +186,7 @@ func (k Keeper) OnAcknowledgementPacketSuccess(ctx sdk.Context, packet channelty
 			continue
 		}
 
-		cp, err := oracletypes.CurrencyPairFromString(oracleReq.GetCurrencyPairId())
-		if err != nil {
-			return err
-		}
+		cp := oracleReq.GetCurrencyPair()
 
 		// ICQ connection is UNORDERED, so old query response can be relayed
 		// later than latest one. To prevent overwrite the latest price info

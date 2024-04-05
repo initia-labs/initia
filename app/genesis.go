@@ -22,7 +22,7 @@ import (
 	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
 	rewardtypes "github.com/initia-labs/initia/x/reward/types"
 
-	auctiontypes "github.com/skip-mev/block-sdk/x/auction/types"
+	auctiontypes "github.com/skip-mev/block-sdk/v2/x/auction/types"
 )
 
 // GenesisState - The genesis state of the blockchain is represented here as a map of raw json

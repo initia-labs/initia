@@ -18,6 +18,7 @@ import (
 
 	vmtypes "github.com/initia-labs/movevm/types"
 
+	slinkytypes "github.com/skip-mev/slinky/pkg/types"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 )
 
@@ -184,7 +185,7 @@ func Test_GetPrice(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
 	pairId := "BITCOIN/USD"
-	cp, err := oracletypes.CurrencyPairFromString(pairId)
+	cp, err := slinkytypes.CurrencyPairFromString(pairId)
 	require.NoError(t, err)
 
 	price := math.NewInt(111111).MulRaw(1_000_000_000).MulRaw(1_000_000_000).MulRaw(1_000_000_000)
@@ -209,7 +210,7 @@ func Test_GetPrice(t *testing.T) {
 		[][]byte{pairIdArg},
 	)
 	require.NoError(t, err)
-	require.Equal(t, fmt.Sprintf("[\"%s\",\"%d\",\"%d\"]", price.String(), now.Unix(), cp.Decimals()), res.Ret)
+	require.Equal(t, fmt.Sprintf("[\"%s\",\"%d\",\"%d\"]", price.String(), now.Unix(), cp.LegacyDecimals()), res.Ret)
 }
 
 func Test_API_Query(t *testing.T) {

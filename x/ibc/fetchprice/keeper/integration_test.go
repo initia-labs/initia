@@ -12,6 +12,7 @@ import (
 	"github.com/initia-labs/initia/x/ibc/fetchprice/types"
 	ibctesting "github.com/initia-labs/initia/x/ibc/testing"
 
+	slinkytypes "github.com/skip-mev/slinky/pkg/types"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 )
 
@@ -34,7 +35,7 @@ func (suite *KeeperTestSuite) CreateOracleCurrencyPair(
 ) {
 	ctx := endpoint.Chain.GetContext()
 
-	cp, err := oracletypes.CurrencyPairFromString(currencyPair)
+	cp, err := slinkytypes.CurrencyPairFromString(currencyPair)
 	suite.NoError(err)
 
 	oracleKeeper := endpoint.Chain.GetInitiaApp().OracleKeeper
@@ -49,7 +50,7 @@ func (suite *KeeperTestSuite) RegisterOracleCurrencyPrice(
 ) {
 	ctx := endpoint.Chain.GetContext()
 
-	cp, err := oracletypes.CurrencyPairFromString(currencyPair)
+	cp, err := slinkytypes.CurrencyPairFromString(currencyPair)
 	suite.NoError(err)
 
 	oracleKeeper := endpoint.Chain.GetInitiaApp().OracleKeeper

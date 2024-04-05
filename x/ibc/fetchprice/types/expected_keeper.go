@@ -12,6 +12,7 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 
+	slinkytypes "github.com/skip-mev/slinky/pkg/types"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 )
 
@@ -49,8 +50,8 @@ type PortKeeper interface {
 }
 
 type OracleKeeper interface {
-	SetPriceForCurrencyPair(ctx sdk.Context, cp oracletypes.CurrencyPair, qp oracletypes.QuotePrice) error
-	GetCurrencyPairFromID(ctx sdk.Context, id uint64) (oracletypes.CurrencyPair, bool)
-	GetPriceForCurrencyPair(ctx sdk.Context, cp oracletypes.CurrencyPair) (oracletypes.QuotePrice, error)
-	GetAllCurrencyPairs(ctx sdk.Context) []oracletypes.CurrencyPair
+	SetPriceForCurrencyPair(ctx sdk.Context, cp slinkytypes.CurrencyPair, qp oracletypes.QuotePrice) error
+	GetCurrencyPairFromID(ctx sdk.Context, id uint64) (slinkytypes.CurrencyPair, bool)
+	GetPriceForCurrencyPair(ctx sdk.Context, cp slinkytypes.CurrencyPair) (oracletypes.QuotePrice, error)
+	GetAllCurrencyPairs(ctx sdk.Context) []slinkytypes.CurrencyPair
 }

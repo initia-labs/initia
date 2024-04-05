@@ -363,6 +363,7 @@ func _createTestInput(
 	oracleKeeper := oraclekeeper.NewKeeper(
 		runtime.NewKVStoreService(keys[oracletypes.StoreKey]),
 		appCodec,
+		nil,
 		authtypes.NewModuleAddress(govtypes.ModuleName),
 	)
 
@@ -371,7 +372,7 @@ func _createTestInput(
 		runtime.NewKVStoreService(keys[movetypes.StoreKey]),
 		accountKeeper,
 		bankKeeper,
-		oracleKeeper,
+		&oracleKeeper,
 		nil,
 		nil,
 		moveConfig,

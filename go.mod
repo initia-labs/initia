@@ -1,6 +1,6 @@
 module github.com/initia-labs/initia
 
-go 1.21.5
+go 1.22
 
 require (
 	cosmossdk.io/api v0.7.3
@@ -21,12 +21,12 @@ require (
 	github.com/IGLOU-EU/go-wildcard v1.0.3
 	github.com/aptos-labs/serde-reflection/serde-generate/runtime/golang v0.0.0-20231213012317-73b6bbf74833
 	github.com/bits-and-blooms/bitset v1.13.0
-	github.com/cometbft/cometbft v0.38.5
+	github.com/cometbft/cometbft v0.38.6
 	github.com/cosmos/cosmos-db v1.0.2
 	github.com/cosmos/cosmos-proto v1.0.0-beta.4
-	github.com/cosmos/cosmos-sdk v0.50.4
+	github.com/cosmos/cosmos-sdk v0.50.5
 	github.com/cosmos/go-bip39 v1.0.0
-	github.com/cosmos/gogoproto v1.4.11
+	github.com/cosmos/gogoproto v1.4.12
 	github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8 v8.0.1
 	github.com/cosmos/ibc-apps/modules/async-icq/v8 v8.0.0
 	github.com/cosmos/ibc-go/modules/capability v1.0.0
@@ -43,20 +43,20 @@ require (
 	github.com/pelletier/go-toml v1.9.5
 	github.com/pkg/errors v0.9.1
 	github.com/rakyll/statik v0.1.7
-	github.com/skip-mev/block-sdk v0.0.0-20231213233341-deceeb0e993b
-	github.com/skip-mev/slinky v0.2.2
+	github.com/skip-mev/block-sdk/v2 v2.1.1
+	github.com/skip-mev/slinky v0.3.1
 	github.com/spf13/cast v1.6.0
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.18.2
 	github.com/stretchr/testify v1.9.0
 	github.com/syndtr/goleveldb v1.0.1-0.20220721030215-126854af5e6d
-	go.uber.org/zap v1.26.0
-	golang.org/x/crypto v0.19.0
+	go.uber.org/zap v1.27.0
+	golang.org/x/crypto v0.21.0
 	golang.org/x/exp v0.0.0-20240222234643-814bf88cf225
 	golang.org/x/sync v0.6.0
-	google.golang.org/genproto/googleapis/api v0.0.0-20240205150955-31a09d347014
-	google.golang.org/grpc v1.62.0
+	google.golang.org/genproto/googleapis/api v0.0.0-20240304212257-790db918fca8
+	google.golang.org/grpc v1.62.1
 	google.golang.org/protobuf v1.33.0
 	gopkg.in/yaml.v3 v3.0.1
 )
@@ -166,7 +166,7 @@ require (
 	github.com/mtibben/percent v0.2.1 // indirect
 	github.com/oasisprotocol/curve25519-voi v0.0.0-20230904125328-1f23a7beb09a // indirect
 	github.com/oklog/run v1.1.0 // indirect
-	github.com/pelletier/go-toml/v2 v2.1.1 // indirect
+	github.com/pelletier/go-toml/v2 v2.2.0 // indirect
 	github.com/petermattis/goid v0.0.0-20230904192822-1876fd5063bc // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/prometheus/client_golang v1.18.0 // indirect
@@ -196,16 +196,16 @@ require (
 	go.opentelemetry.io/otel/metric v1.22.0 // indirect
 	go.opentelemetry.io/otel/trace v1.22.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/net v0.21.0 // indirect
+	golang.org/x/net v0.22.0 // indirect
 	golang.org/x/oauth2 v0.16.0 // indirect
-	golang.org/x/sys v0.17.0 // indirect
-	golang.org/x/term v0.17.0 // indirect
+	golang.org/x/sys v0.18.0 // indirect
+	golang.org/x/term v0.18.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	google.golang.org/api v0.162.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto v0.0.0-20240213162025-012b6fc9bca9 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240221002015-b0ce06bbee7c // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240228224816-df926f6c8641 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gotest.tools/v3 v3.5.1 // indirect
@@ -218,7 +218,7 @@ replace (
 	// use cosmos fork of keyring
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
 
-	github.com/cosmos/cosmos-sdk => github.com/initia-labs/cosmos-sdk v0.0.0-20240313050640-ff14560eeb21
+	github.com/cosmos/cosmos-sdk => github.com/initia-labs/cosmos-sdk v0.0.0-20240405061726-6e766734ba21
 
 	github.com/cosmos/iavl => github.com/initia-labs/iavl v0.0.0-20240208034922-5d81c449d4c0
 
