@@ -200,6 +200,13 @@ func (msg MsgGovPublish) Validate(ac address.Codec) error {
 		return err
 	}
 
+	if msg.UpgradePolicy == UpgradePolicy_UNSPECIFIED {
+		return errors.Wrapf(
+			sdkerrors.ErrInvalidRequest,
+			"upgrade policy not specified",
+		)
+	}
+
 	for _, module := range msg.CodeBytes {
 		if len(module) > ModuleSizeHardLimit {
 			return errors.Wrapf(
