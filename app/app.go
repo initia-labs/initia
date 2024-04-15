@@ -124,6 +124,7 @@ import (
 
 	appante "github.com/initia-labs/initia/app/ante"
 	apphook "github.com/initia-labs/initia/app/hook"
+	appkeepers "github.com/initia-labs/initia/app/keepers"
 	applanes "github.com/initia-labs/initia/app/lanes"
 	apporacle "github.com/initia-labs/initia/app/oracle"
 	"github.com/initia-labs/initia/app/params"
@@ -180,9 +181,25 @@ import (
 	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
+	// opinit dependencies
 	"github.com/initia-labs/OPinit/x/ophost"
 	ophostkeeper "github.com/initia-labs/OPinit/x/ophost/keeper"
 	ophosttypes "github.com/initia-labs/OPinit/x/ophost/types"
+
+	// lz dependencies
+	"github.com/LayerZero-Labs/lz-cosmos/x/endpoint"
+	endpointkeeper "github.com/LayerZero-Labs/lz-cosmos/x/endpoint/keeper"
+	endpointtypes "github.com/LayerZero-Labs/lz-cosmos/x/endpoint/types"
+	"github.com/LayerZero-Labs/lz-cosmos/x/msglib/blocked"
+	blockedkeeper "github.com/LayerZero-Labs/lz-cosmos/x/msglib/blocked/keeper"
+	blockedtypes "github.com/LayerZero-Labs/lz-cosmos/x/msglib/blocked/types"
+	"github.com/LayerZero-Labs/lz-cosmos/x/msglib/simple"
+	simplekeeper "github.com/LayerZero-Labs/lz-cosmos/x/msglib/simple/keeper"
+	simpletypes "github.com/LayerZero-Labs/lz-cosmos/x/msglib/simple/types"
+	ulntypes "github.com/LayerZero-Labs/lz-cosmos/x/msglib/uln/types"
+	"github.com/LayerZero-Labs/lz-cosmos/x/oapp/counter"
+	counterkeeper "github.com/LayerZero-Labs/lz-cosmos/x/oapp/counter/keeper"
+	countertypes "github.com/LayerZero-Labs/lz-cosmos/x/oapp/counter/types"
 
 	// unnamed import of statik for swagger UI support
 	_ "github.com/initia-labs/initia/client/docs/statik"
@@ -209,6 +226,13 @@ var (
 		auctiontypes.ModuleName: nil,
 		// slinky oracle permissions
 		oracletypes.ModuleName: nil,
+
+		// lz permissions
+		endpointtypes.ModuleName: nil,
+		simpletypes.ModuleName:   nil,
+		blockedtypes.ModuleName:  nil,
+		ulntypes.ModuleName:      nil,
+		countertypes.ModuleName:  nil,
 
 		// this is only for testing
 		authtypes.Minter: {authtypes.Minter},
@@ -284,6 +308,12 @@ type InitiaApp struct {
 	OraclePrometheusServer *prometheus.PrometheusServer
 	oraclePreBlockHandler  *oraclepreblock.PreBlockHandler
 
+	// lz keepers
+	LzEndpointKeeper      *endpointkeeper.Keeper
+	LzMsgLibBlockedKeeper *blockedkeeper.Keeper
+	LzMsgLibSimpleKeeper  *simplekeeper.Keeper
+	LzCounterKeeper       *counterkeeper.Keeper
+
 	// make scoped keepers public for test purposes
 	ScopedIBCKeeper           capabilitykeeper.ScopedKeeper
 	ScopedTransferKeeper      capabilitykeeper.ScopedKeeper
@@ -341,7 +371,8 @@ func NewInitiaApp(
 		icacontrollertypes.StoreKey, ibcfeetypes.StoreKey, ibcpermtypes.StoreKey,
 		movetypes.StoreKey, auctiontypes.StoreKey, ophosttypes.StoreKey,
 		oracletypes.StoreKey, packetforwardtypes.StoreKey, icqtypes.StoreKey,
-		fetchpricetypes.StoreKey, ibchookstypes.StoreKey,
+		fetchpricetypes.StoreKey, ibchookstypes.StoreKey, simpletypes.StoreKey,
+		endpointtypes.StoreKey, countertypes.StoreKey,
 	)
 	tkeys := storetypes.NewTransientStoreKeys()
 	memKeys := storetypes.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
@@ -859,6 +890,8 @@ func NewInitiaApp(
 	)
 	app.AuctionKeeper = &auctionKeeper
 
+	// x/ophost module keeper initialization
+
 	app.OPHostKeeper = ophostkeeper.NewKeeper(
 		app.appCodec,
 		runtime.NewKVStoreService(app.keys[ophosttypes.StoreKey]),
@@ -867,6 +900,23 @@ func NewInitiaApp(
 		app.DistrKeeper,
 		ophosttypes.NewBridgeHooks(apphook.NewBridgeHook(app.IBCKeeper.ChannelKeeper, app.IBCPermKeeper, ac)),
 		authorityAddr,
+	)
+
+	// lz module keepers initialization
+	app.LzEndpointKeeper = endpointkeeper.NewKeeper(appCodec, ac, runtime.NewKVStoreService(keys[endpointtypes.StoreKey]), app.BankKeeper, appkeepers.NewBondDenomKeeper(BondDenom), eid)
+	app.LzMsgLibBlockedKeeper = blockedkeeper.NewKeeper(app.LzEndpointKeeper)
+	app.LzMsgLibSimpleKeeper = simplekeeper.NewKeeper(appCodec, ac, runtime.NewKVStoreService(keys[simpletypes.StoreKey]), app.LzEndpointKeeper)
+	app.LzCounterKeeper = counterkeeper.NewKeeper(appCodec, ac, runtime.NewKVStoreService(keys[countertypes.StoreKey]), app.LzEndpointKeeper)
+
+	/****  Module Options ****/
+	// All Msglibs *must* register an account at the account keeper
+	// Add *all* OApps and Msglibs to LzEndpointKeeper's routes
+	app.LzEndpointKeeper.AddRoutes(
+		map[string]interface{}{
+			countertypes.ModuleName: app.LzCounterKeeper,
+			blockedtypes.ModuleName: app.LzMsgLibBlockedKeeper,
+			simpletypes.ModuleName:  app.LzMsgLibSimpleKeeper,
+		},
 	)
 
 	govConfig := govtypes.DefaultConfig()
@@ -921,6 +971,11 @@ func NewInitiaApp(
 		icq.NewAppModule(*app.ICQKeeper, nil),
 		fetchprice.NewAppModule(appCodec, *app.FetchPriceKeeper),
 		ibchooks.NewAppModule(appCodec, *app.IBCHooksKeeper),
+		// lz modules
+		endpoint.NewAppModule(appCodec, *app.LzEndpointKeeper),
+		simple.NewAppModule(appCodec, *app.LzMsgLibSimpleKeeper),
+		blocked.NewAppModule(appCodec, *app.LzMsgLibBlockedKeeper),
+		counter.NewAppModule(appCodec, *app.LzCounterKeeper),
 	)
 
 	// BasicModuleManager defines the module BasicManager is in charge of setting up basic,
@@ -981,7 +1036,8 @@ func NewInitiaApp(
 		ibcnfttransfertypes.ModuleName, icatypes.ModuleName, icaauthtypes.ModuleName, ibcfeetypes.ModuleName,
 		ibcpermtypes.ModuleName, consensusparamtypes.ModuleName, auctiontypes.ModuleName, ophosttypes.ModuleName,
 		oracletypes.ModuleName, packetforwardtypes.ModuleName, icqtypes.ModuleName, fetchpricetypes.ModuleName,
-		ibchookstypes.ModuleName,
+		ibchookstypes.ModuleName, endpointtypes.ModuleName, blockedtypes.ModuleName, simpletypes.ModuleName,
+		countertypes.ModuleName,
 	}
 	app.ModuleManager.SetOrderInitGenesis(genesisModuleOrder...)
 	app.ModuleManager.SetOrderExportGenesis(genesisModuleOrder...)
