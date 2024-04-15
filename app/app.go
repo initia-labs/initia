@@ -1172,7 +1172,7 @@ func NewInitiaApp(
 			compression.NewDefaultExtendedCommitCodec(),
 			compression.NewZStdCompressor(),
 		),
-		currencypair.NewDeltaCurrencyPairStrategy(app.OracleKeeper),
+		currencypair.NewDefaultCurrencyPairStrategy(app.OracleKeeper),
 		serviceMetrics,
 	)
 
@@ -1188,7 +1188,7 @@ func NewInitiaApp(
 			voteweighted.DefaultPowerThreshold),
 		app.OracleKeeper,
 		serviceMetrics,
-		currencypair.NewDeltaCurrencyPairStrategy(app.OracleKeeper),
+		currencypair.NewDefaultCurrencyPairStrategy(app.OracleKeeper),
 		compression.NewCompressionVoteExtensionCodec(
 			compression.NewDefaultVoteExtensionCodec(),
 			compression.NewZLibCompressor(),
@@ -1205,7 +1205,8 @@ func NewInitiaApp(
 		app.Logger(),
 		app.OracleClient,
 		time.Second,
-		currencypair.NewDeltaCurrencyPairStrategy(app.OracleKeeper),
+		currencypair.NewDefaultCurrencyPairStrategy(app.OracleKeeper),
+		// currencypair.NewDeltaCurrencyPairStrategy(app.OracleKeeper),
 		compression.NewCompressionVoteExtensionCodec(
 			compression.NewDefaultVoteExtensionCodec(),
 			compression.NewZLibCompressor(),
