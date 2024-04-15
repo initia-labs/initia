@@ -864,6 +864,7 @@ func NewInitiaApp(
 		runtime.NewKVStoreService(app.keys[ophosttypes.StoreKey]),
 		app.AccountKeeper,
 		app.BankKeeper,
+		app.DistrKeeper,
 		ophosttypes.NewBridgeHooks(apphook.NewBridgeHook(app.IBCKeeper.ChannelKeeper, app.IBCPermKeeper, ac)),
 		authorityAddr,
 	)
