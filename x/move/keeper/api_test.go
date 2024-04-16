@@ -170,7 +170,7 @@ func Test_UnbondTimestamp(t *testing.T) {
 	stakingParams, err := input.StakingKeeper.GetParams(ctx)
 	require.NoError(t, err)
 
-	stakingParams.UnbondingTime = time.Duration(60 * 60 * 24 * 7)
+	stakingParams.UnbondingTime = time.Second * 60 * 60 * 24 * 7
 	input.StakingKeeper.SetParams(ctx, stakingParams)
 
 	now := time.Now()

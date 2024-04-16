@@ -97,7 +97,7 @@ func (api GoApi) UnbondTimestamp() uint64 {
 	}
 
 	sdkCtx := sdk.UnwrapSDKContext(api.ctx)
-	return uint64(sdkCtx.BlockTime().Unix()) + uint64(unbondingTime)
+	return uint64(sdkCtx.BlockTime().Unix()) + uint64(unbondingTime.Seconds())
 }
 
 func (api GoApi) GetPrice(pairId string) ([]byte, uint64, uint64, error) {
