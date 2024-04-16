@@ -565,13 +565,15 @@ func NewInitiaApp(
 
 	app.ForwardingKeeper = forwardingkeeper.NewKeeper(
 		appCodec,
-		app.Logger().With("module", "forwarding"),
+		app.Logger(),
 		runtime.NewKVStoreService(keys[forwardingtypes.StoreKey]),
 		runtime.NewTransientStoreService(tkeys[forwardingtypes.TransientStoreKey]),
 		app.AccountKeeper,
 		app.BankKeeper,
+		app.IBCKeeper.ChannelKeeper,
+		app.TransferKeeper,
 	)
-	app.ForwardingKeeper.SetIBCKeepers(app.IBCKeeper.ChannelKeeper, app.TransferKeeper)
+	app.BankKeeper.AppendSendRestriction(app.ForwardingKeeper.SendRestrictionFn)
 
 	////////////////////////////
 	// Transfer configuration //
