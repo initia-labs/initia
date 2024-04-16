@@ -42,7 +42,7 @@ require (
 	github.com/initia-labs/OPinit v0.2.3
 	// we also need to update `LIBMOVEVM_VERSION` of images/private/Dockerfile#5
 	github.com/initia-labs/movevm v0.2.5
-	github.com/noble-assets/forwarding ed8e9efaf69a906e537808290e7752cfb95f7874
+	github.com/noble-assets/forwarding v0.0.0-20240416085758-ed8e9efaf69a
 	github.com/pelletier/go-toml v1.9.5
 	github.com/pkg/errors v0.9.1
 	github.com/rakyll/statik v0.1.7

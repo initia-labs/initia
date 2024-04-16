@@ -1242,8 +1242,8 @@ github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f h1:KUppIJq7/+
 github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f/go.mod h1:qRWi+5nqEBWmkhHvq77mSJWrCKwh8bxhgT7d/eI7P4U=
 github.com/mwitkow/grpc-proxy v0.0.0-20181017164139-0f1106ef9c76/go.mod h1:x5OoJHDHqxHS801UIuhqGl6QdSAEJvtausosHSdazIo=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
-github.com/noble-assets/forwarding v0.0.0-20240410172429-c1d472bdd926 h1:N8ouQ4P72yAS7wfSAL8NxJCTGbpdgDeHnyKPn/P5BKc=
-github.com/noble-assets/forwarding v0.0.0-20240410172429-c1d472bdd926/go.mod h1:nMEL3w1pf7+2LAQ3jqX+XaK0GWcdnwXjwlBnX7QO9ho=
+github.com/noble-assets/forwarding v0.0.0-20240416085758-ed8e9efaf69a h1:82MU1eCScb+AGkj/dE6OwJJEpaBR9lEZo9pocsuPU58=
+github.com/noble-assets/forwarding v0.0.0-20240416085758-ed8e9efaf69a/go.mod h1:nMEL3w1pf7+2LAQ3jqX+XaK0GWcdnwXjwlBnX7QO9ho=
 github.com/nxadm/tail v1.4.4/go.mod h1:kenIhsEOeOJmVchQTgglprH7qJGnHDVpk1VPCcaMI8A=
 github.com/nxadm/tail v1.4.8 h1:nPr65rt6Y5JFSKQO7qToXr7pePgD6Gwiw05lkbyAQTE=
 github.com/nxadm/tail v1.4.8/go.mod h1:+ncqLTQzXmGhMZNUePPaPqPvBxHAIsmXswZKocGu+AU=
