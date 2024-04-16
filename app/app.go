@@ -184,6 +184,11 @@ import (
 	ophostkeeper "github.com/initia-labs/OPinit/x/ophost/keeper"
 	ophosttypes "github.com/initia-labs/OPinit/x/ophost/types"
 
+	// noble forwarding keeper
+	"github.com/noble-assets/forwarding/x/forwarding"
+	forwardingkeeper "github.com/noble-assets/forwarding/x/forwarding/keeper"
+	forwardingtypes "github.com/noble-assets/forwarding/x/forwarding/types"
+
 	// unnamed import of statik for swagger UI support
 	_ "github.com/initia-labs/initia/client/docs/statik"
 )
@@ -275,6 +280,7 @@ type InitiaApp struct {
 	AuctionKeeper         *auctionkeeper.Keeper // x/auction keeper used to process bids for TOB auctions
 	OPHostKeeper          *ophostkeeper.Keeper
 	OracleKeeper          *oraclekeeper.Keeper // x/oracle keeper used for the slinky oracle
+	ForwardingKeeper      *forwardingkeeper.Keeper
 
 	// testing purpose
 	FetchPriceKeeper *fetchpricekeeper.Keeper
@@ -341,9 +347,9 @@ func NewInitiaApp(
 		icacontrollertypes.StoreKey, ibcfeetypes.StoreKey, ibcpermtypes.StoreKey,
 		movetypes.StoreKey, auctiontypes.StoreKey, ophosttypes.StoreKey,
 		oracletypes.StoreKey, packetforwardtypes.StoreKey, icqtypes.StoreKey,
-		fetchpricetypes.StoreKey, ibchookstypes.StoreKey,
+		fetchpricetypes.StoreKey, ibchookstypes.StoreKey, forwardingtypes.StoreKey,
 	)
-	tkeys := storetypes.NewTransientStoreKeys()
+	tkeys := storetypes.NewTransientStoreKeys(forwardingtypes.TransientStoreKey)
 	memKeys := storetypes.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
 
 	// register streaming services
@@ -557,6 +563,18 @@ func NewInitiaApp(
 		ac,
 	)
 
+	app.ForwardingKeeper = forwardingkeeper.NewKeeper(
+		appCodec,
+		app.Logger(),
+		runtime.NewKVStoreService(keys[forwardingtypes.StoreKey]),
+		runtime.NewTransientStoreService(tkeys[forwardingtypes.TransientStoreKey]),
+		app.AccountKeeper,
+		app.BankKeeper,
+		app.IBCKeeper.ChannelKeeper,
+		app.TransferKeeper,
+	)
+	app.BankKeeper.AppendSendRestriction(app.ForwardingKeeper.SendRestrictionFn)
+
 	////////////////////////////
 	// Transfer configuration //
 	////////////////////////////
@@ -582,7 +600,15 @@ func NewInitiaApp(
 			authorityAddr,
 		)
 		app.TransferKeeper = &transferKeeper
-		transferIBCModule := ibctransfer.NewIBCModule(*app.TransferKeeper)
+		transferStack = ibctransfer.NewIBCModule(*app.TransferKeeper)
+
+		// forwarding middleware
+		transferStack = forwarding.NewMiddleware(
+			// receive: forwarding -> transfer
+			transferStack,
+			app.AccountKeeper,
+			app.ForwardingKeeper,
+		)
 
 		// create packet forward middleware
 		*packetForwardKeeper = *packetforwardkeeper.NewKeeper(
@@ -597,9 +623,9 @@ func NewInitiaApp(
 			authorityAddr,
 		)
 		app.PacketForwardKeeper = packetForwardKeeper
-		packetForwardMiddleware := packetforward.NewIBCMiddleware(
-			// receive: packet forward -> transfer
-			transferIBCModule,
+		transferStack = packetforward.NewIBCMiddleware(
+			// receive: packet forward -> forwarding -> transfer
+			transferStack,
 			app.PacketForwardKeeper,
 			0,
 			packetforwardkeeper.DefaultForwardTransferPacketTimeoutTimestamp,
@@ -607,9 +633,9 @@ func NewInitiaApp(
 		)
 
 		// create move middleware for transfer
-		hookMiddleware := ibchooks.NewIBCMiddleware(
-			// receive: move -> packet forward -> transfer
-			packetForwardMiddleware,
+		transferStack = ibchooks.NewIBCMiddleware(
+			// receive: move -> packet forward -> forwarding -> transfer
+			transferStack,
 			ibchooks.NewICS4Middleware(
 				nil, /* ics4wrapper: not used */
 				ibcmovehooks.NewMoveHooks(appCodec, ac, app.MoveKeeper),
@@ -618,17 +644,16 @@ func NewInitiaApp(
 		)
 
 		// create ibcfee middleware for transfer
-		feeMiddleware := ibcfee.NewIBCMiddleware(
-			// receive: fee -> move -> packet forward -> transfer
-			hookMiddleware,
-			// ics4wrapper: transfer -> fee -> channel
+		transferStack = ibcfee.NewIBCMiddleware(
+			// receive: fee -> move -> packet forward -> forwarding -> transfer
+			transferStack,
 			*app.IBCFeeKeeper,
 		)
 
 		// create perm middleware for transfer
 		transferStack = ibcperm.NewIBCMiddleware(
-			// receive: perm -> fee -> move -> packet forward -> transfer
-			feeMiddleware,
+			// receive: perm -> fee -> move -> packet forward -> forwarding -> transfer
+			transferStack,
 			// ics4wrapper: not used
 			nil,
 			*app.IBCPermKeeper,
@@ -921,6 +946,7 @@ func NewInitiaApp(
 		icq.NewAppModule(*app.ICQKeeper, nil),
 		fetchprice.NewAppModule(appCodec, *app.FetchPriceKeeper),
 		ibchooks.NewAppModule(appCodec, *app.IBCHooksKeeper),
+		forwarding.NewAppModule(app.ForwardingKeeper),
 	)
 
 	// BasicModuleManager defines the module BasicManager is in charge of setting up basic,
@@ -965,6 +991,7 @@ func NewInitiaApp(
 		authz.ModuleName,
 		feegrant.ModuleName,
 		group.ModuleName,
+		forwardingtypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -981,7 +1008,7 @@ func NewInitiaApp(
 		ibcnfttransfertypes.ModuleName, icatypes.ModuleName, icaauthtypes.ModuleName, ibcfeetypes.ModuleName,
 		ibcpermtypes.ModuleName, consensusparamtypes.ModuleName, auctiontypes.ModuleName, ophosttypes.ModuleName,
 		oracletypes.ModuleName, packetforwardtypes.ModuleName, icqtypes.ModuleName, fetchpricetypes.ModuleName,
-		ibchookstypes.ModuleName,
+		ibchookstypes.ModuleName, forwardingtypes.ModuleName,
 	}
 	app.ModuleManager.SetOrderInitGenesis(genesisModuleOrder...)
 	app.ModuleManager.SetOrderExportGenesis(genesisModuleOrder...)
