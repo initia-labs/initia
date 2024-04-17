@@ -234,7 +234,7 @@ replace (
 
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 
-	github.com/skip-mev/slinky => github.com/initia-labs/slinky v0.0.0-20240417065452-3bd5542b0e6b
+	github.com/skip-mev/slinky => github.com/initia-labs/slinky v0.0.0-20240417072126-af7b74bb2669
 
 	// Downgraded to avoid bugs in following commits which caused simulations to fail.
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
