@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/url"
+	"strconv"
 	"sync"
 	"time"
 
@@ -13,6 +14,8 @@ import (
 	oracleclient "github.com/skip-mev/slinky/service/clients/oracle"
 	"github.com/skip-mev/slinky/service/metrics"
 	oracleservertypes "github.com/skip-mev/slinky/service/servers/oracle/types"
+
+	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -158,7 +161,12 @@ func (c *GRPCClient) Prices(
 		}
 	}
 
-	return c.client.Prices(ctx, req, grpc.WaitForReady(true))
+	prices, err := c.client.Prices(ctx, req, grpc.WaitForReady(true))
+	if err != nil {
+		return &oracleservertypes.QueryPricesResponse{}, err
+	}
+	prices.Prices[oracletypes.ReservedCPTimestamp] = strconv.FormatInt(prices.Timestamp.UnixNano(), 10)
+	return prices, nil
 }
 
 func (c *GRPCClient) createConnection(ctx context.Context) error {
