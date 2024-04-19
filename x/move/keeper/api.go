@@ -15,7 +15,7 @@ import (
 
 	storetypes "cosmossdk.io/store/types"
 
-	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
+	slinkytypes "github.com/skip-mev/slinky/pkg/types"
 )
 
 var _ vmapi.GoAPI = &GoApi{}
@@ -101,7 +101,7 @@ func (api GoApi) UnbondTimestamp() uint64 {
 }
 
 func (api GoApi) GetPrice(pairId string) ([]byte, uint64, uint64, error) {
-	cp, err := oracletypes.CurrencyPairFromString(pairId)
+	cp, err := slinkytypes.CurrencyPairFromString(pairId)
 	if err != nil {
 		return nil, 0, 0, err
 	}
@@ -117,7 +117,12 @@ func (api GoApi) GetPrice(pairId string) ([]byte, uint64, uint64, error) {
 		return nil, 0, 0, err
 	}
 
-	return priceBz, uint64(price.BlockTimestamp.Unix()), uint64(cp.Decimals()), nil
+	decimal, err := api.oracleKeeper.GetDecimalsForCurrencyPair(sdkCtx, cp)
+	if err != nil {
+		return nil, 0, 0, err
+	}
+
+	return priceBz, uint64(price.BlockTimestamp.Unix()), decimal, nil
 }
 
 func (api GoApi) Query(req vmtypes.QueryRequest, gasBalance uint64) ([]byte, uint64, error) {

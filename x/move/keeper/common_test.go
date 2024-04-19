@@ -268,7 +268,8 @@ func _createTestInput(
 	keys := storetypes.NewKVStoreKeys(
 		authtypes.StoreKey, banktypes.StoreKey, stakingtypes.StoreKey,
 		rewardtypes.StoreKey, distributiontypes.StoreKey, slashingtypes.StoreKey,
-		govtypes.StoreKey, authzkeeper.StoreKey, movetypes.StoreKey, oracletypes.StoreKey,
+		govtypes.StoreKey, authzkeeper.StoreKey, movetypes.StoreKey,
+		oracletypes.StoreKey,
 	)
 	ms := store.NewCommitMultiStore(db, log.NewNopLogger(), metrics.NewNoOpMetrics())
 	for _, v := range keys {
@@ -381,6 +382,7 @@ func _createTestInput(
 	oracleKeeper := oraclekeeper.NewKeeper(
 		runtime.NewKVStoreService(keys[oracletypes.StoreKey]),
 		appCodec,
+		nil,
 		authtypes.NewModuleAddress(govtypes.ModuleName),
 	)
 
@@ -392,7 +394,7 @@ func _createTestInput(
 		runtime.NewKVStoreService(keys[movetypes.StoreKey]),
 		accountKeeper,
 		bankKeeper,
-		oracleKeeper,
+		&oracleKeeper,
 		TestMsgRouter{},
 		queryRouter,
 		moveConfig,

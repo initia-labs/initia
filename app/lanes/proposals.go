@@ -5,8 +5,8 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	blockbase "github.com/skip-mev/block-sdk/block/base"
-	"github.com/skip-mev/block-sdk/block/proposals"
+	blockbase "github.com/skip-mev/block-sdk/v2/block/base"
+	"github.com/skip-mev/block-sdk/v2/block/proposals"
 )
 
 // DefaultProposalHandler returns a default implementation of the PrepareLaneHandler and

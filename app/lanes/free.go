@@ -6,8 +6,8 @@ import (
 	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
-	"github.com/skip-mev/block-sdk/block"
-	blockbase "github.com/skip-mev/block-sdk/block/base"
+	"github.com/skip-mev/block-sdk/v2/block"
+	blockbase "github.com/skip-mev/block-sdk/v2/block/base"
 )
 
 // FreeLaneMatchHandler returns the default match handler for the free lane. The

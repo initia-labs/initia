@@ -186,14 +186,6 @@
       }
     },
     {
-      "url": "./tmp-swagger-gen/ibc/applications/fetchprice/v1/query.swagger.json",
-      "operationIds": {
-        "rename": {
-          "Params": "FetchPriceParams"
-        }
-      }
-    },
-    {
       "url": "./tmp-swagger-gen/ibc/applications/perm/v1/query.swagger.json"
     },
     {
@@ -201,14 +193,6 @@
       "operationIds": {
         "rename": {
           "Params": "PFMParams"
-        }
-      }
-    },
-    {
-      "url": "./tmp-swagger-gen/icq/v1/query.swagger.json",
-      "operationIds": {
-        "rename": {
-          "Params": "FeeParams"
         }
       }
     },
