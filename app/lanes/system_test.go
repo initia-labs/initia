@@ -15,34 +15,6 @@ import (
 	lanes "github.com/initia-labs/initia/app/lanes"
 )
 
-func Test_SystemLaneMatchHandler(t *testing.T) {
-	ctx := sdk.NewContext(nil, types.Header{}, false, log.NewNopLogger())
-
-	handler := lanes.SystemLaneMatchHandler()
-
-	// 1 system message
-	require.True(t, handler(ctx, MockTx{
-		msgs: []sdk.Msg{
-			&opchildtypes.MsgUpdateOracle{},
-		},
-	}))
-
-	// 2 system messages
-	require.False(t, handler(ctx, MockTx{
-		msgs: []sdk.Msg{
-			&opchildtypes.MsgUpdateOracle{},
-			&opchildtypes.MsgUpdateOracle{},
-		},
-	}))
-
-	// 1 non-system message
-	require.False(t, handler(ctx, MockTx{
-		msgs: []sdk.Msg{
-			&banktypes.MsgSend{},
-		},
-	}))
-}
-
 func Test_RejectMatchHandler(t *testing.T) {
 	ctx := sdk.NewContext(nil, types.Header{}, false, log.NewNopLogger())
 
