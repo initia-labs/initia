@@ -3,7 +3,6 @@ package oracle
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"strconv"
 	"sync"
 	"time"
@@ -83,10 +82,6 @@ func NewClient(
 ) (oracleclient.OracleClient, error) {
 	if logger == nil {
 		return nil, fmt.Errorf("logger cannot be nil")
-	}
-
-	if _, err := url.ParseRequestURI(addr); err != nil {
-		return nil, fmt.Errorf("invalid oracle address: %w", err)
 	}
 
 	if metrics == nil {
