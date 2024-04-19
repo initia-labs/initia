@@ -16,9 +16,9 @@ import (
 	moveconfig "github.com/initia-labs/initia/x/move/config"
 	"github.com/initia-labs/initia/x/move/types"
 
-	vm "github.com/initia-labs/initiavm"
-	vmapi "github.com/initia-labs/initiavm/api"
-	vmtypes "github.com/initia-labs/initiavm/types"
+	vm "github.com/initia-labs/movevm"
+	vmapi "github.com/initia-labs/movevm/api"
+	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 type Keeper struct {
@@ -37,7 +37,8 @@ type Keeper struct {
 	oracleKeeper types.OracleKeeper
 
 	// Msg server router
-	msgRouter baseapp.MessageRouter
+	msgRouter  baseapp.MessageRouter
+	grpcRouter *baseapp.GRPCQueryRouter
 
 	config moveconfig.MoveConfig
 
@@ -55,6 +56,8 @@ type Keeper struct {
 
 	ac address.Codec
 	vc address.Codec
+
+	vmQueryWhiteList types.VMQueryWhiteList
 }
 
 func NewKeeper(
@@ -64,6 +67,7 @@ func NewKeeper(
 	bankKeeper types.BankKeeper,
 	oracleKeeper types.OracleKeeper,
 	msgRouter baseapp.MessageRouter,
+	grpcRouter *baseapp.GRPCQueryRouter,
 	moveConfig moveconfig.MoveConfig,
 	distrKeeper types.DistributionKeeper, // can be nil, if staking not used
 	stakingKeeper types.StakingKeeper, // can be nil, if staking not used
@@ -78,8 +82,12 @@ func NewKeeper(
 		panic("authority is not a valid acc address")
 	}
 
-	if moveConfig.CacheCapacity == 0 {
-		moveConfig.CacheCapacity = moveconfig.DefaultCacheCapacity
+	if moveConfig.ModuleCacheCapacity == 0 {
+		moveConfig.ModuleCacheCapacity = moveconfig.DefaultModuleCacheCapacity
+	}
+
+	if moveConfig.ScriptCacheCapacity == 0 {
+		moveConfig.ScriptCacheCapacity = moveconfig.DefaultScriptCacheCapacity
 	}
 
 	if moveConfig.ContractSimulationGasLimit == 0 {
@@ -90,7 +98,11 @@ func NewKeeper(
 		moveConfig.ContractQueryGasLimit = moveconfig.DefaultContractQueryGasLimit
 	}
 
-	moveVM := vm.NewVM(moveConfig.CacheCapacity)
+	if moveConfig.ContractViewBatchLimit == 0 {
+		moveConfig.ContractViewBatchLimit = moveconfig.DefaultContractViewBatchLimit
+	}
+
+	moveVM := vm.NewVM(moveConfig.ModuleCacheCapacity, moveConfig.ScriptCacheCapacity)
 
 	sb := collections.NewSchemaBuilder(storeService)
 	k := &Keeper{
@@ -100,6 +112,7 @@ func NewKeeper(
 		bankKeeper:          bankKeeper,
 		oracleKeeper:        oracleKeeper,
 		msgRouter:           msgRouter,
+		grpcRouter:          grpcRouter,
 		config:              moveConfig,
 		moveVM:              &moveVM,
 		distrKeeper:         distrKeeper,
@@ -116,6 +129,8 @@ func NewKeeper(
 
 		ac: ac,
 		vc: vc,
+
+		vmQueryWhiteList: types.DefaultVMQueryWhiteList(ac),
 	}
 	schema, err := sb.Build()
 	if err != nil {
@@ -125,9 +140,15 @@ func NewKeeper(
 	return k
 }
 
+// WithVMQueryWhitelist overrides vmQueryWhitelist
+func (k Keeper) WithVMQueryWhitelist(vmQueryWhiteList types.VMQueryWhiteList) Keeper {
+	k.vmQueryWhiteList = vmQueryWhiteList
+	return k
+}
+
 // GetAuthority returns the x/move module's authority.
-func (ak Keeper) GetAuthority() string {
-	return ak.authority
+func (k Keeper) GetAuthority() string {
+	return k.authority
 }
 
 // Logger returns a module-specific logger.
@@ -548,46 +569,6 @@ func (k Keeper) IterateVMStore(ctx context.Context, cb func(*types.Module, *type
 	})
 
 	return err
-}
-
-func (k Keeper) ExecuteViewFunction(
-	ctx context.Context,
-	moduleAddr vmtypes.AccountAddress,
-	moduleName string,
-	functionName string,
-	typeArgs []vmtypes.TypeTag,
-	args [][]byte,
-) (string, error) {
-	if payload, err := types.BuildExecuteViewFunctionPayload(
-		moduleAddr,
-		moduleName,
-		functionName,
-		typeArgs,
-		args,
-	); err != nil {
-		return "", err
-	} else {
-
-		executionCounter, err := k.ExecutionCounter.Next(ctx)
-		if err != nil {
-			return "", err
-		}
-
-		api := NewApi(k, ctx)
-		env := types.NewEnv(
-			ctx,
-			types.NextAccountNumber(ctx, k.authKeeper),
-			executionCounter,
-		)
-
-		return k.moveVM.ExecuteViewFunction(
-			types.NewVMStore(ctx, k.VMStore),
-			api,
-			env,
-			k.config.ContractQueryGasLimit,
-			payload,
-		)
-	}
 }
 
 // DecodeMoveResource decode raw move resource bytes

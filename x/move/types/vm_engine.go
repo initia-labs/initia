@@ -1,8 +1,8 @@
 package types
 
 import (
-	"github.com/initia-labs/initiavm/api"
-	vmtypes "github.com/initia-labs/initiavm/types"
+	"github.com/initia-labs/movevm/api"
+	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 // VMEngine defines required VM features
@@ -12,7 +12,6 @@ type VMEngine interface {
 		goApi api.GoAPI,
 		env vmtypes.Env,
 		moduleBundle vmtypes.ModuleBundle,
-		allowArbitrary bool,
 		allowedPublishers []vmtypes.AccountAddress,
 	) error
 	Destroy()
@@ -22,7 +21,7 @@ type VMEngine interface {
 		env vmtypes.Env,
 		gasLimit uint64,
 		payload vmtypes.ViewFunction,
-	) (string, error)
+	) (vmtypes.ViewOutput, error)
 	ExecuteEntryFunction(
 		kvStore api.KVStore,
 		goApi api.GoAPI,

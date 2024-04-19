@@ -16,13 +16,13 @@ import (
 	movecli "github.com/initia-labs/initia/x/move/client/cli"
 	movetypes "github.com/initia-labs/initia/x/move/types"
 
-	"github.com/initia-labs/initiavm/api"
-	"github.com/initia-labs/initiavm/types/compiler"
-	buildtypes "github.com/initia-labs/initiavm/types/compiler/build"
-	coveragetypes "github.com/initia-labs/initiavm/types/compiler/coverage"
-	docgentypes "github.com/initia-labs/initiavm/types/compiler/docgen"
-	provetypes "github.com/initia-labs/initiavm/types/compiler/prove"
-	testtypes "github.com/initia-labs/initiavm/types/compiler/test"
+	"github.com/initia-labs/movevm/api"
+	"github.com/initia-labs/movevm/types/compiler"
+	buildtypes "github.com/initia-labs/movevm/types/compiler/build"
+	coveragetypes "github.com/initia-labs/movevm/types/compiler/coverage"
+	docgentypes "github.com/initia-labs/movevm/types/compiler/docgen"
+	provetypes "github.com/initia-labs/movevm/types/compiler/prove"
+	testtypes "github.com/initia-labs/movevm/types/compiler/test"
 	"github.com/pelletier/go-toml"
 	"github.com/spf13/cobra"
 )
@@ -39,6 +39,7 @@ const (
 	flagTestMode               = "test"
 	flagGenerateDocs           = "doc"
 	flagGenerateABI            = "abi"
+	flagBuild                  = "build"
 	flagPackagePath            = "path" // also used by moveDeployCommand()
 	flagPackagePathShorthand   = "p"
 	flagInstallDir             = "install-dir"
@@ -143,7 +144,7 @@ func moveBuildCmd() *cobra.Command {
 		Long:  "Build a move package. The provided path must specify the path of move package to build",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			arg, err := getInitiaCompilerArgument(cmd)
+			arg, err := getCompilerArgument(cmd)
 			if err != nil {
 				return err
 			}
@@ -168,7 +169,7 @@ func moveTestCmd() *cobra.Command {
 		Long:  "Run tests in a move package. The provided path must specify the path of move package to test",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			arg, err := getInitiaCompilerArgument(cmd)
+			arg, err := getCompilerArgument(cmd)
 			if err != nil {
 				return err
 			}
@@ -198,7 +199,7 @@ func moveCoverageSummaryCmd() *cobra.Command {
 		Short: "Display a coverage summary for all modules in this package",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			arg, err := getInitiaCompilerArgument(cmd)
+			arg, err := getCompilerArgument(cmd)
 			if err != nil {
 				return err
 			}
@@ -229,7 +230,7 @@ func moveCoverageSourceCmd() *cobra.Command {
 		Short: "Display coverage information about the module against source code",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			arg, err := getInitiaCompilerArgument(cmd)
+			arg, err := getCompilerArgument(cmd)
 			if err != nil {
 				return err
 			}
@@ -256,7 +257,7 @@ func moveCoverageBytecodeCmd() *cobra.Command {
 		Short: "Display coverage information about the module against disassembled bytecode",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			arg, err := getInitiaCompilerArgument(cmd)
+			arg, err := getCompilerArgument(cmd)
 			if err != nil {
 				return err
 			}
@@ -284,7 +285,7 @@ func moveNewCmd() *cobra.Command {
 		Long:  "Create a new Move package with name `name` at `path`. If `path` is not provided the package will be created in the directory `name`",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			arg, err := getInitiaCompilerArgument(cmd)
+			arg, err := getCompilerArgument(cmd)
 			if err != nil {
 				return err
 			}
@@ -309,7 +310,7 @@ func moveCleanCmd() *cobra.Command {
 		Long:  "Remove previously built data and its cache",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			arg := compiler.InitiaCompilerArgument{}
+			arg := compiler.CompilerArgument{}
 
 			cleanCache, err := cmd.Flags().GetBool(flagCleanCache)
 			if err != nil {
@@ -368,6 +369,26 @@ func moveDeployCmd(ac address.Codec) *cobra.Command {
 		Long:  "deploy a whole move package. This command occurs a tx to publish module bundle.",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
+
+			// build package
+			flagBuild, err := cmd.Flags().GetBool(flagBuild)
+			if err != nil {
+				return err
+			}
+
+			if flagBuild {
+				arg, err := getCompilerArgument(cmd)
+				if err != nil {
+					return err
+				}
+
+				_, err = api.BuildContract(*arg)
+				if err != nil {
+					return err
+				}
+			}
+
+			// verify package
 			flagVerify, err := cmd.Flags().GetBool(flagVerify)
 			if err != nil {
 				return err
@@ -381,6 +402,7 @@ func moveDeployCmd(ac address.Codec) *cobra.Command {
 				}
 			}
 
+			// deploy package
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
 				return err
@@ -436,6 +458,7 @@ func moveDeployCmd(ac address.Codec) *cobra.Command {
 	cmd.Flags().AddFlagSet(movecli.FlagSetUpgradePolicy())
 
 	addMoveDeployFlags(cmd)
+	addMoveBuildFlags(cmd)
 	addMoveVerifyFlags(cmd, false)
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
@@ -448,7 +471,7 @@ func moveProveCmd() *cobra.Command {
 		Long:  "run formal verification of a Move package using the Move prover",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			arg, err := getInitiaCompilerArgument(cmd)
+			arg, err := getCompilerArgument(cmd)
 			if err != nil {
 				return err
 			}
@@ -506,7 +529,7 @@ func moveDocgenCmd() *cobra.Command {
 		Long:  "Generate documents of a move package. The provided path must specify the path of move package to generate docs",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			arg, err := getInitiaCompilerArgument(cmd)
+			arg, err := getCompilerArgument(cmd)
 			if err != nil {
 				return err
 			}
@@ -568,7 +591,7 @@ func addMoveCleanFlags(cmd *cobra.Command) {
 }
 
 func addMoveDeployFlags(cmd *cobra.Command) {
-	cmd.Flags().StringP(flagPackagePath, flagPackagePathShorthand, defaultPackagePath, "Path to a package which the command should be run with respect to")
+	cmd.Flags().Bool(flagBuild, false, "Build package before deployment")
 	cmd.Flags().Bool(flagVerify, false, "Verify the contract compared to the onchain package")
 }
 
@@ -597,7 +620,7 @@ func addMoveDocgenFlags(cmd *cobra.Command) {
 	cmd.Flags().String(flagReferencesFile, "", "Package-relative path to a file whose content is added to each generated markdown file.")
 }
 
-func getInitiaCompilerArgument(cmd *cobra.Command) (*compiler.InitiaCompilerArgument, error) {
+func getCompilerArgument(cmd *cobra.Command) (*compiler.CompilerArgument, error) {
 	bc, err := getBuildConfig(cmd)
 	if err != nil {
 		return nil, err
@@ -613,7 +636,7 @@ func getInitiaCompilerArgument(cmd *cobra.Command) (*compiler.InitiaCompilerArgu
 		return nil, err
 	}
 
-	return &compiler.InitiaCompilerArgument{
+	return &compiler.CompilerArgument{
 		PackagePath: packagePath,
 		Verbose:     verbose,
 		BuildConfig: *bc,

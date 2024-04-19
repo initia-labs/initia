@@ -11,11 +11,18 @@ module std::BasicCoin {
         test: bool,
     }
 
+    #[event]
     /// Event emitted when some amount of coins are withdrawn from an Collateral.
     struct MintEvent has drop, store {
         account: address,
         amount: u64,
         coin_type: string::String,
+    }
+    
+    #[event]
+    /// Event emitted at view function.
+    struct ViewEvent has drop, store {
+        data: string::String,
     }
 
     public entry fun mint<CoinType>(account: signer, value: u64) acquires Coin {
@@ -39,6 +46,12 @@ module std::BasicCoin {
 
     #[view]
     public fun get<CoinType>(account: address): u64 acquires Coin{
+        event::emit(
+            ViewEvent {
+                data: string::utf8(b"hello world"),
+            }
+        );
+
         let c = borrow_global<Coin<CoinType>>(account);
         c.value
     }

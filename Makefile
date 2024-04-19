@@ -130,7 +130,8 @@ build-linux-with-shared-library:
 	docker build --tag initia/initiad-shared ./ -f ./shared.Dockerfile
 	docker create --name temp initia/initiad-shared:latest
 	docker cp temp:/usr/local/bin/initiad $(BUILDDIR)/
-	docker cp temp:/lib/libinitia.so $(BUILDDIR)/
+	docker cp temp:/lib/libmovevm.so $(BUILDDIR)/
+	docker cp temp:/lib/libcompiler.so $(BUILDDIR)/
 	docker rm temp
 
 install: go.sum 
@@ -151,7 +152,7 @@ update-swagger-docs: statik
 ###                                Protobuf                                 ###
 ###############################################################################
 
-protoVer=0.13.0
+protoVer=0.14.0
 protoImageName=ghcr.io/cosmos/proto-builder:$(protoVer)
 protoImage=$(DOCKER) run --rm -v $(CURDIR):/workspace  --workdir /workspace $(protoImageName)
 

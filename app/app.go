@@ -79,9 +79,6 @@ import (
 	packetforward "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward"
 	packetforwardkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/keeper"
 	packetforwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types"
-	icq "github.com/cosmos/ibc-apps/modules/async-icq/v8"
-	icqkeeper "github.com/cosmos/ibc-apps/modules/async-icq/v8/keeper"
-	icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v8/types"
 	"github.com/cosmos/ibc-go/modules/capability"
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
@@ -106,9 +103,6 @@ import (
 	solomachine "github.com/cosmos/ibc-go/v8/modules/light-clients/06-solomachine"
 	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 
-	fetchprice "github.com/initia-labs/initia/x/ibc/fetchprice"
-	fetchpricekeeper "github.com/initia-labs/initia/x/ibc/fetchprice/keeper"
-	fetchpricetypes "github.com/initia-labs/initia/x/ibc/fetchprice/types"
 	ibcnfttransfer "github.com/initia-labs/initia/x/ibc/nft-transfer"
 	ibcnfttransferkeeper "github.com/initia-labs/initia/x/ibc/nft-transfer/keeper"
 	ibcnfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
@@ -137,9 +131,12 @@ import (
 	"github.com/initia-labs/initia/x/genutil"
 	"github.com/initia-labs/initia/x/gov"
 	govkeeper "github.com/initia-labs/initia/x/gov/keeper"
+	ibchooks "github.com/initia-labs/initia/x/ibc-hooks"
+	ibchookskeeper "github.com/initia-labs/initia/x/ibc-hooks/keeper"
+	ibcmovehooks "github.com/initia-labs/initia/x/ibc-hooks/move-hooks"
+	ibchookstypes "github.com/initia-labs/initia/x/ibc-hooks/types"
 	"github.com/initia-labs/initia/x/move"
 	moveconfig "github.com/initia-labs/initia/x/move/config"
-	moveibcmiddleware "github.com/initia-labs/initia/x/move/ibc-middleware"
 	movekeeper "github.com/initia-labs/initia/x/move/keeper"
 	movetypes "github.com/initia-labs/initia/x/move/types"
 	staking "github.com/initia-labs/initia/x/mstaking"
@@ -152,24 +149,25 @@ import (
 	slashingkeeper "github.com/initia-labs/initia/x/slashing/keeper"
 
 	// block-sdk dependencies
-	blockabci "github.com/skip-mev/block-sdk/abci"
-	signer_extraction "github.com/skip-mev/block-sdk/adapters/signer_extraction_adapter"
-	"github.com/skip-mev/block-sdk/block"
-	blockbase "github.com/skip-mev/block-sdk/block/base"
-	mevlane "github.com/skip-mev/block-sdk/lanes/mev"
-	"github.com/skip-mev/block-sdk/x/auction"
-	auctionante "github.com/skip-mev/block-sdk/x/auction/ante"
-	auctionkeeper "github.com/skip-mev/block-sdk/x/auction/keeper"
-	auctiontypes "github.com/skip-mev/block-sdk/x/auction/types"
+	blockabci "github.com/skip-mev/block-sdk/v2/abci"
+	blockchecktx "github.com/skip-mev/block-sdk/v2/abci/checktx"
+	signer_extraction "github.com/skip-mev/block-sdk/v2/adapters/signer_extraction_adapter"
+	"github.com/skip-mev/block-sdk/v2/block"
+	blockbase "github.com/skip-mev/block-sdk/v2/block/base"
+	mevlane "github.com/skip-mev/block-sdk/v2/lanes/mev"
+	"github.com/skip-mev/block-sdk/v2/x/auction"
+	auctionante "github.com/skip-mev/block-sdk/v2/x/auction/ante"
+	auctionkeeper "github.com/skip-mev/block-sdk/v2/x/auction/keeper"
+	auctiontypes "github.com/skip-mev/block-sdk/v2/x/auction/types"
 
 	// slinky oracle dependencies
 	oraclepreblock "github.com/skip-mev/slinky/abci/preblock/oracle"
-	oraclemath "github.com/skip-mev/slinky/abci/preblock/oracle/math"
 	oracleproposals "github.com/skip-mev/slinky/abci/proposals"
 	compression "github.com/skip-mev/slinky/abci/strategies/codec"
 	"github.com/skip-mev/slinky/abci/strategies/currencypair"
 	"github.com/skip-mev/slinky/abci/ve"
 	oracleconfig "github.com/skip-mev/slinky/oracle/config"
+	"github.com/skip-mev/slinky/pkg/math/voteweighted"
 	oracleclient "github.com/skip-mev/slinky/service/clients/oracle"
 	servicemetrics "github.com/skip-mev/slinky/service/metrics"
 	"github.com/skip-mev/slinky/service/servers/prometheus"
@@ -180,6 +178,11 @@ import (
 	"github.com/initia-labs/OPinit/x/ophost"
 	ophostkeeper "github.com/initia-labs/OPinit/x/ophost/keeper"
 	ophosttypes "github.com/initia-labs/OPinit/x/ophost/types"
+
+	// noble forwarding keeper
+	"github.com/noble-assets/forwarding/x/forwarding"
+	forwardingkeeper "github.com/noble-assets/forwarding/x/forwarding/keeper"
+	forwardingtypes "github.com/noble-assets/forwarding/x/forwarding/types"
 
 	// unnamed import of statik for swagger UI support
 	_ "github.com/initia-labs/initia/client/docs/statik"
@@ -266,14 +269,12 @@ type InitiaApp struct {
 	IBCFeeKeeper          *ibcfeekeeper.Keeper
 	IBCPermKeeper         *ibcpermkeeper.Keeper
 	PacketForwardKeeper   *packetforwardkeeper.Keeper
-	ICQKeeper             *icqkeeper.Keeper
 	MoveKeeper            *movekeeper.Keeper
+	IBCHooksKeeper        *ibchookskeeper.Keeper
 	AuctionKeeper         *auctionkeeper.Keeper // x/auction keeper used to process bids for TOB auctions
 	OPHostKeeper          *ophostkeeper.Keeper
 	OracleKeeper          *oraclekeeper.Keeper // x/oracle keeper used for the slinky oracle
-
-	// testing purpose
-	FetchPriceKeeper *fetchpricekeeper.Keeper
+	ForwardingKeeper      *forwardingkeeper.Keeper
 
 	// other slinky oracle services
 	OracleClient           oracleclient.OracleClient
@@ -287,8 +288,6 @@ type InitiaApp struct {
 	ScopedICAHostKeeper       capabilitykeeper.ScopedKeeper
 	ScopedICAControllerKeeper capabilitykeeper.ScopedKeeper
 	ScopedICAAuthKeeper       capabilitykeeper.ScopedKeeper
-	ScopedICQKeeper           capabilitykeeper.ScopedKeeper
-	ScopedFetchPriceKeeper    capabilitykeeper.ScopedKeeper
 
 	// the module manager
 	ModuleManager      *module.Manager
@@ -298,7 +297,7 @@ type InitiaApp struct {
 	configurator module.Configurator
 
 	// Override of BaseApp's CheckTx
-	checkTxHandler mevlane.CheckTx
+	checkTxHandler blockchecktx.CheckTx
 }
 
 // NewInitiaApp returns a reference to an initialized Initia.
@@ -336,10 +335,10 @@ func NewInitiaApp(
 		authzkeeper.StoreKey, feegrant.StoreKey, icahosttypes.StoreKey,
 		icacontrollertypes.StoreKey, ibcfeetypes.StoreKey, ibcpermtypes.StoreKey,
 		movetypes.StoreKey, auctiontypes.StoreKey, ophosttypes.StoreKey,
-		oracletypes.StoreKey, packetforwardtypes.StoreKey, icqtypes.StoreKey,
-		fetchpricetypes.StoreKey,
+		oracletypes.StoreKey, packetforwardtypes.StoreKey, ibchookstypes.StoreKey,
+		forwardingtypes.StoreKey,
 	)
-	tkeys := storetypes.NewTransientStoreKeys()
+	tkeys := storetypes.NewTransientStoreKeys(forwardingtypes.TransientStoreKey)
 	memKeys := storetypes.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
 
 	// register streaming services
@@ -383,8 +382,6 @@ func NewInitiaApp(
 	app.ScopedICAHostKeeper = app.CapabilityKeeper.ScopeToModule(icahosttypes.SubModuleName)
 	app.ScopedICAControllerKeeper = app.CapabilityKeeper.ScopeToModule(icacontrollertypes.SubModuleName)
 	app.ScopedICAAuthKeeper = app.CapabilityKeeper.ScopeToModule(icaauthtypes.ModuleName)
-	app.ScopedICQKeeper = app.CapabilityKeeper.ScopeToModule(icqtypes.ModuleName)
-	app.ScopedFetchPriceKeeper = app.CapabilityKeeper.ScopeToModule(fetchpricetypes.ModuleName)
 
 	app.CapabilityKeeper.Seal()
 
@@ -542,9 +539,29 @@ func NewInitiaApp(
 	oracleKeeper := oraclekeeper.NewKeeper(
 		runtime.NewKVStoreService(keys[oracletypes.StoreKey]),
 		appCodec,
+		nil, // put MarketMapKeeper in near future
 		authorityAccAddr,
 	)
 	app.OracleKeeper = &oracleKeeper
+
+	app.IBCHooksKeeper = ibchookskeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[ibchookstypes.StoreKey]),
+		authorityAddr,
+		ac,
+	)
+
+	app.ForwardingKeeper = forwardingkeeper.NewKeeper(
+		appCodec,
+		app.Logger(),
+		runtime.NewKVStoreService(keys[forwardingtypes.StoreKey]),
+		runtime.NewTransientStoreService(tkeys[forwardingtypes.TransientStoreKey]),
+		app.AccountKeeper,
+		app.BankKeeper,
+		app.IBCKeeper.ChannelKeeper,
+		app.TransferKeeper,
+	)
+	app.BankKeeper.AppendSendRestriction(app.ForwardingKeeper.SendRestrictionFn)
 
 	////////////////////////////
 	// Transfer configuration //
@@ -571,7 +588,15 @@ func NewInitiaApp(
 			authorityAddr,
 		)
 		app.TransferKeeper = &transferKeeper
-		transferIBCModule := ibctransfer.NewIBCModule(*app.TransferKeeper)
+		transferStack = ibctransfer.NewIBCModule(*app.TransferKeeper)
+
+		// forwarding middleware
+		transferStack = forwarding.NewMiddleware(
+			// receive: forwarding -> transfer
+			transferStack,
+			app.AccountKeeper,
+			app.ForwardingKeeper,
+		)
 
 		// create packet forward middleware
 		*packetForwardKeeper = *packetforwardkeeper.NewKeeper(
@@ -586,9 +611,9 @@ func NewInitiaApp(
 			authorityAddr,
 		)
 		app.PacketForwardKeeper = packetForwardKeeper
-		packetForwardMiddleware := packetforward.NewIBCMiddleware(
-			// receive: packet forward -> transfer
-			transferIBCModule,
+		transferStack = packetforward.NewIBCMiddleware(
+			// receive: packet forward -> forwarding -> transfer
+			transferStack,
 			app.PacketForwardKeeper,
 			0,
 			packetforwardkeeper.DefaultForwardTransferPacketTimeoutTimestamp,
@@ -596,27 +621,27 @@ func NewInitiaApp(
 		)
 
 		// create move middleware for transfer
-		moveMiddleware := moveibcmiddleware.NewIBCMiddleware(
-			// receive: move -> packet forward -> transfer
-			packetForwardMiddleware,
-			// ics4wrapper: not used
-			nil,
-			app.MoveKeeper,
-			ac,
+		transferStack = ibchooks.NewIBCMiddleware(
+			// receive: move -> packet forward -> forwarding -> transfer
+			transferStack,
+			ibchooks.NewICS4Middleware(
+				nil, /* ics4wrapper: not used */
+				ibcmovehooks.NewMoveHooks(appCodec, ac, app.MoveKeeper),
+			),
+			app.IBCHooksKeeper,
 		)
 
 		// create ibcfee middleware for transfer
-		feeMiddleware := ibcfee.NewIBCMiddleware(
-			// receive: fee -> move -> packet forward -> transfer
-			moveMiddleware,
-			// ics4wrapper: transfer -> fee -> channel
+		transferStack = ibcfee.NewIBCMiddleware(
+			// receive: fee -> move -> packet forward -> forwarding -> transfer
+			transferStack,
 			*app.IBCFeeKeeper,
 		)
 
 		// create perm middleware for transfer
 		transferStack = ibcperm.NewIBCMiddleware(
-			// receive: perm -> fee -> move -> packet forward -> transfer
-			feeMiddleware,
+			// receive: perm -> fee -> move -> packet forward -> forwarding -> transfer
+			transferStack,
 			// ics4wrapper: not used
 			nil,
 			*app.IBCPermKeeper,
@@ -645,20 +670,21 @@ func NewInitiaApp(
 		nftTransferIBCModule := ibcnfttransfer.NewIBCModule(*app.NftTransferKeeper)
 
 		// create move middleware for nft-transfer
-		moveMiddleware := moveibcmiddleware.NewIBCMiddleware(
+		hookMiddleware := ibchooks.NewIBCMiddleware(
 			// receive: move -> nft-transfer
 			nftTransferIBCModule,
-			// ics4wrapper: not used
-			nil,
-			app.MoveKeeper,
-			ac,
+			ibchooks.NewICS4Middleware(
+				nil, /* ics4wrapper: not used */
+				ibcmovehooks.NewMoveHooks(appCodec, ac, app.MoveKeeper),
+			),
+			app.IBCHooksKeeper,
 		)
 
 		nftTransferStack = ibcperm.NewIBCMiddleware(
 			// receive: perm -> fee -> nft transfer
 			ibcfee.NewIBCMiddleware(
 				// receive: channel -> fee -> move -> nft transfer
-				moveMiddleware,
+				hookMiddleware,
 				*app.IBCFeeKeeper,
 			),
 			// ics4wrapper: not used
@@ -726,64 +752,6 @@ func NewInitiaApp(
 		)
 	}
 
-	///////////////////////
-	// ICQ configuration //
-	///////////////////////
-
-	var icqStack porttypes.IBCModule
-	{
-		icqKeeper := icqkeeper.NewKeeper(
-			appCodec,
-			app.keys[icqtypes.StoreKey],
-			// ics4wrapper: icq -> fee -> channel
-			app.IBCFeeKeeper,
-			app.IBCKeeper.ChannelKeeper,
-			app.IBCKeeper.PortKeeper,
-			app.ScopedICQKeeper,
-			bApp.GRPCQueryRouter(),
-			authorityAddr,
-		)
-		app.ICQKeeper = &icqKeeper
-
-		// Create Async ICQ module
-		icqModule := icq.NewIBCModule(*app.ICQKeeper)
-		icqStack = ibcperm.NewIBCMiddleware(
-			// receive: perm -> fee -> icq
-			ibcfee.NewIBCMiddleware(icqModule, *app.IBCFeeKeeper),
-			// ics4wrapper: not used
-			nil,
-			*app.IBCPermKeeper,
-		)
-	}
-
-	//////////////////////////////
-	// FetchPrice configuration //
-	//////////////////////////////
-
-	var fetchpriceStack porttypes.IBCModule
-	{
-		app.FetchPriceKeeper = fetchpricekeeper.NewKeeper(
-			appCodec,
-			runtime.NewKVStoreService(app.keys[fetchpricetypes.StoreKey]),
-			// ics4wrapper: fetchprice -> fee -> channel
-			app.IBCFeeKeeper,
-			app.IBCKeeper.ChannelKeeper,
-			app.IBCKeeper.PortKeeper,
-			app.AccountKeeper,
-			app.OracleKeeper,
-			app.ScopedFetchPriceKeeper,
-			authorityAddr,
-		)
-
-		// Create FetchPrice module
-		fetchpriceModule := fetchprice.NewIBCModule(*app.FetchPriceKeeper)
-		fetchpriceStack = ibcfee.NewIBCMiddleware(
-			// receive: fee -> fetchprice
-			fetchpriceModule,
-			*app.IBCFeeKeeper,
-		)
-	}
-
 	//////////////////////////////
 	// IBC router Configuration //
 	//////////////////////////////
@@ -794,9 +762,7 @@ func NewInitiaApp(
 		AddRoute(icahosttypes.SubModuleName, icaHostStack).
 		AddRoute(icacontrollertypes.SubModuleName, icaControllerStack).
 		AddRoute(icaauthtypes.ModuleName, icaControllerStack).
-		AddRoute(ibcnfttransfertypes.ModuleName, nftTransferStack).
-		AddRoute(icqtypes.ModuleName, icqStack).
-		AddRoute(fetchpricetypes.ModuleName, fetchpriceStack)
+		AddRoute(ibcnfttransfertypes.ModuleName, nftTransferStack)
 	app.IBCKeeper.SetRouter(ibcRouter)
 
 	//////////////////////////////
@@ -811,6 +777,7 @@ func NewInitiaApp(
 		app.OracleKeeper,
 		// app.NftTransferKeeper,
 		app.BaseApp.MsgServiceRouter(),
+		app.BaseApp.GRPCQueryRouter(),
 		moveConfig,
 		// staking feature
 		app.DistrKeeper,
@@ -850,6 +817,7 @@ func NewInitiaApp(
 		runtime.NewKVStoreService(app.keys[ophosttypes.StoreKey]),
 		app.AccountKeeper,
 		app.BankKeeper,
+		app.DistrKeeper,
 		ophosttypes.NewBridgeHooks(apphook.NewBridgeHook(app.IBCKeeper.ChannelKeeper, app.IBCPermKeeper, ac)),
 		authorityAddr,
 	)
@@ -903,8 +871,8 @@ func NewInitiaApp(
 		ibctm.NewAppModule(),
 		solomachine.NewAppModule(),
 		packetforward.NewAppModule(app.PacketForwardKeeper, nil),
-		icq.NewAppModule(*app.ICQKeeper, nil),
-		fetchprice.NewAppModule(appCodec, *app.FetchPriceKeeper),
+		ibchooks.NewAppModule(appCodec, *app.IBCHooksKeeper),
+		forwarding.NewAppModule(app.ForwardingKeeper),
 	)
 
 	// BasicModuleManager defines the module BasicManager is in charge of setting up basic,
@@ -939,6 +907,7 @@ func NewInitiaApp(
 		authz.ModuleName,
 		movetypes.ModuleName,
 		ibcexported.ModuleName,
+		oracletypes.ModuleName,
 	)
 
 	app.ModuleManager.SetOrderEndBlockers(
@@ -949,6 +918,8 @@ func NewInitiaApp(
 		authz.ModuleName,
 		feegrant.ModuleName,
 		group.ModuleName,
+		oracletypes.ModuleName,
+		forwardingtypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -964,7 +935,7 @@ func NewInitiaApp(
 		consensusparamtypes.ModuleName, ibcexported.ModuleName, ibctransfertypes.ModuleName,
 		ibcnfttransfertypes.ModuleName, icatypes.ModuleName, icaauthtypes.ModuleName, ibcfeetypes.ModuleName,
 		ibcpermtypes.ModuleName, consensusparamtypes.ModuleName, auctiontypes.ModuleName, ophosttypes.ModuleName,
-		oracletypes.ModuleName, packetforwardtypes.ModuleName, icqtypes.ModuleName, fetchpricetypes.ModuleName,
+		oracletypes.ModuleName, packetforwardtypes.ModuleName, ibchookstypes.ModuleName, forwardingtypes.ModuleName,
 	}
 	app.ModuleManager.SetOrderInitGenesis(genesisModuleOrder...)
 	app.ModuleManager.SetOrderExportGenesis(genesisModuleOrder...)
@@ -1009,49 +980,70 @@ func NewInitiaApp(
 	// and insert the txs at the top of the block spots.
 	signerExtractor := signer_extraction.NewDefaultAdapter()
 
-	mevConfig := blockbase.LaneConfig{
+	systemLane := applanes.NewSystemLane(blockbase.LaneConfig{
 		Logger:          app.Logger(),
 		TxEncoder:       app.txConfig.TxEncoder(),
 		TxDecoder:       app.txConfig.TxDecoder(),
-		MaxBlockSpace:   math.LegacyZeroDec(),
+		MaxBlockSpace:   math.LegacyMustNewDecFromStr("0.05"),
+		MaxTxs:          1,
+		SignerExtractor: signerExtractor,
+	}, applanes.RejectMatchHandler())
+
+	factory := mevlane.NewDefaultAuctionFactory(app.txConfig.TxDecoder(), signerExtractor)
+	mevLane := mevlane.NewMEVLane(blockbase.LaneConfig{
+		Logger:          app.Logger(),
+		TxEncoder:       app.txConfig.TxEncoder(),
+		TxDecoder:       app.txConfig.TxDecoder(),
+		MaxBlockSpace:   math.LegacyMustNewDecFromStr("0.15"),
 		MaxTxs:          100,
 		SignerExtractor: signerExtractor,
-	}
-	factor := mevlane.NewDefaultAuctionFactory(app.txConfig.TxDecoder(), signerExtractor)
-	mevLane := mevlane.NewMEVLane(
-		mevConfig,
-		factor,
-		factor.MatchHandler(),
-	)
+	}, factory, factory.MatchHandler())
 
-	freeConfig := blockbase.LaneConfig{
+	freeLane := applanes.NewFreeLane(blockbase.LaneConfig{
 		Logger:          app.Logger(),
 		TxEncoder:       app.txConfig.TxEncoder(),
 		TxDecoder:       app.txConfig.TxDecoder(),
-		MaxBlockSpace:   math.LegacyZeroDec(),
+		MaxBlockSpace:   math.LegacyMustNewDecFromStr("0.2"),
 		MaxTxs:          100,
 		SignerExtractor: signerExtractor,
-	}
-	freeLane := applanes.NewFreeLane(freeConfig, applanes.FreeLaneMatchHandler())
+	}, applanes.FreeLaneMatchHandler())
 
-	defaultLaneConfig := blockbase.LaneConfig{
+	defaultLane := applanes.NewDefaultLane(blockbase.LaneConfig{
 		Logger:          app.Logger(),
 		TxEncoder:       app.txConfig.TxEncoder(),
 		TxDecoder:       app.txConfig.TxDecoder(),
-		MaxBlockSpace:   math.LegacyZeroDec(),
-		MaxTxs:          0,
+		MaxBlockSpace:   math.LegacyMustNewDecFromStr("0.6"),
+		MaxTxs:          1000,
 		SignerExtractor: signerExtractor,
-	}
-	defaultLane := applanes.NewDefaultLane(defaultLaneConfig)
+	})
 
-	lanes := []block.Lane{mevLane, freeLane, defaultLane}
+	lanes := []block.Lane{systemLane, mevLane, freeLane, defaultLane}
 	mempool, err := block.NewLanedMempool(app.Logger(), lanes)
 	if err != nil {
 		panic(err)
 	}
 
+	// The application's mempool is now powered by the Block SDK!
 	app.SetMempool(mempool)
 	anteHandler := app.setAnteHandler(mevLane, freeLane)
+
+	// NOTE seems this optional, to reduce mempool logic cost
+	// skip this for now
+	//
+	// set the ante handler for each lane
+	//
+	// opt := []blockbase.LaneOption{
+	// 	blockbase.WithAnteHandler(anteHandler),
+	// }
+	// mevLane.WithOptions(
+	// 	opt...,
+	// )
+	// freeLane.(*blockbase.BaseLane).WithOptions(
+	// 	opt...,
+	// )
+	// defaultLane.(*blockbase.BaseLane).WithOptions(
+	// 	opt...,
+	// )
 
 	// override the base-app's ABCI methods (CheckTx, PrepareProposal, ProcessProposal)
 	blockProposalHandlers := blockabci.NewProposalHandler(
@@ -1062,11 +1054,16 @@ func NewInitiaApp(
 	)
 
 	// overrde base-app's CheckTx
-	checkTxHandler := mevlane.NewCheckTxHandler(
+	mevCheckTx := blockchecktx.NewMEVCheckTxHandler(
 		app.BaseApp,
 		app.txConfig.TxDecoder(),
 		mevLane,
 		anteHandler,
+		app.BaseApp.CheckTx,
+	)
+	checkTxHandler := blockchecktx.NewMempoolParityCheckTx(
+		app.Logger(), mempool,
+		app.txConfig.TxDecoder(), mevCheckTx.CheckTx(),
 	)
 	app.SetCheckTx(checkTxHandler.CheckTx())
 
@@ -1118,7 +1115,6 @@ func NewInitiaApp(
 		blockProposalHandlers.PrepareProposalHandler(),
 		blockProposalHandlers.ProcessProposalHandler(),
 		ve.NewDefaultValidateVoteExtensionsFn(
-			app.ChainID(),
 			stakingkeeper.NewCompatibilityKeeper(app.StakingKeeper),
 		),
 		compression.NewCompressionVoteExtensionCodec(
@@ -1139,10 +1135,10 @@ func NewInitiaApp(
 
 	app.oraclePreBlockHandler = oraclepreblock.NewOraclePreBlockHandler(
 		app.Logger(),
-		oraclemath.VoteWeightedMedianFromContext(
+		voteweighted.MedianFromContext(
 			app.Logger(),
 			stakingkeeper.NewCompatibilityKeeper(app.StakingKeeper),
-			oraclemath.DefaultPowerThreshold),
+			voteweighted.DefaultPowerThreshold),
 		app.OracleKeeper,
 		serviceMetrics,
 		currencypair.NewDeltaCurrencyPairStrategy(app.OracleKeeper),
@@ -1210,7 +1206,7 @@ func (app *InitiaApp) CheckTx(req *abci.RequestCheckTx) (*abci.ResponseCheckTx, 
 }
 
 // SetCheckTx sets the checkTxHandler for the app.
-func (app *InitiaApp) SetCheckTx(handler mevlane.CheckTx) {
+func (app *InitiaApp) SetCheckTx(handler blockchecktx.CheckTx) {
 	app.checkTxHandler = handler
 }
 

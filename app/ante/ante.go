@@ -13,9 +13,9 @@ import (
 	moveante "github.com/initia-labs/initia/x/move/ante"
 	movetypes "github.com/initia-labs/initia/x/move/types"
 
-	"github.com/skip-mev/block-sdk/block"
-	auctionante "github.com/skip-mev/block-sdk/x/auction/ante"
-	auctionkeeper "github.com/skip-mev/block-sdk/x/auction/keeper"
+	"github.com/skip-mev/block-sdk/v2/block"
+	auctionante "github.com/skip-mev/block-sdk/v2/x/auction/ante"
+	auctionkeeper "github.com/skip-mev/block-sdk/v2/x/auction/keeper"
 )
 
 // HandlerOptions extends the SDK's AnteHandler options by requiring the IBC

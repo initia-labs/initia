@@ -16,31 +16,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 			Service: govv1.Query_ServiceDesc.ServiceName,
 			RpcCommandOptions: []*autocliv1.RpcCommandOptions{
 				{
-					RpcMethod: "Params",
-					Use:       "params",
-					Short:     "Query the parameters of the governance process",
-					Long:      "Query the parameters of the governance process. Specify specific param types (voting|tallying|deposit) to filter results.",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "params_type", Optional: true},
-					},
-				},
-				{
-					RpcMethod: "Proposals",
-					Use:       "proposals",
-					Short:     "Query proposals with optional filters",
-					Example:   fmt.Sprintf("%[1]s query gov proposals --depositor cosmos1...\n%[1]s query gov proposals --voter cosmos1...\n%[1]s query gov proposals --proposal-status (PROPOSAL_STATUS_DEPOSIT_PERIOD|PROPOSAL_STATUS_VOTING_PERIOD|PROPOSAL_STATUS_PASSED|PROPOSAL_STATUS_REJECTED|PROPOSAL_STATUS_FAILED)", version.AppName),
-				},
-				{
-					RpcMethod: "Proposal",
-					Use:       "proposal [proposal-id]",
-					Alias:     []string{"proposer"},
-					Short:     "Query details of a single proposal",
-					Example:   fmt.Sprintf("%s query gov proposal 1", version.AppName),
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "proposal_id"},
-					},
-				},
-				{
 					RpcMethod: "Vote",
 					Use:       "vote [proposal-id] [voter-addr]",
 					Short:     "Query details of a single vote",

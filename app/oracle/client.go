@@ -3,6 +3,7 @@ package oracle
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"sync"
 	"time"
 
@@ -15,6 +16,8 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+
+	l2slinky "github.com/initia-labs/OPinit/x/opchild/l2slinky"
 )
 
 var _ oracleclient.OracleClient = (*GRPCClient)(nil)
@@ -153,7 +156,13 @@ func (c *GRPCClient) Prices(
 		}
 	}
 
-	return c.client.Prices(ctx, req, grpc.WaitForReady(true))
+	resp, err = c.client.Prices(ctx, req, grpc.WaitForReady(true))
+	if err != nil {
+		return nil, err
+	}
+
+	resp.Prices[l2slinky.ReservedCPTimestamp] = strconv.FormatInt(resp.Timestamp.UTC().UnixNano(), 10)
+	return resp, nil
 }
 
 func (c *GRPCClient) createConnection(ctx context.Context) error {

@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/initia-labs/initia/x/move/types"
-	vmtypes "github.com/initia-labs/initiavm/types"
+	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 type CodeKeeper struct {
@@ -17,7 +17,7 @@ func NewCodeKeeper(k *Keeper) CodeKeeper {
 }
 
 // Load the code params from the move store
-func (k CodeKeeper) GetParams(ctx context.Context) (bool, []vmtypes.AccountAddress, error) {
+func (k CodeKeeper) GetParams(ctx context.Context) ([]vmtypes.AccountAddress, error) {
 	bz, err := k.GetResourceBytes(ctx, vmtypes.StdAddress, vmtypes.StructTag{
 		Address:  vmtypes.StdAddress,
 		Module:   vmtypes.Identifier(types.MoveModuleNameCode),
@@ -25,45 +25,10 @@ func (k CodeKeeper) GetParams(ctx context.Context) (bool, []vmtypes.AccountAddre
 		TypeArgs: []vmtypes.TypeTag{},
 	})
 	if err != nil {
-		return false, nil, err
+		return nil, err
 	}
 
 	return types.ReadCodeModuleStore(bz)
-}
-
-// Load the allow_arbitrary flag from the move store
-func (k CodeKeeper) GetAllowArbitrary(ctx context.Context) (bool, error) {
-	bz, err := k.GetResourceBytes(ctx, vmtypes.StdAddress, vmtypes.StructTag{
-		Address:  vmtypes.StdAddress,
-		Module:   vmtypes.Identifier(types.MoveModuleNameCode),
-		Name:     vmtypes.Identifier(types.ResourceNameModuleStore),
-		TypeArgs: []vmtypes.TypeTag{},
-	})
-	if err != nil {
-		return false, err
-	}
-
-	return vmtypes.NewDeserializer(bz[:1]).DeserializeBool()
-}
-
-// Store the allow_arbitrary flag to move store.
-func (k CodeKeeper) SetAllowArbitrary(ctx context.Context, allow bool) error {
-	ser := vmtypes.NewSerializer()
-	if err := ser.SerializeBool(allow); err != nil {
-		return err
-	}
-
-	return k.ExecuteEntryFunction(
-		ctx,
-		vmtypes.StdAddress,
-		vmtypes.StdAddress,
-		types.MoveModuleNameCode,
-		types.FunctionNameCodeSetAllowArbitrary,
-		[]vmtypes.TypeTag{},
-		[][]byte{
-			ser.GetBytes(),
-		},
-	)
 }
 
 // Load the allowed_publishers from the move store
@@ -78,7 +43,7 @@ func (k CodeKeeper) GetAllowedPublishers(ctx context.Context) ([]vmtypes.Account
 		return nil, err
 	}
 
-	_, allowedPublishers, err := types.ReadCodeModuleStore(bz)
+	allowedPublishers, err := types.ReadCodeModuleStore(bz)
 	return allowedPublishers, err
 }
 
@@ -113,27 +78,27 @@ func (k CodeKeeper) GetUpgradePolicy(ctx context.Context, addr vmtypes.AccountAd
 
 	bz, err := k.GetResourceBytes(ctx, addr, st)
 	if err != nil {
-		return types.UpgradePolicy_ARBITRARY, err
+		return types.UpgradePolicy_UNSPECIFIED, err
 	}
 
 	tableHandle, err := types.ReadMetadataTableHandleFromMetadataStore(bz)
 	if err != nil {
-		return types.UpgradePolicy_ARBITRARY, err
+		return types.UpgradePolicy_UNSPECIFIED, err
 	}
 
 	vmAddr, err := vmtypes.NewAccountAddressFromBytes(addr[:])
 	if err != nil {
-		return types.UpgradePolicy_ARBITRARY, err
+		return types.UpgradePolicy_UNSPECIFIED, err
 	}
 
 	tableKey, err := vmtypes.SerializeString(vmtypes.NewModuleId(vmAddr, name).String())
 	if err != nil {
-		return types.UpgradePolicy_ARBITRARY, err
+		return types.UpgradePolicy_UNSPECIFIED, err
 	}
 
 	tableEntry, err := k.GetTableEntryBytes(ctx, tableHandle, tableKey)
 	if err != nil {
-		return types.UpgradePolicy_ARBITRARY, err
+		return types.UpgradePolicy_UNSPECIFIED, err
 	}
 
 	return types.ReadUpgradePolicyFromModuleMetadata(tableEntry.ValueBytes)

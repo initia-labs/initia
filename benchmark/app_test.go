@@ -14,7 +14,7 @@ import (
 	simappparams "cosmossdk.io/simapp/params"
 	initiaapp "github.com/initia-labs/initia/app"
 	movetypes "github.com/initia-labs/initia/x/move/types"
-	vmtypes "github.com/initia-labs/initiavm/types"
+	vmtypes "github.com/initia-labs/movevm/types"
 
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/client"

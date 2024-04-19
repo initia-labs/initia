@@ -42,7 +42,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
-	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
@@ -52,6 +51,7 @@ import (
 
 	initiaapp "github.com/initia-labs/initia/app"
 	initiaappparams "github.com/initia-labs/initia/app/params"
+	"github.com/initia-labs/initia/x/bank"
 	movebank "github.com/initia-labs/initia/x/bank/keeper"
 	"github.com/initia-labs/initia/x/distribution"
 	distrkeeper "github.com/initia-labs/initia/x/distribution/keeper"
@@ -59,8 +59,6 @@ import (
 	"github.com/initia-labs/initia/x/gov"
 	govkeeper "github.com/initia-labs/initia/x/gov/keeper"
 	customgovtypes "github.com/initia-labs/initia/x/gov/types"
-
-	// nfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 	"github.com/initia-labs/initia/x/move"
 	moveconfig "github.com/initia-labs/initia/x/move/config"
 	movekeeper "github.com/initia-labs/initia/x/move/keeper"
@@ -73,9 +71,9 @@ import (
 	rewardtypes "github.com/initia-labs/initia/x/reward/types"
 	"github.com/initia-labs/initia/x/slashing"
 
-	vmapi "github.com/initia-labs/initiavm/api"
-	"github.com/initia-labs/initiavm/precompile"
-	vmtypes "github.com/initia-labs/initiavm/types"
+	vmapi "github.com/initia-labs/movevm/api"
+	"github.com/initia-labs/movevm/precompile"
+	vmtypes "github.com/initia-labs/movevm/types"
 
 	"github.com/skip-mev/slinky/x/oracle"
 	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
@@ -270,7 +268,8 @@ func _createTestInput(
 	keys := storetypes.NewKVStoreKeys(
 		authtypes.StoreKey, banktypes.StoreKey, stakingtypes.StoreKey,
 		rewardtypes.StoreKey, distributiontypes.StoreKey, slashingtypes.StoreKey,
-		govtypes.StoreKey, authzkeeper.StoreKey, movetypes.StoreKey, oracletypes.StoreKey,
+		govtypes.StoreKey, authzkeeper.StoreKey, movetypes.StoreKey,
+		oracletypes.StoreKey,
 	)
 	ms := store.NewCommitMultiStore(db, log.NewNopLogger(), metrics.NewNoOpMetrics())
 	for _, v := range keys {
@@ -383,16 +382,21 @@ func _createTestInput(
 	oracleKeeper := oraclekeeper.NewKeeper(
 		runtime.NewKVStoreService(keys[oracletypes.StoreKey]),
 		appCodec,
+		nil,
 		authtypes.NewModuleAddress(govtypes.ModuleName),
 	)
+
+	queryRouter := baseapp.NewGRPCQueryRouter()
+	queryRouter.SetInterfaceRegistry(encodingConfig.InterfaceRegistry)
 
 	*moveKeeper = *movekeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[movetypes.StoreKey]),
 		accountKeeper,
 		bankKeeper,
-		oracleKeeper,
+		&oracleKeeper,
 		TestMsgRouter{},
+		queryRouter,
 		moveConfig,
 		distKeeper,
 		stakingKeeper,
@@ -415,7 +419,7 @@ func _createTestInput(
 	// append test module
 	moduleBytes = append(moduleBytes, basicCoinModule)
 
-	err = moveKeeper.Initialize(ctx, moduleBytes, moveParams.ArbitraryEnabled, moveParams.AllowedPublishers)
+	err = moveKeeper.Initialize(ctx, moduleBytes, moveParams.AllowedPublishers)
 	require.NoError(t, err)
 
 	faucet := NewTestFaucet(t, ctx, bankKeeper, *moveKeeper, authtypes.Minter, initialTotalSupply()...)
@@ -429,8 +433,6 @@ func _createTestInput(
 	// register bank & move
 	msgRouter := baseapp.NewMsgServiceRouter()
 	msgRouter.SetInterfaceRegistry(encodingConfig.InterfaceRegistry)
-	banktypes.RegisterMsgServer(msgRouter, bankkeeper.NewMsgServerImpl(bankKeeper))
-	movetypes.RegisterMsgServer(msgRouter, movekeeper.NewMsgServerImpl(*moveKeeper))
 
 	govConfig := govtypes.DefaultConfig()
 	govKeeper := govkeeper.NewKeeper(
@@ -450,6 +452,16 @@ func _createTestInput(
 
 	cfg := sdk.GetConfig()
 	cfg.SetAddressVerifier(initiaapp.VerifyAddressLen())
+
+	am := module.NewManager( // minimal module set that we use for message/ query tests
+		bank.NewAppModule(appCodec, bankKeeper, accountKeeper),
+		staking.NewAppModule(appCodec, *stakingKeeper),
+		distribution.NewAppModule(appCodec, *distKeeper),
+		gov.NewAppModule(appCodec, govKeeper, accountKeeper, bankKeeper),
+	)
+	am.RegisterServices(module.NewConfigurator(appCodec, msgRouter, queryRouter)) //nolint:errcheck
+	movetypes.RegisterMsgServer(msgRouter, movekeeper.NewMsgServerImpl(moveKeeper))
+	movetypes.RegisterQueryServer(queryRouter, movekeeper.NewQuerier(moveKeeper))
 
 	keepers := TestKeepers{
 		AccountKeeper: accountKeeper,
@@ -472,12 +484,14 @@ var basicCoinModuleAbi string
 var stdCoinTestModule []byte
 var basicCoinMintScript []byte
 var tableGeneratorModule []byte
+var testAddressModule []byte
 
 func init() {
 	basicCoinModule = ReadMoveFile("BasicCoin")
-	basicCoinModuleAbi = `{"address":"0x1","name":"BasicCoin","friends":[],"exposed_functions":[{"name":"get","visibility":"public","is_entry":false,"is_view":true,"generic_type_params":[{"constraints":[]}],"params":["address"],"return":["u64"]},{"name":"get_coin","visibility":"public","is_entry":false,"is_view":true,"generic_type_params":[{"constraints":[]}],"params":["address"],"return":["0x1::BasicCoin::Coin<T0>"]},{"name":"mint","visibility":"public","is_entry":true,"is_view":false,"generic_type_params":[{"constraints":[]}],"params":["signer","u64"],"return":[]},{"name":"number","visibility":"public","is_entry":false,"is_view":true,"generic_type_params":[],"params":[],"return":["u64"]}],"structs":[{"name":"Coin","is_native":false,"abilities":["copy","key"],"generic_type_params":[{"constraints":[],"is_phantom":true}],"fields":[{"name":"value","type":"u64"},{"name":"test","type":"bool"}]},{"name":"Initia","is_native":false,"abilities":[],"generic_type_params":[],"fields":[{"name":"dummy_field","type":"bool"}]},{"name":"MintEvent","is_native":false,"abilities":["drop","store"],"generic_type_params":[],"fields":[{"name":"account","type":"address"},{"name":"amount","type":"u64"},{"name":"coin_type","type":"0x1::string::String"}]}]}`
+	basicCoinModuleAbi = "{\"address\":\"0x1\",\"name\":\"BasicCoin\",\"friends\":[],\"exposed_functions\":[{\"name\":\"get\",\"visibility\":\"public\",\"is_entry\":false,\"is_view\":true,\"generic_type_params\":[{\"constraints\":[]}],\"params\":[\"address\"],\"return\":[\"u64\"]},{\"name\":\"get_coin\",\"visibility\":\"public\",\"is_entry\":false,\"is_view\":true,\"generic_type_params\":[{\"constraints\":[]}],\"params\":[\"address\"],\"return\":[\"0x1::BasicCoin::Coin<T0>\"]},{\"name\":\"mint\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[{\"constraints\":[]}],\"params\":[\"signer\",\"u64\"],\"return\":[]},{\"name\":\"number\",\"visibility\":\"public\",\"is_entry\":false,\"is_view\":true,\"generic_type_params\":[],\"params\":[],\"return\":[\"u64\"]}],\"structs\":[{\"name\":\"Coin\",\"is_native\":false,\"abilities\":[\"copy\",\"key\"],\"generic_type_params\":[{\"constraints\":[],\"is_phantom\":true}],\"fields\":[{\"name\":\"value\",\"type\":\"u64\"},{\"name\":\"test\",\"type\":\"bool\"}]},{\"name\":\"Initia\",\"is_native\":false,\"abilities\":[],\"generic_type_params\":[],\"fields\":[{\"name\":\"dummy_field\",\"type\":\"bool\"}]},{\"name\":\"MintEvent\",\"is_native\":false,\"abilities\":[\"drop\",\"store\"],\"generic_type_params\":[],\"fields\":[{\"name\":\"account\",\"type\":\"address\"},{\"name\":\"amount\",\"type\":\"u64\"},{\"name\":\"coin_type\",\"type\":\"0x1::string::String\"}]},{\"name\":\"ViewEvent\",\"is_native\":false,\"abilities\":[\"drop\",\"store\"],\"generic_type_params\":[],\"fields\":[{\"name\":\"data\",\"type\":\"0x1::string::String\"}]}]}"
 	stdCoinTestModule = ReadMoveFile("StdCoinTest")
 	tableGeneratorModule = ReadMoveFile("TableGenerator")
+	testAddressModule = ReadMoveFile("TestAddress")
 
 	basicCoinMintScript = ReadScriptFile("main")
 }

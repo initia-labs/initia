@@ -1,4 +1,4 @@
-FROM golang:1.21-bullseye AS go-builder
+FROM golang:1.22-bullseye AS go-builder
 
 # Install minimum necessary dependencies, build Cosmos SDK, remove packages
 RUN apt update
@@ -11,14 +11,16 @@ COPY . /code/
 
 RUN LEDGER_ENABLED=false make build
 
-RUN cp /go/pkg/mod/github.com/initia\-labs/initiavm@v*/api/libinitia.`uname -m`.so /lib/libinitia.so
+RUN cp /go/pkg/mod/github.com/initia\-labs/movevm@v*/api/libmovevm.`uname -m`.so /lib/libmovevm.so
+RUN cp /go/pkg/mod/github.com/initia\-labs/movevm@v*/api/libcompiler.`uname -m`.so /lib/libcompiler.so
 
 FROM ubuntu:20.04
 
 WORKDIR /root
 
 COPY --from=go-builder /code/build/initiad /usr/local/bin/initiad
-COPY --from=go-builder /lib/libinitia.so /lib/libinitia.so
+COPY --from=go-builder /lib/libmovevm.so /lib/libmovevm.so
+COPY --from=go-builder /lib/libcompiler.so /lib/libcompiler.so
 
 # rest server
 EXPOSE 1317

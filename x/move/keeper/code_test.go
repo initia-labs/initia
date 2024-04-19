@@ -4,8 +4,7 @@ import (
 	"testing"
 
 	"github.com/initia-labs/initia/x/move/keeper"
-	"github.com/initia-labs/initia/x/move/types"
-	vmtypes "github.com/initia-labs/initiavm/types"
+	vmtypes "github.com/initia-labs/movevm/types"
 
 	"github.com/stretchr/testify/require"
 )
@@ -13,9 +12,8 @@ import (
 func Test_CodeKeeper_GetParams(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
-	allowArbitrary, allowedPublishers, err := keeper.NewCodeKeeper(&input.MoveKeeper).GetParams(ctx)
+	allowedPublishers, err := keeper.NewCodeKeeper(&input.MoveKeeper).GetParams(ctx)
 	require.NoError(t, err)
-	require.Equal(t, types.DefaultArbitraryEnabled, allowArbitrary)
 	require.Empty(t, allowedPublishers)
 }
 
@@ -23,15 +21,8 @@ func Test_CodeKeeper_SetParams(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 	codeKeeper := keeper.NewCodeKeeper(&input.MoveKeeper)
 
-	err := codeKeeper.SetAllowArbitrary(ctx, false)
+	err := codeKeeper.SetAllowedPublishers(ctx, []vmtypes.AccountAddress{vmtypes.StdAddress, vmtypes.TestAddress})
 	require.NoError(t, err)
-
-	err = codeKeeper.SetAllowedPublishers(ctx, []vmtypes.AccountAddress{vmtypes.StdAddress, vmtypes.TestAddress})
-	require.NoError(t, err)
-
-	allowArbitrary, err := codeKeeper.GetAllowArbitrary(ctx)
-	require.NoError(t, err)
-	require.False(t, allowArbitrary)
 
 	allowedPublishers, err := codeKeeper.GetAllowedPublishers(ctx)
 	require.NoError(t, err)

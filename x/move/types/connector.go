@@ -6,8 +6,8 @@ import (
 	"cosmossdk.io/errors"
 	"cosmossdk.io/math"
 
-	vmapi "github.com/initia-labs/initiavm/api"
-	vmtypes "github.com/initia-labs/initiavm/types"
+	vmapi "github.com/initia-labs/movevm/api"
+	vmtypes "github.com/initia-labs/movevm/types"
 
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
@@ -64,7 +64,6 @@ const (
 	// function names for code
 	FunctionNameCodePublish              = "publish"
 	FunctionNameCodeInitGenesis          = "init_genesis"
-	FunctionNameCodeSetAllowArbitrary    = "set_allow_arbitrary"
 	FunctionNameCodeSetAllowedPublishers = "set_allowed_publishers"
 
 	// resource names
@@ -110,6 +109,7 @@ func BuildExecuteEntryFunctionPayload(
 	functionName string,
 	typeArgs []vmtypes.TypeTag,
 	args [][]byte,
+	isJSON bool,
 ) (vmtypes.EntryFunction, error) {
 	if len(moduleName) == 0 {
 		return vmtypes.EntryFunction{}, errors.Wrap(sdkerrors.ErrInvalidRequest, "empty module name")
@@ -127,6 +127,7 @@ func BuildExecuteEntryFunctionPayload(
 		Function: vmtypes.Identifier(functionName),
 		TyArgs:   typeArgs,
 		Args:     args,
+		IsJson:   isJSON,
 	}, nil
 }
 
@@ -135,6 +136,7 @@ func BuildExecuteScriptPayload(
 	byteCodes []byte,
 	typeArgs []vmtypes.TypeTag,
 	args [][]byte,
+	isJSON bool,
 ) (vmtypes.Script, error) {
 	if len(byteCodes) == 0 {
 		return vmtypes.Script{}, errors.Wrap(sdkerrors.ErrInvalidRequest, "empty code bytes")
@@ -144,6 +146,7 @@ func BuildExecuteScriptPayload(
 		Code:   byteCodes,
 		TyArgs: typeArgs,
 		Args:   args,
+		IsJson: isJSON,
 	}
 
 	return payload, nil
@@ -156,6 +159,7 @@ func BuildExecuteViewFunctionPayload(
 	functionName string,
 	typeArgs []vmtypes.TypeTag,
 	args [][]byte,
+	isJSON bool,
 ) (vmtypes.ViewFunction, error) {
 	if len(moduleName) == 0 {
 		return vmtypes.ViewFunction{}, errors.Wrap(sdkerrors.ErrInvalidRequest, "empty module name")
@@ -173,6 +177,7 @@ func BuildExecuteViewFunctionPayload(
 		Function: vmtypes.Identifier(functionName),
 		TyArgs:   typeArgs,
 		Args:     args,
+		IsJson:   isJSON,
 	}, nil
 }
 
@@ -230,7 +235,7 @@ func TypeTagToStructTag(coinType vmtypes.TypeTag) (vmtypes.StructTag, error) {
 
 // convert UpgradePolicy to vm UpgradePolicy
 func (policy UpgradePolicy) ToVmUpgradePolicy() uint8 {
-	// 0 => Arbitrary
+	// 0 => Unspecified
 	// 1 => Compatible
 	// 2 => Immutable
 	return uint8(policy)
@@ -549,11 +554,8 @@ func ReadStakingStatesTableHandleFromModuleStore(bz []byte) (vmtypes.AccountAddr
 	return ReadTableHandleFromTable(bz[cursor : cursor+AddressBytesLength+8])
 }
 
-func ReadCodeModuleStore(bz []byte) (bool, []vmtypes.AccountAddress, error) {
+func ReadCodeModuleStore(bz []byte) ([]vmtypes.AccountAddress, error) {
 	cursor := int(0)
-
-	allowArbitrary := bz[cursor] == 1
-	cursor += 1
 
 	addrsLen, len := readULEB128(bz[cursor:])
 	cursor += len
@@ -563,13 +565,13 @@ func ReadCodeModuleStore(bz []byte) (bool, []vmtypes.AccountAddress, error) {
 		var err error
 		allowedPublishers[i], err = vmtypes.NewAccountAddressFromBytes(bz[cursor : cursor+AddressBytesLength])
 		if err != nil {
-			return false, nil, err
+			return nil, err
 		}
 
 		cursor += AddressBytesLength
 	}
 
-	return allowArbitrary, allowedPublishers, nil
+	return allowedPublishers, nil
 }
 
 func ReadFungibleAssetMetadata(bz []byte) (string, string, uint8) {

@@ -16,16 +16,28 @@ service Msg {
 
   // Publish stores compiled Move module
   rpc Publish(MsgPublish) returns (MsgPublishResponse);
+  // Deprecated: Use ExecuteJSON instead
   // Execute runs a entry function with the given message
   rpc Execute(MsgExecute) returns (MsgExecuteResponse);
+  // ExecuteJSON runs a entry function with the given message
+  rpc ExecuteJSON(MsgExecuteJSON) returns (MsgExecuteJSONResponse);
+  // Deprecated: Use ScriptJSON instead
   // Script runs a scripts with the given message
   rpc Script(MsgScript) returns (MsgScriptResponse);
+  // ScriptJSON runs a scripts with the given message
+  rpc ScriptJSON(MsgScriptJSON) returns (MsgScriptJSONResponse);
   // GovPublish stores compiled Move module via gov proposal
   rpc GovPublish(MsgGovPublish) returns (MsgGovPublishResponse);
+  // Deprecated: Use GovExecuteJSON instead
   // GovExecute runs a entry function with the given message via gov proposal
   rpc GovExecute(MsgGovExecute) returns (MsgGovExecuteResponse);
+  // GovExecuteJSON runs a entry function with the given message via gov proposal
+  rpc GovExecuteJSON(MsgGovExecuteJSON) returns (MsgGovExecuteJSONResponse);
+  // Deprecated: Use GovScriptJSON instead
   // GovScript runs a scripts with the given message via gov proposal
   rpc GovScript(MsgGovScript) returns (MsgGovScriptResponse);
+  // GovScriptJSON runs a scripts with the given message via gov proposal
+  rpc GovScriptJSON(MsgGovScriptJSON) returns (MsgGovScriptJSONResponse);
   // Whitelist registers a dex pair to whitelist of various features.
   // - whitelist from coin register operation
   // - allow counter party denom can be used as gas fee
@@ -85,6 +97,29 @@ message MsgExecute {
 // MsgExecuteResponse returns execution result data.
 message MsgExecuteResponse {}
 
+// MsgExecuteJSON is the message to execute the given module function
+message MsgExecuteJSON {
+  option (cosmos.msg.v1.signer) = "sender";
+  option (amino.name)           = "move/MsgExecuteJSON";
+
+  // Sender is the that actor that signed the messages
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // ModuleAddr is the address of the module deployer
+  string module_address = 2;
+  // ModuleName is the name of module to execute
+  string module_name = 3;
+  // FunctionName is the name of a function to execute
+  string function_name = 4;
+  // TypeArgs is the type arguments of a function to execute
+  // ex) "0x1::BasicCoin::Initia", "bool", "u8", "u64"
+  repeated string type_args = 5;
+  // Args is the arguments of a function to execute in json stringify format
+  repeated string args = 6;
+}
+
+// MsgExecuteJSONResponse returns execution result data.
+message MsgExecuteJSONResponse {}
+
 // MsgScript is the message to execute script code with sender as signer
 message MsgScript {
   option (cosmos.msg.v1.signer) = "sender";
@@ -105,6 +140,25 @@ message MsgScript {
 
 // MsgScriptResponse returns execution result data.
 message MsgScriptResponse {}
+
+// MsgScriptJSON is the message to execute script code with sender as signer
+message MsgScriptJSON {
+  option (cosmos.msg.v1.signer) = "sender";
+  option (amino.name)           = "move/MsgScriptJSON";
+
+  // Sender is the that actor that signed the messages
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // CodeBytes is the script bytes code to execute
+  bytes code_bytes = 2;
+  // TypeArgs is the type arguments of a function to execute
+  // ex) "0x1::BasicCoin::Initia", "bool", "u8", "u64"
+  repeated string type_args = 3;
+  // Args is the arguments of a function to execute in json stringify format
+  repeated string args = 4;
+}
+
+// MsgScriptJSONResponse returns execution result data.
+message MsgScriptJSONResponse {}
 
 ////////////////////
 /// Gov Messages ///
@@ -164,6 +218,33 @@ message MsgGovExecute {
 // MsgGovExecuteResponse returns execution result data.
 message MsgGovExecuteResponse {}
 
+// MsgGovExecuteJSON is the message to execute the given module
+// function via gov proposal
+message MsgGovExecuteJSON {
+  option (cosmos.msg.v1.signer) = "authority";
+  option (amino.name)           = "move/MsgGovExecuteJSON";
+
+  // authority is the address that controls the module
+  // (defaults to x/gov unless overwritten).
+  string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // Sender is the that actor that signed the messages
+  string sender = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // ModuleAddr is the address of the module deployer
+  string module_address = 3;
+  // ModuleName is the name of module to execute
+  string module_name = 4;
+  // FunctionName is the name of a function to execute
+  string function_name = 5;
+  // TypeArgs is the type arguments of a function to execute
+  // ex) "0x1::BasicCoin::Initia", "bool", "u8", "u64"
+  repeated string type_args = 6;
+  // Args is the arguments of a function to execute in json stringify format
+  repeated string args = 7;
+}
+
+// MsgGovExecuteJSONResponse returns execution result data.
+message MsgGovExecuteJSONResponse {}
+
 // MsgGovScript is the message to execute script code with sender as signer via gov
 message MsgGovScript {
   option (cosmos.msg.v1.signer) = "authority";
@@ -187,6 +268,28 @@ message MsgGovScript {
 
 // MsgGovScriptResponse returns execution result data.
 message MsgGovScriptResponse {}
+
+// MsgGovScriptJSON is the message to execute script code with sender as signer via gov
+message MsgGovScriptJSON {
+  option (cosmos.msg.v1.signer) = "authority";
+  option (amino.name)           = "move/MsgGovScriptJSON";
+
+  // authority is the address that controls the module
+  // (defaults to x/gov unless overwritten).
+  string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // Sender is the that actor that signed the messages
+  string sender = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // CodeBytes is the script bytes code to execute
+  bytes code_bytes = 3;
+  // TypeArgs is the type arguments of a function to execute
+  // ex) "0x1::BasicCoin::Initia", "bool", "u8", "u64"
+  repeated string type_args = 4;
+  // Args is the arguments of a function to execute in json stringify format
+  repeated string args = 5;
+}
+
+// MsgGovScriptJSONResponse returns execution result data.
+message MsgGovScriptJSONResponse {}
 
 // MsgWhitelist is a message to register a dex pair to
 // whitelist of various features.

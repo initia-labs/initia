@@ -6,14 +6,13 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/initia-labs/initia/x/move/types"
-	vmapi "github.com/initia-labs/initiavm/api"
-	vmtypes "github.com/initia-labs/initiavm/types"
+	vmapi "github.com/initia-labs/movevm/api"
+	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 func (k Keeper) Initialize(
 	ctx context.Context,
 	moduleBytes [][]byte,
-	allowArbitrary bool,
 	allowedPublishers []string,
 ) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
@@ -49,7 +48,7 @@ func (k Keeper) Initialize(
 	// The default upgrade policy is compatible when it's not set,
 	// so skip the registration at initialize.
 	vmStore := types.NewVMStore(ctx, k.VMStore)
-	if err := k.moveVM.Initialize(vmStore, api, env, vmtypes.NewModuleBundle(modules...), allowArbitrary, _allowedPublishers); err != nil {
+	if err := k.moveVM.Initialize(vmStore, api, env, vmtypes.NewModuleBundle(modules...), _allowedPublishers); err != nil {
 		return err
 	}
 
@@ -69,7 +68,7 @@ func (k Keeper) InitGenesis(ctx context.Context, genState types.GenesisState) er
 	}
 
 	if len(genState.GetModules()) == 0 {
-		if err := k.Initialize(ctx, genState.GetStdlibs(), params.ArbitraryEnabled, params.AllowedPublishers); err != nil {
+		if err := k.Initialize(ctx, genState.GetStdlibs(), params.AllowedPublishers); err != nil {
 			return err
 		}
 	}

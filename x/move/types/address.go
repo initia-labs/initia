@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"cosmossdk.io/core/address"
-	vmtypes "github.com/initia-labs/initiavm/types"
+	vmtypes "github.com/initia-labs/movevm/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )

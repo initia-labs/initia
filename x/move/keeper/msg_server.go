@@ -11,17 +11,17 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
 	"github.com/initia-labs/initia/x/move/types"
-	vmtypes "github.com/initia-labs/initiavm/types"
+	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 type MsgServer struct {
-	Keeper
+	*Keeper
 }
 
 var _ types.MsgServer = MsgServer{}
 
 // NewMsgServerImpl return MsgServer instance
-func NewMsgServerImpl(k Keeper) MsgServer {
+func NewMsgServerImpl(k *Keeper) MsgServer {
 	return MsgServer{k}
 }
 
@@ -96,6 +96,46 @@ func (ms MsgServer) Execute(context context.Context, req *types.MsgExecute) (*ty
 	return &types.MsgExecuteResponse{}, nil
 }
 
+// ExecuteJSON implements entry function execution feature
+func (ms MsgServer) ExecuteJSON(context context.Context, req *types.MsgExecuteJSON) (*types.MsgExecuteJSONResponse, error) {
+	defer telemetry.MeasureSince(time.Now(), "move", "msg", "execute")
+	ctx := sdk.UnwrapSDKContext(context)
+	if err := req.Validate(ms.ac); err != nil {
+		return nil, err
+	}
+
+	ac := ms.ac
+	sender, err := types.AccAddressFromString(ac, req.Sender)
+	if err != nil {
+		return nil, err
+	}
+
+	moduleAddr, err := types.AccAddressFromString(ac, req.ModuleAddress)
+	if err != nil {
+		return nil, err
+	}
+
+	typeTags, err := types.TypeTagsFromTypeArgs(req.TypeArgs)
+	if err != nil {
+		return nil, err
+	}
+
+	err = ms.Keeper.ExecuteEntryFunctionJSON(
+		ctx,
+		sender,
+		moduleAddr,
+		req.ModuleName,
+		req.FunctionName,
+		typeTags,
+		req.Args,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.MsgExecuteJSONResponse{}, nil
+}
+
 // Script implements script execution
 func (ms MsgServer) Script(context context.Context, req *types.MsgScript) (*types.MsgScriptResponse, error) {
 	defer telemetry.MeasureSince(time.Now(), "move", "msg", "script")
@@ -127,6 +167,39 @@ func (ms MsgServer) Script(context context.Context, req *types.MsgScript) (*type
 	}
 
 	return &types.MsgScriptResponse{}, nil
+}
+
+// ScriptJSON implements script execution
+func (ms MsgServer) ScriptJSON(context context.Context, req *types.MsgScriptJSON) (*types.MsgScriptJSONResponse, error) {
+	defer telemetry.MeasureSince(time.Now(), "move", "msg", "script")
+	ctx := sdk.UnwrapSDKContext(context)
+	if err := req.Validate(ms.ac); err != nil {
+		return nil, err
+	}
+
+	ac := ms.ac
+	sender, err := types.AccAddressFromString(ac, req.Sender)
+	if err != nil {
+		return nil, err
+	}
+
+	typeTags, err := types.TypeTagsFromTypeArgs(req.TypeArgs)
+	if err != nil {
+		return nil, err
+	}
+
+	err = ms.Keeper.ExecuteScriptJSON(
+		ctx,
+		sender,
+		req.CodeBytes,
+		typeTags,
+		req.Args,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.MsgScriptJSONResponse{}, nil
 }
 
 // GovPublish implements publishing module to move vm via gov proposal
@@ -209,6 +282,50 @@ func (ms MsgServer) GovExecute(context context.Context, req *types.MsgGovExecute
 	return &types.MsgGovExecuteResponse{}, nil
 }
 
+// GovExecuteJSON implements entry function execution feature via gov proposal
+func (ms MsgServer) GovExecuteJSON(context context.Context, req *types.MsgGovExecuteJSON) (*types.MsgGovExecuteJSONResponse, error) {
+	defer telemetry.MeasureSince(time.Now(), "move", "msg", "gov-execute")
+	if ms.authority != req.Authority {
+		return nil, errors.Wrapf(govtypes.ErrInvalidSigner, "invalid authority; expected %s, got %s", ms.authority, req.Authority)
+	}
+
+	ctx := sdk.UnwrapSDKContext(context)
+	if err := req.Validate(ms.ac); err != nil {
+		return nil, err
+	}
+
+	ac := ms.ac
+	sender, err := types.AccAddressFromString(ac, req.Sender)
+	if err != nil {
+		return nil, err
+	}
+
+	moduleAddr, err := types.AccAddressFromString(ac, req.ModuleAddress)
+	if err != nil {
+		return nil, err
+	}
+
+	typeTags, err := types.TypeTagsFromTypeArgs(req.TypeArgs)
+	if err != nil {
+		return nil, err
+	}
+
+	err = ms.Keeper.ExecuteEntryFunctionJSON(
+		ctx,
+		sender,
+		moduleAddr,
+		req.ModuleName,
+		req.FunctionName,
+		typeTags,
+		req.Args,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.MsgGovExecuteJSONResponse{}, nil
+}
+
 // GovScript implements script execution via gov proposal
 func (ms MsgServer) GovScript(context context.Context, req *types.MsgGovScript) (*types.MsgGovScriptResponse, error) {
 	defer telemetry.MeasureSince(time.Now(), "move", "msg", "gov-script")
@@ -244,6 +361,43 @@ func (ms MsgServer) GovScript(context context.Context, req *types.MsgGovScript) 
 	}
 
 	return &types.MsgGovScriptResponse{}, nil
+}
+
+// GovScriptJSON implements script execution via gov proposal
+func (ms MsgServer) GovScriptJSON(context context.Context, req *types.MsgGovScriptJSON) (*types.MsgGovScriptJSONResponse, error) {
+	defer telemetry.MeasureSince(time.Now(), "move", "msg", "gov-script")
+	if ms.authority != req.Authority {
+		return nil, errors.Wrapf(govtypes.ErrInvalidSigner, "invalid authority; expected %s, got %s", ms.authority, req.Authority)
+	}
+
+	ctx := sdk.UnwrapSDKContext(context)
+	if err := req.Validate(ms.ac); err != nil {
+		return nil, err
+	}
+
+	ac := ms.ac
+	sender, err := types.AccAddressFromString(ac, req.Sender)
+	if err != nil {
+		return nil, err
+	}
+
+	typeTags, err := types.TypeTagsFromTypeArgs(req.TypeArgs)
+	if err != nil {
+		return nil, err
+	}
+
+	err = ms.Keeper.ExecuteScriptJSON(
+		ctx,
+		sender,
+		req.CodeBytes,
+		typeTags,
+		req.Args,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.MsgGovScriptJSONResponse{}, nil
 }
 
 func (ms MsgServer) Whitelist(context context.Context, req *types.MsgWhitelist) (*types.MsgWhitelistResponse, error) {

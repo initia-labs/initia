@@ -8,8 +8,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	cosmosbanktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-
-	vmtypes "github.com/initia-labs/initiavm/types"
 )
 
 type MoveBankKeeper interface {
@@ -19,9 +17,6 @@ type MoveBankKeeper interface {
 	GetPaginatedSupply(ctx context.Context, pageReq *query.PageRequest) (sdk.Coins, *query.PageResponse, error)
 	IterateAccountBalances(ctx context.Context, addr sdk.AccAddress, cb func(sdk.Coin) (bool, error)) error
 	IterateSupply(ctx context.Context, cb func(supply sdk.Coin) (bool, error)) error
-
-	// store balance
-	Balance(ctx context.Context, store vmtypes.AccountAddress) (vmtypes.AccountAddress, math.Int, error)
 
 	// operations
 	SendCoins(ctx context.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) error
@@ -33,7 +28,6 @@ type MoveBankKeeper interface {
 	HasSupply(ctx context.Context, denom string) (bool, error)
 
 	// fungible asset
-	Issuer(context.Context, vmtypes.AccountAddress) (vmtypes.AccountAddress, error)
-	Symbol(context.Context, vmtypes.AccountAddress) (string, error)
 	GetMetadata(ctx context.Context, denom string) (cosmosbanktypes.Metadata, error)
+	HasMetadata(ctx context.Context, denom string) (bool, error)
 }

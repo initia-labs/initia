@@ -38,3 +38,83 @@ func TestNonFungibleTokenPacketDataValidateBasic(t *testing.T) {
 		}
 	}
 }
+
+func Test_decodePacketData(t *testing.T) {
+	data := NonFungibleTokenPacketData{
+		ClassId:   "class_id",
+		ClassUri:  "class_uri",
+		ClassData: "class_data",
+		TokenIds:  []string{"token_id_1", "token_id_2"},
+		TokenUris: []string{"token_uri_1", "token_uri_2"},
+		TokenData: []string{"token_data_1", "token_data_2"},
+		Sender:    "sender",
+		Receiver:  "receiver",
+		Memo:      "memo",
+	}
+
+	// snake case
+	snakeJsonStr := `{
+		"class_id": "class_id",
+		"class_uri": "class_uri",
+		"class_data": "class_data",
+		"token_ids": ["token_id_1", "token_id_2"],
+		"token_uris": ["token_uri_1", "token_uri_2"],
+		"token_data": ["token_data_1", "token_data_2"],
+		"sender": "sender",
+		"receiver": "receiver",
+		"memo": "memo"
+	}`
+
+	res, err := DecodePacketData([]byte(snakeJsonStr), "ics721")
+	require.NoError(t, err)
+	require.Equal(t, data, res)
+
+	// camel case
+	camelJsonStr := `{
+		"classId": "class_id",
+		"classUri": "class_uri",
+		"classData": "class_data",
+		"tokenIds": ["token_id_1", "token_id_2"],
+		"tokenUris": ["token_uri_1", "token_uri_2"],
+		"tokenData": ["token_data_1", "token_data_2"],
+		"sender": "sender",
+		"receiver": "receiver",
+		"memo": "memo"
+	}`
+
+	camelRes, err := DecodePacketData([]byte(camelJsonStr), "wasm.contract")
+	require.NoError(t, err)
+	require.Equal(t, data, camelRes)
+}
+
+func Test_GetBytes(t *testing.T) {
+	data := NonFungibleTokenPacketData{
+		ClassId:   "class_id",
+		ClassUri:  "class_uri",
+		ClassData: "class_data",
+		TokenIds:  []string{"token_id_1", "token_id_2"},
+		TokenUris: []string{"token_uri_1", "token_uri_2"},
+		TokenData: []string{"token_data_1", "token_data_2"},
+		Sender:    "sender",
+		Receiver:  "receiver",
+		Memo:      "memo",
+	}
+
+	// case wasm
+	wasmPortID := wasmPortPrefix + "contract"
+	_data, err := DecodePacketData(data.GetBytes(wasmPortID), wasmPortID)
+	require.NoError(t, err)
+	require.Equal(t, data, _data)
+
+	// case normal
+	portID := "ics721"
+	_data, err = DecodePacketData(data.GetBytes(portID), portID)
+	require.NoError(t, err)
+	require.Equal(t, data, _data)
+
+	// case mixed
+	_, err = DecodePacketData(data.GetBytes(wasmPortID), portID)
+	require.Error(t, err)
+	_, err = DecodePacketData(data.GetBytes(portID), wasmPortID)
+	require.Error(t, err)
+}

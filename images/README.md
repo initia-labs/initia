@@ -10,7 +10,7 @@ Build like:
 ``` bash
 docker build \
     -t initiad \
-    --build-arg LIBINITIAVM_VERSION=v1.0.0 \
+    --build-arg LIBMOVEVM_VERSION=v1.0.0 \
     --build-arg GITHUB_ACCESS_TOKEN=$PAT \
     -f images/private/Dockerfile \
     .

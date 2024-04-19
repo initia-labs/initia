@@ -83,9 +83,6 @@ func (k BaseKeeper) SpendableBalances(ctx context.Context, req *types.QuerySpend
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to load user stores: %s", err.Error())
 	}
-	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "paginate: %v", err)
-	}
 
 	return &types.QuerySpendableBalancesResponse{Balances: balances, Pagination: pageRes}, nil
 }

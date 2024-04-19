@@ -65,7 +65,7 @@ import (
 	rewardtypes "github.com/initia-labs/initia/x/reward/types"
 	"github.com/initia-labs/initia/x/slashing"
 
-	"github.com/initia-labs/initiavm/precompile"
+	"github.com/initia-labs/movevm/precompile"
 
 	"github.com/skip-mev/slinky/x/oracle"
 	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
@@ -363,6 +363,7 @@ func _createTestInput(
 	oracleKeeper := oraclekeeper.NewKeeper(
 		runtime.NewKVStoreService(keys[oracletypes.StoreKey]),
 		appCodec,
+		nil,
 		authtypes.NewModuleAddress(govtypes.ModuleName),
 	)
 
@@ -371,7 +372,8 @@ func _createTestInput(
 		runtime.NewKVStoreService(keys[movetypes.StoreKey]),
 		accountKeeper,
 		bankKeeper,
-		oracleKeeper,
+		&oracleKeeper,
+		nil,
 		nil,
 		moveConfig,
 		distKeeper,
@@ -392,7 +394,7 @@ func _createTestInput(
 	moduleBytes, err := precompile.ReadStdlib()
 	require.NoError(t, err)
 
-	err = moveKeeper.Initialize(ctx, moduleBytes, moveParams.ArbitraryEnabled, moveParams.AllowedPublishers)
+	err = moveKeeper.Initialize(ctx, moduleBytes, moveParams.AllowedPublishers)
 	require.NoError(t, err)
 
 	faucet := NewTestFaucet(t, ctx, bankKeeper, *moveKeeper, authtypes.Minter, initialTotalSupply()...)
@@ -401,7 +403,7 @@ func _createTestInput(
 	msgRouter := baseapp.NewMsgServiceRouter()
 	msgRouter.SetInterfaceRegistry(encodingConfig.InterfaceRegistry)
 	banktypes.RegisterMsgServer(msgRouter, bankkeeper.NewMsgServerImpl(bankKeeper))
-	movetypes.RegisterMsgServer(msgRouter, movekeeper.NewMsgServerImpl(*moveKeeper))
+	movetypes.RegisterMsgServer(msgRouter, movekeeper.NewMsgServerImpl(moveKeeper))
 
 	govConfig := govtypes.DefaultConfig()
 	govKeeper := govkeeper.NewKeeper(

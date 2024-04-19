@@ -13,10 +13,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 
-	opchildtypes "github.com/initia-labs/OPinit/x/opchild/types"
-	ophosttypes "github.com/initia-labs/OPinit/x/ophost/types"
 	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
-	vmtypes "github.com/initia-labs/initiavm/types"
+	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 // ConvertToSDKMessage convert vm CosmosMessage to sdk.Msg
@@ -181,58 +179,6 @@ func ConvertToSDKMessage(
 			)
 
 			return payPacketFeeMsg, nil
-		}
-	case *vmtypes.CosmosMessage__OPinit:
-		switch msg := msg.Value.(type) {
-		case *vmtypes.OPinitMessage__InitiateTokenDeposit:
-			denom, err := DenomFromMetadataAddress(ctx, fk, msg.Amount.Metadata)
-			if err != nil {
-				return nil, err
-			}
-
-			senderAddr, err := ac.BytesToString(ConvertVMAddressToSDKAddress(msg.SenderAddress))
-			if err != nil {
-				return nil, err
-			}
-
-			toAddr, err := ac.BytesToString(ConvertVMAddressToSDKAddress(msg.ToAddress))
-			if err != nil {
-				return nil, err
-			}
-
-			depositMsg := ophosttypes.NewMsgInitiateTokenDeposit(
-				senderAddr,
-				msg.BridgeId,
-				toAddr,
-				sdk.NewCoin(denom, math.NewIntFromUint64(msg.Amount.Amount)),
-				msg.Data,
-			)
-
-			return depositMsg, nil
-
-		case *vmtypes.OPinitMessage__InitiateTokenWithdrawal: // for l2 (minitia)
-			denom, err := DenomFromMetadataAddress(ctx, fk, msg.Amount.Metadata)
-			if err != nil {
-				return nil, err
-			}
-
-			senderAddr, err := ac.BytesToString(ConvertVMAddressToSDKAddress(msg.SenderAddress))
-			if err != nil {
-				return nil, err
-			}
-
-			toAddr, err := ac.BytesToString(ConvertVMAddressToSDKAddress(msg.ToAddress))
-			if err != nil {
-				return nil, err
-			}
-
-			withdrawMsg := opchildtypes.NewMsgInitiateTokenWithdrawal(
-				senderAddr,
-				toAddr,
-				sdk.NewCoin(denom, math.NewIntFromUint64(msg.Amount.Amount)),
-			)
-
-			return withdrawMsg, nil
 		}
 	}
 

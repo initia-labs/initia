@@ -1,0 +1,56 @@
+package keeper
+
+import (
+	abci "github.com/cometbft/cometbft/abci/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"github.com/initia-labs/initia/x/move/types"
+	vmtypes "github.com/initia-labs/movevm/types"
+)
+
+func (k Keeper) HandleVMQuery(ctx sdk.Context, req *vmtypes.QueryRequest) ([]byte, error) {
+	switch {
+	case req.Custom != nil:
+		return k.queryCustom(ctx, req.Custom)
+	case req.Stargate != nil:
+		return k.queryStargate(ctx, req.Stargate)
+	}
+
+	return nil, types.ErrInvalidQueryRequest
+}
+
+func (k Keeper) queryCustom(ctx sdk.Context, req *vmtypes.CustomQuery) ([]byte, error) {
+	customQuery, exists := k.vmQueryWhiteList.Custom[req.Name]
+	if !exists {
+		return nil, types.ErrNotSupportedCustomQuery
+	}
+
+	return customQuery(ctx, req.Data)
+}
+
+func (k Keeper) queryStargate(ctx sdk.Context, req *vmtypes.StargateQuery) ([]byte, error) {
+	protoSet, exists := k.vmQueryWhiteList.Stargate[req.Path]
+	if !exists {
+		return nil, types.ErrNotSupportedStargateQuery
+	}
+
+	route := k.grpcRouter.Route(req.Path)
+	if route == nil {
+		return nil, types.ErrNotSupportedStargateQuery
+	}
+
+	reqData, err := types.ConvertJSONMarshalToProto(k.cdc, protoSet.Request, req.Data)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := route(ctx, &abci.RequestQuery{
+		Data: reqData,
+		Path: req.Path,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return types.ConvertProtoToJSONMarshal(k.cdc, protoSet.Response, res.Value)
+}

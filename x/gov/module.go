@@ -35,6 +35,8 @@ import (
 
 	"github.com/initia-labs/initia/x/gov/keeper"
 	customtypes "github.com/initia-labs/initia/x/gov/types"
+
+	customcli "github.com/initia-labs/initia/x/gov/client/cli"
 )
 
 const ConsensusVersion = 1
@@ -107,6 +109,11 @@ func (a AppModuleBasic) GetTxCmd() *cobra.Command {
 	legacyProposalCLIHandlers := getProposalCLIHandlers(a.legacyProposalHandlers)
 
 	return cli.NewTxCmd(legacyProposalCLIHandlers)
+}
+
+// GetQueryCmd returns no root query command for the staking module.
+func (b AppModuleBasic) GetQueryCmd() *cobra.Command {
+	return customcli.GetQueryCmd(b.cdc.InterfaceRegistry().SigningContext().AddressCodec())
 }
 
 func getProposalCLIHandlers(handlers []govclient.ProposalHandler) []*cobra.Command {

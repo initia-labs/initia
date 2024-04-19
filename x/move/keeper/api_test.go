@@ -9,13 +9,16 @@ import (
 	"github.com/stretchr/testify/require"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	govtypesv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 
+	govtypes "github.com/initia-labs/initia/x/gov/types"
 	"github.com/initia-labs/initia/x/move/keeper"
 	"github.com/initia-labs/initia/x/move/types"
 	stakingkeeper "github.com/initia-labs/initia/x/mstaking/keeper"
 
-	vmtypes "github.com/initia-labs/initiavm/types"
+	vmtypes "github.com/initia-labs/movevm/types"
 
+	slinkytypes "github.com/skip-mev/slinky/pkg/types"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 )
 
@@ -168,7 +171,7 @@ func Test_UnbondTimestamp(t *testing.T) {
 	stakingParams, err := input.StakingKeeper.GetParams(ctx)
 	require.NoError(t, err)
 
-	stakingParams.UnbondingTime = time.Duration(60 * 60 * 24 * 7)
+	stakingParams.UnbondingTime = time.Second * 60 * 60 * 24 * 7
 	input.StakingKeeper.SetParams(ctx, stakingParams)
 
 	now := time.Now()
@@ -182,7 +185,7 @@ func Test_GetPrice(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
 	pairId := "BITCOIN/USD"
-	cp, err := oracletypes.CurrencyPairFromString(pairId)
+	cp, err := slinkytypes.CurrencyPairFromString(pairId)
 	require.NoError(t, err)
 
 	price := math.NewInt(111111).MulRaw(1_000_000_000).MulRaw(1_000_000_000).MulRaw(1_000_000_000)
@@ -207,5 +210,73 @@ func Test_GetPrice(t *testing.T) {
 		[][]byte{pairIdArg},
 	)
 	require.NoError(t, err)
-	require.Equal(t, fmt.Sprintf("[\"%s\",\"%d\",\"%d\"]", price.String(), now.Unix(), cp.Decimals()), res)
+	require.Equal(t, fmt.Sprintf("[\"%s\",\"%d\",\"%d\"]", price.String(), now.Unix(), cp.LegacyDecimals()), res.Ret)
+}
+
+func Test_API_Query(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+
+	proposal := govtypes.Proposal{
+		Id:      1,
+		Title:   "title",
+		Summary: "summary",
+		Status:  govtypesv1.ProposalStatus_PROPOSAL_STATUS_DEPOSIT_PERIOD,
+	}
+
+	// set Proposal
+	err := input.GovKeeper.SetProposal(ctx, proposal)
+	require.NoError(t, err)
+
+	now := time.Now()
+	api := keeper.NewApi(input.MoveKeeper, ctx.WithBlockTime(now))
+
+	// out of gas
+	require.Panics(t, func() {
+		_, _, _ = api.Query(vmtypes.QueryRequest{
+			Stargate: &vmtypes.StargateQuery{
+				Path: "/initia.gov.v1.Query/Proposal",
+				Data: []byte(`{"proposal_id": "1"}`),
+			},
+		}, 100)
+	})
+
+	// valid query
+	gasBalance := uint64(2000)
+	resBz, gasUsed, err := api.Query(vmtypes.QueryRequest{
+		Stargate: &vmtypes.StargateQuery{
+			Path: "/initia.gov.v1.Query/Proposal",
+			Data: []byte(`{"proposal_id": "1"}`),
+		},
+	}, gasBalance)
+	require.NoError(t, err)
+	require.Greater(t, gasBalance, gasUsed)
+
+	// expected proposal res json bytes
+	expectedResBz, err := input.EncodingConfig.Codec.MarshalJSON(&govtypes.QueryProposalResponse{
+		Proposal: &proposal,
+	})
+	require.NoError(t, err)
+	require.Equal(t, expectedResBz, resBz)
+}
+
+func Test_API_CustomQuery(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+
+	err := input.MoveKeeper.PublishModuleBundle(ctx, vmtypes.TestAddress, vmtypes.NewModuleBundle(vmtypes.NewModule(testAddressModule)), types.UpgradePolicy_COMPATIBLE)
+	require.NoError(t, err)
+
+	vmAddr, err := vmtypes.NewAccountAddressFromBytes(addrs[0])
+	require.NoError(t, err)
+
+	// to sdk
+	res, err := input.MoveKeeper.ExecuteViewFunction(ctx, vmtypes.TestAddress, "TestAddress", "to_sdk", []vmtypes.TypeTag{}, [][]byte{vmAddr.Bytes()})
+	require.NoError(t, err)
+	require.Equal(t, fmt.Sprintf("\"%s\"", addrs[0].String()), res.Ret)
+
+	// from sdk
+	inputBz, err := vmtypes.SerializeString(addrs[0].String())
+	require.NoError(t, err)
+	res, err = input.MoveKeeper.ExecuteViewFunction(ctx, vmtypes.TestAddress, "TestAddress", "from_sdk", []vmtypes.TypeTag{}, [][]byte{inputBz})
+	require.NoError(t, err)
+	require.Equal(t, fmt.Sprintf("\"%s\"", vmAddr.String()), res.Ret)
 }

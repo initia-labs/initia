@@ -14,10 +14,14 @@ import (
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	legacy.RegisterAminoMsg(cdc, &MsgPublish{}, "move/MsgPublish")
 	legacy.RegisterAminoMsg(cdc, &MsgExecute{}, "move/MsgExecute")
+	legacy.RegisterAminoMsg(cdc, &MsgExecuteJSON{}, "move/MsgExecuteJSON")
 	legacy.RegisterAminoMsg(cdc, &MsgScript{}, "move/MsgScript")
+	legacy.RegisterAminoMsg(cdc, &MsgScriptJSON{}, "move/MsgScriptJSON")
 	legacy.RegisterAminoMsg(cdc, &MsgGovPublish{}, "move/MsgGovPublish")
 	legacy.RegisterAminoMsg(cdc, &MsgGovExecute{}, "move/MsgGovExecute")
+	legacy.RegisterAminoMsg(cdc, &MsgGovExecuteJSON{}, "move/MsgGovExecuteJSON")
 	legacy.RegisterAminoMsg(cdc, &MsgGovScript{}, "move/MsgGovScript")
+	legacy.RegisterAminoMsg(cdc, &MsgGovScriptJSON{}, "move/MsgGovScriptJSON")
 	legacy.RegisterAminoMsg(cdc, &MsgWhitelist{}, "move/MsgWhitelist")
 	legacy.RegisterAminoMsg(cdc, &MsgDelist{}, "move/MsgDelist")
 	legacy.RegisterAminoMsg(cdc, &MsgUpdateParams{}, "move/MsgUpdateParams")
@@ -34,10 +38,14 @@ func RegisterInterfaces(registry codectypes.InterfaceRegistry) {
 	registry.RegisterImplementations((*sdk.Msg)(nil),
 		&MsgPublish{},
 		&MsgExecute{},
+		&MsgExecuteJSON{},
 		&MsgScript{},
+		&MsgScriptJSON{},
 		&MsgGovPublish{},
 		&MsgGovExecute{},
+		&MsgGovExecuteJSON{},
 		&MsgGovScript{},
+		&MsgGovScriptJSON{},
 		&MsgWhitelist{},
 		&MsgDelist{},
 		&MsgUpdateParams{},

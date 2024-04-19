@@ -48,10 +48,46 @@ service Query {
     option (google.api.http).get = "/initia/move/v1/tables/{address}/entries";
   }
 
-  // ViewFunction execute entry function and return  the function result
-  rpc ViewFunction(QueryViewFunctionRequest) returns (QueryViewFunctionResponse) {
+  // Deprecated: Use Query/ViewJSON or Query/ViewJSONBatch
+  // LegacyView execute view function and return the view result.
+  rpc LegacyView(QueryLegacyViewRequest) returns (QueryLegacyViewResponse) {
+    option deprecated        = true;
     option (google.api.http) = {
       post: "/initia/move/v1/accounts/{address}/modules/{module_name}/view_functions/{function_name}"
+      body: "*"
+    };
+  }
+
+  // Deprecated: Use Query/ViewJSON or Query/ViewJSONBatch
+  // View execute view function and return the view result
+  rpc View(QueryViewRequest) returns (QueryViewResponse) {
+    option (google.api.http) = {
+      post: "/initia/move/v1/view"
+      body: "*"
+    };
+  }
+
+  // Deprecated: Use Query/ViewJSON or Query/ViewJSONBatch
+  // ViewBatch execute multiple view functions and return the view results
+  rpc ViewBatch(QueryViewBatchRequest) returns (QueryViewBatchResponse) {
+    option (google.api.http) = {
+      post: "/initia/move/v1/view/batch"
+      body: "*"
+    };
+  }
+
+  // ViewJSON execute view function with json arguemtns and return the view result
+  rpc ViewJSON(QueryViewJSONRequest) returns (QueryViewJSONResponse) {
+    option (google.api.http) = {
+      post: "/initia/move/v1/view/json"
+      body: "*"
+    };
+  }
+
+  // ViewJSONBatch execute multiple view functions with json arguemtns and return the view results
+  rpc ViewJSONBatch(QueryViewJSONBatchRequest) returns (QueryViewJSONBatchResponse) {
+    option (google.api.http) = {
+      post: "/initia/move/v1/view/json/batch"
       body: "*"
     };
   }
@@ -67,6 +103,16 @@ service Query {
   // Params queries all parameters.
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/initia/move/v1/params";
+  }
+
+  // Metadata converts metadata to denom
+  rpc Metadata(QueryMetadataRequest) returns (QueryMetadataResponse) {
+    option (google.api.http).get = "/initia/move/v1/metadata";
+  }
+
+  // Denom converts denom to metadata
+  rpc Denom(QueryDenomRequest) returns (QueryDenomResponse) {
+    option (google.api.http).get = "/initia/move/v1/denom";
   }
 }
 
@@ -181,9 +227,9 @@ message QueryTableEntriesResponse {
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
-// QueryViewFunctionRequest is the request type for the QueryyViewFunction
+// QueryLegacyViewRequest is the request type for the QueryLegacyView
 // RPC method
-message QueryViewFunctionRequest {
+message QueryLegacyViewRequest {
   // Address is the owner address of the module to query
   string address = 1;
   // ModuleName is the module name of the entry function to query
@@ -199,10 +245,92 @@ message QueryViewFunctionRequest {
   repeated bytes args = 5;
 }
 
-// QueryViewFunctionResponse is the response type for the
-// QueryyViewFunction RPC method
-message QueryViewFunctionResponse {
-  string data = 1;
+// QueryLegacyViewResponse is the response type for the
+// QueryLegacyView RPC method
+message QueryLegacyViewResponse {
+  string           data     = 1;
+  repeated VMEvent events   = 2 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+  uint64           gas_used = 3;
+}
+
+// QueryViewRequest is the request type for the QueryView
+// RPC method
+message QueryViewRequest {
+  // Address is the owner address of the module to query
+  string address = 1;
+  // ModuleName is the module name of the entry function to query
+  string module_name = 2;
+  // FunctionName is the name of a function to query
+  string function_name = 3;
+  // TypeArgs is the type arguments of a function to execute
+  // ex) "0x1::BasicCoin::Initia", "bool", "u8", "u64"
+  repeated string type_args = 4;
+  // Args is the arguments of a function to execute
+  // - number: little endian
+  // - string: base64 bytes
+  repeated bytes args = 5;
+}
+
+// QueryViewResponse is the response type for the
+// QueryView RPC method
+message QueryViewResponse {
+  string           data     = 1;
+  repeated VMEvent events   = 2 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+  uint64           gas_used = 3;
+}
+
+// QueryViewBatchRequest is the request type for the QueryViewBatch
+// RPC method
+message QueryViewBatchRequest {
+  repeated QueryViewRequest requests = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+}
+
+// QueryViewBatchResponse is the response type for the
+// QueryViewBatch RPC method
+message QueryViewBatchResponse {
+  repeated QueryViewResponse responses = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+}
+
+// QueryViewJSONRequest is the request type for the QueryViewJSON
+// RPC method
+message QueryViewJSONRequest {
+  // Address is the owner address of the module to query
+  string address = 1;
+  // ModuleName is the module name of the entry function to query
+  string module_name = 2;
+  // FunctionName is the name of a function to query
+  string function_name = 3;
+  // TypeArgs is the type arguments of a function to execute
+  // ex) "0x1::BasicCoin::Initia", "bool", "u8", "u64"
+  repeated string type_args = 4;
+  // Args is the arguments of a function to execute in json stringify format
+  repeated string args = 5;
+}
+
+// QueryViewJSONResponse is the response type for the
+// QueryViewJSON RPC method
+message QueryViewJSONResponse {
+  string           data     = 1;
+  repeated VMEvent events   = 2 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+  uint64           gas_used = 3;
+}
+
+// QueryViewJSONBatchRequest is the request type for the QueryViewJSONBatch
+// RPC method
+message QueryViewJSONBatchRequest {
+  repeated QueryViewJSONRequest requests = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+}
+
+// QueryViewJSONBatchResponse is the response type for the
+// QueryViewJSONBatch RPC method
+message QueryViewJSONBatchResponse {
+  repeated QueryViewJSONResponse responses = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+}
+
+// VMEvent is the event emitted from vm.
+message VMEvent {
+  string type_tag = 1;
+  string data     = 2;
 }
 
 // QueryScriptABIRequest is the request type for the Query/ScriptABI
@@ -225,4 +353,24 @@ message QueryParamsRequest {}
 message QueryParamsResponse {
   // params defines the parameters of the module.
   Params params = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryMetadataRequest is the request type for the Query/Metadata RPC method.
+message QueryMetadataRequest {
+  string denom = 1;
+}
+
+// QueryMetadataResponse is the response type for the Query/Metadata RPC method.
+message QueryMetadataResponse {
+  string metadata = 1;
+}
+
+// QueryDenomRequest is the request type for the Query/Denom RPC method.
+message QueryDenomRequest {
+  string metadata = 1;
+}
+
+// QueryDenomResponse is the response type for the Query/Denom RPC method.
+message QueryDenomResponse {
+  string denom = 1;
 }

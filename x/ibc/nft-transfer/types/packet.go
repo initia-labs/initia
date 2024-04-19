@@ -1,6 +1,7 @@
 package types
 
 import (
+	"encoding/json"
 	"strings"
 	"time"
 
@@ -69,7 +70,75 @@ func (nftpd NonFungibleTokenPacketData) ValidateBasic() error {
 	return ValidatePrefixedClassId(nftpd.ClassId)
 }
 
-// GetBytes is a helper for serialising
-func (nftpd NonFungibleTokenPacketData) GetBytes() []byte {
-	return sdk.MustSortJSON(mustProtoMarshalJSON(&nftpd))
+// GetBytes is a helper for serializing
+func (nftpd NonFungibleTokenPacketData) GetBytes(counterPartyPort string) []byte {
+	var bz []byte
+	var err error
+	if isWasmPacket(counterPartyPort) {
+		bz, err = json.Marshal(nftpd.ToWasmData())
+	} else {
+		bz, err = json.Marshal(nftpd)
+	}
+	if err != nil {
+		panic(err)
+	}
+
+	return sdk.MustSortJSON(bz)
+}
+
+// decode packet data to NonFungibleTokenPacketData
+func DecodePacketData(packetData []byte, counterPartyPort string) (NonFungibleTokenPacketData, error) {
+	decoder := json.NewDecoder(strings.NewReader(string(packetData)))
+	decoder.DisallowUnknownFields()
+
+	if isWasmPacket(counterPartyPort) {
+		var wasmData NonFungibleTokenPacketDataWasm
+		if err := decoder.Decode(&wasmData); err != nil {
+			return NonFungibleTokenPacketData{}, sdkerrors.ErrInvalidRequest.Wrap(err.Error())
+		}
+		return wasmData.ToPacketData(), nil
+	}
+
+	var data NonFungibleTokenPacketData
+	if err := decoder.Decode(&data); err != nil {
+		return NonFungibleTokenPacketData{}, sdkerrors.ErrInvalidRequest.Wrap(err.Error())
+	}
+
+	return data, nil
+}
+
+func (wasmData *NonFungibleTokenPacketDataWasm) ToPacketData() NonFungibleTokenPacketData {
+	data := NonFungibleTokenPacketData{
+		ClassId:   wasmData.ClassId,
+		ClassUri:  wasmData.ClassUri,
+		ClassData: wasmData.ClassData,
+		TokenIds:  wasmData.TokenIds,
+		TokenUris: wasmData.TokenUris,
+		TokenData: wasmData.TokenData,
+		Sender:    wasmData.Sender,
+		Receiver:  wasmData.Receiver,
+		Memo:      wasmData.Memo,
+	}
+
+	return data
+}
+
+func (data *NonFungibleTokenPacketData) ToWasmData() NonFungibleTokenPacketDataWasm {
+	return NonFungibleTokenPacketDataWasm{
+		ClassId:   data.ClassId,
+		ClassUri:  data.ClassUri,
+		ClassData: data.ClassData,
+		TokenIds:  data.TokenIds,
+		TokenUris: data.TokenUris,
+		TokenData: data.TokenData,
+		Sender:    data.Sender,
+		Receiver:  data.Receiver,
+		Memo:      data.Memo,
+	}
+}
+
+const wasmPortPrefix = "wasm."
+
+func isWasmPacket(port string) bool {
+	return strings.HasPrefix(port, wasmPortPrefix)
 }

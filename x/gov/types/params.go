@@ -36,6 +36,7 @@ var (
 	DefaultBurnVoteQuorom            = false // set to false to  replicate behavior of when this change was made (0.47)
 	DefaultBurnVoteVeto              = true  // set to true to replicate behavior of when this change was made (0.47)
 	DefaultMinDepositRatio           = math.LegacyMustNewDecFromStr("0.01")
+	DefaultLowThresholdFunctions     = []string{"0x1::vip::register_snapshot"}
 )
 
 // NewParams creates a new Params instance with given values.
@@ -43,7 +44,7 @@ func NewParams(
 	minDeposit, expeditedminDeposit sdk.Coins, maxDepositPeriod, votingPeriod, expeditedVotingPeriod time.Duration,
 	quorum, threshold, expeditedThreshold, vetoThreshold, minInitialDepositRatio, proposalCancelRatio, proposalCancelDest string,
 	burnProposalDeposit, burnVoteQuorum, burnVoteVeto bool, minDepositRatio string,
-	emergencyMinDeposit sdk.Coins, emergencyTallyInterval time.Duration,
+	emergencyMinDeposit sdk.Coins, emergencyTallyInterval time.Duration, lowThresholdFunctions []string,
 ) Params {
 	return Params{
 		MinDeposit:                 minDeposit,
@@ -64,6 +65,7 @@ func NewParams(
 		MinDepositRatio:            minDepositRatio,
 		EmergencyMinDeposit:        emergencyMinDeposit,
 		EmergencyTallyInterval:     emergencyTallyInterval,
+		LowThresholdFunctions:      lowThresholdFunctions,
 	}
 }
 
@@ -88,6 +90,7 @@ func DefaultParams() Params {
 		DefaultMinDepositRatio.String(),
 		sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, DefaultEmergencyMinDepositTokens)),
 		DefaultEmergencyTallyInterval,
+		DefaultLowThresholdFunctions,
 	)
 }
 
@@ -234,4 +237,14 @@ func (p Params) ToV1() v1.Params {
 		BurnVoteVeto:               p.BurnVoteVeto,
 		MinDepositRatio:            p.MinDepositRatio,
 	}
+}
+
+func (p Params) IsLowThresholdFunction(fid string) bool {
+	for _, fid_ := range p.LowThresholdFunctions {
+		if fid == fid_ {
+			return true
+		}
+	}
+
+	return false
 }
