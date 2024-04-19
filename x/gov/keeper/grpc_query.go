@@ -270,8 +270,12 @@ func (q queryServer) TallyResult(ctx context.Context, req *v1.QueryTallyResultRe
 
 	default:
 		// proposal is in voting period
-		var err error
-		_, _, _, tallyResult, err = q.k.Tally(ctx, proposal)
+		params, err := q.k.Params.Get(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		_, _, _, tallyResult, err = q.k.Tally(ctx, params, proposal)
 		if err != nil {
 			return nil, err
 		}

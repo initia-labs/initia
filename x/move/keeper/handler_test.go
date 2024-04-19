@@ -29,17 +29,15 @@ func TestPublishModuleBundle(t *testing.T) {
 	require.NoError(t, err)
 
 	// republish not allowed
-	err = input.MoveKeeper.PublishModuleBundle(ctx, vmtypes.StdAddress, vmtypes.NewModuleBundle(vmtypes.NewModule(basicCoinModule)), types.UpgradePolicy_ARBITRARY)
+	err = input.MoveKeeper.PublishModuleBundle(ctx, vmtypes.StdAddress, vmtypes.NewModuleBundle(vmtypes.NewModule(basicCoinModule)), types.UpgradePolicy_COMPATIBLE)
 	require.Error(t, err)
 }
 
-func TestPublishModuleBundle_ArbitraryNotEnabled(t *testing.T) {
+func TestPublishModuleBundle_UnspecifiedNotEnabled(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
-	input.MoveKeeper.SetArbitraryEnabled(ctx, false)
-
-	// arbitrary not allowed
-	err := input.MoveKeeper.PublishModuleBundle(ctx, vmtypes.StdAddress, vmtypes.NewModuleBundle(vmtypes.NewModule(basicCoinModule)), types.UpgradePolicy_ARBITRARY)
+	// unspecified not allowed
+	err := input.MoveKeeper.PublishModuleBundle(ctx, vmtypes.StdAddress, vmtypes.NewModuleBundle(vmtypes.NewModule(basicCoinModule)), types.UpgradePolicy_UNSPECIFIED)
 	require.Error(t, err)
 
 	err = input.MoveKeeper.PublishModuleBundle(ctx, vmtypes.StdAddress, vmtypes.NewModuleBundle(vmtypes.NewModule(basicCoinModule)), types.UpgradePolicy_COMPATIBLE)
@@ -62,6 +60,16 @@ func TestPublishModuleBundle_AllowedPublishers(t *testing.T) {
 
 	err = input.MoveKeeper.PublishModuleBundle(ctx, vmtypes.TestAddress, vmtypes.NewModuleBundle(vmtypes.NewModule(tableGeneratorModule)), types.UpgradePolicy_COMPATIBLE)
 	require.NoError(t, err)
+
+	// remove vmtypes.TestAddr to the allowed list
+	err = input.MoveKeeper.SetAllowedPublishers(ctx, []vmtypes.AccountAddress{vmtypes.StdAddress})
+	require.NoError(t, err)
+
+	err = input.MoveKeeper.PublishModuleBundle(ctx, vmtypes.StdAddress, vmtypes.NewModuleBundle(vmtypes.NewModule(basicCoinModule)), types.UpgradePolicy_COMPATIBLE)
+	require.NoError(t, err)
+
+	err = input.MoveKeeper.PublishModuleBundle(ctx, vmtypes.TestAddress, vmtypes.NewModuleBundle(vmtypes.NewModule(tableGeneratorModule)), types.UpgradePolicy_COMPATIBLE)
+	require.Error(t, err)
 }
 
 func TestExecuteEntryFunction(t *testing.T) {
@@ -83,15 +91,45 @@ func TestExecuteEntryFunction(t *testing.T) {
 		sdk.NewAttribute(types.AttributeKeyTypeTag, "0x1::BasicCoin::MintEvent"),
 		sdk.NewAttribute(types.AttributeKeyData, `{"account":"0x2","amount":"100","coin_type":"0x1::BasicCoin::Initia"}`),
 	), event)
+
+	// cleanup events
+	ctx = ctx.WithEventManager(sdk.NewEventManager())
+
+	// json args
+	err = input.MoveKeeper.ExecuteEntryFunctionJSON(ctx, vmtypes.TestAddress, vmtypes.StdAddress,
+		"BasicCoin",
+		"mint",
+		[]vmtypes.TypeTag{MustConvertStringToTypeTag("0x1::BasicCoin::Initia")},
+		[]string{"\"200\""})
+	require.NoError(t, err)
+
+	events = ctx.EventManager().Events()
+	event = events[len(events)-1]
+
+	require.Equal(t, sdk.NewEvent(types.EventTypeMove,
+		sdk.NewAttribute(types.AttributeKeyTypeTag, "0x1::BasicCoin::MintEvent"),
+		sdk.NewAttribute(types.AttributeKeyData, `{"account":"0x2","amount":"200","coin_type":"0x1::BasicCoin::Initia"}`),
+	), event)
 }
 
 func TestExecuteScript(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
-	err := input.MoveKeeper.ExecuteScript(ctx, vmtypes.TestAddress,
+	argBz, err := vmtypes.SerializeUint64(200)
+	require.NoError(t, err)
+
+	err = input.MoveKeeper.ExecuteScript(ctx, vmtypes.TestAddress,
 		basicCoinMintScript,
 		[]vmtypes.TypeTag{MustConvertStringToTypeTag("0x1::BasicCoin::Initia"), MustConvertStringToTypeTag("bool")},
-		[][]byte{},
+		[][]byte{argBz},
+	)
+	require.NoError(t, err)
+
+	// json args
+	err = input.MoveKeeper.ExecuteScriptJSON(ctx, vmtypes.TestAddress,
+		basicCoinMintScript,
+		[]vmtypes.TypeTag{MustConvertStringToTypeTag("0x1::BasicCoin::Initia"), MustConvertStringToTypeTag("bool")},
+		[]string{"\"200\""},
 	)
 	require.NoError(t, err)
 }

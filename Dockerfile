@@ -1,8 +1,8 @@
-FROM golang:1.22-alpine AS go-builder
+FROM golang:1.22-alpine3.19 AS go-builder
 #ARG arch=x86_64
 
 # See https://github.com/initia-labs/movevm/releases
-ENV LIBMOVEVM_VERSION=v0.2.2
+ENV LIBMOVEVM_VERSION=v0.2.5
 
 # this comes from standard alpine nightly file
 #  https://github.com/rust-lang/docker-rust-nightly/blob/master/alpine3.12/Dockerfile
@@ -39,7 +39,7 @@ RUN cp /lib/libcompiler_muslc.`uname -m`.a /lib/libcompiler_muslc.a
 # force it to use static lib (from above) not standard libmovevm.so and libcompiler.so file
 RUN LEDGER_ENABLED=false BUILD_TAGS=muslc LDFLAGS="-linkmode=external -extldflags \"-L/code/mimalloc/build -lmimalloc -Wl,-z,muldefs -static\"" make build
 
-FROM alpine:3.15.4
+FROM alpine:3.19
 
 RUN addgroup initia \
     && adduser -G initia -D -h /initia initia

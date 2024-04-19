@@ -17,9 +17,8 @@ const (
 // FlagSetUpgradePolicy Returns the FlagSet for upgrade policy related operations.
 func FlagSetUpgradePolicy() *flag.FlagSet {
 	fs := flag.NewFlagSet("", flag.ContinueOnError)
-	fs.String(FlagUpgradePolicy, types.UpgradePolicy_name[int32(types.UpgradePolicy_ARBITRARY)],
-		fmt.Sprintf(`The module upgrade policy, which should be one of "%s", "%s" and "%s")`,
-			types.UpgradePolicy_name[int32(types.UpgradePolicy_ARBITRARY)],
+	fs.String(FlagUpgradePolicy, types.UpgradePolicy_name[int32(types.UpgradePolicy_COMPATIBLE)],
+		fmt.Sprintf(`The module upgrade policy, which should be one of "%s" and "%s")`,
 			types.UpgradePolicy_name[int32(types.UpgradePolicy_COMPATIBLE)],
 			types.UpgradePolicy_name[int32(types.UpgradePolicy_IMMUTABLE)],
 		))

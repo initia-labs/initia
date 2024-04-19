@@ -3,7 +3,6 @@ package app
 import (
 	"encoding/json"
 
-	icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v8/types"
 	icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
 	icagenesistypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/genesis/types"
 	icahosttypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/host/types"
@@ -15,14 +14,16 @@ import (
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
+	l2slinky "github.com/initia-labs/OPinit/x/opchild/l2slinky"
 	customdistrtypes "github.com/initia-labs/initia/x/distribution/types"
 	customgovtypes "github.com/initia-labs/initia/x/gov/types"
-	fetchpricetypes "github.com/initia-labs/initia/x/ibc/fetchprice/types"
 	movetypes "github.com/initia-labs/initia/x/move/types"
 	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
 	rewardtypes "github.com/initia-labs/initia/x/reward/types"
 
 	auctiontypes "github.com/skip-mev/block-sdk/v2/x/auction/types"
+	slinkytypes "github.com/skip-mev/slinky/pkg/types"
+	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 )
 
 // GenesisState - The genesis state of the blockchain is represented here as a map of raw json
@@ -39,8 +40,7 @@ func NewDefaultGenesisState(cdc codec.JSONCodec, bondDenom string) GenesisState 
 	return GenesisState(BasicManager().DefaultGenesis(cdc)).
 		ConfigureBondDenom(cdc, bondDenom).
 		ConfigureICA(cdc).
-		ConfigureICQ(cdc).
-		DisableFetchPrice(cdc)
+		AddTimestampCurrencyPair(cdc)
 }
 
 // ConfigureBondDenom generates the default state for the application.
@@ -88,24 +88,21 @@ func (genState GenesisState) ConfigureBondDenom(cdc codec.JSONCodec, bondDenom s
 	return genState
 }
 
-func (genState GenesisState) ConfigureICQ(cdc codec.JSONCodec) GenesisState {
-	var icqGenSate icqtypes.GenesisState
-	cdc.MustUnmarshalJSON(genState[icqtypes.ModuleName], &icqGenSate)
-	icqGenSate.Params.HostEnabled = true
-	icqGenSate.Params.AllowQueries = []string{
-		"/slinky.oracle.v1.Query/GetPrices",
-		"/slinky.oracle.v1.Query/GetPrice",
+func (genState GenesisState) AddTimestampCurrencyPair(cdc codec.JSONCodec) GenesisState {
+	var oracleGenState oracletypes.GenesisState
+	cdc.MustUnmarshalJSON(genState[oracletypes.ModuleName], &oracleGenState)
+
+	cp, err := slinkytypes.CurrencyPairFromString(l2slinky.ReservedCPTimestamp)
+	if err != nil {
+		panic(err)
 	}
-	genState[icqtypes.ModuleName] = cdc.MustMarshalJSON(&icqGenSate)
 
-	return genState
-}
-
-func (genState GenesisState) DisableFetchPrice(cdc codec.JSONCodec) GenesisState {
-	var fetchpriceGenSate fetchpricetypes.GenesisState
-	cdc.MustUnmarshalJSON(genState[fetchpricetypes.ModuleName], &fetchpriceGenSate)
-	fetchpriceGenSate.Params.FetchEnabled = false
-	genState[fetchpricetypes.ModuleName] = cdc.MustMarshalJSON(&fetchpriceGenSate)
+	oracleGenState.CurrencyPairGenesis = append(oracleGenState.CurrencyPairGenesis, oracletypes.CurrencyPairGenesis{
+		CurrencyPair:      cp,
+		CurrencyPairPrice: nil,
+		Nonce:             0,
+	})
+	genState[oracletypes.ModuleName] = cdc.MustMarshalJSON(&oracleGenState)
 	return genState
 }
 

@@ -264,7 +264,6 @@ func TestQueueManagement(t *testing.T) {
 			err = input.GovKeeper.Params.Set(ctx, params)
 			require.NoError(t, err)
 
-			proposals := make([]customtypes.Proposal, 0, len(tc.deposits))
 			for _, deposit := range tc.deposits {
 				proposal, err := input.GovKeeper.SubmitProposal(ctx, nil, "", "", "", addrs[0], false)
 				require.NoError(t, err)
@@ -279,7 +278,6 @@ func TestQueueManagement(t *testing.T) {
 					err = input.GovKeeper.ActivateEmergencyProposal(ctx, proposal)
 					require.NoError(t, err)
 				}
-				proposals = append(proposals, proposal)
 			}
 
 			qr := queueResult{}

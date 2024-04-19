@@ -19,20 +19,22 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Query_Module_FullMethodName       = "/initia.move.v1.Query/Module"
-	Query_Modules_FullMethodName      = "/initia.move.v1.Query/Modules"
-	Query_Resource_FullMethodName     = "/initia.move.v1.Query/Resource"
-	Query_Resources_FullMethodName    = "/initia.move.v1.Query/Resources"
-	Query_TableInfo_FullMethodName    = "/initia.move.v1.Query/TableInfo"
-	Query_TableEntry_FullMethodName   = "/initia.move.v1.Query/TableEntry"
-	Query_TableEntries_FullMethodName = "/initia.move.v1.Query/TableEntries"
-	Query_LegacyView_FullMethodName   = "/initia.move.v1.Query/LegacyView"
-	Query_View_FullMethodName         = "/initia.move.v1.Query/View"
-	Query_ViewBatch_FullMethodName    = "/initia.move.v1.Query/ViewBatch"
-	Query_ScriptABI_FullMethodName    = "/initia.move.v1.Query/ScriptABI"
-	Query_Params_FullMethodName       = "/initia.move.v1.Query/Params"
-	Query_Metadata_FullMethodName     = "/initia.move.v1.Query/Metadata"
-	Query_Denom_FullMethodName        = "/initia.move.v1.Query/Denom"
+	Query_Module_FullMethodName        = "/initia.move.v1.Query/Module"
+	Query_Modules_FullMethodName       = "/initia.move.v1.Query/Modules"
+	Query_Resource_FullMethodName      = "/initia.move.v1.Query/Resource"
+	Query_Resources_FullMethodName     = "/initia.move.v1.Query/Resources"
+	Query_TableInfo_FullMethodName     = "/initia.move.v1.Query/TableInfo"
+	Query_TableEntry_FullMethodName    = "/initia.move.v1.Query/TableEntry"
+	Query_TableEntries_FullMethodName  = "/initia.move.v1.Query/TableEntries"
+	Query_LegacyView_FullMethodName    = "/initia.move.v1.Query/LegacyView"
+	Query_View_FullMethodName          = "/initia.move.v1.Query/View"
+	Query_ViewBatch_FullMethodName     = "/initia.move.v1.Query/ViewBatch"
+	Query_ViewJSON_FullMethodName      = "/initia.move.v1.Query/ViewJSON"
+	Query_ViewJSONBatch_FullMethodName = "/initia.move.v1.Query/ViewJSONBatch"
+	Query_ScriptABI_FullMethodName     = "/initia.move.v1.Query/ScriptABI"
+	Query_Params_FullMethodName        = "/initia.move.v1.Query/Params"
+	Query_Metadata_FullMethodName      = "/initia.move.v1.Query/Metadata"
+	Query_Denom_FullMethodName         = "/initia.move.v1.Query/Denom"
 )
 
 // QueryClient is the client API for Query service.
@@ -54,13 +56,19 @@ type QueryClient interface {
 	// Query table entries with pagination
 	TableEntries(ctx context.Context, in *QueryTableEntriesRequest, opts ...grpc.CallOption) (*QueryTableEntriesResponse, error)
 	// Deprecated: Do not use.
-	// Deprecated: Use of Query/LegacyView is deprecated.
+	// Deprecated: Use Query/ViewJSON or Query/ViewJSONBatch
 	// LegacyView execute view function and return the view result.
 	LegacyView(ctx context.Context, in *QueryLegacyViewRequest, opts ...grpc.CallOption) (*QueryLegacyViewResponse, error)
+	// Deprecated: Use Query/ViewJSON or Query/ViewJSONBatch
 	// View execute view function and return the view result
 	View(ctx context.Context, in *QueryViewRequest, opts ...grpc.CallOption) (*QueryViewResponse, error)
+	// Deprecated: Use Query/ViewJSON or Query/ViewJSONBatch
 	// ViewBatch execute multiple view functions and return the view results
 	ViewBatch(ctx context.Context, in *QueryViewBatchRequest, opts ...grpc.CallOption) (*QueryViewBatchResponse, error)
+	// ViewJSON execute view function with json arguemtns and return the view result
+	ViewJSON(ctx context.Context, in *QueryViewJSONRequest, opts ...grpc.CallOption) (*QueryViewJSONResponse, error)
+	// ViewJSONBatch execute multiple view functions with json arguemtns and return the view results
+	ViewJSONBatch(ctx context.Context, in *QueryViewJSONBatchRequest, opts ...grpc.CallOption) (*QueryViewJSONBatchResponse, error)
 	// ScriptABI decode script bytes into ABI
 	ScriptABI(ctx context.Context, in *QueryScriptABIRequest, opts ...grpc.CallOption) (*QueryScriptABIResponse, error)
 	// Params queries all parameters.
@@ -170,6 +178,24 @@ func (c *queryClient) ViewBatch(ctx context.Context, in *QueryViewBatchRequest, 
 	return out, nil
 }
 
+func (c *queryClient) ViewJSON(ctx context.Context, in *QueryViewJSONRequest, opts ...grpc.CallOption) (*QueryViewJSONResponse, error) {
+	out := new(QueryViewJSONResponse)
+	err := c.cc.Invoke(ctx, Query_ViewJSON_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) ViewJSONBatch(ctx context.Context, in *QueryViewJSONBatchRequest, opts ...grpc.CallOption) (*QueryViewJSONBatchResponse, error) {
+	out := new(QueryViewJSONBatchResponse)
+	err := c.cc.Invoke(ctx, Query_ViewJSONBatch_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *queryClient) ScriptABI(ctx context.Context, in *QueryScriptABIRequest, opts ...grpc.CallOption) (*QueryScriptABIResponse, error) {
 	out := new(QueryScriptABIResponse)
 	err := c.cc.Invoke(ctx, Query_ScriptABI_FullMethodName, in, out, opts...)
@@ -225,13 +251,19 @@ type QueryServer interface {
 	// Query table entries with pagination
 	TableEntries(context.Context, *QueryTableEntriesRequest) (*QueryTableEntriesResponse, error)
 	// Deprecated: Do not use.
-	// Deprecated: Use of Query/LegacyView is deprecated.
+	// Deprecated: Use Query/ViewJSON or Query/ViewJSONBatch
 	// LegacyView execute view function and return the view result.
 	LegacyView(context.Context, *QueryLegacyViewRequest) (*QueryLegacyViewResponse, error)
+	// Deprecated: Use Query/ViewJSON or Query/ViewJSONBatch
 	// View execute view function and return the view result
 	View(context.Context, *QueryViewRequest) (*QueryViewResponse, error)
+	// Deprecated: Use Query/ViewJSON or Query/ViewJSONBatch
 	// ViewBatch execute multiple view functions and return the view results
 	ViewBatch(context.Context, *QueryViewBatchRequest) (*QueryViewBatchResponse, error)
+	// ViewJSON execute view function with json arguemtns and return the view result
+	ViewJSON(context.Context, *QueryViewJSONRequest) (*QueryViewJSONResponse, error)
+	// ViewJSONBatch execute multiple view functions with json arguemtns and return the view results
+	ViewJSONBatch(context.Context, *QueryViewJSONBatchRequest) (*QueryViewJSONBatchResponse, error)
 	// ScriptABI decode script bytes into ABI
 	ScriptABI(context.Context, *QueryScriptABIRequest) (*QueryScriptABIResponse, error)
 	// Params queries all parameters.
@@ -276,6 +308,12 @@ func (UnimplementedQueryServer) View(context.Context, *QueryViewRequest) (*Query
 }
 func (UnimplementedQueryServer) ViewBatch(context.Context, *QueryViewBatchRequest) (*QueryViewBatchResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ViewBatch not implemented")
+}
+func (UnimplementedQueryServer) ViewJSON(context.Context, *QueryViewJSONRequest) (*QueryViewJSONResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ViewJSON not implemented")
+}
+func (UnimplementedQueryServer) ViewJSONBatch(context.Context, *QueryViewJSONBatchRequest) (*QueryViewJSONBatchResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ViewJSONBatch not implemented")
 }
 func (UnimplementedQueryServer) ScriptABI(context.Context, *QueryScriptABIRequest) (*QueryScriptABIResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ScriptABI not implemented")
@@ -482,6 +520,42 @@ func _Query_ViewBatch_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_ViewJSON_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryViewJSONRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).ViewJSON(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_ViewJSON_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).ViewJSON(ctx, req.(*QueryViewJSONRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_ViewJSONBatch_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryViewJSONBatchRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).ViewJSONBatch(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_ViewJSONBatch_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).ViewJSONBatch(ctx, req.(*QueryViewJSONBatchRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Query_ScriptABI_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryScriptABIRequest)
 	if err := dec(in); err != nil {
@@ -600,6 +674,14 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ViewBatch",
 			Handler:    _Query_ViewBatch_Handler,
+		},
+		{
+			MethodName: "ViewJSON",
+			Handler:    _Query_ViewJSON_Handler,
+		},
+		{
+			MethodName: "ViewJSONBatch",
+			Handler:    _Query_ViewJSONBatch_Handler,
 		},
 		{
 			MethodName: "ScriptABI",

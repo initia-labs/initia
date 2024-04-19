@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"fmt"
 	"testing"
 
 	"cosmossdk.io/math"
@@ -66,6 +67,20 @@ func TestView(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "\"100\"", legacyRes.Data)
 	require.Equal(t, []types.VMEvent{{TypeTag: "0x1::BasicCoin::ViewEvent", Data: "{\"data\":\"hello world\"}"}}, legacyRes.Events)
+
+	// json check
+	jsonRes, err := querier.ViewJSON(
+		ctx,
+		&types.QueryViewJSONRequest{
+			Address:      vmtypes.StdAddress.String(),
+			ModuleName:   "BasicCoin",
+			FunctionName: "get",
+			TypeArgs:     []string{"0x1::BasicCoin::Initia"},
+			Args:         []string{fmt.Sprintf("\"%s\"", vmtypes.TestAddress)},
+		})
+	require.NoError(t, err)
+	require.Equal(t, "\"100\"", jsonRes.Data)
+	require.Equal(t, []types.VMEvent{{TypeTag: "0x1::BasicCoin::ViewEvent", Data: "{\"data\":\"hello world\"}"}}, legacyRes.Events)
 }
 
 func TestViewBatch(t *testing.T) {
@@ -116,6 +131,32 @@ func TestViewBatch(t *testing.T) {
 	require.Len(t, res.Responses, 2)
 	require.Equal(t, "\"100\"", res.Responses[0].Data)
 	require.Equal(t, "\"123\"", res.Responses[1].Data)
+
+	// json check
+	jsonRes, err := querier.ViewJSONBatch(
+		ctx,
+		&types.QueryViewJSONBatchRequest{
+			Requests: []types.QueryViewJSONRequest{
+				{
+					Address:      vmtypes.StdAddress.String(),
+					ModuleName:   "BasicCoin",
+					FunctionName: "get",
+					TypeArgs:     []string{"0x1::BasicCoin::Initia"},
+					Args:         []string{fmt.Sprintf("\"%s\"", vmtypes.TestAddress)},
+				},
+				{
+					Address:      vmtypes.StdAddress.String(),
+					ModuleName:   "BasicCoin",
+					FunctionName: "number",
+					TypeArgs:     []string{},
+					Args:         []string{},
+				},
+			},
+		})
+	require.NoError(t, err)
+	require.Len(t, jsonRes.Responses, 2)
+	require.Equal(t, "\"100\"", jsonRes.Responses[0].Data)
+	require.Equal(t, "\"123\"", jsonRes.Responses[1].Data)
 }
 
 func TestModules(t *testing.T) {
@@ -382,8 +423,8 @@ func TestScriptABI(t *testing.T) {
 		},
 	)
 	require.NoError(t, err)
-	expectedABI := `{"name":"main","visibility":"public","is_entry":true,"is_view":false,"generic_type_params":[{"constraints":[]},{"constraints":[]}],"params":["signer"],"return":[]}`
-	require.Equal(t, []byte(expectedABI), abi.Abi)
+	expectedABI := `{"name":"main","visibility":"public","is_entry":true,"is_view":false,"generic_type_params":[{"constraints":[]},{"constraints":[]}],"params":["signer","u64"],"return":[]}`
+	require.Equal(t, expectedABI, string(abi.Abi))
 }
 
 func TestParams(t *testing.T) {
