@@ -1158,7 +1158,7 @@ func NewInitiaApp(
 		app.Logger(),
 		app.OracleClient,
 		time.Second,
-		currencypair.NewDeltaCurrencyPairStrategy(app.OracleKeeper),
+		currencypair.NewDefaultCurrencyPairStrategy(app.OracleKeeper),
 		compression.NewCompressionVoteExtensionCodec(
 			compression.NewDefaultVoteExtensionCodec(),
 			compression.NewZLibCompressor(),
