@@ -1129,7 +1129,7 @@ github.com/improbable-eng/grpc-web v0.15.0/go.mod h1:1sy9HKV4Jt9aEs9JSnkWlRJPuPt
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
-github.com/initia-labs/OPinit v0.2.5 h1:DQu+euHXA/pmygPSMDBdHH0FM0s3w08HsacLgq2qjNA=
+github.com/initia-labs/OPinit v0.2.5 h1:gxhtAQ4x/X6DV/XqtGgRkHC0RYlmWT90uT3Isa4XLbc=
 github.com/initia-labs/OPinit v0.2.5/go.mod h1:w89049brZ832S7K6p14AV3UI/V2LMbA6EuVs4IkoErc=
 github.com/initia-labs/OPinit/api v0.2.5 h1:eekVYpcVqG3Te58jAzREJLTKabwBNCEVrHT5s52xHy8=
 github.com/initia-labs/OPinit/api v0.2.5/go.mod h1:oo8VsUFo1vVRg1jXhTMzlm5IF1JjU0I0u0OF/jo6iO4=

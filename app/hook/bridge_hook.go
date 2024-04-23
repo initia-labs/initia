@@ -24,6 +24,7 @@ type ChannelKeeper interface {
 }
 
 type PermKeeper interface {
+	HasPermission(ctx context.Context, portID, channelID string, relayer sdk.AccAddress) (bool, error)
 	SetPermissionedRelayer(ctx context.Context, portID, channelID string, relayer sdk.AccAddress) error
 }
 
@@ -106,5 +107,46 @@ func (h BridgeHook) BridgeBatchInfoUpdated(
 	bridgeId uint64,
 	bridgeConfig ophosttypes.BridgeConfig,
 ) error {
+	return nil
+}
+
+func (h BridgeHook) BridgeMetadataUpdated(
+	ctx context.Context,
+	bridgeId uint64,
+	bridgeConfig ophosttypes.BridgeConfig,
+) error {
+	hasPermChannels, metadata := hasPermChannels(bridgeConfig.Metadata)
+	if !hasPermChannels {
+		return nil
+	}
+
+	challenger, err := h.ac.StringToBytes(bridgeConfig.Challenger)
+	if err != nil {
+		return err
+	}
+
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	for _, permChannel := range metadata.PermChannels {
+		portID, channelID := permChannel.PortID, permChannel.ChannelID
+
+		// check if the relayer is already registered as a permissioned relayer
+		if hasPermission, err := h.IBCPermKeeper.HasPermission(ctx, portID, channelID, challenger); err != nil {
+			return err
+		} else if hasPermission {
+			continue
+		}
+
+		if seq, ok := h.IBCChannelKeeper.GetNextSequenceSend(sdkCtx, portID, channelID); !ok {
+			return channeltypes.ErrChannelNotFound.Wrap("failed to register permissioned relayer")
+		} else if seq != 1 {
+			return channeltypes.ErrChannelExists.Wrap("cannot register permissioned relayer for the channel in use")
+		}
+
+		// register challenger as channel relayer
+		if err = h.IBCPermKeeper.SetPermissionedRelayer(sdkCtx, portID, channelID, challenger); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
