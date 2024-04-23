@@ -1,7 +1,9 @@
 package keeper
 
 import (
+	"bytes"
 	"context"
+	"errors"
 	"fmt"
 
 	"cosmossdk.io/collections"
@@ -60,6 +62,7 @@ func (k Keeper) Logger(ctx context.Context) log.Logger {
 	return sdkCtx.Logger().With("module", "x/"+exported.ModuleName+"-"+types.ModuleName)
 }
 
+// IteratePermissionedRelayers iterates over all the permissioned relayers.
 func (k Keeper) IteratePermissionedRelayers(ctx context.Context, cb func(channelRelayer types.PermissionedRelayer) (bool, error)) error {
 	return k.PermissionedRelayers.Walk(ctx, nil, func(key collections.Pair[string, string], relayer []byte) (stop bool, err error) {
 		relayerStr, err := k.ac.BytesToString(relayer)
@@ -75,6 +78,19 @@ func (k Keeper) IteratePermissionedRelayers(ctx context.Context, cb func(channel
 	})
 }
 
+// SetPermissionedRelayer sets the relayer as the permissioned relayer for the channel.
 func (k Keeper) SetPermissionedRelayer(ctx context.Context, portID, channelID string, relayer sdk.AccAddress) error {
 	return k.PermissionedRelayers.Set(ctx, collections.Join(portID, channelID), relayer)
+}
+
+// HasPermission checks if the relayer has permission to relay packets on the channel.
+func (k Keeper) HasPermission(ctx context.Context, portID, channelID string, relayer sdk.AccAddress) (bool, error) {
+	permRelayer, err := k.PermissionedRelayers.Get(ctx, collections.Join(portID, channelID))
+	if err != nil && errors.Is(err, collections.ErrNotFound) {
+		return false, nil
+	} else if err != nil {
+		return false, err
+	}
+
+	return bytes.Equal(permRelayer, relayer.Bytes()), nil
 }

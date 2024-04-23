@@ -83,8 +83,8 @@ func Test_GetPermissionedRelayer(t *testing.T) {
 
 	portID := "port-123"
 	channelID := "channel-123"
-	pubKey := secp256k1.GenPrivKey().PubKey()
-	addr := sdk.AccAddress(pubKey.Address())
+	pubKey, pubKey2 := secp256k1.GenPrivKey().PubKey(), secp256k1.GenPrivKey().PubKey()
+	addr, addr2 := sdk.AccAddress(pubKey.Address()), sdk.AccAddress(pubKey2.Address())
 
 	// should be empty
 	_, err := k.PermissionedRelayers.Get(ctx, collections.Join(portID, channelID))
@@ -98,4 +98,14 @@ func Test_GetPermissionedRelayer(t *testing.T) {
 	res, err := k.PermissionedRelayers.Get(ctx, collections.Join(portID, channelID))
 	require.NoError(t, err)
 	require.Equal(t, res, addr.Bytes())
+
+	// check properly set
+	ok, err := k.HasPermission(ctx, portID, channelID, addr)
+	require.NoError(t, err)
+	require.True(t, ok)
+
+	// check properly set
+	ok, err = k.HasPermission(ctx, portID, channelID, addr2)
+	require.NoError(t, err)
+	require.False(t, ok)
 }
