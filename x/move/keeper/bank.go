@@ -352,14 +352,13 @@ func (k MoveBankKeeper) BurnCoins(
 	accAddr sdk.AccAddress,
 	coins sdk.Coins,
 ) error {
+
+	communityPoolFunds := sdk.NewCoins()
 	for _, coin := range coins {
 		// if a coin is not generated from 0x1, then send the coin to community pool
 		// because we don't have burn capability.
 		if types.IsMoveCoin(coin) {
-			if err := k.communityPoolKeeper.FundCommunityPool(ctx, coins, accAddr); err != nil {
-				return err
-			}
-
+			communityPoolFunds = communityPoolFunds.Add(coin)
 			continue
 		}
 
@@ -391,6 +390,13 @@ func (k MoveBankKeeper) BurnCoins(
 		)
 
 		if err != nil {
+			return err
+		}
+	}
+
+	// fund community pool with the coins that are not generated from 0x1
+	if !communityPoolFunds.IsZero() {
+		if err := k.communityPoolKeeper.FundCommunityPool(ctx, coins, accAddr); err != nil {
 			return err
 		}
 	}
