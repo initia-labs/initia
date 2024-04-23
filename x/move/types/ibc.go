@@ -6,6 +6,7 @@ import (
 )
 
 type ICS721Data struct {
+	Name        *string          `json:"initia:name,omitempty"`
 	Description *ICS721DataValue `json:"initia:description,omitempty"`
 }
 
@@ -19,6 +20,35 @@ type ICS721DataValue struct {
 // - https://github.com/cosmos/ibc/tree/main/spec/app/ics-721-nft-transfer
 func ConvertDescriptionToICS721Data(desc string) (string, error) {
 	data := ICS721Data{}
+
+	if desc != "" {
+		// if the desc is base64 format, then pass it without wrapping.
+		if _, err := base64.StdEncoding.DecodeString(desc); err == nil {
+			return desc, nil
+		}
+
+		data.Description = &ICS721DataValue{
+			Value: desc,
+		}
+	}
+
+	bz, err := json.Marshal(data)
+	if err != nil {
+		return "", err
+	}
+
+	return base64.StdEncoding.EncodeToString(bz), nil
+}
+
+// Convert description to base64 encoded json string
+// to meet the ics721 spec.
+//
+// - https://github.com/cosmos/ibc/tree/main/spec/app/ics-721-nft-transfer
+func ConvertDescriptionToICS721DataWithName(desc, name string) (string, error) {
+	data := ICS721Data{
+		Name: &name,
+	}
+
 	if desc != "" {
 		// if the desc is base64 format, then pass it without wrapping.
 		if _, err := base64.StdEncoding.DecodeString(desc); err == nil {
@@ -54,10 +84,6 @@ func ConvertICS721DataToDescription(data string) (string, error) {
 	desc := ""
 	if ics721Data.Description != nil {
 		desc = ics721Data.Description.Value
-	} else {
-		// if the data is not initia format, then
-		// use raw data string as description.
-		desc = data
 	}
 
 	return desc, nil

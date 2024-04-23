@@ -21,9 +21,17 @@ service Query {
     option (google.api.http).get = "/ibc/apps/nft_transfer/v1/class_traces";
   }
 
+  rpc ClassData(QueryClassDataRequest) return (QueryClassDataResponse) {
+    option (google.api.http).get = "/ibc/apps/nft_transfer/v1/class_data/{hash}";
+  }
+
   // ClassHash queries a class id hash information.
   rpc ClassHash(QueryClassHashRequest) returns (QueryClassHashResponse) {
     option (google.api.http).get = "/ibc/apps/nft_transfer/v1/class_hashs/{trace}";
+  }
+
+  rpc TokenData(QueryTokenDataRequest) returns (QueryTokenDataResponse) {
+    option (google.api.http).get = "/ibc/apps/nft_transfer/v1/token_data/{hash}/{id}";
   }
 
   // EscrowAddress returns the escrow address for a particular port and channel id.

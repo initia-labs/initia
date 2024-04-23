@@ -36,6 +36,10 @@ var (
 	PortKey = []byte{0x01}
 	// ClassTraceKey defines the key to store the class id trace info in store
 	ClassTraceKey = []byte{0x02}
+	// ClassDataPrefix defines the prefix for class data
+	ClassDataPrefix = []byte{0x03}
+	// TokenDataPrefix defines the prefix for token data
+	TokenDataPrefix = []byte{0x04}
 
 	ParamsKey = []byte{0x11}
 )

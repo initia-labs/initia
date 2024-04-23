@@ -44,7 +44,7 @@ func (k NftKeeper) CollectionInfo(ctx context.Context, collection vmtypes.Accoun
 		return
 	}
 
-	data, err = types.ConvertDescriptionToICS721Data(desc)
+	data, err = types.ConvertDescriptionToICS721DataWithName(desc, name)
 	if err != nil {
 		return
 	}
