@@ -396,7 +396,7 @@ func (k MoveBankKeeper) BurnCoins(
 
 	// fund community pool with the coins that are not generated from 0x1
 	if !communityPoolFunds.IsZero() {
-		if err := k.communityPoolKeeper.FundCommunityPool(ctx, coins, accAddr); err != nil {
+		if err := k.communityPoolKeeper.FundCommunityPool(ctx, communityPoolFunds, accAddr); err != nil {
 			return err
 		}
 	}
