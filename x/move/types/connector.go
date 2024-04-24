@@ -504,7 +504,7 @@ func ReadCollectionInfo(bz []byte) (
 }
 
 // ReadNftInfo util function to read nft info from the raw bytes (bcs)
-func ReadNftInfo(bz []byte) (tokenId, uri, desc string) {
+func ReadNftInfo(bz []byte) (tokenId, tokenUri, tokenDesc string) {
 	cursor := int(0)
 
 	// read collection
@@ -514,7 +514,7 @@ func ReadNftInfo(bz []byte) (tokenId, uri, desc string) {
 	descLen, len := readULEB128(bz[cursor:])
 	cursor += len
 
-	desc = string(bz[cursor : cursor+descLen])
+	tokenDesc = string(bz[cursor : cursor+descLen])
 	cursor += descLen
 
 	// read tokenId
@@ -528,7 +528,7 @@ func ReadNftInfo(bz []byte) (tokenId, uri, desc string) {
 	uriLen, len := readULEB128(bz[cursor:])
 	cursor += len
 
-	uri = string(bz[cursor : cursor+uriLen])
+	tokenUri = string(bz[cursor : cursor+uriLen])
 	cursor += uriLen //nolint
 
 	return

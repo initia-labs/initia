@@ -96,7 +96,7 @@ func (suite *KeeperTestSuite) ConfirmClassId(endpoint *ibctesting.Endpoint, clas
 
 // The following test describes the entire cross-chain process of nft-transfer.
 // The execution sequence of the cross-chain process is:
-// A -> B -> C -> A -> B ->A
+// A -> B -> C -> B ->A
 func (suite *KeeperTestSuite) TestSendAndReceive() {
 	suite.SetupTest()
 
@@ -175,8 +175,8 @@ func (suite *KeeperTestSuite) TestSendAndReceive() {
 		}
 	})
 
-	// transfer from chainC to chainA
-	suite.Run("transfer forward C->B", func() {
+	// transfer from chainC to chainB
+	suite.Run("transfer back C->B", func() {
 		{
 			sender := pathB2C.EndpointB.Chain.SenderAccount.GetAddress()
 			receiver := pathB2C.EndpointA.Chain.SenderAccount.GetAddress()
@@ -200,6 +200,7 @@ func (suite *KeeperTestSuite) TestSendAndReceive() {
 		}
 	})
 
+	// transfer from chainB to chainA
 	suite.Run("transfer back B->A", func() {
 		{
 			sender := pathA2B.EndpointB.Chain.SenderAccount.GetAddress()
@@ -290,6 +291,9 @@ func (suite *KeeperTestSuite) receiverNft(
 		classTrace := types.ParseClassTrace(unprefixedClassId)
 		if classTrace.Path != "" {
 			classId = classTrace.IBCClassId()
+		} else {
+			data.ClassData, err = types.ConvertTokenDataFromICS721(data.ClassData)
+			suite.Require().NoError(err, "ConvertTokenDataFromICS721 error on chain %s", toEndpoint.Chain.ChainID)
 		}
 	}
 
