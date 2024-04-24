@@ -34,6 +34,8 @@ type Keeper struct {
 	PortID      collections.Item[string]
 	Params      collections.Item[types.Params]
 	ClassTraces collections.Map[[]byte, types.ClassTrace]
+	ClassData   collections.Map[[]byte, string]
+	TokenData   collections.Map[collections.Pair[[]byte, string], string]
 }
 
 // NewKeeper creates a new IBC nft-transfer Keeper instance
@@ -62,6 +64,8 @@ func NewKeeper(
 		PortID:      collections.NewItem(sb, types.PortKey, "port_id", collections.StringValue),
 		Params:      collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
 		ClassTraces: collections.NewMap(sb, types.ClassTraceKey, "class_traces", collections.BytesKey, codec.CollValue[types.ClassTrace](cdc)),
+		ClassData:   collections.NewMap(sb, types.ClassDataPrefix, "class_data", collections.BytesKey, collections.StringValue),
+		TokenData:   collections.NewMap(sb, types.TokenDataPrefix, "token_data", collections.PairKeyCodec(collections.BytesKey, collections.StringKey), collections.StringValue),
 	}
 
 	schema, err := sb.Build()

@@ -24,12 +24,12 @@ func NewNftKeeper(k *Keeper) NftKeeper {
 	return NftKeeper{k}
 }
 
-func (k NftKeeper) CollectionInfo(ctx context.Context, collection vmtypes.AccountAddress) (
+func (k NftKeeper) CollectionInfo(ctx context.Context, collectionAddr vmtypes.AccountAddress) (
 	creator vmtypes.AccountAddress,
-	name, uri, data string,
+	name, uri, desc string,
 	err error,
 ) {
-	bz, err := k.GetResourceBytes(ctx, collection, vmtypes.StructTag{
+	bz, err := k.GetResourceBytes(ctx, collectionAddr, vmtypes.StructTag{
 		Address: vmtypes.StdAddress,
 		Module:  types.MoveModuleNameCollection,
 		Name:    types.ResourceNameCollection,
@@ -38,20 +38,10 @@ func (k NftKeeper) CollectionInfo(ctx context.Context, collection vmtypes.Accoun
 		return
 	}
 
-	var desc string
-	creator, name, uri, desc, err = types.ReadCollectionInfo(bz)
-	if err != nil {
-		return
-	}
-
-	data, err = types.ConvertDescriptionToICS721Data(desc)
-	if err != nil {
-		return
-	}
-
-	return
+	return types.ReadCollectionInfo(bz)
 }
 
+// Transfer transfers an NFT from one account to another.
 func (k NftKeeper) Transfer(ctx context.Context, sender, receiver, tokenAddr vmtypes.AccountAddress) error {
 	return k.ExecuteEntryFunction(
 		ctx,
@@ -68,9 +58,10 @@ func (k NftKeeper) Transfer(ctx context.Context, sender, receiver, tokenAddr vmt
 	)
 }
 
+// Mint mints a new NFT.
 func (k NftKeeper) Mint(
 	ctx context.Context,
-	collectionName, tokenId, tokenUri, tokenData string,
+	collectionName, tokenID, tokenURI, tokenDesc string,
 	recipientAddr vmtypes.AccountAddress,
 ) error {
 	collectionNameBz, err := vmtypes.SerializeString(collectionName)
@@ -78,22 +69,17 @@ func (k NftKeeper) Mint(
 		return err
 	}
 
-	idBz, err := vmtypes.SerializeString(tokenId)
+	tokenIDBz, err := vmtypes.SerializeString(tokenID)
 	if err != nil {
 		return err
 	}
 
-	uriBz, err := vmtypes.SerializeString(tokenUri)
+	tokenURIBz, err := vmtypes.SerializeString(tokenURI)
 	if err != nil {
 		return err
 	}
 
-	desc, err := types.ConvertICS721DataToDescription(tokenData)
-	if err != nil {
-		return err
-	}
-
-	descBz, err := vmtypes.SerializeString(desc)
+	tokenDescBz, err := vmtypes.SerializeString(tokenDesc)
 	if err != nil {
 		return err
 	}
@@ -105,7 +91,7 @@ func (k NftKeeper) Mint(
 		types.MoveModuleNameSimpleNft,
 		types.FunctionNameSimpleNftMint,
 		[]vmtypes.TypeTag{},
-		[][]byte{collectionNameBz, descBz, idBz, uriBz, {1}, append([]byte{1}, recipientAddr[:]...)},
+		[][]byte{collectionNameBz, tokenDescBz, tokenIDBz, tokenURIBz, {1}, append([]byte{1}, recipientAddr[:]...)},
 	)
 }
 
@@ -134,12 +120,12 @@ func (k NftKeeper) isCollectionInitialized(ctx context.Context, collection vmtyp
 }
 
 func (k NftKeeper) CreateOrUpdateClass(ctx context.Context, classId, classUri, classData string) error {
-	collection, err := types.CollectionAddressFromClassId(classId)
+	collectionAddr, err := types.CollectionAddressFromClassId(classId)
 	if err != nil {
 		return err
 	}
 
-	if ok, err := k.isCollectionInitialized(ctx, collection); err != nil {
+	if ok, err := k.isCollectionInitialized(ctx, collectionAddr); err != nil {
 		return err
 	} else if !ok {
 		// use classId as collection name
@@ -152,23 +138,18 @@ func (k NftKeeper) CreateOrUpdateClass(ctx context.Context, classId, classUri, c
 	return nil
 }
 
-func (k NftKeeper) initializeCollection(ctx context.Context, collectionName, collectionUri, collectionData string) error {
-	nameBz, err := vmtypes.SerializeString(collectionName)
+func (k NftKeeper) initializeCollection(ctx context.Context, collectionName, classUri, classData string) error {
+	collectionNameBz, err := vmtypes.SerializeString(collectionName)
 	if err != nil {
 		return err
 	}
 
-	uriBz, err := vmtypes.SerializeString(collectionUri)
+	collectionUriBz, err := vmtypes.SerializeString(classUri)
 	if err != nil {
 		return err
 	}
 
-	desc, err := types.ConvertICS721DataToDescription(collectionData)
-	if err != nil {
-		return err
-	}
-
-	descBz, err := vmtypes.SerializeString(desc)
+	collectionDescBz, err := vmtypes.SerializeString(classData)
 	if err != nil {
 		return err
 	}
@@ -180,7 +161,7 @@ func (k NftKeeper) initializeCollection(ctx context.Context, collectionName, col
 		types.MoveModuleNameSimpleNft,
 		types.FunctionNameSimpleNftInitialize,
 		[]vmtypes.TypeTag{},
-		[][]byte{descBz, {0}, nameBz, uriBz, {0}, {0}, {0}, {0}, {0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+		[][]byte{collectionDescBz, {0}, collectionNameBz, collectionUriBz, {0}, {0}, {0}, {0}, {0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
 	)
 }
 
@@ -202,12 +183,12 @@ func (k NftKeeper) Transfers(ctx context.Context, sender, receiver sdk.AccAddres
 		return err
 	}
 
-	collection, err := types.CollectionAddressFromClassId(classId)
+	collectionAddr, err := types.CollectionAddressFromClassId(classId)
 	if err != nil {
 		return err
 	}
 
-	collectionCreator, collectionName, _, _, err := k.CollectionInfo(ctx, collection)
+	collectionCreator, collectionName, _, _, err := k.CollectionInfo(ctx, collectionAddr)
 	if err != nil {
 		return err
 	}
@@ -291,31 +272,31 @@ func (k NftKeeper) Mints(
 	return nil
 }
 
-func (k NftKeeper) GetClassInfo(ctx context.Context, classId string) (classUri string, classData string, err error) {
-	collection, err := types.CollectionAddressFromClassId(classId)
+func (k NftKeeper) GetClassInfo(ctx context.Context, classId string) (classUri string, classDescs string, err error) {
+	collectionAddr, err := types.CollectionAddressFromClassId(classId)
 	if err != nil {
 		return "", "", err
 	}
 
-	_, _, classUri, classData, err = k.CollectionInfo(ctx, collection)
+	_, _, classUri, classDescs, err = k.CollectionInfo(ctx, collectionAddr)
 	return
 }
 
-func (k NftKeeper) GetTokenInfos(ctx context.Context, classId string, tokenIds []string) (tokenUris []string, tokenData []string, err error) {
-	collection, err := types.CollectionAddressFromClassId(classId)
+func (k NftKeeper) GetTokenInfos(ctx context.Context, classId string, tokenIds []string) (tokenUris []string, tokenDescs []string, err error) {
+	collectionAddr, err := types.CollectionAddressFromClassId(classId)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	collectionCreator, collectionName, _, _, err := k.CollectionInfo(ctx, collection)
+	collectionCreator, collectionName, _, _, err := k.CollectionInfo(ctx, collectionAddr)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	tokenUris = make([]string, len(tokenIds))
-	tokenData = make([]string, len(tokenIds))
-	for i, id := range tokenIds {
-		tokenAddr, err := types.TokenAddressFromTokenId(collectionCreator, collectionName, id)
+	tokenDescs = make([]string, len(tokenIds))
+	for i, tokenId := range tokenIds {
+		tokenAddr, err := types.TokenAddressFromTokenId(collectionCreator, collectionName, tokenId)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -329,15 +310,9 @@ func (k NftKeeper) GetTokenInfos(ctx context.Context, classId string, tokenIds [
 			return nil, nil, err
 		}
 
-		_, uri, desc := types.ReadNftInfo(bz)
-		data, err := types.ConvertDescriptionToICS721Data(desc)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		tokenUris[i] = uri
-		tokenData[i] = data
+		_, tokenUri, tokenDesc := types.ReadNftInfo(bz)
+		tokenUris[i] = tokenUri
+		tokenDescs[i] = tokenDesc
 	}
-
-	return tokenUris, tokenData, nil
+	return
 }
