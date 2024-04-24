@@ -136,17 +136,18 @@ func (k Keeper) sendNftTransfer(
 	if err != nil {
 		return 0, err
 	}
-	classData := classDesc
 
 	// get token info
 	tokenUris, tokenDesc, err := k.nftKeeper.GetTokenInfos(ctx, classId, tokenIds)
 	if err != nil {
 		return 0, err
 	}
-	tokenData := tokenDesc
 
 	// NOTE: class id and hex hash correctness checked during msg.ValidateBasic
 	fullClassIdPath := classId
+
+	var classData string
+	tokenData := make([]string, len(tokenIds))
 
 	// deconstruct the nft class id into the class id trace info
 	// to determine if the sender is the source chain
