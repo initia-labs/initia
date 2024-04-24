@@ -126,10 +126,27 @@ func (k Keeper) sendNftTransfer(
 		return 0, errors.Wrap(channeltypes.ErrChannelCapabilityNotFound, "module does not own channel capability")
 	}
 
+	labels := []metrics.Label{
+		telemetry.NewLabel(coretypes.LabelDestinationPort, destinationPort),
+		telemetry.NewLabel(coretypes.LabelDestinationChannel, destinationChannel),
+	}
+
+	// get class info
+	classUri, classDesc, err := k.nftKeeper.GetClassInfo(ctx, classId)
+	if err != nil {
+		return 0, err
+	}
+	classData := classDesc
+
+	// get token info
+	tokenUris, tokenDesc, err := k.nftKeeper.GetTokenInfos(ctx, classId, tokenIds)
+	if err != nil {
+		return 0, err
+	}
+	tokenData := tokenDesc
+
 	// NOTE: class id and hex hash correctness checked during msg.ValidateBasic
 	fullClassIdPath := classId
-
-	var err error
 
 	// deconstruct the nft class id into the class id trace info
 	// to determine if the sender is the source chain
@@ -138,23 +155,35 @@ func (k Keeper) sendNftTransfer(
 		if err != nil {
 			return 0, err
 		}
-	}
+		// construct the class id trace from the full raw class id
+		classTrace := types.ParseClassTrace(fullClassIdPath)
+		traceHash := classTrace.Hash()
 
-	labels := []metrics.Label{
-		telemetry.NewLabel(coretypes.LabelDestinationPort, destinationPort),
-		telemetry.NewLabel(coretypes.LabelDestinationChannel, destinationChannel),
-	}
+		// override classData to the data stored, which is relayed from the source chain
+		classData, err = k.ClassData.Get(ctx, traceHash)
+		if err != nil {
+			return 0, err
+		}
 
-	// get class info
-	classUri, classData, err := k.nftKeeper.GetClassInfo(ctx, classId)
-	if err != nil {
-		return 0, err
-	}
+		// override tokenData to the data stored, which is relayed from the source chain
+		for i, tokenId := range tokenIds {
+			tokenData[i], err = k.TokenData.Get(ctx, collections.Join(traceHash.Bytes(), tokenId))
+			if err != nil {
+				return 0, err
+			}
+		}
+	} else {
+		classData, err = types.ConvertClassDataToICS721(classId, classDesc)
+		if err != nil {
+			return 0, err
+		}
 
-	// get token info
-	tokenUris, tokenData, err := k.nftKeeper.GetTokenInfos(ctx, classId, tokenIds)
-	if err != nil {
-		return 0, err
+		for i := range tokenDesc {
+			tokenData[i], err = types.ConvertTokenDataToICS721(tokenDesc[i])
+			if err != nil {
+				return 0, err
+			}
+		}
 	}
 
 	// NOTE: SendNftTransfer simply sends the class id as it exists on its own
@@ -180,24 +209,6 @@ func (k Keeper) sendNftTransfer(
 			ctx, sender, classId, tokenIds,
 		); err != nil {
 			return 0, err
-		}
-
-		// construct the class id trace from the full raw class id
-		classTrace := types.ParseClassTrace(fullClassIdPath)
-		traceHash := classTrace.Hash()
-
-		// override classData to the data stored, which is relayed from the source chain
-		classData, err = k.ClassData.Get(ctx, traceHash)
-		if err != nil {
-			return 0, err
-		}
-
-		// override tokenData to the data stored, which is relayed from the source chain
-		for i, tokenId := range tokenIds {
-			tokenData[i], err = k.TokenData.Get(ctx, collections.Join(traceHash.Bytes(), tokenId))
-			if err != nil {
-				return 0, err
-			}
 		}
 	}
 

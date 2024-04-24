@@ -1129,8 +1129,8 @@ github.com/improbable-eng/grpc-web v0.15.0/go.mod h1:1sy9HKV4Jt9aEs9JSnkWlRJPuPt
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
-github.com/initia-labs/OPinit v0.2.5 h1:qP5k4v6Qjs+548TQeIb0cNeAnjVJWlWdRsNKzElA0Kc=
-github.com/initia-labs/OPinit v0.2.5/go.mod h1:w89049brZ832S7K6p14AV3UI/V2LMbA6EuVs4IkoErc=
+github.com/initia-labs/OPinit v0.2.5 h1:0gaIY2ndpkT5nwps2U3JU1cR+BCEjuSqVx+nuYjjejs=
+github.com/initia-labs/OPinit v0.2.5/go.mod h1:edvQHHlkbVXTE1joGV9UoXbUuZz18/ewxxCdDf+tbZI=
 github.com/initia-labs/OPinit/api v0.2.5 h1:efY2v1T/wO0tdRua/3HVZNP6tjySeuDeHsv00Nv6X3g=
 github.com/initia-labs/OPinit/api v0.2.5/go.mod h1:oo8VsUFo1vVRg1jXhTMzlm5IF1JjU0I0u0OF/jo6iO4=
 github.com/initia-labs/cosmos-sdk v0.0.0-20240415094035-619a9cc5c022 h1:63yst7NqigxnrUuePBpQpiDK8v6lLlb4A7G4CuGk+30=
