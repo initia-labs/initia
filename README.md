@@ -1,32 +1,34 @@
-# Initia
+![image (1)](https://github.com/initia-labs/initia/assets/160459432/3b7812ec-be55-417d-8ca2-dee77a294874)
 
 [![codecov](https://codecov.io/gh/initia-labs/initia/graph/badge.svg?token=CQ8FELH3BU)](https://codecov.io/gh/initia-labs/initia)
 [![Go Report Card](https://goreportcard.com/badge/github.com/initia-labs/initia)](https://goreportcard.com/report/github.com/initia-labs/initia)
+# Welcome to Initia, a Network for Interwoven Rollups
 
-This repository hosts `initiad`, the first implementation of a cosmos zone with move smart contracts enabled.
+At its core, Initia reconstructs the entire technological stack, introducing a foundational Layer 1 blockchain integrated with a bespoke Layer 2 infrastructure. This integration fosters a tightly knit ecosystem of modular networks. Owning the complete technological stack enables Initia to implement chain-level mechanisms that harmonize the economic interests of users, developers, Layer 2 app-chains, and the Layer 1 chain itself.
 
-## Documentation & Introduction
+The Initia Layer 1 serves as an orchestration layer, facilitating coordination of security, liquidity, routing, and interoperability across the network of interwoven rollups via the VM-Agnostic Optimistic Rollup framework—the OPinit Stack. This framework, supported by fraud proofs and rollback capabilities, allows for the secure scaling of rollups based on CosmosSDK in environments like EVM, MoveVM, or WasmVM, all while leveraging Celestia's Data Availability (DA) layer.
 
-You can find an introduction to the Initia and how to use the initiad binary as a delegator, validator or node operator as well as how moveVM on the Initia works in the [documentation](https://app.gitbook.com/o/VC1Rsak51RJaeaQhM2YE/s/pUvrGia2zAh06hjawOb6/developers/initiad).
+## Native Apps
+Initia's product stack unifies the architecture, offering users a singular chain experience when interacting with thousands of interwoven rollups and reducing entry barriers:
 
-Alternatively, whether you're new to blockchain technology or interested in getting involved, the Initia [Tutorial](https://app.gitbook.com/o/f40ATI6dfRXMHEcAFnUO/s/rnGS4UFboF67ZTvcmbIH/tutorials) will guide you through everything. The tutorial walks you through the basics of blockchain technology, to interacting, creating your own smart contract, and beyond.
+- [InitiaScan](https://scan.initia.tech/mahalo-2): A multi-chain explorer with VM-specific tools and information.
+- [Initia App](https://app.mahalo-2.initia.xyz/): A centralized platform for all things related to Initia.
+- [Initia Usernames](https://usernames.mahalo-2.initia.xyz/): A blockchain-wide on-chain identity system.
+- [Initia Wallet](https://chromewebstore.google.com/detail/initia-wallet/ffbceckpkpbcmgiaehlloocglmijnpmp): A dedicated wallet designed for navigating the expansive Initia ecosystem.
 
-## Note Operators
+## Documentation
+- [General Users](https://initia.gitbook.io/initia-docs-v2/5rqmIevVbPiGQOnNSuWk)
+  - Learn more about Initia on our document's ```About``` section. Learn about what makes Initia unique, such as the Initia architecture, ecosystem, the enshrined liquidity mechanism, and vested interest program.
+- [Validators](https://initia.gitbook.io/initia-docs-v2/5rqmIevVbPiGQOnNSuWk/run-initia-node/running-initia-node)
+  - For validators who want to provide security to the Initia ecosystem, please visit our ```Running Initia Node``` section of the docs. Here, you will be able to learn step-by-step the ways to boot an Initia node. 
+- [Builders](https://initia.gitbook.io/initia-docs-v2/5rqmIevVbPiGQOnNSuWk/build-on-initia/getting-started)
+  - Whether you are an L2 (Minitia) builder or a DApp builder on both layers, start with reading the ```Build on Initia``` section. This document provides the instructions for building on MoveVM, EVM, and WasmVM, and all the tips on building on Initia.
+ 
+  
+## Community
+Join the Initia community for questions and updates!
 
-If you're interested in running an node on the current Initia, check out the docs to [Run a Public Node](https://app.gitbook.com/o/VC1Rsak51RJaeaQhM2YE/s/pUvrGia2zAh06hjawOb6/node-operators/running-initia-node).
-
-## Validators
-
-If you want to participate and help secure Initia, check out becoming a validator. Information on what a validator is and how to participate as one can be found at the [documentation](https://app.gitbook.com/o/f40ATI6dfRXMHEcAFnUO/s/rnGS4UFboF67ZTvcmbIH/validators). If you're running a validator node on the Initia, reach out to a `TBD` on the Initia Developers Discord to join the #validators-verified channel.
-
-## Delegators
-
-If you still want to participate on the Initia, check out becoming a delegator. Information on what a delegator is and how to participate as one can be found at the [TBD](./).
-
-## Contract Developers
-
-If you want to build a move smart contract on Initia, check out becoming contract developer. Information on how to build and deploy contract can be found at the [documentation](https://app.gitbook.com/o/VC1Rsak51RJaeaQhM2YE/s/pUvrGia2zAh06hjawOb6/developers/contracts).
-
-## Testnet
-
-To participate in or utilize the current Initia testnet, take a look at the [initia/networks](https://github.com/initia-labs/networks) repository.
+- [Twitter](twitter.com/initiaFDN)
+- [Discord](https://discord.gg/initia)
+- [Medium](https://medium.com/@initiafdn)
+  
