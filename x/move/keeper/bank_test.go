@@ -198,7 +198,7 @@ func Test_BurnCoins(t *testing.T) {
 		"managed_coin",
 		"initialize",
 		[]vmtypes.TypeTag{},
-		[]string{`[]`, `"test coin"`, `"bar"`, `6`, `""`, `""`},
+		[]string{`null`, `"test coin"`, `"bar"`, `6`, `""`, `""`},
 	)
 	require.NoError(t, err)
 
