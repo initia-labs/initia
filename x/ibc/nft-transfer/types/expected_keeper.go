@@ -25,7 +25,7 @@ type NftKeeper interface {
 	Transfers(ctx context.Context, sender, escrowAddress sdk.AccAddress, classId string, tokenIds []string) error
 	Burns(ctx context.Context, owner sdk.AccAddress, classId string, tokenIds []string) error
 	Mints(ctx context.Context, receiver sdk.AccAddress, classId string, tokenIds, tokenUris []string, tokenData []string) error
-	GetClassInfo(ctx context.Context, classId string) (classUri string, classData string, err error)
+	GetClassInfo(ctx context.Context, classId string) (className string, classUri string, classData string, err error)
 	GetTokenInfos(ctx context.Context, classId string, tokenIds []string) (tokenUris []string, tokenData []string, err error)
 }
 

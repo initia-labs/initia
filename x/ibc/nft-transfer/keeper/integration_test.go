@@ -277,6 +277,7 @@ func (suite *KeeperTestSuite) receiverNft(
 	suite.Require().NoError(err) // message committed
 
 	var classId string
+	var className string
 
 	isAwayFromOrigin := types.SenderChainIsSource(packet.GetSourcePort(), packet.GetSourceChannel(), data.GetClassId())
 	if isAwayFromOrigin {
@@ -292,16 +293,17 @@ func (suite *KeeperTestSuite) receiverNft(
 		if classTrace.Path != "" {
 			classId = classTrace.IBCClassId()
 		} else {
-			data.ClassData, err = types.ConvertTokenDataFromICS721(data.ClassData)
+			className, data.ClassData, err = types.ConvertClassDataFromICS721(data.ClassData)
 			suite.Require().NoError(err, "ConvertTokenDataFromICS721 error on chain %s", toEndpoint.Chain.ChainID)
 		}
 	}
-
 	toNftKeeper := movekeeper.NewNftKeeper(toEndpoint.Chain.GetInitiaApp().MoveKeeper)
-	classUri, classData, err := toNftKeeper.GetClassInfo(toEndpoint.Chain.GetContext(), classId)
+	_className, classUri, classData, err := toNftKeeper.GetClassInfo(toEndpoint.Chain.GetContext(), classId)
 	suite.Require().NoError(err, "not found class")
 	suite.Require().Equal(classUri, data.GetClassUri(), "class uri not equal")
 	suite.Require().Equal(classData, data.GetClassData(), "class data not equal")
-
+	if className != "" {
+		suite.Require().Equal(_className, className, "class name not equal")
+	}
 	return classId
 }

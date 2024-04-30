@@ -132,7 +132,7 @@ func (k Keeper) sendNftTransfer(
 	}
 
 	// get class info
-	classUri, classDesc, err := k.nftKeeper.GetClassInfo(ctx, classId)
+	className, classUri, classDesc, err := k.nftKeeper.GetClassInfo(ctx, classId)
 	if err != nil {
 		return 0, err
 	}
@@ -174,7 +174,7 @@ func (k Keeper) sendNftTransfer(
 			}
 		}
 	} else {
-		classData, err = types.ConvertClassDataToICS721(classId, classDesc)
+		classData, err = types.ConvertClassDataToICS721(className, classDesc)
 		if err != nil {
 			return 0, err
 		}

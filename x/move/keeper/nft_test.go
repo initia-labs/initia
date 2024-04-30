@@ -17,7 +17,7 @@ func Test_NftCreateOrUpdateClass(t *testing.T) {
 	err := nftKeeper.CreateOrUpdateClass(ctx, ibcClassId, "uri", collectionDesc)
 	require.NoError(t, err)
 
-	collectionUri, _collectionData, err := nftKeeper.GetClassInfo(ctx, ibcClassId)
+	_, collectionUri, _collectionData, err := nftKeeper.GetClassInfo(ctx, ibcClassId)
 	require.NoError(t, err)
 	require.Equal(t, "uri", collectionUri)
 	require.Equal(t, collectionDesc, _collectionData)
