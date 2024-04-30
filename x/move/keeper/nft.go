@@ -272,13 +272,13 @@ func (k NftKeeper) Mints(
 	return nil
 }
 
-func (k NftKeeper) GetClassInfo(ctx context.Context, classId string) (classUri string, classDescs string, err error) {
+func (k NftKeeper) GetClassInfo(ctx context.Context, classId string) (className string, classUri string, classDescs string, err error) {
 	collectionAddr, err := types.CollectionAddressFromClassId(classId)
 	if err != nil {
-		return "", "", err
+		return "", "", "", err
 	}
 
-	_, _, classUri, classDescs, err = k.CollectionInfo(ctx, collectionAddr)
+	_, className, classUri, classDescs, err = k.CollectionInfo(ctx, collectionAddr)
 	return
 }
 
