@@ -30,6 +30,7 @@ func Test_GetAccountInfo(t *testing.T) {
 
 	api := keeper.NewApi(input.MoveKeeper, ctx)
 
+	// base account
 	input.AccountKeeper.SetAccount(ctx, input.AccountKeeper.NewAccountWithAddress(ctx, addrs[0]))
 	found, accountNumber, sequence, accountType := api.GetAccountInfo(vmaddr)
 	require.True(t, found)
@@ -39,6 +40,20 @@ func Test_GetAccountInfo(t *testing.T) {
 	require.Equal(t, acc.GetSequence(), sequence)
 	require.Equal(t, vmtypes.AccountType_Base, accountType)
 
+	// module account
+	govAcc := input.AccountKeeper.GetModuleAccount(ctx, "gov")
+	govAddr := govAcc.GetAddress()
+	govVmAddr, err := vmtypes.NewAccountAddressFromBytes(govAddr.Bytes())
+	require.NoError(t, err)
+	found, accountNumber, sequence, accountType = api.GetAccountInfo(govVmAddr)
+	require.True(t, found)
+
+	acc = input.AccountKeeper.GetAccount(ctx, govAddr)
+	require.Equal(t, acc.GetAccountNumber(), accountNumber)
+	require.Equal(t, acc.GetSequence(), sequence)
+	require.Equal(t, vmtypes.AccountType_Module, accountType)
+
+	// not found
 	vmaddr, err = vmtypes.NewAccountAddress("0x3")
 	require.NoError(t, err)
 
