@@ -42,11 +42,9 @@ func (api GoApi) GetAccountInfo(addr vmtypes.AccountAddress) (bool /* found */, 
 			accType = vmtypes.AccountType_Object
 		case *types.TableAccount:
 			accType = vmtypes.AccountType_Table
-		case *authtypes.ModuleAccount:
-			accType = vmtypes.AccountType_Module
 		default:
-			// TODO - panic to error
-			panic("unknown account type")
+			// other account types are considered as module account
+			accType = vmtypes.AccountType_Module
 		}
 
 		return true, acc.GetAccountNumber(), acc.GetSequence(), accType
