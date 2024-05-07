@@ -383,8 +383,13 @@ func (k Keeper) handleExecuteResponse(
 			return err
 		}
 
+		// increase global account number if the given account is not exists
+		if !k.authKeeper.HasAccount(ctx, addr) {
+			k.authKeeper.NextAccountNumber(ctx)
+		}
+
+		// write or overwrite account
 		k.authKeeper.SetAccount(ctx, accI)
-		k.authKeeper.NextAccountNumber(ctx) // increase global account number
 	}
 
 	// CSR: distribute fee coins to contract creator
