@@ -723,7 +723,7 @@ github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANyt
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
 github.com/influxdata/influxdb1-client v0.0.0-20191209144304-8bf82d3c094d/go.mod h1:qj24IKcXYK6Iy9ceXlo3Tc+vtHo9lIhSX5JddghvEPo=
-github.com/initia-labs/OPinit v0.2.8 h1:nKouL3kXwc1bXEq1FHSM91O5n2rwpwjLXn/nXsuz5IY=
+github.com/initia-labs/OPinit v0.2.8 h1:qNEjQtZ5H5SDsLQgPEOUbSxQk/u2bu6hh+9kIWdVZT8=
 github.com/initia-labs/OPinit v0.2.8/go.mod h1:ih8DF/djza3oqMpKFeACPp7YtaJpMBPqO+cgKbKqeG8=
 github.com/initia-labs/OPinit/api v0.2.6 h1:his/7339UJbBcHOY4TcRzGxNWBtcpdt9bzfGKBh/d8w=
 github.com/initia-labs/OPinit/api v0.2.6/go.mod h1:oo8VsUFo1vVRg1jXhTMzlm5IF1JjU0I0u0OF/jo6iO4=
