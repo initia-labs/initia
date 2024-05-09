@@ -12,7 +12,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
 	"github.com/spf13/cast"
-	"go.uber.org/zap"
 
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 	reflectionv1 "cosmossdk.io/api/cosmos/reflection/v1"
@@ -170,7 +169,9 @@ import (
 	"github.com/skip-mev/slinky/pkg/math/voteweighted"
 	oracleclient "github.com/skip-mev/slinky/service/clients/oracle"
 	servicemetrics "github.com/skip-mev/slinky/service/metrics"
-	"github.com/skip-mev/slinky/service/servers/prometheus"
+	marketmap "github.com/skip-mev/slinky/x/marketmap"
+	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
+	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 	"github.com/skip-mev/slinky/x/oracle"
 	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
@@ -208,7 +209,8 @@ var (
 		// distributed to proposers
 		auctiontypes.ModuleName: nil,
 		// slinky oracle permissions
-		oracletypes.ModuleName: nil,
+		oracletypes.ModuleName:    nil,
+		marketmaptypes.ModuleName: nil,
 
 		// this is only for testing
 		authtypes.Minter: {authtypes.Minter},
@@ -274,12 +276,12 @@ type InitiaApp struct {
 	AuctionKeeper         *auctionkeeper.Keeper // x/auction keeper used to process bids for TOB auctions
 	OPHostKeeper          *ophostkeeper.Keeper
 	OracleKeeper          *oraclekeeper.Keeper // x/oracle keeper used for the slinky oracle
+	MarketMapKeeper       *marketmapkeeper.Keeper
 	ForwardingKeeper      *forwardingkeeper.Keeper
 
 	// other slinky oracle services
-	OracleClient           oracleclient.OracleClient
-	OraclePrometheusServer *prometheus.PrometheusServer
-	oraclePreBlockHandler  *oraclepreblock.PreBlockHandler
+	OracleClient          oracleclient.OracleClient
+	oraclePreBlockHandler *oraclepreblock.PreBlockHandler
 
 	// make scoped keepers public for test purposes
 	ScopedIBCKeeper           capabilitykeeper.ScopedKeeper
@@ -336,7 +338,7 @@ func NewInitiaApp(
 		icacontrollertypes.StoreKey, ibcfeetypes.StoreKey, ibcpermtypes.StoreKey,
 		movetypes.StoreKey, auctiontypes.StoreKey, ophosttypes.StoreKey,
 		oracletypes.StoreKey, packetforwardtypes.StoreKey, ibchookstypes.StoreKey,
-		forwardingtypes.StoreKey,
+		forwardingtypes.StoreKey, marketmaptypes.StoreKey,
 	)
 	tkeys := storetypes.NewTransientStoreKeys(forwardingtypes.TransientStoreKey)
 	memKeys := storetypes.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
@@ -536,13 +538,24 @@ func NewInitiaApp(
 		ac,
 	)
 
+	marketMapKeeper := marketmapkeeper.NewKeeper(
+		runtime.NewKVStoreService(keys[marketmaptypes.StoreKey]),
+		appCodec,
+		authorityAccAddr,
+	)
+	app.MarketMapKeeper = marketMapKeeper
+
 	oracleKeeper := oraclekeeper.NewKeeper(
 		runtime.NewKVStoreService(keys[oracletypes.StoreKey]),
 		appCodec,
-		nil, // put MarketMapKeeper in near future
+		app.MarketMapKeeper,
 		authorityAccAddr,
 	)
 	app.OracleKeeper = &oracleKeeper
+
+	// Add the oracle keeper as a hook to market map keeper so new market map entries can be created
+	// and propogated to the oracle keeper.
+	app.MarketMapKeeper.SetHooks(app.OracleKeeper.Hooks())
 
 	app.IBCHooksKeeper = ibchookskeeper.NewKeeper(
 		appCodec,
@@ -860,6 +873,7 @@ func NewInitiaApp(
 		ophost.NewAppModule(appCodec, *app.OPHostKeeper),
 		// slinky modules
 		oracle.NewAppModule(appCodec, *app.OracleKeeper),
+		marketmap.NewAppModule(appCodec, app.MarketMapKeeper),
 		// ibc modules
 		ibc.NewAppModule(app.IBCKeeper),
 		ibctransfer.NewAppModule(*app.TransferKeeper),
@@ -908,6 +922,7 @@ func NewInitiaApp(
 		movetypes.ModuleName,
 		ibcexported.ModuleName,
 		oracletypes.ModuleName,
+		marketmaptypes.ModuleName,
 	)
 
 	app.ModuleManager.SetOrderEndBlockers(
@@ -919,6 +934,7 @@ func NewInitiaApp(
 		feegrant.ModuleName,
 		group.ModuleName,
 		oracletypes.ModuleName,
+		marketmaptypes.ModuleName,
 		forwardingtypes.ModuleName,
 	)
 
@@ -935,7 +951,8 @@ func NewInitiaApp(
 		consensusparamtypes.ModuleName, ibcexported.ModuleName, ibctransfertypes.ModuleName,
 		ibcnfttransfertypes.ModuleName, icatypes.ModuleName, icaauthtypes.ModuleName, ibcfeetypes.ModuleName,
 		ibcpermtypes.ModuleName, consensusparamtypes.ModuleName, auctiontypes.ModuleName, ophosttypes.ModuleName,
-		oracletypes.ModuleName, packetforwardtypes.ModuleName, ibchookstypes.ModuleName, forwardingtypes.ModuleName,
+		oracletypes.ModuleName, marketmaptypes.ModuleName, packetforwardtypes.ModuleName, ibchookstypes.ModuleName,
+		forwardingtypes.ModuleName,
 	}
 	app.ModuleManager.SetOrderInitGenesis(genesisModuleOrder...)
 	app.ModuleManager.SetOrderExportGenesis(genesisModuleOrder...)
@@ -1096,20 +1113,6 @@ func NewInitiaApp(
 		panic(err)
 	}
 
-	// If app level instrumentation is enabled, then wrap the oracle service with a metrics client
-	// to get metrics on the oracle service (for ABCI++). This will allow the instrumentation to track
-	// latency in VerifyVoteExtension requests and more.
-	if oracleConfig.MetricsEnabled {
-		zapLogger, err := zap.NewProduction()
-		if err != nil {
-			panic(err)
-		}
-		app.OraclePrometheusServer, err = prometheus.NewPrometheusServer(oracleConfig.PrometheusServerAddress, zapLogger)
-		if err != nil {
-			panic(err)
-		}
-	}
-
 	oracleProposalHandler := oracleproposals.NewProposalHandler(
 		app.Logger(),
 		blockProposalHandlers.PrepareProposalHandler(),
@@ -1125,7 +1128,7 @@ func NewInitiaApp(
 			compression.NewDefaultExtendedCommitCodec(),
 			compression.NewZStdCompressor(),
 		),
-		currencypair.NewDefaultCurrencyPairStrategy(app.OracleKeeper),
+		currencypair.NewHashCurrencyPairStrategy(app.OracleKeeper),
 		serviceMetrics,
 	)
 
@@ -1141,7 +1144,7 @@ func NewInitiaApp(
 			voteweighted.DefaultPowerThreshold),
 		app.OracleKeeper,
 		serviceMetrics,
-		currencypair.NewDefaultCurrencyPairStrategy(app.OracleKeeper),
+		currencypair.NewHashCurrencyPairStrategy(app.OracleKeeper),
 		compression.NewCompressionVoteExtensionCodec(
 			compression.NewDefaultVoteExtensionCodec(),
 			compression.NewZLibCompressor(),
@@ -1158,7 +1161,7 @@ func NewInitiaApp(
 		app.Logger(),
 		app.OracleClient,
 		time.Second,
-		currencypair.NewDefaultCurrencyPairStrategy(app.OracleKeeper),
+		currencypair.NewHashCurrencyPairStrategy(app.OracleKeeper),
 		compression.NewCompressionVoteExtensionCodec(
 			compression.NewDefaultVoteExtensionCodec(),
 			compression.NewZLibCompressor(),

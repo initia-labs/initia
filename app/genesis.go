@@ -102,6 +102,7 @@ func (genState GenesisState) AddTimestampCurrencyPair(cdc codec.JSONCodec) Genes
 		CurrencyPairPrice: nil,
 		Nonce:             0,
 	})
+	oracleGenState.NextId = 1
 	genState[oracletypes.ModuleName] = cdc.MustMarshalJSON(&oracleGenState)
 	return genState
 }
