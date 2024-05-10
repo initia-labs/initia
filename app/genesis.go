@@ -103,9 +103,11 @@ func (genState GenesisState) AddMarketData(cdc codec.JSONCodec) GenesisState {
 		panic(err)
 	}
 	marketGenState.MarketMap = genesis_markets.ToMarketMap(markets)
-	// Todo david add authorities/admin here
-	// marketGenState.Params.MarketAuthorities =
-	// marketGenState.Params.Admin =
+
+	// Skip Admin account.
+	adminAddr := "init12xufazw43lanl8dkvf3l7y9zzm8n3zsw0xafeg"
+	marketGenState.Params.MarketAuthorities = []string{adminAddr}
+	marketGenState.Params.Admin = adminAddr
 
 	var id uint64
 	// Initialize all markets plus ReservedCPTimestamp
