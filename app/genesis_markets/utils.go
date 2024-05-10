@@ -26,6 +26,7 @@ func ToMarketMap(markets []marketmaptypes.Market) marketmaptypes.MarketMap {
 	}
 
 	for _, m := range markets {
+		m.Ticker.Enabled = true
 		mm.Markets[m.Ticker.String()] = m
 	}
 
