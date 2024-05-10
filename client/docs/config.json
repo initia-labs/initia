@@ -263,6 +263,14 @@
     },
     {
       "url": "./tmp-swagger-gen/slinky/oracle/v1/query.swagger.json"
+    },
+    {
+      "url": "./tmp-swagger-gen/slinky/marketmap/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "MarketMapParams"
+        }
+      }
     }
   ]
 }

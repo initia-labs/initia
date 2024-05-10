@@ -53388,6 +53388,466 @@ paths:
           collectionFormat: multi
       tags:
         - Query
+  /slinky/marketmap/v1/last_updated:
+    get:
+      summary: LastUpdated returns the last height the market map was updated at.
+      operationId: LastUpdated
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              last_updated:
+                type: string
+                format: uint64
+            description: >-
+              LastUpdatedResponse is the response type for the Query/LastUpdated
+              RPC
+
+              method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      tags:
+        - Query
+  /slinky/marketmap/v1/market:
+    get:
+      summary: |-
+        Market returns a market stored in the x/marketmap
+        module.
+      operationId: Market
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              market:
+                description: >-
+                  Market is the configuration of a single market to be
+                  price-fetched for.
+                type: object
+                properties:
+                  ticker:
+                    description: >-
+                      Ticker represents a price feed for a given asset pair i.e.
+                      BTC/USD. The
+
+                      price feed is scaled to a number of decimal places and has
+                      a minimum number
+
+                      of providers required to consider the ticker valid.
+                    type: object
+                    properties:
+                      currency_pair:
+                        description: CurrencyPair is the currency pair for this ticker.
+                        type: object
+                        properties:
+                          Base:
+                            type: string
+                          Quote:
+                            type: string
+                        title: >-
+                          CurrencyPair is the standard representation of a pair
+                          of assets, where one
+
+                          (Base) is priced in terms of the other (Quote)
+                      decimals:
+                        type: string
+                        format: uint64
+                        description: >-
+                          Decimals is the number of decimal places for the
+                          ticker. The number of
+
+                          decimal places is used to convert the price to a
+                          human-readable format.
+                      min_provider_count:
+                        type: string
+                        format: uint64
+                        description: >-
+                          MinProviderCount is the minimum number of providers
+                          required to consider
+
+                          the ticker valid.
+                      enabled:
+                        type: boolean
+                        description: >-
+                          Enabled is the flag that denotes if the Ticker is
+                          enabled for price
+
+                          fetching by an oracle.
+                      metadata_JSON:
+                        type: string
+                        description: >-
+                          MetadataJSON is a string of JSON that encodes any
+                          extra configuration
+
+                          for the given ticker.
+                  provider_configs:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          description: >-
+                            Name corresponds to the name of the provider for
+                            which the configuration is
+
+                            being set.
+                        off_chain_ticker:
+                          type: string
+                          description: >-
+                            OffChainTicker is the off-chain representation of
+                            the ticker i.e. BTC/USD.
+
+                            The off-chain ticker is unique to a given provider
+                            and is used to fetch the
+
+                            price of the ticker from the provider.
+                        normalize_by_pair:
+                          description: >-
+                            NormalizeByPair is the currency pair for this ticker
+                            to be normalized by.
+
+                            For example, if the desired Ticker is BTC/USD, this
+                            market could be reached
+
+                            using: OffChainTicker = BTC/USDT NormalizeByPair =
+                            USDT/USD This field is
+
+                            optional and nullable.
+                          type: object
+                          properties:
+                            Base:
+                              type: string
+                            Quote:
+                              type: string
+                          title: >-
+                            CurrencyPair is the standard representation of a
+                            pair of assets, where one
+
+                            (Base) is priced in terms of the other (Quote)
+                        invert:
+                          type: boolean
+                          title: >-
+                            Invert is a boolean indicating if the BASE and QUOTE
+                            of the market should
+
+                            be inverted. i.e. BASE -> QUOTE, QUOTE -> BASE
+                        metadata_JSON:
+                          type: string
+                          description: >-
+                            MetadataJSON is a string of JSON that encodes any
+                            extra configuration
+
+                            for the given provider config.
+                    description: >-
+                      ProviderConfigs is the list of provider-specific configs
+                      for this Market.
+            description: MarketResponse is the query response for the Market query.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: currency_pair.Base
+          in: query
+          required: false
+          type: string
+        - name: currency_pair.Quote
+          in: query
+          required: false
+          type: string
+      tags:
+        - Query
+  /slinky/marketmap/v1/marketmap:
+    get:
+      summary: |-
+        MarketMap returns the full market map stored in the x/marketmap
+        module.
+      operationId: MarketMap
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              market_map:
+                description: >-
+                  MarketMap defines the global set of market configurations for
+                  all providers
+
+                  and markets.
+                type: object
+                properties:
+                  markets:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      properties:
+                        ticker:
+                          description: >-
+                            Ticker represents a price feed for a given asset
+                            pair i.e. BTC/USD. The
+
+                            price feed is scaled to a number of decimal places
+                            and has a minimum number
+
+                            of providers required to consider the ticker valid.
+                          type: object
+                          properties:
+                            currency_pair:
+                              description: >-
+                                CurrencyPair is the currency pair for this
+                                ticker.
+                              type: object
+                              properties:
+                                Base:
+                                  type: string
+                                Quote:
+                                  type: string
+                              title: >-
+                                CurrencyPair is the standard representation of a
+                                pair of assets, where one
+
+                                (Base) is priced in terms of the other (Quote)
+                            decimals:
+                              type: string
+                              format: uint64
+                              description: >-
+                                Decimals is the number of decimal places for the
+                                ticker. The number of
+
+                                decimal places is used to convert the price to a
+                                human-readable format.
+                            min_provider_count:
+                              type: string
+                              format: uint64
+                              description: >-
+                                MinProviderCount is the minimum number of
+                                providers required to consider
+
+                                the ticker valid.
+                            enabled:
+                              type: boolean
+                              description: >-
+                                Enabled is the flag that denotes if the Ticker
+                                is enabled for price
+
+                                fetching by an oracle.
+                            metadata_JSON:
+                              type: string
+                              description: >-
+                                MetadataJSON is a string of JSON that encodes
+                                any extra configuration
+
+                                for the given ticker.
+                        provider_configs:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              name:
+                                type: string
+                                description: >-
+                                  Name corresponds to the name of the provider
+                                  for which the configuration is
+
+                                  being set.
+                              off_chain_ticker:
+                                type: string
+                                description: >-
+                                  OffChainTicker is the off-chain representation
+                                  of the ticker i.e. BTC/USD.
+
+                                  The off-chain ticker is unique to a given
+                                  provider and is used to fetch the
+
+                                  price of the ticker from the provider.
+                              normalize_by_pair:
+                                description: >-
+                                  NormalizeByPair is the currency pair for this
+                                  ticker to be normalized by.
+
+                                  For example, if the desired Ticker is BTC/USD,
+                                  this market could be reached
+
+                                  using: OffChainTicker = BTC/USDT
+                                  NormalizeByPair = USDT/USD This field is
+
+                                  optional and nullable.
+                                type: object
+                                properties:
+                                  Base:
+                                    type: string
+                                  Quote:
+                                    type: string
+                                title: >-
+                                  CurrencyPair is the standard representation of
+                                  a pair of assets, where one
+
+                                  (Base) is priced in terms of the other (Quote)
+                              invert:
+                                type: boolean
+                                title: >-
+                                  Invert is a boolean indicating if the BASE and
+                                  QUOTE of the market should
+
+                                  be inverted. i.e. BASE -> QUOTE, QUOTE -> BASE
+                              metadata_JSON:
+                                type: string
+                                description: >-
+                                  MetadataJSON is a string of JSON that encodes
+                                  any extra configuration
+
+                                  for the given provider config.
+                          description: >-
+                            ProviderConfigs is the list of provider-specific
+                            configs for this Market.
+                      description: >-
+                        Market encapsulates a Ticker and its provider-specific
+                        configuration.
+                    description: >-
+                      Markets is the full list of tickers and their associated
+                      configurations
+
+                      to be stored on-chain.
+              last_updated:
+                type: string
+                format: uint64
+                description: >-
+                  LastUpdated is the last block height that the market map was
+                  updated.
+
+                  This field can be used as an optimization for clients checking
+                  if there
+
+                  is a new update to the map.
+              chain_id:
+                type: string
+                description: ChainId is the chain identifier for the market map.
+            description: MarketMapResponse is the query response for the MarketMap query.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      tags:
+        - Query
+  /slinky/marketmap/v1/params:
+    get:
+      summary: Params returns the current x/marketmap module parameters.
+      operationId: MarketMapParams
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              params:
+                type: object
+                properties:
+                  market_authorities:
+                    type: array
+                    items:
+                      type: string
+                    description: >-
+                      MarketAuthorities is the list of authority accounts that
+                      are able to
+
+                      control updating the marketmap.
+                  admin:
+                    type: string
+                    description: >-
+                      Admin is an address that can remove addresses from the
+                      MarketAuthorities
+
+                      list. Only governance can add to the MarketAuthorities or
+                      change the Admin.
+                description: Params defines the parameters for the x/marketmap module.
+            description: >-
+              ParamsResponse is the response type for the Query/Params RPC
+              method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      tags:
+        - Query
 definitions:
   cosmos.auth.v1beta1.AddressBytesToStringResponse:
     type: object
@@ -87135,3 +87595,697 @@ definitions:
     title: |-
       CurrencyPair is the standard representation of a pair of assets, where one
       (Base) is priced in terms of the other (Quote)
+  slinky.marketmap.v1.LastUpdatedResponse:
+    type: object
+    properties:
+      last_updated:
+        type: string
+        format: uint64
+    description: |-
+      LastUpdatedResponse is the response type for the Query/LastUpdated RPC
+      method.
+  slinky.marketmap.v1.Market:
+    type: object
+    properties:
+      ticker:
+        description: >-
+          Ticker represents a price feed for a given asset pair i.e. BTC/USD.
+          The
+
+          price feed is scaled to a number of decimal places and has a minimum
+          number
+
+          of providers required to consider the ticker valid.
+        type: object
+        properties:
+          currency_pair:
+            description: CurrencyPair is the currency pair for this ticker.
+            type: object
+            properties:
+              Base:
+                type: string
+              Quote:
+                type: string
+            title: >-
+              CurrencyPair is the standard representation of a pair of assets,
+              where one
+
+              (Base) is priced in terms of the other (Quote)
+          decimals:
+            type: string
+            format: uint64
+            description: >-
+              Decimals is the number of decimal places for the ticker. The
+              number of
+
+              decimal places is used to convert the price to a human-readable
+              format.
+          min_provider_count:
+            type: string
+            format: uint64
+            description: >-
+              MinProviderCount is the minimum number of providers required to
+              consider
+
+              the ticker valid.
+          enabled:
+            type: boolean
+            description: >-
+              Enabled is the flag that denotes if the Ticker is enabled for
+              price
+
+              fetching by an oracle.
+          metadata_JSON:
+            type: string
+            description: >-
+              MetadataJSON is a string of JSON that encodes any extra
+              configuration
+
+              for the given ticker.
+      provider_configs:
+        type: array
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+              description: >-
+                Name corresponds to the name of the provider for which the
+                configuration is
+
+                being set.
+            off_chain_ticker:
+              type: string
+              description: >-
+                OffChainTicker is the off-chain representation of the ticker
+                i.e. BTC/USD.
+
+                The off-chain ticker is unique to a given provider and is used
+                to fetch the
+
+                price of the ticker from the provider.
+            normalize_by_pair:
+              description: >-
+                NormalizeByPair is the currency pair for this ticker to be
+                normalized by.
+
+                For example, if the desired Ticker is BTC/USD, this market could
+                be reached
+
+                using: OffChainTicker = BTC/USDT NormalizeByPair = USDT/USD This
+                field is
+
+                optional and nullable.
+              type: object
+              properties:
+                Base:
+                  type: string
+                Quote:
+                  type: string
+              title: >-
+                CurrencyPair is the standard representation of a pair of assets,
+                where one
+
+                (Base) is priced in terms of the other (Quote)
+            invert:
+              type: boolean
+              title: >-
+                Invert is a boolean indicating if the BASE and QUOTE of the
+                market should
+
+                be inverted. i.e. BASE -> QUOTE, QUOTE -> BASE
+            metadata_JSON:
+              type: string
+              description: >-
+                MetadataJSON is a string of JSON that encodes any extra
+                configuration
+
+                for the given provider config.
+        description: >-
+          ProviderConfigs is the list of provider-specific configs for this
+          Market.
+    description: Market encapsulates a Ticker and its provider-specific configuration.
+  slinky.marketmap.v1.MarketMap:
+    type: object
+    properties:
+      markets:
+        type: object
+        additionalProperties:
+          type: object
+          properties:
+            ticker:
+              description: >-
+                Ticker represents a price feed for a given asset pair i.e.
+                BTC/USD. The
+
+                price feed is scaled to a number of decimal places and has a
+                minimum number
+
+                of providers required to consider the ticker valid.
+              type: object
+              properties:
+                currency_pair:
+                  description: CurrencyPair is the currency pair for this ticker.
+                  type: object
+                  properties:
+                    Base:
+                      type: string
+                    Quote:
+                      type: string
+                  title: >-
+                    CurrencyPair is the standard representation of a pair of
+                    assets, where one
+
+                    (Base) is priced in terms of the other (Quote)
+                decimals:
+                  type: string
+                  format: uint64
+                  description: >-
+                    Decimals is the number of decimal places for the ticker. The
+                    number of
+
+                    decimal places is used to convert the price to a
+                    human-readable format.
+                min_provider_count:
+                  type: string
+                  format: uint64
+                  description: >-
+                    MinProviderCount is the minimum number of providers required
+                    to consider
+
+                    the ticker valid.
+                enabled:
+                  type: boolean
+                  description: >-
+                    Enabled is the flag that denotes if the Ticker is enabled
+                    for price
+
+                    fetching by an oracle.
+                metadata_JSON:
+                  type: string
+                  description: >-
+                    MetadataJSON is a string of JSON that encodes any extra
+                    configuration
+
+                    for the given ticker.
+            provider_configs:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    description: >-
+                      Name corresponds to the name of the provider for which the
+                      configuration is
+
+                      being set.
+                  off_chain_ticker:
+                    type: string
+                    description: >-
+                      OffChainTicker is the off-chain representation of the
+                      ticker i.e. BTC/USD.
+
+                      The off-chain ticker is unique to a given provider and is
+                      used to fetch the
+
+                      price of the ticker from the provider.
+                  normalize_by_pair:
+                    description: >-
+                      NormalizeByPair is the currency pair for this ticker to be
+                      normalized by.
+
+                      For example, if the desired Ticker is BTC/USD, this market
+                      could be reached
+
+                      using: OffChainTicker = BTC/USDT NormalizeByPair =
+                      USDT/USD This field is
+
+                      optional and nullable.
+                    type: object
+                    properties:
+                      Base:
+                        type: string
+                      Quote:
+                        type: string
+                    title: >-
+                      CurrencyPair is the standard representation of a pair of
+                      assets, where one
+
+                      (Base) is priced in terms of the other (Quote)
+                  invert:
+                    type: boolean
+                    title: >-
+                      Invert is a boolean indicating if the BASE and QUOTE of
+                      the market should
+
+                      be inverted. i.e. BASE -> QUOTE, QUOTE -> BASE
+                  metadata_JSON:
+                    type: string
+                    description: >-
+                      MetadataJSON is a string of JSON that encodes any extra
+                      configuration
+
+                      for the given provider config.
+              description: >-
+                ProviderConfigs is the list of provider-specific configs for
+                this Market.
+          description: >-
+            Market encapsulates a Ticker and its provider-specific
+            configuration.
+        description: >-
+          Markets is the full list of tickers and their associated
+          configurations
+
+          to be stored on-chain.
+    description: MarketMap maps ticker strings to their Markets.
+  slinky.marketmap.v1.MarketMapResponse:
+    type: object
+    properties:
+      market_map:
+        description: >-
+          MarketMap defines the global set of market configurations for all
+          providers
+
+          and markets.
+        type: object
+        properties:
+          markets:
+            type: object
+            additionalProperties:
+              type: object
+              properties:
+                ticker:
+                  description: >-
+                    Ticker represents a price feed for a given asset pair i.e.
+                    BTC/USD. The
+
+                    price feed is scaled to a number of decimal places and has a
+                    minimum number
+
+                    of providers required to consider the ticker valid.
+                  type: object
+                  properties:
+                    currency_pair:
+                      description: CurrencyPair is the currency pair for this ticker.
+                      type: object
+                      properties:
+                        Base:
+                          type: string
+                        Quote:
+                          type: string
+                      title: >-
+                        CurrencyPair is the standard representation of a pair of
+                        assets, where one
+
+                        (Base) is priced in terms of the other (Quote)
+                    decimals:
+                      type: string
+                      format: uint64
+                      description: >-
+                        Decimals is the number of decimal places for the ticker.
+                        The number of
+
+                        decimal places is used to convert the price to a
+                        human-readable format.
+                    min_provider_count:
+                      type: string
+                      format: uint64
+                      description: >-
+                        MinProviderCount is the minimum number of providers
+                        required to consider
+
+                        the ticker valid.
+                    enabled:
+                      type: boolean
+                      description: >-
+                        Enabled is the flag that denotes if the Ticker is
+                        enabled for price
+
+                        fetching by an oracle.
+                    metadata_JSON:
+                      type: string
+                      description: >-
+                        MetadataJSON is a string of JSON that encodes any extra
+                        configuration
+
+                        for the given ticker.
+                provider_configs:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        description: >-
+                          Name corresponds to the name of the provider for which
+                          the configuration is
+
+                          being set.
+                      off_chain_ticker:
+                        type: string
+                        description: >-
+                          OffChainTicker is the off-chain representation of the
+                          ticker i.e. BTC/USD.
+
+                          The off-chain ticker is unique to a given provider and
+                          is used to fetch the
+
+                          price of the ticker from the provider.
+                      normalize_by_pair:
+                        description: >-
+                          NormalizeByPair is the currency pair for this ticker
+                          to be normalized by.
+
+                          For example, if the desired Ticker is BTC/USD, this
+                          market could be reached
+
+                          using: OffChainTicker = BTC/USDT NormalizeByPair =
+                          USDT/USD This field is
+
+                          optional and nullable.
+                        type: object
+                        properties:
+                          Base:
+                            type: string
+                          Quote:
+                            type: string
+                        title: >-
+                          CurrencyPair is the standard representation of a pair
+                          of assets, where one
+
+                          (Base) is priced in terms of the other (Quote)
+                      invert:
+                        type: boolean
+                        title: >-
+                          Invert is a boolean indicating if the BASE and QUOTE
+                          of the market should
+
+                          be inverted. i.e. BASE -> QUOTE, QUOTE -> BASE
+                      metadata_JSON:
+                        type: string
+                        description: >-
+                          MetadataJSON is a string of JSON that encodes any
+                          extra configuration
+
+                          for the given provider config.
+                  description: >-
+                    ProviderConfigs is the list of provider-specific configs for
+                    this Market.
+              description: >-
+                Market encapsulates a Ticker and its provider-specific
+                configuration.
+            description: >-
+              Markets is the full list of tickers and their associated
+              configurations
+
+              to be stored on-chain.
+      last_updated:
+        type: string
+        format: uint64
+        description: >-
+          LastUpdated is the last block height that the market map was updated.
+
+          This field can be used as an optimization for clients checking if
+          there
+
+          is a new update to the map.
+      chain_id:
+        type: string
+        description: ChainId is the chain identifier for the market map.
+    description: MarketMapResponse is the query response for the MarketMap query.
+  slinky.marketmap.v1.MarketResponse:
+    type: object
+    properties:
+      market:
+        description: >-
+          Market is the configuration of a single market to be price-fetched
+          for.
+        type: object
+        properties:
+          ticker:
+            description: >-
+              Ticker represents a price feed for a given asset pair i.e.
+              BTC/USD. The
+
+              price feed is scaled to a number of decimal places and has a
+              minimum number
+
+              of providers required to consider the ticker valid.
+            type: object
+            properties:
+              currency_pair:
+                description: CurrencyPair is the currency pair for this ticker.
+                type: object
+                properties:
+                  Base:
+                    type: string
+                  Quote:
+                    type: string
+                title: >-
+                  CurrencyPair is the standard representation of a pair of
+                  assets, where one
+
+                  (Base) is priced in terms of the other (Quote)
+              decimals:
+                type: string
+                format: uint64
+                description: >-
+                  Decimals is the number of decimal places for the ticker. The
+                  number of
+
+                  decimal places is used to convert the price to a
+                  human-readable format.
+              min_provider_count:
+                type: string
+                format: uint64
+                description: >-
+                  MinProviderCount is the minimum number of providers required
+                  to consider
+
+                  the ticker valid.
+              enabled:
+                type: boolean
+                description: >-
+                  Enabled is the flag that denotes if the Ticker is enabled for
+                  price
+
+                  fetching by an oracle.
+              metadata_JSON:
+                type: string
+                description: >-
+                  MetadataJSON is a string of JSON that encodes any extra
+                  configuration
+
+                  for the given ticker.
+          provider_configs:
+            type: array
+            items:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: >-
+                    Name corresponds to the name of the provider for which the
+                    configuration is
+
+                    being set.
+                off_chain_ticker:
+                  type: string
+                  description: >-
+                    OffChainTicker is the off-chain representation of the ticker
+                    i.e. BTC/USD.
+
+                    The off-chain ticker is unique to a given provider and is
+                    used to fetch the
+
+                    price of the ticker from the provider.
+                normalize_by_pair:
+                  description: >-
+                    NormalizeByPair is the currency pair for this ticker to be
+                    normalized by.
+
+                    For example, if the desired Ticker is BTC/USD, this market
+                    could be reached
+
+                    using: OffChainTicker = BTC/USDT NormalizeByPair = USDT/USD
+                    This field is
+
+                    optional and nullable.
+                  type: object
+                  properties:
+                    Base:
+                      type: string
+                    Quote:
+                      type: string
+                  title: >-
+                    CurrencyPair is the standard representation of a pair of
+                    assets, where one
+
+                    (Base) is priced in terms of the other (Quote)
+                invert:
+                  type: boolean
+                  title: >-
+                    Invert is a boolean indicating if the BASE and QUOTE of the
+                    market should
+
+                    be inverted. i.e. BASE -> QUOTE, QUOTE -> BASE
+                metadata_JSON:
+                  type: string
+                  description: >-
+                    MetadataJSON is a string of JSON that encodes any extra
+                    configuration
+
+                    for the given provider config.
+            description: >-
+              ProviderConfigs is the list of provider-specific configs for this
+              Market.
+    description: MarketResponse is the query response for the Market query.
+  slinky.marketmap.v1.Params:
+    type: object
+    properties:
+      market_authorities:
+        type: array
+        items:
+          type: string
+        description: |-
+          MarketAuthorities is the list of authority accounts that are able to
+          control updating the marketmap.
+      admin:
+        type: string
+        description: >-
+          Admin is an address that can remove addresses from the
+          MarketAuthorities
+
+          list. Only governance can add to the MarketAuthorities or change the
+          Admin.
+    description: Params defines the parameters for the x/marketmap module.
+  slinky.marketmap.v1.ParamsResponse:
+    type: object
+    properties:
+      params:
+        type: object
+        properties:
+          market_authorities:
+            type: array
+            items:
+              type: string
+            description: >-
+              MarketAuthorities is the list of authority accounts that are able
+              to
+
+              control updating the marketmap.
+          admin:
+            type: string
+            description: >-
+              Admin is an address that can remove addresses from the
+              MarketAuthorities
+
+              list. Only governance can add to the MarketAuthorities or change
+              the Admin.
+        description: Params defines the parameters for the x/marketmap module.
+    description: ParamsResponse is the response type for the Query/Params RPC method.
+  slinky.marketmap.v1.ProviderConfig:
+    type: object
+    properties:
+      name:
+        type: string
+        description: >-
+          Name corresponds to the name of the provider for which the
+          configuration is
+
+          being set.
+      off_chain_ticker:
+        type: string
+        description: >-
+          OffChainTicker is the off-chain representation of the ticker i.e.
+          BTC/USD.
+
+          The off-chain ticker is unique to a given provider and is used to
+          fetch the
+
+          price of the ticker from the provider.
+      normalize_by_pair:
+        description: >-
+          NormalizeByPair is the currency pair for this ticker to be normalized
+          by.
+
+          For example, if the desired Ticker is BTC/USD, this market could be
+          reached
+
+          using: OffChainTicker = BTC/USDT NormalizeByPair = USDT/USD This field
+          is
+
+          optional and nullable.
+        type: object
+        properties:
+          Base:
+            type: string
+          Quote:
+            type: string
+        title: >-
+          CurrencyPair is the standard representation of a pair of assets, where
+          one
+
+          (Base) is priced in terms of the other (Quote)
+      invert:
+        type: boolean
+        title: >-
+          Invert is a boolean indicating if the BASE and QUOTE of the market
+          should
+
+          be inverted. i.e. BASE -> QUOTE, QUOTE -> BASE
+      metadata_JSON:
+        type: string
+        description: |-
+          MetadataJSON is a string of JSON that encodes any extra configuration
+          for the given provider config.
+  slinky.marketmap.v1.Ticker:
+    type: object
+    properties:
+      currency_pair:
+        description: CurrencyPair is the currency pair for this ticker.
+        type: object
+        properties:
+          Base:
+            type: string
+          Quote:
+            type: string
+        title: >-
+          CurrencyPair is the standard representation of a pair of assets, where
+          one
+
+          (Base) is priced in terms of the other (Quote)
+      decimals:
+        type: string
+        format: uint64
+        description: >-
+          Decimals is the number of decimal places for the ticker. The number of
+
+          decimal places is used to convert the price to a human-readable
+          format.
+      min_provider_count:
+        type: string
+        format: uint64
+        description: >-
+          MinProviderCount is the minimum number of providers required to
+          consider
+
+          the ticker valid.
+      enabled:
+        type: boolean
+        description: |-
+          Enabled is the flag that denotes if the Ticker is enabled for price
+          fetching by an oracle.
+      metadata_JSON:
+        type: string
+        description: |-
+          MetadataJSON is a string of JSON that encodes any extra configuration
+          for the given ticker.
+    description: >-
+      Ticker represents a price feed for a given asset pair i.e. BTC/USD. The
+      price
+
+      feed is scaled to a number of decimal places and has a minimum number of
+
+      providers required to consider the ticker valid.

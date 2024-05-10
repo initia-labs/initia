@@ -12,21 +12,19 @@ import (
 
 func DefaultConfig() oracleconfig.AppConfig {
 	return oracleconfig.AppConfig{
-		Enabled:                 false,
-		OracleAddress:           "",
-		ClientTimeout:           time.Second * 2,
-		MetricsEnabled:          false,
-		PrometheusServerAddress: "localhost:8000",
+		Enabled:        false,
+		OracleAddress:  "",
+		ClientTimeout:  time.Second * 2,
+		MetricsEnabled: false,
 	}
 }
 
 func ReadOracleConfig(appOpts servertypes.AppOptions) oracleconfig.AppConfig {
 	config := oracleconfig.AppConfig{
-		Enabled:                 cast.ToBool(appOpts.Get("oracle.enabled")),
-		OracleAddress:           cast.ToString(appOpts.Get("oracle.oracle_address")),
-		ClientTimeout:           cast.ToDuration(appOpts.Get("oracle.client_timeout")),
-		MetricsEnabled:          cast.ToBool(appOpts.Get("oracle.metrics_enabled")),
-		PrometheusServerAddress: cast.ToString(appOpts.Get("oracle.prometheus_server_address")),
+		Enabled:        cast.ToBool(appOpts.Get("oracle.enabled")),
+		OracleAddress:  cast.ToString(appOpts.Get("oracle.oracle_address")),
+		ClientTimeout:  cast.ToDuration(appOpts.Get("oracle.client_timeout")),
+		MetricsEnabled: cast.ToBool(appOpts.Get("oracle.metrics_enabled")),
 	}
 
 	return config
