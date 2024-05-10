@@ -15,6 +15,7 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
 	l2slinky "github.com/initia-labs/OPinit/x/opchild/l2slinky"
+	"github.com/initia-labs/initia/app/genesis_markets"
 	customdistrtypes "github.com/initia-labs/initia/x/distribution/types"
 	customgovtypes "github.com/initia-labs/initia/x/gov/types"
 	movetypes "github.com/initia-labs/initia/x/move/types"
@@ -23,6 +24,7 @@ import (
 
 	auctiontypes "github.com/skip-mev/block-sdk/v2/x/auction/types"
 	slinkytypes "github.com/skip-mev/slinky/pkg/types"
+	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 )
 
@@ -40,7 +42,7 @@ func NewDefaultGenesisState(cdc codec.JSONCodec, bondDenom string) GenesisState 
 	return GenesisState(BasicManager().DefaultGenesis(cdc)).
 		ConfigureBondDenom(cdc, bondDenom).
 		ConfigureICA(cdc).
-		AddTimestampCurrencyPair(cdc)
+		AddMarketData(cdc)
 }
 
 // ConfigureBondDenom generates the default state for the application.
@@ -88,21 +90,50 @@ func (genState GenesisState) ConfigureBondDenom(cdc codec.JSONCodec, bondDenom s
 	return genState
 }
 
-func (genState GenesisState) AddTimestampCurrencyPair(cdc codec.JSONCodec) GenesisState {
+func (genState GenesisState) AddMarketData(cdc codec.JSONCodec) GenesisState {
 	var oracleGenState oracletypes.GenesisState
 	cdc.MustUnmarshalJSON(genState[oracletypes.ModuleName], &oracleGenState)
+
+	var marketGenState marketmaptypes.GenesisState
+	cdc.MustUnmarshalJSON(genState[marketmaptypes.ModuleName], &marketGenState)
+
+	// Load initial markets
+	markets, err := genesis_markets.ReadMarketsFromFile("genesis_markets/markets.json")
+	if err != nil {
+		panic(err)
+	}
+	marketGenState.MarketMap = genesis_markets.ToMarketMap(markets)
+	// Todo david add authorities/admin here
+	// marketGenState.Params.MarketAuthorities =
+	// marketGenState.Params.Admin =
+
+	var id uint64
+	// Initialize all markets plus ReservedCPTimestamp
+	currencyPairGenesis := make([]oracletypes.CurrencyPairGenesis, len(markets)+1)
 
 	cp, err := slinkytypes.CurrencyPairFromString(l2slinky.ReservedCPTimestamp)
 	if err != nil {
 		panic(err)
 	}
-
-	oracleGenState.CurrencyPairGenesis = append(oracleGenState.CurrencyPairGenesis, oracletypes.CurrencyPairGenesis{
+	currencyPairGenesis[id] = oracletypes.CurrencyPairGenesis{
 		CurrencyPair:      cp,
 		CurrencyPairPrice: nil,
 		Nonce:             0,
-	})
-	oracleGenState.NextId = 1
+		Id:                id,
+	}
+	id++
+	for i, market := range markets {
+		currencyPairGenesis[i+1] = oracletypes.CurrencyPairGenesis{
+			CurrencyPair:      market.Ticker.CurrencyPair,
+			CurrencyPairPrice: nil,
+			Nonce:             0,
+			Id:                id,
+		}
+		id++
+	}
+
+	oracleGenState.CurrencyPairGenesis = currencyPairGenesis
+	oracleGenState.NextId = id
 	genState[oracletypes.ModuleName] = cdc.MustMarshalJSON(&oracleGenState)
 	return genState
 }
