@@ -9,6 +9,7 @@ const GenesisMarkets = `[
 		},
 		"decimals": 0,
 		"min_provider_count": 1
+	  }
 	},
 	{
 	  "ticker": {
