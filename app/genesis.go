@@ -1,6 +1,7 @@
 package app
 
 import (
+	"encoding/hex"
 	"encoding/json"
 
 	icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
@@ -8,6 +9,7 @@ import (
 	icahosttypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/host/types"
 	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
 
+	"cosmossdk.io/core/address"
 	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
@@ -38,11 +40,11 @@ import (
 type GenesisState map[string]json.RawMessage
 
 // NewDefaultGenesisState generates the default state for the application.
-func NewDefaultGenesisState(cdc codec.JSONCodec, bondDenom string) GenesisState {
+func NewDefaultGenesisState(cdc codec.Codec, bondDenom string) GenesisState {
 	return GenesisState(BasicManager().DefaultGenesis(cdc)).
 		ConfigureBondDenom(cdc, bondDenom).
 		ConfigureICA(cdc).
-		AddMarketData(cdc)
+		AddMarketData(cdc, cdc.InterfaceRegistry().SigningContext().AddressCodec())
 }
 
 // ConfigureBondDenom generates the default state for the application.
@@ -90,7 +92,7 @@ func (genState GenesisState) ConfigureBondDenom(cdc codec.JSONCodec, bondDenom s
 	return genState
 }
 
-func (genState GenesisState) AddMarketData(cdc codec.JSONCodec) GenesisState {
+func (genState GenesisState) AddMarketData(cdc codec.JSONCodec, ac address.Codec) GenesisState {
 	var oracleGenState oracletypes.GenesisState
 	cdc.MustUnmarshalJSON(genState[oracletypes.ModuleName], &oracleGenState)
 
@@ -105,7 +107,16 @@ func (genState GenesisState) AddMarketData(cdc codec.JSONCodec) GenesisState {
 	marketGenState.MarketMap = genesis_markets.ToMarketMap(markets)
 
 	// Skip Admin account.
-	adminAddr := "init12xufazw43lanl8dkvf3l7y9zzm8n3zsw0xafeg"
+	adminAddrBz, err := hex.DecodeString("51B89E89D58FFB3F9DB66263FF10A216CF388A0E")
+	if err != nil {
+		panic(err)
+	}
+
+	adminAddr, err := ac.BytesToString(adminAddrBz)
+	if err != nil {
+		panic(err)
+	}
+
 	marketGenState.Params.MarketAuthorities = []string{adminAddr}
 	marketGenState.Params.Admin = adminAddr
 

@@ -4,6 +4,15 @@ const GenesisMarkets = `[
 	{
 	  "ticker": {
 		"currency_pair": {
+			"Base": "TIMESTAMP",
+			"Quote": "NANOSECOND"
+		},
+		"decimals": 0,
+		"min_provider_count": 1
+	},
+	{
+	  "ticker": {
+		"currency_pair": {
 		  "Base": "BNB",
 		  "Quote": "USD"
 		},
