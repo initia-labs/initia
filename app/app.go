@@ -181,9 +181,9 @@ import (
 	ophosttypes "github.com/initia-labs/OPinit/x/ophost/types"
 
 	// noble forwarding keeper
-	"github.com/noble-assets/forwarding/x/forwarding"
-	forwardingkeeper "github.com/noble-assets/forwarding/x/forwarding/keeper"
-	forwardingtypes "github.com/noble-assets/forwarding/x/forwarding/types"
+	"github.com/noble-assets/forwarding/v2/x/forwarding"
+	forwardingkeeper "github.com/noble-assets/forwarding/v2/x/forwarding/keeper"
+	forwardingtypes "github.com/noble-assets/forwarding/v2/x/forwarding/types"
 
 	// unnamed import of statik for swagger UI support
 	_ "github.com/initia-labs/initia/client/docs/statik"
