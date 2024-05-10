@@ -98,7 +98,7 @@ func (genState GenesisState) AddMarketData(cdc codec.JSONCodec) GenesisState {
 	cdc.MustUnmarshalJSON(genState[marketmaptypes.ModuleName], &marketGenState)
 
 	// Load initial markets
-	markets, err := genesis_markets.ReadMarketsFromFile("genesis_markets/markets.json")
+	markets, err := genesis_markets.ReadMarketsFromFile(genesis_markets.GenesisMarkets)
 	if err != nil {
 		panic(err)
 	}
