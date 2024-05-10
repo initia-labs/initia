@@ -110,9 +110,9 @@ func (genState GenesisState) AddMarketData(cdc codec.JSONCodec) GenesisState {
 	marketGenState.Params.Admin = adminAddr
 
 	var id uint64
+
 	// Initialize all markets plus ReservedCPTimestamp
 	currencyPairGenesis := make([]oracletypes.CurrencyPairGenesis, len(markets)+1)
-
 	cp, err := slinkytypes.CurrencyPairFromString(l2slinky.ReservedCPTimestamp)
 	if err != nil {
 		panic(err)
@@ -136,6 +136,9 @@ func (genState GenesisState) AddMarketData(cdc codec.JSONCodec) GenesisState {
 
 	oracleGenState.CurrencyPairGenesis = currencyPairGenesis
 	oracleGenState.NextId = id
+
+	// write the updates to genState
+	genState[marketmaptypes.ModuleName] = cdc.MustMarshalJSON(&marketGenState)
 	genState[oracletypes.ModuleName] = cdc.MustMarshalJSON(&oracleGenState)
 	return genState
 }
