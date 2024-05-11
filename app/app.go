@@ -116,6 +116,7 @@ import (
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 
 	appante "github.com/initia-labs/initia/app/ante"
+	appheaderinfo "github.com/initia-labs/initia/app/header_info"
 	apphook "github.com/initia-labs/initia/app/hook"
 	applanes "github.com/initia-labs/initia/app/lanes"
 	apporacle "github.com/initia-labs/initia/app/oracle"
@@ -569,6 +570,7 @@ func NewInitiaApp(
 		app.Logger(),
 		runtime.NewKVStoreService(keys[forwardingtypes.StoreKey]),
 		runtime.NewTransientStoreService(tkeys[forwardingtypes.TransientStoreKey]),
+		appheaderinfo.NewHeaderInfoService(),
 		app.AccountKeeper,
 		app.BankKeeper,
 		app.IBCKeeper.ChannelKeeper,
