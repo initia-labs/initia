@@ -234,6 +234,8 @@ replace (
 
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 
+	github.com/noble-assets/forwarding => github.com/initia-labs/forwarding v0.0.0-20240513113423-5c2833d87227
+
 	// Downgraded to avoid bugs in following commits which caused simulations to fail.
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 )

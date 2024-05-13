@@ -13,6 +13,7 @@ import (
 	tmstrings "github.com/cometbft/cometbft/libs/strings"
 
 	"cosmossdk.io/collections"
+	"cosmossdk.io/core/address"
 	errorsmod "cosmossdk.io/errors"
 
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
@@ -524,7 +525,15 @@ func (k msgServer) CancelUnbondingDelegation(ctx context.Context, msg *types.Msg
 }
 
 func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
-	if err := msg.Validate(ms.Keeper.authKeeper.AddressCodec()); err != nil {
+	var addrCodec address.Codec
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	if sdkCtx.ChainID() == "initiation-1" && sdkCtx.BlockHeight() > 90500 {
+		addrCodec = ms.Keeper.authKeeper.AddressCodec()
+	} else {
+		addrCodec = ms.Keeper.ValidatorAddressCodec()
+	}
+
+	if err := msg.Validate(addrCodec); err != nil {
 		return nil, err
 	}
 
