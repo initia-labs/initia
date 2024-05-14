@@ -189,6 +189,10 @@ func EndBlocker(ctx sdk.Context, k *keeper.Keeper) error {
 			if err = k.EmergencyProposalsQueue.Remove(ctx, key); err != nil {
 				return false, err
 			}
+			err = k.Proposals.Set(ctx, proposal.Id, proposal)
+			if err != nil {
+				return false, err
+			}
 			return false, nil
 		}
 
