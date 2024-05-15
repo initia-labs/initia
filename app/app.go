@@ -116,6 +116,7 @@ import (
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 
 	appante "github.com/initia-labs/initia/app/ante"
+	appheaderinfo "github.com/initia-labs/initia/app/header_info"
 	apphook "github.com/initia-labs/initia/app/hook"
 	applanes "github.com/initia-labs/initia/app/lanes"
 	apporacle "github.com/initia-labs/initia/app/oracle"
@@ -181,9 +182,9 @@ import (
 	ophosttypes "github.com/initia-labs/OPinit/x/ophost/types"
 
 	// noble forwarding keeper
-	"github.com/noble-assets/forwarding/x/forwarding"
-	forwardingkeeper "github.com/noble-assets/forwarding/x/forwarding/keeper"
-	forwardingtypes "github.com/noble-assets/forwarding/x/forwarding/types"
+	"github.com/noble-assets/forwarding/v2/x/forwarding"
+	forwardingkeeper "github.com/noble-assets/forwarding/v2/x/forwarding/keeper"
+	forwardingtypes "github.com/noble-assets/forwarding/v2/x/forwarding/types"
 
 	// unnamed import of statik for swagger UI support
 	_ "github.com/initia-labs/initia/client/docs/statik"
@@ -229,6 +230,10 @@ func init() {
 
 	DefaultNodeHome = filepath.Join(userHomeDir, "."+AppName)
 }
+
+const (
+	maxDefaultLaneSize = 2000
+)
 
 // InitiaApp extends an ABCI application, but with most of its parameters exported.
 // They are exported for convenience in creating helper functions, as object
@@ -569,6 +574,7 @@ func NewInitiaApp(
 		app.Logger(),
 		runtime.NewKVStoreService(keys[forwardingtypes.StoreKey]),
 		runtime.NewTransientStoreService(tkeys[forwardingtypes.TransientStoreKey]),
+		appheaderinfo.NewHeaderInfoService(),
 		app.AccountKeeper,
 		app.BankKeeper,
 		app.IBCKeeper.ChannelKeeper,
@@ -1030,7 +1036,7 @@ func NewInitiaApp(
 		TxEncoder:       app.txConfig.TxEncoder(),
 		TxDecoder:       app.txConfig.TxDecoder(),
 		MaxBlockSpace:   math.LegacyMustNewDecFromStr("0.6"),
-		MaxTxs:          1000,
+		MaxTxs:          2000,
 		SignerExtractor: signerExtractor,
 	})
 
