@@ -82,6 +82,10 @@ func (h *DefaultProposalHandler) PrepareLaneHandler() blockbase.PrepareLaneHandl
 					"tx_hash", txInfo.Hash,
 				)
 
+				if txInfo.Size > limit.MaxTxBytes {
+					txsToRemove = append(txsToRemove, tx)
+				}
+
 				// TODO: Determine if there is any trade off with breaking or continuing here.
 				continue
 			}
@@ -96,6 +100,10 @@ func (h *DefaultProposalHandler) PrepareLaneHandler() blockbase.PrepareLaneHandl
 					"max_gas", limit.MaxGasLimit,
 					"tx_hash", txInfo.Hash,
 				)
+
+				if txInfo.GasLimit > limit.MaxGasLimit {
+					txsToRemove = append(txsToRemove, tx)
+				}
 
 				continue
 			}
