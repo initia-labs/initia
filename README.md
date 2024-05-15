@@ -14,8 +14,8 @@ The Initia Layer 1 serves as an orchestration layer, facilitating coordination o
 Initia's product stack unifies the architecture, offering users a singular chain experience when interacting with thousands of interwoven rollups and reducing entry barriers:
 
 - [InitiaScan](https://scan.initia.tech/initiation-1): A multi-chain explorer with VM-specific tools and information.
-- [Initia App](https://app.initiation-1.initia.xyz/): A centralized platform for all things related to Initia.
-- [Initia Usernames](https://usernames.initiation-1.initia.xyz/): A blockchain-wide on-chain identity system.
+- [Initia App](https://app.testnet.initia.xyz): A centralized platform for all things related to Initia.
+- [Initia Usernames](https://usernames.testnet.initia.xyz): A blockchain-wide on-chain identity system.
 - [Initia Wallet](https://chromewebstore.google.com/detail/initia-wallet/ffbceckpkpbcmgiaehlloocglmijnpmp): A dedicated wallet designed for navigating the expansive Initia ecosystem.
 
 ## Documentation
