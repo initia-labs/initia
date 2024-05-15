@@ -230,6 +230,10 @@ func init() {
 	DefaultNodeHome = filepath.Join(userHomeDir, "."+AppName)
 }
 
+const (
+	maxDefaultLaneSize = 2000
+)
+
 // InitiaApp extends an ABCI application, but with most of its parameters exported.
 // They are exported for convenience in creating helper functions, as object
 // capabilities aren't needed for testing.
@@ -1030,7 +1034,7 @@ func NewInitiaApp(
 		TxEncoder:       app.txConfig.TxEncoder(),
 		TxDecoder:       app.txConfig.TxDecoder(),
 		MaxBlockSpace:   math.LegacyMustNewDecFromStr("0.6"),
-		MaxTxs:          1000,
+		MaxTxs:          2000,
 		SignerExtractor: signerExtractor,
 	})
 
