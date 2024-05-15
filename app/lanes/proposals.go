@@ -83,7 +83,7 @@ func (h *DefaultProposalHandler) PrepareLaneHandler() blockbase.PrepareLaneHandl
 				)
 
 				// TODO: Determine if there is any trade off with breaking or continuing here.
-				break
+				continue
 			}
 
 			// If the gas limit of the transaction is too large, we break and do not attempt to include more txs.
@@ -97,7 +97,7 @@ func (h *DefaultProposalHandler) PrepareLaneHandler() blockbase.PrepareLaneHandl
 					"tx_hash", txInfo.Hash,
 				)
 
-				break
+				continue
 			}
 
 			// Verify the transaction.
