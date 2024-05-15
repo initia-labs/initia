@@ -86,7 +86,6 @@ func (h *DefaultProposalHandler) PrepareLaneHandler() blockbase.PrepareLaneHandl
 					txsToRemove = append(txsToRemove, tx)
 				}
 
-				// TODO: Determine if there is any trade off with breaking or continuing here.
 				continue
 			}
 
