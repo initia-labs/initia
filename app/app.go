@@ -575,6 +575,7 @@ func NewInitiaApp(
 		runtime.NewKVStoreService(keys[forwardingtypes.StoreKey]),
 		runtime.NewTransientStoreService(tkeys[forwardingtypes.TransientStoreKey]),
 		appheaderinfo.NewHeaderInfoService(),
+		authorityAddr,
 		app.AccountKeeper,
 		app.BankKeeper,
 		app.IBCKeeper.ChannelKeeper,
