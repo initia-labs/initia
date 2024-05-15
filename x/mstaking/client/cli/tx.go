@@ -225,7 +225,7 @@ $ %s tx staking redelegate %s1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj %s1l2rsakp3
 				return err
 			}
 
-			valDstAddrStr := args[0]
+			valDstAddrStr := args[1]
 			if _, err := vc.StringToBytes(valDstAddrStr); err != nil {
 				return err
 			}
