@@ -985,8 +985,8 @@ github.com/sirupsen/logrus v1.6.0/go.mod h1:7uNnSEd1DgxDLC74fIahvMZmmYsHGZGEOFrf
 github.com/sirupsen/logrus v1.7.0/go.mod h1:yWOB1SBYBC5VeMP7gHvWumXLIWorT60ONWic61uBYv0=
 github.com/sirupsen/logrus v1.9.3 h1:dueUQJ1C2q9oE3F7wvmSGAaVtTmUizReu6fjN8uqzbQ=
 github.com/sirupsen/logrus v1.9.3/go.mod h1:naHLuLoDiP4jHNo9R0sCBMtWGeIprob74mVsIT4qYEQ=
-github.com/skip-mev/block-sdk/v2 v2.1.1 h1:Audcf6Dtev16JRewV8M8GfjEDDsu6ayxlz9GHAt8tXs=
-github.com/skip-mev/block-sdk/v2 v2.1.1/go.mod h1:AOjFICNrPpq/Cq1f97CcC7ljWhxCzmfmyz4/Ir8/xFM=
+github.com/skip-mev/block-sdk/v2 v2.1.2 h1:fNKbrb+PVVzuU0JiSuWgBV4Afj5zZ1VeHQJp88wSl1g=
+github.com/skip-mev/block-sdk/v2 v2.1.2/go.mod h1:kIq7SMva0/eHKTCiG/oI5XGxD4HNVK0t71TrUZqHcvA=
 github.com/skip-mev/chaintestutil v0.0.0-20240116134208-3e49bf514803 h1:VRRVYN3wsOIOqVT3e3nDh3vyUl6RvF9QwdK4BvgPP9c=
 github.com/skip-mev/chaintestutil v0.0.0-20240116134208-3e49bf514803/go.mod h1:LF2koCTmygQnz11yjSfHvNP8axdyZ2lTEw0EwI+dnno=
 github.com/skip-mev/slinky v0.4.3 h1:4LWqeDa2and84GXG3HgAAmDa145+TG2WQ0uRDAU7AzA=
