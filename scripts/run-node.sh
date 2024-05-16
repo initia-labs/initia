@@ -32,10 +32,10 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     fi
 fi
 
-# check BINARY is set. If not, build picad and set BINARY
+# check BINARY is set. If not, build initiad and set BINARY
 if [ -z "$BINARY" ]; then
     make build
-    BINARY=build/picad
+    BINARY=build/initiad
 fi
 
 CHAIN_ID="localinit"
