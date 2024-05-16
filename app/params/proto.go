@@ -2,7 +2,6 @@ package params
 
 import (
 	"cosmossdk.io/x/tx/signing"
-
 	"github.com/cosmos/cosmos-sdk/codec"
 	codecaddress "github.com/cosmos/cosmos-sdk/codec/address"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"

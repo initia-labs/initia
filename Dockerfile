@@ -41,8 +41,8 @@ RUN LEDGER_ENABLED=false BUILD_TAGS=muslc LDFLAGS="-linkmode=external -extldflag
 
 FROM alpine:3.19
 
-RUN addgroup initia \
-    && adduser -G initia -D -h /initia initia
+RUN addgroup --gid 1025 -S initia \
+    && adduser --uid 1025 -S initia -G initia -D -h /initia initia
 
 WORKDIR /initia
 

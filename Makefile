@@ -134,6 +134,9 @@ build-linux-with-shared-library:
 	docker cp temp:/lib/libcompiler.so $(BUILDDIR)/
 	docker rm temp
 
+docker-build-debug:
+	@DOCKER_BUILDKIT=1 docker build -t initial:debug -f Dockerfile .
+
 install: go.sum 
 	go install -mod=readonly $(BUILD_FLAGS) ./cmd/initiad
 
@@ -246,3 +249,8 @@ format:
 	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/docs/statik/statik.go" -not -path "./tests/mocks/*" -not -name '*.pb.go' | xargs misspell -w
 	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/docs/statik/statik.go" -not -path "./tests/mocks/*" -not -name '*.pb.go' | xargs goimports -w -local github.com/cosmos/cosmos-sdk
 .PHONY: format
+
+
+# Executes start chain tests via interchaintest
+ictest-ibc-transfer:
+	cd tests/interchaintest && go test -race -v -run TestInitialGaiaIBCTransfer .
