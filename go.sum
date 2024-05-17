@@ -740,8 +740,8 @@ github.com/initia-labs/forwarding v0.0.0-20240513113423-5c2833d87227 h1:mwX9VHlv
 github.com/initia-labs/forwarding v0.0.0-20240513113423-5c2833d87227/go.mod h1:nMEL3w1pf7+2LAQ3jqX+XaK0GWcdnwXjwlBnX7QO9ho=
 github.com/initia-labs/iavl v0.0.0-20240415085037-7e81233cdd9e h1:1gkMWkAgVhYFhEv7K4tX+8uJJLdiTKlQhl5+wGaxdMg=
 github.com/initia-labs/iavl v0.0.0-20240415085037-7e81233cdd9e/go.mod h1:jLeUvm6bGT1YutCaL2fIar/8vGUE8cPZvh/gXEWDaDM=
-github.com/initia-labs/indexer v0.2.4-0.20240514134829-d1fea1ac7e24 h1:s3HiFw3EoiwYbg/wG/6RSEbcOqzo1VEJSwPJ+GvgaCM=
-github.com/initia-labs/indexer v0.2.4-0.20240514134829-d1fea1ac7e24/go.mod h1:kdFmxLx3ZwjIhNCacM7tWLBkhe2Q7E/wFPxFOHvnqUs=
+github.com/initia-labs/indexer v0.2.4-0.20240516083610-d7d81aa533f0 h1:td53eb8Bd+4KRTCapLBdMz0Y7YQ+XQTeXy1gTDUTwVw=
+github.com/initia-labs/indexer v0.2.4-0.20240516083610-d7d81aa533f0/go.mod h1:kdFmxLx3ZwjIhNCacM7tWLBkhe2Q7E/wFPxFOHvnqUs=
 github.com/initia-labs/movevm v0.2.8 h1:4UCUOrYSRQbfBLHEryqG2U1i9Qme/ms14HoVhcpmUNI=
 github.com/initia-labs/movevm v0.2.8/go.mod h1:6MxR4GP5zH3JUc1IMgfqAe1e483mZVS7fshPknZPJ30=
 github.com/jackc/pgpassfile v1.0.0 h1:/6Hmqy13Ss2zCq62VdNG8tM1wchn8zjSGOBJ6icpsIM=
