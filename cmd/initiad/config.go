@@ -10,6 +10,7 @@ import (
 
 	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
 
+	indexerconfig "github.com/initia-labs/indexer/config"
 	initiaapp "github.com/initia-labs/initia/app"
 	initiaapporacle "github.com/initia-labs/initia/app/oracle"
 	moveconfig "github.com/initia-labs/initia/x/move/config"
@@ -18,8 +19,9 @@ import (
 // initiaappConfig initia specify app config
 type initiaappConfig struct {
 	serverconfig.Config
-	MoveConfig moveconfig.MoveConfig  `mapstructure:"move"`
-	Oracle     oracleconfig.AppConfig `mapstructure:"oracle"`
+	MoveConfig    moveconfig.MoveConfig       `mapstructure:"move"`
+	Oracle        oracleconfig.AppConfig      `mapstructure:"oracle"`
+	IndexerConfig indexerconfig.IndexerConfig `mapstructure:"indexer"`
 }
 
 // initAppConfig helps to override default appConfig template and configs.
@@ -44,14 +46,16 @@ func initAppConfig() (string, interface{}) {
 	srvCfg.MinGasPrices = fmt.Sprintf("0%s", initiaapp.BondDenom)
 
 	initiaappConfig := initiaappConfig{
-		Config:     *srvCfg,
-		MoveConfig: moveconfig.DefaultMoveConfig(),
-		Oracle:     initiaapporacle.DefaultConfig(),
+		Config:        *srvCfg,
+		MoveConfig:    moveconfig.DefaultMoveConfig(),
+		Oracle:        initiaapporacle.DefaultConfig(),
+		IndexerConfig: indexerconfig.DefaultIndexerConfig(),
 	}
 
 	initiaappTemplate := serverconfig.DefaultConfigTemplate +
 		moveconfig.DefaultConfigTemplate +
-		oracleconfig.DefaultConfigTemplate
+		oracleconfig.DefaultConfigTemplate +
+		indexerconfig.DefaultConfigTemplate
 
 	return initiaappTemplate, initiaappConfig
 }

@@ -1493,3 +1493,7 @@ func (app *InitiaApp) Close() error {
 
 	return nil
 }
+
+func (app *InitiaApp) GetKeys() map[string]*storetypes.KVStoreKey {
+	return app.keys
+}
