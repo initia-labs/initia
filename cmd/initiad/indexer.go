@@ -8,6 +8,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/server/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
 
@@ -29,14 +31,9 @@ func addIndexFlag(cmd *cobra.Command) {
 func preSetupIndexer(svrCtx *server.Context, clientCtx client.Context, ctx context.Context, g *errgroup.Group, _app types.Application) error {
 	app := _app.(*initiaapp.InitiaApp)
 
-	// listen all keys
-	keysToListen := []storetypes.StoreKey{}
+	// listen auth key: need only auth key for now
+	keysToListen := []storetypes.StoreKey{app.GetKey(authtypes.StoreKey)}
 
-	// TODO: if it downgrades performacne, have to set only keys for registered submodules and crons
-	keys := app.GetKeys()
-	for _, key := range keys {
-		keysToListen = append(keysToListen, key)
-	}
 	app.CommitMultiStore().AddListeners(keysToListen)
 
 	// if indexer is disabled, it returns nil
