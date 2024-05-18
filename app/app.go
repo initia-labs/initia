@@ -559,7 +559,7 @@ func NewInitiaApp(
 	app.OracleKeeper = &oracleKeeper
 
 	// Add the oracle keeper as a hook to market map keeper so new market map entries can be created
-	// and propogated to the oracle keeper.
+	// and propagated to the oracle keeper.
 	app.MarketMapKeeper.SetHooks(app.OracleKeeper.Hooks())
 
 	app.IBCHooksKeeper = ibchookskeeper.NewKeeper(
