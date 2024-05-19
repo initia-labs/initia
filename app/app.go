@@ -231,7 +231,7 @@ func init() {
 }
 
 const (
-	maxDefaultLaneSize = 2000
+	maxDefaultLaneSize = 2500
 )
 
 // InitiaApp extends an ABCI application, but with most of its parameters exported.
@@ -1034,7 +1034,7 @@ func NewInitiaApp(
 		TxEncoder:       app.txConfig.TxEncoder(),
 		TxDecoder:       app.txConfig.TxDecoder(),
 		MaxBlockSpace:   math.LegacyMustNewDecFromStr("0.6"),
-		MaxTxs:          2000,
+		MaxTxs:          maxDefaultLaneSize,
 		SignerExtractor: signerExtractor,
 	})
 
