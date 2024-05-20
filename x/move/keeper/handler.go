@@ -389,6 +389,7 @@ func (k Keeper) handleExecuteResponse(
 		}
 
 		// write or overwrite account
+		k.authKeeper.RemoveAccount(ctx, accI)
 		k.authKeeper.SetAccount(ctx, accI)
 	}
 
