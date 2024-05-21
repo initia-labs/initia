@@ -25,29 +25,7 @@ func (k CompatibilityKeeper) Validator(ctx context.Context, addr sdk.ValAddress)
 	if err != nil {
 		return nil, err
 	}
-
-	unbondingOnHoldRefCount := int64(0)
-	unbondingIds := []uint64{}
-	if val.UnbondingId >= types.DefaultUnbondingIdStart {
-		unbondingOnHoldRefCount++
-		unbondingIds = append(unbondingIds, val.UnbondingId)
-	}
-
-	return cosmostypes.Validator{
-		OperatorAddress:         val.OperatorAddress,
-		ConsensusPubkey:         val.ConsensusPubkey,
-		Jailed:                  val.Jailed,
-		Status:                  cosmostypes.BondStatus(val.Status),
-		Tokens:                  val.VotingPower,
-		Description:             cosmostypes.Description(val.Description),
-		UnbondingHeight:         val.UnbondingHeight,
-		UnbondingTime:           val.UnbondingTime,
-		Commission:              cosmostypes.NewCommission(val.Commission.Rate, val.Commission.MaxRate, val.Commission.MaxChangeRate),
-		MinSelfDelegation:       math.OneInt(),
-		UnbondingOnHoldRefCount: unbondingOnHoldRefCount,
-		UnbondingIds:            unbondingIds,
-		DelegatorShares:         math.LegacyZeroDec(), // not supported
-	}, nil
+	return ValidatorToCosmosValidator(val), nil
 }
 
 func (k CompatibilityKeeper) ValidatorByConsAddr(ctx context.Context, addr sdk.ConsAddress) (cosmostypes.ValidatorI, error) {
@@ -55,6 +33,10 @@ func (k CompatibilityKeeper) ValidatorByConsAddr(ctx context.Context, addr sdk.C
 	if err != nil {
 		return nil, err
 	}
+	return ValidatorToCosmosValidator(val), nil
+}
+
+func ValidatorToCosmosValidator(val types.Validator) cosmostypes.Validator {
 	unbondingOnHoldRefCount := int64(0)
 	unbondingIds := []uint64{}
 	if val.UnbondingId >= types.DefaultUnbondingIdStart {
@@ -76,14 +58,15 @@ func (k CompatibilityKeeper) ValidatorByConsAddr(ctx context.Context, addr sdk.C
 		UnbondingOnHoldRefCount: unbondingOnHoldRefCount,
 		UnbondingIds:            unbondingIds,
 		DelegatorShares:         math.LegacyZeroDec(), // not supported
-	}, nil
+	}
 }
 
 // TotalBondedTokens returns sum of voting power
 func (k CompatibilityKeeper) TotalBondedTokens(ctx context.Context) (math.Int, error) {
 	total := math.ZeroInt()
-	err := k.IterateLastValidatorPowers(ctx, func(operator sdk.ValAddress, power int64) (stop bool, err error) {
-		total = total.AddRaw(power)
+	err := k.IterateLastValidatorConsPowers(ctx, func(operator sdk.ValAddress, power int64) (stop bool, err error) {
+		votingPower := k.VotingPowerFromConsensusPower(ctx, power)
+		total = total.Add(votingPower)
 		return false, nil
 	})
 

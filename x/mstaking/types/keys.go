@@ -17,12 +17,12 @@ const (
 var (
 	// Keys for store prefixes
 	// Last* values are constant during a block.
-	LastValidatorPowersPrefix   = []byte{0x11} // prefix for each key to a validator index, for bonded validators
-	WhitelistedValidatorsPrefix = []byte{0x12} // prefix for each key to a validator index, sorted by power
+	LastValidatorConsPowersPrefix = []byte{0x11} // prefix for each key to a validator index, for bonded validators
+	WhitelistedValidatorsPrefix   = []byte{0x12} // prefix for each key to a validator index, sorted by power
 
-	ValidatorsPrefix             = []byte{0x21} // prefix for each key to a validator
-	ValidatorsByConsAddrPrefix   = []byte{0x22} // prefix for each key to a validator index, by pubkey
-	ValidatorsByPowerIndexPrefix = []byte{0x23} // prefix for each key to a validator index, sorted by power
+	ValidatorsPrefix                 = []byte{0x21} // prefix for each key to a validator
+	ValidatorsByConsAddrPrefix       = []byte{0x22} // prefix for each key to a validator index, by pubkey
+	ValidatorsByConsPowerIndexPrefix = []byte{0x23} // prefix for each key to a validator index, sorted by power
 
 	DelegationsPrefix                    = []byte{0x31} // key for a delegation
 	DelegationsByValIndexPrefix          = []byte{0x32}

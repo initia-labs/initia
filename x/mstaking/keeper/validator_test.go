@@ -242,9 +242,9 @@ func Test_LastValidatorPower(t *testing.T) {
 	valAddr1 := createValidatorWithBalance(ctx, input, 100_000_000, 1_000_000, 1)
 	valAddr2 := createValidatorWithBalance(ctx, input, 100_000_000, 2_000_000, 2)
 
-	power1, err := input.StakingKeeper.GetLastValidatorPower(ctx, valAddr1)
+	power1, err := input.StakingKeeper.GetLastValidatorConsPower(ctx, valAddr1)
 	require.NoError(t, err)
-	power2, err := input.StakingKeeper.GetLastValidatorPower(ctx, valAddr2)
+	power2, err := input.StakingKeeper.GetLastValidatorConsPower(ctx, valAddr2)
 	require.NoError(t, err)
 	validator1, err := input.StakingKeeper.Validators.Get(ctx, valAddr1)
 	require.NoError(t, err)
@@ -254,7 +254,7 @@ func Test_LastValidatorPower(t *testing.T) {
 	require.Equal(t, validator1.ConsensusPower(input.StakingKeeper.PowerReduction(ctx)), power1)
 	require.Equal(t, validator2.ConsensusPower(input.StakingKeeper.PowerReduction(ctx)), power2)
 
-	require.NoError(t, input.StakingKeeper.IterateLastValidatorPowers(ctx, func(valAddr sdk.ValAddress, power int64) (bool, error) {
+	require.NoError(t, input.StakingKeeper.IterateLastValidatorConsPowers(ctx, func(valAddr sdk.ValAddress, power int64) (bool, error) {
 		if valAddr.Equals(valAddr1) {
 			require.Equal(t, validator1.ConsensusPower(input.StakingKeeper.PowerReduction(ctx)), power)
 		} else {
