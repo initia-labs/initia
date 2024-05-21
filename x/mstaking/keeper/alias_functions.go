@@ -27,7 +27,7 @@ func (k Keeper) IterateBondedValidatorsByPower(ctx context.Context, cb func(vali
 	}
 
 	counter := 0
-	return k.ValidatorsByPowerIndex.Walk(ctx, new(collections.PairRange[int64, []byte]).Descending(), func(key collections.Pair[int64, []byte], value bool) (stop bool, err error) {
+	return k.ValidatorsByConsPowerIndex.Walk(ctx, new(collections.PairRange[int64, []byte]).Descending(), func(key collections.Pair[int64, []byte], value bool) (stop bool, err error) {
 		val, err := k.Validators.Get(ctx, key.K2())
 		if err != nil {
 			return true, err
@@ -47,7 +47,7 @@ func (k Keeper) IterateBondedValidatorsByPower(ctx context.Context, cb func(vali
 
 // iterate through the active validator set and perform the provided function
 func (k Keeper) IterateLastValidators(ctx context.Context, cb func(validator types.ValidatorI) (stop bool, err error)) error {
-	return k.LastValidatorPowers.Walk(ctx, nil, func(valAddr []byte, power int64) (stop bool, err error) {
+	return k.LastValidatorConsPowers.Walk(ctx, nil, func(valAddr []byte, power int64) (stop bool, err error) {
 		val, err := k.Validators.Get(ctx, valAddr)
 		if err != nil {
 			return true, err

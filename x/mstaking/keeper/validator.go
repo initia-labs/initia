@@ -81,7 +81,7 @@ func (k Keeper) SetValidatorByPowerIndex(ctx context.Context, validator types.Va
 		return err
 	}
 
-	return k.ValidatorsByPowerIndex.Set(ctx, collections.Join(consensusPower, valAddr), true)
+	return k.ValidatorsByConsPowerIndex.Set(ctx, collections.Join(consensusPower, valAddr), true)
 }
 
 // validator index
@@ -93,7 +93,7 @@ func (k Keeper) DeleteValidatorByPowerIndex(ctx context.Context, validator types
 		return err
 	}
 
-	return k.ValidatorsByPowerIndex.Remove(ctx, collections.Join(consensusPower, valAddr))
+	return k.ValidatorsByConsPowerIndex.Remove(ctx, collections.Join(consensusPower, valAddr))
 }
 
 // Update the tokens of an existing validator.
@@ -220,7 +220,7 @@ func (k Keeper) RemoveValidator(ctx context.Context, valAddr sdk.ValAddress) err
 		return err
 	}
 
-	if err := k.ValidatorsByPowerIndex.Remove(ctx, collections.Join(consensusPower, []byte(valAddr))); err != nil {
+	if err := k.ValidatorsByConsPowerIndex.Remove(ctx, collections.Join(consensusPower, []byte(valAddr))); err != nil {
 		return err
 	}
 
@@ -263,7 +263,7 @@ func (k Keeper) GetBondedValidatorsByPower(ctx context.Context) ([]types.Validat
 	}
 
 	validators := make([]types.Validator, 0, maxValidators)
-	err = k.ValidatorsByPowerIndex.Walk(ctx, new(collections.PairRange[int64, []byte]).Descending(), func(key collections.Pair[int64, []byte], value bool) (stop bool, err error) {
+	err = k.ValidatorsByConsPowerIndex.Walk(ctx, new(collections.PairRange[int64, []byte]).Descending(), func(key collections.Pair[int64, []byte], value bool) (stop bool, err error) {
 		validator, err := k.GetValidator(ctx, key.K2())
 		if err != nil {
 			return true, err
@@ -283,8 +283,8 @@ func (k Keeper) GetBondedValidatorsByPower(ctx context.Context) ([]types.Validat
 
 // Load the last validator power.
 // Returns zero if the operator was not a validator last block.
-func (k Keeper) GetLastValidatorPower(ctx context.Context, valAddr sdk.ValAddress) (int64, error) {
-	power, err := k.LastValidatorPowers.Get(ctx, valAddr)
+func (k Keeper) GetLastValidatorConsPower(ctx context.Context, valAddr sdk.ValAddress) (int64, error) {
+	power, err := k.LastValidatorConsPowers.Get(ctx, valAddr)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
 			return 0, nil
@@ -297,18 +297,18 @@ func (k Keeper) GetLastValidatorPower(ctx context.Context, valAddr sdk.ValAddres
 }
 
 // Set the last validator power.
-func (k Keeper) SetLastValidatorPower(ctx context.Context, valAddr sdk.ValAddress, power int64) error {
-	return k.LastValidatorPowers.Set(ctx, valAddr, power)
+func (k Keeper) SetLastValidatorConsPower(ctx context.Context, valAddr sdk.ValAddress, power int64) error {
+	return k.LastValidatorConsPowers.Set(ctx, valAddr, power)
 }
 
 // Delete the last validator power.
-func (k Keeper) DeleteLastValidatorPower(ctx context.Context, valAddr sdk.ValAddress) error {
-	return k.LastValidatorPowers.Remove(ctx, valAddr)
+func (k Keeper) DeleteLastValidatorConsPower(ctx context.Context, valAddr sdk.ValAddress) error {
+	return k.LastValidatorConsPowers.Remove(ctx, valAddr)
 }
 
 // Iterate over last validator powers.
-func (k Keeper) IterateLastValidatorPowers(ctx context.Context, handler func(operator sdk.ValAddress, power int64) (stop bool, err error)) error {
-	return k.LastValidatorPowers.Walk(ctx, nil, func(valAddr []byte, power int64) (stop bool, err error) {
+func (k Keeper) IterateLastValidatorConsPowers(ctx context.Context, handler func(operator sdk.ValAddress, power int64) (stop bool, err error)) error {
+	return k.LastValidatorConsPowers.Walk(ctx, nil, func(valAddr []byte, power int64) (stop bool, err error) {
 		return handler(valAddr, power)
 	})
 }
@@ -321,7 +321,7 @@ func (k Keeper) GetLastValidators(ctx context.Context) (validators []types.Valid
 	}
 
 	validators = make([]types.Validator, 0, maxValidators)
-	err = k.LastValidatorPowers.Walk(ctx, nil, func(valAddr []byte, power int64) (stop bool, err error) {
+	err = k.LastValidatorConsPowers.Walk(ctx, nil, func(valAddr []byte, power int64) (stop bool, err error) {
 		validator, err := k.GetValidator(ctx, valAddr)
 		if err != nil {
 			return true, err

@@ -108,7 +108,7 @@ func NonNegativePowerInvariant(k Keeper) sdk.Invariant {
 			msg    string
 			broken bool
 		)
-		err := k.ValidatorsByPowerIndex.Walk(ctx, nil, func(key collections.Pair[int64, []byte], _ bool) (stop bool, err error) {
+		err := k.ValidatorsByConsPowerIndex.Walk(ctx, nil, func(key collections.Pair[int64, []byte], _ bool) (stop bool, err error) {
 			power := key.K1()
 			valAddr := key.K2()
 
