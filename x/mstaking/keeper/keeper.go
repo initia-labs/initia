@@ -175,7 +175,7 @@ func (k *Keeper) SetHooks(sh types.StakingHooks) *Keeper {
 
 // SlashingHooks gets the slashing hooks for staking *Keeper {
 func (k *Keeper) SlashingHooks() types.SlashingHooks {
-	if k.hooks == nil {
+	if k.slashingHooks == nil {
 		// return a no-op implementation if no hooks are set
 		return types.MultiSlashingHooks{}
 	}
