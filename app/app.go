@@ -231,10 +231,6 @@ func init() {
 	DefaultNodeHome = filepath.Join(userHomeDir, "."+AppName)
 }
 
-const (
-	maxDefaultLaneSize = 2000
-)
-
 // InitiaApp extends an ABCI application, but with most of its parameters exported.
 // They are exported for convenience in creating helper functions, as object
 // capabilities aren't needed for testing.
@@ -318,6 +314,13 @@ func NewInitiaApp(
 	appOpts servertypes.AppOptions,
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *InitiaApp {
+	// load the configs
+	mempoolTxs := cast.ToInt(appOpts.Get(server.FlagMempoolMaxTxs))
+	queryGasLimit := cast.ToInt(appOpts.Get(server.FlagQueryGasLimit))
+
+	logger.Info("mempool max txs", "max_txs", mempoolTxs)
+	logger.Info("query gas limit", "gas_limit", queryGasLimit)
+
 	encodingConfig := params.MakeEncodingConfig()
 	std.RegisterLegacyAminoCodec(encodingConfig.Amino)
 	std.RegisterInterfaces(encodingConfig.InterfaceRegistry)
@@ -1008,7 +1011,7 @@ func NewInitiaApp(
 		Logger:          app.Logger(),
 		TxEncoder:       app.txConfig.TxEncoder(),
 		TxDecoder:       app.txConfig.TxDecoder(),
-		MaxBlockSpace:   math.LegacyMustNewDecFromStr("0.05"),
+		MaxBlockSpace:   math.LegacyMustNewDecFromStr("0.01"),
 		MaxTxs:          1,
 		SignerExtractor: signerExtractor,
 	}, applanes.RejectMatchHandler())
@@ -1018,7 +1021,7 @@ func NewInitiaApp(
 		Logger:          app.Logger(),
 		TxEncoder:       app.txConfig.TxEncoder(),
 		TxDecoder:       app.txConfig.TxDecoder(),
-		MaxBlockSpace:   math.LegacyMustNewDecFromStr("0.15"),
+		MaxBlockSpace:   math.LegacyMustNewDecFromStr("0.09"),
 		MaxTxs:          100,
 		SignerExtractor: signerExtractor,
 	}, factory, factory.MatchHandler())
@@ -1027,7 +1030,7 @@ func NewInitiaApp(
 		Logger:          app.Logger(),
 		TxEncoder:       app.txConfig.TxEncoder(),
 		TxDecoder:       app.txConfig.TxDecoder(),
-		MaxBlockSpace:   math.LegacyMustNewDecFromStr("0.2"),
+		MaxBlockSpace:   math.LegacyMustNewDecFromStr("0.1"),
 		MaxTxs:          100,
 		SignerExtractor: signerExtractor,
 	}, applanes.FreeLaneMatchHandler())
@@ -1036,8 +1039,8 @@ func NewInitiaApp(
 		Logger:          app.Logger(),
 		TxEncoder:       app.txConfig.TxEncoder(),
 		TxDecoder:       app.txConfig.TxDecoder(),
-		MaxBlockSpace:   math.LegacyMustNewDecFromStr("0.6"),
-		MaxTxs:          2000,
+		MaxBlockSpace:   math.LegacyMustNewDecFromStr("0.8"),
+		MaxTxs:          mempoolTxs,
 		SignerExtractor: signerExtractor,
 	})
 

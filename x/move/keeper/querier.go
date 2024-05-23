@@ -319,10 +319,6 @@ func (q Querier) View(ctx context.Context, req *types.QueryViewRequest) (res *ty
 }
 
 func (q Querier) ViewBatch(ctx context.Context, req *types.QueryViewBatchRequest) (res *types.QueryViewBatchResponse, err error) {
-	if len(req.Requests) > int(q.config.ContractViewBatchLimit) {
-		return nil, types.ErrLimit.Wrapf("batch query cannot exceed %d requests", q.config.ContractViewBatchLimit)
-	}
-
 	responses := make([]types.QueryViewResponse, len(req.Requests))
 	for i, req := range req.Requests {
 		res, err := q.View(ctx, &req)
@@ -394,10 +390,6 @@ func (q Querier) ViewJSON(ctx context.Context, req *types.QueryViewJSONRequest) 
 }
 
 func (q Querier) ViewJSONBatch(ctx context.Context, req *types.QueryViewJSONBatchRequest) (res *types.QueryViewJSONBatchResponse, err error) {
-	if len(req.Requests) > int(q.config.ContractViewBatchLimit) {
-		return nil, types.ErrLimit.Wrapf("batch query cannot exceed %d requests", q.config.ContractViewBatchLimit)
-	}
-
 	responses := make([]types.QueryViewJSONResponse, len(req.Requests))
 	for i, req := range req.Requests {
 		res, err := q.ViewJSON(ctx, &req)
