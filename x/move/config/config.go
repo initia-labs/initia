@@ -16,9 +16,6 @@ const DefaultScriptCacheCapacity = uint64(1_000)
 // DefaultContractSimulationGasLimit - default max simulation gas
 const DefaultContractSimulationGasLimit = uint64(3_000_000)
 
-// DefaultContractViewBatchLimit - default max view batch limit
-const DefaultContractViewBatchLimit = uint64(10)
-
 const (
 	flagModuleCacheCapacity        = "move.module-cache-capacity"
 	flagScriptCacheCapacity        = "move.script-cache-capacity"
