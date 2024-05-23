@@ -38,9 +38,9 @@ require (
 	github.com/gorilla/mux v1.8.1
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/hashicorp/go-metrics v0.5.3
-	github.com/initia-labs/OPinit v0.2.9
+	github.com/initia-labs/OPinit v0.3.0
 	// we also need to update `LIBMOVEVM_VERSION` of images/private/Dockerfile#5
-	github.com/initia-labs/movevm v0.2.8
+	github.com/initia-labs/movevm v0.3.0
 	github.com/noble-assets/forwarding/v2 v2.0.0-20240514101621-172acc02aac6
 	github.com/pelletier/go-toml v1.9.5
 	github.com/pkg/errors v0.9.1
@@ -149,7 +149,7 @@ require (
 	github.com/iancoleman/strcase v0.3.0 // indirect
 	github.com/improbable-eng/grpc-web v0.15.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/initia-labs/OPinit/api v0.2.6 // indirect
+	github.com/initia-labs/OPinit/api v0.3.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/jmhodges/levigo v1.0.0 // indirect
 	github.com/klauspost/compress v1.17.8 // indirect
