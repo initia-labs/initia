@@ -4,7 +4,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
+
+	"github.com/initia-labs/initia/tx"
 )
 
 type config struct {
@@ -12,7 +13,7 @@ type config struct {
 }
 
 func NewClientTxConfig(protoCodec codec.ProtoCodecMarshaler) client.TxConfig {
-	return config{authtx.NewTxConfig(protoCodec, authtx.DefaultSignModes)}
+	return config{tx.NewTxConfig(protoCodec, tx.DefaultSignModes)}
 }
 
 func (c config) TxDecoder() sdk.TxDecoder {

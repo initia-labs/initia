@@ -7,9 +7,9 @@ import (
 	codecaddress "github.com/cosmos/cosmos-sdk/codec/address"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/auth/tx"
-
 	"github.com/cosmos/gogoproto/proto"
+
+	"github.com/initia-labs/initia/tx"
 )
 
 // MakeEncodingConfig creates an EncodingConfig for an amino based test configuration.
