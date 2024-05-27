@@ -450,6 +450,36 @@ func createValidatorWithBalance(
 	return valAddr
 }
 
+func createValidatorAndOperatorWithBalance(
+	ctx sdk.Context,
+	input TestKeepers,
+	balance int64,
+	delBalance int64,
+	index int,
+) (sdk.ValAddress, sdk.AccAddress) {
+	valPubKey := testutilsims.CreateTestPubKeys(index)[index-1]
+
+	pubKey := secp256k1.GenPrivKey().PubKey()
+	accAddr := sdk.AccAddress(sdk.AccAddress(pubKey.Address()))
+	valAddr := sdk.ValAddress(sdk.AccAddress(pubKey.Address()))
+
+	input.Faucet.Fund(ctx, accAddr, sdk.NewCoin(bondDenom, math.NewInt(balance)))
+
+	sh := stakingkeeper.NewMsgServerImpl(input.StakingKeeper)
+	_, err := sh.CreateValidator(ctx, newTestMsgCreateValidator(valAddr, valPubKey, sdk.NewCoin(bondDenom, math.NewInt(delBalance))))
+	if err != nil {
+		panic(err)
+	}
+
+	// power update
+	_, err = input.StakingKeeper.ApplyAndReturnValidatorSetUpdates(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	return valAddr, accAddr
+}
+
 func createValidatorWithCoin(
 	ctx sdk.Context,
 	input TestKeepers,
