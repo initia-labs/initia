@@ -48,7 +48,7 @@ type SigVerificationDecorator struct {
 	signModeHandler *txsigning.HandlerMap
 }
 
-func newSigVerificationDecorator(ak authante.AccountKeeper, signModeHandler *txsigning.HandlerMap) SigVerificationDecorator {
+func NewSigVerificationDecorator(ak authante.AccountKeeper, signModeHandler *txsigning.HandlerMap) SigVerificationDecorator {
 	return SigVerificationDecorator{
 		ak:              ak,
 		signModeHandler: signModeHandler,
@@ -147,7 +147,7 @@ func (svd SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simul
 // defaultSigVerificationGasConsumer is the default implementation of SignatureVerificationGasConsumer. It consumes gas
 // for signature verification based upon the public key type. The cost is fetched from the given params and is matched
 // by the concrete type.
-func defaultSigVerificationGasConsumer(
+func DefaultSigVerificationGasConsumer(
 	meter storetypes.GasMeter, sig signing.SignatureV2, params types.Params,
 ) error {
 	pubkey := sig.PubKey
@@ -197,7 +197,7 @@ func consumeMultisignatureVerificationGas(
 			Data:     sig.Signatures[sigIndex],
 			Sequence: accSeq,
 		}
-		err := defaultSigVerificationGasConsumer(meter, sigV2, params)
+		err := DefaultSigVerificationGasConsumer(meter, sigV2, params)
 		if err != nil {
 			return err
 		}
