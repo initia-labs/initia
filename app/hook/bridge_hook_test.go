@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/collections"
 	"cosmossdk.io/log"
 	"cosmossdk.io/store"
 	"cosmossdk.io/store/metrics"
@@ -18,6 +19,7 @@ import (
 
 	ophosttypes "github.com/initia-labs/OPinit/x/ophost/types"
 	"github.com/initia-labs/initia/app/hook"
+	permtypes "github.com/initia-labs/initia/x/ibc/perm/types"
 )
 
 var _ hook.ChannelKeeper = MockChannelKeeper{}
@@ -43,6 +45,14 @@ func (k MockPermKeeper) HasPermission(ctx context.Context, portID, channelID str
 func (k MockPermKeeper) SetPermissionedRelayer(ctx context.Context, portID, channelID string, relayer sdk.AccAddress) error {
 	k.perms[portID+"/"+channelID] = relayer
 	return nil
+}
+
+func (k MockPermKeeper) GetPermissionedRelayer(ctx context.Context, portID, channelID string) (sdk.AccAddress, error) {
+	if _, ok := k.perms[portID+"/"+channelID]; !ok {
+		return nil, collections.ErrNotFound
+	}
+
+	return k.perms[portID+"/"+channelID], nil
 }
 
 func setup() (context.Context, hook.BridgeHook) {
@@ -98,6 +108,13 @@ func Test_BridgeHook_BridgeCreated(t *testing.T) {
 		Metadata:   metadata,
 	})
 	require.NoError(t, err)
+
+	// can't create bridge with already taken channel
+	err = h.BridgeCreated(ctx, 2, ophosttypes.BridgeConfig{
+		Challenger: addr.String(),
+		Metadata:   metadata,
+	})
+	require.ErrorIs(t, err, permtypes.ErrAlreadyTaken)
 
 	// cannot take non-1 sequence channel
 	err = h.BridgeCreated(ctx, 1, ophosttypes.BridgeConfig{
