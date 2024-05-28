@@ -17,6 +17,7 @@ Initia's product stack unifies the architecture, offering users a singular chain
 - [Initia App](https://app.testnet.initia.xyz): A centralized platform for all things related to Initia.
 - [Initia Usernames](https://usernames.testnet.initia.xyz): A blockchain-wide on-chain identity system.
 - [Initia Wallet](https://chromewebstore.google.com/detail/initia-wallet/ffbceckpkpbcmgiaehlloocglmijnpmp): A dedicated wallet designed for navigating the expansive Initia ecosystem.
+- [Initia Bridge](https://bridge.testnet.initia.xyz/): Bridge to explore testnet initia.
 
 ## Documentation
 
