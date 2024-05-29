@@ -527,10 +527,10 @@ func (k msgServer) CancelUnbondingDelegation(ctx context.Context, msg *types.Msg
 func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
 	var addrCodec address.Codec
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	if sdkCtx.ChainID() == "initiation-1" && sdkCtx.BlockHeight() > 90500 {
-		addrCodec = ms.Keeper.authKeeper.AddressCodec()
-	} else {
+	if sdkCtx.ChainID() == "initiation-1" && sdkCtx.BlockHeight() <= 90500 {
 		addrCodec = ms.Keeper.ValidatorAddressCodec()
+	} else {
+		addrCodec = ms.Keeper.authKeeper.AddressCodec()
 	}
 
 	if err := msg.Validate(addrCodec); err != nil {
