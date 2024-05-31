@@ -83,6 +83,16 @@ func (k Keeper) SetPermissionedRelayer(ctx context.Context, portID, channelID st
 	return k.PermissionedRelayers.Set(ctx, collections.Join(portID, channelID), relayer)
 }
 
+// GetPermissionedRelayer returns the permissioned relayer for the channel.
+func (k Keeper) GetPermissionedRelayer(ctx context.Context, portID, channelID string) (sdk.AccAddress, error) {
+	relayer, err := k.PermissionedRelayers.Get(ctx, collections.Join(portID, channelID))
+	if err != nil {
+		return nil, err
+	}
+
+	return sdk.AccAddress(relayer), nil
+}
+
 // HasPermission checks if the relayer has permission to relay packets on the channel.
 func (k Keeper) HasPermission(ctx context.Context, portID, channelID string, relayer sdk.AccAddress) (bool, error) {
 	permRelayer, err := k.PermissionedRelayers.Get(ctx, collections.Join(portID, channelID))
