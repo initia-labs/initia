@@ -12731,7 +12731,7 @@ func (BondStatus) EnumDescriptor() ([]byte, []int) {
 	return file_initia_mstaking_v1_staking_proto_rawDescGZIP(), []int{0}
 }
 
-// Infraction indicates the infraction a validator commited.
+// Infraction indicates the infraction a validator committed.
 type Infraction int32
 
 const (

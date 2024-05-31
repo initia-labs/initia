@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             (unknown)
-// source: ibc/applications/fetchprice/v1/tx.proto
+// source: ibc/applications/nft_transfer/v1/tx.proto
 
-package fetchpricev1
+package nft_transferv1
 
 import (
 	context "context"
@@ -19,20 +19,17 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Msg_Activate_FullMethodName     = "/ibc.applications.fetchprice.v1.Msg/Activate"
-	Msg_Deactivate_FullMethodName   = "/ibc.applications.fetchprice.v1.Msg/Deactivate"
-	Msg_UpdateParams_FullMethodName = "/ibc.applications.fetchprice.v1.Msg/UpdateParams"
+	Msg_Transfer_FullMethodName     = "/ibc.applications.nft_transfer.v1.Msg/Transfer"
+	Msg_UpdateParams_FullMethodName = "/ibc.applications.nft_transfer.v1.Msg/UpdateParams"
 )
 
 // MsgClient is the client API for Msg service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MsgClient interface {
-	// Activate price fetching ICQ process
-	Activate(ctx context.Context, in *MsgActivate, opts ...grpc.CallOption) (*MsgActivateResponse, error)
-	// Deactivate price fetching ICQ process
-	Deactivate(ctx context.Context, in *MsgDeactivate, opts ...grpc.CallOption) (*MsgDeactivateResponse, error)
-	// UpdateParams defines an operation for updating the x/ibc/fetchprice module
+	// Transfer defines a rpc handler method for MsgTransfer.
+	Transfer(ctx context.Context, in *MsgTransfer, opts ...grpc.CallOption) (*MsgTransferResponse, error)
+	// UpdateParams defines an operation for updating the x/ibc/nft-transfer module
 	// parameters.
 	UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error)
 }
@@ -45,18 +42,9 @@ func NewMsgClient(cc grpc.ClientConnInterface) MsgClient {
 	return &msgClient{cc}
 }
 
-func (c *msgClient) Activate(ctx context.Context, in *MsgActivate, opts ...grpc.CallOption) (*MsgActivateResponse, error) {
-	out := new(MsgActivateResponse)
-	err := c.cc.Invoke(ctx, Msg_Activate_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *msgClient) Deactivate(ctx context.Context, in *MsgDeactivate, opts ...grpc.CallOption) (*MsgDeactivateResponse, error) {
-	out := new(MsgDeactivateResponse)
-	err := c.cc.Invoke(ctx, Msg_Deactivate_FullMethodName, in, out, opts...)
+func (c *msgClient) Transfer(ctx context.Context, in *MsgTransfer, opts ...grpc.CallOption) (*MsgTransferResponse, error) {
+	out := new(MsgTransferResponse)
+	err := c.cc.Invoke(ctx, Msg_Transfer_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -76,11 +64,9 @@ func (c *msgClient) UpdateParams(ctx context.Context, in *MsgUpdateParams, opts 
 // All implementations must embed UnimplementedMsgServer
 // for forward compatibility
 type MsgServer interface {
-	// Activate price fetching ICQ process
-	Activate(context.Context, *MsgActivate) (*MsgActivateResponse, error)
-	// Deactivate price fetching ICQ process
-	Deactivate(context.Context, *MsgDeactivate) (*MsgDeactivateResponse, error)
-	// UpdateParams defines an operation for updating the x/ibc/fetchprice module
+	// Transfer defines a rpc handler method for MsgTransfer.
+	Transfer(context.Context, *MsgTransfer) (*MsgTransferResponse, error)
+	// UpdateParams defines an operation for updating the x/ibc/nft-transfer module
 	// parameters.
 	UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error)
 	mustEmbedUnimplementedMsgServer()
@@ -90,11 +76,8 @@ type MsgServer interface {
 type UnimplementedMsgServer struct {
 }
 
-func (UnimplementedMsgServer) Activate(context.Context, *MsgActivate) (*MsgActivateResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Activate not implemented")
-}
-func (UnimplementedMsgServer) Deactivate(context.Context, *MsgDeactivate) (*MsgDeactivateResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Deactivate not implemented")
+func (UnimplementedMsgServer) Transfer(context.Context, *MsgTransfer) (*MsgTransferResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Transfer not implemented")
 }
 func (UnimplementedMsgServer) UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateParams not implemented")
@@ -112,38 +95,20 @@ func RegisterMsgServer(s grpc.ServiceRegistrar, srv MsgServer) {
 	s.RegisterService(&Msg_ServiceDesc, srv)
 }
 
-func _Msg_Activate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgActivate)
+func _Msg_Transfer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgTransfer)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).Activate(ctx, in)
+		return srv.(MsgServer).Transfer(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Msg_Activate_FullMethodName,
+		FullMethod: Msg_Transfer_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).Activate(ctx, req.(*MsgActivate))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Msg_Deactivate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgDeactivate)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServer).Deactivate(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Msg_Deactivate_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).Deactivate(ctx, req.(*MsgDeactivate))
+		return srv.(MsgServer).Transfer(ctx, req.(*MsgTransfer))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -170,16 +135,12 @@ func _Msg_UpdateParams_Handler(srv interface{}, ctx context.Context, dec func(in
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Msg_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "ibc.applications.fetchprice.v1.Msg",
+	ServiceName: "ibc.applications.nft_transfer.v1.Msg",
 	HandlerType: (*MsgServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Activate",
-			Handler:    _Msg_Activate_Handler,
-		},
-		{
-			MethodName: "Deactivate",
-			Handler:    _Msg_Deactivate_Handler,
+			MethodName: "Transfer",
+			Handler:    _Msg_Transfer_Handler,
 		},
 		{
 			MethodName: "UpdateParams",
@@ -187,5 +148,5 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "ibc/applications/fetchprice/v1/tx.proto",
+	Metadata: "ibc/applications/nft_transfer/v1/tx.proto",
 }

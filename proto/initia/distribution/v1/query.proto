@@ -81,7 +81,7 @@ message QueryValidatorCommissionRequest {
 // QueryValidatorCommissionResponse is the response type for the
 // Query/ValidatorCommission RPC method
 message QueryValidatorCommissionResponse {
-  // commission defines the commision the validator received.
+  // commission defines the commission the validator received.
   ValidatorAccumulatedCommission commission = 1 [(gogoproto.nullable) = false];
 }
 
