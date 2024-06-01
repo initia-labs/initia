@@ -33,11 +33,22 @@ func (q Querier) Validators(ctx context.Context, req *types.QueryValidatorsReque
 		return nil, status.Errorf(codes.InvalidArgument, "invalid validator status %s", req.Status)
 	}
 
-	validators, pageRes, err := query.CollectionFilteredPaginate(ctx, q.Keeper.Validators, req.Pagination, func(valAddr []byte, val types.Validator) (include bool, err error) {
-		return (req.Status == "" || strings.EqualFold(val.GetStatus().String(), req.Status)), nil
-	}, func(valAddr []byte, val types.Validator) (types.Validator, error) {
-		return val, nil
-	})
+	var validators []types.Validator
+	var pageRes *query.PageResponse
+	var err error
+
+	if req.Status == types.Bonded.String() {
+		validators, pageRes, err = query.CollectionPaginate(ctx, q.Keeper.ValidatorsByConsPowerIndex, req.Pagination, func(key collections.Pair[int64, []byte], _ bool) (types.Validator, error) {
+			valAddr := key.K2()
+			return q.Keeper.Validators.Get(ctx, valAddr)
+		})
+	} else {
+		validators, pageRes, err = query.CollectionFilteredPaginate(ctx, q.Keeper.Validators, req.Pagination, func(valAddr []byte, val types.Validator) (include bool, err error) {
+			return (req.Status == "" || strings.EqualFold(val.GetStatus().String(), req.Status)), nil
+		}, func(valAddr []byte, val types.Validator) (types.Validator, error) {
+			return val, nil
+		})
+	}
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
