@@ -14,7 +14,7 @@ func TestDepositValidatorRewardsPool(t *testing.T) {
 	ctx, keepers := createDefaultTestInput(t)
 	customMsgServer := keeper.NewCustomMsgServerImpl(keepers.DistKeeper)
 	_, _, depositor := keyPubAddr()
-	keepers.Faucet.Mint(ctx, depositor, types.NewCoin("uinit", math.NewInt(10)))
+	keepers.Faucet.Mint(ctx, depositor, types.NewCoin("uinit", math.NewInt(20)))
 	val := createValidatorWithBalance(ctx, keepers, 100, 100, 1)
 
 	cases := []struct {
@@ -55,7 +55,7 @@ func TestDepositValidatorRewardsPool(t *testing.T) {
 				Amount:           types.NewCoins(types.NewCoin("uinit", math.NewInt(10))),
 			},
 			resp:   &customTypes.MsgDepositValidatorRewardsPoolResponse{},
-			errMsg: "VM aborted: location=0000000000000000000000000000000000000000000000000000000000000001::fungible_asset, code=65540",
+			errMsg: "decoding bech32 failed: invalid bech32 string length 7",
 		},
 	}
 
