@@ -42,11 +42,11 @@ type Keeper struct {
 
 	Schema collections.Schema
 
-	LastValidatorPowers    collections.Map[[]byte, int64]
-	WhitelistedValidators  collections.Map[[]byte, bool]
-	Validators             collections.Map[[]byte, types.Validator]
-	ValidatorsByConsAddr   collections.Map[[]byte, []byte]
-	ValidatorsByPowerIndex collections.Map[collections.Pair[int64, []byte], bool]
+	LastValidatorConsPowers    collections.Map[[]byte, int64]
+	WhitelistedValidators      collections.Map[[]byte, bool]
+	Validators                 collections.Map[[]byte, types.Validator]
+	ValidatorsByConsAddr       collections.Map[[]byte, []byte]
+	ValidatorsByConsPowerIndex collections.Map[collections.Pair[int64, []byte], bool]
 
 	Delegations                    collections.Map[collections.Pair[[]byte, []byte], types.Delegation]             // delAddr, valAddr
 	DelegationsByValIndex          collections.Map[collections.Pair[[]byte, []byte], bool]                         // valAddr, delAddr
@@ -110,11 +110,11 @@ func NewKeeper(
 		validatorAddressCodec: validatorAddressCodec,
 		consensusAddressCodec: consensusAddressCodec,
 
-		LastValidatorPowers:    collections.NewMap(sb, types.LastValidatorPowersPrefix, "last_validator_powers", collections.BytesKey, collections.Int64Value),
-		WhitelistedValidators:  collections.NewMap(sb, types.WhitelistedValidatorsPrefix, "whitelisted_validators", collections.BytesKey, collections.BoolValue),
-		Validators:             collections.NewMap(sb, types.ValidatorsPrefix, "validators", collections.BytesKey, codec.CollValue[types.Validator](cdc)),
-		ValidatorsByConsAddr:   collections.NewMap(sb, types.ValidatorsByConsAddrPrefix, "validators_by_cons_addr", collections.BytesKey, collections.BytesValue),
-		ValidatorsByPowerIndex: collections.NewMap(sb, types.ValidatorsByPowerIndexPrefix, "validators_by_power_index_prefix", collections.PairKeyCodec(collections.Int64Key, collections.BytesKey), collections.BoolValue),
+		LastValidatorConsPowers:    collections.NewMap(sb, types.LastValidatorConsPowersPrefix, "last_validator_cons_powers", collections.BytesKey, collections.Int64Value),
+		WhitelistedValidators:      collections.NewMap(sb, types.WhitelistedValidatorsPrefix, "whitelisted_validators", collections.BytesKey, collections.BoolValue),
+		Validators:                 collections.NewMap(sb, types.ValidatorsPrefix, "validators", collections.BytesKey, codec.CollValue[types.Validator](cdc)),
+		ValidatorsByConsAddr:       collections.NewMap(sb, types.ValidatorsByConsAddrPrefix, "validators_by_cons_addr", collections.BytesKey, collections.BytesValue),
+		ValidatorsByConsPowerIndex: collections.NewMap(sb, types.ValidatorsByConsPowerIndexPrefix, "validators_by_cons_power_index_prefix", collections.PairKeyCodec(collections.Int64Key, collections.BytesKey), collections.BoolValue),
 
 		Delegations:                    collections.NewMap(sb, types.DelegationsPrefix, "delegations", collections.PairKeyCodec(collections.BytesKey, collections.BytesKey), codec.CollValue[types.Delegation](cdc)),
 		DelegationsByValIndex:          collections.NewMap(sb, types.DelegationsByValIndexPrefix, "delegations_by_val_index", collections.PairKeyCodec(collections.BytesKey, collections.BytesKey), collections.BoolValue),
@@ -175,7 +175,7 @@ func (k *Keeper) SetHooks(sh types.StakingHooks) *Keeper {
 
 // SlashingHooks gets the slashing hooks for staking *Keeper {
 func (k *Keeper) SlashingHooks() types.SlashingHooks {
-	if k.hooks == nil {
+	if k.slashingHooks == nil {
 		// return a no-op implementation if no hooks are set
 		return types.MultiSlashingHooks{}
 	}

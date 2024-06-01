@@ -386,6 +386,10 @@ func (k Keeper) handleExecuteResponse(
 		// increase global account number if the given account is not exists
 		if !k.authKeeper.HasAccount(ctx, addr) {
 			k.authKeeper.NextAccountNumber(ctx)
+		} else {
+			// remove account if it already exists
+			// to avoid collection's primary key conflict
+			k.authKeeper.RemoveAccount(ctx, accI)
 		}
 
 		// write or overwrite account
@@ -564,34 +568,47 @@ func (k Keeper) executeViewFunction(
 	args [][]byte,
 	isJSON bool,
 ) (vmtypes.ViewOutput, error) {
-	if payload, err := types.BuildExecuteViewFunctionPayload(
+	payload, err := types.BuildExecuteViewFunctionPayload(
 		moduleAddr,
 		moduleName,
 		functionName,
 		typeArgs,
 		args,
 		isJSON,
-	); err != nil {
+	)
+	if err != nil {
 		return vmtypes.ViewOutput{}, err
-	} else {
-		executionCounter, err := k.ExecutionCounter.Next(ctx)
-		if err != nil {
-			return vmtypes.ViewOutput{}, err
-		}
-
-		api := NewApi(k, ctx)
-		env := types.NewEnv(
-			ctx,
-			types.NextAccountNumber(ctx, k.authKeeper),
-			executionCounter,
-		)
-
-		return k.moveVM.ExecuteViewFunction(
-			types.NewVMStore(ctx, k.VMStore),
-			api,
-			env,
-			k.config.ContractQueryGasLimit,
-			payload,
-		)
 	}
+
+	executionCounter, err := k.ExecutionCounter.Next(ctx)
+	if err != nil {
+		return vmtypes.ViewOutput{}, err
+	}
+
+	api := NewApi(k, ctx)
+	env := types.NewEnv(
+		ctx,
+		types.NextAccountNumber(ctx, k.authKeeper),
+		executionCounter,
+	)
+
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	gasMeter := sdkCtx.GasMeter()
+	gasForRuntime := gasMeter.Limit() - gasMeter.GasConsumedToLimit()
+
+	viewRes, err := k.moveVM.ExecuteViewFunction(
+		types.NewVMStore(ctx, k.VMStore),
+		api,
+		env,
+		gasForRuntime,
+		payload,
+	)
+	if err != nil {
+		return vmtypes.ViewOutput{}, err
+	}
+
+	// consume gas first and check error
+	gasMeter.ConsumeGas(viewRes.GasUsed, "view; move runtime")
+
+	return viewRes, nil
 }

@@ -195,7 +195,7 @@ func (k Keeper) InitGenesis(
 				panic(err)
 			}
 
-			err = k.SetLastValidatorPower(ctx, valAddr, lv.Power)
+			err = k.SetLastValidatorConsPower(ctx, valAddr, lv.Power)
 			if err != nil {
 				panic(err)
 			}
@@ -247,7 +247,7 @@ func (k Keeper) ExportGenesis(ctx context.Context) *types.GenesisState {
 
 	var lastValidatorPowers []types.LastValidatorPower
 
-	err = k.IterateLastValidatorPowers(ctx, func(addr sdk.ValAddress, power int64) (stop bool, err error) {
+	err = k.IterateLastValidatorConsPowers(ctx, func(addr sdk.ValAddress, power int64) (stop bool, err error) {
 		valAddr, err := k.validatorAddressCodec.BytesToString(addr)
 		if err != nil {
 			return true, err

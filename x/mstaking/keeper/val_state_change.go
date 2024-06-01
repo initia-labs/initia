@@ -8,7 +8,6 @@ import (
 
 	"cosmossdk.io/collections"
 	"cosmossdk.io/core/address"
-	"cosmossdk.io/math"
 	abci "github.com/cometbft/cometbft/abci/types"
 
 	"github.com/initia-labs/initia/x/mstaking/types"
@@ -160,8 +159,7 @@ func (k Keeper) ApplyVotingPowerUpdates(ctx context.Context) error {
 }
 
 // ApplyAndReturnValidatorSetUpdates applies and return accumulated updates to the bonded validator set. Also,
-// * Updates the active valset as keyed by LastValidatorPowerKey.
-// * Updates the total power as keyed by LastTotalPowerKey.
+// * Updates the active valset as keyed by LastValidatorConsPowerKey.
 // * Updates validator status' according to updated powers.
 // * Updates the fee pool bonded vs not-bonded tokens.
 // * Updates relevant indices.
@@ -183,7 +181,6 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx context.Context) (updates 
 
 	maxValidators := params.MaxValidators
 	powerReduction := k.PowerReduction(ctx)
-	totalPower := math.ZeroInt()
 	amtFromBondedToNotBonded, amtFromNotBondedToBonded := sdk.NewCoins(), sdk.NewCoins()
 
 	// Retrieve the last validator set.
@@ -197,7 +194,7 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx context.Context) (updates 
 	counter := 0
 
 	// Iterate over validators, highest power to lowest.
-	err = k.ValidatorsByPowerIndex.Walk(ctx, new(collections.PairRange[int64, []byte]).Descending(), func(key collections.Pair[int64, []byte], value bool) (stop bool, err error) {
+	err = k.ValidatorsByConsPowerIndex.Walk(ctx, new(collections.PairRange[int64, []byte]).Descending(), func(key collections.Pair[int64, []byte], value bool) (stop bool, err error) {
 		valAddr := key.K2()
 		validator := k.mustGetValidator(ctx, valAddr)
 
@@ -244,7 +241,7 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx context.Context) (updates 
 		if !found || oldPower != newPower {
 			updates = append(updates, validator.ABCIValidatorUpdate(powerReduction))
 
-			err = k.SetLastValidatorPower(ctx, valAddr, newPower)
+			err = k.SetLastValidatorConsPower(ctx, valAddr, newPower)
 			if err != nil {
 				return true, err
 			}
@@ -253,7 +250,6 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx context.Context) (updates 
 		delete(last, valAddrStr)
 		counter++
 
-		totalPower = totalPower.Add(math.NewInt(newPower))
 		return counter == int(maxValidators), nil
 	})
 	if err != nil {
@@ -273,7 +269,7 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx context.Context) (updates 
 		}
 
 		amtFromBondedToNotBonded = amtFromBondedToNotBonded.Add(validator.GetTokens()...)
-		if err := k.DeleteLastValidatorPower(ctx, valAddr); err != nil {
+		if err := k.DeleteLastValidatorConsPower(ctx, valAddr); err != nil {
 			return nil, err
 		}
 		updates = append(updates, validator.ABCIValidatorUpdateZero())
@@ -513,7 +509,7 @@ type validatorsByAddr map[string]int64
 func (k Keeper) getLastValidatorsByAddr(ctx context.Context) (validatorsByAddr, error) {
 	last := make(validatorsByAddr)
 
-	err := k.LastValidatorPowers.Walk(ctx, nil, func(valAddr []byte, power int64) (stop bool, err error) {
+	err := k.LastValidatorConsPowers.Walk(ctx, nil, func(valAddr []byte, power int64) (stop bool, err error) {
 		if valAddrStr, err := k.validatorAddressCodec.BytesToString(valAddr); err != nil {
 			return true, err
 		} else {

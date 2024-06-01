@@ -151,9 +151,9 @@ func (k Keeper) WithdrawDelegationRewards(ctx context.Context, delAddr sdk.AccAd
 	sdkCtx.EventManager().EmitEvent(
 		sdk.NewEvent(
 			types.EventTypeWithdrawRewards,
-			sdk.NewAttribute(types.AttributeKeyValidator, valAddr.String()),
-			sdk.NewAttribute(sdk.AttributeKeyAmount, rewards.Sum().String()),
-			sdk.NewAttribute(customtypes.AttributeKeyAmountPerPool, rewards.String()),
+			sdk.NewAttribute(types.AttributeKeyValidator, valAddr.String()),           // validator address
+			sdk.NewAttribute(sdk.AttributeKeyAmount, rewards.Sum().String()),          // rewards
+			sdk.NewAttribute(customtypes.AttributeKeyAmountPerPool, rewards.String()), // rewards per pool
 		),
 	)
 
