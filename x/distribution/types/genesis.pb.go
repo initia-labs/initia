@@ -29,7 +29,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 type ValidatorOutstandingRewardsRecord struct {
 	// validator_address is the address of the validator.
 	ValidatorAddress string `protobuf:"bytes,1,opt,name=validator_address,json=validatorAddress,proto3" json:"validator_address,omitempty" yaml:"validator_address"`
-	// outstanding_rewards represents the oustanding rewards of a validator.
+	// outstanding_rewards represents the outstanding rewards of a validator.
 	OutstandingRewards DecPools `protobuf:"bytes,2,rep,name=outstanding_rewards,json=outstandingRewards,proto3,castrepeated=DecPools" json:"outstanding_rewards" yaml:"outstanding_rewards"`
 }
 
@@ -240,7 +240,7 @@ var xxx_messageInfo_DelegatorStartingInfoRecord proto.InternalMessageInfo
 type ValidatorSlashEventRecord struct {
 	// validator_address is the address of the validator.
 	ValidatorAddress string `protobuf:"bytes,1,opt,name=validator_address,json=validatorAddress,proto3" json:"validator_address,omitempty" yaml:"validator_address"`
-	// height defines the block height at which the slash event occured.
+	// height defines the block height at which the slash event occurred.
 	Height uint64 `protobuf:"varint,2,opt,name=height,proto3" json:"height,omitempty"`
 	// period is the period of the slash event.
 	Period uint64 `protobuf:"varint,3,opt,name=period,proto3" json:"period,omitempty"`
@@ -293,7 +293,7 @@ type GenesisState struct {
 	PreviousProposer string `protobuf:"bytes,4,opt,name=previous_proposer,json=previousProposer,proto3" json:"previous_proposer,omitempty" yaml:"previous_proposer"`
 	// fee_pool defines the outstanding rewards of all validators at genesis.
 	OutstandingRewards []ValidatorOutstandingRewardsRecord `protobuf:"bytes,5,rep,name=outstanding_rewards,json=outstandingRewards,proto3" json:"outstanding_rewards" yaml:"outstanding_rewards"`
-	// fee_pool defines the accumulated commisions of all validators at genesis.
+	// fee_pool defines the accumulated commissions of all validators at genesis.
 	ValidatorAccumulatedCommissions []ValidatorAccumulatedCommissionRecord `protobuf:"bytes,6,rep,name=validator_accumulated_commissions,json=validatorAccumulatedCommissions,proto3" json:"validator_accumulated_commissions" yaml:"validator_accumulated_commissions"`
 	// fee_pool defines the historical rewards of all validators at genesis.
 	ValidatorHistoricalRewards []ValidatorHistoricalRewardsRecord `protobuf:"bytes,7,rep,name=validator_historical_rewards,json=validatorHistoricalRewards,proto3" json:"validator_historical_rewards" yaml:"validator_historical_rewards"`
