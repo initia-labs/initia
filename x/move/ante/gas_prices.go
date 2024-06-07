@@ -27,6 +27,10 @@ func (d GasPricesDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool
 	gas := feeTx.GetGas()
 
 	if !simulate {
+		if gas == 0 {
+			return ctx, errors.Wrap(sdkerrors.ErrOutOfGas, "Transaction gas cannot be zero.")
+		}
+
 		// CSR: store a tx gas prices
 		ctx = ctx.WithValue(GasPricesContextKey, sdk.NewDecCoinsFromCoins(feeCoins...).QuoDec(math.LegacyNewDec(int64(gas))))
 	}
