@@ -28,7 +28,7 @@ func (d GasPricesDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool
 
 	if !simulate {
 		if gas == 0 {
-			return ctx, errors.Wrap(sdkerrors.ErrOutOfGas, "gas is not provided")
+			return ctx, errors.Wrap(sdkerrors.ErrOutOfGas, "Transaction gas cannot be zero.")
 		}
 
 		// CSR: store a tx gas prices
