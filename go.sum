@@ -735,8 +735,8 @@ github.com/initia-labs/forwarding v0.0.0-20240513113423-5c2833d87227 h1:mwX9VHlv
 github.com/initia-labs/forwarding v0.0.0-20240513113423-5c2833d87227/go.mod h1:nMEL3w1pf7+2LAQ3jqX+XaK0GWcdnwXjwlBnX7QO9ho=
 github.com/initia-labs/iavl v0.0.0-20240415085037-7e81233cdd9e h1:1gkMWkAgVhYFhEv7K4tX+8uJJLdiTKlQhl5+wGaxdMg=
 github.com/initia-labs/iavl v0.0.0-20240415085037-7e81233cdd9e/go.mod h1:jLeUvm6bGT1YutCaL2fIar/8vGUE8cPZvh/gXEWDaDM=
-github.com/initia-labs/movevm v0.2.9-0.20240522155044-8d827fd69f02 h1:6ik+3E0IiHyvQvxKr5uiw+/NBh4PJ+r57MIpGD2H12s=
-github.com/initia-labs/movevm v0.2.9-0.20240522155044-8d827fd69f02/go.mod h1:6MxR4GP5zH3JUc1IMgfqAe1e483mZVS7fshPknZPJ30=
+github.com/initia-labs/movevm v0.2.9 h1:NHx67ErUbILzN3u3t4eCv+MkH2kdqxzC7W8DLMNZEbU=
+github.com/initia-labs/movevm v0.2.9/go.mod h1:6MxR4GP5zH3JUc1IMgfqAe1e483mZVS7fshPknZPJ30=
 github.com/jhump/protoreflect v1.15.3 h1:6SFRuqU45u9hIZPJAoZ8c28T3nK64BNdp9w6jFonzls=
 github.com/jhump/protoreflect v1.15.3/go.mod h1:4ORHmSBmlCW8fh3xHmJMGyul1zNqZK4Elxc8qKP+p1k=
 github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af/go.mod h1:Nht3zPeWKUH0NzdCt2Blrr5ys8VGpn0CEB0cQHVjt7k=
