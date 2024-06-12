@@ -18,7 +18,7 @@ message ValidatorOutstandingRewardsRecord {
   // validator_address is the address of the validator.
   string validator_address = 1 [(gogoproto.moretags) = "yaml:\"validator_address\""];
 
-  // outstanding_rewards represents the oustanding rewards of a validator.
+  // outstanding_rewards represents the outstanding rewards of a validator.
   repeated DecPool outstanding_rewards = 2 [
     (gogoproto.castrepeated) = "DecPools",
     (gogoproto.nullable)     = false,
@@ -91,7 +91,7 @@ message ValidatorSlashEventRecord {
 
   // validator_address is the address of the validator.
   string validator_address = 1 [(gogoproto.moretags) = "yaml:\"validator_address\""];
-  // height defines the block height at which the slash event occured.
+  // height defines the block height at which the slash event occurred.
   uint64 height = 2;
   // period is the period of the slash event.
   uint64 period = 3;
@@ -122,7 +122,7 @@ message GenesisState {
   repeated ValidatorOutstandingRewardsRecord outstanding_rewards = 5
       [(gogoproto.nullable) = false, (gogoproto.moretags) = "yaml:\"outstanding_rewards\""];
 
-  // fee_pool defines the accumulated commisions of all validators at genesis.
+  // fee_pool defines the accumulated commissions of all validators at genesis.
   repeated ValidatorAccumulatedCommissionRecord validator_accumulated_commissions = 6
       [(gogoproto.nullable) = false, (gogoproto.moretags) = "yaml:\"validator_accumulated_commissions\""];
 

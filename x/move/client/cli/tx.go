@@ -41,7 +41,7 @@ func PublishCmd(ac address.Codec) *cobra.Command {
 		Short: "Publish move binary files",
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`
-Publish move binary files. allowed to upload upto 100 files
+Publish move binary files. allowed to upload up to 100 files
 
 Example:
 $ %s tx move publish \

@@ -261,7 +261,7 @@ func (m *QueryValidatorCommissionRequest) GetValidatorAddress() string {
 // QueryValidatorCommissionResponse is the response type for the
 // Query/ValidatorCommission RPC method
 type QueryValidatorCommissionResponse struct {
-	// commission defines the commision the validator received.
+	// commission defines the commission the validator received.
 	Commission ValidatorAccumulatedCommission `protobuf:"bytes,1,opt,name=commission,proto3" json:"commission"`
 }
 

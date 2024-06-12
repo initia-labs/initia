@@ -96,7 +96,7 @@ message Params {
       [(gogoproto.stdduration) = true, (gogoproto.nullable) = false, (amino.dont_omitempty) = true];
 
   // Low threshold functions for emergency and expedited proposal.
-  // These are Move function identifiers and can only be applied 
+  // These are Move function identifiers and can only be applied
   // for Move execute messages.
   repeated string low_threshold_functions = 93;
 }
