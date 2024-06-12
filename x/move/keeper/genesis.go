@@ -48,11 +48,12 @@ func (k Keeper) Initialize(
 	// The default upgrade policy is compatible when it's not set,
 	// so skip the registration at initialize.
 	vmStore := types.NewVMStore(ctx, k.VMStore)
-	if err := k.moveVM.Initialize(vmStore, api, env, vmtypes.NewModuleBundle(modules...), _allowedPublishers); err != nil {
+	execRes, err := k.moveVM.Initialize(vmStore, api, env, vmtypes.NewModuleBundle(modules...), _allowedPublishers)
+	if err != nil {
 		return err
 	}
 
-	return nil
+	return k.handleExecuteResponse(sdkCtx, sdkCtx.GasMeter(), execRes)
 }
 
 // InitGenesis sets supply information for genesis.
