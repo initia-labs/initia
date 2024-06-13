@@ -24,6 +24,8 @@ const (
 	PrivKeySize = 32
 	// PubKeySize defines the size of the PubKey bytes
 	PubKeySize = 33
+	// UncompressedPubKeySize defines the size of the uncompressed PubKey bytes
+	UncompressedPubKeySize = 65
 	// SignatureSize defines the size of the ECDSA signature with the recovery ID
 	SignatureSize = 65
 	// KeyType is the string constant for the Secp256k1 algorithm
@@ -148,6 +150,22 @@ var (
 	_ cryptotypes.PubKey   = &PubKey{}
 	_ codec.AminoMarshaler = &PubKey{}
 )
+
+// Create a new PubKey object from a compressed or uncompressed byte slice.
+func NewPubKeyFromBytes(key []byte) (*PubKey, error) {
+	if len(key) == UncompressedPubKeySize {
+		// compress the key
+		pub, err := secp256k1.ParsePubKey(key)
+		if err != nil {
+			return nil, err
+		}
+		key = pub.SerializeCompressed()
+	} else if len(key) != PubKeySize {
+		return nil, errorsmod.Wrapf(errortypes.ErrInvalidPubKey, "invalid pubkey size, expected %d, got %d", PubKeySize, len(key))
+	}
+
+	return &PubKey{Key: key}, nil
+}
 
 // Address returns the address of the ECDSA public key.
 // The function will return an empty address if the public key is invalid.
