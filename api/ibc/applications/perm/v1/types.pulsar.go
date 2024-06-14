@@ -573,7 +573,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// PermissionedRelayer is used to specifiy the permissioned relayer for
+// PermissionedRelayer is used to specify the permissioned relayer for
 // the specific port-id:channel-id pair.
 type PermissionedRelayer struct {
 	state         protoimpl.MessageState
