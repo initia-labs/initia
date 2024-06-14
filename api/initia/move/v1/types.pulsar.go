@@ -5704,7 +5704,7 @@ func (x *UpgradePolicyProto) GetPolicy() UpgradePolicy {
 	return UpgradePolicy_UNSPECIFIED
 }
 
-// DexPair contains coin metdata address
+// DexPair contains coin metadata address
 // std::dex::Pool and std::dex::Config resources.
 type DexPair struct {
 	state         protoimpl.MessageState
