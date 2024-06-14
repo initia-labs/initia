@@ -1,16 +1,16 @@
 package types
 
 // NewGenesisState creates a new ibc perm GenesisState instance.
-func NewGenesisState(permissionedRelayers []PermissionedRelayer) *GenesisState {
+func NewGenesisState(permissionedRelayers []PermissionedRelayersSet) *GenesisState {
 	return &GenesisState{
-		PermissionedRelayers: permissionedRelayers,
+		PermissionedRelayerSets: permissionedRelayers,
 	}
 }
 
 // DefaultGenesisState returns a default empty GenesisState.
 func DefaultGenesisState() *GenesisState {
 	return &GenesisState{
-		PermissionedRelayers: []PermissionedRelayer{},
+		PermissionedRelayerSets: []PermissionedRelayersSet{},
 	}
 }
 

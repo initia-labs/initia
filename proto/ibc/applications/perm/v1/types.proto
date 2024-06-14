@@ -6,8 +6,12 @@ option go_package = "github.com/initia-labs/initia/x/ibc/perm/types";
 
 // PermissionedRelayer is used to specifiy the permissioned relayer for
 // the specific port-id:channel-id pair.
-message PermissionedRelayer {
+message PermissionedRelayersSet {
   string port_id    = 1;
   string channel_id = 2;
-  string relayer    = 3;
+  PermissionedRelayerList relayer_list    = 3;
+}
+
+message PermissionedRelayerList {
+  repeated string relayers = 1;
 }

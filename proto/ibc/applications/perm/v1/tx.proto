@@ -5,22 +5,25 @@ import "amino/amino.proto";
 import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
-
+import "ibc/applications/perm/v1/types.proto";
 option go_package = "github.com/initia-labs/initia/x/ibc/perm/types";
 
 // Msg defines the ibc/perm Msg service
 service Msg {
   option (cosmos.msg.v1.service) = true;
 
-  // SetPermissionedRelayer defines a rpc handler method for MsgSetPermissionedRelayer.
-  rpc SetPermissionedRelayer(MsgSetPermissionedRelayer) returns (MsgSetPermissionedRelayerResponse);
+  // SetPermissionedRelayers defines a rpc handler method for MsgSetPermissionedRelayers.
+  rpc SetPermissionedRelayers(MsgSetPermissionedRelayers) returns (MsgSetPermissionedRelayersResponse);
+
+  // AddPermissionedRelayers defines a rpc handler method for MsgSetPermissionedRelayers.
+  rpc AddPermissionedRelayers(MsgAddPermissionedRelayers) returns (MsgAddPermissionedRelayersResponse);
 }
 
-// MsgSetPermissionedRelayer defines msg to set permissioned relyer for
+// MsgSetPermissionedRelayers defines msg to set permissioned relyer for
 // the specific ibc channel.
-message MsgSetPermissionedRelayer {
+message MsgSetPermissionedRelayers {
   option (cosmos.msg.v1.signer) = "authority";
-  option (amino.name)           = "perm/MsgSetPermissionedRelayer";
+  option (amino.name)           = "perm/MsgSetPermissionedRelayers";
 
   option (gogoproto.equal)           = false;
   option (gogoproto.goproto_getters) = false;
@@ -30,8 +33,29 @@ message MsgSetPermissionedRelayer {
   string authority  = 1 [(gogoproto.moretags) = "yaml:\"authority\"", (cosmos_proto.scalar) = "cosmos.AddressString"];
   string port_id    = 2 [(gogoproto.moretags) = "yaml:\"port_id\""];
   string channel_id = 3 [(gogoproto.moretags) = "yaml:\"channel_id\""];
-  string relayer    = 4 [(gogoproto.moretags) = "yaml:\"relayer\""];
+  PermissionedRelayerList relayer_list    = 4 [(gogoproto.moretags) = "yaml:\"relayers\""];
 }
 
-// MsgSetPermissionedRelayerResponse defines the Msg/SetPermissionedRelayer response type.
-message MsgSetPermissionedRelayerResponse {}
+// MsgSetPermissionedRelayersResponse defines the Msg/SetPermissionedRelayer response type.
+message MsgSetPermissionedRelayersResponse {}
+
+
+// MsgAddPermissionedRelayers defines msg to set permissioned relyer for
+// the specific ibc channel.
+message MsgAddPermissionedRelayers {
+  option (cosmos.msg.v1.signer) = "authority";
+  option (amino.name)           = "perm/MsgAddPermissionedRelayers";
+
+  option (gogoproto.equal)           = false;
+  option (gogoproto.goproto_getters) = false;
+
+  // authority is the address that controls the module
+  // (defaults to x/gov unless overwritten).
+  string authority  = 1 [(gogoproto.moretags) = "yaml:\"authority\"", (cosmos_proto.scalar) = "cosmos.AddressString"];
+  string port_id    = 2 [(gogoproto.moretags) = "yaml:\"port_id\""];
+  string channel_id = 3 [(gogoproto.moretags) = "yaml:\"channel_id\""];
+  PermissionedRelayerList relayer_list = 4 [(gogoproto.moretags) = "yaml:\"relayers\""];
+}
+
+// MsgSetPermissionedRelayersResponse defines the Msg/SetPermissionedRelayer response type.
+message MsgAddPermissionedRelayersResponse {}

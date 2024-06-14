@@ -24,24 +24,24 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // PermissionedRelayer is used to specifiy the permissioned relayer for
 // the specific port-id:channel-id pair.
-type PermissionedRelayer struct {
-	PortId    string `protobuf:"bytes,1,opt,name=port_id,json=portId,proto3" json:"port_id,omitempty"`
-	ChannelId string `protobuf:"bytes,2,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
-	Relayer   string `protobuf:"bytes,3,opt,name=relayer,proto3" json:"relayer,omitempty"`
+type PermissionedRelayersSet struct {
+	PortId      string                   `protobuf:"bytes,1,opt,name=port_id,json=portId,proto3" json:"port_id,omitempty"`
+	ChannelId   string                   `protobuf:"bytes,2,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
+	RelayerList *PermissionedRelayerList `protobuf:"bytes,3,opt,name=relayer_list,json=relayerList,proto3" json:"relayer_list,omitempty"`
 }
 
-func (m *PermissionedRelayer) Reset()         { *m = PermissionedRelayer{} }
-func (m *PermissionedRelayer) String() string { return proto.CompactTextString(m) }
-func (*PermissionedRelayer) ProtoMessage()    {}
-func (*PermissionedRelayer) Descriptor() ([]byte, []int) {
+func (m *PermissionedRelayersSet) Reset()         { *m = PermissionedRelayersSet{} }
+func (m *PermissionedRelayersSet) String() string { return proto.CompactTextString(m) }
+func (*PermissionedRelayersSet) ProtoMessage()    {}
+func (*PermissionedRelayersSet) Descriptor() ([]byte, []int) {
 	return fileDescriptor_58b3976370e0fa77, []int{0}
 }
-func (m *PermissionedRelayer) XXX_Unmarshal(b []byte) error {
+func (m *PermissionedRelayersSet) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *PermissionedRelayer) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *PermissionedRelayersSet) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_PermissionedRelayer.Marshal(b, m, deterministic)
+		return xxx_messageInfo_PermissionedRelayersSet.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -51,41 +51,86 @@ func (m *PermissionedRelayer) XXX_Marshal(b []byte, deterministic bool) ([]byte,
 		return b[:n], nil
 	}
 }
-func (m *PermissionedRelayer) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_PermissionedRelayer.Merge(m, src)
+func (m *PermissionedRelayersSet) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PermissionedRelayersSet.Merge(m, src)
 }
-func (m *PermissionedRelayer) XXX_Size() int {
+func (m *PermissionedRelayersSet) XXX_Size() int {
 	return m.Size()
 }
-func (m *PermissionedRelayer) XXX_DiscardUnknown() {
-	xxx_messageInfo_PermissionedRelayer.DiscardUnknown(m)
+func (m *PermissionedRelayersSet) XXX_DiscardUnknown() {
+	xxx_messageInfo_PermissionedRelayersSet.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_PermissionedRelayer proto.InternalMessageInfo
+var xxx_messageInfo_PermissionedRelayersSet proto.InternalMessageInfo
 
-func (m *PermissionedRelayer) GetPortId() string {
+func (m *PermissionedRelayersSet) GetPortId() string {
 	if m != nil {
 		return m.PortId
 	}
 	return ""
 }
 
-func (m *PermissionedRelayer) GetChannelId() string {
+func (m *PermissionedRelayersSet) GetChannelId() string {
 	if m != nil {
 		return m.ChannelId
 	}
 	return ""
 }
 
-func (m *PermissionedRelayer) GetRelayer() string {
+func (m *PermissionedRelayersSet) GetRelayerList() *PermissionedRelayerList {
 	if m != nil {
-		return m.Relayer
+		return m.RelayerList
 	}
-	return ""
+	return nil
+}
+
+type PermissionedRelayerList struct {
+	Relayers []string `protobuf:"bytes,1,rep,name=relayers,proto3" json:"relayers,omitempty"`
+}
+
+func (m *PermissionedRelayerList) Reset()         { *m = PermissionedRelayerList{} }
+func (m *PermissionedRelayerList) String() string { return proto.CompactTextString(m) }
+func (*PermissionedRelayerList) ProtoMessage()    {}
+func (*PermissionedRelayerList) Descriptor() ([]byte, []int) {
+	return fileDescriptor_58b3976370e0fa77, []int{1}
+}
+func (m *PermissionedRelayerList) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *PermissionedRelayerList) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_PermissionedRelayerList.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *PermissionedRelayerList) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PermissionedRelayerList.Merge(m, src)
+}
+func (m *PermissionedRelayerList) XXX_Size() int {
+	return m.Size()
+}
+func (m *PermissionedRelayerList) XXX_DiscardUnknown() {
+	xxx_messageInfo_PermissionedRelayerList.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_PermissionedRelayerList proto.InternalMessageInfo
+
+func (m *PermissionedRelayerList) GetRelayers() []string {
+	if m != nil {
+		return m.Relayers
+	}
+	return nil
 }
 
 func init() {
-	proto.RegisterType((*PermissionedRelayer)(nil), "ibc.applications.perm.v1.PermissionedRelayer")
+	proto.RegisterType((*PermissionedRelayersSet)(nil), "ibc.applications.perm.v1.PermissionedRelayersSet")
+	proto.RegisterType((*PermissionedRelayerList)(nil), "ibc.applications.perm.v1.PermissionedRelayerList")
 }
 
 func init() {
@@ -93,24 +138,27 @@ func init() {
 }
 
 var fileDescriptor_58b3976370e0fa77 = []byte{
-	// 222 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x4c, 0x8f, 0xbd, 0x4a, 0x04, 0x31,
-	0x14, 0x85, 0x27, 0x0a, 0xbb, 0x6c, 0xca, 0x58, 0x98, 0xc6, 0x20, 0x62, 0x61, 0x63, 0xc2, 0xe2,
-	0x1b, 0x58, 0xb9, 0x9d, 0x6c, 0x69, 0x23, 0xf9, 0x63, 0xf7, 0x42, 0x26, 0x09, 0x49, 0x5c, 0x9c,
-	0xb7, 0xf0, 0xb1, 0x2c, 0xa7, 0xb4, 0x94, 0x99, 0x17, 0x91, 0xc4, 0x11, 0xec, 0xee, 0xb9, 0xdf,
-	0xe1, 0xc0, 0x87, 0x6f, 0x41, 0x69, 0x21, 0x63, 0x74, 0xa0, 0x65, 0x81, 0xe0, 0xb3, 0x88, 0x36,
-	0xf5, 0xe2, 0xb4, 0x15, 0x65, 0x88, 0x36, 0xf3, 0x98, 0x42, 0x09, 0x84, 0x82, 0xd2, 0xfc, 0x7f,
-	0x8b, 0xd7, 0x16, 0x3f, 0x6d, 0x6f, 0x0e, 0xf8, 0xe2, 0xd9, 0xa6, 0x1e, 0x72, 0x86, 0xe0, 0xad,
-	0xd9, 0x5b, 0x27, 0x07, 0x9b, 0xc8, 0x25, 0x5e, 0xc7, 0x90, 0xca, 0x2b, 0x18, 0x8a, 0xae, 0xd1,
-	0xdd, 0x66, 0xbf, 0xaa, 0x71, 0x67, 0xc8, 0x15, 0xc6, 0xfa, 0x28, 0xbd, 0xb7, 0xae, 0xb2, 0xb3,
-	0xc6, 0x36, 0xcb, 0x67, 0x67, 0x08, 0xc5, 0xeb, 0xf4, 0x3b, 0x41, 0xcf, 0x1b, 0xfb, 0x8b, 0x8f,
-	0x4f, 0x9f, 0x13, 0x43, 0xe3, 0xc4, 0xd0, 0xf7, 0xc4, 0xd0, 0xc7, 0xcc, 0xba, 0x71, 0x66, 0xdd,
-	0xd7, 0xcc, 0xba, 0x17, 0x7e, 0x80, 0x72, 0x7c, 0x53, 0x5c, 0x87, 0x5e, 0x80, 0x87, 0x02, 0xf2,
-	0xde, 0x49, 0x95, 0x97, 0x5b, 0xbc, 0x8b, 0xaa, 0xd8, 0xac, 0x9a, 0x92, 0x5a, 0x35, 0xa7, 0x87,
-	0x9f, 0x00, 0x00, 0x00, 0xff, 0xff, 0xb1, 0x6a, 0xfb, 0x0e, 0xfb, 0x00, 0x00, 0x00,
+	// 271 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x74, 0x90, 0xb1, 0x4a, 0xc4, 0x30,
+	0x1c, 0xc6, 0x1b, 0x0f, 0x4e, 0x9b, 0x73, 0xea, 0x72, 0x45, 0x30, 0x94, 0xc3, 0xa1, 0x8b, 0x09,
+	0x55, 0x7c, 0x01, 0x27, 0x0f, 0x1c, 0xa4, 0x3a, 0xb9, 0x1c, 0x69, 0x1b, 0xbc, 0x3f, 0xa4, 0x49,
+	0x48, 0xe2, 0xe1, 0xbd, 0x85, 0x6f, 0xe1, 0xab, 0x38, 0xde, 0xe8, 0x28, 0xed, 0x8b, 0x48, 0x6a,
+	0x51, 0x87, 0x73, 0xcb, 0x97, 0xef, 0xe3, 0xcf, 0x8f, 0x1f, 0x3e, 0x83, 0xaa, 0x66, 0xdc, 0x18,
+	0x09, 0x35, 0xf7, 0xa0, 0x95, 0x63, 0x46, 0xd8, 0x96, 0x6d, 0x0a, 0xe6, 0xb7, 0x46, 0x38, 0x6a,
+	0xac, 0xf6, 0x3a, 0x49, 0xa1, 0xaa, 0xe9, 0xdf, 0x15, 0x0d, 0x2b, 0xba, 0x29, 0x16, 0x6f, 0x08,
+	0xcf, 0xef, 0x84, 0x6d, 0xc1, 0x39, 0xd0, 0x4a, 0x34, 0xa5, 0x90, 0x7c, 0x2b, 0xac, 0xbb, 0x17,
+	0x3e, 0x99, 0xe3, 0x43, 0xa3, 0xad, 0x5f, 0x41, 0x93, 0xa2, 0x0c, 0xe5, 0x71, 0x39, 0x0d, 0x71,
+	0xd9, 0x24, 0xa7, 0x18, 0xd7, 0x6b, 0xae, 0x94, 0x90, 0xa1, 0x3b, 0x18, 0xba, 0x78, 0xfc, 0x59,
+	0x36, 0xc9, 0x03, 0x3e, 0xb6, 0xdf, 0x67, 0x56, 0x12, 0x9c, 0x4f, 0x27, 0x19, 0xca, 0x67, 0x17,
+	0x05, 0xfd, 0x0f, 0x82, 0xee, 0x01, 0xb8, 0x05, 0xe7, 0xcb, 0x99, 0xfd, 0x0d, 0x8b, 0xab, 0xbd,
+	0xa0, 0xa1, 0x4a, 0x4e, 0xf0, 0xd1, 0xb8, 0x74, 0x29, 0xca, 0x26, 0x79, 0x5c, 0xfe, 0xe4, 0xeb,
+	0x9b, 0xf7, 0x8e, 0xa0, 0x5d, 0x47, 0xd0, 0x67, 0x47, 0xd0, 0x6b, 0x4f, 0xa2, 0x5d, 0x4f, 0xa2,
+	0x8f, 0x9e, 0x44, 0x8f, 0xf4, 0x09, 0xfc, 0xfa, 0xb9, 0xa2, 0xb5, 0x6e, 0x19, 0x28, 0xf0, 0xc0,
+	0xcf, 0x25, 0xaf, 0xdc, 0xf8, 0x66, 0x2f, 0x2c, 0xa8, 0x1d, 0x6c, 0x0e, 0x2a, 0xab, 0xe9, 0xe0,
+	0xf2, 0xf2, 0x2b, 0x00, 0x00, 0xff, 0xff, 0x0b, 0x7e, 0x1a, 0x9c, 0x73, 0x01, 0x00, 0x00,
 }
 
-func (m *PermissionedRelayer) Marshal() (dAtA []byte, err error) {
+func (m *PermissionedRelayersSet) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -120,20 +168,25 @@ func (m *PermissionedRelayer) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *PermissionedRelayer) MarshalTo(dAtA []byte) (int, error) {
+func (m *PermissionedRelayersSet) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *PermissionedRelayer) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *PermissionedRelayersSet) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if len(m.Relayer) > 0 {
-		i -= len(m.Relayer)
-		copy(dAtA[i:], m.Relayer)
-		i = encodeVarintTypes(dAtA, i, uint64(len(m.Relayer)))
+	if m.RelayerList != nil {
+		{
+			size, err := m.RelayerList.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintTypes(dAtA, i, uint64(size))
+		}
 		i--
 		dAtA[i] = 0x1a
 	}
@@ -154,6 +207,38 @@ func (m *PermissionedRelayer) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *PermissionedRelayerList) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *PermissionedRelayerList) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *PermissionedRelayerList) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Relayers) > 0 {
+		for iNdEx := len(m.Relayers) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.Relayers[iNdEx])
+			copy(dAtA[i:], m.Relayers[iNdEx])
+			i = encodeVarintTypes(dAtA, i, uint64(len(m.Relayers[iNdEx])))
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintTypes(dAtA []byte, offset int, v uint64) int {
 	offset -= sovTypes(v)
 	base := offset
@@ -165,7 +250,7 @@ func encodeVarintTypes(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *PermissionedRelayer) Size() (n int) {
+func (m *PermissionedRelayersSet) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -179,9 +264,24 @@ func (m *PermissionedRelayer) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTypes(uint64(l))
 	}
-	l = len(m.Relayer)
-	if l > 0 {
+	if m.RelayerList != nil {
+		l = m.RelayerList.Size()
 		n += 1 + l + sovTypes(uint64(l))
+	}
+	return n
+}
+
+func (m *PermissionedRelayerList) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.Relayers) > 0 {
+		for _, s := range m.Relayers {
+			l = len(s)
+			n += 1 + l + sovTypes(uint64(l))
+		}
 	}
 	return n
 }
@@ -192,7 +292,7 @@ func sovTypes(x uint64) (n int) {
 func sozTypes(x uint64) (n int) {
 	return sovTypes(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *PermissionedRelayer) Unmarshal(dAtA []byte) error {
+func (m *PermissionedRelayersSet) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -215,10 +315,10 @@ func (m *PermissionedRelayer) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: PermissionedRelayer: wiretype end group for non-group")
+			return fmt.Errorf("proto: PermissionedRelayersSet: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: PermissionedRelayer: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: PermissionedRelayersSet: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -287,7 +387,93 @@ func (m *PermissionedRelayer) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Relayer", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field RelayerList", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTypes
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthTypes
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.RelayerList == nil {
+				m.RelayerList = &PermissionedRelayerList{}
+			}
+			if err := m.RelayerList.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTypes(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTypes
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *PermissionedRelayerList) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTypes
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: PermissionedRelayerList: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: PermissionedRelayerList: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Relayers", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -315,7 +501,7 @@ func (m *PermissionedRelayer) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Relayer = string(dAtA[iNdEx:postIndex])
+			m.Relayers = append(m.Relayers, string(dAtA[iNdEx:postIndex]))
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

@@ -11,18 +11,30 @@ import (
 )
 
 var (
-	_ sdk.Msg = &MsgSetPermissionedRelayer{}
+	_ sdk.Msg = &MsgSetPermissionedRelayers{}
 )
 
 // NewMsgSetPermissionedRelayer creates a new MsgSetPermissionedRelayer instance
-func NewMsgSetPermissionedRelayer(
-	authority, portID, channelID, relayer string,
-) *MsgSetPermissionedRelayer {
-	return &MsgSetPermissionedRelayer{
-		Authority: authority,
-		PortId:    portID,
-		ChannelId: channelID,
-		Relayer:   relayer,
+func NewMsgSetPermissionedRelayers(
+	authority, portID, channelID string, relayers []string,
+) *MsgSetPermissionedRelayers {
+	return &MsgSetPermissionedRelayers{
+		Authority:   authority,
+		PortId:      portID,
+		ChannelId:   channelID,
+		RelayerList: &PermissionedRelayerList{Relayers: relayers},
+	}
+}
+
+// NewMsgAddPermissionedRelayer creates a new MsgAddPermissionedRelayer instance
+func NewMsgAddPermissionedRelayers(
+	authority, portID, channelID string, relayers []string,
+) *MsgAddPermissionedRelayers {
+	return &MsgAddPermissionedRelayers{
+		Authority:   authority,
+		PortId:      portID,
+		ChannelId:   channelID,
+		RelayerList: &PermissionedRelayerList{Relayers: relayers},
 	}
 }
 
@@ -30,7 +42,7 @@ func NewMsgSetPermissionedRelayer(
 // NOTE: timeout height or timestamp values can be 0 to disable the timeout.
 // NOTE: The recipient addresses format is not validated as the format defined by
 // the chain is not known to IBC.
-func (msg MsgSetPermissionedRelayer) Validate(ac address.Codec) error {
+func (msg MsgSetPermissionedRelayers) Validate(ac address.Codec) error {
 	if err := host.PortIdentifierValidator(msg.PortId); err != nil {
 		return err
 	}
@@ -44,9 +56,35 @@ func (msg MsgSetPermissionedRelayer) Validate(ac address.Codec) error {
 		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "string could not be parsed as address: %v", err)
 	}
 
-	_, err = ac.StringToBytes(msg.Relayer)
+	for _, relayer := range msg.RelayerList.Relayers {
+		_, err = ac.StringToBytes(relayer)
+		if err != nil {
+			return errors.Wrapf(sdkerrors.ErrInvalidAddress, "string could not be parsed as address: %v", err)
+		}
+	}
+
+	return nil
+}
+
+func (msg MsgAddPermissionedRelayers) Validate(ac address.Codec) error {
+	if err := host.PortIdentifierValidator(msg.PortId); err != nil {
+		return err
+	}
+
+	if err := host.ChannelIdentifierValidator(msg.ChannelId); err != nil {
+		return err
+	}
+
+	_, err := ac.StringToBytes(msg.Authority)
 	if err != nil {
 		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "string could not be parsed as address: %v", err)
+	}
+
+	for _, relayer := range msg.RelayerList.Relayers {
+		_, err = ac.StringToBytes(relayer)
+		if err != nil {
+			return errors.Wrapf(sdkerrors.ErrInvalidAddress, "string could not be parsed as address: %v", err)
+		}
 	}
 
 	return nil

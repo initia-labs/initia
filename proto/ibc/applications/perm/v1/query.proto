@@ -11,43 +11,43 @@ option go_package = "github.com/initia-labs/initia/x/ibc/perm/types";
 
 // Query provides defines the gRPC querier service.
 service Query {
-  // PermissionedRelayer queries a permissioned ibc relayer for the specific channel.
-  rpc PermissionedRelayer(QueryPermissionedRelayerRequest) returns (QueryPermissionedRelayerResponse) {
+  // PermissionedRelPermissionedRelayersOneChannel queries a set of permissioned ibc relayers for the specific channel.
+  rpc PermissionedRelayersOneChannel(QueryPermissionedRelayersOneChannelRequest) returns (QueryPermissionedRelayersOneChannelResponse) {
     option (google.api.http).get = "/ibc/apps/perm/v1/relayers/{port_id}/{channel_id}";
   }
 
-  // PermissionedRelayers queries a permissioned ibc relayers.
-  rpc PermissionedRelayers(QueryPermissionedRelayersRequest) returns (QueryPermissionedRelayersResponse) {
+  // PermissionedRelayersAllChannel queries all sets of permissioned relayers for all channels.
+  rpc PermissionedRelayersAllChannel(QueryPermissionedRelayersAllChannelRequest) returns (QueryPermissionedRelayersAllChannelResponse) {
     option (google.api.http).get = "/ibc/apps/perm/v1/relayers";
   }
 }
 
-// QueryPermissionedRelayerRequest is the request type for the Query/PermissionedRelayer RPC
+// QueryPermissionedRelayersOfOneChannelRequest is the request type for the Query/PermissionedRelayer RPC
 // method
-message QueryPermissionedRelayerRequest {
+message QueryPermissionedRelayersOneChannelRequest {
   string port_id    = 1;
   string channel_id = 2;
 }
 
 // QueryPermissionedRelayerResponse is the response type for the Query/PermissionedRelayer RPC
 // method.
-message QueryPermissionedRelayerResponse {
+message QueryPermissionedRelayersOneChannelResponse {
   // class_trace returns the requested class id trace information.
-  PermissionedRelayer permissioned_relayer = 1;
+  PermissionedRelayersSet permissioned_relayers_set = 1;
 }
 
-// QueryPermissionedRelayersRequest is the request type for the Query/PermissionedRelayers RPC
+// QueryPermissionedRelayersAllChannelRequest is the request type for the Query/PermissionedRelayersAllChannel RPC
 // method
-message QueryPermissionedRelayersRequest {
+message QueryPermissionedRelayersAllChannelRequest {
   // pagination defines an optional pagination for the request.
   cosmos.base.query.v1beta1.PageRequest pagination = 1;
 }
 
-// QueryPermissionedRelayersResponse is the response type for the Query/PermissionedRelayers RPC
+// QueryPermissionedRelayersAllChannelResponse is the response type for the Query/PermissionedRelayersAllChannel RPC
 // method.
-message QueryPermissionedRelayersResponse {
+message QueryPermissionedRelayersAllChannelResponse {
   // class_trace returns the requested class id trace information.
-  repeated PermissionedRelayer permissioned_relayers = 1 [(gogoproto.nullable) = false];
+  repeated PermissionedRelayersSet permissioned_relayers_sets = 1 [(gogoproto.nullable) = false];
   // pagination defines the pagination in the response.
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
