@@ -84,14 +84,14 @@ func (k Keeper) AddPermissionedRelayers(ctx context.Context, portID, channelID s
 	if err != nil {
 		return err
 	}
-	var relayersToAddSrt []string
+	var relayerAddrs []string
 	for _, relayerToAdd := range relayersAdd {
 		if relayers.Contains(relayerToAdd.String()) {
 			return fmt.Errorf("relayer %s already exists", relayerToAdd)
 		}
-		relayersToAddSrt = append(relayersToAddSrt, relayerToAdd.String())
+		relayerAddrs = append(relayerAddrs, relayerToAdd.String())
 	}
-	relayers.Relayers = append(relayers.Relayers, relayersToAddSrt...)
+	relayers.Relayers = append(relayers.Relayers, relayerAddrs...)
 	return k.PermissionedRelayers.Set(ctx, collections.Join(portID, channelID), relayers)
 }
 
