@@ -67,9 +67,9 @@ type QueryClient interface {
 	// Deprecated: Use Query/ViewJSON or Query/ViewJSONBatch
 	// ViewBatch execute multiple view functions and return the view results
 	ViewBatch(ctx context.Context, in *QueryViewBatchRequest, opts ...grpc.CallOption) (*QueryViewBatchResponse, error)
-	// ViewJSON execute view function with json arguemtns and return the view result
+	// ViewJSON execute view function with json arguments and return the view result
 	ViewJSON(ctx context.Context, in *QueryViewJSONRequest, opts ...grpc.CallOption) (*QueryViewJSONResponse, error)
-	// ViewJSONBatch execute multiple view functions with json arguemtns and return the view results
+	// ViewJSONBatch execute multiple view functions with json arguments and return the view results
 	ViewJSONBatch(ctx context.Context, in *QueryViewJSONBatchRequest, opts ...grpc.CallOption) (*QueryViewJSONBatchResponse, error)
 	// ScriptABI decode script bytes into ABI
 	ScriptABI(ctx context.Context, in *QueryScriptABIRequest, opts ...grpc.CallOption) (*QueryScriptABIResponse, error)
@@ -280,9 +280,9 @@ type QueryServer interface {
 	// Deprecated: Use Query/ViewJSON or Query/ViewJSONBatch
 	// ViewBatch execute multiple view functions and return the view results
 	ViewBatch(context.Context, *QueryViewBatchRequest) (*QueryViewBatchResponse, error)
-	// ViewJSON execute view function with json arguemtns and return the view result
+	// ViewJSON execute view function with json arguments and return the view result
 	ViewJSON(context.Context, *QueryViewJSONRequest) (*QueryViewJSONResponse, error)
-	// ViewJSONBatch execute multiple view functions with json arguemtns and return the view results
+	// ViewJSONBatch execute multiple view functions with json arguments and return the view results
 	ViewJSONBatch(context.Context, *QueryViewJSONBatchRequest) (*QueryViewJSONBatchResponse, error)
 	// ScriptABI decode script bytes into ABI
 	ScriptABI(context.Context, *QueryScriptABIRequest) (*QueryScriptABIResponse, error)
