@@ -36,8 +36,11 @@ func (h MoveHooks) onAckIcs20Packet(
 	cacheCtx, write := ctx.CacheContext()
 
 	callback := hookData.AsyncCallback
-	if allowed, err := h.checkACL(im, cacheCtx, callback.ModuleAddress); err != nil || !allowed {
+	if allowed, err := h.checkACL(im, cacheCtx, callback.ModuleAddress); err != nil {
 		h.moveKeeper.Logger(cacheCtx).Error("failed to check ACL", "error", err)
+		return nil
+	} else if !allowed {
+		h.moveKeeper.Logger(cacheCtx).Error("failed to check ACL", "not allowed")
 		return nil
 	}
 	callbackIdBz, err := vmtypes.SerializeUint64(callback.Id)
@@ -92,8 +95,11 @@ func (h MoveHooks) onAckIcs721Packet(
 	cacheCtx, write := ctx.CacheContext()
 
 	callback := hookData.AsyncCallback
-	if allowed, err := h.checkACL(im, cacheCtx, callback.ModuleAddress); err != nil || !allowed {
+	if allowed, err := h.checkACL(im, cacheCtx, callback.ModuleAddress); err != nil {
 		h.moveKeeper.Logger(cacheCtx).Error("failed to check ACL", "error", err)
+		return nil
+	} else if !allowed {
+		h.moveKeeper.Logger(cacheCtx).Error("failed to check ACL", "not allowed")
 		return nil
 	}
 	callbackIdBz, err := vmtypes.SerializeUint64(callback.Id)
