@@ -26,22 +26,24 @@ func (h MoveHooks) onTimeoutIcs20Packet(
 	if !isMoveRouted || hookData.AsyncCallback == nil {
 		return nil
 	} else if err != nil {
-		return err
-	}
-
-	callback := hookData.AsyncCallback
-	if allowed, err := h.checkACL(im, ctx, callback.ModuleAddress); err != nil {
-		return err
-	} else if !allowed {
+		h.moveKeeper.Logger(ctx).Error("failed to parse memo", "error", err)
 		return nil
 	}
 
+	// create a new cache context to ignore errors during
+	// the execution of the callback
+	cacheCtx, write := ctx.CacheContext()
+
+	callback := hookData.AsyncCallback
+	if allowed, err := h.checkACL(im, cacheCtx, callback.ModuleAddress); err != nil || !allowed {
+		h.moveKeeper.Logger(cacheCtx).Error("failed to check ACL", "error", err)
+		return nil
+	}
 	callbackIdBz, err := vmtypes.SerializeUint64(callback.Id)
 	if err != nil {
-		return err
+		return nil
 	}
-
-	_, err = h.execMsg(ctx, &movetypes.MsgExecute{
+	_, err = h.execMsg(cacheCtx, &movetypes.MsgExecute{
 		Sender:        data.Sender,
 		ModuleAddress: callback.ModuleAddress,
 		ModuleName:    callback.ModuleName,
@@ -50,8 +52,12 @@ func (h MoveHooks) onTimeoutIcs20Packet(
 		Args:          [][]byte{callbackIdBz},
 	})
 	if err != nil {
-		return err
+		h.moveKeeper.Logger(cacheCtx).Error("failed to execute callback", "error", err)
+		return nil
 	}
+
+	// write the cache context only if the callback execution was successful
+	write()
 
 	return nil
 }
@@ -71,22 +77,24 @@ func (h MoveHooks) onTimeoutIcs721Packet(
 	if !isMoveRouted || hookData.AsyncCallback == nil {
 		return nil
 	} else if err != nil {
-		return err
-	}
-
-	callback := hookData.AsyncCallback
-	if allowed, err := h.checkACL(im, ctx, callback.ModuleAddress); err != nil {
-		return err
-	} else if !allowed {
+		h.moveKeeper.Logger(ctx).Error("failed to parse memo", "error", err)
 		return nil
 	}
 
+	// create a new cache context to ignore errors during
+	// the execution of the callback
+	cacheCtx, write := ctx.CacheContext()
+
+	callback := hookData.AsyncCallback
+	if allowed, err := h.checkACL(im, cacheCtx, callback.ModuleAddress); err != nil || !allowed {
+		h.moveKeeper.Logger(cacheCtx).Error("failed to check ACL", "error", err)
+		return nil
+	}
 	callbackIdBz, err := vmtypes.SerializeUint64(callback.Id)
 	if err != nil {
-		return err
+		return nil
 	}
-
-	_, err = h.execMsg(ctx, &movetypes.MsgExecute{
+	_, err = h.execMsg(cacheCtx, &movetypes.MsgExecute{
 		Sender:        data.Sender,
 		ModuleAddress: callback.ModuleAddress,
 		ModuleName:    callback.ModuleName,
@@ -95,8 +103,12 @@ func (h MoveHooks) onTimeoutIcs721Packet(
 		Args:          [][]byte{callbackIdBz},
 	})
 	if err != nil {
-		return err
+		h.moveKeeper.Logger(cacheCtx).Error("failed to execute callback", "error", err)
+		return nil
 	}
+
+	// write the cache context only if the callback execution was successful
+	write()
 
 	return nil
 }
