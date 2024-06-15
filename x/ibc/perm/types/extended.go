@@ -1,17 +1,14 @@
 package types
 
 import (
+	"slices"
+
 	"cosmossdk.io/core/address"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func (rl *PermissionedRelayerList) HasRelayer(addr string) bool {
-	for _, r := range rl.Relayers {
-		if r == addr {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(rl.Relayers, addr)
 }
 func (rl *PermissionedRelayerList) AddRelayer(addr string) {
 	rl.Relayers = append(rl.Relayers, addr)
