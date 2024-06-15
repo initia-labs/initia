@@ -33,7 +33,7 @@ func (ms MsgServer) SetPermissionedRelayers(ctx context.Context, req *types.MsgS
 		return nil, errors.Wrapf(govtypes.ErrInvalidSigner, "invalid authority; expected %s, got %s", ms.authority, req.Authority)
 	}
 
-	relayers, err := req.RelayerList.ToAccAddress(ms.ac)
+	relayers, err := req.RelayerList.GetAccAddr(ms.ac)
 	if err != nil {
 		println("error here")
 		return nil, err
@@ -77,7 +77,7 @@ func (ms MsgServer) AddPermissionedRelayers(ctx context.Context, req *types.MsgA
 		return nil, errors.Wrapf(govtypes.ErrInvalidSigner, "invalid authority; expected %s, got %s", ms.authority, req.Authority)
 	}
 
-	relayers, err := req.RelayerList.ToAccAddress(ms.ac)
+	relayers, err := req.RelayerList.GetAccAddr(ms.ac)
 	if err != nil {
 		return nil, err
 	}

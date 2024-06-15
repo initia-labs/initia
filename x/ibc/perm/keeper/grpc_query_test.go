@@ -33,7 +33,7 @@ func Test_QueryPermissionedRelayersOneChannel(t *testing.T) {
 		ChannelId: channelID,
 	})
 	require.NoError(t, err)
-	require.True(t, res.PermissionedRelayersSet.RelayerList.Contains(addr.String()))
+	require.True(t, res.PermissionedRelayersSet.RelayerList.HasRelayer(addr.String()))
 
 	_, err = queryServer.PermissionedRelayersOneChannel(ctx, &types.QueryPermissionedRelayersOneChannelRequest{
 		PortId:    portID,

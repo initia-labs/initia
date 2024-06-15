@@ -97,7 +97,7 @@ func Test_GetPermissionedRelayers(t *testing.T) {
 	// check properly set
 	res, err := k.PermissionedRelayers.Get(ctx, collections.Join(portID, channelID))
 	require.NoError(t, err)
-	require.True(t, res.Contains(addr.String()))
+	require.True(t, res.HasRelayer(addr.String()))
 
 	// check properly set
 	ok, err := k.HasPermission(ctx, portID, channelID, addr)
@@ -125,7 +125,7 @@ func Test_SetPermissionedRelayers(t *testing.T) {
 	// check properly set
 	res, err := k.PermissionedRelayers.Get(ctx, collections.Join(portID, channelID))
 	require.NoError(t, err)
-	require.True(t, res.Contains(addr.String()))
+	require.True(t, res.HasRelayer(addr.String()))
 }
 
 func Test_AddPermissionedRelayers(t *testing.T) {
@@ -146,8 +146,8 @@ func Test_AddPermissionedRelayers(t *testing.T) {
 	// check properly set
 	res, err := k.PermissionedRelayers.Get(ctx, collections.Join(portID, channelID))
 	require.NoError(t, err)
-	require.True(t, res.Contains(addr1.String()))
-	require.True(t, res.Contains(addr2.String()))
+	require.True(t, res.HasRelayer(addr1.String()))
+	require.True(t, res.HasRelayer(addr2.String()))
 
 	// error case
 	err = k.AddPermissionedRelayers(ctx, portID, channelID, []sdk.AccAddress{addr2})

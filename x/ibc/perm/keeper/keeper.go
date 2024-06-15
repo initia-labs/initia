@@ -86,7 +86,7 @@ func (k Keeper) AddPermissionedRelayers(ctx context.Context, portID, channelID s
 	}
 	var relayerAddrs []string
 	for _, relayerToAdd := range relayersAdd {
-		if relayers.Contains(relayerToAdd.String()) {
+		if relayers.HasRelayer(relayerToAdd.String()) {
 			return fmt.Errorf("relayer %s already exists", relayerToAdd)
 		}
 		relayerAddrs = append(relayerAddrs, relayerToAdd.String())
@@ -101,7 +101,7 @@ func (k Keeper) GetPermissionedRelayers(ctx context.Context, portID, channelID s
 	if err != nil {
 		return nil, err
 	}
-	relayersAcc, err := relayers.ToAccAddress(k.ac)
+	relayersAcc, err := relayers.GetAccAddr(k.ac)
 	if err != nil {
 		return nil, err
 	}

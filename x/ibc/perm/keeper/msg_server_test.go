@@ -41,6 +41,6 @@ func Test_SetPermissionedRelayer(t *testing.T) {
 	// check properly set
 	res, err := k.PermissionedRelayers.Get(ctx, collections.Join(portID, channelID))
 	require.NoError(t, err)
-	require.True(t, res.Contains(addr1.String()))
-	require.True(t, res.Contains(addr2.String()))
+	require.True(t, res.HasRelayer(addr1.String()))
+	require.True(t, res.HasRelayer(addr2.String()))
 }

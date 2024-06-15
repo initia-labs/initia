@@ -5,7 +5,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (rl *PermissionedRelayerList) Contains(addr string) bool {
+func (rl *PermissionedRelayerList) HasRelayer(addr string) bool {
 	for _, r := range rl.Relayers {
 		if r == addr {
 			return true
@@ -13,11 +13,11 @@ func (rl *PermissionedRelayerList) Contains(addr string) bool {
 	}
 	return false
 }
-func (rl *PermissionedRelayerList) Add(addr string) {
+func (rl *PermissionedRelayerList) AddRelayer(addr string) {
 	rl.Relayers = append(rl.Relayers, addr)
 }
 
-func (rl *PermissionedRelayerList) ToAccAddress(cdc address.Codec) ([]sdk.AccAddress, error) {
+func (rl *PermissionedRelayerList) GetAccAddr(cdc address.Codec) ([]sdk.AccAddress, error) {
 
 	var relayers []sdk.AccAddress
 	for _, relayer := range rl.Relayers {
@@ -35,7 +35,7 @@ func (rl *PermissionedRelayerList) ToAccAddress(cdc address.Codec) ([]sdk.AccAdd
 func ToRelayerList(relayers []sdk.AccAddress) PermissionedRelayerList {
 	var relayerList PermissionedRelayerList
 	for _, relayer := range relayers {
-		relayerList.Add(relayer.String())
+		relayerList.AddRelayer(relayer.String())
 	}
 	return relayerList
 }

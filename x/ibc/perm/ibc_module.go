@@ -159,7 +159,7 @@ func (im IBCMiddleware) OnRecvPacket(
 ) ibcexported.Acknowledgement {
 	if permissionedRelayer, err := im.keeper.PermissionedRelayers.Get(ctx, collections.Join(packet.DestinationPort, packet.DestinationChannel)); err != nil && !errors.Is(err, collections.ErrNotFound) {
 		return newEmitErrorAcknowledgement(ctx, err)
-	} else if err == nil && !permissionedRelayer.Contains(relayer.String()) {
+	} else if err == nil && !permissionedRelayer.HasRelayer(relayer.String()) {
 		/*
 			Raise a panic to prevent abnormal relayers from disrupting operations by
 			continuously sending error acknowledgements. For instance, abnormal relaying
