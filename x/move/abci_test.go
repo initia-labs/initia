@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	abci "github.com/cometbft/cometbft/abci/types"
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -22,14 +23,14 @@ func Test_BeginBlocker(t *testing.T) {
 	require.NoError(t, err)
 
 	// initialize staking for secondBondDenom
-	ctx := app.BaseApp.NewContext(false)
+	ctx := app.BaseApp.NewUncachedContext(false, tmproto.Header{})
 	err = app.MoveKeeper.InitializeStaking(ctx, secondBondDenom)
 	require.NoError(t, err)
 
 	// fund addr2
 	app.BankKeeper.SendCoins(ctx, types.StdAddr, addr2, sdk.NewCoins(secondBondCoin))
 
-	_, err = app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1})
+	_, err = app.Commit()
 	require.NoError(t, err)
 
 	// delegate coins via move staking module
@@ -61,7 +62,7 @@ func Test_BeginBlocker(t *testing.T) {
 	require.NoError(t, err)
 
 	// generate rewards
-	ctx = app.BaseApp.NewContext(false)
+	ctx = app.BaseApp.NewUncachedContext(false, tmproto.Header{})
 	validator, err := app.StakingKeeper.Validator(ctx, sdk.ValAddress(addr1))
 	require.NoError(t, err)
 
@@ -78,8 +79,14 @@ func Test_BeginBlocker(t *testing.T) {
 		secondBondDenom,
 		sdk.NewDecCoinsFromCoins(rewardCoins...))
 
+	_, err = app.Commit()
+	require.NoError(t, err)
+
 	// rewards distributed
 	_, err = app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1})
+	require.NoError(t, err)
+
+	_, err = app.Commit()
 	require.NoError(t, err)
 
 	// withdraw rewards to move module

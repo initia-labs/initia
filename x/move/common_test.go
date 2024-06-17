@@ -73,7 +73,7 @@ func createApp(t *testing.T) *initiaapp.InitiaApp {
 	_, err := app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1})
 	require.NoError(t, err)
 
-	ctx := app.BaseApp.NewContext(false)
+	ctx := app.BaseApp.NewUncachedContext(false, tmproto.Header{})
 	createDexPool(t, ctx, app, baseCoin, quoteCoin, math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1))
 
 	// set reward weight
@@ -87,7 +87,7 @@ func createApp(t *testing.T) *initiaapp.InitiaApp {
 	// fund second bond coin
 	app.BankKeeper.SendCoins(ctx, types.StdAddr, addr1, sdk.NewCoins(secondBondCoin))
 
-	_, err = app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1})
+	_, err = app.Commit()
 	require.NoError(t, err)
 
 	// create validator
