@@ -729,8 +729,8 @@ github.com/initia-labs/OPinit v0.2.9 h1:K8AUwti2EQ3lbtjEd6hprZgI7WWJYbE6d50mqogV
 github.com/initia-labs/OPinit v0.2.9/go.mod h1:nm0Cm1iHwiXjIFPvifSi/vu/61TXkJDmVmh+YiXqyw0=
 github.com/initia-labs/OPinit/api v0.2.6 h1:his/7339UJbBcHOY4TcRzGxNWBtcpdt9bzfGKBh/d8w=
 github.com/initia-labs/OPinit/api v0.2.6/go.mod h1:oo8VsUFo1vVRg1jXhTMzlm5IF1JjU0I0u0OF/jo6iO4=
-github.com/initia-labs/cosmos-sdk v0.0.0-20240617094748-6555f66c89ed h1:iBbcZb1HvhEvqmnCCniReR6DYzjb1OJR3HnQfHSFe7o=
-github.com/initia-labs/cosmos-sdk v0.0.0-20240617094748-6555f66c89ed/go.mod h1:lVkRY6cdMJ0fG3gp8y4hFrsKZqF4z7y0M2UXFb9Yt40=
+github.com/initia-labs/cosmos-sdk v0.0.0-20240617110036-2411fa5fd7f8 h1:+LGONkDS+HUB7TOTUOMf2mD4Oj+HMu3f2ADyYLNfeGc=
+github.com/initia-labs/cosmos-sdk v0.0.0-20240617110036-2411fa5fd7f8/go.mod h1:lVkRY6cdMJ0fG3gp8y4hFrsKZqF4z7y0M2UXFb9Yt40=
 github.com/initia-labs/forwarding v0.0.0-20240513113423-5c2833d87227 h1:mwX9VHlvdOCJxhTNttt3u6yXywkBWgFJ4gFsjyG9dMw=
 github.com/initia-labs/forwarding v0.0.0-20240513113423-5c2833d87227/go.mod h1:nMEL3w1pf7+2LAQ3jqX+XaK0GWcdnwXjwlBnX7QO9ho=
 github.com/initia-labs/iavl v0.0.0-20240415085037-7e81233cdd9e h1:1gkMWkAgVhYFhEv7K4tX+8uJJLdiTKlQhl5+wGaxdMg=
