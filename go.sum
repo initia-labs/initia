@@ -346,6 +346,8 @@ github.com/cockroachdb/redact v1.1.5/go.mod h1:BVNblN9mBWFyMyqK1k3AAiSxhvhfK2oOZ
 github.com/cockroachdb/tokenbucket v0.0.0-20230807174530-cc333fc44b06 h1:zuQyyAKVxetITBuuhv3BI9cMrmStnpT18zmgmTxunpo=
 github.com/cockroachdb/tokenbucket v0.0.0-20230807174530-cc333fc44b06/go.mod h1:7nc4anLGjupUW/PeY5qiNYsdNXj7zopG+eqsS7To5IQ=
 github.com/codahale/hdrhistogram v0.0.0-20161010025455-3a0bb77429bd/go.mod h1:sE/e/2PUdi/liOCUjSTXgM1o87ZssimdTWN964YiIeI=
+github.com/cometbft/cometbft v0.38.8-0.20240611155953-ee556e375891 h1:khICzxsOURVUwPOusLB4lrG01WIeJ/TlzAZazLrn6zs=
+github.com/cometbft/cometbft v0.38.8-0.20240611155953-ee556e375891/go.mod h1:xOoGZrtUT+A5izWfHSJgl0gYZUE7lu7Z2XIS1vWG/QQ=
 github.com/cometbft/cometbft-db v0.10.0 h1:VMBQh88zXn64jXVvj39tlu/IgsGR84T7ImjS523DCiU=
 github.com/cometbft/cometbft-db v0.10.0/go.mod h1:7RR7NRv99j7keWJ5IkE9iZibUTKYdtepXTp7Ra0FxKk=
 github.com/containerd/continuity v0.3.0 h1:nisirsYROK15TAMVukJOUyGJjz4BNQJBVsNvAXZJ/eg=
@@ -727,8 +729,6 @@ github.com/initia-labs/OPinit v0.2.9 h1:K8AUwti2EQ3lbtjEd6hprZgI7WWJYbE6d50mqogV
 github.com/initia-labs/OPinit v0.2.9/go.mod h1:nm0Cm1iHwiXjIFPvifSi/vu/61TXkJDmVmh+YiXqyw0=
 github.com/initia-labs/OPinit/api v0.2.6 h1:his/7339UJbBcHOY4TcRzGxNWBtcpdt9bzfGKBh/d8w=
 github.com/initia-labs/OPinit/api v0.2.6/go.mod h1:oo8VsUFo1vVRg1jXhTMzlm5IF1JjU0I0u0OF/jo6iO4=
-github.com/initia-labs/cometbft v0.0.0-20240529065902-bd182474c7ef h1:9Wa+8NkVHFbAyqEkGGD655dPvK7nyBoet5euHiQyjsM=
-github.com/initia-labs/cometbft v0.0.0-20240529065902-bd182474c7ef/go.mod h1:xOoGZrtUT+A5izWfHSJgl0gYZUE7lu7Z2XIS1vWG/QQ=
 github.com/initia-labs/cosmos-sdk v0.0.0-20240514173001-c037b6c44d98 h1:zHPICr9maaEW4iEjQUD9ea6+K+vBUXTm1aEq28BsZYk=
 github.com/initia-labs/cosmos-sdk v0.0.0-20240514173001-c037b6c44d98/go.mod h1:lVkRY6cdMJ0fG3gp8y4hFrsKZqF4z7y0M2UXFb9Yt40=
 github.com/initia-labs/forwarding v0.0.0-20240513113423-5c2833d87227 h1:mwX9VHlvdOCJxhTNttt3u6yXywkBWgFJ4gFsjyG9dMw=
