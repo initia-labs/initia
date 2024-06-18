@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"fmt"
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -49,8 +48,6 @@ func (api GoApi) GetAccountInfo(addr vmtypes.AccountAddress) (bool /* found */, 
 		}
 
 		isBlocked := api.bankKeeper.BlockedAddr(sdkAddr)
-		fmt.Println("acc", acc)
-		fmt.Println("isBlocked", isBlocked)
 		return true, acc.GetAccountNumber(), acc.GetSequence(), accType, isBlocked
 	}
 
