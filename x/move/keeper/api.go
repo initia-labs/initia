@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -30,7 +31,7 @@ func NewApi(k Keeper, ctx context.Context) GoApi {
 }
 
 // GetAccountInfo return account info (account number, sequence)
-func (api GoApi) GetAccountInfo(addr vmtypes.AccountAddress) (bool /* found */, uint64 /* account number */, uint64 /* sequence */, uint8 /* account_type */) {
+func (api GoApi) GetAccountInfo(addr vmtypes.AccountAddress) (bool /* found */, uint64 /* account number */, uint64 /* sequence */, uint8 /* account_type */, bool /* is_blocked */) {
 	sdkAddr := types.ConvertVMAddressToSDKAddress(addr)
 	if api.authKeeper.HasAccount(api.ctx, sdkAddr) {
 		acc := api.authKeeper.GetAccount(api.ctx, sdkAddr)
@@ -47,10 +48,13 @@ func (api GoApi) GetAccountInfo(addr vmtypes.AccountAddress) (bool /* found */, 
 			accType = vmtypes.AccountType_Module
 		}
 
-		return true, acc.GetAccountNumber(), acc.GetSequence(), accType
+		isBlocked := api.bankKeeper.BlockedAddr(sdkAddr)
+		fmt.Println("acc", acc)
+		fmt.Println("isBlocked", isBlocked)
+		return true, acc.GetAccountNumber(), acc.GetSequence(), accType, isBlocked
 	}
 
-	return false, 0, 0, 0
+	return false, 0, 0, 0, false
 }
 
 // AmountToShare convert amount to share

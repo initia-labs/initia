@@ -447,7 +447,7 @@ func (k MoveBankKeeper) MintCoins(
 			vmtypes.StdAddress,
 			vmtypes.StdAddress,
 			types.MoveModuleNameManagedCoin,
-			types.FunctionNameManagedCoinMint,
+			types.FunctionNameManagedCoinSudoMint,
 			[]vmtypes.TypeTag{},
 			[][]byte{recipientAddr[:], metadata[:], amountBz},
 		)
@@ -520,13 +520,14 @@ func (k MoveBankKeeper) SendCoin(
 		return err
 	}
 
-	return k.ExecuteEntryFunction(
+	return k.executeEntryFunction(
 		ctx,
-		fromVmAddr,
+		[]vmtypes.AccountAddress{vmtypes.StdAddress, fromVmAddr},
 		vmtypes.StdAddress,
 		types.MoveModuleNameCoin,
-		types.FunctionNameCoinTransfer,
+		types.FunctionNameCoinSudoTransfer,
 		[]vmtypes.TypeTag{},
 		[][]byte{toVmAddr[:], metadata[:], amountBz},
+		false,
 	)
 }
