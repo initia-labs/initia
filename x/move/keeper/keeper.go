@@ -102,7 +102,10 @@ func NewKeeper(
 		moveConfig.ContractViewBatchLimit = moveconfig.DefaultContractViewBatchLimit
 	}
 
-	moveVM := vm.NewVM(moveConfig.ModuleCacheCapacity, moveConfig.ScriptCacheCapacity)
+	moveVM := vm.NewVM(
+		moveConfig.ModuleCacheCapacity*1024*1024, // convert MiB to bytes
+		moveConfig.ScriptCacheCapacity*1024*1024, // convert MiB to bytes
+	)
 
 	sb := collections.NewSchemaBuilder(storeService)
 	k := &Keeper{

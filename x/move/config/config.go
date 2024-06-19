@@ -8,10 +8,10 @@ import (
 )
 
 // DefaultModuleCacheCapacity the number of modules can be stay in module cache
-const DefaultModuleCacheCapacity = uint64(5_000)
+const DefaultModuleCacheCapacity = uint64(500)
 
 // DefaultScriptCacheCapacity the number of modules can be stay in module cache
-const DefaultScriptCacheCapacity = uint64(1_000)
+const DefaultScriptCacheCapacity = uint64(100)
 
 // DefaultContractQueryGasLimit - default max query gas for external query
 const DefaultContractQueryGasLimit = uint64(3_000_000)
@@ -77,10 +77,12 @@ const DefaultConfigTemplate = `
 ###############################################################################
 
 [move]
-# The number of modules can be live in module cache.
+# in-memory cache for Move modules. 
+# The value is in MiB not bytes.
 module-cache-capacity = "{{ .MoveConfig.ModuleCacheCapacity }}"
 
-# The number of modules can be live in script cache.
+# in-memory cache for Move scripts. 
+# The value is in MiB not bytes.
 script-cache-capacity = "{{ .MoveConfig.ScriptCacheCapacity }}"
 
 # The maximum gas amount can be used in a tx simulation call.
