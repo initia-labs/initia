@@ -146,7 +146,7 @@ func coinTransferMsg(info *AppInfo, idx int) ([]sdk.Msg, error) {
 		ModuleName:    movetypes.MoveModuleNameCoin,
 		FunctionName:  movetypes.FunctionNameCoinTransfer,
 		TypeArgs:      []string{},
-		Args:          [][]byte{vmtypes.StdAddress[:], append(bytes.Repeat([]byte{0}, 12), rcpt...), mt[:], transferAmount},
+		Args:          [][]byte{append(bytes.Repeat([]byte{0}, 12), rcpt...), mt[:], transferAmount},
 	}
 	return []sdk.Msg{msgTransfer}, nil
 }
