@@ -11,6 +11,7 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	abci "github.com/cometbft/cometbft/abci/types"
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 
 	"github.com/initia-labs/initia/x/reward/types"
 )
@@ -22,7 +23,7 @@ func Test_BeginBlocker(t *testing.T) {
 	_, err := app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1})
 	require.NoError(t, err)
 
-	ctx := app.BaseApp.NewContext(false)
+	ctx := app.BaseApp.NewUncachedContext(false, tmproto.Header{})
 
 	// update params & mint coins for reward distribution
 	params, err := app.RewardKeeper.GetParams(ctx)
@@ -46,12 +47,26 @@ func Test_BeginBlocker(t *testing.T) {
 	lastReleaseTimestamp, err := app.RewardKeeper.GetLastReleaseTimestamp(ctx)
 	require.NoError(t, err)
 
+	_, err = app.Commit()
+	require.NoError(t, err)
+
+	ctx = app.BaseApp.NewContext(true)
+	paramsAfter, err := app.RewardKeeper.GetParams(ctx)
+	require.NoError(t, err)
+	require.Equal(t, paramsAfter, params)
+
 	// new block after
 	_, err = app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1, Time: lastReleaseTimestamp})
 	require.NoError(t, err)
 
+	_, err = app.Commit()
+	require.NoError(t, err)
+
 	// new block after 24 hours
 	_, err = app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1, Time: lastReleaseTimestamp.Add(time.Hour * 24).Add(time.Second)})
+	require.NoError(t, err)
+
+	_, err = app.Commit()
 	require.NoError(t, err)
 
 	// check supply
@@ -59,6 +74,7 @@ func Test_BeginBlocker(t *testing.T) {
 	checkBalance(t, app, authtypes.NewModuleAddress(types.ModuleName), rewardCoins.Sub(sdk.NewCoin(rewardDenom, expectedReleasedAmount)))
 
 	// release rate should be half
+	ctx = app.BaseApp.NewContext(true)
 	releaseRate, err := app.RewardKeeper.GetReleaseRate(ctx)
 	require.NoError(t, err)
 	require.Equal(t, math.LegacyNewDecWithPrec(35, 3), releaseRate)
@@ -78,7 +94,7 @@ func Test_BeginBlockerNotEnabled(t *testing.T) {
 	_, err := app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1})
 	require.NoError(t, err)
 
-	ctx := app.BaseApp.NewContext(false)
+	ctx := app.BaseApp.NewUncachedContext(false, tmproto.Header{})
 
 	// update params & mint coins for reward distribution
 	params, err := app.RewardKeeper.GetParams(ctx)
@@ -100,13 +116,24 @@ func Test_BeginBlockerNotEnabled(t *testing.T) {
 	lastReleaseTimestamp, err := app.RewardKeeper.GetLastReleaseTimestamp(ctx)
 	require.NoError(t, err)
 
+	_, err = app.Commit()
+	require.NoError(t, err)
+
 	// new block after
 	_, err = app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1, Time: lastReleaseTimestamp})
+	require.NoError(t, err)
+
+	_, err = app.Commit()
 	require.NoError(t, err)
 
 	// new block after 24 hours
 	_, err = app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1, Time: lastReleaseTimestamp.Add(time.Hour * 24).Add(time.Second)})
 	require.NoError(t, err)
+
+	_, err = app.Commit()
+	require.NoError(t, err)
+
+	ctx = app.BaseApp.NewContext(true)
 
 	// check supply
 	expectedReleasedAmount := math.ZeroInt()
