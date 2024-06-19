@@ -20,7 +20,6 @@ type AccountKeeper interface {
 	GetAccount(ctx context.Context, addr sdk.AccAddress) sdk.AccountI
 	SetAccount(ctx context.Context, acc sdk.AccountI)
 	HasAccount(ctx context.Context, addr sdk.AccAddress) bool
-	RemoveAccount(ctx context.Context, acc sdk.AccountI)
 
 	GetModuleAddress(name string) sdk.AccAddress
 	GetModuleAccount(ctx context.Context, moduleName string) sdk.ModuleAccountI

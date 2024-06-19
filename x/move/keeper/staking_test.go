@@ -100,6 +100,28 @@ func TestDelegateToValidator(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestDelegateToValidator_OverwriteEmptyAccount(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+	valAddr := createValidatorWithBalance(t, ctx, input, 100_000_000, 100_000)
+
+	input.Faucet.Fund(ctx, types.MoveStakingModuleAddress, sdk.NewCoin(bondDenom, math.NewInt(100_000_000)))
+	moveBalance := input.BankKeeper.GetBalance(ctx, types.MoveStakingModuleAddress, bondDenom).Amount.Uint64()
+	require.Equal(t, uint64(100_000_000), moveBalance)
+
+	// fund to delegator module account to create empty account
+	delegatorModuleAddr := types.GetDelegatorModuleAddress(valAddr)
+	input.Faucet.Fund(ctx, delegatorModuleAddr, sdk.NewCoin(bondDenom, math.NewInt(100_000_000)))
+
+	_, err := input.MoveKeeper.DelegateToValidator(ctx, valAddr, sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(100))))
+	require.NoError(t, err)
+
+	moveBalance = input.BankKeeper.GetBalance(ctx, types.MoveStakingModuleAddress, bondDenom).Amount.Uint64()
+	require.Equal(t, uint64(99_999_900), moveBalance)
+
+	_, err = input.MoveKeeper.DelegateToValidator(ctx, valAddr, sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(100_000_000_000))))
+	require.Error(t, err)
+}
+
 func TestAmountToShare(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 	valAddr := createValidatorWithBalance(t, ctx, input, 100_000_000, 100_000)
