@@ -36,10 +36,10 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 type MsgSetPermissionedRelayers struct {
 	// authority is the address that controls the module
 	// (defaults to x/gov unless overwritten).
-	Authority   string                   `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty" yaml:"authority"`
-	PortId      string                   `protobuf:"bytes,2,opt,name=port_id,json=portId,proto3" json:"port_id,omitempty" yaml:"port_id"`
-	ChannelId   string                   `protobuf:"bytes,3,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty" yaml:"channel_id"`
-	RelayerList *PermissionedRelayerList `protobuf:"bytes,4,opt,name=relayer_list,json=relayerList,proto3" json:"relayer_list,omitempty" yaml:"relayers"`
+	Authority string   `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty" yaml:"authority"`
+	PortId    string   `protobuf:"bytes,2,opt,name=port_id,json=portId,proto3" json:"port_id,omitempty" yaml:"port_id"`
+	ChannelId string   `protobuf:"bytes,3,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty" yaml:"channel_id"`
+	Relayers  []string `protobuf:"bytes,4,rep,name=relayers,proto3" json:"relayers,omitempty" yaml:"relayers"`
 }
 
 func (m *MsgSetPermissionedRelayers) Reset()         { *m = MsgSetPermissionedRelayers{} }
@@ -112,130 +112,44 @@ func (m *MsgSetPermissionedRelayersResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgSetPermissionedRelayersResponse proto.InternalMessageInfo
 
-// MsgAddPermissionedRelayers defines msg to set permissioned relyer for
-// the specific ibc channel.
-type MsgAddPermissionedRelayers struct {
-	// authority is the address that controls the module
-	// (defaults to x/gov unless overwritten).
-	Authority   string                   `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty" yaml:"authority"`
-	PortId      string                   `protobuf:"bytes,2,opt,name=port_id,json=portId,proto3" json:"port_id,omitempty" yaml:"port_id"`
-	ChannelId   string                   `protobuf:"bytes,3,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty" yaml:"channel_id"`
-	RelayerList *PermissionedRelayerList `protobuf:"bytes,4,opt,name=relayer_list,json=relayerList,proto3" json:"relayer_list,omitempty" yaml:"relayers"`
-}
-
-func (m *MsgAddPermissionedRelayers) Reset()         { *m = MsgAddPermissionedRelayers{} }
-func (m *MsgAddPermissionedRelayers) String() string { return proto.CompactTextString(m) }
-func (*MsgAddPermissionedRelayers) ProtoMessage()    {}
-func (*MsgAddPermissionedRelayers) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9ea92a5af9136e08, []int{2}
-}
-func (m *MsgAddPermissionedRelayers) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *MsgAddPermissionedRelayers) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_MsgAddPermissionedRelayers.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *MsgAddPermissionedRelayers) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgAddPermissionedRelayers.Merge(m, src)
-}
-func (m *MsgAddPermissionedRelayers) XXX_Size() int {
-	return m.Size()
-}
-func (m *MsgAddPermissionedRelayers) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgAddPermissionedRelayers.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_MsgAddPermissionedRelayers proto.InternalMessageInfo
-
-// MsgSetPermissionedRelayersResponse defines the Msg/SetPermissionedRelayer response type.
-type MsgAddPermissionedRelayersResponse struct {
-}
-
-func (m *MsgAddPermissionedRelayersResponse) Reset()         { *m = MsgAddPermissionedRelayersResponse{} }
-func (m *MsgAddPermissionedRelayersResponse) String() string { return proto.CompactTextString(m) }
-func (*MsgAddPermissionedRelayersResponse) ProtoMessage()    {}
-func (*MsgAddPermissionedRelayersResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9ea92a5af9136e08, []int{3}
-}
-func (m *MsgAddPermissionedRelayersResponse) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *MsgAddPermissionedRelayersResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_MsgAddPermissionedRelayersResponse.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *MsgAddPermissionedRelayersResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgAddPermissionedRelayersResponse.Merge(m, src)
-}
-func (m *MsgAddPermissionedRelayersResponse) XXX_Size() int {
-	return m.Size()
-}
-func (m *MsgAddPermissionedRelayersResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgAddPermissionedRelayersResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_MsgAddPermissionedRelayersResponse proto.InternalMessageInfo
-
 func init() {
 	proto.RegisterType((*MsgSetPermissionedRelayers)(nil), "ibc.applications.perm.v1.MsgSetPermissionedRelayers")
 	proto.RegisterType((*MsgSetPermissionedRelayersResponse)(nil), "ibc.applications.perm.v1.MsgSetPermissionedRelayersResponse")
-	proto.RegisterType((*MsgAddPermissionedRelayers)(nil), "ibc.applications.perm.v1.MsgAddPermissionedRelayers")
-	proto.RegisterType((*MsgAddPermissionedRelayersResponse)(nil), "ibc.applications.perm.v1.MsgAddPermissionedRelayersResponse")
 }
 
 func init() { proto.RegisterFile("ibc/applications/perm/v1/tx.proto", fileDescriptor_9ea92a5af9136e08) }
 
 var fileDescriptor_9ea92a5af9136e08 = []byte{
-	// 508 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xec, 0x54, 0xbf, 0x6e, 0xd4, 0x4e,
-	0x10, 0xb6, 0x2f, 0xbf, 0x5f, 0xd0, 0x6d, 0x10, 0x10, 0x13, 0x94, 0xc3, 0x85, 0x1d, 0xac, 0x14,
-	0xd1, 0x41, 0xbc, 0xba, 0x90, 0xea, 0x44, 0x93, 0xab, 0x08, 0x22, 0x12, 0x72, 0x3a, 0x9a, 0x93,
-	0xff, 0xac, 0x7c, 0x2b, 0xd9, 0x5e, 0x6b, 0x67, 0x13, 0xe5, 0x3a, 0x44, 0x85, 0x90, 0x90, 0x78,
-	0x84, 0x3c, 0x00, 0xc5, 0x15, 0x3c, 0x04, 0x65, 0x44, 0x45, 0x75, 0x42, 0x77, 0xc5, 0x51, 0xfb,
-	0x09, 0x90, 0xd7, 0x7b, 0x1c, 0x05, 0x4b, 0x24, 0x44, 0x49, 0x63, 0xed, 0xec, 0xf7, 0xcd, 0xf8,
-	0x9b, 0xf9, 0xec, 0x41, 0x0f, 0x68, 0x14, 0xe3, 0xb0, 0x2c, 0x33, 0x1a, 0x87, 0x82, 0xb2, 0x02,
-	0x70, 0x49, 0x78, 0x8e, 0xcf, 0x7b, 0x58, 0x5c, 0xf8, 0x25, 0x67, 0x82, 0x59, 0x1d, 0x1a, 0xc5,
-	0xfe, 0xcf, 0x14, 0xbf, 0xa6, 0xf8, 0xe7, 0x3d, 0x7b, 0x33, 0xcc, 0x69, 0xc1, 0xb0, 0x7c, 0x36,
-	0x64, 0x7b, 0x3b, 0x66, 0x90, 0x33, 0xc0, 0x39, 0xa4, 0x75, 0x91, 0x1c, 0x52, 0x05, 0xdc, 0x6f,
-	0x80, 0xa1, 0x8c, 0x70, 0x13, 0x28, 0x68, 0x2b, 0x65, 0x29, 0x6b, 0xee, 0xeb, 0x93, 0xba, 0xdd,
-	0xd5, 0x2b, 0x1b, 0x97, 0x44, 0xe5, 0x7a, 0x55, 0x0b, 0xd9, 0x27, 0x90, 0x9e, 0x12, 0xf1, 0x82,
-	0xf0, 0x9c, 0x02, 0x50, 0x56, 0x90, 0x24, 0x20, 0x59, 0x38, 0x26, 0x1c, 0xac, 0x67, 0xa8, 0x1d,
-	0x9e, 0x89, 0x11, 0xe3, 0x54, 0x8c, 0x3b, 0xe6, 0x8e, 0xb9, 0xd7, 0x1e, 0x3c, 0xaa, 0xa6, 0xee,
-	0x9d, 0x71, 0x98, 0x67, 0x7d, 0xef, 0x07, 0xe4, 0x7d, 0xfe, 0xb8, 0xbf, 0xa5, 0x34, 0x1d, 0x25,
-	0x09, 0x27, 0x00, 0xa7, 0x82, 0xd3, 0x22, 0x0d, 0x56, 0xe9, 0xd6, 0x43, 0x74, 0xa3, 0x64, 0x5c,
-	0x0c, 0x69, 0xd2, 0x69, 0xc9, 0x4a, 0x56, 0x35, 0x75, 0x6f, 0x35, 0x95, 0x14, 0xe0, 0x05, 0xeb,
-	0xf5, 0xe9, 0x38, 0xb1, 0x0e, 0x11, 0x8a, 0x47, 0x61, 0x51, 0x90, 0xac, 0xe6, 0xaf, 0x49, 0xfe,
-	0xbd, 0x6a, 0xea, 0x6e, 0x36, 0xfc, 0x15, 0xe6, 0x05, 0x6d, 0x15, 0x1c, 0x27, 0x16, 0x45, 0x37,
-	0x79, 0x23, 0x7d, 0x98, 0x51, 0x10, 0x9d, 0xff, 0x76, 0xcc, 0xbd, 0x8d, 0x83, 0x9e, 0xaf, 0x73,
-	0xc0, 0xff, 0x45, 0xd3, 0xcf, 0x29, 0x88, 0xc1, 0xdd, 0x6a, 0xea, 0xde, 0x6e, 0x5e, 0xa5, 0x0a,
-	0x82, 0x17, 0x6c, 0xf0, 0x15, 0xa3, 0xdf, 0x7f, 0x73, 0xe9, 0x1a, 0xdf, 0x2e, 0x5d, 0xe3, 0xf5,
-	0x62, 0xd2, 0x5d, 0x75, 0xf9, 0x76, 0x31, 0xe9, 0xba, 0x72, 0xd0, 0xfa, 0xa9, 0x7a, 0xbb, 0xc8,
-	0xd3, 0xa3, 0x01, 0x81, 0x92, 0x15, 0x40, 0x96, 0xd6, 0x1c, 0x25, 0xc9, 0x3f, 0x6b, 0xfe, 0xba,
-	0x35, 0x9a, 0xa9, 0x2a, 0x6b, 0x34, 0xe8, 0xd2, 0x9a, 0x83, 0x0f, 0x2d, 0xb4, 0x76, 0x02, 0xa9,
-	0xf5, 0xce, 0x44, 0xdb, 0xba, 0x5f, 0xe7, 0x50, 0xdf, 0x9a, 0xde, 0x7c, 0xfb, 0xc9, 0x9f, 0x64,
-	0x2d, 0x75, 0x49, 0x3d, 0xba, 0xef, 0xe5, 0xf7, 0x7a, 0x34, 0x59, 0xd7, 0xe8, 0xb9, 0x66, 0x4e,
-	0xf6, 0xff, 0xaf, 0x16, 0x93, 0xae, 0x39, 0x78, 0xfa, 0x69, 0xe6, 0x98, 0x57, 0x33, 0xc7, 0xfc,
-	0x3a, 0x73, 0xcc, 0xf7, 0x73, 0xc7, 0xb8, 0x9a, 0x3b, 0xc6, 0x97, 0xb9, 0x63, 0xbc, 0xf4, 0x53,
-	0x2a, 0x46, 0x67, 0x91, 0x1f, 0xb3, 0x1c, 0xd3, 0x82, 0x0a, 0x1a, 0xee, 0x67, 0x61, 0x04, 0xea,
-	0x8c, 0x2f, 0x70, 0xbd, 0xc4, 0xa4, 0x67, 0x72, 0x69, 0x45, 0xeb, 0x72, 0x6b, 0x3d, 0xfe, 0x1e,
-	0x00, 0x00, 0xff, 0xff, 0x03, 0xdc, 0x79, 0xe9, 0x77, 0x05, 0x00, 0x00,
+	// 454 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x92, 0x31, 0x6f, 0xd3, 0x40,
+	0x14, 0xc7, 0xed, 0x06, 0x0a, 0xb9, 0x01, 0xa8, 0x29, 0x6a, 0xf0, 0x60, 0x17, 0xab, 0x43, 0x15,
+	0xe8, 0x9d, 0x0a, 0x9d, 0x22, 0x16, 0x32, 0x51, 0xa4, 0x4a, 0xc8, 0xdd, 0x58, 0xaa, 0xb3, 0x7d,
+	0xba, 0x9c, 0xe4, 0xbb, 0xb3, 0xee, 0xae, 0x55, 0xb3, 0x21, 0x26, 0x84, 0x84, 0xc4, 0x07, 0x60,
+	0xe8, 0x47, 0xc8, 0xc0, 0xc0, 0x47, 0x60, 0xac, 0x98, 0x98, 0x22, 0x94, 0x0c, 0x61, 0xce, 0x27,
+	0x40, 0x3e, 0x5f, 0x13, 0x16, 0x2f, 0x2c, 0xd6, 0x7b, 0xf7, 0xfb, 0xbf, 0xe7, 0xbf, 0x9e, 0xfe,
+	0xe0, 0x09, 0xcb, 0x72, 0x84, 0xab, 0xaa, 0x64, 0x39, 0x36, 0x4c, 0x0a, 0x8d, 0x2a, 0xa2, 0x38,
+	0xba, 0x38, 0x44, 0xe6, 0x12, 0x56, 0x4a, 0x1a, 0x19, 0xf4, 0x58, 0x96, 0xc3, 0x7f, 0x25, 0xb0,
+	0x96, 0xc0, 0x8b, 0xc3, 0x70, 0x0b, 0x73, 0x26, 0x24, 0xb2, 0xdf, 0x46, 0x1c, 0xee, 0xe4, 0x52,
+	0x73, 0xa9, 0x11, 0xd7, 0xb4, 0x5e, 0xc2, 0x35, 0x75, 0xe0, 0x71, 0x03, 0xce, 0x6c, 0x87, 0x9a,
+	0xc6, 0xa1, 0x6d, 0x2a, 0xa9, 0x6c, 0xde, 0xeb, 0xca, 0xbd, 0xee, 0xb5, 0x3b, 0x1b, 0x57, 0xc4,
+	0xcd, 0x26, 0xdf, 0x37, 0x40, 0x78, 0xa2, 0xe9, 0x29, 0x31, 0x6f, 0x89, 0xe2, 0x4c, 0x6b, 0x26,
+	0x05, 0x29, 0x52, 0x52, 0xe2, 0x31, 0x51, 0x3a, 0x78, 0x03, 0xba, 0xf8, 0xdc, 0x8c, 0xa4, 0x62,
+	0x66, 0xdc, 0xf3, 0x77, 0xfd, 0xfd, 0xee, 0xf0, 0xd9, 0x72, 0x1a, 0x3f, 0x18, 0x63, 0x5e, 0x0e,
+	0x92, 0x15, 0x4a, 0x7e, 0x7e, 0x3b, 0xd8, 0x76, 0x9e, 0x5e, 0x15, 0x85, 0x22, 0x5a, 0x9f, 0x1a,
+	0xc5, 0x04, 0x4d, 0xd7, 0xe3, 0xc1, 0x53, 0x70, 0xa7, 0x92, 0xca, 0x9c, 0xb1, 0xa2, 0xb7, 0x61,
+	0x37, 0x05, 0xcb, 0x69, 0x7c, 0xaf, 0xd9, 0xe4, 0x40, 0x92, 0x6e, 0xd6, 0xd5, 0x71, 0x11, 0x1c,
+	0x01, 0x90, 0x8f, 0xb0, 0x10, 0xa4, 0xac, 0xf5, 0x1d, 0xab, 0x7f, 0xb4, 0x9c, 0xc6, 0x5b, 0x8d,
+	0x7e, 0xcd, 0x92, 0xb4, 0xeb, 0x9a, 0xe3, 0x22, 0x40, 0xe0, 0xae, 0x72, 0xd6, 0x7b, 0xb7, 0x76,
+	0x3b, 0xfb, 0xdd, 0xe1, 0xc3, 0xe5, 0x34, 0xbe, 0xdf, 0xcc, 0xdc, 0x90, 0x24, 0x5d, 0x89, 0x06,
+	0x83, 0x8f, 0x57, 0xb1, 0xf7, 0xe7, 0x2a, 0xf6, 0x3e, 0x2c, 0x26, 0xfd, 0xb5, 0xd7, 0x4f, 0x8b,
+	0x49, 0x3f, 0xb6, 0xe7, 0x6a, 0xbf, 0x4d, 0xb2, 0x07, 0x92, 0x76, 0x9a, 0x12, 0x5d, 0x49, 0xa1,
+	0xc9, 0xf3, 0xaf, 0x3e, 0xe8, 0x9c, 0x68, 0x1a, 0x7c, 0xf6, 0xc1, 0x4e, 0xdb, 0x95, 0x8f, 0x60,
+	0x5b, 0x44, 0x60, 0xfb, 0x1f, 0xc2, 0x97, 0xff, 0x33, 0x75, 0xe3, 0x2b, 0xbc, 0xfd, 0x7e, 0x31,
+	0xe9, 0xfb, 0xc3, 0xd7, 0x3f, 0x66, 0x91, 0x7f, 0x3d, 0x8b, 0xfc, 0xdf, 0xb3, 0xc8, 0xff, 0x32,
+	0x8f, 0xbc, 0xeb, 0x79, 0xe4, 0xfd, 0x9a, 0x47, 0xde, 0x3b, 0x48, 0x99, 0x19, 0x9d, 0x67, 0x30,
+	0x97, 0x1c, 0x31, 0xc1, 0x0c, 0xc3, 0x07, 0x25, 0xce, 0xb4, 0xab, 0xd1, 0x25, 0xaa, 0xf3, 0x65,
+	0x6f, 0x64, 0xf3, 0x94, 0x6d, 0xda, 0x40, 0xbd, 0xf8, 0x1b, 0x00, 0x00, 0xff, 0xff, 0x06, 0x93,
+	0x97, 0xca, 0x12, 0x03, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -252,8 +166,6 @@ const _ = grpc.SupportPackageIsVersion4
 type MsgClient interface {
 	// SetPermissionedRelayers defines a rpc handler method for MsgSetPermissionedRelayers.
 	SetPermissionedRelayers(ctx context.Context, in *MsgSetPermissionedRelayers, opts ...grpc.CallOption) (*MsgSetPermissionedRelayersResponse, error)
-	// AddPermissionedRelayers defines a rpc handler method for MsgSetPermissionedRelayers.
-	AddPermissionedRelayers(ctx context.Context, in *MsgAddPermissionedRelayers, opts ...grpc.CallOption) (*MsgAddPermissionedRelayersResponse, error)
 }
 
 type msgClient struct {
@@ -273,21 +185,10 @@ func (c *msgClient) SetPermissionedRelayers(ctx context.Context, in *MsgSetPermi
 	return out, nil
 }
 
-func (c *msgClient) AddPermissionedRelayers(ctx context.Context, in *MsgAddPermissionedRelayers, opts ...grpc.CallOption) (*MsgAddPermissionedRelayersResponse, error) {
-	out := new(MsgAddPermissionedRelayersResponse)
-	err := c.cc.Invoke(ctx, "/ibc.applications.perm.v1.Msg/AddPermissionedRelayers", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
 	// SetPermissionedRelayers defines a rpc handler method for MsgSetPermissionedRelayers.
 	SetPermissionedRelayers(context.Context, *MsgSetPermissionedRelayers) (*MsgSetPermissionedRelayersResponse, error)
-	// AddPermissionedRelayers defines a rpc handler method for MsgSetPermissionedRelayers.
-	AddPermissionedRelayers(context.Context, *MsgAddPermissionedRelayers) (*MsgAddPermissionedRelayersResponse, error)
 }
 
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.
@@ -296,9 +197,6 @@ type UnimplementedMsgServer struct {
 
 func (*UnimplementedMsgServer) SetPermissionedRelayers(ctx context.Context, req *MsgSetPermissionedRelayers) (*MsgSetPermissionedRelayersResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetPermissionedRelayers not implemented")
-}
-func (*UnimplementedMsgServer) AddPermissionedRelayers(ctx context.Context, req *MsgAddPermissionedRelayers) (*MsgAddPermissionedRelayersResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddPermissionedRelayers not implemented")
 }
 
 func RegisterMsgServer(s grpc1.Server, srv MsgServer) {
@@ -323,24 +221,6 @@ func _Msg_SetPermissionedRelayers_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_AddPermissionedRelayers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgAddPermissionedRelayers)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServer).AddPermissionedRelayers(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/ibc.applications.perm.v1.Msg/AddPermissionedRelayers",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).AddPermissionedRelayers(ctx, req.(*MsgAddPermissionedRelayers))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 var _Msg_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "ibc.applications.perm.v1.Msg",
 	HandlerType: (*MsgServer)(nil),
@@ -348,10 +228,6 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SetPermissionedRelayers",
 			Handler:    _Msg_SetPermissionedRelayers_Handler,
-		},
-		{
-			MethodName: "AddPermissionedRelayers",
-			Handler:    _Msg_AddPermissionedRelayers_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -378,17 +254,14 @@ func (m *MsgSetPermissionedRelayers) MarshalToSizedBuffer(dAtA []byte) (int, err
 	_ = i
 	var l int
 	_ = l
-	if m.RelayerList != nil {
-		{
-			size, err := m.RelayerList.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintTx(dAtA, i, uint64(size))
+	if len(m.Relayers) > 0 {
+		for iNdEx := len(m.Relayers) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.Relayers[iNdEx])
+			copy(dAtA[i:], m.Relayers[iNdEx])
+			i = encodeVarintTx(dAtA, i, uint64(len(m.Relayers[iNdEx])))
+			i--
+			dAtA[i] = 0x22
 		}
-		i--
-		dAtA[i] = 0x22
 	}
 	if len(m.ChannelId) > 0 {
 		i -= len(m.ChannelId)
@@ -437,85 +310,6 @@ func (m *MsgSetPermissionedRelayersResponse) MarshalToSizedBuffer(dAtA []byte) (
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgAddPermissionedRelayers) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *MsgAddPermissionedRelayers) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *MsgAddPermissionedRelayers) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.RelayerList != nil {
-		{
-			size, err := m.RelayerList.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintTx(dAtA, i, uint64(size))
-		}
-		i--
-		dAtA[i] = 0x22
-	}
-	if len(m.ChannelId) > 0 {
-		i -= len(m.ChannelId)
-		copy(dAtA[i:], m.ChannelId)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.ChannelId)))
-		i--
-		dAtA[i] = 0x1a
-	}
-	if len(m.PortId) > 0 {
-		i -= len(m.PortId)
-		copy(dAtA[i:], m.PortId)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.PortId)))
-		i--
-		dAtA[i] = 0x12
-	}
-	if len(m.Authority) > 0 {
-		i -= len(m.Authority)
-		copy(dAtA[i:], m.Authority)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.Authority)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *MsgAddPermissionedRelayersResponse) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *MsgAddPermissionedRelayersResponse) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *MsgAddPermissionedRelayersResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	return len(dAtA) - i, nil
-}
-
 func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
 	offset -= sovTx(v)
 	base := offset
@@ -545,48 +339,16 @@ func (m *MsgSetPermissionedRelayers) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	if m.RelayerList != nil {
-		l = m.RelayerList.Size()
-		n += 1 + l + sovTx(uint64(l))
+	if len(m.Relayers) > 0 {
+		for _, s := range m.Relayers {
+			l = len(s)
+			n += 1 + l + sovTx(uint64(l))
+		}
 	}
 	return n
 }
 
 func (m *MsgSetPermissionedRelayersResponse) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	return n
-}
-
-func (m *MsgAddPermissionedRelayers) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.Authority)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
-	}
-	l = len(m.PortId)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
-	}
-	l = len(m.ChannelId)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
-	}
-	if m.RelayerList != nil {
-		l = m.RelayerList.Size()
-		n += 1 + l + sovTx(uint64(l))
-	}
-	return n
-}
-
-func (m *MsgAddPermissionedRelayersResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -728,9 +490,9 @@ func (m *MsgSetPermissionedRelayers) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 4:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field RelayerList", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Relayers", wireType)
 			}
-			var msglen int
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -740,27 +502,23 @@ func (m *MsgSetPermissionedRelayers) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				msglen |= int(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if msglen < 0 {
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
 				return ErrInvalidLengthTx
 			}
-			postIndex := iNdEx + msglen
+			postIndex := iNdEx + intStringLen
 			if postIndex < 0 {
 				return ErrInvalidLengthTx
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if m.RelayerList == nil {
-				m.RelayerList = &PermissionedRelayerList{}
-			}
-			if err := m.RelayerList.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
+			m.Relayers = append(m.Relayers, string(dAtA[iNdEx:postIndex]))
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -810,238 +568,6 @@ func (m *MsgSetPermissionedRelayersResponse) Unmarshal(dAtA []byte) error {
 		}
 		if fieldNum <= 0 {
 			return fmt.Errorf("proto: MsgSetPermissionedRelayersResponse: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTx(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTx
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *MsgAddPermissionedRelayers) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTx
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: MsgAddPermissionedRelayers: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgAddPermissionedRelayers: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Authority", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Authority = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field PortId", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.PortId = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ChannelId", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.ChannelId = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 4:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field RelayerList", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.RelayerList == nil {
-				m.RelayerList = &PermissionedRelayerList{}
-			}
-			if err := m.RelayerList.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTx(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTx
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *MsgAddPermissionedRelayersResponse) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTx
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: MsgAddPermissionedRelayersResponse: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgAddPermissionedRelayersResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:

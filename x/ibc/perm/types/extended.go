@@ -3,36 +3,51 @@ package types
 import (
 	"slices"
 
+	"cosmossdk.io/errors"
+
 	"cosmossdk.io/core/address"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-func (rl *PermissionedRelayerList) HasRelayer(addr string) bool {
+func (rl *PermissionedRelayersList) HasRelayer(addr string) bool {
 	return slices.Contains(rl.Relayers, addr)
 }
-func (rl *PermissionedRelayerList) AddRelayer(addr string) {
+func (rl *PermissionedRelayersList) AddRelayer(addr string) {
 	rl.Relayers = append(rl.Relayers, addr)
 }
 
-func (rl *PermissionedRelayerList) GetAccAddr(cdc address.Codec) ([]sdk.AccAddress, error) {
+func (rl *PermissionedRelayersList) GetAccAddr(cdc address.Codec) ([]sdk.AccAddress, error) {
 
-	var relayers []sdk.AccAddress
+	var relayerStrs []sdk.AccAddress
 	for _, relayer := range rl.Relayers {
 
 		relayer, err := cdc.StringToBytes(relayer)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrapf(sdkerrors.ErrInvalidAddress, "string could not be parsed as address: %v", err)
 		}
-		relayers = append(relayers, relayer)
+		relayerStrs = append(relayerStrs, relayer)
 	}
 
-	return relayers, nil
+	return relayerStrs, nil
 }
 
-func ToRelayerList(relayers []sdk.AccAddress) PermissionedRelayerList {
-	var relayerList PermissionedRelayerList
+func ToRelayerList(relayers []sdk.AccAddress) PermissionedRelayersList {
+	var relayerList PermissionedRelayersList
 	for _, relayer := range relayers {
 		relayerList.AddRelayer(relayer.String())
 	}
 	return relayerList
+}
+
+func ToRelayerAccAddr(cdc address.Codec, relayerStrs []string) ([]sdk.AccAddress, error) {
+	var relayerAccAddrs []sdk.AccAddress
+	for _, relayerStr := range relayerStrs {
+		relayer, err := cdc.StringToBytes(relayerStr)
+		if err != nil {
+			return nil, errors.Wrapf(sdkerrors.ErrInvalidAddress, "string could not be parsed as address: %v", err)
+		}
+		relayerAccAddrs = append(relayerAccAddrs, relayer)
+	}
+	return relayerAccAddrs, nil
 }

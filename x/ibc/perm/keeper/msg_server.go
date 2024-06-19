@@ -33,7 +33,7 @@ func (ms MsgServer) SetPermissionedRelayers(ctx context.Context, req *types.MsgS
 		return nil, errors.Wrapf(govtypes.ErrInvalidSigner, "invalid authority; expected %s, got %s", ms.authority, req.Authority)
 	}
 
-	relayers, err := req.RelayerList.GetAccAddr(ms.ac)
+	relayers, err := types.ToRelayerAccAddr(ms.ac, req.Relayers)
 	if err != nil {
 		println("error here")
 		return nil, err
@@ -47,16 +47,16 @@ func (ms MsgServer) SetPermissionedRelayers(ctx context.Context, req *types.MsgS
 		"IBC permissioned channel relayer",
 		"port id", req.PortId,
 		"channel id", req.ChannelId,
-		"relayers", req.RelayerList.Relayers,
+		"relayers", req.Relayers,
 	)
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	sdkCtx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
-			types.EventTypeSetPermissionedRelayer,
+			types.EventTypeSetPermissionedRelayers,
 			sdk.NewAttribute(types.AttributeKeyPortId, req.PortId),
 			sdk.NewAttribute(types.AttributeKeyChannelId, req.ChannelId),
-			sdk.NewAttribute(types.AttributeKeyRelayer, strings.Join(req.RelayerList.Relayers, ",")),
+			sdk.NewAttribute(types.AttributeKeyRelayers, strings.Join(req.Relayers, ",")),
 		),
 		sdk.NewEvent(
 			sdk.EventTypeMessage,
@@ -65,47 +65,4 @@ func (ms MsgServer) SetPermissionedRelayers(ctx context.Context, req *types.MsgS
 	})
 
 	return &types.MsgSetPermissionedRelayersResponse{}, nil
-}
-
-// SetPermissionedRelayer update channel relayer to restrict relaying operation of a channel to specific relayer.
-func (ms MsgServer) AddPermissionedRelayers(ctx context.Context, req *types.MsgAddPermissionedRelayers) (*types.MsgAddPermissionedRelayersResponse, error) {
-	if err := req.Validate(ms.Keeper.ac); err != nil {
-		return nil, err
-	}
-
-	if ms.authority != req.Authority {
-		return nil, errors.Wrapf(govtypes.ErrInvalidSigner, "invalid authority; expected %s, got %s", ms.authority, req.Authority)
-	}
-
-	relayers, err := req.RelayerList.GetAccAddr(ms.ac)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := ms.Keeper.AddPermissionedRelayers(ctx, req.PortId, req.ChannelId, relayers); err != nil {
-		return nil, err
-	}
-
-	ms.Logger(ctx).Info(
-		"IBC permissioned channel relayer",
-		"port id", req.PortId,
-		"channel id", req.ChannelId,
-		"relayers", req.RelayerList.Relayers,
-	)
-
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	sdkCtx.EventManager().EmitEvents(sdk.Events{
-		sdk.NewEvent(
-			types.EventTypeAddPermissionedRelayer,
-			sdk.NewAttribute(types.AttributeKeyPortId, req.PortId),
-			sdk.NewAttribute(types.AttributeKeyChannelId, req.ChannelId),
-			sdk.NewAttribute(types.AttributeKeyRelayer, strings.Join(req.RelayerList.Relayers, ",")),
-		),
-		sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
-		),
-	})
-
-	return &types.MsgAddPermissionedRelayersResponse{}, nil
 }

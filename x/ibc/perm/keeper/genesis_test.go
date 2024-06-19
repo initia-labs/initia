@@ -27,16 +27,16 @@ func Test_ExportGenesis(t *testing.T) {
 	addrB := sdk.AccAddress(pubKeyB.Address())
 
 	genState := types.NewGenesisState(
-		[]types.PermissionedRelayersSet{
+		[]types.PermissionedRelayers{
 			{
-				PortId:      portA,
-				ChannelId:   channelA,
-				RelayerList: &types.PermissionedRelayerList{Relayers: []string{addrA.String()}},
+				PortId:    portA,
+				ChannelId: channelA,
+				Relayers:  []string{addrA.String()},
 			},
 			{
-				PortId:      portB,
-				ChannelId:   channelB,
-				RelayerList: &types.PermissionedRelayerList{Relayers: []string{addrB.String()}},
+				PortId:    portB,
+				ChannelId: channelB,
+				Relayers:  []string{addrB.String()},
 			},
 		},
 	)

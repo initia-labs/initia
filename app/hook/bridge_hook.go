@@ -29,7 +29,6 @@ type ChannelKeeper interface {
 type PermKeeper interface {
 	HasPermission(ctx context.Context, portID, channelID string, relayer sdk.AccAddress) (bool, error)
 	SetPermissionedRelayers(ctx context.Context, portID, channelID string, relayers []sdk.AccAddress) error
-	AddPermissionedRelayers(ctx context.Context, portID, channelID string, relayersAdd []sdk.AccAddress) error
 	GetPermissionedRelayers(ctx context.Context, portID, channelID string) ([]sdk.AccAddress, error)
 }
 

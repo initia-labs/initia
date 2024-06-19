@@ -32,27 +32,27 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // QueryPermissionedRelayersOfOneChannelRequest is the request type for the Query/PermissionedRelayer RPC
 // method
-type QueryPermissionedRelayersOneChannelRequest struct {
+type QueryPermissionedRelayersByChannelRequest struct {
 	PortId    string `protobuf:"bytes,1,opt,name=port_id,json=portId,proto3" json:"port_id,omitempty"`
 	ChannelId string `protobuf:"bytes,2,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
 }
 
-func (m *QueryPermissionedRelayersOneChannelRequest) Reset() {
-	*m = QueryPermissionedRelayersOneChannelRequest{}
+func (m *QueryPermissionedRelayersByChannelRequest) Reset() {
+	*m = QueryPermissionedRelayersByChannelRequest{}
 }
-func (m *QueryPermissionedRelayersOneChannelRequest) String() string {
+func (m *QueryPermissionedRelayersByChannelRequest) String() string {
 	return proto.CompactTextString(m)
 }
-func (*QueryPermissionedRelayersOneChannelRequest) ProtoMessage() {}
-func (*QueryPermissionedRelayersOneChannelRequest) Descriptor() ([]byte, []int) {
+func (*QueryPermissionedRelayersByChannelRequest) ProtoMessage() {}
+func (*QueryPermissionedRelayersByChannelRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_835b754d3cf5eb3d, []int{0}
 }
-func (m *QueryPermissionedRelayersOneChannelRequest) XXX_Unmarshal(b []byte) error {
+func (m *QueryPermissionedRelayersByChannelRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *QueryPermissionedRelayersOneChannelRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *QueryPermissionedRelayersByChannelRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_QueryPermissionedRelayersOneChannelRequest.Marshal(b, m, deterministic)
+		return xxx_messageInfo_QueryPermissionedRelayersByChannelRequest.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -62,26 +62,26 @@ func (m *QueryPermissionedRelayersOneChannelRequest) XXX_Marshal(b []byte, deter
 		return b[:n], nil
 	}
 }
-func (m *QueryPermissionedRelayersOneChannelRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryPermissionedRelayersOneChannelRequest.Merge(m, src)
+func (m *QueryPermissionedRelayersByChannelRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryPermissionedRelayersByChannelRequest.Merge(m, src)
 }
-func (m *QueryPermissionedRelayersOneChannelRequest) XXX_Size() int {
+func (m *QueryPermissionedRelayersByChannelRequest) XXX_Size() int {
 	return m.Size()
 }
-func (m *QueryPermissionedRelayersOneChannelRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryPermissionedRelayersOneChannelRequest.DiscardUnknown(m)
+func (m *QueryPermissionedRelayersByChannelRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryPermissionedRelayersByChannelRequest.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_QueryPermissionedRelayersOneChannelRequest proto.InternalMessageInfo
+var xxx_messageInfo_QueryPermissionedRelayersByChannelRequest proto.InternalMessageInfo
 
-func (m *QueryPermissionedRelayersOneChannelRequest) GetPortId() string {
+func (m *QueryPermissionedRelayersByChannelRequest) GetPortId() string {
 	if m != nil {
 		return m.PortId
 	}
 	return ""
 }
 
-func (m *QueryPermissionedRelayersOneChannelRequest) GetChannelId() string {
+func (m *QueryPermissionedRelayersByChannelRequest) GetChannelId() string {
 	if m != nil {
 		return m.ChannelId
 	}
@@ -90,27 +90,27 @@ func (m *QueryPermissionedRelayersOneChannelRequest) GetChannelId() string {
 
 // QueryPermissionedRelayerResponse is the response type for the Query/PermissionedRelayer RPC
 // method.
-type QueryPermissionedRelayersOneChannelResponse struct {
+type QueryPermissionedRelayersByChannelResponse struct {
 	// class_trace returns the requested class id trace information.
-	PermissionedRelayersSet *PermissionedRelayersSet `protobuf:"bytes,1,opt,name=permissioned_relayers_set,json=permissionedRelayersSet,proto3" json:"permissioned_relayers_set,omitempty"`
+	PermissionedRelayers *PermissionedRelayers `protobuf:"bytes,1,opt,name=permissioned_relayers,json=permissionedRelayers,proto3" json:"permissioned_relayers,omitempty"`
 }
 
-func (m *QueryPermissionedRelayersOneChannelResponse) Reset() {
-	*m = QueryPermissionedRelayersOneChannelResponse{}
+func (m *QueryPermissionedRelayersByChannelResponse) Reset() {
+	*m = QueryPermissionedRelayersByChannelResponse{}
 }
-func (m *QueryPermissionedRelayersOneChannelResponse) String() string {
+func (m *QueryPermissionedRelayersByChannelResponse) String() string {
 	return proto.CompactTextString(m)
 }
-func (*QueryPermissionedRelayersOneChannelResponse) ProtoMessage() {}
-func (*QueryPermissionedRelayersOneChannelResponse) Descriptor() ([]byte, []int) {
+func (*QueryPermissionedRelayersByChannelResponse) ProtoMessage() {}
+func (*QueryPermissionedRelayersByChannelResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_835b754d3cf5eb3d, []int{1}
 }
-func (m *QueryPermissionedRelayersOneChannelResponse) XXX_Unmarshal(b []byte) error {
+func (m *QueryPermissionedRelayersByChannelResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *QueryPermissionedRelayersOneChannelResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *QueryPermissionedRelayersByChannelResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_QueryPermissionedRelayersOneChannelResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_QueryPermissionedRelayersByChannelResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -120,48 +120,44 @@ func (m *QueryPermissionedRelayersOneChannelResponse) XXX_Marshal(b []byte, dete
 		return b[:n], nil
 	}
 }
-func (m *QueryPermissionedRelayersOneChannelResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryPermissionedRelayersOneChannelResponse.Merge(m, src)
+func (m *QueryPermissionedRelayersByChannelResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryPermissionedRelayersByChannelResponse.Merge(m, src)
 }
-func (m *QueryPermissionedRelayersOneChannelResponse) XXX_Size() int {
+func (m *QueryPermissionedRelayersByChannelResponse) XXX_Size() int {
 	return m.Size()
 }
-func (m *QueryPermissionedRelayersOneChannelResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryPermissionedRelayersOneChannelResponse.DiscardUnknown(m)
+func (m *QueryPermissionedRelayersByChannelResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryPermissionedRelayersByChannelResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_QueryPermissionedRelayersOneChannelResponse proto.InternalMessageInfo
+var xxx_messageInfo_QueryPermissionedRelayersByChannelResponse proto.InternalMessageInfo
 
-func (m *QueryPermissionedRelayersOneChannelResponse) GetPermissionedRelayersSet() *PermissionedRelayersSet {
+func (m *QueryPermissionedRelayersByChannelResponse) GetPermissionedRelayers() *PermissionedRelayers {
 	if m != nil {
-		return m.PermissionedRelayersSet
+		return m.PermissionedRelayers
 	}
 	return nil
 }
 
-// QueryPermissionedRelayersAllChannelRequest is the request type for the Query/PermissionedRelayersAllChannel RPC
+// QueryAllPermissionedRelayersRequest is the request type for the Query/AllPermissionedRelayers RPC
 // method
-type QueryPermissionedRelayersAllChannelRequest struct {
+type QueryAllPermissionedRelayersRequest struct {
 	// pagination defines an optional pagination for the request.
 	Pagination *query.PageRequest `protobuf:"bytes,1,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
-func (m *QueryPermissionedRelayersAllChannelRequest) Reset() {
-	*m = QueryPermissionedRelayersAllChannelRequest{}
-}
-func (m *QueryPermissionedRelayersAllChannelRequest) String() string {
-	return proto.CompactTextString(m)
-}
-func (*QueryPermissionedRelayersAllChannelRequest) ProtoMessage() {}
-func (*QueryPermissionedRelayersAllChannelRequest) Descriptor() ([]byte, []int) {
+func (m *QueryAllPermissionedRelayersRequest) Reset()         { *m = QueryAllPermissionedRelayersRequest{} }
+func (m *QueryAllPermissionedRelayersRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryAllPermissionedRelayersRequest) ProtoMessage()    {}
+func (*QueryAllPermissionedRelayersRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_835b754d3cf5eb3d, []int{2}
 }
-func (m *QueryPermissionedRelayersAllChannelRequest) XXX_Unmarshal(b []byte) error {
+func (m *QueryAllPermissionedRelayersRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *QueryPermissionedRelayersAllChannelRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *QueryAllPermissionedRelayersRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_QueryPermissionedRelayersAllChannelRequest.Marshal(b, m, deterministic)
+		return xxx_messageInfo_QueryAllPermissionedRelayersRequest.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -171,50 +167,46 @@ func (m *QueryPermissionedRelayersAllChannelRequest) XXX_Marshal(b []byte, deter
 		return b[:n], nil
 	}
 }
-func (m *QueryPermissionedRelayersAllChannelRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryPermissionedRelayersAllChannelRequest.Merge(m, src)
+func (m *QueryAllPermissionedRelayersRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryAllPermissionedRelayersRequest.Merge(m, src)
 }
-func (m *QueryPermissionedRelayersAllChannelRequest) XXX_Size() int {
+func (m *QueryAllPermissionedRelayersRequest) XXX_Size() int {
 	return m.Size()
 }
-func (m *QueryPermissionedRelayersAllChannelRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryPermissionedRelayersAllChannelRequest.DiscardUnknown(m)
+func (m *QueryAllPermissionedRelayersRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryAllPermissionedRelayersRequest.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_QueryPermissionedRelayersAllChannelRequest proto.InternalMessageInfo
+var xxx_messageInfo_QueryAllPermissionedRelayersRequest proto.InternalMessageInfo
 
-func (m *QueryPermissionedRelayersAllChannelRequest) GetPagination() *query.PageRequest {
+func (m *QueryAllPermissionedRelayersRequest) GetPagination() *query.PageRequest {
 	if m != nil {
 		return m.Pagination
 	}
 	return nil
 }
 
-// QueryPermissionedRelayersAllChannelResponse is the response type for the Query/PermissionedRelayersAllChannel RPC
+// QueryAllPermissionedRelayersResponse is the response type for the Query/AllPermissionedRelayers RPC
 // method.
-type QueryPermissionedRelayersAllChannelResponse struct {
+type QueryAllPermissionedRelayersResponse struct {
 	// class_trace returns the requested class id trace information.
-	PermissionedRelayersSets []PermissionedRelayersSet `protobuf:"bytes,1,rep,name=permissioned_relayers_sets,json=permissionedRelayersSets,proto3" json:"permissioned_relayers_sets"`
+	PermissionedRelayers []PermissionedRelayers `protobuf:"bytes,1,rep,name=permissioned_relayers,json=permissionedRelayers,proto3" json:"permissioned_relayers"`
 	// pagination defines the pagination in the response.
 	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
-func (m *QueryPermissionedRelayersAllChannelResponse) Reset() {
-	*m = QueryPermissionedRelayersAllChannelResponse{}
-}
-func (m *QueryPermissionedRelayersAllChannelResponse) String() string {
-	return proto.CompactTextString(m)
-}
-func (*QueryPermissionedRelayersAllChannelResponse) ProtoMessage() {}
-func (*QueryPermissionedRelayersAllChannelResponse) Descriptor() ([]byte, []int) {
+func (m *QueryAllPermissionedRelayersResponse) Reset()         { *m = QueryAllPermissionedRelayersResponse{} }
+func (m *QueryAllPermissionedRelayersResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryAllPermissionedRelayersResponse) ProtoMessage()    {}
+func (*QueryAllPermissionedRelayersResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_835b754d3cf5eb3d, []int{3}
 }
-func (m *QueryPermissionedRelayersAllChannelResponse) XXX_Unmarshal(b []byte) error {
+func (m *QueryAllPermissionedRelayersResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *QueryPermissionedRelayersAllChannelResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *QueryAllPermissionedRelayersResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_QueryPermissionedRelayersAllChannelResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_QueryAllPermissionedRelayersResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -224,26 +216,26 @@ func (m *QueryPermissionedRelayersAllChannelResponse) XXX_Marshal(b []byte, dete
 		return b[:n], nil
 	}
 }
-func (m *QueryPermissionedRelayersAllChannelResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryPermissionedRelayersAllChannelResponse.Merge(m, src)
+func (m *QueryAllPermissionedRelayersResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryAllPermissionedRelayersResponse.Merge(m, src)
 }
-func (m *QueryPermissionedRelayersAllChannelResponse) XXX_Size() int {
+func (m *QueryAllPermissionedRelayersResponse) XXX_Size() int {
 	return m.Size()
 }
-func (m *QueryPermissionedRelayersAllChannelResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryPermissionedRelayersAllChannelResponse.DiscardUnknown(m)
+func (m *QueryAllPermissionedRelayersResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryAllPermissionedRelayersResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_QueryPermissionedRelayersAllChannelResponse proto.InternalMessageInfo
+var xxx_messageInfo_QueryAllPermissionedRelayersResponse proto.InternalMessageInfo
 
-func (m *QueryPermissionedRelayersAllChannelResponse) GetPermissionedRelayersSets() []PermissionedRelayersSet {
+func (m *QueryAllPermissionedRelayersResponse) GetPermissionedRelayers() []PermissionedRelayers {
 	if m != nil {
-		return m.PermissionedRelayersSets
+		return m.PermissionedRelayers
 	}
 	return nil
 }
 
-func (m *QueryPermissionedRelayersAllChannelResponse) GetPagination() *query.PageResponse {
+func (m *QueryAllPermissionedRelayersResponse) GetPagination() *query.PageResponse {
 	if m != nil {
 		return m.Pagination
 	}
@@ -251,10 +243,10 @@ func (m *QueryPermissionedRelayersAllChannelResponse) GetPagination() *query.Pag
 }
 
 func init() {
-	proto.RegisterType((*QueryPermissionedRelayersOneChannelRequest)(nil), "ibc.applications.perm.v1.QueryPermissionedRelayersOneChannelRequest")
-	proto.RegisterType((*QueryPermissionedRelayersOneChannelResponse)(nil), "ibc.applications.perm.v1.QueryPermissionedRelayersOneChannelResponse")
-	proto.RegisterType((*QueryPermissionedRelayersAllChannelRequest)(nil), "ibc.applications.perm.v1.QueryPermissionedRelayersAllChannelRequest")
-	proto.RegisterType((*QueryPermissionedRelayersAllChannelResponse)(nil), "ibc.applications.perm.v1.QueryPermissionedRelayersAllChannelResponse")
+	proto.RegisterType((*QueryPermissionedRelayersByChannelRequest)(nil), "ibc.applications.perm.v1.QueryPermissionedRelayersByChannelRequest")
+	proto.RegisterType((*QueryPermissionedRelayersByChannelResponse)(nil), "ibc.applications.perm.v1.QueryPermissionedRelayersByChannelResponse")
+	proto.RegisterType((*QueryAllPermissionedRelayersRequest)(nil), "ibc.applications.perm.v1.QueryAllPermissionedRelayersRequest")
+	proto.RegisterType((*QueryAllPermissionedRelayersResponse)(nil), "ibc.applications.perm.v1.QueryAllPermissionedRelayersResponse")
 }
 
 func init() {
@@ -262,39 +254,39 @@ func init() {
 }
 
 var fileDescriptor_835b754d3cf5eb3d = []byte{
-	// 511 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x94, 0x4f, 0x6f, 0xd4, 0x3c,
-	0x10, 0xc6, 0x37, 0xdb, 0xf7, 0x2d, 0xaa, 0xb9, 0x59, 0x48, 0x5d, 0xa2, 0x12, 0xaa, 0x08, 0x01,
-	0x2a, 0xc2, 0x56, 0xda, 0x13, 0x47, 0xca, 0xdf, 0x9e, 0x28, 0xe1, 0xc6, 0x65, 0xe5, 0x24, 0xa3,
-	0xd4, 0x52, 0x62, 0xbb, 0xb1, 0x77, 0xc5, 0xaa, 0xea, 0x85, 0x4f, 0x80, 0xc4, 0x95, 0xcf, 0x83,
-	0x7a, 0x2c, 0xe2, 0xc2, 0x09, 0xa1, 0x5d, 0x0e, 0x5c, 0xf8, 0x0e, 0x28, 0x8e, 0xab, 0x0d, 0xb4,
-	0x59, 0xaa, 0xe5, 0x96, 0xdd, 0x79, 0x3c, 0xe3, 0xdf, 0x33, 0x33, 0x46, 0xb7, 0x78, 0x92, 0x52,
-	0xa6, 0x54, 0xc1, 0x53, 0x66, 0xb8, 0x14, 0x9a, 0x2a, 0xa8, 0x4a, 0x3a, 0x8e, 0xe8, 0xe1, 0x08,
-	0xaa, 0x09, 0x51, 0x95, 0x34, 0x12, 0x0f, 0x78, 0x92, 0x92, 0xb6, 0x8a, 0xd4, 0x2a, 0x32, 0x8e,
-	0xfc, 0x6b, 0xb9, 0xcc, 0xa5, 0x15, 0xd1, 0xfa, 0xab, 0xd1, 0xfb, 0x1b, 0xb9, 0x94, 0x79, 0x01,
-	0x94, 0x29, 0x4e, 0x99, 0x10, 0xd2, 0x9c, 0x9d, 0xb2, 0xd1, 0xad, 0x54, 0xea, 0x52, 0x6a, 0x9a,
-	0x30, 0x0d, 0x4d, 0x19, 0x3a, 0x8e, 0x12, 0x30, 0x2c, 0xa2, 0x8a, 0xe5, 0x5c, 0x58, 0xb1, 0xd3,
-	0x76, 0xdf, 0xcf, 0x4c, 0x14, 0xb8, 0x8c, 0x61, 0x86, 0xb6, 0x5e, 0xd6, 0x79, 0xf6, 0xa1, 0x2a,
-	0xb9, 0xd6, 0x5c, 0x0a, 0xc8, 0x62, 0x28, 0xd8, 0x04, 0x2a, 0xfd, 0x42, 0xc0, 0xa3, 0x03, 0x26,
-	0x04, 0x14, 0x31, 0x1c, 0x8e, 0x40, 0x1b, 0xbc, 0x8e, 0xae, 0x28, 0x59, 0x99, 0x21, 0xcf, 0x06,
-	0xde, 0xa6, 0x77, 0x77, 0x2d, 0x5e, 0xad, 0x7f, 0xee, 0x65, 0xf8, 0x06, 0x42, 0x69, 0x23, 0xad,
-	0x63, 0x7d, 0x1b, 0x5b, 0x73, 0xff, 0xec, 0x65, 0xe1, 0x07, 0x0f, 0xdd, 0xbb, 0x54, 0x19, 0xad,
-	0xa4, 0xd0, 0x80, 0x4b, 0x74, 0x5d, 0xb5, 0x94, 0xc3, 0xca, 0x49, 0x87, 0x1a, 0x8c, 0xad, 0x7c,
-	0x75, 0x3b, 0x22, 0x5d, 0xce, 0x92, 0x8b, 0x8a, 0xbc, 0x02, 0x13, 0xaf, 0xab, 0x8b, 0x03, 0xa1,
-	0x59, 0x60, 0xc2, 0xc3, 0xa2, 0xf8, 0xc3, 0x84, 0xa7, 0x08, 0xcd, 0xcd, 0x76, 0xb7, 0xb9, 0x4d,
-	0x9a, 0xce, 0x90, 0xba, 0x33, 0xa4, 0x19, 0x00, 0xd7, 0x19, 0xb2, 0xcf, 0x72, 0x70, 0x67, 0xe3,
-	0xd6, 0xc9, 0xf0, 0xe7, 0x22, 0x53, 0xda, 0x65, 0x9d, 0x29, 0x23, 0xe4, 0x77, 0x9a, 0xa2, 0x07,
-	0xde, 0xe6, 0xca, 0x52, 0xae, 0xec, 0xfe, 0x77, 0xf2, 0xf5, 0x66, 0x2f, 0x1e, 0x74, 0x78, 0xa3,
-	0xf1, 0xb3, 0xdf, 0x70, 0xfb, 0x16, 0xf7, 0xce, 0x5f, 0x71, 0x9b, 0x3b, 0xb7, 0x79, 0xb7, 0x3f,
-	0xae, 0xa0, 0xff, 0x2d, 0x2f, 0xfe, 0xe1, 0xa1, 0x60, 0xf1, 0x24, 0xe0, 0xc7, 0xdd, 0x20, 0x97,
-	0x9f, 0x57, 0xff, 0xc9, 0x3f, 0x66, 0x69, 0x28, 0xc2, 0x07, 0x6f, 0x3f, 0x7f, 0x7f, 0xdf, 0xdf,
-	0xc1, 0x11, 0x75, 0x3b, 0x35, 0xdf, 0xa5, 0xb3, 0x26, 0xd0, 0x23, 0xb7, 0x18, 0xc7, 0xf4, 0x68,
-	0xbe, 0x09, 0xc7, 0xf8, 0x53, 0x07, 0xea, 0xbc, 0xbf, 0x4b, 0xa1, 0x9e, 0x9b, 0xca, 0xa5, 0x50,
-	0xcf, 0x0f, 0x59, 0x18, 0x5a, 0xd4, 0x0d, 0xec, 0x77, 0xa3, 0xee, 0x3e, 0x3f, 0x99, 0x06, 0xde,
-	0xe9, 0x34, 0xf0, 0xbe, 0x4d, 0x03, 0xef, 0xdd, 0x2c, 0xe8, 0x9d, 0xce, 0x82, 0xde, 0x97, 0x59,
-	0xd0, 0x7b, 0x4d, 0x72, 0x6e, 0x0e, 0x46, 0x09, 0x49, 0x65, 0x49, 0xb9, 0xe0, 0x86, 0xb3, 0xfb,
-	0x05, 0x4b, 0xb4, 0xfb, 0xa6, 0x6f, 0x6c, 0x52, 0x9b, 0xcf, 0xbe, 0x41, 0xc9, 0xaa, 0x7d, 0x84,
-	0x76, 0x7e, 0x05, 0x00, 0x00, 0xff, 0xff, 0x80, 0x6e, 0x35, 0xc9, 0x4c, 0x05, 0x00, 0x00,
+	// 502 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x94, 0x4d, 0x6e, 0xd4, 0x30,
+	0x14, 0xc7, 0xc7, 0x53, 0x28, 0xaa, 0xd9, 0x59, 0x45, 0xad, 0xa2, 0x36, 0xa0, 0x50, 0xf1, 0x51,
+	0x09, 0x5b, 0x69, 0x57, 0x2c, 0x40, 0x62, 0x8a, 0x80, 0xee, 0x4a, 0x96, 0x6c, 0x2a, 0xc7, 0x63,
+	0xa5, 0x96, 0x12, 0xdb, 0x8d, 0x3d, 0x23, 0x46, 0x55, 0x37, 0x9c, 0x00, 0xc4, 0x3d, 0x38, 0x01,
+	0x07, 0xe8, 0xb2, 0x12, 0x1b, 0xc4, 0x02, 0xa1, 0x19, 0xb8, 0x07, 0x8a, 0xe3, 0x6a, 0x82, 0x94,
+	0x4c, 0x0b, 0xec, 0x12, 0xbf, 0xff, 0xfb, 0xf8, 0xbd, 0xf7, 0x6c, 0xb8, 0x25, 0x52, 0x46, 0xa8,
+	0xd6, 0xb9, 0x60, 0xd4, 0x0a, 0x25, 0x0d, 0xd1, 0xbc, 0x2c, 0xc8, 0x38, 0x26, 0xc7, 0x23, 0x5e,
+	0x4e, 0xb0, 0x2e, 0x95, 0x55, 0x68, 0x5d, 0xa4, 0x0c, 0x37, 0x55, 0xb8, 0x52, 0xe1, 0x71, 0x1c,
+	0xac, 0x66, 0x2a, 0x53, 0x4e, 0x44, 0xaa, 0xaf, 0x5a, 0x1f, 0x6c, 0x64, 0x4a, 0x65, 0x39, 0x27,
+	0x54, 0x0b, 0x42, 0xa5, 0x54, 0xf6, 0xc2, 0xcb, 0x59, 0xb7, 0x99, 0x32, 0x85, 0x32, 0x24, 0xa5,
+	0x86, 0xd7, 0x69, 0xc8, 0x38, 0x4e, 0xb9, 0xa5, 0x31, 0xd1, 0x34, 0x13, 0xd2, 0x89, 0xbd, 0xb6,
+	0xbb, 0x3e, 0x3b, 0xd1, 0xdc, 0x47, 0x8c, 0x18, 0x7c, 0xf8, 0xba, 0x8a, 0x73, 0xc0, 0xcb, 0x42,
+	0x18, 0x23, 0x94, 0xe4, 0xc3, 0x84, 0xe7, 0x74, 0xc2, 0x4b, 0x33, 0x98, 0xec, 0x1d, 0x51, 0x29,
+	0x79, 0x9e, 0xf0, 0xe3, 0x11, 0x37, 0x16, 0xad, 0xc1, 0x1b, 0x5a, 0x95, 0xf6, 0x50, 0x0c, 0xd7,
+	0xc1, 0x1d, 0xf0, 0x60, 0x25, 0x59, 0xae, 0x7e, 0xf7, 0x87, 0x68, 0x13, 0x42, 0x56, 0x4b, 0x2b,
+	0x5b, 0xdf, 0xd9, 0x56, 0xfc, 0xc9, 0xfe, 0x30, 0xfa, 0x00, 0xe0, 0xf6, 0x55, 0xb2, 0x18, 0xad,
+	0xa4, 0xe1, 0x88, 0xc1, 0x5b, 0xba, 0x21, 0x3c, 0x2c, 0xbd, 0xd2, 0x25, 0xbd, 0xb9, 0x83, 0x71,
+	0x57, 0x4f, 0x71, 0x5b, 0xfc, 0x64, 0x55, 0xb7, 0x9c, 0x46, 0x05, 0xbc, 0xeb, 0x4a, 0x7a, 0x96,
+	0xe7, 0xad, 0x5e, 0x1e, 0xf9, 0x05, 0x84, 0xf3, 0xce, 0xfa, 0x02, 0xee, 0xe1, 0x7a, 0x0c, 0xb8,
+	0x1a, 0x03, 0xae, 0xa7, 0xed, 0xc7, 0x80, 0x0f, 0x68, 0xc6, 0xbd, 0x6f, 0xd2, 0xf0, 0x8c, 0xbe,
+	0x01, 0xb8, 0xb5, 0x38, 0x9f, 0x87, 0x17, 0xdd, 0xf0, 0x4b, 0x7f, 0x0f, 0x3f, 0xb8, 0x76, 0xf6,
+	0xfd, 0x76, 0xaf, 0xbd, 0x05, 0xe8, 0xe5, 0x1f, 0x6c, 0x7d, 0xc7, 0x76, 0xff, 0x52, 0xb6, 0xba,
+	0xce, 0x26, 0xdc, 0xce, 0xa7, 0x25, 0x78, 0xdd, 0xc1, 0xa1, 0x5f, 0x00, 0x6e, 0x2e, 0x1c, 0x32,
+	0xda, 0xeb, 0x06, 0xb8, 0xf2, 0x22, 0x06, 0xcf, 0xff, 0x2f, 0x48, 0x8d, 0x10, 0x3d, 0x7e, 0xf7,
+	0xe5, 0xe7, 0xc7, 0xfe, 0x2e, 0x8a, 0x89, 0xbf, 0x2a, 0xf3, 0x2b, 0x72, 0xd1, 0x75, 0x72, 0xe2,
+	0x17, 0xfe, 0x94, 0x9c, 0xcc, 0x37, 0xfc, 0x14, 0x7d, 0x06, 0x70, 0xad, 0x63, 0x92, 0xe8, 0xc9,
+	0x25, 0xc5, 0x2d, 0xde, 0xb8, 0xe0, 0xe9, 0xbf, 0xba, 0x7b, 0xaa, 0xc8, 0x51, 0x6d, 0xa0, 0xa0,
+	0x9b, 0x6a, 0xf0, 0xea, 0x6c, 0x1a, 0x82, 0xf3, 0x69, 0x08, 0x7e, 0x4c, 0x43, 0xf0, 0x7e, 0x16,
+	0xf6, 0xce, 0x67, 0x61, 0xef, 0xeb, 0x2c, 0xec, 0xbd, 0xc1, 0x99, 0xb0, 0x47, 0xa3, 0x14, 0x33,
+	0x55, 0x10, 0x21, 0x85, 0x15, 0xf4, 0x51, 0x4e, 0x53, 0xe3, 0xbf, 0xc9, 0x5b, 0x17, 0xd4, 0xc5,
+	0x73, 0xaf, 0x48, 0xba, 0xec, 0x9e, 0x91, 0xdd, 0xdf, 0x01, 0x00, 0x00, 0xff, 0xff, 0x4a, 0x0e,
+	0x6b, 0x78, 0x0e, 0x05, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -309,10 +301,10 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type QueryClient interface {
-	// PermissionedRelPermissionedRelayersOneChannel queries a set of permissioned ibc relayers for the specific channel.
-	PermissionedRelayersOneChannel(ctx context.Context, in *QueryPermissionedRelayersOneChannelRequest, opts ...grpc.CallOption) (*QueryPermissionedRelayersOneChannelResponse, error)
-	// PermissionedRelayersAllChannel queries all sets of permissioned relayers for all channels.
-	PermissionedRelayersAllChannel(ctx context.Context, in *QueryPermissionedRelayersAllChannelRequest, opts ...grpc.CallOption) (*QueryPermissionedRelayersAllChannelResponse, error)
+	// PermissionedRelayersByChannel queries a set of permissioned ibc relayers for the specific channel.
+	PermissionedRelayersByChannel(ctx context.Context, in *QueryPermissionedRelayersByChannelRequest, opts ...grpc.CallOption) (*QueryPermissionedRelayersByChannelResponse, error)
+	// AllPermissionedRelayers queries all sets of permissioned relayers for all channels.
+	AllPermissionedRelayers(ctx context.Context, in *QueryAllPermissionedRelayersRequest, opts ...grpc.CallOption) (*QueryAllPermissionedRelayersResponse, error)
 }
 
 type queryClient struct {
@@ -323,18 +315,18 @@ func NewQueryClient(cc grpc1.ClientConn) QueryClient {
 	return &queryClient{cc}
 }
 
-func (c *queryClient) PermissionedRelayersOneChannel(ctx context.Context, in *QueryPermissionedRelayersOneChannelRequest, opts ...grpc.CallOption) (*QueryPermissionedRelayersOneChannelResponse, error) {
-	out := new(QueryPermissionedRelayersOneChannelResponse)
-	err := c.cc.Invoke(ctx, "/ibc.applications.perm.v1.Query/PermissionedRelayersOneChannel", in, out, opts...)
+func (c *queryClient) PermissionedRelayersByChannel(ctx context.Context, in *QueryPermissionedRelayersByChannelRequest, opts ...grpc.CallOption) (*QueryPermissionedRelayersByChannelResponse, error) {
+	out := new(QueryPermissionedRelayersByChannelResponse)
+	err := c.cc.Invoke(ctx, "/ibc.applications.perm.v1.Query/PermissionedRelayersByChannel", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *queryClient) PermissionedRelayersAllChannel(ctx context.Context, in *QueryPermissionedRelayersAllChannelRequest, opts ...grpc.CallOption) (*QueryPermissionedRelayersAllChannelResponse, error) {
-	out := new(QueryPermissionedRelayersAllChannelResponse)
-	err := c.cc.Invoke(ctx, "/ibc.applications.perm.v1.Query/PermissionedRelayersAllChannel", in, out, opts...)
+func (c *queryClient) AllPermissionedRelayers(ctx context.Context, in *QueryAllPermissionedRelayersRequest, opts ...grpc.CallOption) (*QueryAllPermissionedRelayersResponse, error) {
+	out := new(QueryAllPermissionedRelayersResponse)
+	err := c.cc.Invoke(ctx, "/ibc.applications.perm.v1.Query/AllPermissionedRelayers", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -343,59 +335,59 @@ func (c *queryClient) PermissionedRelayersAllChannel(ctx context.Context, in *Qu
 
 // QueryServer is the server API for Query service.
 type QueryServer interface {
-	// PermissionedRelPermissionedRelayersOneChannel queries a set of permissioned ibc relayers for the specific channel.
-	PermissionedRelayersOneChannel(context.Context, *QueryPermissionedRelayersOneChannelRequest) (*QueryPermissionedRelayersOneChannelResponse, error)
-	// PermissionedRelayersAllChannel queries all sets of permissioned relayers for all channels.
-	PermissionedRelayersAllChannel(context.Context, *QueryPermissionedRelayersAllChannelRequest) (*QueryPermissionedRelayersAllChannelResponse, error)
+	// PermissionedRelayersByChannel queries a set of permissioned ibc relayers for the specific channel.
+	PermissionedRelayersByChannel(context.Context, *QueryPermissionedRelayersByChannelRequest) (*QueryPermissionedRelayersByChannelResponse, error)
+	// AllPermissionedRelayers queries all sets of permissioned relayers for all channels.
+	AllPermissionedRelayers(context.Context, *QueryAllPermissionedRelayersRequest) (*QueryAllPermissionedRelayersResponse, error)
 }
 
 // UnimplementedQueryServer can be embedded to have forward compatible implementations.
 type UnimplementedQueryServer struct {
 }
 
-func (*UnimplementedQueryServer) PermissionedRelayersOneChannel(ctx context.Context, req *QueryPermissionedRelayersOneChannelRequest) (*QueryPermissionedRelayersOneChannelResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method PermissionedRelayersOneChannel not implemented")
+func (*UnimplementedQueryServer) PermissionedRelayersByChannel(ctx context.Context, req *QueryPermissionedRelayersByChannelRequest) (*QueryPermissionedRelayersByChannelResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PermissionedRelayersByChannel not implemented")
 }
-func (*UnimplementedQueryServer) PermissionedRelayersAllChannel(ctx context.Context, req *QueryPermissionedRelayersAllChannelRequest) (*QueryPermissionedRelayersAllChannelResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method PermissionedRelayersAllChannel not implemented")
+func (*UnimplementedQueryServer) AllPermissionedRelayers(ctx context.Context, req *QueryAllPermissionedRelayersRequest) (*QueryAllPermissionedRelayersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AllPermissionedRelayers not implemented")
 }
 
 func RegisterQueryServer(s grpc1.Server, srv QueryServer) {
 	s.RegisterService(&_Query_serviceDesc, srv)
 }
 
-func _Query_PermissionedRelayersOneChannel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryPermissionedRelayersOneChannelRequest)
+func _Query_PermissionedRelayersByChannel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryPermissionedRelayersByChannelRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).PermissionedRelayersOneChannel(ctx, in)
+		return srv.(QueryServer).PermissionedRelayersByChannel(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/ibc.applications.perm.v1.Query/PermissionedRelayersOneChannel",
+		FullMethod: "/ibc.applications.perm.v1.Query/PermissionedRelayersByChannel",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).PermissionedRelayersOneChannel(ctx, req.(*QueryPermissionedRelayersOneChannelRequest))
+		return srv.(QueryServer).PermissionedRelayersByChannel(ctx, req.(*QueryPermissionedRelayersByChannelRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_PermissionedRelayersAllChannel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryPermissionedRelayersAllChannelRequest)
+func _Query_AllPermissionedRelayers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryAllPermissionedRelayersRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).PermissionedRelayersAllChannel(ctx, in)
+		return srv.(QueryServer).AllPermissionedRelayers(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/ibc.applications.perm.v1.Query/PermissionedRelayersAllChannel",
+		FullMethod: "/ibc.applications.perm.v1.Query/AllPermissionedRelayers",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).PermissionedRelayersAllChannel(ctx, req.(*QueryPermissionedRelayersAllChannelRequest))
+		return srv.(QueryServer).AllPermissionedRelayers(ctx, req.(*QueryAllPermissionedRelayersRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -405,19 +397,19 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 	HandlerType: (*QueryServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "PermissionedRelayersOneChannel",
-			Handler:    _Query_PermissionedRelayersOneChannel_Handler,
+			MethodName: "PermissionedRelayersByChannel",
+			Handler:    _Query_PermissionedRelayersByChannel_Handler,
 		},
 		{
-			MethodName: "PermissionedRelayersAllChannel",
-			Handler:    _Query_PermissionedRelayersAllChannel_Handler,
+			MethodName: "AllPermissionedRelayers",
+			Handler:    _Query_AllPermissionedRelayers_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "ibc/applications/perm/v1/query.proto",
 }
 
-func (m *QueryPermissionedRelayersOneChannelRequest) Marshal() (dAtA []byte, err error) {
+func (m *QueryPermissionedRelayersByChannelRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -427,12 +419,12 @@ func (m *QueryPermissionedRelayersOneChannelRequest) Marshal() (dAtA []byte, err
 	return dAtA[:n], nil
 }
 
-func (m *QueryPermissionedRelayersOneChannelRequest) MarshalTo(dAtA []byte) (int, error) {
+func (m *QueryPermissionedRelayersByChannelRequest) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *QueryPermissionedRelayersOneChannelRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *QueryPermissionedRelayersByChannelRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -454,7 +446,7 @@ func (m *QueryPermissionedRelayersOneChannelRequest) MarshalToSizedBuffer(dAtA [
 	return len(dAtA) - i, nil
 }
 
-func (m *QueryPermissionedRelayersOneChannelResponse) Marshal() (dAtA []byte, err error) {
+func (m *QueryPermissionedRelayersByChannelResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -464,19 +456,19 @@ func (m *QueryPermissionedRelayersOneChannelResponse) Marshal() (dAtA []byte, er
 	return dAtA[:n], nil
 }
 
-func (m *QueryPermissionedRelayersOneChannelResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *QueryPermissionedRelayersByChannelResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *QueryPermissionedRelayersOneChannelResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *QueryPermissionedRelayersByChannelResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if m.PermissionedRelayersSet != nil {
+	if m.PermissionedRelayers != nil {
 		{
-			size, err := m.PermissionedRelayersSet.MarshalToSizedBuffer(dAtA[:i])
+			size, err := m.PermissionedRelayers.MarshalToSizedBuffer(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -489,7 +481,7 @@ func (m *QueryPermissionedRelayersOneChannelResponse) MarshalToSizedBuffer(dAtA 
 	return len(dAtA) - i, nil
 }
 
-func (m *QueryPermissionedRelayersAllChannelRequest) Marshal() (dAtA []byte, err error) {
+func (m *QueryAllPermissionedRelayersRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -499,12 +491,12 @@ func (m *QueryPermissionedRelayersAllChannelRequest) Marshal() (dAtA []byte, err
 	return dAtA[:n], nil
 }
 
-func (m *QueryPermissionedRelayersAllChannelRequest) MarshalTo(dAtA []byte) (int, error) {
+func (m *QueryAllPermissionedRelayersRequest) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *QueryPermissionedRelayersAllChannelRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *QueryAllPermissionedRelayersRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -524,7 +516,7 @@ func (m *QueryPermissionedRelayersAllChannelRequest) MarshalToSizedBuffer(dAtA [
 	return len(dAtA) - i, nil
 }
 
-func (m *QueryPermissionedRelayersAllChannelResponse) Marshal() (dAtA []byte, err error) {
+func (m *QueryAllPermissionedRelayersResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -534,12 +526,12 @@ func (m *QueryPermissionedRelayersAllChannelResponse) Marshal() (dAtA []byte, er
 	return dAtA[:n], nil
 }
 
-func (m *QueryPermissionedRelayersAllChannelResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *QueryAllPermissionedRelayersResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *QueryPermissionedRelayersAllChannelResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *QueryAllPermissionedRelayersResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -556,10 +548,10 @@ func (m *QueryPermissionedRelayersAllChannelResponse) MarshalToSizedBuffer(dAtA 
 		i--
 		dAtA[i] = 0x12
 	}
-	if len(m.PermissionedRelayersSets) > 0 {
-		for iNdEx := len(m.PermissionedRelayersSets) - 1; iNdEx >= 0; iNdEx-- {
+	if len(m.PermissionedRelayers) > 0 {
+		for iNdEx := len(m.PermissionedRelayers) - 1; iNdEx >= 0; iNdEx-- {
 			{
-				size, err := m.PermissionedRelayersSets[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				size, err := m.PermissionedRelayers[iNdEx].MarshalToSizedBuffer(dAtA[:i])
 				if err != nil {
 					return 0, err
 				}
@@ -584,7 +576,7 @@ func encodeVarintQuery(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *QueryPermissionedRelayersOneChannelRequest) Size() (n int) {
+func (m *QueryPermissionedRelayersByChannelRequest) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -601,20 +593,20 @@ func (m *QueryPermissionedRelayersOneChannelRequest) Size() (n int) {
 	return n
 }
 
-func (m *QueryPermissionedRelayersOneChannelResponse) Size() (n int) {
+func (m *QueryPermissionedRelayersByChannelResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	if m.PermissionedRelayersSet != nil {
-		l = m.PermissionedRelayersSet.Size()
+	if m.PermissionedRelayers != nil {
+		l = m.PermissionedRelayers.Size()
 		n += 1 + l + sovQuery(uint64(l))
 	}
 	return n
 }
 
-func (m *QueryPermissionedRelayersAllChannelRequest) Size() (n int) {
+func (m *QueryAllPermissionedRelayersRequest) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -627,14 +619,14 @@ func (m *QueryPermissionedRelayersAllChannelRequest) Size() (n int) {
 	return n
 }
 
-func (m *QueryPermissionedRelayersAllChannelResponse) Size() (n int) {
+func (m *QueryAllPermissionedRelayersResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	if len(m.PermissionedRelayersSets) > 0 {
-		for _, e := range m.PermissionedRelayersSets {
+	if len(m.PermissionedRelayers) > 0 {
+		for _, e := range m.PermissionedRelayers {
 			l = e.Size()
 			n += 1 + l + sovQuery(uint64(l))
 		}
@@ -652,7 +644,7 @@ func sovQuery(x uint64) (n int) {
 func sozQuery(x uint64) (n int) {
 	return sovQuery(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *QueryPermissionedRelayersOneChannelRequest) Unmarshal(dAtA []byte) error {
+func (m *QueryPermissionedRelayersByChannelRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -675,10 +667,10 @@ func (m *QueryPermissionedRelayersOneChannelRequest) Unmarshal(dAtA []byte) erro
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: QueryPermissionedRelayersOneChannelRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: QueryPermissionedRelayersByChannelRequest: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryPermissionedRelayersOneChannelRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: QueryPermissionedRelayersByChannelRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -766,7 +758,7 @@ func (m *QueryPermissionedRelayersOneChannelRequest) Unmarshal(dAtA []byte) erro
 	}
 	return nil
 }
-func (m *QueryPermissionedRelayersOneChannelResponse) Unmarshal(dAtA []byte) error {
+func (m *QueryPermissionedRelayersByChannelResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -789,15 +781,15 @@ func (m *QueryPermissionedRelayersOneChannelResponse) Unmarshal(dAtA []byte) err
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: QueryPermissionedRelayersOneChannelResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: QueryPermissionedRelayersByChannelResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryPermissionedRelayersOneChannelResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: QueryPermissionedRelayersByChannelResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field PermissionedRelayersSet", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field PermissionedRelayers", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -824,10 +816,10 @@ func (m *QueryPermissionedRelayersOneChannelResponse) Unmarshal(dAtA []byte) err
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if m.PermissionedRelayersSet == nil {
-				m.PermissionedRelayersSet = &PermissionedRelayersSet{}
+			if m.PermissionedRelayers == nil {
+				m.PermissionedRelayers = &PermissionedRelayers{}
 			}
-			if err := m.PermissionedRelayersSet.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.PermissionedRelayers.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -852,7 +844,7 @@ func (m *QueryPermissionedRelayersOneChannelResponse) Unmarshal(dAtA []byte) err
 	}
 	return nil
 }
-func (m *QueryPermissionedRelayersAllChannelRequest) Unmarshal(dAtA []byte) error {
+func (m *QueryAllPermissionedRelayersRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -875,10 +867,10 @@ func (m *QueryPermissionedRelayersAllChannelRequest) Unmarshal(dAtA []byte) erro
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: QueryPermissionedRelayersAllChannelRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: QueryAllPermissionedRelayersRequest: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryPermissionedRelayersAllChannelRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: QueryAllPermissionedRelayersRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -938,7 +930,7 @@ func (m *QueryPermissionedRelayersAllChannelRequest) Unmarshal(dAtA []byte) erro
 	}
 	return nil
 }
-func (m *QueryPermissionedRelayersAllChannelResponse) Unmarshal(dAtA []byte) error {
+func (m *QueryAllPermissionedRelayersResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -961,15 +953,15 @@ func (m *QueryPermissionedRelayersAllChannelResponse) Unmarshal(dAtA []byte) err
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: QueryPermissionedRelayersAllChannelResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: QueryAllPermissionedRelayersResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryPermissionedRelayersAllChannelResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: QueryAllPermissionedRelayersResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field PermissionedRelayersSets", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field PermissionedRelayers", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -996,8 +988,8 @@ func (m *QueryPermissionedRelayersAllChannelResponse) Unmarshal(dAtA []byte) err
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.PermissionedRelayersSets = append(m.PermissionedRelayersSets, PermissionedRelayersSet{})
-			if err := m.PermissionedRelayersSets[len(m.PermissionedRelayersSets)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			m.PermissionedRelayers = append(m.PermissionedRelayers, PermissionedRelayers{})
+			if err := m.PermissionedRelayers[len(m.PermissionedRelayers)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex

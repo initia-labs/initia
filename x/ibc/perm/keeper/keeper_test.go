@@ -91,7 +91,7 @@ func Test_GetPermissionedRelayers(t *testing.T) {
 	require.ErrorIs(t, err, collections.ErrNotFound)
 
 	// set channel relayer via msg handler
-	err = k.PermissionedRelayers.Set(ctx, collections.Join(portID, channelID), types.PermissionedRelayerList{Relayers: []string{addr.String()}})
+	err = k.PermissionedRelayers.Set(ctx, collections.Join(portID, channelID), types.PermissionedRelayersList{Relayers: []string{addr.String()}})
 	require.NoError(t, err)
 
 	// check properly set
@@ -126,31 +126,4 @@ func Test_SetPermissionedRelayers(t *testing.T) {
 	res, err := k.PermissionedRelayers.Get(ctx, collections.Join(portID, channelID))
 	require.NoError(t, err)
 	require.True(t, res.HasRelayer(addr.String()))
-}
-
-func Test_AddPermissionedRelayers(t *testing.T) {
-	ctx, k := _createTestInput(t, dbm.NewMemDB())
-
-	portID := "port-123"
-	channelID := "channel-123"
-	pubKey1 := secp256k1.GenPrivKey().PubKey()
-	pubKey2 := secp256k1.GenPrivKey().PubKey()
-	addr1 := sdk.AccAddress(pubKey1.Address())
-	addr2 := sdk.AccAddress(pubKey2.Address())
-	err := k.SetPermissionedRelayers(ctx, portID, channelID, []sdk.AccAddress{addr1})
-	require.NoError(t, err)
-	// add relayer
-	err = k.AddPermissionedRelayers(ctx, portID, channelID, []sdk.AccAddress{addr2})
-	require.NoError(t, err)
-
-	// check properly set
-	res, err := k.PermissionedRelayers.Get(ctx, collections.Join(portID, channelID))
-	require.NoError(t, err)
-	require.True(t, res.HasRelayer(addr1.String()))
-	require.True(t, res.HasRelayer(addr2.String()))
-
-	// error case
-	err = k.AddPermissionedRelayers(ctx, portID, channelID, []sdk.AccAddress{addr2})
-	require.Error(t, err)
-
 }

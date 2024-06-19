@@ -19,22 +19,10 @@ func NewMsgSetPermissionedRelayers(
 	authority, portID, channelID string, relayers []string,
 ) *MsgSetPermissionedRelayers {
 	return &MsgSetPermissionedRelayers{
-		Authority:   authority,
-		PortId:      portID,
-		ChannelId:   channelID,
-		RelayerList: &PermissionedRelayerList{Relayers: relayers},
-	}
-}
-
-// NewMsgAddPermissionedRelayer creates a new MsgAddPermissionedRelayer instance
-func NewMsgAddPermissionedRelayers(
-	authority, portID, channelID string, relayers []string,
-) *MsgAddPermissionedRelayers {
-	return &MsgAddPermissionedRelayers{
-		Authority:   authority,
-		PortId:      portID,
-		ChannelId:   channelID,
-		RelayerList: &PermissionedRelayerList{Relayers: relayers},
+		Authority: authority,
+		PortId:    portID,
+		ChannelId: channelID,
+		Relayers:  relayers,
 	}
 }
 
@@ -56,31 +44,7 @@ func (msg MsgSetPermissionedRelayers) Validate(ac address.Codec) error {
 		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "string could not be parsed as address: %v", err)
 	}
 
-	for _, relayer := range msg.RelayerList.Relayers {
-		_, err = ac.StringToBytes(relayer)
-		if err != nil {
-			return errors.Wrapf(sdkerrors.ErrInvalidAddress, "string could not be parsed as address: %v", err)
-		}
-	}
-
-	return nil
-}
-
-func (msg MsgAddPermissionedRelayers) Validate(ac address.Codec) error {
-	if err := host.PortIdentifierValidator(msg.PortId); err != nil {
-		return err
-	}
-
-	if err := host.ChannelIdentifierValidator(msg.ChannelId); err != nil {
-		return err
-	}
-
-	_, err := ac.StringToBytes(msg.Authority)
-	if err != nil {
-		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "string could not be parsed as address: %v", err)
-	}
-
-	for _, relayer := range msg.RelayerList.Relayers {
+	for _, relayer := range msg.Relayers {
 		_, err = ac.StringToBytes(relayer)
 		if err != nil {
 			return errors.Wrapf(sdkerrors.ErrInvalidAddress, "string could not be parsed as address: %v", err)
