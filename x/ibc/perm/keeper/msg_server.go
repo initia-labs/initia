@@ -35,7 +35,6 @@ func (ms MsgServer) SetPermissionedRelayers(ctx context.Context, req *types.MsgS
 
 	relayers, err := types.ToRelayerAccAddr(ms.ac, req.Relayers)
 	if err != nil {
-		println("error here")
 		return nil, err
 	}
 

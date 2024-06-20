@@ -74,7 +74,10 @@ func (k Keeper) IteratePermissionedRelayers(ctx context.Context, cb func(channel
 
 // SetPermissionedRelayer sets the relayer as the permissioned relayer for the channel.
 func (k Keeper) SetPermissionedRelayers(ctx context.Context, portID, channelID string, relayers []sdk.AccAddress) error {
-	relayerList := types.ToRelayerList(relayers)
+	relayerList, err := types.ToRelayerList(k.ac, relayers)
+	if err != nil {
+		return err
+	}
 	return k.PermissionedRelayers.Set(ctx, collections.Join(portID, channelID), relayerList)
 }
 

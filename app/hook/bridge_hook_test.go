@@ -59,23 +59,6 @@ func (k MockPermKeeper) SetPermissionedRelayers(ctx context.Context, portID, cha
 	k.perms[portID+"/"+channelID] = MockPermRelayerList{Relayers: relayers}
 	return nil
 }
-func (k MockPermKeeper) AddPermissionedRelayers(ctx context.Context, portID, channelID string, relayers []sdk.AccAddress) error {
-	existingRelayers := k.perms[portID+"/"+channelID].Relayers
-	for _, newRelayer := range relayers {
-		isContained := false
-		for _, existingRelayer := range existingRelayers {
-			if existingRelayer.Equals(newRelayer) {
-				isContained = true
-				break
-			}
-		}
-		if isContained {
-			existingRelayers = append(existingRelayers, newRelayer)
-		}
-	}
-
-	return nil
-}
 
 func (k MockPermKeeper) GetPermissionedRelayers(ctx context.Context, portID, channelID string) ([]sdk.AccAddress, error) {
 	if _, ok := k.perms[portID+"/"+channelID]; !ok {

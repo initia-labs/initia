@@ -32,12 +32,16 @@ func (rl *PermissionedRelayersList) GetAccAddr(cdc address.Codec) ([]sdk.AccAddr
 	return relayerStrs, nil
 }
 
-func ToRelayerList(relayers []sdk.AccAddress) PermissionedRelayersList {
+func ToRelayerList(cdc address.Codec, relayers []sdk.AccAddress) (PermissionedRelayersList, error) {
 	var relayerList PermissionedRelayersList
 	for _, relayer := range relayers {
-		relayerList.AddRelayer(relayer.String())
+		relayerStr, error := cdc.BytesToString(relayer)
+		if error != nil {
+			return relayerList, errors.Wrapf(sdkerrors.ErrInvalidAddress, "relayer address could not be converted to string : %v", error)
+		}
+		relayerList.AddRelayer(relayerStr)
 	}
-	return relayerList
+	return relayerList, nil
 }
 
 func ToRelayerAccAddr(cdc address.Codec, relayerStrs []string) ([]sdk.AccAddress, error) {

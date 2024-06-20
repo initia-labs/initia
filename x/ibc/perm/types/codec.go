@@ -11,7 +11,7 @@ import (
 // RegisterLegacyAminoCodec registers the necessary x/ibc perm interfaces and concrete types
 // on the provided LegacyAmino codec. These types are used for Amino JSON serialization.
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
-	legacy.RegisterAminoMsg(cdc, &MsgSetPermissionedRelayers{}, "ibc-perm/MsgSetPermissionedRelayer")
+	legacy.RegisterAminoMsg(cdc, &MsgSetPermissionedRelayers{}, "ibc-perm/MsgSetPermissionedRelayers")
 }
 
 // RegisterInterfaces register the ibc perm module interfaces to protobuf
