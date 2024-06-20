@@ -61,7 +61,7 @@ func (k TestAnteKeeper) BaseMinGasPrice(ctx context.Context) (math.LegacyDec, er
 }
 
 func (suite *AnteTestSuite) TestEnsureMempoolFees() {
-	suite.SetupTest(true) // setup
+	suite.SetupTest() // setup
 	suite.txBuilder = suite.clientCtx.TxConfig.NewTxBuilder()
 
 	dexPools := make(map[string][]math.Int)

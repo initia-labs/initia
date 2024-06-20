@@ -10,7 +10,7 @@ import (
 )
 
 func (suite *AnteTestSuite) TestGasPricesDecorator() {
-	suite.SetupTest(true) // setup
+	suite.SetupTest() // setup
 	suite.txBuilder = suite.clientCtx.TxConfig.NewTxBuilder()
 
 	// keys and addresses

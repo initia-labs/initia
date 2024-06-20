@@ -78,7 +78,7 @@ func TestInitGenesisOnMigration(t *testing.T) {
 	logger := log.NewLogger(os.Stdout)
 	app := NewInitiaApp(
 		logger, db, nil, true, moveconfig.DefaultMoveConfig(), apporacle.DefaultConfig(), EmptyAppOptions{})
-	ctx := app.NewContextLegacy(true, cmtproto.Header{Height: app.LastBlockHeight()})
+	ctx := app.NewUncachedContext(false, cmtproto.Header{Height: app.LastBlockHeight()})
 
 	// Create a mock module. This module will serve as the new module we're
 	// adding during a migration.
@@ -127,7 +127,7 @@ func TestUpgradeStateOnGenesis(t *testing.T) {
 	app := SetupWithGenesisAccounts(nil, nil)
 
 	// make sure the upgrade keeper has version map in state
-	ctx := app.NewContext(true)
+	ctx := app.NewUncachedContext(false, cmtproto.Header{})
 	vm, err := app.UpgradeKeeper.GetModuleVersionMap(ctx)
 	require.NoError(t, err)
 

@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"sort"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -57,8 +58,12 @@ func (k Keeper) Initialize(
 }
 
 // InitGenesis sets supply information for genesis.
-func (k Keeper) InitGenesis(ctx context.Context, genState types.GenesisState) error {
-	k.authKeeper.GetModuleAccount(ctx, types.MoveStakingModuleName)
+func (k Keeper) InitGenesis(ctx context.Context, moduleNames []string, genState types.GenesisState) error {
+	// create all module addresses
+	sort.StringSlice(moduleNames).Sort()
+	for _, moduleName := range moduleNames {
+		k.authKeeper.GetModuleAccount(ctx, moduleName)
+	}
 
 	params := genState.GetParams()
 	if err := k.SetRawParams(ctx, params.ToRaw()); err != nil {
