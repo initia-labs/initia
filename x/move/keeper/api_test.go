@@ -32,8 +32,9 @@ func Test_GetAccountInfo(t *testing.T) {
 
 	// base account
 	input.AccountKeeper.SetAccount(ctx, input.AccountKeeper.NewAccountWithAddress(ctx, addrs[0]))
-	found, accountNumber, sequence, accountType := api.GetAccountInfo(vmaddr)
+	found, accountNumber, sequence, accountType, isBlocked := api.GetAccountInfo(vmaddr)
 	require.True(t, found)
+	require.False(t, isBlocked)
 
 	acc := input.AccountKeeper.GetAccount(ctx, addrs[0])
 	require.Equal(t, acc.GetAccountNumber(), accountNumber)
@@ -45,8 +46,9 @@ func Test_GetAccountInfo(t *testing.T) {
 	govAddr := govAcc.GetAddress()
 	govVmAddr, err := vmtypes.NewAccountAddressFromBytes(govAddr.Bytes())
 	require.NoError(t, err)
-	found, accountNumber, sequence, accountType = api.GetAccountInfo(govVmAddr)
+	found, accountNumber, sequence, accountType, isBlocked = api.GetAccountInfo(govVmAddr)
 	require.True(t, found)
+	require.True(t, isBlocked)
 
 	acc = input.AccountKeeper.GetAccount(ctx, govAddr)
 	require.Equal(t, acc.GetAccountNumber(), accountNumber)
@@ -57,8 +59,9 @@ func Test_GetAccountInfo(t *testing.T) {
 	vmaddr, err = vmtypes.NewAccountAddress("0x3")
 	require.NoError(t, err)
 
-	found, _, _, _ = api.GetAccountInfo(vmaddr)
+	found, _, _, _, isBlocked = api.GetAccountInfo(vmaddr)
 	require.False(t, found)
+	require.False(t, isBlocked)
 }
 
 func Test_CreateTypedAccounts(t *testing.T) {
@@ -70,7 +73,7 @@ func Test_CreateTypedAccounts(t *testing.T) {
 	api := keeper.NewApi(input.MoveKeeper, ctx)
 
 	input.AccountKeeper.SetAccount(ctx, input.AccountKeeper.NewAccountWithAddress(ctx, addrs[0]))
-	found, accountNumber, sequence, accountType := api.GetAccountInfo(vmaddr)
+	found, accountNumber, sequence, accountType, _ := api.GetAccountInfo(vmaddr)
 	require.True(t, found)
 
 	acc := input.AccountKeeper.GetAccount(ctx, addrs[0])
@@ -81,7 +84,7 @@ func Test_CreateTypedAccounts(t *testing.T) {
 	vmaddr, err = vmtypes.NewAccountAddress("0x3")
 	require.NoError(t, err)
 
-	found, _, _, _ = api.GetAccountInfo(vmaddr)
+	found, _, _, _, _ = api.GetAccountInfo(vmaddr)
 	require.False(t, found)
 }
 

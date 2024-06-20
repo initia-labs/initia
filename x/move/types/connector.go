@@ -28,7 +28,7 @@ const (
 
 	// function names for managed_coin
 	FunctionNameManagedCoinInitialize = "initialize"
-	FunctionNameManagedCoinMint       = "mint"
+	FunctionNameManagedCoinSudoMint   = "sudo_mint"
 	FunctionNameManagedCoinBurn       = "burn"
 
 	// function names for simple_nft
@@ -37,10 +37,11 @@ const (
 	FunctionNameSimpleNftBurn       = "burn"
 
 	// function names for coin
-	FunctionNameCoinBalance   = "balance"
-	FunctionNameCoinRegister  = "register"
-	FunctionNameCoinTransfer  = "transfer"
-	FunctionNameCoinWhitelist = "whitelist"
+	FunctionNameCoinBalance      = "balance"
+	FunctionNameCoinRegister     = "register"
+	FunctionNameCoinTransfer     = "transfer"
+	FunctionNameCoinSudoTransfer = "sudo_transfer"
+	FunctionNameCoinWhitelist    = "whitelist"
 
 	// function names for staking
 	FunctionNameStakingInitialize           = "initialize_for_chain"
