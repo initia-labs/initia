@@ -727,8 +727,8 @@ github.com/initia-labs/OPinit v0.3.1 h1:uffngNx8a7hQl3ENhVbdSAJ8j5MYksiaiCLVI6xu
 github.com/initia-labs/OPinit v0.3.1/go.mod h1:pHU2472uQZpiKXBOa/D7/aDYn0gtTiddKvhloyliOQU=
 github.com/initia-labs/OPinit/api v0.3.0 h1:OY8ijwmgZLoYwtw9LI1mSY3VC8PY+gtxJFitB6ZNFl4=
 github.com/initia-labs/OPinit/api v0.3.0/go.mod h1:Xy/Nt3ubXLQ4zKn0m7RuQOM1sj8TVdlNNyek21TGYR0=
-github.com/initia-labs/cosmos-sdk v0.0.0-20240425031032-6bc18cf6e67d h1:8OCL+PBoWydjxP07wE567ySQfY8gbu+rjE04OCNx/9U=
-github.com/initia-labs/cosmos-sdk v0.0.0-20240425031032-6bc18cf6e67d/go.mod h1:lVkRY6cdMJ0fG3gp8y4hFrsKZqF4z7y0M2UXFb9Yt40=
+github.com/initia-labs/cosmos-sdk v0.0.0-20240617110109-8f40e8e336e1 h1:d8nw7Ey/ECDhL5fcUdaKAcuH3KabCLX6Y5paRvXEbXo=
+github.com/initia-labs/cosmos-sdk v0.0.0-20240617110109-8f40e8e336e1/go.mod h1:lVkRY6cdMJ0fG3gp8y4hFrsKZqF4z7y0M2UXFb9Yt40=
 github.com/initia-labs/iavl v0.0.0-20240415085037-7e81233cdd9e h1:1gkMWkAgVhYFhEv7K4tX+8uJJLdiTKlQhl5+wGaxdMg=
 github.com/initia-labs/iavl v0.0.0-20240415085037-7e81233cdd9e/go.mod h1:jLeUvm6bGT1YutCaL2fIar/8vGUE8cPZvh/gXEWDaDM=
 github.com/jhump/protoreflect v1.15.3 h1:6SFRuqU45u9hIZPJAoZ8c28T3nK64BNdp9w6jFonzls=

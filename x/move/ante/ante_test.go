@@ -6,6 +6,8 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+
 	"cosmossdk.io/log"
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -38,7 +40,7 @@ type AnteTestSuite struct {
 }
 
 // returns context and app with params set on account keeper
-func (suite *AnteTestSuite) createTestApp(isCheckTx bool, tempDir string) (*initiaapp.InitiaApp, sdk.Context) {
+func (suite *AnteTestSuite) createTestApp(tempDir string) (*initiaapp.InitiaApp, sdk.Context) {
 	appOptions := make(simtestutil.AppOptionsMap, 0)
 	appOptions[flags.FlagHome] = tempDir
 	appOptions[server.FlagInvCheckPeriod] = simcli.FlagPeriodValue
@@ -46,7 +48,7 @@ func (suite *AnteTestSuite) createTestApp(isCheckTx bool, tempDir string) (*init
 	app := initiaapp.NewInitiaApp(
 		log.NewNopLogger(), dbm.NewMemDB(), nil, true, moveconfig.DefaultMoveConfig(), initiaapporacle.DefaultConfig(), appOptions,
 	)
-	ctx := app.BaseApp.NewContext(isCheckTx)
+	ctx := app.BaseApp.NewUncachedContext(false, tmproto.Header{})
 	err := app.AccountKeeper.Params.Set(ctx, authtypes.DefaultParams())
 	suite.NoError(err)
 
@@ -56,9 +58,9 @@ func (suite *AnteTestSuite) createTestApp(isCheckTx bool, tempDir string) (*init
 }
 
 // SetupTest setups a new test, with new app, context, and anteHandler.
-func (suite *AnteTestSuite) SetupTest(isCheckTx bool) {
+func (suite *AnteTestSuite) SetupTest() {
 	tempDir := suite.T().TempDir()
-	suite.app, suite.ctx = suite.createTestApp(isCheckTx, tempDir)
+	suite.app, suite.ctx = suite.createTestApp(tempDir)
 	suite.ctx = suite.ctx.WithBlockHeight(1)
 
 	// Set up TxConfig.

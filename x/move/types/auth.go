@@ -38,3 +38,12 @@ func NewTableAccountWithAddress(addr sdk.AccAddress) *TableAccount {
 func (ma TableAccount) SetPubKey(pubKey cryptotypes.PubKey) error {
 	return fmt.Errorf("not supported for table accounts")
 }
+
+// IsEmptyAccount checks if the account is empty.
+func IsEmptyAccount(account sdk.AccountI) bool {
+	_, isModuleAccount := account.(sdk.ModuleAccountI)
+	_, isObjectAccount := account.(*ObjectAccount)
+	_, isTableAccount := account.(*TableAccount)
+
+	return !isModuleAccount && !isObjectAccount && !isTableAccount && account.GetPubKey() == nil
+}
