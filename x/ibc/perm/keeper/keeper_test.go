@@ -127,3 +127,18 @@ func Test_SetPermissionedRelayers(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, res.HasRelayer(addr.String()))
 }
+func Test_HasPermission(t *testing.T) {
+	ctx, k := _createTestInput(t, dbm.NewMemDB())
+
+	portID := "port-123"
+	channelID := "channel-123"
+	pubKey := secp256k1.GenPrivKey().PubKey()
+	addr := sdk.AccAddress(pubKey.Address())
+
+	err := k.SetPermissionedRelayers(ctx, portID, channelID, []sdk.AccAddress{addr})
+	require.NoError(t, err)
+
+	ok, err := k.HasPermission(ctx, portID, channelID, addr)
+	require.NoError(t, err)
+	require.True(t, ok)
+}

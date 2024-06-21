@@ -96,17 +96,17 @@ func (k Keeper) GetPermissionedRelayers(ctx context.Context, portID, channelID s
 
 // HasPermission checks if the relayer has permission to relay packets on the channel.
 func (k Keeper) HasPermission(ctx context.Context, portID, channelID string, relayer sdk.AccAddress) (bool, error) {
+
 	permRelayers, err := k.PermissionedRelayers.Get(ctx, collections.Join(portID, channelID))
 	if err != nil && errors.Is(err, collections.ErrNotFound) {
 		return false, nil
 	} else if err != nil {
 		return false, err
 	}
-
-	for _, permRelayer := range permRelayers.Relayers {
-		if permRelayer == relayer.String() {
-			return true, nil
-		}
+	relayerStr, err := k.ac.BytesToString(relayer)
+	if err != nil {
+		return false, err
 	}
-	return false, nil
+
+	return permRelayers.HasRelayer(relayerStr), nil
 }

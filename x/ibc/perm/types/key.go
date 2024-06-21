@@ -17,8 +17,6 @@ const (
 var (
 	// PermissionedRelayersPrefixKey defines the key to store the channel relayers in store
 	PermissionedRelayersPrefixKey = []byte{0x01}
-
-	RelayersPrefixKey = []byte{0x02}
 )
 
 // GetPermissionedRelayersKey return channel relayers key of the channel.

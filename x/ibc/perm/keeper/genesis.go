@@ -9,6 +9,7 @@ import (
 
 // InitGenesis initializes the ibc-perm state.
 func (k Keeper) InitGenesis(ctx sdk.Context, genesisState types.GenesisState) {
+
 	for _, relayersByChannel := range genesisState.PermissionedRelayers {
 		var channelRelayers []string
 		for _, channelRelayer := range relayersByChannel.Relayers {
@@ -16,13 +17,13 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genesisState types.GenesisState) {
 			if err != nil {
 				panic(err)
 			}
+			channelRelayers = append(channelRelayers, channelRelayer)
 		}
 		if err := k.PermissionedRelayers.Set(ctx, collections.Join(relayersByChannel.PortId, relayersByChannel.ChannelId), types.PermissionedRelayersList{
-			Relayers: append(relayersByChannel.Relayers, channelRelayers...),
+			Relayers: channelRelayers,
 		}); err != nil {
 			panic(err)
 		}
-
 	}
 }
 
