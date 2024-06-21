@@ -72,9 +72,8 @@ func (k Keeper) IncrementValidatorPeriod(ctx context.Context, val stakingtypes.V
 			// can't calculate ratio for zero-token validators
 			// ergo we instead add to the community pool
 			communityFunding = communityFunding.Add(customtypes.NewDecPool(token.Denom, rewardCoins))
-			current = append(current, customtypes.NewDecPool(token.Denom, sdk.DecCoins{}))
 		} else {
-			current = append(current, customtypes.NewDecPool(token.Denom, rewardCoins.QuoDecTruncate(math.LegacyNewDecFromInt(token.Amount))))
+			current = current.Add(customtypes.NewDecPool(token.Denom, rewardCoins.QuoDecTruncate(math.LegacyNewDecFromInt(token.Amount))))
 		}
 	}
 

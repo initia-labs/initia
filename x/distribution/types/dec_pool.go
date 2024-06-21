@@ -3,7 +3,6 @@ package types
 import (
 	"fmt"
 	"sort"
-	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -12,11 +11,18 @@ import (
 // rewards pools for multi-token staking
 type DecPools []DecPool
 
+// NewDecPools creates a new DecPools instance
+func NewDecPools(pools ...DecPool) DecPools {
+	return removeZeroDecPools(pools)
+}
+
 // NewDecPoolsFromPools create DecPools from Pools
 func NewDecPoolsFromPools(pools Pools) DecPools {
 	decPools := DecPools{}
 	for _, p := range pools {
-		decPools = append(decPools, NewDecPool(p.Denom, sdk.NewDecCoinsFromCoins(p.Coins...)))
+		if !p.IsEmpty() {
+			decPools = append(decPools, NewDecPool(p.Denom, sdk.NewDecCoinsFromCoins(p.Coins...)))
+		}
 	}
 
 	return decPools
@@ -37,52 +43,38 @@ func (pools DecPools) Add(poolsB ...DecPool) DecPools {
 }
 
 // Add will perform addition of two DecPools sets.
-func (pools DecPools) safeAdd(poolsB DecPools) DecPools {
-	sum := ([]DecPool)(nil)
-	indexA, indexB := 0, 0
-	lenA, lenB := len(pools), len(poolsB)
+func (pools DecPools) safeAdd(poolsB DecPools) (coalesced DecPools) {
+	// probably the best way will be to make DecPools and interface and hide the structure
+	// definition (type alias)
+	if !pools.isSorted() {
+		panic("DecPools (self) must be sorted")
+	}
+	if !poolsB.isSorted() {
+		panic("Wrong argument: DecPools must be sorted")
+	}
 
-	for {
-		if indexA == lenA {
-			if indexB == lenB {
-				// return nil pools if both sets are empty
-				return sum
-			}
-
-			// return set B (excluding zero pools) if set A is empty
-			return append(sum, removeZeroDecPools(poolsB[indexB:])...)
-		} else if indexB == lenB {
-			// return set A (excluding zero pools) if set B is empty
-			return append(sum, removeZeroDecPools(pools[indexA:])...)
-		}
-
-		poolA, poolB := pools[indexA], poolsB[indexB]
-
-		switch strings.Compare(poolA.Denom, poolB.Denom) {
-		case -1: // pool A denom < pool B denom
-			if !poolA.IsEmpty() {
-				sum = append(sum, poolA)
-			}
-
-			indexA++
-
-		case 0: // pool A denom == pool B denom
-			res := poolA.Add(poolB)
-			if !res.IsEmpty() {
-				sum = append(sum, res)
-			}
-
-			indexA++
-			indexB++
-
-		case 1: // pool A denom > pool B denom
-			if !poolB.IsEmpty() {
-				sum = append(sum, poolB)
-			}
-
-			indexB++
+	uniqPools := make(map[string]DecPools, len(pools)+len(poolsB))
+	// Traverse all the pools for each of the pools and poolsB.
+	for _, pL := range []DecPools{pools, poolsB} {
+		for _, p := range pL {
+			uniqPools[p.Denom] = append(uniqPools[p.Denom], p)
 		}
 	}
+
+	for denom, pL := range uniqPools { //#nosec
+		comboPool := DecPool{Denom: denom, DecCoins: sdk.DecCoins{}}
+		for _, p := range pL {
+			comboPool = comboPool.Add(p)
+		}
+		if !comboPool.IsEmpty() {
+			coalesced = append(coalesced, comboPool)
+		}
+	}
+	if coalesced == nil {
+		return DecPools{}
+	}
+
+	return coalesced.Sort()
 }
 
 // Sub subtracts a set of DecPools from another (adds the inverse).
@@ -260,6 +252,15 @@ func (p DecPools) Sort() DecPools {
 	return p
 }
 
+func (p DecPools) isSorted() bool {
+	for i := 1; i < len(p); i++ {
+		if p[i-1].Denom > p[i].Denom {
+			return false
+		}
+	}
+	return true
+}
+
 //-----------------------------------------------------------------------------
 // DecPool functions
 
@@ -297,7 +298,7 @@ func (pool DecPool) Sub(poolB DecPool) DecPool {
 // change. Note, the change may be zero.
 func (pool DecPool) TruncateDecimal() (Pool, DecPool) {
 	truncated, change := pool.DecCoins.TruncateDecimal()
-	return NewPool(pool.Denom, sdk.NewCoins(truncated...)), NewDecPool(pool.Denom, change)
+	return NewPool(pool.Denom, truncated), NewDecPool(pool.Denom, change)
 }
 
 func removeZeroDecPools(pools DecPools) DecPools {
