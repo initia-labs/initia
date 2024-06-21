@@ -9,13 +9,19 @@ import (
 
 // InitGenesis initializes the ibc-perm state.
 func (k Keeper) InitGenesis(ctx sdk.Context, genesisState types.GenesisState) {
-	for _, channelRelayer := range genesisState.PermissionedRelayers {
-		addr, err := k.ac.StringToBytes(channelRelayer.Relayer)
-		if err != nil {
-			panic(err)
-		}
 
-		if err := k.PermissionedRelayers.Set(ctx, collections.Join(channelRelayer.PortId, channelRelayer.ChannelId), addr); err != nil {
+	for _, relayersByChannel := range genesisState.PermissionedRelayers {
+		var channelRelayers []string
+		for _, channelRelayer := range relayersByChannel.Relayers {
+			_, err := k.ac.StringToBytes(channelRelayer)
+			if err != nil {
+				panic(err)
+			}
+			channelRelayers = append(channelRelayers, channelRelayer)
+		}
+		if err := k.PermissionedRelayers.Set(ctx, collections.Join(relayersByChannel.PortId, relayersByChannel.ChannelId), types.PermissionedRelayersList{
+			Relayers: channelRelayers,
+		}); err != nil {
 			panic(err)
 		}
 	}
@@ -23,9 +29,9 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genesisState types.GenesisState) {
 
 // ExportGenesis exports ibc-perm module's channel relayers.
 func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
-	channelRelayers := []types.PermissionedRelayer{}
-	err := k.IteratePermissionedRelayers(ctx, func(channelRelayer types.PermissionedRelayer) (bool, error) {
-		channelRelayers = append(channelRelayers, channelRelayer)
+	channelRelayerSets := []types.PermissionedRelayers{}
+	err := k.IteratePermissionedRelayers(ctx, func(channelRelayer types.PermissionedRelayers) (bool, error) {
+		channelRelayerSets = append(channelRelayerSets, channelRelayer)
 		return false, nil
 	})
 	if err != nil {
@@ -33,6 +39,6 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 	}
 
 	return &types.GenesisState{
-		PermissionedRelayers: channelRelayers,
+		PermissionedRelayers: channelRelayerSets,
 	}
 }

@@ -78,7 +78,7 @@ func _createTestInput(
 	return ctx, permKeeper
 }
 
-func Test_GetPermissionedRelayer(t *testing.T) {
+func Test_GetPermissionedRelayers(t *testing.T) {
 	ctx, k := _createTestInput(t, dbm.NewMemDB())
 
 	portID := "port-123"
@@ -91,13 +91,13 @@ func Test_GetPermissionedRelayer(t *testing.T) {
 	require.ErrorIs(t, err, collections.ErrNotFound)
 
 	// set channel relayer via msg handler
-	err = k.PermissionedRelayers.Set(ctx, collections.Join(portID, channelID), addr)
+	err = k.PermissionedRelayers.Set(ctx, collections.Join(portID, channelID), types.PermissionedRelayersList{Relayers: []string{addr.String()}})
 	require.NoError(t, err)
 
 	// check properly set
 	res, err := k.PermissionedRelayers.Get(ctx, collections.Join(portID, channelID))
 	require.NoError(t, err)
-	require.Equal(t, res, addr.Bytes())
+	require.True(t, res.HasRelayer(addr.String()))
 
 	// check properly set
 	ok, err := k.HasPermission(ctx, portID, channelID, addr)
@@ -108,4 +108,37 @@ func Test_GetPermissionedRelayer(t *testing.T) {
 	ok, err = k.HasPermission(ctx, portID, channelID, addr2)
 	require.NoError(t, err)
 	require.False(t, ok)
+}
+
+func Test_SetPermissionedRelayers(t *testing.T) {
+	ctx, k := _createTestInput(t, dbm.NewMemDB())
+
+	portID := "port-123"
+	channelID := "channel-123"
+	pubKey := secp256k1.GenPrivKey().PubKey()
+	addr := sdk.AccAddress(pubKey.Address())
+
+	// set relayer
+	err := k.SetPermissionedRelayers(ctx, portID, channelID, []sdk.AccAddress{addr})
+	require.NoError(t, err)
+
+	// check properly set
+	res, err := k.PermissionedRelayers.Get(ctx, collections.Join(portID, channelID))
+	require.NoError(t, err)
+	require.True(t, res.HasRelayer(addr.String()))
+}
+func Test_HasPermission(t *testing.T) {
+	ctx, k := _createTestInput(t, dbm.NewMemDB())
+
+	portID := "port-123"
+	channelID := "channel-123"
+	pubKey := secp256k1.GenPrivKey().PubKey()
+	addr := sdk.AccAddress(pubKey.Address())
+
+	err := k.SetPermissionedRelayers(ctx, portID, channelID, []sdk.AccAddress{addr})
+	require.NoError(t, err)
+
+	ok, err := k.HasPermission(ctx, portID, channelID, addr)
+	require.NoError(t, err)
+	require.True(t, ok)
 }
