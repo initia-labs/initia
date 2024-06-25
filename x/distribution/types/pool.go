@@ -13,7 +13,7 @@ type Pools []Pool
 
 // NewPools creates a new Pools instance
 func NewPools(pools ...Pool) Pools {
-	return removeZeroPools(pools)
+	return removeZeroPools(pools).Sort()
 }
 
 // Sum returns sum of pool tokens
@@ -264,7 +264,7 @@ func removeZeroPools(pools Pools) Pools {
 		}
 	}
 
-	return result.Sort()
+	return result
 }
 
 // IsEqual returns true if the two sets of Pools have the same value.
