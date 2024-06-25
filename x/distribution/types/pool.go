@@ -130,13 +130,13 @@ func (pools Pools) CoinsOf(denom string) sdk.Coins {
 
 	default:
 		midIdx := len(pools) / 2 // 2:1, 3:1, 4:2
-		coin := pools[midIdx]
+		pool := pools[midIdx]
 
 		switch {
-		case denom < coin.Denom:
+		case denom < pool.Denom:
 			return pools[:midIdx].CoinsOf(denom)
-		case denom == coin.Denom:
-			return coin.Coins
+		case denom == pool.Denom:
+			return pool.Coins
 		default:
 			return pools[midIdx+1:].CoinsOf(denom)
 		}
@@ -202,7 +202,12 @@ var _ sort.Interface = Pools{}
 
 // Sort is a helper function to sort the set of p in-place
 func (p Pools) Sort() Pools {
-	sort.Sort(p)
+	// sort.Sort does a costly runtime copy as part of `runtime.convTSlice`
+	// So we avoid this heap allocation if len(pools) <= 1. In the future, we should hopefully find
+	// a strategy to always avoid this.
+	if len(p) > 1 {
+		sort.Sort(p)
+	}
 	return p
 }
 
@@ -211,6 +216,7 @@ func (p Pools) isSorted() bool {
 		if p[i-1].Denom > p[i].Denom {
 			return false
 		}
+
 	}
 	return true
 }
@@ -220,7 +226,8 @@ func (p Pools) isSorted() bool {
 
 // NewPool return new pool instance
 func NewPool(denom string, coins sdk.Coins) Pool {
-	return Pool{denom, coins}
+	// use NewCoins to ensure the coins are sorted
+	return Pool{denom, sdk.NewCoins(coins...)}
 }
 
 // IsEmpty returns wether the pool coins are empty or not
@@ -249,7 +256,7 @@ func (pool Pool) Sub(poolB Pool) Pool {
 }
 
 func removeZeroPools(pools Pools) Pools {
-	result := make([]Pool, 0, len(pools))
+	result := make(Pools, 0, len(pools))
 
 	for _, pool := range pools {
 		if !pool.IsEmpty() {
@@ -257,13 +264,13 @@ func removeZeroPools(pools Pools) Pools {
 		}
 	}
 
-	return result
+	return result.Sort()
 }
 
 // IsEqual returns true if the two sets of Pools have the same value.
 func (pool Pool) IsEqual(other Pool) bool {
 	if pool.Denom != other.Denom {
-		panic(fmt.Sprintf("invalid pool denominations; %s, %s", pool.Denom, other.Denom))
+		return false
 	}
 
 	return pool.Coins.Equal(other.Coins)
