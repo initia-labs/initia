@@ -17,26 +17,6 @@ const (
 )
 
 var (
-	// SupportedAlgorithms defines the list of signing algorithms used on Evmos:
-	//  - eth_secp256k1 (Ethereum)
-	//  - secp256k1 (Tendermint)
-	SupportedAlgorithms = keyring.SigningAlgoList{EthSecp256k1, hd.Secp256k1}
-	// SupportedAlgorithmsLedger defines the list of signing algorithms used on Evmos for the Ledger device:
-	//  - eth_secp256k1 (Ethereum)
-	//  - secp256k1 (Tendermint)
-	SupportedAlgorithmsLedger = keyring.SigningAlgoList{EthSecp256k1, hd.Secp256k1}
-)
-
-// EthSecp256k1Option defines a function keys options for the ethereum Secp256k1 curve.
-// It supports eth_secp256k1 and secp256k1 keys for accounts.
-func EthSecp256k1Option() keyring.Option {
-	return func(options *keyring.Options) {
-		options.SupportedAlgos = SupportedAlgorithms
-		options.SupportedAlgosLedger = SupportedAlgorithmsLedger
-	}
-}
-
-var (
 	_ keyring.SignatureAlgo = EthSecp256k1
 
 	// EthSecp256k1 uses the Bitcoin secp256k1 ECDSA parameters.
