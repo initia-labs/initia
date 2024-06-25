@@ -278,3 +278,67 @@ func (s *decpoolTestSuite) TestIsEqualPools() {
 		s.Require().Equal(tc.expected, res, "pools equality relation is incorrect, tc #%d", tcIndex)
 	}
 }
+
+func (s *decpoolTestSuite) TestSumPools() {
+	cases := []struct {
+		input    types.DecPools
+		expected sdk.DecCoins
+	}{
+		{types.NewDecPoolsFromPools(types.NewPools(s.pool122, s.pool222)), sdk.NewDecCoinsFromCoins(s.ca4, s.cm4)},
+		{types.NewDecPoolsFromPools(types.NewPools(s.pool111, s.pool111)), sdk.NewDecCoinsFromCoins(s.ca2, s.cm2)},
+	}
+
+	for tcIndex, tc := range cases {
+		res := tc.input.Sum()
+		s.Require().True(tc.expected.Equal(res), "sum of pools is incorrect, tc #%d", tcIndex)
+	}
+}
+
+func (s *decpoolTestSuite) TestTruncatePools() {
+	cases := []struct {
+		input     types.DecPools
+		expected1 types.Pools
+		expected2 types.DecPools
+	}{
+		{
+			types.DecPools{types.DecPool{"test1", sdk.DecCoins{sdk.DecCoin{"testdenom1", math.LegacyNewDecFromIntWithPrec(math.NewInt(10500), 3)}}}},
+			types.Pools{types.Pool{"test1", sdk.Coins{sdk.Coin{"testdenom1", math.NewInt(10)}}}},
+			types.DecPools{types.DecPool{"test1", sdk.DecCoins{sdk.DecCoin{"testdenom1", math.LegacyNewDecFromIntWithPrec(math.NewInt(500), 3)}}}},
+		},
+		{
+			types.DecPools{types.DecPool{"test1", sdk.DecCoins{sdk.DecCoin{"testdenom1", math.LegacyNewDecFromIntWithPrec(math.NewInt(10000), 3)}}}},
+			types.Pools{types.Pool{"test1", sdk.Coins{sdk.Coin{"testdenom1", math.NewInt(10)}}}},
+			types.DecPools{},
+		},
+	}
+
+	for tcIndex, tc := range cases {
+		res1, res2 := tc.input.TruncateDecimal()
+		s.Require().True(tc.expected1.IsEqual(res1), "truncated pools are incorrect, tc #%d", tcIndex)
+		s.Require().True(tc.expected2.IsEqual(res2), "change pools are incorrect, tc #%d", tcIndex)
+	}
+}
+
+func (s *decpoolTestSuite) TestIntersectPools() {
+	cases := []struct {
+		inputOne types.DecPools
+		inputTwo types.DecPools
+		expected types.DecPools
+	}{
+		{
+			types.NewDecPoolsFromPools(types.NewPools(s.pool111, s.pool222)),
+			types.NewDecPoolsFromPools(types.NewPools(s.pool110)),
+			types.NewDecPoolsFromPools(types.NewPools(s.pool110)),
+		},
+		{
+			types.NewDecPoolsFromPools(types.NewPools(s.pool111, s.pool222)),
+			types.NewDecPoolsFromPools(types.NewPools(s.pool111, s.pool444)),
+			types.NewDecPoolsFromPools(types.NewPools(s.pool111)),
+		},
+	}
+
+	for tcIndex, tc := range cases {
+		res := tc.inputOne.Intersect(tc.inputTwo)
+		s.Require().True(tc.expected.IsEqual(res), "intersection of pools is incorrect, tc #%d", tcIndex)
+	}
+}
