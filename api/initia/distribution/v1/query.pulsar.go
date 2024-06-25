@@ -5912,7 +5912,7 @@ type QueryValidatorCommissionResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// commission defines the commision the validator received.
+	// commission defines the commission the validator received.
 	Commission *ValidatorAccumulatedCommission `protobuf:"bytes,1,opt,name=commission,proto3" json:"commission,omitempty"`
 }
 

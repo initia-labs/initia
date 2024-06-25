@@ -38,9 +38,10 @@ require (
 	github.com/gorilla/mux v1.8.1
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/hashicorp/go-metrics v0.5.3
-	github.com/initia-labs/OPinit v0.3.0
+	github.com/initia-labs/OPinit v0.3.1
 	// we also need to update `LIBMOVEVM_VERSION` of images/private/Dockerfile#5
-	github.com/initia-labs/movevm v0.3.0
+	// we also need to update `LIBMOVEVM_VERSION` of Dockerfile#5
+	github.com/initia-labs/movevm v0.3.3
 	github.com/noble-assets/forwarding/v2 v2.0.0-20240514101621-172acc02aac6
 	github.com/pelletier/go-toml v1.9.5
 	github.com/pkg/errors v0.9.1
@@ -222,6 +223,7 @@ replace (
 	// use cosmos fork of keyring
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
 
+	github.com/cosmos/cosmos-sdk => github.com/initia-labs/cosmos-sdk v0.0.0-20240625033052-fb243157dd7a
 	github.com/cosmos/iavl => github.com/initia-labs/iavl v0.0.0-20240415085037-7e81233cdd9e
 
 	// dgrijalva/jwt-go is deprecated and doesn't receive security updates.

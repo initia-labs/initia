@@ -10,8 +10,6 @@ import (
 	ibchooks "github.com/initia-labs/initia/x/ibc-hooks"
 	movekeeper "github.com/initia-labs/initia/x/move/keeper"
 	movetypes "github.com/initia-labs/initia/x/move/types"
-
-	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 var (
@@ -71,10 +69,11 @@ func (h MoveHooks) OnTimeoutPacketOverride(im ibchooks.IBCMiddleware, ctx sdk.Co
 }
 
 func (h MoveHooks) checkACL(im ibchooks.IBCMiddleware, ctx sdk.Context, addrStr string) (bool, error) {
-	vmAddr, err := vmtypes.NewAccountAddress(addrStr)
+	vmAddr, err := movetypes.AccAddressFromString(h.ac, addrStr)
 	if err != nil {
 		return false, err
 	}
+
 	sdkAddr := movetypes.ConvertVMAddressToSDKAddress(vmAddr)
 	return im.HooksKeeper.GetAllowed(ctx, sdkAddr)
 }

@@ -44,4 +44,7 @@ var (
 
 	// ErrNotSupportedStargateQuery error raised when the stargate request is not supported or accepted
 	ErrNotSupportedStargateQuery = errorsmod.Register(ModuleName, 14, "not supported stargate query")
+
+	// ErrAddressAlreadyTaken error raised when the address is already taken
+	ErrAddressAlreadyTaken = errorsmod.Register(ModuleName, 15, "address already taken")
 )

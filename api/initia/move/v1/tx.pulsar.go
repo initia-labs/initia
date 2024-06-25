@@ -14126,7 +14126,7 @@ func (x *MsgPublish) GetUpgradePolicy() UpgradePolicy {
 	if x != nil {
 		return x.UpgradePolicy
 	}
-	return UpgradePolicy_ARBITRARY
+	return UpgradePolicy_UNSPECIFIED
 }
 
 // MsgPublishResponse returns store result data.
@@ -14632,7 +14632,7 @@ func (x *MsgGovPublish) GetUpgradePolicy() UpgradePolicy {
 	if x != nil {
 		return x.UpgradePolicy
 	}
-	return UpgradePolicy_ARBITRARY
+	return UpgradePolicy_UNSPECIFIED
 }
 
 // MsgGovPublishResponse returns execution result data.

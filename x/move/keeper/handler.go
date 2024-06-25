@@ -386,10 +386,6 @@ func (k Keeper) handleExecuteResponse(
 		// increase global account number if the given account is not exists
 		if !k.authKeeper.HasAccount(ctx, addr) {
 			k.authKeeper.NextAccountNumber(ctx)
-		} else {
-			// remove account if it already exists
-			// to avoid collection's primary key conflict
-			k.authKeeper.RemoveAccount(ctx, accI)
 		}
 
 		// write or overwrite account

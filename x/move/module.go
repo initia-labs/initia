@@ -90,8 +90,10 @@ func (b AppModuleBasic) RegisterInterfaces(registry cdctypes.InterfaceRegistry) 
 // AppModule implements an application module for the move module.
 type AppModule struct {
 	AppModuleBasic
-	keeper keeper.Keeper
-	vc     address.Codec
+
+	keeper      keeper.Keeper
+	vc          address.Codec
+	moduleNames []string
 }
 
 // IsAppModule implements the appmodule.AppModule interface.
@@ -111,11 +113,13 @@ func NewAppModule(
 	cdc codec.Codec,
 	k keeper.Keeper,
 	vc address.Codec,
+	moduleNames []string,
 ) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{cdc},
 		keeper:         k,
 		vc:             vc,
+		moduleNames:    moduleNames,
 	}
 }
 
@@ -133,7 +137,7 @@ func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.
 	var genesisState types.GenesisState
 	cdc.MustUnmarshalJSON(data, &genesisState)
 
-	if err := am.keeper.InitGenesis(ctx, genesisState); err != nil {
+	if err := am.keeper.InitGenesis(ctx, am.moduleNames, genesisState); err != nil {
 		panic(err)
 	}
 }

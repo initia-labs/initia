@@ -128,16 +128,26 @@ func (k Keeper) hasZeroRewards(ctx context.Context, validatorAddr sdk.ValAddress
 // consequentially delegate the deposited coins to a validator.
 func (k Keeper) DelegateToValidator(ctx context.Context, valAddr sdk.ValAddress, delCoins sdk.Coins) (sdk.DecCoins, error) {
 	delegatorModuleName := types.GetDelegatorModuleName(valAddr)
-	macc := k.authKeeper.GetModuleAccount(ctx, delegatorModuleName)
+	delModuleAddr := authtypes.NewModuleAddress(delegatorModuleName)
 
-	// register module account if not registered
-	if macc == nil {
-		macc = authtypes.NewEmptyModuleAccount(delegatorModuleName)
+	if macc := k.authKeeper.GetAccount(ctx, delModuleAddr); macc != nil {
+		if _, ok := macc.(sdk.ModuleAccountI); !ok {
+			if !types.IsEmptyAccount(macc) {
+				return sdk.NewDecCoins(), types.ErrAddressAlreadyTaken.Wrapf("module account %s is already taken", delModuleAddr.String())
+			}
+
+			// overwrite empty account with module account
+			newAcc := authtypes.NewEmptyModuleAccount(delegatorModuleName)
+			newAcc.SetAccountNumber(macc.GetAccountNumber())
+
+			k.authKeeper.SetModuleAccount(ctx, newAcc)
+		}
+	} else {
+		// register module account if not registered
+		macc := authtypes.NewEmptyModuleAccount(delegatorModuleName)
 		maccI := (k.authKeeper.NewAccount(ctx, macc)).(sdk.ModuleAccountI) // set the account number
 		k.authKeeper.SetModuleAccount(ctx, maccI)
 	}
-
-	delModuleAddr := macc.GetAddress()
 
 	// send staking coin move module to validator module account
 	// delegated coins are burned, so we should mint coins to module account

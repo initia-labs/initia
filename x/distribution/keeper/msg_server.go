@@ -111,6 +111,9 @@ func (k msgServer) WithdrawValidatorCommission(ctx context.Context, msg *types.M
 
 func (k msgServer) FundCommunityPool(ctx context.Context, msg *types.MsgFundCommunityPool) (*types.MsgFundCommunityPoolResponse, error) {
 	defer telemetry.MeasureSince(time.Now(), "distribution", "msg", "fund-community-pool")
+	if err := msg.Amount.Validate(); err != nil {
+		return nil, err
+	}
 
 	depositor, err := k.authKeeper.AddressCodec().StringToBytes(msg.Depositor)
 	if err != nil {

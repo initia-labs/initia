@@ -3,6 +3,7 @@ package types
 import (
 	context "context"
 	"encoding/hex"
+	"errors"
 	"strings"
 
 	"golang.org/x/crypto/sha3"
@@ -53,7 +54,12 @@ func UserDerivedObjectAddress(source vmtypes.AccountAddress, deriveFrom vmtypes.
 // Extract metadata address from a denom
 func MetadataAddressFromDenom(denom string) (vmtypes.AccountAddress, error) {
 	if strings.HasPrefix(denom, DenomTraceDenomPrefixMove) {
-		addrBz, err := hex.DecodeString(strings.TrimPrefix(denom, DenomTraceDenomPrefixMove))
+		hexStr := strings.TrimPrefix(denom, DenomTraceDenomPrefixMove)
+		if strings.ToLower(hexStr) != hexStr {
+			return vmtypes.AccountAddress{}, errors.New("metadata address should be lowercase")
+		}
+
+		addrBz, err := hex.DecodeString(hexStr)
 		if err != nil {
 			return vmtypes.AccountAddress{}, err
 		}

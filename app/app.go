@@ -12,6 +12,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
 	"github.com/spf13/cast"
+	"golang.org/x/exp/maps"
 
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 	reflectionv1 "cosmossdk.io/api/cosmos/reflection/v1"
@@ -565,7 +566,7 @@ func NewInitiaApp(
 	app.OracleKeeper = &oracleKeeper
 
 	// Add the oracle keeper as a hook to market map keeper so new market map entries can be created
-	// and propogated to the oracle keeper.
+	// and propagated to the oracle keeper.
 	app.MarketMapKeeper.SetHooks(app.OracleKeeper.Hooks())
 
 	app.IBCHooksKeeper = ibchookskeeper.NewKeeper(
@@ -881,7 +882,7 @@ func NewInitiaApp(
 		authzmodule.NewAppModule(appCodec, *app.AuthzKeeper, app.interfaceRegistry),
 		groupmodule.NewAppModule(appCodec, *app.GroupKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		consensus.NewAppModule(appCodec, *app.ConsensusParamsKeeper),
-		move.NewAppModule(appCodec, *app.MoveKeeper, vc),
+		move.NewAppModule(appCodec, *app.MoveKeeper, vc, maps.Keys(maccPerms)),
 		auction.NewAppModule(app.appCodec, *app.AuctionKeeper),
 		ophost.NewAppModule(appCodec, *app.OPHostKeeper),
 		// slinky modules
