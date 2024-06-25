@@ -13,7 +13,7 @@ type VMEngine interface {
 		env vmtypes.Env,
 		moduleBundle vmtypes.ModuleBundle,
 		allowedPublishers []vmtypes.AccountAddress,
-	) error
+	) (vmtypes.ExecutionResult, error)
 	Destroy()
 	ExecuteViewFunction(
 		kvStore api.KVStore,

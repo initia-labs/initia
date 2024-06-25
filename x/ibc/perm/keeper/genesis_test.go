@@ -12,6 +12,42 @@ import (
 	"github.com/initia-labs/initia/x/ibc/perm/types"
 )
 
+func Test_InitGenesis(t *testing.T) {
+	ctx, k := _createTestInput(t, dbm.NewMemDB())
+	channelA := "channel-123"
+	channelB := "channel-456"
+	portA := "port-123"
+	portB := "port-456"
+
+	pubKeyA := secp256k1.GenPrivKey().PubKey()
+	pubKeyB := secp256k1.GenPrivKey().PubKey()
+
+	addrA := sdk.AccAddress(pubKeyA.Address())
+	addrB := sdk.AccAddress(pubKeyB.Address())
+
+	k.InitGenesis(ctx, types.GenesisState{
+		PermissionedRelayers: []types.PermissionedRelayers{
+			{
+				PortId:    portA,
+				ChannelId: channelA,
+				Relayers:  []string{addrA.String()},
+			},
+			{
+				PortId:    portB,
+				ChannelId: channelB,
+				Relayers:  []string{addrB.String()},
+			},
+		},
+	})
+
+	ok, err := k.HasPermission(ctx, portA, channelA, addrA)
+	require.NoError(t, err)
+	require.True(t, ok)
+
+	ok, _ = k.HasPermission(ctx, portB, channelB, addrB)
+	require.NoError(t, err)
+	require.True(t, ok)
+}
 func Test_ExportGenesis(t *testing.T) {
 	ctx, k := _createTestInput(t, dbm.NewMemDB())
 
@@ -27,21 +63,20 @@ func Test_ExportGenesis(t *testing.T) {
 	addrB := sdk.AccAddress(pubKeyB.Address())
 
 	genState := types.NewGenesisState(
-		[]types.PermissionedRelayer{
+		[]types.PermissionedRelayers{
 			{
 				PortId:    portA,
 				ChannelId: channelA,
-				Relayer:   addrA.String(),
+				Relayers:  []string{addrA.String()},
 			},
 			{
 				PortId:    portB,
 				ChannelId: channelB,
-				Relayer:   addrB.String(),
+				Relayers:  []string{addrB.String()},
 			},
 		},
 	)
 	k.InitGenesis(ctx, *genState)
-
 	exportedState := k.ExportGenesis(ctx)
 	require.Equal(t, genState, exportedState)
 }
