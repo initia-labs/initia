@@ -28,6 +28,12 @@ func (h MoveHooks) onTimeoutIcs20Packet(
 		return nil
 	} else if err != nil {
 		h.moveKeeper.Logger(ctx).Error("failed to parse memo", "error", err)
+		ctx.EventManager().EmitEvent(sdk.NewEvent(
+			types.EventTypeHookFailed,
+			sdk.NewAttribute(types.AttributeKeyReason, "failed to parse memo"),
+			sdk.NewAttribute(types.AttributeKeyError, err.Error()),
+		))
+
 		return nil
 	}
 
