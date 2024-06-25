@@ -1,17 +1,15 @@
+# Stage 1: Build the Go project
 FROM golang:1.22-alpine3.19 AS go-builder
-#ARG arch=x86_64
+
+# Use build arguments for the target architecture
+ARG TARGETARCH
+ARG GOARCH
 
 # See https://github.com/initia-labs/movevm/releases
 ENV LIBMOVEVM_VERSION=v0.3.3
 
-# this comes from standard alpine nightly file
-#  https://github.com/rust-lang/docker-rust-nightly/blob/master/alpine3.12/Dockerfile
-# with some changes to support our toolchain, etc
-RUN set -eux; apk add --no-cache ca-certificates build-base;
-
-RUN apk add git cmake
-# NOTE: add these to run with LEDGER_ENABLED=true
-# RUN apk add libusb-dev linux-headers
+# Install necessary packages
+RUN set -eux; apk add --no-cache ca-certificates build-base git cmake
 
 WORKDIR /code
 COPY . /code/
@@ -20,25 +18,27 @@ COPY . /code/
 RUN git clone --depth 1 https://github.com/microsoft/mimalloc; cd mimalloc; mkdir build; cd build; cmake ..; make -j$(nproc); make install
 ENV MIMALLOC_RESERVE_HUGE_OS_PAGES=4
 
-# See https://github.com/initia-labs/movevm/releases
-ADD https://github.com/initia-labs/movevm/releases/download/${LIBMOVEVM_VERSION}/libmovevm_muslc.aarch64.a /lib/libmovevm_muslc.aarch64.a
-ADD https://github.com/initia-labs/movevm/releases/download/${LIBMOVEVM_VERSION}/libmovevm_muslc.x86_64.a /lib/libmovevm_muslc.x86_64.a
-ADD https://github.com/initia-labs/movevm/releases/download/${LIBMOVEVM_VERSION}/libcompiler_muslc.aarch64.a /lib/libcompiler_muslc.aarch64.a
-ADD https://github.com/initia-labs/movevm/releases/download/${LIBMOVEVM_VERSION}/libcompiler_muslc.x86_64.a /lib/libcompiler_muslc.x86_64.a
+# Determine GOARCH and download the appropriate libraries
+RUN set -eux; \
+    case "${TARGETARCH}" in \
+        "amd64") export GOARCH="amd64"; ARCH="x86_64";; \
+        "arm64") export GOARCH="arm64"; ARCH="aarch64";; \
+        *) echo "Unsupported architecture: ${TARGETARCH}"; exit 1;; \
+    esac; \
+    echo "Using GOARCH=${GOARCH} and ARCH=${ARCH}"; \
+    wget -O /lib/libmovevm_muslc.${ARCH}.a https://github.com/initia-labs/movevm/releases/download/${LIBMOVEVM_VERSION}/libmovevm_muslc.${ARCH}.a; \
+    wget -O /lib/libcompiler_muslc.${ARCH}.a https://github.com/initia-labs/movevm/releases/download/${LIBMOVEVM_VERSION}/libcompiler_muslc.${ARCH}.a; \
+    cp /lib/libmovevm_muslc.${ARCH}.a /lib/libmovevm_muslc.a; \
+    cp /lib/libcompiler_muslc.${ARCH}.a /lib/libcompiler_muslc.a
 
-# Highly recommend to verify the version hash
-# RUN sha256sum /lib/libmovevm_muslc.aarch64.a | grep a5e63292ec67f5bdefab51b42c3fbc3fa307c6aefeb6b409d971f1df909c3927
-# RUN sha256sum /lib/libmovevm_muslc.x86_64.a | grep 762307147bf8f550bd5324b7f7c4f17ee20805ff93dc06cc073ffbd909438320
-# RUN sha256sum /lib/libcompiler_muslc.aarch64.a | grep a5e63292ec67f5bdefab51b42c3fbc3fa307c6aefeb6b409d971f1df909c3927
-# RUN sha256sum /lib/libcompiler_muslc.x86_64.a | grep 762307147bf8f550bd5324b7f7c4f17ee20805ff93dc06cc073ffbd909438320
+# Verify the library hashes (optional, uncomment if needed)
+# RUN sha256sum /lib/libmovevm_muslc.${ARCH}.a | grep ...
+# RUN sha256sum /lib/libcompiler_muslc.${ARCH}.a | grep ...
 
-# Copy the library you want to the final location that will be found by the linker flag `-linitia_muslc`
-RUN cp /lib/libmovevm_muslc.`uname -m`.a /lib/libmovevm_muslc.a
-RUN cp /lib/libcompiler_muslc.`uname -m`.a /lib/libcompiler_muslc.a
+# Build the project with the specified architecture and linker flags
+RUN LEDGER_ENABLED=false BUILD_TAGS=muslc GOARCH=${GOARCH} LDFLAGS="-linkmode=external -extldflags \"-L/code/mimalloc/build -lmimalloc -Wl,-z,muldefs -static\"" make build
 
-# force it to use static lib (from above) not standard libmovevm.so and libcompiler.so file
-RUN LEDGER_ENABLED=false BUILD_TAGS=muslc LDFLAGS="-linkmode=external -extldflags \"-L/code/mimalloc/build -lmimalloc -Wl,-z,muldefs -static\"" make build
-
+# Stage 2: Create the final image
 FROM alpine:3.19
 
 RUN addgroup initia \

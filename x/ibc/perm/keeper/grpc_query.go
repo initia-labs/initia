@@ -20,42 +20,33 @@ func NewQueryServer(k *Keeper) QueryServerImpl {
 	return QueryServerImpl{k}
 }
 
-// PermissionedRelayer implements the Query/PermissionedRelayer gRPC method
-func (q QueryServerImpl) PermissionedRelayer(c context.Context, req *types.QueryPermissionedRelayerRequest) (*types.QueryPermissionedRelayerResponse, error) {
+// PermissionedRelayersByChannel implements the Query/PermissionedRelayersByChannel gRPC method
+func (q QueryServerImpl) PermissionedRelayersByChannel(c context.Context, req *types.QueryPermissionedRelayersByChannelRequest) (*types.QueryPermissionedRelayersByChannelResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
-	relayer, err := q.Keeper.PermissionedRelayers.Get(ctx, collections.Join(req.PortId, req.ChannelId))
+	relayersList, err := q.Keeper.PermissionedRelayers.Get(ctx, collections.Join(req.PortId, req.ChannelId))
 	if err != nil {
 		return nil, err
 	}
 
-	relayerStr, err := q.ac.BytesToString(relayer)
-	if err != nil {
-		return nil, err
-	}
-
-	return &types.QueryPermissionedRelayerResponse{
-		PermissionedRelayer: &types.PermissionedRelayer{
+	return &types.QueryPermissionedRelayersByChannelResponse{
+		PermissionedRelayers: &types.PermissionedRelayers{
 			PortId:    req.PortId,
 			ChannelId: req.ChannelId,
-			Relayer:   relayerStr,
+			Relayers:  relayersList.Relayers,
 		},
 	}, nil
 }
 
-// PermissionedRelayers implements the Query/PermissionedRelayers gRPC method
-func (q QueryServerImpl) PermissionedRelayers(ctx context.Context, req *types.QueryPermissionedRelayersRequest) (*types.QueryPermissionedRelayersResponse, error) {
+// AllPermissionedRelayers implements the Query/AllPermissionedRelayers gRPC method
+func (q QueryServerImpl) AllPermissionedRelayers(ctx context.Context, req *types.QueryAllPermissionedRelayersRequest) (*types.QueryAllPermissionedRelayersResponse, error) {
 	relayers, pageRes, err := query.CollectionPaginate(
 		ctx, q.Keeper.PermissionedRelayers, req.Pagination,
-		func(key collections.Pair[string, string], relayer []byte) (types.PermissionedRelayer, error) {
-			relayerStr, err := q.ac.BytesToString(relayer)
-			if err != nil {
-				return types.PermissionedRelayer{}, err
-			}
+		func(key collections.Pair[string, string], relayersList types.PermissionedRelayersList) (types.PermissionedRelayers, error) {
 
-			return types.PermissionedRelayer{
+			return types.PermissionedRelayers{
 				PortId:    key.K1(),
 				ChannelId: key.K2(),
-				Relayer:   relayerStr,
+				Relayers:  relayersList.Relayers,
 			}, nil
 		},
 	)
@@ -63,7 +54,7 @@ func (q QueryServerImpl) PermissionedRelayers(ctx context.Context, req *types.Qu
 		return nil, err
 	}
 
-	return &types.QueryPermissionedRelayersResponse{
+	return &types.QueryAllPermissionedRelayersResponse{
 		PermissionedRelayers: relayers,
 		Pagination:           pageRes,
 	}, nil

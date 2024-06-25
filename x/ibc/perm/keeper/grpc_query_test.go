@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"slices"
 	"testing"
 
 	"cosmossdk.io/collections"
@@ -15,7 +16,7 @@ import (
 	"github.com/initia-labs/initia/x/ibc/perm/types"
 )
 
-func Test_QueryPermissionedRelayer(t *testing.T) {
+func Test_QueryPermissionedRelayersOneChannel(t *testing.T) {
 	ctx, k := _createTestInput(t, dbm.NewMemDB())
 
 	portID := "port-123"
@@ -24,18 +25,18 @@ func Test_QueryPermissionedRelayer(t *testing.T) {
 	addr := sdk.AccAddress(pubKey.Address())
 
 	// set relayer
-	require.NoError(t, k.PermissionedRelayers.Set(ctx, collections.Join(portID, channelID), addr))
+	require.NoError(t, k.PermissionedRelayers.Set(ctx, collections.Join(portID, channelID), types.PermissionedRelayersList{Relayers: []string{addr.String()}}))
 
 	// set channel relayer via msg handler
 	queryServer := keeper.NewQueryServer(k)
-	res, err := queryServer.PermissionedRelayer(ctx, &types.QueryPermissionedRelayerRequest{
+	res, err := queryServer.PermissionedRelayersByChannel(ctx, &types.QueryPermissionedRelayersByChannelRequest{
 		PortId:    portID,
 		ChannelId: channelID,
 	})
 	require.NoError(t, err)
-	require.Equal(t, addr.String(), res.PermissionedRelayer.Relayer)
+	require.True(t, slices.Contains(res.PermissionedRelayers.Relayers, addr.String()))
 
-	_, err = queryServer.PermissionedRelayer(ctx, &types.QueryPermissionedRelayerRequest{
+	_, err = queryServer.PermissionedRelayersByChannel(ctx, &types.QueryPermissionedRelayersByChannelRequest{
 		PortId:    portID,
 		ChannelId: channelID + "4",
 	})
@@ -43,7 +44,7 @@ func Test_QueryPermissionedRelayer(t *testing.T) {
 
 }
 
-func Test_QueryPermissionedRelayers(t *testing.T) {
+func Test_QueryAllPermissionedRelayers(t *testing.T) {
 	ctx, k := _createTestInput(t, dbm.NewMemDB())
 
 	portID1 := "port-123"
@@ -56,38 +57,38 @@ func Test_QueryPermissionedRelayers(t *testing.T) {
 	addr2 := sdk.AccAddress(pubKey2.Address())
 
 	// set relayers
-	require.NoError(t, k.PermissionedRelayers.Set(ctx, collections.Join(portID1, channelID1), addr1))
-	require.NoError(t, k.PermissionedRelayers.Set(ctx, collections.Join(portID2, channelID2), addr2))
+	require.NoError(t, k.PermissionedRelayers.Set(ctx, collections.Join(portID1, channelID1), types.PermissionedRelayersList{Relayers: []string{addr1.String()}}))
+	require.NoError(t, k.PermissionedRelayers.Set(ctx, collections.Join(portID2, channelID2), types.PermissionedRelayersList{Relayers: []string{addr2.String()}}))
 
 	// set channel relayer via msg handler
 	queryServer := keeper.NewQueryServer(k)
-	res, err := queryServer.PermissionedRelayers(ctx, &types.QueryPermissionedRelayersRequest{})
+	res, err := queryServer.AllPermissionedRelayers(ctx, &types.QueryAllPermissionedRelayersRequest{})
 	require.NoError(t, err)
 	require.Len(t, res.PermissionedRelayers, 2)
 	if res.PermissionedRelayers[0].ChannelId == channelID1 {
-		require.Equal(t, res.PermissionedRelayers, []types.PermissionedRelayer{
+		require.Equal(t, res.PermissionedRelayers, []types.PermissionedRelayers{
 			{
 				PortId:    portID1,
 				ChannelId: channelID1,
-				Relayer:   addr1.String(),
+				Relayers:  []string{addr1.String()},
 			},
 			{
 				PortId:    portID2,
 				ChannelId: channelID2,
-				Relayer:   addr2.String(),
+				Relayers:  []string{addr2.String()},
 			},
 		})
 	} else {
-		require.Equal(t, res.PermissionedRelayers, []types.PermissionedRelayer{
+		require.Equal(t, res.PermissionedRelayers, []types.PermissionedRelayers{
 			{
 				PortId:    portID2,
 				ChannelId: channelID2,
-				Relayer:   addr2.String(),
+				Relayers:  []string{addr2.String()},
 			},
 			{
 				PortId:    portID1,
 				ChannelId: channelID1,
-				Relayer:   addr1.String(),
+				Relayers:  []string{addr1.String()},
 			},
 		})
 	}

@@ -23,7 +23,8 @@ func Test_SetPermissionedRelayer(t *testing.T) {
 	portID := "port-123"
 	channelID := "channel-123"
 	pubKey := secp256k1.GenPrivKey().PubKey()
-	addr := sdk.AccAddress(pubKey.Address())
+	addr1 := sdk.AccAddress(pubKey.Address())
+	addr2 := sdk.AccAddress(pubKey.Address())
 
 	// should be empty
 	_, err := k.PermissionedRelayers.Get(ctx, collections.Join(portID, channelID))
@@ -31,14 +32,15 @@ func Test_SetPermissionedRelayer(t *testing.T) {
 
 	// set channel relayer via msg handler
 	msgServer := keeper.NewMsgServerImpl(k)
-	_, err = msgServer.SetPermissionedRelayer(ctx, types.NewMsgSetPermissionedRelayer(
+	_, err = msgServer.SetPermissionedRelayers(ctx, types.NewMsgSetPermissionedRelayers(
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
-		portID, channelID, addr.String(),
+		portID, channelID, []string{addr1.String(), addr2.String()},
 	))
 	require.NoError(t, err)
 
 	// check properly set
 	res, err := k.PermissionedRelayers.Get(ctx, collections.Join(portID, channelID))
 	require.NoError(t, err)
-	require.Equal(t, res, addr.Bytes())
+	require.True(t, res.HasRelayer(addr1.String()))
+	require.True(t, res.HasRelayer(addr2.String()))
 }

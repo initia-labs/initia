@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -25,7 +24,7 @@ type Keeper struct {
 	authority string
 
 	Schema               collections.Schema
-	PermissionedRelayers collections.Map[collections.Pair[string, string], []byte]
+	PermissionedRelayers collections.Map[collections.Pair[string, string], types.PermissionedRelayersList]
 }
 
 // NewKeeper creates a new IBC perm Keeper instance
@@ -43,7 +42,7 @@ func NewKeeper(
 	k := &Keeper{
 		cdc:                  cdc,
 		authority:            authority,
-		PermissionedRelayers: collections.NewMap(sb, types.PermissionedRelayerPrefixKey, "channel_relayers", collections.PairKeyCodec[string, string](collections.StringKey, collections.StringKey), collections.BytesValue),
+		PermissionedRelayers: collections.NewMap(sb, types.PermissionedRelayersPrefixKey, "channel_relayers", collections.PairKeyCodec[string, string](collections.StringKey, collections.StringKey), codec.CollValue[types.PermissionedRelayersList](cdc)),
 		ac:                   ac,
 	}
 
@@ -63,44 +62,51 @@ func (k Keeper) Logger(ctx context.Context) log.Logger {
 }
 
 // IteratePermissionedRelayers iterates over all the permissioned relayers.
-func (k Keeper) IteratePermissionedRelayers(ctx context.Context, cb func(channelRelayer types.PermissionedRelayer) (bool, error)) error {
-	return k.PermissionedRelayers.Walk(ctx, nil, func(key collections.Pair[string, string], relayer []byte) (stop bool, err error) {
-		relayerStr, err := k.ac.BytesToString(relayer)
-		if err != nil {
-			return true, err
-		}
-
-		return cb(types.PermissionedRelayer{
+func (k Keeper) IteratePermissionedRelayers(ctx context.Context, cb func(channelRelayer types.PermissionedRelayers) (bool, error)) error {
+	return k.PermissionedRelayers.Walk(ctx, nil, func(key collections.Pair[string, string], relayersList types.PermissionedRelayersList) (stop bool, err error) {
+		return cb(types.PermissionedRelayers{
 			PortId:    key.K1(),
 			ChannelId: key.K2(),
-			Relayer:   relayerStr,
+			Relayers:  relayersList.Relayers,
 		})
 	})
 }
 
 // SetPermissionedRelayer sets the relayer as the permissioned relayer for the channel.
-func (k Keeper) SetPermissionedRelayer(ctx context.Context, portID, channelID string, relayer sdk.AccAddress) error {
-	return k.PermissionedRelayers.Set(ctx, collections.Join(portID, channelID), relayer)
+func (k Keeper) SetPermissionedRelayers(ctx context.Context, portID, channelID string, relayers []sdk.AccAddress) error {
+	relayerList, err := types.ToRelayerList(k.ac, relayers)
+	if err != nil {
+		return err
+	}
+	return k.PermissionedRelayers.Set(ctx, collections.Join(portID, channelID), relayerList)
 }
 
 // GetPermissionedRelayer returns the permissioned relayer for the channel.
-func (k Keeper) GetPermissionedRelayer(ctx context.Context, portID, channelID string) (sdk.AccAddress, error) {
-	relayer, err := k.PermissionedRelayers.Get(ctx, collections.Join(portID, channelID))
+func (k Keeper) GetPermissionedRelayers(ctx context.Context, portID, channelID string) ([]sdk.AccAddress, error) {
+	relayers, err := k.PermissionedRelayers.Get(ctx, collections.Join(portID, channelID))
 	if err != nil {
 		return nil, err
 	}
-
-	return sdk.AccAddress(relayer), nil
+	relayersAcc, err := relayers.GetAccAddr(k.ac)
+	if err != nil {
+		return nil, err
+	}
+	return relayersAcc, nil
 }
 
 // HasPermission checks if the relayer has permission to relay packets on the channel.
 func (k Keeper) HasPermission(ctx context.Context, portID, channelID string, relayer sdk.AccAddress) (bool, error) {
-	permRelayer, err := k.PermissionedRelayers.Get(ctx, collections.Join(portID, channelID))
+
+	permRelayers, err := k.PermissionedRelayers.Get(ctx, collections.Join(portID, channelID))
 	if err != nil && errors.Is(err, collections.ErrNotFound) {
 		return false, nil
 	} else if err != nil {
 		return false, err
 	}
+	relayerStr, err := k.ac.BytesToString(relayer)
+	if err != nil {
+		return false, err
+	}
 
-	return bytes.Equal(permRelayer, relayer.Bytes()), nil
+	return permRelayers.HasRelayer(relayerStr), nil
 }
