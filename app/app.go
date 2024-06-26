@@ -122,6 +122,7 @@ import (
 	applanes "github.com/initia-labs/initia/app/lanes"
 	apporacle "github.com/initia-labs/initia/app/oracle"
 	"github.com/initia-labs/initia/app/params"
+	cryptocodec "github.com/initia-labs/initia/crypto/codec"
 	authzmodule "github.com/initia-labs/initia/x/authz/module"
 	"github.com/initia-labs/initia/x/bank"
 	bankkeeper "github.com/initia-labs/initia/x/bank/keeper"
@@ -325,6 +326,8 @@ func NewInitiaApp(
 	encodingConfig := params.MakeEncodingConfig()
 	std.RegisterLegacyAminoCodec(encodingConfig.Amino)
 	std.RegisterInterfaces(encodingConfig.InterfaceRegistry)
+	cryptocodec.RegisterLegacyAminoCodec(encodingConfig.Amino)
+	cryptocodec.RegisterInterfaces(encodingConfig.InterfaceRegistry)
 
 	appCodec := encodingConfig.Codec
 	legacyAmino := encodingConfig.Amino

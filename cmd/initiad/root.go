@@ -38,6 +38,7 @@ import (
 	initiaapporacle "github.com/initia-labs/initia/app/oracle"
 	"github.com/initia-labs/initia/app/params"
 	movecmd "github.com/initia-labs/initia/cmd/move"
+	cryptokeyring "github.com/initia-labs/initia/crypto/keyring"
 	"github.com/initia-labs/initia/x/genutil"
 	genutilcli "github.com/initia-labs/initia/x/genutil/client/cli"
 	moveconfig "github.com/initia-labs/initia/x/move/config"
@@ -84,7 +85,8 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		WithInput(os.Stdin).
 		WithAccountRetriever(types.AccountRetriever{}).
 		WithHomeDir(initiaapp.DefaultNodeHome).
-		WithViper(initiaapp.EnvPrefix)
+		WithViper(initiaapp.EnvPrefix).
+		WithKeyringOptions(cryptokeyring.Option())
 
 	rootCmd := &cobra.Command{
 		Use:   basename,
