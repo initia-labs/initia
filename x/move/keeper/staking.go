@@ -451,7 +451,7 @@ func (k Keeper) SlashUnbondingDelegations(
 	return nil
 }
 
-// InitializeStakingmake staking states table for the given denom
+// InitializeStaking makes staking states table for the given denom
 func (k Keeper) InitializeStaking(
 	ctx context.Context,
 	bondDenom string,

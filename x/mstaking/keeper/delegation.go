@@ -64,7 +64,7 @@ func (k Keeper) GetValidatorDelegations(
 	return delegations, err
 }
 
-// GetDelegatorDelegations GetDelegatorDelegations returns a given amount of all the delegations from a delegator
+// GetDelegatorDelegations returns a given amount of all the delegations from a delegator
 func (k Keeper) GetDelegatorDelegations(
 	ctx context.Context,
 	delegator sdk.AccAddress,
