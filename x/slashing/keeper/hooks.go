@@ -19,7 +19,7 @@ type Hooks struct {
 	k Keeper
 }
 
-// Return the slashing hooks
+// Hooks returns the slashing hooks
 func (k Keeper) Hooks() Hooks {
 	return Hooks{k}
 }

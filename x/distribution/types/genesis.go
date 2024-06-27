@@ -26,7 +26,7 @@ func NewGenesisState(
 	}
 }
 
-// get raw genesis raw message for testing
+// DefaultGenesisState returns raw genesis raw message for testing
 func DefaultGenesisState() *GenesisState {
 	return &GenesisState{
 		FeePool:                         distrtypes.InitialFeePool(),

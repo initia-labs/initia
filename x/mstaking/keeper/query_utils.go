@@ -9,7 +9,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// Return all validators that a delegator is bonded to. If maxRetrieve is supplied, the respective amount will be returned.
+// GetDelegatorValidators returns all validators that a delegator is bonded to. If maxRetrieve is supplied, the respective amount will be returned.
 func (k Keeper) GetDelegatorValidators(
 	ctx context.Context, delegatorAddr sdk.AccAddress, maxRetrieve uint32,
 ) (types.Validators, error) {
@@ -35,7 +35,7 @@ func (k Keeper) GetDelegatorValidators(
 	}, err
 }
 
-// return a validator that a delegator is bonded to
+// GetDelegatorValidator returns a validator that a delegator is bonded to
 func (k Keeper) GetDelegatorValidator(
 	ctx context.Context, delegatorAddr sdk.AccAddress, validatorAddr sdk.ValAddress,
 ) (validator types.Validator, err error) {
@@ -52,7 +52,7 @@ func (k Keeper) GetDelegatorValidator(
 	return k.Validators.Get(ctx, valAddr)
 }
 
-// return all delegations for a delegator
+// GetAllDelegatorDelegations returns all delegations for a delegator
 func (k Keeper) GetAllDelegatorDelegations(ctx context.Context, delegator sdk.AccAddress) ([]types.Delegation, error) {
 	delegations := []types.Delegation{}
 	err := k.Delegations.Walk(ctx, collections.NewPrefixedPairRange[[]byte, []byte](delegator), func(key collections.Pair[[]byte, []byte], delegation types.Delegation) (stop bool, err error) {
@@ -63,7 +63,7 @@ func (k Keeper) GetAllDelegatorDelegations(ctx context.Context, delegator sdk.Ac
 	return delegations, err
 }
 
-// return all unbonding-delegations for a delegator
+// GetAllUnbondingDelegations returns all unbonding-delegations for a delegator
 func (k Keeper) GetAllUnbondingDelegations(ctx context.Context, delegator sdk.AccAddress) ([]types.UnbondingDelegation, error) {
 	unbondingDelegations := []types.UnbondingDelegation{}
 	err := k.UnbondingDelegations.Walk(ctx, collections.NewPrefixedPairRange[[]byte, []byte](delegator), func(key collections.Pair[[]byte, []byte], unbondingDelegation types.UnbondingDelegation) (stop bool, err error) {
@@ -74,7 +74,7 @@ func (k Keeper) GetAllUnbondingDelegations(ctx context.Context, delegator sdk.Ac
 	return unbondingDelegations, err
 }
 
-// return all redelegations for a delegator
+// GetAllRedelegations returns all redelegations for a delegator
 func (k Keeper) GetAllRedelegations(
 	ctx context.Context, delegator sdk.AccAddress, srcValAddress, dstValAddress sdk.ValAddress,
 ) ([]types.Redelegation, error) {

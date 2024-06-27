@@ -48,7 +48,7 @@ func (k Keeper) initializeValidator(ctx context.Context, val stakingtypes.Valida
 	return nil
 }
 
-// increment validator period, returning the period just ended
+// IncrementValidatorPeriod increments validator period, returning the period just ended
 func (k Keeper) IncrementValidatorPeriod(ctx context.Context, val stakingtypes.ValidatorI) (uint64, error) {
 	valAddr, err := k.stakingKeeper.ValidatorAddressCodec().StringToBytes(val.GetOperator())
 	if err != nil {
@@ -197,7 +197,7 @@ func (k Keeper) updateValidatorSlashFraction(ctx context.Context, valAddr sdk.Va
 	return nil
 }
 
-// historical reference count (used for testcases)
+// GetValidatorHistoricalReferenceCount returns historical reference count (used for testcases)
 func (k Keeper) GetValidatorHistoricalReferenceCount(ctx context.Context) (count uint64, err error) {
 	err = k.ValidatorHistoricalRewards.Walk(ctx, nil, func(key collections.Pair[[]byte, uint64], rewards customtypes.ValidatorHistoricalRewards) (stop bool, err error) {
 		count += uint64(rewards.ReferenceCount)

@@ -54,7 +54,7 @@ func MustUnmarshalDelegation(cdc codec.BinaryCodec, value []byte) Delegation {
 	return delegation
 }
 
-// return the delegation
+// UnmarshalDelegation returns the delegation
 func UnmarshalDelegation(cdc codec.BinaryCodec, value []byte) (delegation Delegation, err error) {
 	err = cdc.Unmarshal(value, &delegation)
 	return delegation, err
@@ -112,12 +112,12 @@ func (e UnbondingDelegationEntry) OnHold() bool {
 	return e.UnbondingOnHoldRefCount > 0
 }
 
-// return the unbonding delegation entry
+// MustMarshalUBDE returns the unbonding delegation entry
 func MustMarshalUBDE(cdc codec.BinaryCodec, ubd UnbondingDelegationEntry) []byte {
 	return cdc.MustMarshal(&ubd)
 }
 
-// unmarshal a unbonding delegation entry from a store value
+// MustUnmarshalUBDE unmarshal a unbonding delegation entry from a store value
 func MustUnmarshalUBDE(cdc codec.BinaryCodec, value []byte) UnbondingDelegationEntry {
 	ubd, err := UnmarshalUBDE(cdc, value)
 	if err != nil {

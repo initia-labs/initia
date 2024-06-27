@@ -289,7 +289,7 @@ func (k Keeper) ApplyStakingDeltas(
 	return nil
 }
 
-// DepositUnbondingCoin deposit instantly unbonded coins to staking contract
+// DepositUnbondingCoins deposits instantly unbonded coins to staking contract
 func (k Keeper) DepositUnbondingCoins(
 	ctx context.Context,
 	unbondingDenom string,
@@ -347,7 +347,7 @@ func (k Keeper) HasStakingState(ctx context.Context, metadata vmtypes.AccountAdd
 	return k.HasTableEntry(ctx, stakingStatesTableHandle, metadata[:])
 }
 
-// SlashUnbondingCoin slash unbonding coins of the staking contract
+// SlashUnbondingDelegations slash unbonding coins of the staking contract
 func (k Keeper) SlashUnbondingDelegations(
 	ctx context.Context,
 	valAddr sdk.ValAddress,
@@ -451,7 +451,7 @@ func (k Keeper) SlashUnbondingDelegations(
 	return nil
 }
 
-// make staking states table for the given denom
+// InitializeStakingmake staking states table for the given denom
 func (k Keeper) InitializeStaking(
 	ctx context.Context,
 	bondDenom string,
@@ -464,7 +464,7 @@ func (k Keeper) InitializeStaking(
 	return k.InitializeStakingWithMetadata(ctx, metadata)
 }
 
-// make staking states table for the given metadata
+// InitializeStakingWithMetadata makes staking states table for the given metadata
 func (k Keeper) InitializeStakingWithMetadata(
 	ctx context.Context,
 	metadata vmtypes.AccountAddress,

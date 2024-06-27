@@ -9,7 +9,7 @@ import (
 	customtypes "github.com/initia-labs/initia/x/distribution/types"
 )
 
-// get outstanding rewards
+// GetValidatorOutstandingRewardsPools returns outstanding rewards
 func (k Keeper) GetValidatorOutstandingRewardsPools(ctx context.Context, val sdk.ValAddress) (customtypes.DecPools, error) {
 	rewards, err := k.GetValidatorOutstandingRewards(ctx, val)
 	if err != nil {

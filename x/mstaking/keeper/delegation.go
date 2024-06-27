@@ -16,7 +16,7 @@ import (
 	"github.com/initia-labs/initia/x/mstaking/types"
 )
 
-// return a specific delegation
+// GetDelegation returns a specific delegation
 func (k Keeper) GetDelegation(
 	ctx context.Context,
 	delAddr sdk.AccAddress,
@@ -45,7 +45,7 @@ func (k Keeper) GetAllDelegations(ctx context.Context) (delegations []types.Dele
 	return delegations, err
 }
 
-// return all delegations to a specific validator. Useful for querier.
+// GetValidatorDelegations returns all delegations to a specific validator. Useful for querier.
 func (k Keeper) GetValidatorDelegations(
 	ctx context.Context,
 	valAddr sdk.ValAddress,
@@ -64,7 +64,7 @@ func (k Keeper) GetValidatorDelegations(
 	return delegations, err
 }
 
-// return a given amount of all the delegations from a delegator
+// GetDelegatorDelegations GetDelegatorDelegations returns a given amount of all the delegations from a delegator
 func (k Keeper) GetDelegatorDelegations(
 	ctx context.Context,
 	delegator sdk.AccAddress,
@@ -79,7 +79,7 @@ func (k Keeper) GetDelegatorDelegations(
 	return delegations, err
 }
 
-// set a delegation
+// SetDelegation sets a delegation
 func (k Keeper) SetDelegation(ctx context.Context, delegation types.Delegation) error {
 	delAddr, err := k.authKeeper.AddressCodec().StringToBytes(delegation.DelegatorAddress)
 	if err != nil {
@@ -98,7 +98,7 @@ func (k Keeper) SetDelegation(ctx context.Context, delegation types.Delegation) 
 	return k.DelegationsByValIndex.Set(ctx, collections.Join(valAddr, delAddr), true)
 }
 
-// remove a delegation
+// RemoveDelegation removes a delegation
 func (k Keeper) RemoveDelegation(ctx context.Context, delegation types.Delegation) error {
 	delAddr, err := k.authKeeper.AddressCodec().StringToBytes(delegation.DelegatorAddress)
 	if err != nil {
@@ -121,7 +121,7 @@ func (k Keeper) RemoveDelegation(ctx context.Context, delegation types.Delegatio
 	return k.DelegationsByValIndex.Remove(ctx, collections.Join(valAddr, delAddr))
 }
 
-// return a given amount of all the delegator unbonding-delegations
+// GetUnbondingDelegations returns a given amount of all the delegator unbonding-delegations
 func (k Keeper) GetUnbondingDelegations(
 	ctx context.Context,
 	delegator sdk.AccAddress,
@@ -137,14 +137,14 @@ func (k Keeper) GetUnbondingDelegations(
 	return unbondingDelegations, err
 }
 
-// return a unbonding delegation
+// GetUnbondingDelegation GetUnbondingDelegation returns a unbonding delegation
 func (k Keeper) GetUnbondingDelegation(
 	ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress,
 ) (types.UnbondingDelegation, error) {
 	return k.UnbondingDelegations.Get(ctx, collections.Join[[]byte, []byte](delAddr, valAddr))
 }
 
-// return all unbonding delegations from a particular validator
+// GetUnbondingDelegationsFromValidator returns all unbonding delegations from a particular validator
 func (k Keeper) GetUnbondingDelegationsFromValidator(ctx context.Context, valAddr sdk.ValAddress) (ubds []types.UnbondingDelegation, err error) {
 	err = k.UnbondingDelegationsByValIndex.Walk(ctx, collections.NewPrefixedPairRange[[]byte, []byte](valAddr), func(key collections.Pair[[]byte, []byte], value bool) (stop bool, err error) {
 		valAddr := key.K1()
@@ -162,7 +162,7 @@ func (k Keeper) GetUnbondingDelegationsFromValidator(ctx context.Context, valAdd
 	return ubds, err
 }
 
-// iterate through all of the unbonding delegations
+// IterateUnbondingDelegations IterateUnbondingDelegations iterates through all of the unbonding delegations
 func (k Keeper) IterateUnbondingDelegations(ctx context.Context, cb func(ubd types.UnbondingDelegation) (stop bool, err error)) error {
 	return k.UnbondingDelegations.Walk(ctx, nil, func(key collections.Pair[[]byte, []byte], ubd types.UnbondingDelegation) (stop bool, err error) {
 		return cb(ubd)
@@ -188,7 +188,7 @@ func (k Keeper) HasMaxUnbondingDelegationEntries(
 	return len(ubd.Entries) >= int(maxEntries), nil
 }
 
-// set the unbonding delegation and associated index
+// SetUnbondingDelegation sets the unbonding delegation and associated index
 func (k Keeper) SetUnbondingDelegation(ctx context.Context, ubd types.UnbondingDelegation) error {
 	delAddr, err := k.authKeeper.AddressCodec().StringToBytes(ubd.DelegatorAddress)
 	if err != nil {
@@ -212,7 +212,7 @@ func (k Keeper) SetUnbondingDelegation(ctx context.Context, ubd types.UnbondingD
 	return nil
 }
 
-// remove the unbonding delegation object and associated index
+// RemoveUnbondingDelegation removes the unbonding delegation object and associated index
 func (k Keeper) RemoveUnbondingDelegation(ctx context.Context, ubd types.UnbondingDelegation) error {
 	delAddr, err := k.authKeeper.AddressCodec().StringToBytes(ubd.DelegatorAddress)
 	if err != nil {
@@ -598,7 +598,7 @@ func (k Keeper) InsertRedelegationQueue(
 	return k.SetRedelegationQueueTimeSlice(ctx, completionTime, timeSlice)
 }
 
-// Returns a concatenated list of all the timeslices inclusively previous to
+// DequeueAllMatureRedelegationQueue returns a concatenated list of all the timeslices inclusively previous to
 // curTime, and deletes the timeslices from the queue
 func (k Keeper) DequeueAllMatureRedelegationQueue(ctx context.Context, curTime time.Time) (matureRedelegations []types.DVVTriplet, err error) {
 	err = k.RedelegationQueue.Walk(ctx, new(collections.Range[time.Time]).EndInclusive(curTime), func(key time.Time, timeslice types.DVVTriplets) (stop bool, err error) {

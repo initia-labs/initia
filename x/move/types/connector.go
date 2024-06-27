@@ -234,7 +234,7 @@ func TypeTagToStructTag(coinType vmtypes.TypeTag) (vmtypes.StructTag, error) {
 	return vmtypes.StructTag{}, ErrMalformedStructTag
 }
 
-// convert UpgradePolicy to vm UpgradePolicy
+// ToVmUpgradePolicy converts UpgradePolicy to vm UpgradePolicy
 func (policy UpgradePolicy) ToVmUpgradePolicy() uint8 {
 	// 0 => Unspecified
 	// 1 => Compatible
@@ -388,7 +388,7 @@ func ReadStoresFromPool(bz []byte) (vmtypes.AccountAddress, vmtypes.AccountAddre
 	return storeAAddr, storeBAddr, nil
 }
 
-// GetDexWeight conduct same calculation with `get_weight` of dex contract
+// GetPoolWeights conducts same calculation with `get_weight` of dex contract
 func GetPoolWeights(
 	weightCoinABefore, weightCoinBBefore, weightCoinAAfter, weightCoinBAfter math.LegacyDec,
 	timestampBefore, timestampAfter, timestamp math.Int,

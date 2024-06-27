@@ -10,7 +10,7 @@ import (
 	"github.com/initia-labs/initia/x/distribution/types"
 )
 
-// get the delegator withdraw address, defaulting to the delegator address
+// GetDelegatorWithdrawAddr returns the delegator withdraw address, defaulting to the delegator address
 func (k Keeper) GetDelegatorWithdrawAddr(ctx context.Context, delAddr sdk.AccAddress) (sdk.AccAddress, error) {
 	bz, err := k.DelegatorWithdrawAddrs.Get(ctx, delAddr)
 	if err != nil && errors.Is(err, collections.ErrNotFound) {
@@ -22,7 +22,7 @@ func (k Keeper) GetDelegatorWithdrawAddr(ctx context.Context, delAddr sdk.AccAdd
 	return sdk.AccAddress(bz), nil
 }
 
-// get accumulated commission for a validator
+// GetValidatorAccumulatedCommission returns accumulated commission for a validator
 func (k Keeper) GetValidatorAccumulatedCommission(ctx context.Context, val sdk.ValAddress) (commission types.ValidatorAccumulatedCommission, err error) {
 	commission, err = k.ValidatorAccumulatedCommissions.Get(ctx, val)
 	if err != nil && errors.Is(err, collections.ErrNotFound) {
@@ -34,7 +34,7 @@ func (k Keeper) GetValidatorAccumulatedCommission(ctx context.Context, val sdk.V
 	return
 }
 
-// get slash event for height
+// GetValidatorSlashEvent returns slash event for height
 func (k Keeper) GetValidatorSlashEvent(ctx context.Context, val sdk.ValAddress, height, period uint64) (event types.ValidatorSlashEvent, found bool, err error) {
 	event, err = k.ValidatorSlashEvents.Get(ctx, collections.Join3(val.Bytes(), height, period))
 	if err != nil && errors.Is(err, collections.ErrNotFound) {
@@ -46,7 +46,7 @@ func (k Keeper) GetValidatorSlashEvent(ctx context.Context, val sdk.ValAddress, 
 	return event, true, nil
 }
 
-// get validator outstanding rewards
+// GetValidatorOutstandingRewards returns validator outstanding rewards
 // ValidatorOutstandingRewards should be initialized at initValidator()
 func (k Keeper) GetValidatorOutstandingRewards(ctx context.Context, val sdk.ValAddress) (rewards types.ValidatorOutstandingRewards, err error) {
 	rewards, err = k.ValidatorOutstandingRewards.Get(ctx, val)
@@ -57,7 +57,7 @@ func (k Keeper) GetValidatorOutstandingRewards(ctx context.Context, val sdk.ValA
 	return
 }
 
-// get current rewards for a validator
+// GetValidatorCurrentRewards returns current rewards for a validator
 // ValidatorCurrentRewards rewards should be initialized at initValidator()
 func (k Keeper) GetValidatorCurrentRewards(ctx context.Context, val sdk.ValAddress) (rewards types.ValidatorCurrentRewards, err error) {
 	rewards, err = k.ValidatorCurrentRewards.Get(ctx, val)

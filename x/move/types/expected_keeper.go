@@ -69,9 +69,9 @@ type StakingKeeper interface {
 type DistributionKeeper interface {
 	WithdrawDelegationRewards(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) (distrtypes.Pools, error)
 
-	// increment validator period, returning the period just ended
+	// IncrementValidatorPeriod increments validator period, returning the period just ended
 	IncrementValidatorPeriod(ctx context.Context, val stakingtypes.ValidatorI) (uint64, error)
-	// calculate the total rewards accrued by a delegation
+	// CalculateDelegationRewards calculates the total rewards accrued by a delegation
 	CalculateDelegationRewards(ctx context.Context, val stakingtypes.ValidatorI, del stakingtypes.DelegationI, endingPeriod uint64) (rewards distrtypes.DecPools, err error)
 
 	GetRewardWeights(ctx context.Context) (rewardWeights []distrtypes.RewardWeight, err error)

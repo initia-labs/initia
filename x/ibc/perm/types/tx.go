@@ -14,7 +14,7 @@ var (
 	_ sdk.Msg = &MsgSetPermissionedRelayers{}
 )
 
-// NewMsgSetPermissionedRelayer creates a new MsgSetPermissionedRelayer instance
+// NewMsgSetPermissionedRelayers creates a new MsgSetPermissionedRelayer instance
 func NewMsgSetPermissionedRelayers(
 	authority, portID, channelID string, relayers []string,
 ) *MsgSetPermissionedRelayers {
@@ -26,7 +26,7 @@ func NewMsgSetPermissionedRelayers(
 	}
 }
 
-// ValidateBasic performs a basic check of the MsgSetPermissionedRelayer fields.
+// Validate performs a basic check of the MsgSetPermissionedRelayer fields.
 // NOTE: timeout height or timestamp values can be 0 to disable the timeout.
 // NOTE: The recipient addresses format is not validated as the format defined by
 // the chain is not known to IBC.

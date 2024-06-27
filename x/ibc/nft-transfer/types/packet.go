@@ -86,7 +86,7 @@ func (nftpd NonFungibleTokenPacketData) GetBytes(counterPartyPort string) []byte
 	return sdk.MustSortJSON(bz)
 }
 
-// decode packet data to NonFungibleTokenPacketData
+// DecodePacketData decodes packet data to NonFungibleTokenPacketData
 func DecodePacketData(packetData []byte, counterPartyPort string) (NonFungibleTokenPacketData, error) {
 	decoder := json.NewDecoder(strings.NewReader(string(packetData)))
 	decoder.DisallowUnknownFields()
