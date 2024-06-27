@@ -731,8 +731,8 @@ github.com/initia-labs/OPinit/api v0.3.0 h1:OY8ijwmgZLoYwtw9LI1mSY3VC8PY+gtxJFit
 github.com/initia-labs/OPinit/api v0.3.0/go.mod h1:Xy/Nt3ubXLQ4zKn0m7RuQOM1sj8TVdlNNyek21TGYR0=
 github.com/initia-labs/cometbft v0.0.0-20240621095332-4bd01a7a4586 h1:zFQKoiRpiYLrT+6CW5uXNVS/jAhusRJOX3tNBSPxzp8=
 github.com/initia-labs/cometbft v0.0.0-20240621095332-4bd01a7a4586/go.mod h1:xOoGZrtUT+A5izWfHSJgl0gYZUE7lu7Z2XIS1vWG/QQ=
-github.com/initia-labs/cosmos-sdk v0.0.0-20240625033052-fb243157dd7a h1:23hghMCApXmySZEM/Y143zm76l9DbdXY53dxRpHds4M=
-github.com/initia-labs/cosmos-sdk v0.0.0-20240625033052-fb243157dd7a/go.mod h1:lVkRY6cdMJ0fG3gp8y4hFrsKZqF4z7y0M2UXFb9Yt40=
+github.com/initia-labs/cosmos-sdk v0.0.0-20240627065534-d2180fcfd501 h1:OcLFeu3V9T156H4n6WzPNfKWjIUKdkC0P0EBA8zEWFE=
+github.com/initia-labs/cosmos-sdk v0.0.0-20240627065534-d2180fcfd501/go.mod h1:84xDDJEHttRT7NDGwBaUOLVOMN0JNE9x7NbsYIxXs1s=
 github.com/initia-labs/movevm v0.3.3 h1:xUH5VvjBSfJP4jg3axefmBlcdZ/7qfVYnUU09R4oN4g=
 github.com/initia-labs/movevm v0.3.3/go.mod h1:6MxR4GP5zH3JUc1IMgfqAe1e483mZVS7fshPknZPJ30=
 github.com/jhump/protoreflect v1.15.3 h1:6SFRuqU45u9hIZPJAoZ8c28T3nK64BNdp9w6jFonzls=
