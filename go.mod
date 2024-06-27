@@ -38,7 +38,7 @@ require (
 	github.com/gorilla/mux v1.8.1
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/hashicorp/go-metrics v0.5.3
-	github.com/initia-labs/OPinit v0.3.1
+	github.com/initia-labs/OPinit v0.3.2
 	// we also need to update `LIBMOVEVM_VERSION` of images/private/Dockerfile#5
 	// we also need to update `LIBMOVEVM_VERSION` of Dockerfile#5
 	github.com/initia-labs/movevm v0.3.3
@@ -226,7 +226,7 @@ replace (
 
 	github.com/cometbft/cometbft => github.com/initia-labs/cometbft v0.0.0-20240621095332-4bd01a7a4586
 	github.com/cosmos/cosmos-sdk => github.com/initia-labs/cosmos-sdk v0.0.0-20240625033052-fb243157dd7a
-	github.com/cosmos/iavl => github.com/initia-labs/iavl v0.0.0-20240415085037-7e81233cdd9e
+	github.com/cosmos/iavl => github.com/cosmos/iavl v1.1.4
 
 	// dgrijalva/jwt-go is deprecated and doesn't receive security updates.
 	// TODO: remove it: https://github.com/cosmos/cosmos-sdk/issues/13134

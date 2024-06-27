@@ -118,7 +118,6 @@ import (
 
 	appante "github.com/initia-labs/initia/app/ante"
 	appheaderinfo "github.com/initia-labs/initia/app/header_info"
-	apphook "github.com/initia-labs/initia/app/hook"
 	applanes "github.com/initia-labs/initia/app/lanes"
 	apporacle "github.com/initia-labs/initia/app/oracle"
 	"github.com/initia-labs/initia/app/params"
@@ -182,6 +181,7 @@ import (
 	"github.com/initia-labs/OPinit/x/ophost"
 	ophostkeeper "github.com/initia-labs/OPinit/x/ophost/keeper"
 	ophosttypes "github.com/initia-labs/OPinit/x/ophost/types"
+	ophosttypeshook "github.com/initia-labs/OPinit/x/ophost/types/hook"
 
 	// noble forwarding keeper
 	"github.com/noble-assets/forwarding/v2/x/forwarding"
@@ -845,7 +845,7 @@ func NewInitiaApp(
 		app.AccountKeeper,
 		app.BankKeeper,
 		app.DistrKeeper,
-		ophosttypes.NewBridgeHooks(apphook.NewBridgeHook(app.IBCKeeper.ChannelKeeper, app.IBCPermKeeper, ac)),
+		ophosttypes.NewBridgeHooks(ophosttypeshook.NewBridgeHook(app.IBCKeeper.ChannelKeeper, app.IBCPermKeeper, ac)),
 		authorityAddr,
 	)
 
