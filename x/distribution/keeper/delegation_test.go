@@ -5,6 +5,8 @@ import (
 
 	"cosmossdk.io/math"
 
+	abci "github.com/cometbft/cometbft/abci/types"
+	"github.com/cometbft/cometbft/proto/tendermint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
@@ -16,33 +18,61 @@ import (
 
 func TestCalculateRewardsBasic(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
-	valAddr1 := createValidatorWithBalance(ctx, input, 100_000_000, 1_000_000, 1)
-	_, err := input.StakingKeeper.Validator(ctx, valAddr1)
-	require.NoError(t, err)
+	input.StakingKeeper.SetBondDenoms(ctx, []string{"foo", "bar", "aaa"})
+	setRewardWeights(t, ctx, input, []customtypes.RewardWeight{
+		{
+			Denom:  "foo",
+			Weight: math.LegacyNewDecWithPrec(4, 1),
+		},
+		{
+			Denom:  "bar",
+			Weight: math.LegacyNewDecWithPrec(6, 1),
+		},
+		{
+			Denom:  "aaa",
+			Weight: math.LegacyNewDecWithPrec(1, 0),
+		},
+	})
+	input.VotingPowerKeeper.SetVotingPowerWeights(sdk.NewDecCoins(sdk.NewDecCoin("foo", math.NewInt(1)), sdk.NewDecCoin("bar", math.NewInt(4)), sdk.NewDecCoin("aaa", math.NewInt(10))))
 
-	// historical count should be 2 (once for validator init, once for delegation init)
+	valAddr1 := createValidatorWithCoin(ctx, input,
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 100_000_000), sdk.NewInt64Coin("bar", 100_000_000), sdk.NewInt64Coin("aaa", 100_000_000)),
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 2_000_000), sdk.NewInt64Coin("bar", 1_000_000), sdk.NewInt64Coin("aaa", 40_000)), 1)
+	valAddr2 := createValidatorWithCoin(ctx, input,
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 100_000_000), sdk.NewInt64Coin("bar", 100_000_000), sdk.NewInt64Coin("aaa", 100_000_000)),
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 2_000_000), sdk.NewInt64Coin("bar", 4_000_000), sdk.NewInt64Coin("aaa", 10_000)), 2)
+
+	// historical count should be 4 (once for validator init and once for delegation init per validator)
 	refCount, err := input.DistKeeper.GetValidatorHistoricalReferenceCount(ctx)
 	require.NoError(t, err)
-	require.Equal(t, uint64(2), refCount)
+	require.Equal(t, uint64(4), refCount)
 
 	// end block to bond validator and start new block
-	staking.EndBlocker(ctx, input.StakingKeeper)
+	_, err = staking.EndBlocker(ctx, input.StakingKeeper)
+	require.NoError(t, err)
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 
 	// fetch validator and delegation
 	val, err := input.StakingKeeper.Validator(ctx, valAddr1)
 	require.NoError(t, err)
+	val2, err := input.StakingKeeper.Validator(ctx, valAddr2)
+	require.NoError(t, err)
 	del, err := input.StakingKeeper.Delegation(ctx, sdk.AccAddress(valAddr1), valAddr1)
+	require.NoError(t, err)
+
+	valConsPk1, err := val.ConsPubKey()
+	require.NoError(t, err)
+	valConsPk2, err := val2.ConsPubKey()
 	require.NoError(t, err)
 
 	// end period
 	endingPeriod, err := input.DistKeeper.IncrementValidatorPeriod(ctx, val)
 	require.NoError(t, err)
 
-	// historical count should be 2 still
+	// historical count should be 4 still
 	refCount, err = input.DistKeeper.GetValidatorHistoricalReferenceCount(ctx)
 	require.NoError(t, err)
-	require.Equal(t, uint64(2), refCount)
+	require.Equal(t, uint64(4), refCount)
 
 	// calculate delegation rewards
 	rewards, err := input.DistKeeper.CalculateDelegationRewards(ctx, val, del, endingPeriod)
@@ -51,10 +81,29 @@ func TestCalculateRewardsBasic(t *testing.T) {
 	// rewards should be zero
 	require.True(t, rewards.Sum().IsZero())
 
-	// allocate some rewards
-	initial := int64(10)
-	tokens := sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDec(initial)}}
-	input.DistKeeper.AllocateTokensToValidatorPool(ctx, val, bondDenom, tokens)
+	fees := sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(100)))
+	feeCollector := input.AccountKeeper.GetModuleAccount(ctx, authtypes.FeeCollectorName)
+	require.NotNil(t, feeCollector)
+	input.Faucet.Fund(ctx, authtypes.NewModuleAddress(authtypes.FeeCollectorName), fees...)
+
+	votes := []abci.VoteInfo{
+		{
+			Validator: abci.Validator{
+				Address: valConsPk1.Address(),
+				Power:   100,
+			},
+			BlockIdFlag: types.BlockIDFlagCommit,
+		},
+		{
+			Validator: abci.Validator{
+				Address: valConsPk2.Address(),
+				Power:   400,
+			},
+			BlockIdFlag: types.BlockIDFlagCommit,
+		},
+	}
+	err = input.DistKeeper.AllocateTokens(ctx, 500, votes)
+	require.NoError(t, err)
 
 	// end period
 	endingPeriod, err = input.DistKeeper.IncrementValidatorPeriod(ctx, val)
@@ -64,34 +113,76 @@ func TestCalculateRewardsBasic(t *testing.T) {
 	rewards, err = input.DistKeeper.CalculateDelegationRewards(ctx, val, del, endingPeriod)
 	require.NoError(t, err)
 
-	// rewards should be half the tokens
 	require.Equal(t,
-		customtypes.DecPools{{Denom: bondDenom, DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDec(initial / 2)}}}},
+		customtypes.DecPools{
+			// 98 * (40_000 / 50_000) * (10 / 20) * (9 / 10) = 35.28
+			{Denom: "aaa", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(3528, 2)}}},
+			// 98 * (1_000_000 / 5_000_000) * (6 / 20) * (9 / 10) = 5.292
+			{Denom: "bar", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(5292, 3)}}},
+			// 98 * (2_000_000 / 4_000_000) * (4 / 20) * (9 / 10) = 8.82
+			{Denom: "foo", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(882, 2)}}},
+		},
 		rewards)
 
-	// commission should be the other half
 	val1Commission, err := input.DistKeeper.ValidatorAccumulatedCommissions.Get(ctx, valAddr1)
 	require.NoError(t, err)
+
 	require.Equal(t,
-		customtypes.DecPools{{Denom: bondDenom, DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDec(initial / 2)}}}},
+		customtypes.DecPools{
+			// 98 * (40_000 / 50_000) * (10 / 20) * (1 / 10) = 3.92
+			{Denom: "aaa", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(392, 2)}}},
+			// 98 * (1_000_000 / 5_000_000) * (6 / 20) * (1 / 10) = 0.588
+			{Denom: "bar", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(588, 3)}}},
+			// 98 * (2_000_000 / 4_000_000) * (4 / 20) * (1 / 10) = 0.98
+			{Denom: "foo", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(98, 2)}}},
+		},
 		val1Commission.Commissions)
 }
 
 func TestCalculateRewardsAfterSlash(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
-	valAddr1 := createValidatorWithBalance(ctx, input, 100_000_000, 1_000_000, 1)
-	validator1, err := input.StakingKeeper.Validator(ctx, valAddr1)
-	require.NoError(t, err)
+	input.StakingKeeper.SetBondDenoms(ctx, []string{"foo", "bar", "aaa"})
+	setRewardWeights(t, ctx, input, []customtypes.RewardWeight{
+		{
+			Denom:  "foo",
+			Weight: math.LegacyNewDecWithPrec(4, 1),
+		},
+		{
+			Denom:  "bar",
+			Weight: math.LegacyNewDecWithPrec(6, 1),
+		},
+		{
+			Denom:  "aaa",
+			Weight: math.LegacyNewDecWithPrec(1, 0),
+		},
+	})
+
+	input.VotingPowerKeeper.SetVotingPowerWeights(sdk.NewDecCoins(sdk.NewDecCoin("foo", math.NewInt(1)), sdk.NewDecCoin("bar", math.NewInt(4)), sdk.NewDecCoin("aaa", math.NewInt(10))))
+
+	valAddr1 := createValidatorWithCoin(ctx, input,
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 100_000_000), sdk.NewInt64Coin("bar", 100_000_000), sdk.NewInt64Coin("aaa", 100_000_000)),
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 2_000_000), sdk.NewInt64Coin("bar", 1_000_000), sdk.NewInt64Coin("aaa", 40_000)), 1)
+	valAddr2 := createValidatorWithCoin(ctx, input,
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 100_000_000), sdk.NewInt64Coin("bar", 100_000_000), sdk.NewInt64Coin("aaa", 100_000_000)),
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 2_000_000), sdk.NewInt64Coin("bar", 4_000_000), sdk.NewInt64Coin("aaa", 10_000)), 2)
 
 	// end block to bond validator and start new block
-	staking.EndBlocker(ctx, input.StakingKeeper)
+	_, err := staking.EndBlocker(ctx, input.StakingKeeper)
+	require.NoError(t, err)
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 
 	// fetch validator and delegation
 	val, err := input.StakingKeeper.Validator(ctx, valAddr1)
 	require.NoError(t, err)
+	val2, err := input.StakingKeeper.Validator(ctx, valAddr2)
+	require.NoError(t, err)
 	del, err := input.StakingKeeper.Delegation(ctx, sdk.AccAddress(valAddr1), valAddr1)
+	require.NoError(t, err)
+
+	valConsPk1, err := val.ConsPubKey()
+	require.NoError(t, err)
+	valConsPk2, err := val2.ConsPubKey()
 	require.NoError(t, err)
 
 	// end period
@@ -103,26 +194,46 @@ func TestCalculateRewardsAfterSlash(t *testing.T) {
 	// rewards should be zero
 	require.True(t, rewards.Sum().IsZero())
 
-	pubkey, err := validator1.ConsPubKey()
+	pubkey, err := val.ConsPubKey()
 	require.NoError(t, err)
 
-	// update validator for voting power update
-	_, err = input.StakingKeeper.ApplyAndReturnValidatorSetUpdates(ctx)
-	require.NoError(t, err)
-	power := validator1.GetConsensusPower(input.StakingKeeper.PowerReduction(ctx))
-	require.Equal(t, int64(1), power)
+	// start out block height
+	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 3)
 
 	// slash the validator by 50%
-	input.StakingKeeper.Slash(ctx, pubkey.Address().Bytes(), ctx.BlockHeight(), math.LegacyNewDecWithPrec(5, 1))
+	slashedTokens, err := input.StakingKeeper.Slash(ctx, pubkey.Address().Bytes(), ctx.BlockHeight(), math.LegacyNewDecWithPrec(5, 1))
+	require.NoError(t, err)
+	require.True(t, slashedTokens.IsAllPositive(), "expected positive slashed tokens, got: %s", slashedTokens)
+
+	// increase block height
+	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 3)
 
 	// retrieve validator
 	val, err = input.StakingKeeper.Validator(ctx, valAddr1)
 	require.NoError(t, err)
 
-	// allocate some rewards
-	initial := input.StakingKeeper.VotingPowerFromConsensusPower(ctx, 10)
-	tokens := sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecFromInt(initial)}}
-	err = input.DistKeeper.AllocateTokensToValidatorPool(ctx, val, bondDenom, tokens)
+	fees := sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(100)))
+	feeCollector := input.AccountKeeper.GetModuleAccount(ctx, authtypes.FeeCollectorName)
+	require.NotNil(t, feeCollector)
+	input.Faucet.Fund(ctx, authtypes.NewModuleAddress(authtypes.FeeCollectorName), fees...)
+
+	votes := []abci.VoteInfo{
+		{
+			Validator: abci.Validator{
+				Address: valConsPk1.Address(),
+				Power:   100,
+			},
+			BlockIdFlag: types.BlockIDFlagCommit,
+		},
+		{
+			Validator: abci.Validator{
+				Address: valConsPk2.Address(),
+				Power:   400,
+			},
+			BlockIdFlag: types.BlockIDFlagCommit,
+		},
+	}
+	err = input.DistKeeper.AllocateTokens(ctx, 500, votes)
 	require.NoError(t, err)
 
 	// end period
@@ -137,17 +248,49 @@ func TestCalculateRewardsAfterSlash(t *testing.T) {
 	commission, err := input.DistKeeper.ValidatorAccumulatedCommissions.Get(ctx, valAddr1)
 	require.NoError(t, err)
 
-	// rewards should be half the tokens
-	require.Equal(t, customtypes.DecPools{{Denom: bondDenom, DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecFromInt(initial.QuoRaw(2))}}}}, rewards)
-	// commission should be the other half
-	require.Equal(t, customtypes.DecPools{{Denom: bondDenom, DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecFromInt(initial.QuoRaw(2))}}}}, commission.Commissions)
+	require.Equal(t,
+		// 98 * (20_000 / 30_000) * (10 / 20) * (9 / 10)
+		// + 98 * (500_000 / 4_500_000) * (6 / 20) * (9 / 10)
+		// + 98 * (1_000_000 / 3_000_000) * (4 / 20) * (9 / 10)
+		// = 38.22
+		int64(38),
+		rewards.Sum().AmountOf(bondDenom).TruncateInt64())
+
+	require.Equal(t,
+		// 98 * (20_000 / 30_000) * (10 / 20) * (1 / 10)
+		// + 98 * (500_000 / 4_500_000) * (6 / 20) * (1 / 10)
+		// + 98 * (1_000_000 / 3_000_000) * (4 / 20) * (1 / 10)
+		// = 4.246666666666666
+		int64(4),
+		commission.Commissions.Sum().AmountOf(bondDenom).TruncateInt64())
 }
 
 func TestCalculateRewardsAfterManySlashes(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
-	valAddr1 := createValidatorWithBalance(ctx, input, 100_000_000, 100_000_000, 1)
-	_, err := input.StakingKeeper.Validator(ctx, valAddr1)
-	require.NoError(t, err)
+	input.StakingKeeper.SetBondDenoms(ctx, []string{"foo", "bar", "aaa"})
+	setRewardWeights(t, ctx, input, []customtypes.RewardWeight{
+		{
+			Denom:  "foo",
+			Weight: math.LegacyNewDecWithPrec(4, 1),
+		},
+		{
+			Denom:  "bar",
+			Weight: math.LegacyNewDecWithPrec(6, 1),
+		},
+		{
+			Denom:  "aaa",
+			Weight: math.LegacyNewDecWithPrec(1, 0),
+		},
+	})
+
+	input.VotingPowerKeeper.SetVotingPowerWeights(sdk.NewDecCoins(sdk.NewDecCoin("foo", math.NewInt(1)), sdk.NewDecCoin("bar", math.NewInt(4)), sdk.NewDecCoin("aaa", math.NewInt(10))))
+
+	valAddr1 := createValidatorWithCoin(ctx, input,
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 100_000_000), sdk.NewInt64Coin("bar", 100_000_000), sdk.NewInt64Coin("aaa", 100_000_000)),
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 2_000_000), sdk.NewInt64Coin("bar", 1_000_000), sdk.NewInt64Coin("aaa", 40_000)), 1)
+	valAddr2 := createValidatorWithCoin(ctx, input,
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 100_000_000), sdk.NewInt64Coin("bar", 100_000_000), sdk.NewInt64Coin("aaa", 100_000_000)),
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 2_000_000), sdk.NewInt64Coin("bar", 4_000_000), sdk.NewInt64Coin("aaa", 10_000)), 2)
 
 	validator1, err := input.StakingKeeper.Validator(ctx, valAddr1)
 	require.NoError(t, err)
@@ -165,7 +308,14 @@ func TestCalculateRewardsAfterManySlashes(t *testing.T) {
 	// fetch validator and delegation
 	val, err := input.StakingKeeper.Validator(ctx, valAddr1)
 	require.NoError(t, err)
+	val2, err := input.StakingKeeper.Validator(ctx, valAddr2)
+	require.NoError(t, err)
 	del, err := input.StakingKeeper.Delegation(ctx, sdk.AccAddress(valAddr1), valAddr1)
+	require.NoError(t, err)
+
+	valConsPk1, err := val.ConsPubKey()
+	require.NoError(t, err)
+	valConsPk2, err := val2.ConsPubKey()
 	require.NoError(t, err)
 
 	// end period
@@ -183,7 +333,9 @@ func TestCalculateRewardsAfterManySlashes(t *testing.T) {
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 3)
 
 	// slash the validator by 50%
-	input.StakingKeeper.Slash(ctx, valConsAddr1, ctx.BlockHeight(), math.LegacyNewDecWithPrec(5, 1))
+	slashedTokens, err := input.StakingKeeper.Slash(ctx, valConsAddr1, ctx.BlockHeight(), math.LegacyNewDecWithPrec(5, 1))
+	require.NoError(t, err)
+	require.True(t, slashedTokens.IsAllPositive(), "expected positive slashed tokens, got: %s", slashedTokens)
 
 	// fetch the validator again
 	val, err = input.StakingKeeper.Validator(ctx, valAddr1)
@@ -192,13 +344,34 @@ func TestCalculateRewardsAfterManySlashes(t *testing.T) {
 	// increase block height
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 3)
 
-	// allocate some rewards
-	initial := input.StakingKeeper.VotingPowerFromConsensusPower(ctx, 10)
-	tokens := sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecFromInt(initial)}}
-	input.DistKeeper.AllocateTokensToValidatorPool(ctx, val, bondDenom, tokens)
+	fees := sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(100)))
+	feeCollector := input.AccountKeeper.GetModuleAccount(ctx, authtypes.FeeCollectorName)
+	require.NotNil(t, feeCollector)
+	input.Faucet.Fund(ctx, authtypes.NewModuleAddress(authtypes.FeeCollectorName), fees...)
+
+	votes := []abci.VoteInfo{
+		{
+			Validator: abci.Validator{
+				Address: valConsPk1.Address(),
+				Power:   100,
+			},
+			BlockIdFlag: types.BlockIDFlagCommit,
+		},
+		{
+			Validator: abci.Validator{
+				Address: valConsPk2.Address(),
+				Power:   400,
+			},
+			BlockIdFlag: types.BlockIDFlagCommit,
+		},
+	}
+	err = input.DistKeeper.AllocateTokens(ctx, 500, votes)
+	require.NoError(t, err)
 
 	// slash the validator by 50% again
-	input.StakingKeeper.Slash(ctx, valConsAddr1, ctx.BlockHeight(), math.LegacyNewDecWithPrec(5, 1))
+	slashedTokens, err = input.StakingKeeper.Slash(ctx, valConsAddr1, ctx.BlockHeight(), math.LegacyNewDecWithPrec(5, 1))
+	require.NoError(t, err)
+	require.True(t, slashedTokens.IsAllPositive(), "expected positive slashed tokens, got: %s", slashedTokens)
 
 	// fetch the validator again
 	val, err = input.StakingKeeper.Validator(ctx, valAddr1)
@@ -207,8 +380,9 @@ func TestCalculateRewardsAfterManySlashes(t *testing.T) {
 	// increase block height
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 3)
 
-	// allocate some more rewards
-	input.DistKeeper.AllocateTokensToValidatorPool(ctx, val, bondDenom, tokens)
+	input.Faucet.Fund(ctx, authtypes.NewModuleAddress(authtypes.FeeCollectorName), fees...)
+	err = input.DistKeeper.AllocateTokens(ctx, 500, votes)
+	require.NoError(t, err)
 
 	// end period
 	endingPeriod, err = input.DistKeeper.IncrementValidatorPeriod(ctx, val)
@@ -218,24 +392,64 @@ func TestCalculateRewardsAfterManySlashes(t *testing.T) {
 	rewards, err = input.DistKeeper.CalculateDelegationRewards(ctx, val, del, endingPeriod)
 	require.NoError(t, err)
 
-	// rewards should be half the tokens
-	require.Equal(t,
-		customtypes.DecPools{{Denom: bondDenom, DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecFromInt(initial)}}}},
-		rewards)
-
-	// commission should be the other half
 	commission, err := input.DistKeeper.ValidatorAccumulatedCommissions.Get(ctx, valAddr1)
 	require.NoError(t, err)
+
 	require.Equal(t,
-		customtypes.DecPools{{Denom: bondDenom, DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecFromInt(initial)}}}},
-		commission.Commissions)
+		// 98 * (20_000 / 30_000) * (10 / 20) * (9 / 10)
+		// + 98 * (500_000 / 4_500_000) * (6 / 20) * (9 / 10)
+		// + 98 * (1_000_000 / 3_000_000) * (4 / 20) * (9 / 10)
+		// = 38.22
+
+		// 98 * (10_000 / 20_000) * (10 / 20) * (9 / 10)
+		// + 98 * (250_000 / 4_250_000) * (6 / 20) * (9 / 10)
+		// + 98 * (500_000 / 2_500_000) * (4 / 20) * (9 / 10)
+		// = 27.134470588235295
+		int64(65),
+		rewards.Sum().AmountOf(bondDenom).TruncateInt64())
+
+	require.Equal(t,
+		// 98 * (20_000 / 30_000) * (10 / 20) * (1 / 10)
+		// + 98 * (500_000 / 4_500_000) * (6 / 20) * (1 / 10)
+		// + 98 * (1_000_000 / 3_000_000) * (4 / 20) * (1 / 10)
+		// = 4.246666666666666
+
+		// 98 * (10_000 / 20_000) * (10 / 20) * (1 / 10)
+		// + 98 * (250_000 / 4_250_000) * (6 / 20) * (1 / 10)
+		// + 98 * (500_000 / 2_500_000) * (4 / 20) * (1 / 10)
+		// = 3.0149411764705882
+		int64(7),
+		commission.Commissions.Sum().AmountOf(bondDenom).TruncateInt64())
 }
 
 func TestCalculateRewardsMultiDelegator(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
-	// self-delegation
-	valAddr1 := createValidatorWithBalance(ctx, input, 100_000_000, 1_000_000, 1)
+	input.StakingKeeper.SetBondDenoms(ctx, []string{"foo", "bar", "aaa"})
+	setRewardWeights(t, ctx, input, []customtypes.RewardWeight{
+		{
+			Denom:  "foo",
+			Weight: math.LegacyNewDecWithPrec(4, 1),
+		},
+		{
+			Denom:  "bar",
+			Weight: math.LegacyNewDecWithPrec(6, 1),
+		},
+		{
+			Denom:  "aaa",
+			Weight: math.LegacyNewDecWithPrec(1, 0),
+		},
+	})
+
+	input.VotingPowerKeeper.SetVotingPowerWeights(sdk.NewDecCoins(sdk.NewDecCoin("foo", math.NewInt(1)), sdk.NewDecCoin("bar", math.NewInt(4)), sdk.NewDecCoin("aaa", math.NewInt(10))))
+
+	valAddr1 := createValidatorWithCoin(ctx, input,
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 100_000_000), sdk.NewInt64Coin("bar", 100_000_000), sdk.NewInt64Coin("aaa", 100_000_000)),
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 2_000_000), sdk.NewInt64Coin("bar", 1_000_000), sdk.NewInt64Coin("aaa", 40_000)), 1)
+	valAddr2 := createValidatorWithCoin(ctx, input,
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 100_000_000), sdk.NewInt64Coin("bar", 100_000_000), sdk.NewInt64Coin("aaa", 100_000_000)),
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 2_000_000), sdk.NewInt64Coin("bar", 4_000_000), sdk.NewInt64Coin("aaa", 10_000)), 2)
+
 	validator, err := input.StakingKeeper.GetValidator(ctx, valAddr1)
 	require.NoError(t, err)
 	del1, err := input.StakingKeeper.GetDelegation(ctx, sdk.AccAddress(valAddr1), valAddr1)
@@ -244,15 +458,40 @@ func TestCalculateRewardsMultiDelegator(t *testing.T) {
 	// fetch validator and delegation
 	val, err := input.StakingKeeper.Validator(ctx, valAddr1)
 	require.NoError(t, err)
+	val2, err := input.StakingKeeper.Validator(ctx, valAddr2)
+	require.NoError(t, err)
 
-	// allocate some rewards
-	initial := int64(1000)
-	tokens := sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDec(initial)}}
-	err = input.DistKeeper.AllocateTokensToValidatorPool(ctx, val, bondDenom, tokens)
+	valConsPk1, err := val.ConsPubKey()
+	require.NoError(t, err)
+	valConsPk2, err := val2.ConsPubKey()
+	require.NoError(t, err)
+
+	fees := sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(100)))
+	feeCollector := input.AccountKeeper.GetModuleAccount(ctx, authtypes.FeeCollectorName)
+	require.NotNil(t, feeCollector)
+	input.Faucet.Fund(ctx, authtypes.NewModuleAddress(authtypes.FeeCollectorName), fees...)
+
+	votes := []abci.VoteInfo{
+		{
+			Validator: abci.Validator{
+				Address: valConsPk1.Address(),
+				Power:   100,
+			},
+			BlockIdFlag: types.BlockIDFlagCommit,
+		},
+		{
+			Validator: abci.Validator{
+				Address: valConsPk2.Address(),
+				Power:   400,
+			},
+			BlockIdFlag: types.BlockIDFlagCommit,
+		},
+	}
+	err = input.DistKeeper.AllocateTokens(ctx, 500, votes)
 	require.NoError(t, err)
 
 	// delegate to validator
-	bondCoins := sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(1_000_000)))
+	bondCoins := sdk.NewCoins(sdk.NewCoin("foo", math.NewInt(1_000_000)))
 	delAddr := input.Faucet.NewFundedAccount(ctx, bondCoins...)
 
 	shares, err := input.StakingKeeper.Delegate(ctx, delAddr, bondCoins, stakingtypes.Unbonded, validator, true)
@@ -271,7 +510,8 @@ func TestCalculateRewardsMultiDelegator(t *testing.T) {
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 
 	// allocate some more rewards
-	err = input.DistKeeper.AllocateTokensToValidatorPool(ctx, val, bondDenom, tokens)
+	input.Faucet.Fund(ctx, authtypes.NewModuleAddress(authtypes.FeeCollectorName), fees...)
+	err = input.DistKeeper.AllocateTokens(ctx, 500, votes)
 	require.NoError(t, err)
 
 	// end period
@@ -283,8 +523,18 @@ func TestCalculateRewardsMultiDelegator(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t,
-		customtypes.DecPools{{Denom: bondDenom, DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDec(initial * 3 / 4)}}}},
-		rewards)
+		// 98 * (40_000 / 50_000) * (10 / 20) * (9 / 10)
+		// + 98 * (1_000_000 / 5_000_000) * (6 / 20) * (9 / 10)
+		// + 98 * (2_000_000 / 4_000_000) * (4 / 20) * (9 / 10)
+		// = 49.392
+
+		// 98 * (40_000 / 50_000) * (10 / 20) * (9 / 10)
+		// + 98 * (1_000_000 / 5_000_000) * (6 / 20) * (9 / 10)
+		// + 98 * (2_000_000 / 5_000_000) * (4 / 20) * (9 / 10)
+		// = 47.628
+
+		int64(97),
+		rewards.Sum().AmountOf(bondDenom).TruncateInt64())
 
 	// calculate delegation rewards for del2
 	rewards, err = input.DistKeeper.CalculateDelegationRewards(ctx, val, del2, endingPeriod)
@@ -295,107 +545,195 @@ func TestCalculateRewardsMultiDelegator(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t,
-		customtypes.DecPools{{Denom: bondDenom, DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDec(initial * 1 / 4)}}}},
-		rewards)
+		// 98 * (1_000_000 / 5_000_000) * (4 / 20) * (9 / 10)
+		// = 3.528
+		int64(3),
+		rewards.Sum().AmountOf(bondDenom).TruncateInt64())
 
-	// commission should be equal to initial (50% twice)
 	require.Equal(t,
-		customtypes.DecPools{{Denom: bondDenom, DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDec(initial)}}}},
-		commission.Commissions)
+		// 98 * (40_000 / 50_000) * (10 / 20) * (1 / 10)
+		// + 98 * (1_000_000 / 5_000_000) * (6 / 20) * (1 / 10)
+		// + 98 * (2_000_000 / 4_000_000) * (4 / 20) * (1 / 10)
+		// = 5.488
+
+		// 98 * (40_000 / 50_000) * (10 / 20) * (1 / 10)
+		// + 98 * (1_000_000 / 5_000_000) * (6 / 20) * (1 / 10)
+		// + 98 * (3_000_000 / 5_000_000) * (4 / 20) * (1 / 10)
+		// = 5.684
+		int64(11),
+		commission.Commissions.Sum().AmountOf(bondDenom).TruncateInt64())
 }
 
 func TestWithdrawDelegationRewardsBasic(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
-	// create validator with 50% commission
-	valAddr := createValidatorWithBalance(ctx, input, 100_000_000, 1_000_000, 1)
-	_, err := input.StakingKeeper.GetValidator(ctx, valAddr)
+	input.StakingKeeper.SetBondDenoms(ctx, []string{"foo", "bar", "aaa"})
+	setRewardWeights(t, ctx, input, []customtypes.RewardWeight{
+		{
+			Denom:  "foo",
+			Weight: math.LegacyNewDecWithPrec(4, 1),
+		},
+		{
+			Denom:  "bar",
+			Weight: math.LegacyNewDecWithPrec(6, 1),
+		},
+		{
+			Denom:  "aaa",
+			Weight: math.LegacyNewDecWithPrec(1, 0),
+		},
+	})
+
+	input.VotingPowerKeeper.SetVotingPowerWeights(sdk.NewDecCoins(sdk.NewDecCoin("foo", math.NewInt(1)), sdk.NewDecCoin("bar", math.NewInt(4)), sdk.NewDecCoin("aaa", math.NewInt(10))))
+
+	valAddr1 := createValidatorWithCoin(ctx, input,
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 100_000_000), sdk.NewInt64Coin("bar", 100_000_000), sdk.NewInt64Coin("aaa", 100_000_000)),
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 2_000_000), sdk.NewInt64Coin("bar", 1_000_000), sdk.NewInt64Coin("aaa", 40_000)), 1)
+	valAddr2 := createValidatorWithCoin(ctx, input,
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 100_000_000), sdk.NewInt64Coin("bar", 100_000_000), sdk.NewInt64Coin("aaa", 100_000_000)),
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 2_000_000), sdk.NewInt64Coin("bar", 4_000_000), sdk.NewInt64Coin("aaa", 10_000)), 2)
+
+	// end block to bond validator and start new block
+	_, err := staking.EndBlocker(ctx, input.StakingKeeper)
 	require.NoError(t, err)
-
-	balancePower := int64(100)
-	balanceTokens := input.StakingKeeper.VotingPowerFromConsensusPower(ctx, balancePower)
-
-	// set module account coins
-	distrAcc := input.DistKeeper.GetDistributionAccount(ctx)
-	amount := sdk.NewCoins(sdk.NewCoin(bondDenom, balanceTokens))
-	err = input.BankKeeper.MintCoins(ctx, authtypes.Minter, amount)
-	require.NoError(t, err)
-	err = input.BankKeeper.SendCoinsFromModuleToModule(ctx, authtypes.Minter, distrAcc.GetName(), amount)
-	require.NoError(t, err)
-
-	power := int64(1)
-	valTokens := input.StakingKeeper.VotingPowerFromConsensusPower(ctx, power)
-
-	// assert correct initial balance
-	expTokens := balanceTokens.Sub(valTokens)
-	require.Equal(t,
-		sdk.Coins{sdk.NewCoin(bondDenom, expTokens)},
-		input.BankKeeper.GetAllBalances(ctx, sdk.AccAddress(valAddr)),
-	)
-
-	// end block to bond validator
-	staking.EndBlocker(ctx, input.StakingKeeper)
-	// next block
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 
 	// fetch validator and delegation
-	val, err := input.StakingKeeper.Validator(ctx, valAddr)
+	val, err := input.StakingKeeper.Validator(ctx, valAddr1)
+	require.NoError(t, err)
+	val2, err := input.StakingKeeper.Validator(ctx, valAddr2)
 	require.NoError(t, err)
 
-	// allocate some rewards
-	initial := input.StakingKeeper.VotingPowerFromConsensusPower(ctx, 1)
-	tokens := sdk.DecCoins{sdk.NewDecCoin(bondDenom, initial)}
+	valConsPk1, err := val.ConsPubKey()
+	require.NoError(t, err)
+	valConsPk2, err := val2.ConsPubKey()
+	require.NoError(t, err)
 
-	input.DistKeeper.AllocateTokensToValidatorPool(ctx, val, bondDenom, tokens)
+	fees := sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(100)))
+	feeCollector := input.AccountKeeper.GetModuleAccount(ctx, authtypes.FeeCollectorName)
+	require.NotNil(t, feeCollector)
+	input.Faucet.Fund(ctx, authtypes.NewModuleAddress(authtypes.FeeCollectorName), fees...)
 
-	// historical count should be 2 (initial + latest for delegation)
+	votes := []abci.VoteInfo{
+		{
+			Validator: abci.Validator{
+				Address: valConsPk1.Address(),
+				Power:   100,
+			},
+			BlockIdFlag: types.BlockIDFlagCommit,
+		},
+		{
+			Validator: abci.Validator{
+				Address: valConsPk2.Address(),
+				Power:   400,
+			},
+			BlockIdFlag: types.BlockIDFlagCommit,
+		},
+	}
+	err = input.DistKeeper.AllocateTokens(ctx, 500, votes)
+	require.NoError(t, err)
+
+	// historical count should be 4 (initial + latest: 2 for delegation per validator)
 	refCount, err := input.DistKeeper.GetValidatorHistoricalReferenceCount(ctx)
 	require.NoError(t, err)
-	require.Equal(t, uint64(2), refCount)
+	require.Equal(t, uint64(4), refCount)
 
 	// withdraw rewards
-	_, err = input.DistKeeper.WithdrawDelegationRewards(ctx, sdk.AccAddress(valAddr), valAddr)
-	require.Nil(t, err)
+	rewards, err := input.DistKeeper.WithdrawDelegationRewards(ctx, sdk.AccAddress(valAddr1), valAddr1)
+	require.NoError(t, err)
 
-	// historical count should still be 2 (added one record, cleared one)
+	require.Equal(t,
+		customtypes.Pools{
+			// 98 * (40_000 / 50_000) * (10 / 20) * (9 / 10) = 35.28
+			{Denom: "aaa", Coins: sdk.Coins{{Denom: bondDenom, Amount: math.NewInt(35)}}},
+			// 98 * (1_000_000 / 5_000_000) * (6 / 20) * (9 / 10) = 5.292
+			{Denom: "bar", Coins: sdk.Coins{{Denom: bondDenom, Amount: math.NewInt(5)}}},
+			// 98 * (2_000_000 / 4_000_000) * (4 / 20) * (9 / 10) = 8.82
+			{Denom: "foo", Coins: sdk.Coins{{Denom: bondDenom, Amount: math.NewInt(8)}}},
+		},
+		rewards,
+	)
+
+	// historical count should still be 4 (added one record, cleared one)
 	refCount, err = input.DistKeeper.GetValidatorHistoricalReferenceCount(ctx)
 	require.NoError(t, err)
-	require.Equal(t, uint64(2), refCount)
+	require.Equal(t, uint64(4), refCount)
 
 	// assert correct balance
-	exp := balanceTokens.Sub(valTokens).Add(initial.QuoRaw(2))
 	require.Equal(t,
-		sdk.Coins{sdk.NewCoin(bondDenom, exp)},
-		input.BankKeeper.GetAllBalances(ctx, sdk.AccAddress(valAddr)),
+		rewards.Sum().AmountOf(bondDenom).Int64(),
+		input.BankKeeper.GetBalance(ctx, sdk.AccAddress(valAddr1), bondDenom).Amount.Int64(),
 	)
 
 	// withdraw commission
-	_, err = input.DistKeeper.WithdrawValidatorCommission(ctx, valAddr)
+	_, err = input.DistKeeper.WithdrawValidatorCommission(ctx, valAddr1)
 	require.Nil(t, err)
 }
 
 func TestWithdrawDelegationZeroRewards(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
-	// create validator with 50% commission
-	valAddr := createValidatorWithBalance(ctx, input, 100_000_000, 1_000_000, 1)
-	_, err := input.StakingKeeper.GetValidator(ctx, valAddr)
+	input.StakingKeeper.SetBondDenoms(ctx, []string{"foo", "bar", "aaa"})
+	setRewardWeights(t, ctx, input, []customtypes.RewardWeight{
+		{
+			Denom:  "foo",
+			Weight: math.LegacyNewDecWithPrec(4, 1),
+		},
+		{
+			Denom:  "bar",
+			Weight: math.LegacyNewDecWithPrec(6, 1),
+		},
+		{
+			Denom:  "aaa",
+			Weight: math.LegacyNewDecWithPrec(1, 0),
+		},
+	})
+
+	input.VotingPowerKeeper.SetVotingPowerWeights(sdk.NewDecCoins(sdk.NewDecCoin("foo", math.NewInt(1)), sdk.NewDecCoin("bar", math.NewInt(4)), sdk.NewDecCoin("aaa", math.NewInt(10))))
+
+	valAddr1 := createValidatorWithCoin(ctx, input,
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 100_000_000), sdk.NewInt64Coin("bar", 100_000_000), sdk.NewInt64Coin("aaa", 100_000_000)),
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 2_000_000), sdk.NewInt64Coin("bar", 1_000_000), sdk.NewInt64Coin("aaa", 40_000)), 1)
+	valAddr2 := createValidatorWithCoin(ctx, input,
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 100_000_000), sdk.NewInt64Coin("bar", 100_000_000), sdk.NewInt64Coin("aaa", 100_000_000)),
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 2_000_000), sdk.NewInt64Coin("bar", 4_000_000), sdk.NewInt64Coin("aaa", 10_000)), 2)
+
+	// fetch validator and delegation
+	val, err := input.StakingKeeper.Validator(ctx, valAddr1)
+	require.NoError(t, err)
+	val2, err := input.StakingKeeper.Validator(ctx, valAddr2)
 	require.NoError(t, err)
 
-	balancePower := int64(1000)
-	balanceTokens := input.StakingKeeper.VotingPowerFromConsensusPower(ctx, balancePower)
+	valConsPk1, err := val.ConsPubKey()
+	require.NoError(t, err)
+	valConsPk2, err := val2.ConsPubKey()
+	require.NoError(t, err)
 
-	// set module account coins
-	distrAcc := input.DistKeeper.GetDistributionAccount(ctx)
-	amount := sdk.NewCoins(sdk.NewCoin(bondDenom, balanceTokens))
-	err = input.BankKeeper.MintCoins(ctx, authtypes.Minter, amount)
+	fees := sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(100)))
+	feeCollector := input.AccountKeeper.GetModuleAccount(ctx, authtypes.FeeCollectorName)
+	require.NotNil(t, feeCollector)
+	input.Faucet.Fund(ctx, authtypes.NewModuleAddress(authtypes.FeeCollectorName), fees...)
+
+	votes := []abci.VoteInfo{
+		{
+			Validator: abci.Validator{
+				Address: valConsPk1.Address(),
+				Power:   100,
+			},
+			BlockIdFlag: types.BlockIDFlagCommit,
+		},
+		{
+			Validator: abci.Validator{
+				Address: valConsPk2.Address(),
+				Power:   400,
+			},
+			BlockIdFlag: types.BlockIDFlagCommit,
+		},
+	}
+	err = input.DistKeeper.AllocateTokens(ctx, 500, votes)
 	require.NoError(t, err)
-	err = input.BankKeeper.SendCoinsFromModuleToModule(ctx, authtypes.Minter, distrAcc.GetName(), amount)
-	require.NoError(t, err)
-	input.AccountKeeper.SetModuleAccount(ctx, distrAcc)
 
 	// withdraw rewards -- should be 0
-	pool, err := input.DistKeeper.WithdrawDelegationRewards(ctx, sdk.AccAddress(valAddr), valAddr)
+	pool, err := input.DistKeeper.WithdrawDelegationRewards(ctx, sdk.AccAddress(valAddr1), valAddr1)
 	require.NoError(t, err)
 	require.True(t, pool.Sum().IsZero(), "expected withdraw rewards to be zero")
 	require.True(t, pool.Sum().IsValid(), "expected returned coins to be valid")
@@ -404,19 +742,48 @@ func TestWithdrawDelegationZeroRewards(t *testing.T) {
 func TestCalculateRewardsAfterManySlashesInSameBlock(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
-	valAddr := createValidatorWithBalance(ctx, input, 100_000_000, 10_000_000, 1)
-	validator, err := input.StakingKeeper.GetValidator(ctx, valAddr)
-	require.NoError(t, err)
+	input.StakingKeeper.SetBondDenoms(ctx, []string{"foo", "bar", "aaa"})
+	setRewardWeights(t, ctx, input, []customtypes.RewardWeight{
+		{
+			Denom:  "foo",
+			Weight: math.LegacyNewDecWithPrec(4, 1),
+		},
+		{
+			Denom:  "bar",
+			Weight: math.LegacyNewDecWithPrec(6, 1),
+		},
+		{
+			Denom:  "aaa",
+			Weight: math.LegacyNewDecWithPrec(1, 0),
+		},
+	})
 
-	// end block to bond validator
-	staking.EndBlocker(ctx, input.StakingKeeper)
-	// next block
+	input.VotingPowerKeeper.SetVotingPowerWeights(sdk.NewDecCoins(sdk.NewDecCoin("foo", math.NewInt(1)), sdk.NewDecCoin("bar", math.NewInt(4)), sdk.NewDecCoin("aaa", math.NewInt(10))))
+
+	valAddr1 := createValidatorWithCoin(ctx, input,
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 100_000_000), sdk.NewInt64Coin("bar", 100_000_000), sdk.NewInt64Coin("aaa", 100_000_000)),
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 2_000_000), sdk.NewInt64Coin("bar", 1_000_000), sdk.NewInt64Coin("aaa", 40_000)), 1)
+	valAddr2 := createValidatorWithCoin(ctx, input,
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 100_000_000), sdk.NewInt64Coin("bar", 100_000_000), sdk.NewInt64Coin("aaa", 100_000_000)),
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 2_000_000), sdk.NewInt64Coin("bar", 4_000_000), sdk.NewInt64Coin("aaa", 10_000)), 2)
+
+	// end block to bond validator and start new block
+	_, err := staking.EndBlocker(ctx, input.StakingKeeper)
+	require.NoError(t, err)
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 
 	// fetch validator and delegation
-	val, err := input.StakingKeeper.Validator(ctx, valAddr)
+	val, err := input.StakingKeeper.Validator(ctx, valAddr1)
 	require.NoError(t, err)
-	del, err := input.StakingKeeper.Delegation(ctx, sdk.AccAddress(valAddr), valAddr)
+	val2, err := input.StakingKeeper.Validator(ctx, valAddr2)
+	require.NoError(t, err)
+
+	valConsPk1, err := val.ConsPubKey()
+	require.NoError(t, err)
+	valConsPk2, err := val2.ConsPubKey()
+	require.NoError(t, err)
+
+	del, err := input.StakingKeeper.Delegation(ctx, sdk.AccAddress(valAddr1), valAddr1)
 	require.NoError(t, err)
 
 	// end period
@@ -428,32 +795,57 @@ func TestCalculateRewardsAfterManySlashesInSameBlock(t *testing.T) {
 
 	// rewards should be zero
 	require.True(t, rewards.Sum().IsZero())
-	// start out block height
-	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 3)
 
-	// allocate some rewards
-	initial := math.LegacyNewDecFromInt(input.StakingKeeper.VotingPowerFromConsensusPower(ctx, 1))
-	tokens := sdk.DecCoins{{Denom: bondDenom, Amount: initial}}
-	input.DistKeeper.AllocateTokensToValidatorPool(ctx, val, bondDenom, tokens)
+	fees := sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(100)))
+	feeCollector := input.AccountKeeper.GetModuleAccount(ctx, authtypes.FeeCollectorName)
+	require.NotNil(t, feeCollector)
+	votes := []abci.VoteInfo{
+		{
+			Validator: abci.Validator{
+				Address: valConsPk1.Address(),
+				Power:   100,
+			},
+			BlockIdFlag: types.BlockIDFlagCommit,
+		},
+		{
+			Validator: abci.Validator{
+				Address: valConsPk2.Address(),
+				Power:   400,
+			},
+			BlockIdFlag: types.BlockIDFlagCommit,
+		},
+	}
+	input.Faucet.Fund(ctx, authtypes.NewModuleAddress(authtypes.FeeCollectorName), fees...)
+	err = input.DistKeeper.AllocateTokens(ctx, 500, votes)
+	require.NoError(t, err)
 
-	pubkey, err := validator.ConsPubKey()
+	pubkey, err := val.ConsPubKey()
 	require.NoError(t, err)
 	valConsAddr := pubkey.Address().Bytes()
 
+	// start out block height
+	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 3)
+
 	// slash the validator by 50%
-	input.StakingKeeper.Slash(ctx, valConsAddr, ctx.BlockHeight(), math.LegacyNewDecWithPrec(5, 1))
+	slashedTokens, err := input.StakingKeeper.Slash(ctx, valConsAddr, ctx.BlockHeight(), math.LegacyNewDecWithPrec(5, 1))
+	require.NoError(t, err)
+	require.True(t, slashedTokens.IsAllPositive(), "expected positive slashed tokens, got: %s", slashedTokens)
 
 	// slash the validator by 50% again
-	input.StakingKeeper.Slash(ctx, valConsAddr, ctx.BlockHeight(), math.LegacyNewDecWithPrec(5, 1))
-
-	// fetch the validator again
-	val, err = input.StakingKeeper.Validator(ctx, valAddr)
+	slashedTokens, err = input.StakingKeeper.Slash(ctx, valConsAddr, ctx.BlockHeight(), math.LegacyNewDecWithPrec(5, 1))
 	require.NoError(t, err)
+	require.True(t, slashedTokens.IsAllPositive(), "expected positive slashed tokens, got: %s", slashedTokens)
+
 	// increase block height
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 3)
 
-	// allocate some more rewards
-	input.DistKeeper.AllocateTokensToValidatorPool(ctx, val, bondDenom, tokens)
+	input.Faucet.Fund(ctx, authtypes.NewModuleAddress(authtypes.FeeCollectorName), fees...)
+	err = input.DistKeeper.AllocateTokens(ctx, 500, votes)
+	require.NoError(t, err)
+
+	// fetch the validator again
+	val, err = input.StakingKeeper.Validator(ctx, valAddr1)
+	require.NoError(t, err)
 
 	// end period
 	endingPeriod, err = input.DistKeeper.IncrementValidatorPeriod(ctx, val)
@@ -463,82 +855,146 @@ func TestCalculateRewardsAfterManySlashesInSameBlock(t *testing.T) {
 	rewards, err = input.DistKeeper.CalculateDelegationRewards(ctx, val, del, endingPeriod)
 	require.NoError(t, err)
 
-	// rewards should be half the tokens
-	require.Equal(t,
-		customtypes.DecPools{{Denom: bondDenom, DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: initial}}}},
-		rewards)
-
 	// load commission
-	commission, err := input.DistKeeper.ValidatorAccumulatedCommissions.Get(ctx, valAddr)
+	commission, err := input.DistKeeper.ValidatorAccumulatedCommissions.Get(ctx, valAddr1)
 	require.NoError(t, err)
 
-	// commission should be the other half
 	require.Equal(t,
-		customtypes.DecPools{{Denom: bondDenom, DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: initial}}}},
-		commission.Commissions)
+		// 98 * (40_000 / 50_000) * (10 / 20) * (9 / 10)
+		// + 98 * (1_000_000 / 5_000_000) * (6 / 20) * (9 / 10)
+		// + 98 * (2_000_000 / 4_000_000) * (4 / 20) * (9 / 10)
+		// = 49.392
+
+		// 98 * (10_000 / 20_000) * (10 / 20) * (9 / 10)
+		// + 98 * (250_000 / 4_250_000) * (6 / 20) * (9 / 10)
+		// + 98 * (500_000 / 2_500_000) * (4 / 20) * (9 / 10)
+		// = 27.134470588235295
+		int64(76),
+		rewards.Sum().AmountOf(bondDenom).TruncateInt64())
+
+	require.Equal(t,
+		// 98 * (40_000 / 50_000) * (10 / 20) * (1 / 10)
+		// + 98 * (1_000_000 / 5_000_000) * (6 / 20) * (1 / 10)
+		// + 98 * (2_000_000 / 4_000_000) * (4 / 20) * (1 / 10)
+		// = 5.488
+
+		// 98 * (10_000 / 20_000) * (10 / 20) * (1 / 10)
+		// + 98 * (250_000 / 4_250_000) * (6 / 20) * (1 / 10)
+		// + 98 * (500_000 / 2_500_000) * (4 / 20) * (1 / 10)
+		// = 3.0149411764705882
+		int64(8),
+		commission.Commissions.Sum().AmountOf(bondDenom).TruncateInt64())
 }
 
 func TestCalculateRewardsMultiDelegatorMultiSlash(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
-	// self delegation
-	valAddr1 := createValidatorWithBalance(ctx, input, 100_000_000, 10_000_000, 1)
-	_, err := input.StakingKeeper.GetValidator(ctx, valAddr1)
+	input.StakingKeeper.SetBondDenoms(ctx, []string{"foo", "bar", "aaa"})
+	setRewardWeights(t, ctx, input, []customtypes.RewardWeight{
+		{
+			Denom:  "foo",
+			Weight: math.LegacyNewDecWithPrec(4, 1),
+		},
+		{
+			Denom:  "bar",
+			Weight: math.LegacyNewDecWithPrec(6, 1),
+		},
+		{
+			Denom:  "aaa",
+			Weight: math.LegacyNewDecWithPrec(1, 0),
+		},
+	})
+
+	input.VotingPowerKeeper.SetVotingPowerWeights(sdk.NewDecCoins(sdk.NewDecCoin("foo", math.NewInt(1)), sdk.NewDecCoin("bar", math.NewInt(4)), sdk.NewDecCoin("aaa", math.NewInt(10))))
+
+	valAddr1 := createValidatorWithCoin(ctx, input,
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 100_000_000), sdk.NewInt64Coin("bar", 100_000_000), sdk.NewInt64Coin("aaa", 100_000_000)),
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 2_000_000), sdk.NewInt64Coin("bar", 1_000_000), sdk.NewInt64Coin("aaa", 40_000)), 1)
+	valAddr2 := createValidatorWithCoin(ctx, input,
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 100_000_000), sdk.NewInt64Coin("bar", 100_000_000), sdk.NewInt64Coin("aaa", 100_000_000)),
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 2_000_000), sdk.NewInt64Coin("bar", 4_000_000), sdk.NewInt64Coin("aaa", 10_000)), 2)
+
+	// end block to bond validator and start new block
+	_, err := staking.EndBlocker(ctx, input.StakingKeeper)
 	require.NoError(t, err)
-
-	valAddr2 := createValidatorWithBalance(ctx, input, 100_000_000, 1, 2)
-	_, err = input.StakingKeeper.GetValidator(ctx, valAddr2)
-	require.NoError(t, err)
-
-	validator1, err := input.StakingKeeper.GetValidator(ctx, valAddr1)
-	require.NoError(t, err)
-
-	pubkey, err := validator1.ConsPubKey()
-	require.NoError(t, err)
-	valConsAddr1 := pubkey.Address().Bytes()
-
-	// end block to bond validator
-	staking.EndBlocker(ctx, input.StakingKeeper)
-
-	// next block
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 
 	// fetch validator and delegation
 	val, err := input.StakingKeeper.Validator(ctx, valAddr1)
 	require.NoError(t, err)
+	val2, err := input.StakingKeeper.Validator(ctx, valAddr2)
+	require.NoError(t, err)
 	del1, err := input.StakingKeeper.Delegation(ctx, sdk.AccAddress(valAddr1), valAddr1)
 	require.NoError(t, err)
 
-	// allocate some rewards
-	initial := math.LegacyNewDecFromInt(input.StakingKeeper.VotingPowerFromConsensusPower(ctx, 10))
-	tokens := sdk.DecCoins{{Denom: bondDenom, Amount: initial}}
-	input.DistKeeper.AllocateTokensToValidatorPool(ctx, val, bondDenom, tokens)
+	valConsPk1, err := val.ConsPubKey()
+	require.NoError(t, err)
+	valConsPk2, err := val2.ConsPubKey()
+	require.NoError(t, err)
+
+	valConsAddr := valConsPk1.Address().Bytes()
+
+	fees := sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(100)))
+	feeCollector := input.AccountKeeper.GetModuleAccount(ctx, authtypes.FeeCollectorName)
+	require.NotNil(t, feeCollector)
+	votes := []abci.VoteInfo{
+		{
+			Validator: abci.Validator{
+				Address: valConsPk1.Address(),
+				Power:   100,
+			},
+			BlockIdFlag: types.BlockIDFlagCommit,
+		},
+		{
+			Validator: abci.Validator{
+				Address: valConsPk2.Address(),
+				Power:   400,
+			},
+			BlockIdFlag: types.BlockIDFlagCommit,
+		},
+	}
+	input.Faucet.Fund(ctx, authtypes.NewModuleAddress(authtypes.FeeCollectorName), fees...)
+	err = input.DistKeeper.AllocateTokens(ctx, 500, votes)
+	require.NoError(t, err)
 
 	// slash the validator
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 3)
-	input.StakingKeeper.Slash(ctx, valConsAddr1, ctx.BlockHeight(), math.LegacyNewDecWithPrec(5, 1))
+	slashedTokens, err := input.StakingKeeper.Slash(ctx, valConsAddr, ctx.BlockHeight(), math.LegacyNewDecWithPrec(5, 1))
+	require.NoError(t, err)
+	require.True(t, slashedTokens.IsAllPositive(), "expected positive slashed tokens, got: %s", slashedTokens)
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 3)
 
 	// second delegation
-	bondCoins := sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(10_000_000)))
-	shares, err := input.StakingKeeper.Delegate(ctx, sdk.AccAddress(valAddr2), bondCoins, stakingtypes.Unbonded, validator1, true)
+	bondCoins := sdk.NewCoins(sdk.NewCoin("foo", math.NewInt(1_000_000)))
+	delAddr := input.Faucet.NewFundedAccount(ctx, bondCoins...)
+
+	validator, err := input.StakingKeeper.GetValidator(ctx, valAddr1)
 	require.NoError(t, err)
-	require.Equal(t, sdk.NewDecCoinsFromCoins(bondCoins...), shares)
-	del2, err := input.StakingKeeper.GetDelegation(ctx, sdk.AccAddress(valAddr2), valAddr1)
+	shares, err := input.StakingKeeper.Delegate(ctx, delAddr, bondCoins, stakingtypes.Unbonded, validator, true)
+	require.NoError(t, err)
+
+	// existing 2_000_000 shares for 2_000_000 / 2 tokens => new shares == 2_000_000
+	require.Equal(t, sdk.NewDecCoinsFromCoins(bondCoins...).MulDec(math.LegacyNewDec(2)), shares)
+	del2, err := input.StakingKeeper.GetDelegation(ctx, delAddr, valAddr1)
 	require.NoError(t, err)
 
 	// end block
-	staking.EndBlocker(ctx, input.StakingKeeper)
+	_, err = staking.EndBlocker(ctx, input.StakingKeeper)
+	require.NoError(t, err)
 
 	// next block
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 
 	// allocate some more rewards
-	input.DistKeeper.AllocateTokensToValidatorPool(ctx, val, bondDenom, tokens)
+	input.Faucet.Fund(ctx, authtypes.NewModuleAddress(authtypes.FeeCollectorName), fees...)
+	err = input.DistKeeper.AllocateTokens(ctx, 500, votes)
+	require.NoError(t, err)
 
 	// slash the validator again
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 3)
-	input.StakingKeeper.Slash(ctx, valConsAddr1, ctx.BlockHeight(), math.LegacyNewDecWithPrec(5, 1))
+	slashedTokens, err = input.StakingKeeper.Slash(ctx, valConsAddr, ctx.BlockHeight(), math.LegacyNewDecWithPrec(5, 1))
+	require.NoError(t, err)
+	require.True(t, slashedTokens.IsAllPositive(), "expected positive slashed tokens, got: %s", slashedTokens)
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 3)
 
 	// fetch updated validator
@@ -553,79 +1009,123 @@ func TestCalculateRewardsMultiDelegatorMultiSlash(t *testing.T) {
 	rewards, err := input.DistKeeper.CalculateDelegationRewards(ctx, val, del1, endingPeriod)
 	require.NoError(t, err)
 
-	// rewards for del1 should be 5/8 initial (half initial first period, 1/8 initial second period)
 	require.Equal(t,
-		customtypes.DecPools{{Denom: bondDenom, DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: initial.QuoInt64(2).Add(initial.QuoInt64(8))}}}},
-		rewards)
+		// 98 * (40_000 / 50_000) * (10 / 20) * (9 / 10)
+		// + 98 * (1_000_000 / 5_000_000) * (6 / 20) * (9 / 10)
+		// + 98 * (2_000_000 / 4_000_000) * (4 / 20) * (9 / 10)
+		// = 49.392
+
+		// 98 * (20_000 / 30_000) * (10 / 20) * (9 / 10)
+		// + 98 * (500_000 / 4_500_000) * (6 / 20) * (9 / 10)
+		// + 98 * (1_000_000 / 4_000_000) * (4 / 20) * (9 / 10)
+		// = 36.75
+		int64(86),
+		rewards.Sum().AmountOf(bondDenom).TruncateInt64())
 
 	// calculate delegation rewards for del2
 	rewards, err = input.DistKeeper.CalculateDelegationRewards(ctx, val, del2, endingPeriod)
 	require.NoError(t, err)
 
-	// rewards for del2 should be initial / 8
 	require.Equal(t,
-		customtypes.DecPools{{Denom: bondDenom, DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: initial.QuoInt64(4)}}}},
-		rewards)
+		// 98 * (1_000_000 / 4_000_000) * (4 / 20) * (9 / 10)
+		// = 4.41
+		int64(4),
+		rewards.Sum().AmountOf(bondDenom).TruncateInt64())
 
 	// load commission
 	commission, err := input.DistKeeper.ValidatorAccumulatedCommissions.Get(ctx, valAddr1)
 	require.NoError(t, err)
 
-	// commission should be equal to initial (twice 50% commission, unaffected by slashing)
 	require.Equal(t,
-		customtypes.DecPools{{Denom: bondDenom, DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: initial}}}},
-		commission.Commissions)
+		// 98 * (40_000 / 50_000) * (10 / 20) * (1 / 10)
+		// + 98 * (1_000_000 / 5_000_000) * (6 / 20) * (1 / 10)
+		// + 98 * (2_000_000 / 4_000_000) * (4 / 20) * (1 / 10)
+		// = 5.488
+
+		// 98 * (20_000 / 30_000) * (10 / 20) * (1 / 10)
+		// + 98 * (500_000 / 4_500_000) * (6 / 20) * (1 / 10)
+		// + 98 * (3_000_000 / 4_000_000) * (4 / 20) * (1 / 10)
+		// = 5.06333333
+		int64(10),
+		commission.Commissions.Sum().AmountOf(bondDenom).TruncateInt64())
 }
 
 func TestCalculateRewardsMultiDelegatorMultWithdraw(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
-	// self delegation
-	valAddr1 := createValidatorWithBalance(ctx, input, 100_000_000, 1_000_000, 1)
-	_, err := input.StakingKeeper.GetValidator(ctx, valAddr1)
-	require.NoError(t, err)
+	input.StakingKeeper.SetBondDenoms(ctx, []string{"foo", "bar", "aaa"})
+	setRewardWeights(t, ctx, input, []customtypes.RewardWeight{
+		{
+			Denom:  "foo",
+			Weight: math.LegacyNewDecWithPrec(4, 1),
+		},
+		{
+			Denom:  "bar",
+			Weight: math.LegacyNewDecWithPrec(6, 1),
+		},
+		{
+			Denom:  "aaa",
+			Weight: math.LegacyNewDecWithPrec(1, 0),
+		},
+	})
 
-	valAddr2 := createValidatorWithBalance(ctx, input, 100_000_000, 1_000_000, 2)
-	_, err = input.StakingKeeper.GetValidator(ctx, valAddr2)
-	require.NoError(t, err)
+	input.VotingPowerKeeper.SetVotingPowerWeights(sdk.NewDecCoins(sdk.NewDecCoin("foo", math.NewInt(1)), sdk.NewDecCoin("bar", math.NewInt(4)), sdk.NewDecCoin("aaa", math.NewInt(10))))
 
-	validator1, err := input.StakingKeeper.GetValidator(ctx, valAddr1)
-	require.NoError(t, err)
+	valAddr1 := createValidatorWithCoin(ctx, input,
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 100_000_000), sdk.NewInt64Coin("bar", 100_000_000), sdk.NewInt64Coin("aaa", 100_000_000)),
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 2_000_000), sdk.NewInt64Coin("bar", 1_000_000), sdk.NewInt64Coin("aaa", 40_000)), 1)
+	valAddr2 := createValidatorWithCoin(ctx, input,
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 100_000_000), sdk.NewInt64Coin("bar", 100_000_000), sdk.NewInt64Coin("aaa", 100_000_000)),
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 2_000_000), sdk.NewInt64Coin("bar", 4_000_000), sdk.NewInt64Coin("aaa", 10_000)), 2)
 
-	// set module account coins
-	balancePower := int64(100)
-	balanceTokens := input.StakingKeeper.VotingPowerFromConsensusPower(ctx, balancePower)
-	distrAcc := input.DistKeeper.GetDistributionAccount(ctx)
-	amount := sdk.NewCoins(sdk.NewCoin(bondDenom, balanceTokens))
-	err = input.BankKeeper.MintCoins(ctx, authtypes.Minter, amount)
+	// end block to bond validator and start new block
+	_, err := staking.EndBlocker(ctx, input.StakingKeeper)
 	require.NoError(t, err)
-	err = input.BankKeeper.SendCoinsFromModuleToModule(ctx, authtypes.Minter, distrAcc.GetName(), amount)
-	require.NoError(t, err)
+	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 
 	// fetch validator and delegation
 	val, err := input.StakingKeeper.Validator(ctx, valAddr1)
 	require.NoError(t, err)
+	val2, err := input.StakingKeeper.Validator(ctx, valAddr2)
+	require.NoError(t, err)
 	del1, err := input.StakingKeeper.Delegation(ctx, sdk.AccAddress(valAddr1), valAddr1)
 	require.NoError(t, err)
 
-	// end block
-	staking.EndBlocker(ctx, input.StakingKeeper)
-	// next block
-	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
+	valConsPk1, err := val.ConsPubKey()
+	require.NoError(t, err)
+	valConsPk2, err := val2.ConsPubKey()
+	require.NoError(t, err)
 
-	// allocate some rewards (1)
-	initial := int64(20)
-	tokens := sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDec(initial)}}
-	input.DistKeeper.AllocateTokensToValidatorPool(ctx, val, bondDenom, tokens)
+	fees := sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(100)))
+	feeCollector := input.AccountKeeper.GetModuleAccount(ctx, authtypes.FeeCollectorName)
+	require.NotNil(t, feeCollector)
+	votes := []abci.VoteInfo{
+		{
+			Validator: abci.Validator{
+				Address: valConsPk1.Address(),
+				Power:   100,
+			},
+			BlockIdFlag: types.BlockIDFlagCommit,
+		},
+		{
+			Validator: abci.Validator{
+				Address: valConsPk2.Address(),
+				Power:   400,
+			},
+			BlockIdFlag: types.BlockIDFlagCommit,
+		},
+	}
 
 	// second delegation
-	bondCoins := sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(1_000_000)))
-	shares, err := input.StakingKeeper.Delegate(ctx, sdk.AccAddress(valAddr2), bondCoins, stakingtypes.Unbonded, validator1, true)
-	require.NoError(t, err)
-	require.Equal(t, sdk.NewDecCoinsFromCoins(bondCoins...), shares)
+	bondCoins := sdk.NewCoins(sdk.NewCoin("foo", math.NewInt(1_000_000)))
+	delAddr := input.Faucet.NewFundedAccount(ctx, bondCoins...)
 
-	// fetch updated validator
-	del2, err := input.StakingKeeper.GetDelegation(ctx, sdk.AccAddress(valAddr2), valAddr1)
+	validator, err := input.StakingKeeper.GetValidator(ctx, valAddr1)
+	require.NoError(t, err)
+	_, err = input.StakingKeeper.Delegate(ctx, delAddr, bondCoins, stakingtypes.Unbonded, validator, true)
+	require.NoError(t, err)
+
+	del2, err := input.StakingKeeper.GetDelegation(ctx, delAddr, valAddr1)
 	require.NoError(t, err)
 
 	// end block
@@ -635,15 +1135,17 @@ func TestCalculateRewardsMultiDelegatorMultWithdraw(t *testing.T) {
 	// next block
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 
-	// allocate some more rewards (2)
-	input.DistKeeper.AllocateTokensToValidatorPool(ctx, val, bondDenom, tokens)
+	// allocate some more rewards
+	input.Faucet.Fund(ctx, authtypes.NewModuleAddress(authtypes.FeeCollectorName), fees...)
+	err = input.DistKeeper.AllocateTokens(ctx, 500, votes)
+	require.NoError(t, err)
 
 	// first delegator withdraws
 	_, err = input.DistKeeper.WithdrawDelegationRewards(ctx, sdk.AccAddress(valAddr1), valAddr1)
 	require.NoError(t, err)
 
 	// second delegator withdraws
-	_, err = input.DistKeeper.WithdrawDelegationRewards(ctx, sdk.AccAddress(valAddr2), valAddr1)
+	_, err = input.DistKeeper.WithdrawDelegationRewards(ctx, delAddr, valAddr1)
 	require.NoError(t, err)
 
 	// validator withdraws commission (1)
@@ -668,16 +1170,23 @@ func TestCalculateRewardsMultiDelegatorMultWithdraw(t *testing.T) {
 	// rewards for del2 should be zero
 	require.True(t, rewards.Sum().IsZero())
 
-	// commission should be zero
 	val1Commission, err := input.DistKeeper.ValidatorAccumulatedCommissions.Get(ctx, valAddr1)
 	require.NoError(t, err)
-	require.True(t, val1Commission.Commissions.Sum().IsZero())
+	require.Equal(t,
+		// 98 * (40_000 / 50_000) * (10 / 20) * (1 / 10) = 3.92
+		// 98 * (1_000_000 / 5_000_000) * (6 / 20) * (1 / 10) = 0.588
+		// 98 * (3_000_000 / 5_000_000) * (4 / 20) * (1 / 10) = 1.176
+
+		// 0.92 + 0.588 + 0.176 = 1.684
+		int64(1),
+		val1Commission.Commissions.Sum().AmountOf(bondDenom).TruncateInt64())
 
 	// next block
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 
-	// allocate some more rewards (3)
-	input.DistKeeper.AllocateTokensToValidatorPool(ctx, val, bondDenom, tokens)
+	input.Faucet.Fund(ctx, authtypes.NewModuleAddress(authtypes.FeeCollectorName), fees...)
+	err = input.DistKeeper.AllocateTokens(ctx, 500, votes)
+	require.NoError(t, err)
 
 	// first delegator withdraws again
 	_, err = input.DistKeeper.WithdrawDelegationRewards(ctx, sdk.AccAddress(valAddr1), valAddr1)
@@ -691,23 +1200,29 @@ func TestCalculateRewardsMultiDelegatorMultWithdraw(t *testing.T) {
 	rewards, err = input.DistKeeper.CalculateDelegationRewards(ctx, val, del2, endingPeriod)
 	require.NoError(t, err)
 
-	// rewards for del2 should be 1/4 initial
 	require.Equal(t,
-		customtypes.DecPools{{Denom: bondDenom, DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDec(initial / 4)}}}},
-		rewards)
+		// 98 * (1_000_000 / 5_000_000) * (4 / 20) * (9 / 10)
+		// = 3.5280000000000005
+		int64(3),
+		rewards.Sum().AmountOf(bondDenom).TruncateInt64())
 
-	// commission should be half initial
 	val1Commission, err = input.DistKeeper.ValidatorAccumulatedCommissions.Get(ctx, valAddr1)
 	require.NoError(t, err)
 	require.Equal(t,
-		customtypes.DecPools{{Denom: bondDenom, DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDec(initial / 2)}}}},
-		val1Commission.Commissions)
+		// 98 * (40_000 / 50_000) * (10 / 20) * (1 / 10) + 0.92
+		// + 98 * (1_000_000 / 5_000_000) * (6 / 20) * (1 / 10) + 0.588
+		// + 98 * (3_000_000 / 5_000_000) * (4 / 20) * (1 / 10) + 0.176
+		// 7.368
+
+		int64(7),
+		val1Commission.Commissions.Sum().AmountOf(bondDenom).TruncateInt64())
 
 	// next block
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 
-	// allocate some more rewards (4)
-	input.DistKeeper.AllocateTokensToValidatorPool(ctx, val, bondDenom, tokens)
+	input.Faucet.Fund(ctx, authtypes.NewModuleAddress(authtypes.FeeCollectorName), fees...)
+	err = input.DistKeeper.AllocateTokens(ctx, 500, votes)
+	require.NoError(t, err)
 
 	// withdraw commission (2)
 	_, err = input.DistKeeper.WithdrawValidatorCommission(ctx, valAddr1)
@@ -728,22 +1243,37 @@ func TestCalculateRewardsMultiDelegatorMultWithdraw(t *testing.T) {
 	rewards, err = input.DistKeeper.CalculateDelegationRewards(ctx, val, del1, endingPeriod)
 	require.NoError(t, err)
 
-	// rewards for del1 should be 1/4 initial
 	require.Equal(t,
-		customtypes.DecPools{{Denom: bondDenom, DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDec(initial / 4)}}}},
-		rewards)
+		// 98 * (40_000 / 50_000) * (10 / 20) * (9 / 10)
+		// + 98 * (1_000_000 / 5_000_000) * (6 / 20) * (9 / 10)
+		// + 98 * (2_000_000 / 5_000_000) * (4 / 20) * (9 / 10)
+		// = 47.628
+		int64(47),
+		rewards.Sum().AmountOf(bondDenom).TruncateInt64())
 
 	// calculate delegation rewards for del2
 	rewards, err = input.DistKeeper.CalculateDelegationRewards(ctx, val, del2, endingPeriod)
 	require.NoError(t, err)
 
-	// rewards for del2 should be 1/2 initial
 	require.Equal(t,
-		customtypes.DecPools{{Denom: bondDenom, DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDec(initial / 2)}}}},
-		rewards)
+		// 98 * (1_000_000 / 5_000_000) * (4 / 20) * (9 / 10)
+		// = 3.5280000000000005
+
+		// 98 * (1_000_000 / 5_000_000) * (4 / 20) * (9 / 10)
+		// = 3.5280000000000005
+
+		int64(7),
+		rewards.Sum().AmountOf(bondDenom).TruncateInt64())
 
 	// commission should be zero
 	val1Commission, err = input.DistKeeper.ValidatorAccumulatedCommissions.Get(ctx, valAddr1)
 	require.NoError(t, err)
-	require.True(t, val1Commission.Commissions.Sum().IsZero())
+	require.Equal(t,
+		// 98 * (40_000 / 50_000) * (10 / 20) * (1 / 10) * 2 + 0.92 = 8.760000000000002
+		// 98 * (1_000_000 / 5_000_000) * (6 / 20) * (1 / 10) * 2 + 0.588 = 1.7639999999999998
+		// 98 * (3_000_000 / 5_000_000) * (4 / 20) * (1 / 10) * 2 + 0.176 = 2.528
+
+		// 0.760000000000002 + 0.7639999999999998 + 0.528 = 2.052
+		int64(2),
+		val1Commission.Commissions.Sum().AmountOf(bondDenom).TruncateInt64())
 }
