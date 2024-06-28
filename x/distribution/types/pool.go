@@ -3,7 +3,6 @@ package types
 import (
 	"fmt"
 	"sort"
-	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -11,6 +10,11 @@ import (
 // Pools defines denom and sdk.Coins wrapper to represents
 // rewards pools for multi-token staking
 type Pools []Pool
+
+// NewPools creates a new Pools instance
+func NewPools(pools ...Pool) Pools {
+	return removeZeroPools(pools).Sort()
+}
 
 // Sum returns sum of pool tokens
 func (p Pools) Sum() (coins sdk.Coins) {
@@ -27,52 +31,38 @@ func (pools Pools) Add(poolsB ...Pool) Pools {
 }
 
 // Add will perform addition of two Pools sets.
-func (pools Pools) safeAdd(poolsB Pools) Pools {
-	sum := ([]Pool)(nil)
-	indexA, indexB := 0, 0
-	lenA, lenB := len(pools), len(poolsB)
+func (pools Pools) safeAdd(poolsB Pools) (coalesced Pools) {
+	// probably the best way will be to make Pools and interface and hide the structure
+	// definition (type alias)
+	if !pools.isSorted() {
+		panic("Pools (self) must be sorted")
+	}
+	if !poolsB.isSorted() {
+		panic("Wrong argument: Pools must be sorted")
+	}
 
-	for {
-		if indexA == lenA {
-			if indexB == lenB {
-				// return nil pools if both sets are empty
-				return sum
-			}
-
-			// return set B (excluding zero pools) if set A is empty
-			return append(sum, removeZeroPools(poolsB[indexB:])...)
-		} else if indexB == lenB {
-			// return set A (excluding zero pools) if set B is empty
-			return append(sum, removeZeroPools(pools[indexA:])...)
-		}
-
-		poolA, poolB := pools[indexA], poolsB[indexB]
-
-		switch strings.Compare(poolA.Denom, poolB.Denom) {
-		case -1: // pool A denom < pool B denom
-			if !poolA.IsEmpty() {
-				sum = append(sum, poolA)
-			}
-
-			indexA++
-
-		case 0: // pool A denom == pool B denom
-			res := poolA.Add(poolB)
-			if !res.IsEmpty() {
-				sum = append(sum, res)
-			}
-
-			indexA++
-			indexB++
-
-		case 1: // pool A denom > pool B denom
-			if !poolB.IsEmpty() {
-				sum = append(sum, poolB)
-			}
-
-			indexB++
+	uniqPools := make(map[string]Pools, len(pools)+len(poolsB))
+	// Traverse all the pools for each of the pools and poolsB.
+	for _, pL := range []Pools{pools, poolsB} {
+		for _, c := range pL {
+			uniqPools[c.Denom] = append(uniqPools[c.Denom], c)
 		}
 	}
+
+	for denom, pL := range uniqPools { //#nosec
+		comboPool := Pool{Denom: denom, Coins: sdk.Coins{}}
+		for _, p := range pL {
+			comboPool = comboPool.Add(p)
+		}
+		if !comboPool.IsEmpty() {
+			coalesced = append(coalesced, comboPool)
+		}
+	}
+	if coalesced == nil {
+		return Pools{}
+	}
+
+	return coalesced.Sort()
 }
 
 // Sub subtracts a set of Pools from another (adds the inverse).
@@ -140,13 +130,13 @@ func (pools Pools) CoinsOf(denom string) sdk.Coins {
 
 	default:
 		midIdx := len(pools) / 2 // 2:1, 3:1, 4:2
-		coin := pools[midIdx]
+		pool := pools[midIdx]
 
 		switch {
-		case denom < coin.Denom:
+		case denom < pool.Denom:
 			return pools[:midIdx].CoinsOf(denom)
-		case denom == coin.Denom:
-			return coin.Coins
+		case denom == pool.Denom:
+			return pool.Coins
 		default:
 			return pools[midIdx+1:].CoinsOf(denom)
 		}
@@ -212,8 +202,23 @@ var _ sort.Interface = Pools{}
 
 // Sort is a helper function to sort the set of p in-place
 func (p Pools) Sort() Pools {
-	sort.Sort(p)
+	// sort.Sort does a costly runtime copy as part of `runtime.convTSlice`
+	// So we avoid this heap allocation if len(pools) <= 1. In the future, we should hopefully find
+	// a strategy to always avoid this.
+	if len(p) > 1 {
+		sort.Sort(p)
+	}
 	return p
+}
+
+func (p Pools) isSorted() bool {
+	for i := 1; i < len(p); i++ {
+		if p[i-1].Denom > p[i].Denom {
+			return false
+		}
+
+	}
+	return true
 }
 
 //-----------------------------------------------------------------------------
@@ -221,7 +226,8 @@ func (p Pools) Sort() Pools {
 
 // NewPool return new pool instance
 func NewPool(denom string, coins sdk.Coins) Pool {
-	return Pool{denom, coins}
+	// use NewCoins to ensure the coins are sorted
+	return Pool{denom, sdk.NewCoins(coins...)}
 }
 
 // IsEmpty returns wether the pool coins are empty or not
@@ -250,7 +256,7 @@ func (pool Pool) Sub(poolB Pool) Pool {
 }
 
 func removeZeroPools(pools Pools) Pools {
-	result := make([]Pool, 0, len(pools))
+	result := make(Pools, 0, len(pools))
 
 	for _, pool := range pools {
 		if !pool.IsEmpty() {
@@ -264,7 +270,7 @@ func removeZeroPools(pools Pools) Pools {
 // IsEqual returns true if the two sets of Pools have the same value.
 func (pool Pool) IsEqual(other Pool) bool {
 	if pool.Denom != other.Denom {
-		panic(fmt.Sprintf("invalid pool denominations; %s, %s", pool.Denom, other.Denom))
+		return false
 	}
 
 	return pool.Coins.Equal(other.Coins)
