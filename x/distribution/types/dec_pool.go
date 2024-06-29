@@ -170,7 +170,7 @@ func (pools DecPools) CoinsOf(denom string) sdk.DecCoins {
 	}
 }
 
-// IsZero returns whether all pools are empty
+// IsEmpty returns whether all pools are empty
 func (pools DecPools) IsEmpty() bool {
 	for _, pool := range pools {
 		if !pool.IsEmpty() {

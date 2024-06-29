@@ -4,7 +4,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// create a new DelegatorStartingInfo
+// NewDelegatorStartingInfo creates a new DelegatorStartingInfo
 func NewDelegatorStartingInfo(previousPeriod uint64, stakes sdk.DecCoins, height uint64) DelegatorStartingInfo {
 	return DelegatorStartingInfo{
 		PreviousPeriod: previousPeriod,
@@ -13,7 +13,7 @@ func NewDelegatorStartingInfo(previousPeriod uint64, stakes sdk.DecCoins, height
 	}
 }
 
-// create a new DelegationDelegatorReward
+// NewDelegationDelegatorReward creates a new DelegationDelegatorReward
 func NewDelegationDelegatorReward(valAddr sdk.ValAddress, rewards DecPools) DelegationDelegatorReward {
 	return DelegationDelegatorReward{
 		ValidatorAddress: valAddr.String(),

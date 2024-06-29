@@ -1,7 +1,7 @@
 package types
 
 import (
-	fmt "fmt"
+	"fmt"
 	"strings"
 
 	"cosmossdk.io/core/address"
@@ -11,7 +11,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	proto "github.com/gogo/protobuf/proto"
+	"github.com/gogo/protobuf/proto"
 )
 
 var (
@@ -30,7 +30,7 @@ func NewMsgRegisterAccount(owner, connectionID, version string) *MsgRegisterAcco
 	}
 }
 
-// ValidateBasic implements sdk.Msg
+// Validate implements sdk.Msg
 func (msg MsgRegisterAccount) Validate(ac address.Codec) error {
 	if strings.TrimSpace(msg.Owner) == "" {
 		return errorsmod.Wrap(sdkerrors.ErrInvalidAddress, "missing sender address")
@@ -89,7 +89,7 @@ func (msg *MsgSubmitTx) GetTxMsg() sdk.Msg {
 	return sdkMsg
 }
 
-// ValidateBasic implements sdk.Msg
+// Validate implements sdk.Msg
 func (msg MsgSubmitTx) Validate(ac address.Codec) error {
 	_, err := ac.StringToBytes(msg.Owner)
 	if err != nil {

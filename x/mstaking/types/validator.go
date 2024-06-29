@@ -101,12 +101,12 @@ func (v Validators) Sort() {
 	sort.Sort(v)
 }
 
-// Implements sort interface
+// Len implements sort interface
 func (v Validators) Len() int {
 	return len(v.Validators)
 }
 
-// Implements sort interface
+// Less implements sort interface
 func (v Validators) Less(i, j int) bool {
 	vi, err := v.ValidatorCodec.StringToBytes(v.Validators[i].GetOperator())
 	if err != nil {
@@ -120,7 +120,7 @@ func (v Validators) Less(i, j int) bool {
 	return bytes.Compare(vi, vj) == -1
 }
 
-// Implements sort interface
+// Swap implements sort interface
 func (v Validators) Swap(i, j int) {
 	v.Validators[i], v.Validators[j] = v.Validators[j], v.Validators[i]
 }
@@ -135,12 +135,12 @@ func (v Validators) UnpackInterfaces(c codectypes.AnyUnpacker) error {
 	return nil
 }
 
-// return the redelegation
+// MustMarshalValidator returns the redelegation
 func MustMarshalValidator(cdc codec.BinaryCodec, validator *Validator) []byte {
 	return cdc.MustMarshal(validator)
 }
 
-// unmarshal a redelegation from a store value
+// MustUnmarshalValidator unmarshal a redelegation from a store value
 func MustUnmarshalValidator(cdc codec.BinaryCodec, value []byte) Validator {
 	validator, err := UnmarshalValidator(cdc, value)
 	if err != nil {
@@ -150,7 +150,7 @@ func MustUnmarshalValidator(cdc codec.BinaryCodec, value []byte) Validator {
 	return validator
 }
 
-// unmarshal a redelegation from a store value
+// UnmarshalValidator unmarshal a redelegation from a store value
 func UnmarshalValidator(cdc codec.BinaryCodec, value []byte) (v Validator, err error) {
 	err = cdc.Unmarshal(value, &v)
 	return v, err
@@ -171,7 +171,7 @@ func (v Validator) IsUnbonding() bool {
 	return v.GetStatus() == Unbonding
 }
 
-// constant used in flags to indicate that description field should not be updated
+// DoNotModifyDesc constant used in flags to indicate that description field should not be updated
 const DoNotModifyDesc = "[do-not-modify]"
 
 func NewDescription(moniker, identity, website, securityContact, details string) Description {
@@ -286,7 +286,7 @@ func (v Validator) InvalidExRate() bool {
 	return false
 }
 
-// calculate the token worth of provided shares
+// TokensFromShares calculates the token worth of provided shares
 func (v Validator) TokensFromShares(shares sdk.DecCoins) sdk.DecCoins {
 	tokens := sdk.NewDecCoins()
 	for _, share := range shares {
@@ -310,7 +310,7 @@ func (v Validator) TokensFromShares(shares sdk.DecCoins) sdk.DecCoins {
 	return tokens
 }
 
-// calculate the token worth of provided shares, truncated
+// TokensFromSharesTruncated calculates the token worth of provided shares, truncated
 func (v Validator) TokensFromSharesTruncated(shares sdk.DecCoins) sdk.DecCoins {
 	tokens := sdk.NewDecCoins()
 	for _, share := range shares {
@@ -422,7 +422,7 @@ func (v Validator) ShareFromTokenTruncated(token sdk.Coin) sdk.DecCoin {
 	)
 }
 
-// get the bonded tokens which the validator holds
+// BondedTokens returns the bonded tokens which the validator holds
 func (v Validator) BondedTokens() sdk.Coins {
 	if v.IsBonded() {
 		return v.Tokens
@@ -431,7 +431,7 @@ func (v Validator) BondedTokens() sdk.Coins {
 	return sdk.NewCoins()
 }
 
-// Convert voting power to consensus power with the given power reduction
+// ConsensusPower converts voting power to consensus power with the given power reduction
 func (v Validator) ConsensusPower(r math.Int) int64 {
 	if v.IsBonded() {
 		return v.PotentialConsensusPower(r)

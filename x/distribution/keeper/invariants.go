@@ -11,7 +11,7 @@ import (
 	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
 )
 
-// register all distribution invariants
+// RegisterInvariants registers all distribution invariants
 func RegisterInvariants(ir sdk.InvariantRegistry, k Keeper) {
 	ir.RegisterRoute(types.ModuleName, "nonnegative-outstanding",
 		NonNegativeOutstandingInvariant(k))

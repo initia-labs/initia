@@ -12,14 +12,14 @@ import (
 
 // Validator Set
 
-// iterate through the validator set and perform the provided function
+// IterateValidators IterateValidators iterates through the validator set and perform the provided function
 func (k Keeper) IterateValidators(ctx context.Context, cb func(validator types.ValidatorI) (stop bool, err error)) error {
 	return k.Validators.Walk(ctx, nil, func(key []byte, val types.Validator) (stop bool, err error) {
 		return cb(val)
 	})
 }
 
-// iterate through the bonded validator set and perform the provided function
+// IterateBondedValidatorsByPower iterates through the bonded validator set and perform the provided function
 func (k Keeper) IterateBondedValidatorsByPower(ctx context.Context, cb func(validator types.ValidatorI) (stop bool, err error)) error {
 	maxValidators, err := k.MaxValidators(ctx)
 	if err != nil {
@@ -45,7 +45,7 @@ func (k Keeper) IterateBondedValidatorsByPower(ctx context.Context, cb func(vali
 	})
 }
 
-// iterate through the active validator set and perform the provided function
+// IterateLastValidators iterates through the active validator set and perform the provided function
 func (k Keeper) IterateLastValidators(ctx context.Context, cb func(validator types.ValidatorI) (stop bool, err error)) error {
 	return k.LastValidatorConsPowers.Walk(ctx, nil, func(valAddr []byte, power int64) (stop bool, err error) {
 		val, err := k.Validators.Get(ctx, valAddr)
@@ -69,17 +69,17 @@ func (k Keeper) ValidatorByConsAddr(ctx context.Context, addr sdk.ConsAddress) (
 
 // Delegation Set
 
-// Returns self as it is both a validatorset and delegationset
+// GetValidatorSet returns self as it is both a validatorset and delegationset
 func (k Keeper) GetValidatorSet() types.ValidatorSet {
 	return k
 }
 
-// Delegation get the delegation interface for a particular set of delegator and validator addresses
+// Delegation returns the delegation interface for a particular set of delegator and validator addresses
 func (k Keeper) Delegation(ctx context.Context, addrDel sdk.AccAddress, addrVal sdk.ValAddress) (types.DelegationI, error) {
 	return k.GetDelegation(ctx, addrDel, addrVal)
 }
 
-// iterate through all of the delegations from a delegator
+// IterateDelegations iterates through all of the delegations from a delegator
 func (k Keeper) IterateDelegations(
 	ctx context.Context,
 	delAddr sdk.AccAddress,
@@ -90,7 +90,7 @@ func (k Keeper) IterateDelegations(
 	})
 }
 
-// return all delegations used during genesis dump
+// GetAllSDKDelegations returns all delegations used during genesis dump
 // TODO: remove this func, change all usage for iterate functionality
 func (k Keeper) GetAllSDKDelegations(ctx context.Context) (delegations []types.Delegation, err error) {
 	err = k.Delegations.Walk(ctx, nil, func(key collections.Pair[[]byte, []byte], del types.Delegation) (stop bool, err error) {

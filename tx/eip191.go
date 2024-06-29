@@ -11,7 +11,7 @@ import (
 
 const EIP191MessagePrefix = "\x19Ethereum Signed Message:\n"
 
-// SignModeEIP191Handler defines the SIGN_MODE_DIRECT SignModeHandler
+// SignModeEIP191Handler defines the SIGN_MODE_EIP_191 SignModeHandler
 type SignModeEIP191Handler struct {
 	*aminojson.SignModeHandler
 }

@@ -27,7 +27,7 @@ func AccAddressFromString(ac address.Codec, addrStr string) (vmtypes.AccountAddr
 	}
 }
 
-// address conversion add `0` prefix padding to the given address
+// ConvertSDKAddressToVMAddress returns address conversion add `0` prefix padding to the given address
 // until 32 bytes size filled.
 func ConvertSDKAddressToVMAddress(addr sdk.AccAddress) vmtypes.AccountAddress {
 	vmAddr, err := vmtypes.NewAccountAddressFromBytes(addr)
@@ -38,7 +38,7 @@ func ConvertSDKAddressToVMAddress(addr sdk.AccAddress) vmtypes.AccountAddress {
 	return vmAddr
 }
 
-// convert vm address to sdk.AccAddress by removing 0s prefix
+// ConvertVMAddressToSDKAddress converts vm address to sdk.AccAddress by removing 0s prefix
 func ConvertVMAddressToSDKAddress(addr vmtypes.AccountAddress) sdk.AccAddress {
 	return bytes.TrimPrefix(addr[:], bytes.Repeat([]byte{0}, AddressBytesLength-20))
 }
