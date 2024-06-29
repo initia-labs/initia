@@ -62,10 +62,7 @@ func TestLoadRewardWeights(t *testing.T) {
 func TestLoadBondedTokens(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
-	input.StakingKeeper.SetBondDenoms(ctx, []string{"foo", "bar"})
-
-	// update reward weights
-	// update reward weights
+	input.StakingKeeper.SetBondDenoms(ctx, []string{"foo", "bar", "aaa"})
 	setRewardWeights(t, ctx, input, []customtypes.RewardWeight{
 		{
 			Denom:  "foo",
@@ -75,14 +72,20 @@ func TestLoadBondedTokens(t *testing.T) {
 			Denom:  "bar",
 			Weight: math.LegacyNewDecWithPrec(6, 1),
 		},
+		{
+			Denom:  "aaa",
+			Weight: math.LegacyNewDecWithPrec(1, 0),
+		},
 	})
 
+	input.VotingPowerKeeper.SetVotingPowerWeights(sdk.NewDecCoins(sdk.NewDecCoin("foo", math.NewInt(1)), sdk.NewDecCoin("bar", math.NewInt(4)), sdk.NewDecCoin("aaa", math.NewInt(10))))
+
 	valAddr1 := createValidatorWithCoin(ctx, input,
-		sdk.NewCoins(sdk.NewInt64Coin("foo", 100_000_000), sdk.NewInt64Coin("bar", 100_000_000)),
-		sdk.NewCoins(sdk.NewInt64Coin("foo", 3_000_000), sdk.NewInt64Coin("bar", 5_000_000)), 1)
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 100_000_000), sdk.NewInt64Coin("bar", 100_000_000), sdk.NewInt64Coin("aaa", 100_000_000)),
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 3_000_000), sdk.NewInt64Coin("bar", 1_000_000), sdk.NewInt64Coin("aaa", 20_000)), 1)
 	valAddr2 := createValidatorWithCoin(ctx, input,
-		sdk.NewCoins(sdk.NewInt64Coin("foo", 100_000_000), sdk.NewInt64Coin("bar", 100_000_000)),
-		sdk.NewCoins(sdk.NewInt64Coin("foo", 5_000_000), sdk.NewInt64Coin("bar", 3_000_000)), 2)
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 100_000_000), sdk.NewInt64Coin("bar", 100_000_000), sdk.NewInt64Coin("aaa", 100_000_000)),
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 6_000_000), sdk.NewInt64Coin("bar", 4_000_000), sdk.NewInt64Coin("aaa", 10_000)), 2)
 
 	validator1, err := input.StakingKeeper.Validator(ctx, valAddr1)
 	require.NoError(t, err)
@@ -100,7 +103,7 @@ func TestLoadBondedTokens(t *testing.T) {
 	}
 	abciValB := abci.Validator{
 		Address: valConsPk2.Address(),
-		Power:   100,
+		Power:   400,
 	}
 
 	votes := []abci.VoteInfo{
@@ -123,47 +126,37 @@ func TestLoadBondedTokens(t *testing.T) {
 		if val.ValAddr == validator1.GetOperator() {
 			require.Equal(t, math.NewInt(3_000_000), val.Amount)
 		} else {
-			require.Equal(t, math.NewInt(5_000_000), val.Amount)
+			require.Equal(t, math.NewInt(6_000_000), val.Amount)
 		}
 	}
 
 	for _, val := range bondedTokens["bar"] {
-		if val.ValAddr == validator2.GetOperator() {
-			require.Equal(t, math.NewInt(3_000_000), val.Amount)
+		if val.ValAddr == validator1.GetOperator() {
+			require.Equal(t, math.NewInt(1_000_000), val.Amount)
 		} else {
-			require.Equal(t, math.NewInt(5_000_000), val.Amount)
+			require.Equal(t, math.NewInt(4_000_000), val.Amount)
 		}
 	}
-	require.Equal(t, math.NewInt(8_000_000), bondedTokensSum["foo"])
-	require.Equal(t, math.NewInt(8_000_000), bondedTokensSum["bar"])
+
+	for _, val := range bondedTokens["aaa"] {
+		if val.ValAddr == validator1.GetOperator() {
+			require.Equal(t, math.NewInt(20_000), val.Amount)
+		} else {
+			require.Equal(t, math.NewInt(10_000), val.Amount)
+		}
+	}
+	require.Equal(t, math.NewInt(9_000_000), bondedTokensSum["foo"])
+	require.Equal(t, math.NewInt(5_000_000), bondedTokensSum["bar"])
+	require.Equal(t, math.NewInt(30_000), bondedTokensSum["aaa"])
 }
 
 func TestAllocateTokensToValidatorWithCommission(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
-	valAddr := createValidatorWithBalance(ctx, input, 100_000_000, 1_000_000, 1)
-
-	validator, err := input.StakingKeeper.Validator(ctx, valAddr)
-	require.NoError(t, err)
-
-	tokens := sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDec(10)}}
-	input.DistKeeper.AllocateTokensToValidatorPool(ctx, validator, bondDenom, tokens)
-	expected := customtypes.DecPools{{Denom: bondDenom, DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDec(5)}}}}
-
-	// check commission
-	commission, err := input.DistKeeper.ValidatorAccumulatedCommissions.Get(ctx, valAddr)
-	require.NoError(t, err)
-	require.Equal(t, expected, commission.Commissions)
-	// check current rewards
-
-	currentRewards, err := input.DistKeeper.ValidatorCurrentRewards.Get(ctx, valAddr)
-	require.NoError(t, err)
-	require.Equal(t, expected, currentRewards.Rewards)
-}
-
-func TestAllocateTokensToManyValidators(t *testing.T) {
-	ctx, input := createDefaultTestInput(t)
 	input.StakingKeeper.SetBondDenoms(ctx, []string{"foo", "bar"})
+
+	// update reward weights
+	// update reward weights
 	setRewardWeights(t, ctx, input, []customtypes.RewardWeight{
 		{
 			Denom:  "foo",
@@ -174,13 +167,57 @@ func TestAllocateTokensToManyValidators(t *testing.T) {
 			Weight: math.LegacyNewDecWithPrec(6, 1),
 		},
 	})
+	input.VotingPowerKeeper.SetVotingPowerWeights(sdk.NewDecCoins(sdk.NewDecCoin("foo", math.NewInt(1)), sdk.NewDecCoin("bar", math.NewInt(4)), sdk.NewDecCoin("aaa", math.NewInt(10))))
 
-	valAddr1 := createValidatorWithCoin(ctx, input,
+	valAddr := createValidatorWithCoin(ctx, input,
 		sdk.NewCoins(sdk.NewInt64Coin("foo", 100_000_000), sdk.NewInt64Coin("bar", 100_000_000)),
 		sdk.NewCoins(sdk.NewInt64Coin("foo", 3_000_000), sdk.NewInt64Coin("bar", 5_000_000)), 1)
+
+	validator, err := input.StakingKeeper.Validator(ctx, valAddr)
+	require.NoError(t, err)
+
+	tokens := sdk.DecCoins{{Denom: "reward1", Amount: math.LegacyNewDec(10)}, {Denom: "reward2", Amount: math.LegacyNewDec(20)}}
+	input.DistKeeper.AllocateTokensToValidatorPool(ctx, validator, "bar", tokens)
+	expectedCommission := customtypes.DecPools{{Denom: "bar", DecCoins: sdk.DecCoins{{Denom: "reward1", Amount: math.LegacyNewDec(1)}, {Denom: "reward2", Amount: math.LegacyNewDec(2)}}}}
+	expectedRewards := customtypes.DecPools{{Denom: "bar", DecCoins: sdk.DecCoins{{Denom: "reward1", Amount: math.LegacyNewDec(9)}, {Denom: "reward2", Amount: math.LegacyNewDec(18)}}}}
+
+	// check commission
+	commission, err := input.DistKeeper.ValidatorAccumulatedCommissions.Get(ctx, valAddr)
+	require.NoError(t, err)
+	require.Equal(t, expectedCommission, commission.Commissions)
+	// check current rewards
+
+	currentRewards, err := input.DistKeeper.ValidatorCurrentRewards.Get(ctx, valAddr)
+	require.NoError(t, err)
+	require.Equal(t, expectedRewards, currentRewards.Rewards)
+}
+
+func TestAllocateTokensToManyValidators(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+	input.StakingKeeper.SetBondDenoms(ctx, []string{"foo", "bar", "aaa"})
+	setRewardWeights(t, ctx, input, []customtypes.RewardWeight{
+		{
+			Denom:  "foo",
+			Weight: math.LegacyNewDecWithPrec(4, 1),
+		},
+		{
+			Denom:  "bar",
+			Weight: math.LegacyNewDecWithPrec(6, 1),
+		},
+		{
+			Denom:  "aaa",
+			Weight: math.LegacyNewDecWithPrec(1, 0),
+		},
+	})
+
+	input.VotingPowerKeeper.SetVotingPowerWeights(sdk.NewDecCoins(sdk.NewDecCoin("foo", math.NewInt(1)), sdk.NewDecCoin("bar", math.NewInt(4)), sdk.NewDecCoin("aaa", math.NewInt(10))))
+
+	valAddr1 := createValidatorWithCoin(ctx, input,
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 100_000_000), sdk.NewInt64Coin("bar", 100_000_000), sdk.NewInt64Coin("aaa", 100_000_000)),
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 2_000_000), sdk.NewInt64Coin("bar", 1_000_000), sdk.NewInt64Coin("aaa", 40_000)), 1)
 	valAddr2 := createValidatorWithCoin(ctx, input,
-		sdk.NewCoins(sdk.NewInt64Coin("foo", 100_000_000), sdk.NewInt64Coin("bar", 100_000_000)),
-		sdk.NewCoins(sdk.NewInt64Coin("foo", 5_000_000), sdk.NewInt64Coin("bar", 3_000_000)), 2)
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 100_000_000), sdk.NewInt64Coin("bar", 100_000_000), sdk.NewInt64Coin("aaa", 100_000_000)),
+		sdk.NewCoins(sdk.NewInt64Coin("foo", 2_000_000), sdk.NewInt64Coin("bar", 4_000_000), sdk.NewInt64Coin("aaa", 10_000)), 2)
 
 	validator1, err := input.StakingKeeper.Validator(ctx, valAddr1)
 	require.NoError(t, err)
@@ -198,7 +235,7 @@ func TestAllocateTokensToManyValidators(t *testing.T) {
 	}
 	abciValB := abci.Validator{
 		Address: valConsPk2.Address(),
-		Power:   100,
+		Power:   400,
 	}
 
 	// assert initial state: zero outstanding rewards, zero community pool, zero commission, zero current rewards
@@ -247,23 +284,31 @@ func TestAllocateTokensToManyValidators(t *testing.T) {
 	require.NotNil(t, feeCollector)
 	input.Faucet.Fund(ctx, authtypes.NewModuleAddress(authtypes.FeeCollectorName), fees...)
 
-	input.DistKeeper.AllocateTokens(ctx, 200, votes)
+	input.DistKeeper.AllocateTokens(ctx, 500, votes)
 
 	// 98 outstanding rewards (100 less 2 to community pool)
 	val1OutRewards, err = input.DistKeeper.ValidatorOutstandingRewards.Get(ctx, valAddr1)
 	require.NoError(t, err)
 	require.Equal(t,
 		customtypes.DecPools{
-			{Denom: "bar", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(3675, 2)}}},
-			{Denom: "foo", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(147, 1)}}},
+			// 98 * (40_000 / 50_000) * (10 / 20) = 39.2
+			{Denom: "aaa", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(392, 1)}}},
+			// 98 * (1_000_000 / 5_000_000) * (6 / 20) = 5.88
+			{Denom: "bar", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(588, 2)}}},
+			// 98 * (2_000_000 / 4_000_000) * (4 / 20) = 9.8
+			{Denom: "foo", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(98, 1)}}},
 		},
 		val1OutRewards.Rewards)
 	val2OutRewards, err = input.DistKeeper.ValidatorOutstandingRewards.Get(ctx, valAddr2)
 	require.NoError(t, err)
 	require.Equal(t,
 		customtypes.DecPools{
-			{Denom: "bar", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(2205, 2)}}},
-			{Denom: "foo", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(245, 1)}}},
+			// 98 * (10_000 / 50_000) * (10 / 20) = 9.8
+			{Denom: "aaa", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(98, 1)}}},
+			// 98 * (4_000_000 / 5_000_000) * (6 / 20) = 23.52
+			{Denom: "bar", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(2352, 2)}}},
+			// 98 * (2_000_000 / 4_000_000) * (4 / 20) = 9.8
+			{Denom: "foo", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(98, 1)}}},
 		},
 		val2OutRewards.Rewards)
 	// 2 community pool coins
@@ -271,39 +316,55 @@ func TestAllocateTokensToManyValidators(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDec(2)}}, feePool.CommunityPool)
 
-	// 50% commission for first proposer, (0.5 * 98%) * 100 / 2 = 24.5
+	// 10% commission for first proposer,
 	val1Commission, err = input.DistKeeper.ValidatorAccumulatedCommissions.Get(ctx, valAddr1)
 	require.NoError(t, err)
 	require.Equal(t,
 		customtypes.DecPools{
-			{Denom: "bar", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(18375, 3)}}},
-			{Denom: "foo", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(735, 2)}}},
+			// 98 * (40_000 / 50_000) * (10 / 20) * (1 / 10) = 3.92
+			{Denom: "aaa", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(392, 2)}}},
+			// 98 * (1_000_000 / 5_000_000) * (6 / 20) * (1 / 10) = 0.588
+			{Denom: "bar", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(588, 3)}}},
+			// 98 * (2_000_000 / 4_000_000) * (4 / 20) * (1 / 10) = 0.98
+			{Denom: "foo", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(98, 2)}}},
 		},
 		val1Commission.Commissions)
 	val2Commission, err = input.DistKeeper.ValidatorAccumulatedCommissions.Get(ctx, valAddr2)
 	require.NoError(t, err)
 	require.Equal(t,
 		customtypes.DecPools{
-			{Denom: "bar", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(11025, 3)}}},
-			{Denom: "foo", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(1225, 2)}}},
+			// 98 * (10_000 / 50_000) * (10 / 20) * (1 / 10) = 0.98
+			{Denom: "aaa", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(98, 2)}}},
+			// 98 * (4_000_000 / 5_000_000) * (6 / 20) * (1 / 10) = 2.352
+			{Denom: "bar", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(2352, 3)}}},
+			// 98 * (2_000_000 / 4_000_000) * (4 / 20) * (1 / 10) = 0.98
+			{Denom: "foo", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(98, 2)}}},
 		},
 		val2Commission.Commissions)
 
-	// just staking.proportional for first proposer less commission = (0.5 * 98%) * 100 / 2 = 24.5
+	// just staking.proportional for first proposer less commission
 	val1CurRewards, err = input.DistKeeper.ValidatorCurrentRewards.Get(ctx, valAddr1)
 	require.NoError(t, err)
 	require.Equal(t,
 		customtypes.DecPools{
-			{Denom: "bar", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(18375, 3)}}},
-			{Denom: "foo", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(735, 2)}}},
+			// 98 * (40_000 / 50_000) * (10 / 20) * (9 / 10) = 35.28
+			{Denom: "aaa", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(3528, 2)}}},
+			// 98 * (1_000_000 / 5_000_000) * (6 / 20) * (9 / 10) = 5.292
+			{Denom: "bar", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(5292, 3)}}},
+			// 98 * (2_000_000 / 4_000_000) * (4 / 20) * (9 / 10) = 8.82
+			{Denom: "foo", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(882, 2)}}},
 		},
 		val1CurRewards.Rewards)
 	val2CurRewards, err = input.DistKeeper.ValidatorCurrentRewards.Get(ctx, valAddr2)
 	require.NoError(t, err)
 	require.Equal(t,
 		customtypes.DecPools{
-			{Denom: "bar", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(11025, 3)}}},
-			{Denom: "foo", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(1225, 2)}}},
+			// 98 * (10_000 / 50_000) * (10 / 20) * (9 / 10) = 8.82
+			{Denom: "aaa", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(882, 2)}}},
+			// 98 * (4_000_000 / 5_000_000) * (6 / 20) * (9 / 10) = 21.168
+			{Denom: "bar", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(21168, 3)}}},
+			// 98 * (2_000_000 / 4_000_000) * (4 / 20) * (9 / 10) = 8.82
+			{Denom: "foo", DecCoins: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDecWithPrec(882, 2)}}},
 		},
 		val2CurRewards.Rewards)
 }

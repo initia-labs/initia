@@ -91,6 +91,7 @@ func TestInitGenesisOnMigration(t *testing.T) {
 	mockModule.EXPECT().ConsensusVersion().Times(1).Return(uint64(0))
 
 	app.ModuleManager.Modules["mock"] = mockModule
+	app.ModuleManager.OrderMigrations = []string{"mock"}
 
 	// Run migrations only for "mock" module. We exclude it from
 	// the VersionMap to simulate upgrading with a new module.

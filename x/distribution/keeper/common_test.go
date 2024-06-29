@@ -189,16 +189,17 @@ func (f *TestFaucet) NewFundedAccount(ctx sdk.Context, amounts ...sdk.Coin) sdk.
 }
 
 type TestKeepers struct {
-	AccountKeeper  authkeeper.AccountKeeper
-	StakingKeeper  stakingkeeper.Keeper
-	DistKeeper     distrkeeper.Keeper
-	BankKeeper     bankkeeper.Keeper
-	GovKeeper      govkeeper.Keeper
-	MoveKeeper     movekeeper.Keeper
-	DexKeeper      TestDexKeeper
-	EncodingConfig initiaappparams.EncodingConfig
-	Faucet         *TestFaucet
-	MultiStore     storetypes.CommitMultiStore
+	AccountKeeper     authkeeper.AccountKeeper
+	StakingKeeper     stakingkeeper.Keeper
+	DistKeeper        distrkeeper.Keeper
+	BankKeeper        bankkeeper.Keeper
+	GovKeeper         govkeeper.Keeper
+	MoveKeeper        movekeeper.Keeper
+	DexKeeper         TestDexKeeper
+	VotingPowerKeeper *TestVotingPowerKeeper
+	EncodingConfig    initiaappparams.EncodingConfig
+	Faucet            *TestFaucet
+	MultiStore        storetypes.CommitMultiStore
 }
 
 // createDefaultTestInput common settings for createTestInput
@@ -300,12 +301,14 @@ func _createTestInput(
 	)
 	require.NoError(t, bankKeeper.SetParams(ctx, banktypes.DefaultParams()))
 
+	votingPowerKeeper := NewTestVotingPowerKeeper()
+
 	stakingKeeper := stakingkeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[stakingtypes.StoreKey]),
 		accountKeeper,
 		bankKeeper,
-		movekeeper.NewVotingPowerKeeper(moveKeeper),
+		votingPowerKeeper,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		vc, cc,
 	)
@@ -406,16 +409,17 @@ func _createTestInput(
 	cfg.SetAddressVerifier(initiaapp.VerifyAddressLen())
 
 	keepers := TestKeepers{
-		AccountKeeper:  accountKeeper,
-		StakingKeeper:  *stakingKeeper,
-		DistKeeper:     *distKeeper,
-		MoveKeeper:     *moveKeeper,
-		BankKeeper:     bankKeeper,
-		GovKeeper:      *govKeeper,
-		DexKeeper:      dexKeeper,
-		EncodingConfig: encodingConfig,
-		Faucet:         faucet,
-		MultiStore:     ms,
+		AccountKeeper:     accountKeeper,
+		StakingKeeper:     *stakingKeeper,
+		DistKeeper:        *distKeeper,
+		MoveKeeper:        *moveKeeper,
+		BankKeeper:        bankKeeper,
+		GovKeeper:         *govKeeper,
+		DexKeeper:         dexKeeper,
+		VotingPowerKeeper: votingPowerKeeper,
+		EncodingConfig:    encodingConfig,
+		Faucet:            faucet,
+		MultiStore:        ms,
 	}
 	return ctx, keepers
 }
@@ -512,7 +516,7 @@ func createValidatorWithCoin(
 
 // newTestMsgCreateValidator test msg creator
 func newTestMsgCreateValidator(address sdk.ValAddress, pubKey cryptotypes.PubKey, amt ...sdk.Coin) *stakingtypes.MsgCreateValidator {
-	commission := stakingtypes.NewCommissionRates(math.LegacyNewDecWithPrec(5, 1), math.LegacyNewDecWithPrec(5, 1), math.LegacyNewDec(0))
+	commission := stakingtypes.NewCommissionRates(math.LegacyNewDecWithPrec(1, 1), math.LegacyNewDecWithPrec(5, 1), math.LegacyNewDec(0))
 	msg, _ := stakingtypes.NewMsgCreateValidator(
 		address.String(), pubKey, amt,
 		stakingtypes.NewDescription("homeDir", "", "", "", ""), commission,
@@ -597,4 +601,22 @@ func (k TestDexKeeper) SwapToBase(ctx context.Context, addr sdk.AccAddress, quot
 	// withdraw coin
 	_, _, dummyAddr := keyPubAddr()
 	return bk.SendCoin(ctx, addr, dummyAddr, quoteCoin.Denom, quoteCoin.Amount)
+}
+
+type TestVotingPowerKeeper struct {
+	weights sdk.DecCoins
+}
+
+func NewTestVotingPowerKeeper() *TestVotingPowerKeeper {
+	return &TestVotingPowerKeeper{
+		weights: sdk.DecCoins{sdk.DecCoin{bondDenom, math.LegacyNewDec(1)}},
+	}
+}
+
+func (k *TestVotingPowerKeeper) SetVotingPowerWeights(weights sdk.DecCoins) {
+	k.weights = weights
+}
+
+func (k TestVotingPowerKeeper) GetVotingPowerWeights(_ context.Context, bondDenoms []string) (sdk.DecCoins, error) {
+	return k.weights, nil
 }

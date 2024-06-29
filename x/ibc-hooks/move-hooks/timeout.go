@@ -6,6 +6,7 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
 	ibchooks "github.com/initia-labs/initia/x/ibc-hooks"
+	"github.com/initia-labs/initia/x/ibc-hooks/types"
 	nfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 	movetypes "github.com/initia-labs/initia/x/move/types"
 	vmtypes "github.com/initia-labs/movevm/types"
@@ -27,6 +28,12 @@ func (h MoveHooks) onTimeoutIcs20Packet(
 		return nil
 	} else if err != nil {
 		h.moveKeeper.Logger(ctx).Error("failed to parse memo", "error", err)
+		ctx.EventManager().EmitEvent(sdk.NewEvent(
+			types.EventTypeHookFailed,
+			sdk.NewAttribute(types.AttributeKeyReason, "failed to parse memo"),
+			sdk.NewAttribute(types.AttributeKeyError, err.Error()),
+		))
+
 		return nil
 	}
 
@@ -37,9 +44,21 @@ func (h MoveHooks) onTimeoutIcs20Packet(
 	callback := hookData.AsyncCallback
 	if allowed, err := h.checkACL(im, cacheCtx, callback.ModuleAddress); err != nil {
 		h.moveKeeper.Logger(cacheCtx).Error("failed to check ACL", "error", err)
+		ctx.EventManager().EmitEvent(sdk.NewEvent(
+			types.EventTypeHookFailed,
+			sdk.NewAttribute(types.AttributeKeyReason, "failed to check ACL"),
+			sdk.NewAttribute(types.AttributeKeyError, err.Error()),
+		))
+
 		return nil
 	} else if !allowed {
 		h.moveKeeper.Logger(cacheCtx).Error("failed to check ACL", "not allowed")
+		ctx.EventManager().EmitEvent(sdk.NewEvent(
+			types.EventTypeHookFailed,
+			sdk.NewAttribute(types.AttributeKeyReason, "failed to check ACL"),
+			sdk.NewAttribute(types.AttributeKeyError, "not allowed"),
+		))
+
 		return nil
 	}
 	callbackIdBz, err := vmtypes.SerializeUint64(callback.Id)
@@ -56,6 +75,12 @@ func (h MoveHooks) onTimeoutIcs20Packet(
 	})
 	if err != nil {
 		h.moveKeeper.Logger(cacheCtx).Error("failed to execute callback", "error", err)
+		ctx.EventManager().EmitEvent(sdk.NewEvent(
+			types.EventTypeHookFailed,
+			sdk.NewAttribute(types.AttributeKeyReason, "failed to execute callback"),
+			sdk.NewAttribute(types.AttributeKeyError, err.Error()),
+		))
+
 		return nil
 	}
 
@@ -91,9 +116,21 @@ func (h MoveHooks) onTimeoutIcs721Packet(
 	callback := hookData.AsyncCallback
 	if allowed, err := h.checkACL(im, cacheCtx, callback.ModuleAddress); err != nil {
 		h.moveKeeper.Logger(cacheCtx).Error("failed to check ACL", "error", err)
+		ctx.EventManager().EmitEvent(sdk.NewEvent(
+			types.EventTypeHookFailed,
+			sdk.NewAttribute(types.AttributeKeyReason, "failed to check ACL"),
+			sdk.NewAttribute(types.AttributeKeyError, err.Error()),
+		))
+
 		return nil
 	} else if !allowed {
 		h.moveKeeper.Logger(cacheCtx).Error("failed to check ACL", "not allowed")
+		ctx.EventManager().EmitEvent(sdk.NewEvent(
+			types.EventTypeHookFailed,
+			sdk.NewAttribute(types.AttributeKeyReason, "failed to check ACL"),
+			sdk.NewAttribute(types.AttributeKeyError, "not allowed"),
+		))
+
 		return nil
 	}
 	callbackIdBz, err := vmtypes.SerializeUint64(callback.Id)
@@ -110,6 +147,12 @@ func (h MoveHooks) onTimeoutIcs721Packet(
 	})
 	if err != nil {
 		h.moveKeeper.Logger(cacheCtx).Error("failed to execute callback", "error", err)
+		ctx.EventManager().EmitEvent(sdk.NewEvent(
+			types.EventTypeHookFailed,
+			sdk.NewAttribute(types.AttributeKeyReason, "failed to execute callback"),
+			sdk.NewAttribute(types.AttributeKeyError, err.Error()),
+		))
+
 		return nil
 	}
 
