@@ -11,7 +11,7 @@ import (
 
 // StakingKeeper expected staking keeper (noalias)
 type StakingKeeper interface {
-	// iterate through validators by operator address, execute func for each validator
+	// IterateValidators iterates through validators by operator address, execute func for each validator
 	IterateValidators(ctx context.Context, cb func(validator stakingtypes.ValidatorI) (stop bool, err error)) error
 
 	Validator(ctx context.Context, address sdk.ValAddress) (stakingtypes.ValidatorI, error)

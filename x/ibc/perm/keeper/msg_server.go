@@ -23,7 +23,7 @@ func NewMsgServerImpl(k *Keeper) MsgServer {
 	return MsgServer{k}
 }
 
-// SetPermissionedRelayer update channel relayer to restrict relaying operation of a channel to specific relayer.
+// SetPermissionedRelayers updates channel relayer to restrict relaying operation of a channel to specific relayer.
 func (ms MsgServer) SetPermissionedRelayers(ctx context.Context, req *types.MsgSetPermissionedRelayers) (*types.MsgSetPermissionedRelayersResponse, error) {
 	if err := req.Validate(ms.Keeper.ac); err != nil {
 		return nil, err

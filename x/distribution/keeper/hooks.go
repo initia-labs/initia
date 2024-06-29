@@ -12,17 +12,17 @@ import (
 	customtypes "github.com/initia-labs/initia/x/distribution/types"
 )
 
-// Wrapper struct
+// Hooks Keeper wrapper struct
 type Hooks struct {
 	k Keeper
 }
 
 var _ stakingtypes.StakingHooks = Hooks{}
 
-// Create new distribution hooks
+// Hooks creates new distribution hooks
 func (k Keeper) Hooks() Hooks { return Hooks{k} }
 
-// initialize validator distribution record
+// AfterValidatorCreated initializes validator distribution record
 func (h Hooks) AfterValidatorCreated(ctx context.Context, valAddr sdk.ValAddress) error {
 	val, err := h.k.stakingKeeper.Validator(ctx, valAddr)
 	if err != nil {
@@ -135,7 +135,7 @@ func (h Hooks) AfterValidatorRemoved(ctx context.Context, _ sdk.ConsAddress, val
 	return nil
 }
 
-// increment period
+// BeforeDelegationCreated increments period
 func (h Hooks) BeforeDelegationCreated(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) error {
 	val, err := h.k.stakingKeeper.Validator(ctx, valAddr)
 	if err != nil {
@@ -150,7 +150,7 @@ func (h Hooks) BeforeDelegationCreated(ctx context.Context, delAddr sdk.AccAddre
 	return nil
 }
 
-// withdraw delegation rewards (which also increments period)
+// BeforeDelegationSharesModified withdraws delegation rewards (which also increments period)
 func (h Hooks) BeforeDelegationSharesModified(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) error {
 	val, err := h.k.stakingKeeper.Validator(ctx, valAddr)
 	if err != nil {
@@ -169,12 +169,12 @@ func (h Hooks) BeforeDelegationSharesModified(ctx context.Context, delAddr sdk.A
 	return nil
 }
 
-// create new delegation period record
+// AfterDelegationModified creates new delegation period record
 func (h Hooks) AfterDelegationModified(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) error {
 	return h.k.initializeDelegation(ctx, valAddr, delAddr)
 }
 
-// record the slash event
+// BeforeValidatorSlashed records the slash event
 func (h Hooks) BeforeValidatorSlashed(ctx context.Context, valAddr sdk.ValAddress, fractions sdk.DecCoins) error {
 	return h.k.updateValidatorSlashFraction(ctx, valAddr, fractions)
 }

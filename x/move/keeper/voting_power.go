@@ -22,7 +22,7 @@ func NewVotingPowerKeeper(k *Keeper) VotingPowerKeeper {
 	return VotingPowerKeeper{k}
 }
 
-// returns voting power weights of bond denoms.
+// GetVotingPowerWeights returns voting power weights of bond denoms.
 // if denom is base denom, weight is 1.
 // if denom is not base denom, weight = locked base balance / total share,
 // which means we only consider locked base balance for voting power.

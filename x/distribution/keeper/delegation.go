@@ -91,7 +91,7 @@ func (k Keeper) calculateDelegationRewardsBetween(ctx context.Context, val staki
 	return
 }
 
-// calculate the total rewards accrued by a delegation
+// CalculateDelegationRewards calculates the total rewards accrued by a delegation
 func (k Keeper) CalculateDelegationRewards(ctx context.Context, val stakingtypes.ValidatorI, del stakingtypes.DelegationI, endingPeriod uint64) (rewards customtypes.DecPools, err error) {
 	addrCodec := k.authKeeper.AddressCodec()
 	delAddr, err := addrCodec.StringToBytes(del.GetDelegatorAddr())

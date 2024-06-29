@@ -5,7 +5,7 @@ import (
 	"crypto/subtle"
 	"errors"
 	"fmt"
-	io "io"
+	"io"
 	"math/big"
 
 	errorsmod "cosmossdk.io/errors"
@@ -15,7 +15,7 @@ import (
 	errortypes "github.com/cosmos/cosmos-sdk/types/errors"
 	"golang.org/x/crypto/sha3"
 
-	secp256k1 "github.com/decred/dcrd/dcrec/secp256k1/v4"
+	"github.com/decred/dcrd/dcrec/secp256k1/v4"
 	"github.com/decred/dcrd/dcrec/secp256k1/v4/ecdsa"
 )
 
@@ -151,7 +151,7 @@ var (
 	_ codec.AminoMarshaler = &PubKey{}
 )
 
-// Create a new PubKey object from a compressed or uncompressed byte slice.
+// NewPubKeyFromBytes creates a new PubKey object from a compressed or uncompressed byte slice.
 func NewPubKeyFromBytes(key []byte) (*PubKey, error) {
 	if len(key) == UncompressedPubKeySize {
 		// compress the key

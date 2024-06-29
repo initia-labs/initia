@@ -19,7 +19,7 @@ import (
 
 var _ banktypes.MoveBankKeeper = MoveBankKeeper{}
 
-// NftKeeper implements move wrapper for types.MoveBankKeeper interface
+// MoveBankKeeper implements move wrapper for types.MoveBankKeeper interface
 type MoveBankKeeper struct {
 	*Keeper
 }

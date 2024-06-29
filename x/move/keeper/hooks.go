@@ -9,15 +9,14 @@ import (
 	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
 )
 
-// SlashHooks
-// Wrapper struct
+// Hooks Keeper wrapper struct
 type Hooks struct {
 	k Keeper
 }
 
 var _ stakingtypes.SlashingHooks = Hooks{}
 
-// Create new distribution hooks
+// Hooks creates new distribution hooks
 func (k Keeper) Hooks() Hooks { return Hooks{k} }
 
 func (h Hooks) SlashUnbondingDelegations(ctx context.Context, valAddr sdk.ValAddress, fraction math.LegacyDec) error {

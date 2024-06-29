@@ -49,18 +49,18 @@ type BankKeeper interface {
 
 // ValidatorSet expected properties for the set of all validators (noalias)
 type ValidatorSet interface {
-	// iterate through validators by operator address, execute func for each validator
+	// IterateValidators iterates through validators by operator address, execute func for each validator
 	IterateValidators(context.Context,
 		func(validator ValidatorI) (stop bool, err error)) error
 
-	// iterate through bonded validators by operator address, execute func for each validator
+	// IterateBondedValidatorsByPower iterates through bonded validators by operator address, execute func for each validator
 	IterateBondedValidatorsByPower(context.Context,
 		func(validator ValidatorI) (stop bool, err error)) error
 
 	Validator(context.Context, sdk.ValAddress) (ValidatorI, error)            // get a particular validator by operator address
 	ValidatorByConsAddr(context.Context, sdk.ConsAddress) (ValidatorI, error) // get a particular validator by consensus address
 
-	// slash the validator and delegators of the validator, specifying offense height, and slash fraction
+	// Slash slash the validator and delegators of the validator, specifying offense height, and slash fraction
 	Slash(context.Context, sdk.ConsAddress, int64, math.LegacyDec) (sdk.Coins, error)
 	Jail(context.Context, sdk.ConsAddress) error   // jail a validator
 	Unjail(context.Context, sdk.ConsAddress) error // unjail a validator
@@ -77,7 +77,7 @@ type ValidatorSet interface {
 type DelegationSet interface {
 	GetValidatorSet() ValidatorSet // validator set for which delegation set is based upon
 
-	// iterate through all delegations from one delegator by validator-AccAddress,
+	// IterateDelegations iterates through all delegations from one delegator by validator-AccAddress,
 	//   execute func for each validator
 	IterateDelegations(ctx context.Context, delegator sdk.AccAddress,
 		fn func(delegation DelegationI) (stop bool, err error)) error

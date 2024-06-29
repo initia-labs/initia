@@ -24,7 +24,7 @@ var _ types.ValidatorSet = Keeper{}
 // Implements DelegationSet interface
 var _ types.DelegationSet = Keeper{}
 
-// keeper of the staking store
+// Keeper keeper of the staking store
 type Keeper struct {
 	cdc          codec.BinaryCodec
 	storeService corestoretypes.KVStoreService
@@ -162,7 +162,7 @@ func (k *Keeper) Hooks() types.StakingHooks {
 	return k.hooks
 }
 
-// Set the staking hooks
+// SetHooks set the staking hooks
 func (k *Keeper) SetHooks(sh types.StakingHooks) *Keeper {
 	if k.hooks != nil {
 		panic("cannot set staking hooks twice")
@@ -183,7 +183,7 @@ func (k *Keeper) SlashingHooks() types.SlashingHooks {
 	return k.slashingHooks
 }
 
-// Set the slashing hooks
+// SetSlashingHooks set the slashing hooks
 func (k *Keeper) SetSlashingHooks(sh types.SlashingHooks) *Keeper {
 	if k.slashingHooks != nil {
 		panic("cannot set slashing hooks twice")

@@ -22,7 +22,7 @@ const (
 	DenomTraceDenomPrefixMove = "move/"
 )
 
-// Generate named object address from the seed (address + name + 0xFE)
+// NamedObjectAddress generates named object address from the seed (address + name + 0xFE)
 func NamedObjectAddress(source vmtypes.AccountAddress, name string) vmtypes.AccountAddress {
 	// 0xFE is the suffix of named object address, which is
 	// defined in object.move as `OBJECT_FROM_SEED_ADDRESS_SCHEME`.
@@ -51,7 +51,7 @@ func UserDerivedObjectAddress(source vmtypes.AccountAddress, deriveFrom vmtypes.
 	return addr
 }
 
-// Extract metadata address from a denom
+// MetadataAddressFromDenom extracts metadata address from a denom
 func MetadataAddressFromDenom(denom string) (vmtypes.AccountAddress, error) {
 	if strings.HasPrefix(denom, DenomTraceDenomPrefixMove) {
 		hexStr := strings.TrimPrefix(denom, DenomTraceDenomPrefixMove)
@@ -71,7 +71,7 @@ func MetadataAddressFromDenom(denom string) (vmtypes.AccountAddress, error) {
 	return NamedObjectAddress(vmtypes.StdAddress, denom), nil
 }
 
-// Return denom of a metadata
+// DenomFromMetadataAddress returns denom of a metadata
 func DenomFromMetadataAddress(ctx context.Context, k FungibleAssetKeeper, metadata vmtypes.AccountAddress) (string, error) {
 	symbol, err := k.Symbol(ctx, metadata)
 	if err != nil {
@@ -87,12 +87,12 @@ func DenomFromMetadataAddress(ctx context.Context, k FungibleAssetKeeper, metada
 	return DenomTraceDenomPrefixMove + metadata.CanonicalString(), nil
 }
 
-// Return the flag whether the coin denom contains `move/` prefix or not.
+// IsMoveCoin returns the flag whether the coin denom contains `move/` prefix or not.
 func IsMoveCoin(coin sdk.Coin) bool {
 	return IsMoveDenom(coin.Denom)
 }
 
-// Return the flag whether the denom contains `move/` prefix or not.
+// IsMoveDenom returns the flag whether the denom contains `move/` prefix or not.
 func IsMoveDenom(denom string) bool {
 	return strings.HasPrefix(denom, DenomTraceDenomPrefixMove)
 }

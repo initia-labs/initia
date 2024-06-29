@@ -11,7 +11,7 @@ import (
 
 // StakingKeeper expected staking keeper (Validator and Delegator sets) (noalias)
 type StakingKeeper interface {
-	// iterate through bonded validators by operator address, execute func for each validator
+	// IterateBondedValidatorsByPower iterates through bonded validators by operator address, execute func for each validator
 	IterateBondedValidatorsByPower(
 		context.Context, func(validator stakingtypes.ValidatorI) (stop bool, err error),
 	) error

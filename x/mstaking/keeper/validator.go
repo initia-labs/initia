@@ -14,7 +14,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// get a single validator
+// GetValidator returns a single validator
 func (k Keeper) GetValidator(ctx context.Context, addr sdk.ValAddress) (validator types.Validator, err error) {
 	return k.Validators.Get(ctx, addr)
 }
@@ -28,7 +28,7 @@ func (k Keeper) mustGetValidator(ctx context.Context, addr sdk.ValAddress) types
 	return validator
 }
 
-// get a single validator by consensus address
+// GetValidatorByConsAddr returns a single validator by consensus address
 func (k Keeper) GetValidatorByConsAddr(ctx context.Context, consAddr sdk.ConsAddress) (validator types.Validator, err error) {
 	valAddr, err := k.ValidatorsByConsAddr.Get(ctx, consAddr)
 	if err != nil {
@@ -47,7 +47,7 @@ func (k Keeper) mustGetValidatorByConsAddr(ctx context.Context, consAddr sdk.Con
 	return validator
 }
 
-// set the main record holding validator details
+// SetValidator set the main record holding validator details
 func (k Keeper) SetValidator(ctx context.Context, validator types.Validator) error {
 	valAddr, err := k.validatorAddressCodec.StringToBytes(validator.GetOperator())
 	if err != nil {
@@ -57,7 +57,7 @@ func (k Keeper) SetValidator(ctx context.Context, validator types.Validator) err
 	return k.Validators.Set(ctx, valAddr, validator)
 }
 
-// validator index
+// SetValidatorByConsAddr validates index
 func (k Keeper) SetValidatorByConsAddr(ctx context.Context, validator types.Validator) error {
 	consPk, err := validator.GetConsAddr()
 	if err != nil {
@@ -72,7 +72,7 @@ func (k Keeper) SetValidatorByConsAddr(ctx context.Context, validator types.Vali
 	return k.ValidatorsByConsAddr.Set(ctx, consPk, valAddr)
 }
 
-// validator index
+// SetValidatorByPowerIndex validates index
 func (k Keeper) SetValidatorByPowerIndex(ctx context.Context, validator types.Validator) error {
 	powerReduction := k.PowerReduction(ctx)
 	consensusPower := sdk.TokensToConsensusPower(validator.VotingPower, powerReduction)
@@ -84,7 +84,7 @@ func (k Keeper) SetValidatorByPowerIndex(ctx context.Context, validator types.Va
 	return k.ValidatorsByConsPowerIndex.Set(ctx, collections.Join(consensusPower, valAddr), true)
 }
 
-// validator index
+// DeleteValidatorByPowerIndex validates index
 func (k Keeper) DeleteValidatorByPowerIndex(ctx context.Context, validator types.Validator) error {
 	powerReduction := k.PowerReduction(ctx)
 	consensusPower := sdk.TokensToConsensusPower(validator.VotingPower, powerReduction)
@@ -234,7 +234,7 @@ func (k Keeper) RemoveValidator(ctx context.Context, valAddr sdk.ValAddress) err
 
 // get groups of validators
 
-// get the set of all validators with no limits, used during genesis dump
+// GetAllValidators returns the set of all validators with no limits, used during genesis dump
 func (k Keeper) GetAllValidators(ctx context.Context) (validators []types.Validator, err error) {
 	err = k.Validators.Walk(ctx, nil, func(key []byte, validator types.Validator) (stop bool, err error) {
 		validators = append(validators, validator)
@@ -244,7 +244,7 @@ func (k Keeper) GetAllValidators(ctx context.Context) (validators []types.Valida
 	return
 }
 
-// return a given amount of all the validators
+// GetValidators returns a given amount of all the validators
 func (k Keeper) GetValidators(ctx context.Context, maxRetrieve uint32) (validators []types.Validator, err error) {
 	validators = make([]types.Validator, 0, maxRetrieve)
 	err = k.Validators.Walk(ctx, nil, func(key []byte, validator types.Validator) (stop bool, err error) {
@@ -255,7 +255,7 @@ func (k Keeper) GetValidators(ctx context.Context, maxRetrieve uint32) (validato
 	return validators, err
 }
 
-// get the current group of bonded validators sorted by power-rank
+// GetBondedValidatorsByPower returns the current group of bonded validators sorted by power-rank
 func (k Keeper) GetBondedValidatorsByPower(ctx context.Context) ([]types.Validator, error) {
 	maxValidators, err := k.MaxValidators(ctx)
 	if err != nil {
@@ -296,24 +296,24 @@ func (k Keeper) GetLastValidatorConsPower(ctx context.Context, valAddr sdk.ValAd
 	return power, nil
 }
 
-// Set the last validator power.
+// SetLastValidatorConsPower set the last validator power.
 func (k Keeper) SetLastValidatorConsPower(ctx context.Context, valAddr sdk.ValAddress, power int64) error {
 	return k.LastValidatorConsPowers.Set(ctx, valAddr, power)
 }
 
-// Delete the last validator power.
+// DeleteLastValidatorConsPower deletes the last validator power.
 func (k Keeper) DeleteLastValidatorConsPower(ctx context.Context, valAddr sdk.ValAddress) error {
 	return k.LastValidatorConsPowers.Remove(ctx, valAddr)
 }
 
-// Iterate over last validator powers.
+// IterateLastValidatorConsPowers iterates over last validator powers.
 func (k Keeper) IterateLastValidatorConsPowers(ctx context.Context, handler func(operator sdk.ValAddress, power int64) (stop bool, err error)) error {
 	return k.LastValidatorConsPowers.Walk(ctx, nil, func(valAddr []byte, power int64) (stop bool, err error) {
 		return handler(valAddr, power)
 	})
 }
 
-// get the group of the bonded validators
+// GetLastValidators returns the group of the bonded validators
 func (k Keeper) GetLastValidators(ctx context.Context) (validators []types.Validator, err error) {
 	maxValidators, err := k.MaxValidators(ctx)
 	if err != nil {

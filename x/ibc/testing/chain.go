@@ -444,7 +444,7 @@ func (chain *TestChain) ConstructUpdateTMClientHeader(counterparty *TestChain, c
 	return chain.ConstructUpdateTMClientHeaderWithTrustedHeight(counterparty, clientID, clienttypes.ZeroHeight())
 }
 
-// ConstructUpdateTMClientHeader will construct a valid 07-tendermint Header to update the
+// ConstructUpdateTMClientHeaderWithTrustedHeight will construct a valid 07-tendermint Header to update the
 // light client on the source chain.
 func (chain *TestChain) ConstructUpdateTMClientHeaderWithTrustedHeight(counterparty *TestChain, clientID string, trustedHeight clienttypes.Height) (*ibctm.Header, error) {
 	header := counterparty.LastHeader

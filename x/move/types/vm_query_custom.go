@@ -8,10 +8,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// The whitelist of custom queries.
+// CustomQueryWhiteList the whitelist of custom queries.
 type CustomQueryWhiteList map[string]CustomQuery
 
-// Default CustomQueryWhiteList
+// DefaultCustomQueryWhiteList returns CustomQueryWhiteList
 func DefaultCustomQueryWhiteList(ac address.Codec) CustomQueryWhiteList {
 	res := make(CustomQueryWhiteList)
 	res["to_sdk_address"] = ToSDKAddress(ac)

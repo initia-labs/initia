@@ -12,7 +12,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// Slash a validator for an infraction committed at a known height
+// Slash slash a validator for an infraction committed at a known height
 // Find the contributing stake at that height and burn the specified slashFactor
 // of it, updating unbonding delegations & redelegations appropriately
 //
@@ -186,7 +186,7 @@ func (k Keeper) SlashWithInfractionReason(
 	return k.Slash(ctx, consAddr, infractionHeight, slashFactor)
 }
 
-// jail a validator
+// Jail jail a validator
 func (k Keeper) Jail(ctx context.Context, consAddr sdk.ConsAddress) error {
 	validator := k.mustGetValidatorByConsAddr(ctx, consAddr)
 	if err := k.jailValidator(ctx, validator); err != nil {
@@ -198,7 +198,7 @@ func (k Keeper) Jail(ctx context.Context, consAddr sdk.ConsAddress) error {
 	return nil
 }
 
-// unjail a validator
+// Unjail unjail a validator
 func (k Keeper) Unjail(ctx context.Context, consAddr sdk.ConsAddress) error {
 	validator := k.mustGetValidatorByConsAddr(ctx, consAddr)
 	if err := k.unjailValidator(ctx, validator); err != nil {

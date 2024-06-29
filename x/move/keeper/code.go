@@ -16,7 +16,7 @@ func NewCodeKeeper(k *Keeper) CodeKeeper {
 	return CodeKeeper{k}
 }
 
-// Load the code params from the move store
+// GetParams loads the code params from the move store
 func (k CodeKeeper) GetParams(ctx context.Context) ([]vmtypes.AccountAddress, error) {
 	bz, err := k.GetResourceBytes(ctx, vmtypes.StdAddress, vmtypes.StructTag{
 		Address:  vmtypes.StdAddress,
@@ -31,7 +31,7 @@ func (k CodeKeeper) GetParams(ctx context.Context) ([]vmtypes.AccountAddress, er
 	return types.ReadCodeModuleStore(bz)
 }
 
-// Load the allowed_publishers from the move store
+// GetAllowedPublishers loads the allowed_publishers from the move store
 func (k CodeKeeper) GetAllowedPublishers(ctx context.Context) ([]vmtypes.AccountAddress, error) {
 	bz, err := k.GetResourceBytes(ctx, vmtypes.StdAddress, vmtypes.StructTag{
 		Address:  vmtypes.StdAddress,

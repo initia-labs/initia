@@ -10,7 +10,7 @@ import (
 	cosmostypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
-// Querier is used as Keeper will have duplicate methods if used directly, and gRPC names take precedence over keeper
+// CompatibilityQuerier is used as Keeper will have duplicate methods if used directly, and gRPC names take precedence over keeper
 type CompatibilityQuerier struct {
 	Keeper
 }

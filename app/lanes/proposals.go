@@ -22,7 +22,7 @@ func NewDefaultProposalHandler(lane *blockbase.BaseLane) *DefaultProposalHandler
 	}
 }
 
-// DefaultPrepareLaneHandler returns a default implementation of the PrepareLaneHandler. It
+// PrepareLaneHandler returns a default implementation of the PrepareLaneHandler. It
 // selects all transactions in the mempool that are valid and not already in the partial
 // proposal. It will continue to reap transactions until the maximum blockspace/gas for this
 // lane has been reached. Additionally, any transactions that are invalid will be returned.

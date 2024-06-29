@@ -10,7 +10,7 @@ const (
 	DefaultName = "default"
 )
 
-// DefaultLane defines a default lane implementation. The default lane orders
+// NewDefaultLane defines a default lane implementation. The default lane orders
 // transactions by the transaction fees. The default lane accepts any transaction
 // that should not be ignored (as defined by the IgnoreList in the LaneConfig).
 // The default lane builds and verifies blocks in a similar fashion to how the
