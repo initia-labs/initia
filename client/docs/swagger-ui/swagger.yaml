@@ -42562,7 +42562,7 @@ paths:
             type: object
             properties:
               commission:
-                description: commission defines the commision the validator received.
+                description: commission defines the commission the validator received.
                 type: object
                 properties:
                   commissions:
@@ -80961,7 +80961,7 @@ definitions:
     type: object
     properties:
       commission:
-        description: commission defines the commision the validator received.
+        description: commission defines the commission the validator received.
         type: object
         properties:
           commissions:
@@ -84854,7 +84854,7 @@ definitions:
           type: string
         description: |-
           Low threshold functions for emergency and expedited proposal.
-          These are Move function identifiers and can only be applied 
+          These are Move function identifiers and can only be applied
           for Move execute messages.
     description: Params defines the parameters for the x/gov module.
   initia.gov.v1.Proposal:
@@ -85611,7 +85611,7 @@ definitions:
               type: string
             description: |-
               Low threshold functions for emergency and expedited proposal.
-              These are Move function identifiers and can only be applied 
+              These are Move function identifiers and can only be applied
               for Move execute messages.
     description: QueryParamsResponse is the response type for the Query/Params RPC method.
   initia.gov.v1.QueryProposalResponse:
