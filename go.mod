@@ -224,7 +224,7 @@ replace (
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
 	github.com/cometbft/cometbft => github.com/initia-labs/cometbft v0.0.0-20240617161722-c6d777ba222a
 
-	github.com/cosmos/cosmos-sdk => github.com/initia-labs/cosmos-sdk v0.0.0-20240617110036-2411fa5fd7f8
+	github.com/cosmos/cosmos-sdk => github.com/initia-labs/cosmos-sdk v0.0.0-20240703101957-d86732af1610
 	github.com/cosmos/iavl => github.com/initia-labs/iavl v0.0.0-20240415085037-7e81233cdd9e
 
 	// dgrijalva/jwt-go is deprecated and doesn't receive security updates.
