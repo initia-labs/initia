@@ -67,11 +67,11 @@ func (k Keeper) calculateDelegationRewardsBetween(ctx context.Context, val staki
 	}
 
 	// return staking * (ending - starting)
-	starting, err := k.ValidatorHistoricalRewards.Get(ctx, collections.Join[[]byte, uint64](valAddr, startingPeriod))
+	starting, err := k.ValidatorHistoricalRewards.Get(ctx, collections.Join(valAddr, startingPeriod))
 	if err != nil {
 		return nil, err
 	}
-	ending, err := k.ValidatorHistoricalRewards.Get(ctx, collections.Join[[]byte, uint64](valAddr, endingPeriod))
+	ending, err := k.ValidatorHistoricalRewards.Get(ctx, collections.Join(valAddr, endingPeriod))
 	if err != nil {
 		return nil, err
 	}
@@ -278,7 +278,7 @@ func (k Keeper) withdrawDelegationRewards(ctx context.Context, val stakingtypes.
 
 	// update the outstanding rewards and the community pool only if the
 	// transaction was successful
-	err = k.ValidatorOutstandingRewards.Set(ctx, delAddr, customtypes.ValidatorOutstandingRewards{Rewards: outstanding.Sub(rewards)})
+	err = k.ValidatorOutstandingRewards.Set(ctx, valAddr, customtypes.ValidatorOutstandingRewards{Rewards: outstanding.Sub(rewards)})
 	if err != nil {
 		return nil, err
 	}

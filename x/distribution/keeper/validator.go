@@ -22,7 +22,7 @@ func (k Keeper) initializeValidator(ctx context.Context, val stakingtypes.Valida
 	}
 
 	// set initial historical rewards (period 0) with reference count of 1
-	err = k.ValidatorHistoricalRewards.Set(ctx, collections.Join[[]byte, uint64](valAddr, 0), customtypes.NewValidatorHistoricalRewards(customtypes.DecPools{}, 1))
+	err = k.ValidatorHistoricalRewards.Set(ctx, collections.Join(valAddr, uint64(0)), customtypes.NewValidatorHistoricalRewards(customtypes.DecPools{}, 1))
 	if err != nil {
 		return err
 	}
@@ -100,7 +100,7 @@ func (k Keeper) IncrementValidatorPeriod(ctx context.Context, val stakingtypes.V
 	}
 
 	// fetch historical rewards for last period
-	historicalRewards, err := k.ValidatorHistoricalRewards.Get(ctx, collections.Join[[]byte, uint64](valAddr, rewards.Period-1))
+	historicalRewards, err := k.ValidatorHistoricalRewards.Get(ctx, collections.Join(valAddr, rewards.Period-1))
 	if err != nil {
 		return 0, err
 	}
@@ -112,7 +112,7 @@ func (k Keeper) IncrementValidatorPeriod(ctx context.Context, val stakingtypes.V
 	}
 
 	// set new historical rewards with reference count of 1
-	err = k.ValidatorHistoricalRewards.Set(ctx, collections.Join[[]byte, uint64](valAddr, rewards.Period), customtypes.NewValidatorHistoricalRewards(historicalRewards.CumulativeRewardRatios.Add(current...), 1))
+	err = k.ValidatorHistoricalRewards.Set(ctx, collections.Join(valAddr, rewards.Period), customtypes.NewValidatorHistoricalRewards(historicalRewards.CumulativeRewardRatios.Add(current...), 1))
 	if err != nil {
 		return 0, err
 	}
@@ -128,7 +128,7 @@ func (k Keeper) IncrementValidatorPeriod(ctx context.Context, val stakingtypes.V
 
 // increment the reference count for a historical rewards value
 func (k Keeper) incrementReferenceCount(ctx context.Context, valAddr sdk.ValAddress, period uint64) error {
-	historical, err := k.ValidatorHistoricalRewards.Get(ctx, collections.Join[[]byte, uint64](valAddr, period))
+	historical, err := k.ValidatorHistoricalRewards.Get(ctx, collections.Join(valAddr.Bytes(), period))
 	if err != nil {
 		return err
 	}
@@ -138,12 +138,12 @@ func (k Keeper) incrementReferenceCount(ctx context.Context, valAddr sdk.ValAddr
 	}
 
 	historical.ReferenceCount++
-	return k.ValidatorHistoricalRewards.Set(ctx, collections.Join[[]byte, uint64](valAddr, period), historical)
+	return k.ValidatorHistoricalRewards.Set(ctx, collections.Join(valAddr.Bytes(), period), historical)
 }
 
 // decrement the reference count for a historical rewards value, and delete if zero references remain
 func (k Keeper) decrementReferenceCount(ctx context.Context, valAddr sdk.ValAddress, period uint64) error {
-	historical, err := k.ValidatorHistoricalRewards.Get(ctx, collections.Join[[]byte, uint64](valAddr, period))
+	historical, err := k.ValidatorHistoricalRewards.Get(ctx, collections.Join(valAddr.Bytes(), period))
 	if err != nil {
 		return err
 	}
@@ -153,9 +153,9 @@ func (k Keeper) decrementReferenceCount(ctx context.Context, valAddr sdk.ValAddr
 
 	historical.ReferenceCount--
 	if historical.ReferenceCount == 0 {
-		return k.ValidatorHistoricalRewards.Remove(ctx, collections.Join[[]byte, uint64](valAddr, period))
+		return k.ValidatorHistoricalRewards.Remove(ctx, collections.Join(valAddr.Bytes(), period))
 	} else {
-		return k.ValidatorHistoricalRewards.Set(ctx, collections.Join[[]byte, uint64](valAddr, period), historical)
+		return k.ValidatorHistoricalRewards.Set(ctx, collections.Join(valAddr.Bytes(), period), historical)
 	}
 }
 
@@ -188,7 +188,7 @@ func (k Keeper) updateValidatorSlashFraction(ctx context.Context, valAddr sdk.Va
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	height := uint64(sdkCtx.BlockHeight())
 
-	err = k.ValidatorSlashEvents.Set(ctx, collections.Join3[[]byte, uint64, uint64](valAddr, height, newPeriod), slashEvent)
+	err = k.ValidatorSlashEvents.Set(ctx, collections.Join3(valAddr.Bytes(), height, newPeriod), slashEvent)
 	if err != nil {
 		return err
 	}
