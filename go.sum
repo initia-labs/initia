@@ -731,8 +731,8 @@ github.com/initia-labs/OPinit v0.3.2 h1:TeELD5GeSJJ9meY5b5YIXDdmCZt9kZOA2Chz+Iwx
 github.com/initia-labs/OPinit v0.3.2/go.mod h1:XlYsBFAKOFS6/wRIHB1vVbfonqX8QrC8cWK2GJvmX20=
 github.com/initia-labs/OPinit/api v0.3.0 h1:OY8ijwmgZLoYwtw9LI1mSY3VC8PY+gtxJFitB6ZNFl4=
 github.com/initia-labs/OPinit/api v0.3.0/go.mod h1:Xy/Nt3ubXLQ4zKn0m7RuQOM1sj8TVdlNNyek21TGYR0=
-github.com/initia-labs/cometbft v0.0.0-20240621095332-4bd01a7a4586 h1:zFQKoiRpiYLrT+6CW5uXNVS/jAhusRJOX3tNBSPxzp8=
-github.com/initia-labs/cometbft v0.0.0-20240621095332-4bd01a7a4586/go.mod h1:xOoGZrtUT+A5izWfHSJgl0gYZUE7lu7Z2XIS1vWG/QQ=
+github.com/initia-labs/cometbft v0.0.0-20240704071957-c46468756c01 h1:EGcO68mXypbiO3rmoFsskxLEAeZFcOkJII1PsSK0rRI=
+github.com/initia-labs/cometbft v0.0.0-20240704071957-c46468756c01/go.mod h1:xOoGZrtUT+A5izWfHSJgl0gYZUE7lu7Z2XIS1vWG/QQ=
 github.com/initia-labs/movevm v0.3.3 h1:xUH5VvjBSfJP4jg3axefmBlcdZ/7qfVYnUU09R4oN4g=
 github.com/initia-labs/movevm v0.3.3/go.mod h1:6MxR4GP5zH3JUc1IMgfqAe1e483mZVS7fshPknZPJ30=
 github.com/jhump/protoreflect v1.15.3 h1:6SFRuqU45u9hIZPJAoZ8c28T3nK64BNdp9w6jFonzls=
