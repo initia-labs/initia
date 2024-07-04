@@ -41877,8 +41877,10 @@ paths:
         - Query
   /ibc/apps/perm/v1/relayers:
     get:
-      summary: PermissionedRelayers queries a permissioned ibc relayers.
-      operationId: PermissionedRelayers
+      summary: >-
+        AllPermissionedRelayers queries all sets of permissioned relayers for
+        all channels.
+      operationId: AllPermissionedRelayers
       responses:
         '200':
           description: A successful response.
@@ -41894,8 +41896,10 @@ paths:
                       type: string
                     channel_id:
                       type: string
-                    relayer:
-                      type: string
+                    relayers:
+                      type: array
+                      items:
+                        type: string
                   description: >-
                     PermissionedRelayer is used to specifiy the permissioned
                     relayer for
@@ -41922,8 +41926,8 @@ paths:
 
                       was set, its value is undefined otherwise
             description: >-
-              QueryPermissionedRelayersResponse is the response type for the
-              Query/PermissionedRelayers RPC
+              QueryAllPermissionedRelayersResponse is the response type for the
+              Query/AllPermissionedRelayers RPC
 
               method.
         default:
@@ -42010,24 +42014,26 @@ paths:
   /ibc/apps/perm/v1/relayers/{port_id}/{channel_id}:
     get:
       summary: >-
-        PermissionedRelayer queries a permissioned ibc relayer for the specific
-        channel.
-      operationId: PermissionedRelayer
+        PermissionedRelayersByChannel queries a set of permissioned ibc relayers
+        for the specific channel.
+      operationId: PermissionedRelayersByChannel
       responses:
         '200':
           description: A successful response.
           schema:
             type: object
             properties:
-              permissioned_relayer:
+              permissioned_relayers:
                 type: object
                 properties:
                   port_id:
                     type: string
                   channel_id:
                     type: string
-                  relayer:
-                    type: string
+                  relayers:
+                    type: array
+                    items:
+                      type: string
                 description: >-
                   PermissionedRelayer is used to specifiy the permissioned
                   relayer for
@@ -42562,7 +42568,7 @@ paths:
             type: object
             properties:
               commission:
-                description: commission defines the commision the validator received.
+                description: commission defines the commission the validator received.
                 type: object
                 properties:
                   commissions:
@@ -49302,7 +49308,7 @@ paths:
                       proposal.
 
                       These are Move function identifiers and can only be
-                      applied 
+                      applied
 
                       for Move execute messages.
             description: >-
@@ -52302,8 +52308,10 @@ paths:
                     bridge_config:
                       type: object
                       properties:
-                        challenger:
-                          type: string
+                        challengers:
+                          type: array
+                          items:
+                            type: string
                           description: The address of the challenger.
                         proposer:
                           type: string
@@ -52470,8 +52478,10 @@ paths:
               bridge_config:
                 type: object
                 properties:
-                  challenger:
-                    type: string
+                  challengers:
+                    type: array
+                    items:
+                      type: string
                     description: The address of the challenger.
                   proposer:
                     type: string
@@ -80594,39 +80604,21 @@ definitions:
       PacketId is an identifer for a unique Packet
       Source chains refer to packets by source port/channel
       Destination chains refer to packets by destination port/channel
-  ibc.applications.perm.v1.PermissionedRelayer:
+  ibc.applications.perm.v1.PermissionedRelayers:
     type: object
     properties:
       port_id:
         type: string
       channel_id:
         type: string
-      relayer:
-        type: string
+      relayers:
+        type: array
+        items:
+          type: string
     description: |-
       PermissionedRelayer is used to specifiy the permissioned relayer for
       the specific port-id:channel-id pair.
-  ibc.applications.perm.v1.QueryPermissionedRelayerResponse:
-    type: object
-    properties:
-      permissioned_relayer:
-        type: object
-        properties:
-          port_id:
-            type: string
-          channel_id:
-            type: string
-          relayer:
-            type: string
-        description: |-
-          PermissionedRelayer is used to specifiy the permissioned relayer for
-          the specific port-id:channel-id pair.
-    description: >-
-      QueryPermissionedRelayerResponse is the response type for the
-      Query/PermissionedRelayer RPC
-
-      method.
-  ibc.applications.perm.v1.QueryPermissionedRelayersResponse:
+  ibc.applications.perm.v1.QueryAllPermissionedRelayersResponse:
     type: object
     properties:
       permissioned_relayers:
@@ -80638,8 +80630,10 @@ definitions:
               type: string
             channel_id:
               type: string
-            relayer:
-              type: string
+            relayers:
+              type: array
+              items:
+                type: string
           description: |-
             PermissionedRelayer is used to specifiy the permissioned relayer for
             the specific port-id:channel-id pair.
@@ -80664,8 +80658,30 @@ definitions:
 
               was set, its value is undefined otherwise
     description: >-
-      QueryPermissionedRelayersResponse is the response type for the
-      Query/PermissionedRelayers RPC
+      QueryAllPermissionedRelayersResponse is the response type for the
+      Query/AllPermissionedRelayers RPC
+
+      method.
+  ibc.applications.perm.v1.QueryPermissionedRelayersByChannelResponse:
+    type: object
+    properties:
+      permissioned_relayers:
+        type: object
+        properties:
+          port_id:
+            type: string
+          channel_id:
+            type: string
+          relayers:
+            type: array
+            items:
+              type: string
+        description: |-
+          PermissionedRelayer is used to specifiy the permissioned relayer for
+          the specific port-id:channel-id pair.
+    description: >-
+      QueryPermissionedRelayerResponse is the response type for the
+      Query/PermissionedRelayer RPC
 
       method.
   packetforward.v1.Params:
@@ -80961,7 +80977,7 @@ definitions:
     type: object
     properties:
       commission:
-        description: commission defines the commision the validator received.
+        description: commission defines the commission the validator received.
         type: object
         properties:
           commissions:
@@ -84854,7 +84870,7 @@ definitions:
           type: string
         description: |-
           Low threshold functions for emergency and expedited proposal.
-          These are Move function identifiers and can only be applied 
+          These are Move function identifiers and can only be applied
           for Move execute messages.
     description: Params defines the parameters for the x/gov module.
   initia.gov.v1.Proposal:
@@ -85611,7 +85627,7 @@ definitions:
               type: string
             description: |-
               Low threshold functions for emergency and expedited proposal.
-              These are Move function identifiers and can only be applied 
+              These are Move function identifiers and can only be applied
               for Move execute messages.
     description: QueryParamsResponse is the response type for the Query/Params RPC method.
   initia.gov.v1.QueryProposalResponse:
@@ -87019,8 +87035,10 @@ definitions:
   opinit.ophost.v1.BridgeConfig:
     type: object
     properties:
-      challenger:
-        type: string
+      challengers:
+        type: array
+        items:
+          type: string
         description: The address of the challenger.
       proposer:
         type: string
@@ -87106,8 +87124,10 @@ definitions:
       bridge_config:
         type: object
         properties:
-          challenger:
-            type: string
+          challengers:
+            type: array
+            items:
+              type: string
             description: The address of the challenger.
           proposer:
             type: string
@@ -87164,8 +87184,10 @@ definitions:
             bridge_config:
               type: object
               properties:
-                challenger:
-                  type: string
+                challengers:
+                  type: array
+                  items:
+                    type: string
                   description: The address of the challenger.
                 proposer:
                   type: string
