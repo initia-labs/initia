@@ -224,7 +224,11 @@ replace (
 	// use cosmos fork of keyring
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
 
-	github.com/cometbft/cometbft => github.com/initia-labs/cometbft v0.0.0-20240621095332-4bd01a7a4586
+	// use custom version for 
+	// - https://github.com/initia-labs/cometbft/commit/cb3ed4ca9be4d6c55df7df2d927e9b92153bc3e2
+	github.com/cometbft/cometbft => github.com/initia-labs/cometbft v0.0.0-20240704071957-c46468756c01
+	// use v1.1.4 for 
+	// - https://github.com/cosmos/iavl/commit/021433c2ed0b64223f90315a3421eb645e1f08fe
 	github.com/cosmos/iavl => github.com/cosmos/iavl v1.1.4
 
 	// dgrijalva/jwt-go is deprecated and doesn't receive security updates.
