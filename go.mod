@@ -222,8 +222,8 @@ require (
 replace (
 	// use cosmos fork of keyring
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
-	github.com/cometbft/cometbft => github.com/initia-labs/cometbft v0.0.0-20240617161722-c6d777ba222a
 
+	github.com/cometbft/cometbft => github.com/initia-labs/cometbft v0.0.0-20240704071957-c46468756c01
 	github.com/cosmos/cosmos-sdk => github.com/initia-labs/cosmos-sdk v0.0.0-20240514173001-c037b6c44d98
 	github.com/cosmos/iavl => github.com/initia-labs/iavl v0.0.0-20240415085037-7e81233cdd9e
 
