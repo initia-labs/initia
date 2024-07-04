@@ -73,6 +73,7 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 	}
 
 	anteDecorators := []sdk.AnteDecorator{
+		NewAccountNumberDecorator(options.AccountKeeper),
 		ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
 		ante.NewExtensionOptionsDecorator(options.ExtensionOptionChecker),
 		moveante.NewGasPricesDecorator(),
