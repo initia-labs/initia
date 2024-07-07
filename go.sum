@@ -362,6 +362,8 @@ github.com/cosmos/cosmos-db v1.0.2 h1:hwMjozuY1OlJs/uh6vddqnk9j7VamLv+0DBlbEXbAK
 github.com/cosmos/cosmos-db v1.0.2/go.mod h1:Z8IXcFJ9PqKK6BIsVOB3QXtkKoqUOp1vRvPT39kOXEA=
 github.com/cosmos/cosmos-proto v1.0.0-beta.5 h1:eNcayDLpip+zVLRLYafhzLvQlSmyab+RC5W7ZfmxJLA=
 github.com/cosmos/cosmos-proto v1.0.0-beta.5/go.mod h1:hQGLpiIUloJBMdQMMWb/4wRApmI9hjHH05nefC0Ojec=
+github.com/cosmos/cosmos-sdk v0.50.7 h1:LsBGKxifENR/DN4E1RZaitsyL93HU44x0p8EnMHp4V4=
+github.com/cosmos/cosmos-sdk v0.50.7/go.mod h1:84xDDJEHttRT7NDGwBaUOLVOMN0JNE9x7NbsYIxXs1s=
 github.com/cosmos/go-bip39 v1.0.0 h1:pcomnQdrdH22njcAatO0yWojsUnCO3y2tNoV1cb6hHY=
 github.com/cosmos/go-bip39 v1.0.0/go.mod h1:RNJv0H/pOIVgxw6KS7QeX2a0Uo0aKUlfhZ4xuwvCdJw=
 github.com/cosmos/gogogateway v1.2.0 h1:Ae/OivNhp8DqBi/sh2A8a1D0y638GpL3tkmLQAiKxTE=
@@ -729,12 +731,10 @@ github.com/initia-labs/OPinit v0.3.2 h1:TeELD5GeSJJ9meY5b5YIXDdmCZt9kZOA2Chz+Iwx
 github.com/initia-labs/OPinit v0.3.2/go.mod h1:XlYsBFAKOFS6/wRIHB1vVbfonqX8QrC8cWK2GJvmX20=
 github.com/initia-labs/OPinit/api v0.3.0 h1:OY8ijwmgZLoYwtw9LI1mSY3VC8PY+gtxJFitB6ZNFl4=
 github.com/initia-labs/OPinit/api v0.3.0/go.mod h1:Xy/Nt3ubXLQ4zKn0m7RuQOM1sj8TVdlNNyek21TGYR0=
-github.com/initia-labs/cometbft v0.0.0-20240621095332-4bd01a7a4586 h1:zFQKoiRpiYLrT+6CW5uXNVS/jAhusRJOX3tNBSPxzp8=
-github.com/initia-labs/cometbft v0.0.0-20240621095332-4bd01a7a4586/go.mod h1:xOoGZrtUT+A5izWfHSJgl0gYZUE7lu7Z2XIS1vWG/QQ=
-github.com/initia-labs/cosmos-sdk v0.0.0-20240627065534-d2180fcfd501 h1:OcLFeu3V9T156H4n6WzPNfKWjIUKdkC0P0EBA8zEWFE=
-github.com/initia-labs/cosmos-sdk v0.0.0-20240627065534-d2180fcfd501/go.mod h1:84xDDJEHttRT7NDGwBaUOLVOMN0JNE9x7NbsYIxXs1s=
-github.com/initia-labs/movevm v0.3.3 h1:xUH5VvjBSfJP4jg3axefmBlcdZ/7qfVYnUU09R4oN4g=
-github.com/initia-labs/movevm v0.3.3/go.mod h1:6MxR4GP5zH3JUc1IMgfqAe1e483mZVS7fshPknZPJ30=
+github.com/initia-labs/cometbft v0.0.0-20240704071957-c46468756c01 h1:EGcO68mXypbiO3rmoFsskxLEAeZFcOkJII1PsSK0rRI=
+github.com/initia-labs/cometbft v0.0.0-20240704071957-c46468756c01/go.mod h1:xOoGZrtUT+A5izWfHSJgl0gYZUE7lu7Z2XIS1vWG/QQ=
+github.com/initia-labs/movevm v0.3.4 h1:kzqs6uzTq0f5peZJNzLq/1qgnmAFfC+I9eCyPBducxM=
+github.com/initia-labs/movevm v0.3.4/go.mod h1:6MxR4GP5zH3JUc1IMgfqAe1e483mZVS7fshPknZPJ30=
 github.com/jhump/protoreflect v1.15.3 h1:6SFRuqU45u9hIZPJAoZ8c28T3nK64BNdp9w6jFonzls=
 github.com/jhump/protoreflect v1.15.3/go.mod h1:4ORHmSBmlCW8fh3xHmJMGyul1zNqZK4Elxc8qKP+p1k=
 github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af/go.mod h1:Nht3zPeWKUH0NzdCt2Blrr5ys8VGpn0CEB0cQHVjt7k=
