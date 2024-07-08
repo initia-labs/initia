@@ -7,7 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 )
 
-const upgradeName = "0.2.2"
+const upgradeName = "initiation-stage-2"
 
 // RegisterUpgradeHandlers returns upgrade handlers
 func (app *InitiaApp) RegisterUpgradeHandlers(cfg module.Configurator) {
