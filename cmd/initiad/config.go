@@ -63,14 +63,14 @@ func initAppConfig() (string, interface{}) {
 func initTendermintConfig() *tmcfg.Config {
 	cfg := tmcfg.DefaultConfig()
 
-	// set block time to 3s
-	cfg.Consensus.TimeoutPropose = 1800 * time.Millisecond
-	cfg.Consensus.TimeoutProposeDelta = 300 * time.Millisecond
-	cfg.Consensus.TimeoutPrevote = 600 * time.Millisecond
-	cfg.Consensus.TimeoutPrevoteDelta = 300 * time.Millisecond
-	cfg.Consensus.TimeoutPrecommit = 600 * time.Millisecond
-	cfg.Consensus.TimeoutPrecommitDelta = 300 * time.Millisecond
-	cfg.Consensus.TimeoutCommit = 3000 * time.Millisecond
+	// set block time to 2s
+	cfg.Consensus.TimeoutPropose = 2 * time.Second
+	cfg.Consensus.TimeoutProposeDelta = 500 * time.Millisecond
+	cfg.Consensus.TimeoutPrevote = 1 * time.Second
+	cfg.Consensus.TimeoutPrevoteDelta = 500 * time.Millisecond
+	cfg.Consensus.TimeoutPrecommit = 1 * time.Second
+	cfg.Consensus.TimeoutPrecommitDelta = 500 * time.Millisecond
+	cfg.Consensus.TimeoutCommit = 2 * time.Second
 
 	return cfg
 }
