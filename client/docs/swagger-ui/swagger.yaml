@@ -52604,6 +52604,52 @@ paths:
           format: uint64
       tags:
         - Query
+  /opinit/ophost/v1/bridges/{bridge_id}/next_l1_sequence:
+    get:
+      summary: NextL1Sequence queries the next l1 sequence.
+      operationId: NextL1Sequence
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              next_l1_sequence:
+                type: string
+                format: uint64
+            description: >-
+              QueryNextL1SequenceResponse is response type for the
+              Query/NextL1Sequence RPC method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: bridge_id
+          in: path
+          required: true
+          type: string
+          format: uint64
+      tags:
+        - Query
   /opinit/ophost/v1/bridges/{bridge_id}/outputs:
     get:
       summary: OutputProposals queries all output proposals.
@@ -53069,6 +53115,56 @@ paths:
           in: query
           required: false
           type: string
+      tags:
+        - Query
+  /opinit/ophost/v1/bridges/{bridge_id}/withdrawals/{withdrawal_hash}/claimed:
+    get:
+      summary: Claimed queries whether the output is claimed.
+      operationId: Claimed
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              claimed:
+                type: boolean
+            title: >-
+              QueryClaimedResponse is response type for the Query/Claimed RPC
+              method
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: bridge_id
+          in: path
+          required: true
+          type: string
+          format: uint64
+        - name: withdrawal_hash
+          in: path
+          required: true
+          type: string
+          format: byte
       tags:
         - Query
   /opinit/ophost/v1/params:
@@ -87226,6 +87322,12 @@ definitions:
 
               was set, its value is undefined otherwise
     title: QueryBridgesResponse is response type for the Query/Bridges RPC method
+  opinit.ophost.v1.QueryClaimedResponse:
+    type: object
+    properties:
+      claimed:
+        type: boolean
+    title: QueryClaimedResponse is response type for the Query/Claimed RPC method
   opinit.ophost.v1.QueryLastFinalizedOutputResponse:
     type: object
     properties:
@@ -87248,6 +87350,15 @@ definitions:
             format: uint64
             description: The l2 block number that the output root was submitted in.
         description: Output is a l2 block submitted by proposer.
+  opinit.ophost.v1.QueryNextL1SequenceResponse:
+    type: object
+    properties:
+      next_l1_sequence:
+        type: string
+        format: uint64
+    description: >-
+      QueryNextL1SequenceResponse is response type for the Query/NextL1Sequence
+      RPC method.
   opinit.ophost.v1.QueryOutputProposalResponse:
     type: object
     properties:
