@@ -81,9 +81,9 @@ func initTendermintConfig() *tmcfg.Config {
 
 	// no need to increase wait timeout(delta) for prevote and precommit
 	cfg.Consensus.TimeoutPrevote = 500 * time.Millisecond
-	cfg.Consensus.TimeoutPrevoteDelta = 50 * time.Millisecond
+	cfg.Consensus.TimeoutPrevoteDelta = 0 * time.Millisecond
 	cfg.Consensus.TimeoutPrecommit = 500 * time.Millisecond
-	cfg.Consensus.TimeoutPrecommitDelta = 50 * time.Millisecond
+	cfg.Consensus.TimeoutPrecommitDelta = 0 * time.Millisecond
 
 	// set commit timeout to 2s
 	cfg.Consensus.TimeoutCommit = 2 * time.Second
