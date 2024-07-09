@@ -63,13 +63,29 @@ func initAppConfig() (string, interface{}) {
 func initTendermintConfig() *tmcfg.Config {
 	cfg := tmcfg.DefaultConfig()
 
-	// set block time to 2s
-	cfg.Consensus.TimeoutPropose = 2 * time.Second
+	// performance turning configs
+	cfg.P2P.SendRate = 20480000
+	cfg.P2P.RecvRate = 20480000
+	cfg.P2P.MaxPacketMsgPayloadSize = 1000000 // 1MB
+	cfg.P2P.FlushThrottleTimeout = 10 * time.Millisecond
+	cfg.Consensus.PeerGossipSleepDuration = 30 * time.Millisecond
+
+	// mempool configs
+	cfg.Mempool.Size = 1000
+	cfg.Mempool.MaxTxsBytes = 10737418240
+	cfg.Mempool.MaxTxBytes = 2048576
+
+	// set propose timeout to 3s and increase timeout by 500ms each round
+	cfg.Consensus.TimeoutPropose = 3 * time.Second
 	cfg.Consensus.TimeoutProposeDelta = 500 * time.Millisecond
-	cfg.Consensus.TimeoutPrevote = 1 * time.Second
-	cfg.Consensus.TimeoutPrevoteDelta = 500 * time.Millisecond
-	cfg.Consensus.TimeoutPrecommit = 1 * time.Second
-	cfg.Consensus.TimeoutPrecommitDelta = 500 * time.Millisecond
+
+	// no need to increase wait timeout(delta) for prevote and precommit
+	cfg.Consensus.TimeoutPrevote = 500 * time.Millisecond
+	cfg.Consensus.TimeoutPrevoteDelta = 50 * time.Millisecond
+	cfg.Consensus.TimeoutPrecommit = 500 * time.Millisecond
+	cfg.Consensus.TimeoutPrecommitDelta = 50 * time.Millisecond
+
+	// set commit timeout to 2s
 	cfg.Consensus.TimeoutCommit = 2 * time.Second
 
 	return cfg
