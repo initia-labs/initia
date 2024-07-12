@@ -30,6 +30,7 @@ ignore:
   - "**/cli"
   - "**/rest"
   - "**/*.pb.go"
+  - "**/*.pulsar.go"
   - "**/*.pb.gw.go"
   - "**/test_utils.go"
   - "**/module.go"
