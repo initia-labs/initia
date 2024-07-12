@@ -26,8 +26,13 @@ jobs:
           CC: aarch64-linux-gnu-gcc
           CXX: aarch64-linux-gnu-g++
         run: |
+          echo "GOARCH=$GOARCH"
+          echo "CC=$CC"
+          echo "CXX=$CXX"
           echo "Building for GOARCH=arm64"
-          CGO_ENABLED=1 GOOS=linux GOARCH=arm64 CC=$CC CXX=$CXX make build-linux-with-shared-library
+          CGO_ENABLED=1 GOOS=linux GOARCH=arm64 CC=$CC CXX=$CXX go build -o ./build/initiad ./cmd/initiad
+          CGO_ENABLED=1 GOOS=linux GOARCH=arm64 CC=$CC CXX=$CXX go build -buildmode=c-shared -o ./build/libmovevm.so ./cmd/libmovevm
+          CGO_ENABLED=1 GOOS=linux GOARCH=arm64 CC=$CC CXX=$CXX go build -buildmode=c-shared -o ./build/libcompiler.so ./cmd/libcompiler
           cd ./build
           mkdir -p initia_${GITHUB_REF#refs/tags/}
           mv libmovevm.so initia_${GITHUB_REF#refs/tags/}/libmovevm.arm64.so
