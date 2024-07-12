@@ -1,4 +1,4 @@
-package ante
+package sigverify
 
 import (
 	"context"
