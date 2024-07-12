@@ -20,14 +20,25 @@ jobs:
           go-version: '1.22.4'
 
       - name: Build for Darwin
+        env:
+          GOARCH: ${{ inputs.arch }}
         run: |
-          make build
+          make build GOARCH=${{ inputs.arch }}
           cd ./build
           mkdir -p initia_${GITHUB_REF#refs/tags/}
           cp ~/go/pkg/mod/github.com/initia-labs/movevm@*/api/libmovevm.dylib initia_${GITHUB_REF#refs/tags/}/libmovevm.${{ inputs.arch }}.dylib
           cp ~/go/pkg/mod/github.com/initia-labs/movevm@*/api/libcompiler.dylib initia_${GITHUB_REF#refs/tags/}/libcompiler.${{ inputs.arch }}.dylib
           mv initiad initia_${GITHUB_REF#refs/tags/}/
           tar -czvf initia_${GITHUB_REF#refs/tags/}_Darwin_${{ inputs.arch }}.tar.gz initia_${GITHUB_REF#refs/tags/}
+
+      - name: Verify binary architecture
+        run: |
+          file ./build/initia_${GITHUB_REF#refs/tags/}/initiad
+
+      - name: Verify library architecture
+        run: |
+          file ./build/initia_${GITHUB_REF#refs/tags/}/libmovevm.${{ inputs.arch }}.dylib
+          file ./build/initia_${GITHUB_REF#refs/tags/}/libcompiler.${{ inputs.arch }}.dylib
 
       - name: Google Auth
         uses: 'google-github-actions/auth@v2'
