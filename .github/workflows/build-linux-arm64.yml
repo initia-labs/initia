@@ -11,7 +11,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Set up ARM Runner
-        uses: pguyot/arm-runner-action@v1.1.0
+        uses: pguyot/arm-runner-action@v2
         with:
           architecture: arm64
 
