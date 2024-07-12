@@ -1,0 +1,68 @@
+name: Build Linux ARM64
+
+on:
+  workflow_call:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.22.4'
+
+      - name: Install cross-compilation tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+
+      - name: Build for Linux ARM64
+        env:
+          GOARCH: arm64
+          CC: aarch64-linux-gnu-gcc
+          CXX: aarch64-linux-gnu-g++
+        run: |
+          echo "Building for GOARCH=arm64"
+          CGO_ENABLED=1 GOOS=linux GOARCH=arm64 CC=$CC CXX=$CXX make build-linux-with-shared-library
+          cd ./build
+          mkdir -p initia_${GITHUB_REF#refs/tags/}
+          mv libmovevm.so initia_${GITHUB_REF#refs/tags/}/libmovevm.arm64.so
+          mv libcompiler.so initia_${GITHUB_REF#refs/tags/}/libcompiler.arm64.so
+          mv initiad initia_${GITHUB_REF#refs/tags/}/
+          tar -czvf initia_${GITHUB_REF#refs/tags/}_Linux_arm64.tar.gz initia_${GITHUB_REF#refs/tags/}
+
+      - name: Verify binary architecture
+        run: |
+          file ./build/initia_${GITHUB_REF#refs/tags/}/initiad
+          file ./build/initia_${GITHUB_REF#refs/tags/}/libmovevm.arm64.so
+          file ./build/initia_${GITHUB_REF#refs/tags/}/libcompiler.arm64.so
+
+      - name: Google Auth
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
+      - name: Set up Cloud SDK
+        uses: 'google-github-actions/setup-gcloud@v2'
+
+      - name: Upload to GCS
+        env:
+          GCS_BUCKET: ${{ secrets.GCS_BUCKET }}
+        run: |
+          gsutil cp ./build/initia_${GITHUB_REF#refs/tags/}_Linux_arm64.tar.gz gs://${GCS_BUCKET}/initia/${GITHUB_REF#refs/tags/}/
+
+      - name: Verify upload and Generate public URL
+        env:
+          GCS_BUCKET: ${{ secrets.GCS_BUCKET }}
+        run: |
+          if gsutil stat gs://${GCS_BUCKET}/initia/${GITHUB_REF#refs/tags/}/initia_${GITHUB_REF#refs/tags/}_Linux_arm64.tar.gz; then
+            echo "File successfully uploaded"
+            echo "Public URL: https://storage.googleapis.com/${GCS_BUCKET}/initia/${GITHUB_REF#refs/tags/}/initia_${GITHUB_REF#refs/tags/}_Linux_arm64.tar.gz" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "File upload failed"
+            exit 1
+          fi
