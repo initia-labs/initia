@@ -20,14 +20,25 @@ jobs:
           go-version: '1.22.4'
 
       - name: Build for Linux
+        env:
+          GOARCH: ${{ inputs.arch }}
         run: |
-          make build-linux-with-shared-library
+          make build-linux-with-shared-library GOARCH=${{ inputs.arch }}
           cd ./build
           mkdir -p initia_${GITHUB_REF#refs/tags/}
           mv libmovevm.so initia_${GITHUB_REF#refs/tags/}/libmovevm.${{ inputs.arch }}.so
           mv libcompiler.so initia_${GITHUB_REF#refs/tags/}/libcompiler.${{ inputs.arch }}.so
           mv initiad initia_${GITHUB_REF#refs/tags/}/
           tar -czvf initia_${GITHUB_REF#refs/tags/}_Linux_${{ inputs.arch }}.tar.gz initia_${GITHUB_REF#refs/tags/}
+
+      - name: Verify binary architecture
+        run: |
+          file ./build/initia_${GITHUB_REF#refs/tags/}/initiad
+
+      - name: Verify library architecture
+        run: |
+          file ./build/initia_${GITHUB_REF#refs/tags/}/libmovevm.${{ inputs.arch }}.so
+          file ./build/initia_${GITHUB_REF#refs/tags/}/libcompiler.${{ inputs.arch }}.so
 
       - name: Google Auth
         uses: 'google-github-actions/auth@v2'
