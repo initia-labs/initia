@@ -175,7 +175,7 @@ proto-format:
 	@$(protoImage) find ./ -name "*.proto" -exec clang-format -i {} \;
 
 proto-lint:
-	@$(protoImage) buf lint --error-format=json
+	@$(protoImage) buf lint --error-format=json ./proto
 
 proto-check-breaking:
 	@$(protoImage) buf breaking --against $(HTTPS_GIT)#branch=main

@@ -26,18 +26,17 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// UpgradePolicy
-//   - `compatible`
-//     Whether a compatibility check should be performed for upgrades. The check only passes if
-//     a new module has (a) the same public functions (b) for existing resources, no layout change.
-//   - `immutable`
-//     Whether the modules in the package are immutable and cannot be upgraded.
+// UpgradePolicy is the policy for upgrading a move module.
 type UpgradePolicy int32
 
 const (
+	// UNSPECIFIED: a placeholder for an unspecified upgrade policy.
 	UpgradePolicy_UNSPECIFIED UpgradePolicy = 0
-	UpgradePolicy_COMPATIBLE  UpgradePolicy = 1
-	UpgradePolicy_IMMUTABLE   UpgradePolicy = 2
+	// COMPATBILE: Whether a compatibility check should be performed for upgrades. The check only passes if
+	// a new module has (a) the same public functions (b) for existing resources, no layout change.
+	UpgradePolicy_COMPATIBLE UpgradePolicy = 1
+	// IMMUTABLE: Whether the modules in the package are immutable and cannot be upgraded.
+	UpgradePolicy_IMMUTABLE UpgradePolicy = 2
 )
 
 var UpgradePolicy_name = map[int32]string{
