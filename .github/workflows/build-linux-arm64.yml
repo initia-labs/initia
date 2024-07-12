@@ -22,13 +22,19 @@ jobs:
 
       - name: Build for Linux ARM64
         run: |
-          make build-linux-with-shared-library
+          docker build --platform linux/arm64 --tag initia/initiad-shared ./ -f ./shared.Dockerfile
           cd ./build
           mkdir -p initia_${GITHUB_REF#refs/tags/}
           mv libmovevm.so initia_${GITHUB_REF#refs/tags/}/libmovevm.arm64.so
           mv libcompiler.so initia_${GITHUB_REF#refs/tags/}/libcompiler.arm64.so
           mv initiad initia_${GITHUB_REF#refs/tags/}/
           tar -czvf initia_${GITHUB_REF#refs/tags/}_Linux_arm64.tar.gz initia_${GITHUB_REF#refs/tags/}
+          
+      - name: Verify binary architecture
+        run: |
+          file ./build/initia_${GITHUB_REF#refs/tags/}/initiad
+          file ./build/initia_${GITHUB_REF#refs/tags/}/libmovevm.amd64.so
+          file ./build/initia_${GITHUB_REF#refs/tags/}/libcompiler.amd64.so
 
       - name: Google Auth
         uses: 'google-github-actions/auth@v2'
