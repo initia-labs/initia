@@ -84,6 +84,8 @@ func (m *PermissionedRelayers) GetRelayers() []string {
 	return nil
 }
 
+// PermissionedRelayersList is used to specify the list of permissioned relayers
+// for the specific port-id:channel-id pair.
 type PermissionedRelayersList struct {
 	Relayers []string `protobuf:"bytes,1,rep,name=relayers,proto3" json:"relayers,omitempty"`
 }

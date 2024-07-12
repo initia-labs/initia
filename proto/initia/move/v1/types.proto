@@ -90,16 +90,15 @@ message TableEntry {
   bytes  value_bytes = 5;
 }
 
-// UpgradePolicy
-// * `compatible`
-//     Whether a compatibility check should be performed for upgrades. The check only passes if
-//     a new module has (a) the same public functions (b) for existing resources, no layout change.
-// * `immutable`
-//     Whether the modules in the package are immutable and cannot be upgraded.
+// UpgradePolicy is the policy for upgrading a move module.
 enum UpgradePolicy {
+  // UNSPECIFIED: a placeholder for an unspecified upgrade policy.
   UNSPECIFIED = 0;
-  COMPATIBLE  = 1;
-  IMMUTABLE   = 2;
+  // COMPATBILE: Whether a compatibility check should be performed for upgrades. The check only passes if
+  // a new module has (a) the same public functions (b) for existing resources, no layout change.
+  COMPATIBLE = 1;
+  // IMMUTABLE: Whether the modules in the package are immutable and cannot be upgraded.
+  IMMUTABLE = 2;
 }
 
 // proto wrapper to store the value
