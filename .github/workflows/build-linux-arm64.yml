@@ -19,8 +19,8 @@ jobs:
           bind_mount_repository: true
           commands: |
             apt-get update
-            apt-get install -y golang-1.22 make file
-            export PATH=$PATH:/usr/lib/go-1.22/bin
+            apt-get install -y golang-1.22.4 make file
+            export PATH=$PATH:/usr/lib/go-1.22.4/bin
             echo "Building for GOARCH=arm64"
             GOARCH=arm64 make build-linux-with-shared-library
             cd ./build
