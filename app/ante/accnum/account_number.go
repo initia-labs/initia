@@ -1,4 +1,4 @@
-package ante
+package accnum
 
 import (
 	storetypes "cosmossdk.io/store/types"

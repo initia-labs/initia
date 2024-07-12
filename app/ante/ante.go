@@ -10,6 +10,8 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 
+	"github.com/initia-labs/initia/app/ante/accnum"
+	"github.com/initia-labs/initia/app/ante/sigverify"
 	moveante "github.com/initia-labs/initia/x/move/ante"
 	movetypes "github.com/initia-labs/initia/x/move/types"
 
@@ -49,7 +51,7 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 
 	sigGasConsumer := options.SigGasConsumer
 	if sigGasConsumer == nil {
-		sigGasConsumer = DefaultSigVerificationGasConsumer
+		sigGasConsumer = sigverify.DefaultSigVerificationGasConsumer
 	}
 
 	txFeeChecker := options.TxFeeChecker
@@ -73,7 +75,7 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 	}
 
 	anteDecorators := []sdk.AnteDecorator{
-		NewAccountNumberDecorator(options.AccountKeeper),
+		accnum.NewAccountNumberDecorator(options.AccountKeeper),
 		ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
 		ante.NewExtensionOptionsDecorator(options.ExtensionOptionChecker),
 		moveante.NewGasPricesDecorator(),
@@ -86,7 +88,7 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 		ante.NewSetPubKeyDecorator(options.AccountKeeper),
 		ante.NewValidateSigCountDecorator(options.AccountKeeper),
 		ante.NewSigGasConsumeDecorator(options.AccountKeeper, sigGasConsumer),
-		NewSigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
+		sigverify.NewSigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
 		ante.NewIncrementSequenceDecorator(options.AccountKeeper),
 		ibcante.NewRedundantRelayDecorator(options.IBCkeeper),
 		auctionante.NewAuctionDecorator(options.AuctionKeeper, options.TxEncoder, options.MevLane),
