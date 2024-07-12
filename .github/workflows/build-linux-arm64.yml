@@ -5,7 +5,8 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-arm64 
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -15,24 +16,12 @@ jobs:
         with:
           go-version: '1.22.4'
 
-      - name: Install cross-compilation tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
-
       - name: Build for Linux ARM64
         env:
           GOARCH: arm64
-          CC: aarch64-linux-gnu-gcc
-          CXX: aarch64-linux-gnu-g++
         run: |
-          echo "GOARCH=$GOARCH"
-          echo "CC=$CC"
-          echo "CXX=$CXX"
           echo "Building for GOARCH=arm64"
-          CGO_ENABLED=1 GOOS=linux GOARCH=arm64 CC=$CC CXX=$CXX go build -o ./build/initiad ./cmd/initiad
-          CGO_ENABLED=1 GOOS=linux GOARCH=arm64 CC=$CC CXX=$CXX go build -buildmode=c-shared -o ./build/libmovevm.so ./cmd/libmovevm
-          CGO_ENABLED=1 GOOS=linux GOARCH=arm64 CC=$CC CXX=$CXX go build -buildmode=c-shared -o ./build/libcompiler.so ./cmd/libcompiler
+          make build-linux-with-shared-library
           cd ./build
           mkdir -p initia_${GITHUB_REF#refs/tags/}
           mv libmovevm.so initia_${GITHUB_REF#refs/tags/}/libmovevm.arm64.so
