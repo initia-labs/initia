@@ -19,11 +19,20 @@ jobs:
         with:
           go-version: '1.22.4'
 
+      - name: Install cross-compilation tools
+        if: inputs.arch == 'arm64'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+
       - name: Build for Linux
         env:
           GOARCH: ${{ inputs.arch }}
+          CC: ${{ inputs.arch == 'arm64' && 'aarch64-linux-gnu-gcc' || 'gcc' }}
+          CXX: ${{ inputs.arch == 'arm64' && 'aarch64-linux-gnu-g++' || 'g++' }}
         run: |
-          make build-linux-with-shared-library GOARCH=${{ inputs.arch }}
+          echo "Building for GOARCH=$GOARCH"
+          CGO_ENABLED=1 GOOS=linux GOARCH=$GOARCH CC=$CC CXX=$CXX make build-linux-with-shared-library
           cd ./build
           mkdir -p initia_${GITHUB_REF#refs/tags/}
           mv libmovevm.so initia_${GITHUB_REF#refs/tags/}/libmovevm.${{ inputs.arch }}.so
@@ -31,12 +40,9 @@ jobs:
           mv initiad initia_${GITHUB_REF#refs/tags/}/
           tar -czvf initia_${GITHUB_REF#refs/tags/}_Linux_${{ inputs.arch }}.tar.gz initia_${GITHUB_REF#refs/tags/}
 
-      - name: Verify binary architecture
+      - name: Verify binary and library architecture
         run: |
           file ./build/initia_${GITHUB_REF#refs/tags/}/initiad
-
-      - name: Verify library architecture
-        run: |
           file ./build/initia_${GITHUB_REF#refs/tags/}/libmovevm.${{ inputs.arch }}.so
           file ./build/initia_${GITHUB_REF#refs/tags/}/libcompiler.${{ inputs.arch }}.so
 
