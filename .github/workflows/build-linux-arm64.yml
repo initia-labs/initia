@@ -5,35 +5,33 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest-arm64 
-
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Go
-        uses: actions/setup-go@v4
+      - name: ARM Runner
+        uses: pguyot/arm-runner-action@v2
         with:
-          go-version: '1.22.4'
-
-      - name: Build for Linux ARM64
-        env:
-          GOARCH: arm64
-        run: |
-          echo "Building for GOARCH=arm64"
-          make build-linux-with-shared-library
-          cd ./build
-          mkdir -p initia_${GITHUB_REF#refs/tags/}
-          mv libmovevm.so initia_${GITHUB_REF#refs/tags/}/libmovevm.arm64.so
-          mv libcompiler.so initia_${GITHUB_REF#refs/tags/}/libcompiler.arm64.so
-          mv initiad initia_${GITHUB_REF#refs/tags/}/
-          tar -czvf initia_${GITHUB_REF#refs/tags/}_Linux_arm64.tar.gz initia_${GITHUB_REF#refs/tags/}
-
-      - name: Verify binary architecture
-        run: |
-          file ./build/initia_${GITHUB_REF#refs/tags/}/initiad
-          file ./build/initia_${GITHUB_REF#refs/tags/}/libmovevm.arm64.so
-          file ./build/initia_${GITHUB_REF#refs/tags/}/libcompiler.arm64.so
+          base_image: raspios_lite_arm64:latest
+          cpu: cortex-a53
+          cpu_info: cpuinfo/raspberrypi_zero2_w
+          bind_mount_repository: true
+          commands: |
+            apt-get update
+            apt-get install -y golang-1.22 make file
+            export PATH=$PATH:/usr/lib/go-1.22/bin
+            echo "Building for GOARCH=arm64"
+            GOARCH=arm64 make build-linux-with-shared-library
+            cd ./build
+            mkdir -p initia_${GITHUB_REF#refs/tags/}
+            mv libmovevm.so initia_${GITHUB_REF#refs/tags/}/libmovevm.arm64.so
+            mv libcompiler.so initia_${GITHUB_REF#refs/tags/}/libcompiler.arm64.so
+            mv initiad initia_${GITHUB_REF#refs/tags/}/
+            tar -czvf initia_${GITHUB_REF#refs/tags/}_Linux_arm64.tar.gz initia_${GITHUB_REF#refs/tags/}
+            file ./initia_${GITHUB_REF#refs/tags/}/initiad
+            file ./initia_${GITHUB_REF#refs/tags/}/libmovevm.arm64.so
+            file ./initia_${GITHUB_REF#refs/tags/}/libcompiler.arm64.so
 
       - name: Google Auth
         uses: 'google-github-actions/auth@v2'
