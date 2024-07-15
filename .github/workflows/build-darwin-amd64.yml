@@ -1,0 +1,62 @@
+name: Build and Upload Darwin AMD64
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  GO_VERSION: '1.22'
+  MOVEVM_VERSION: 'v0.2.12'
+  L1_NETWORK_NAME: 'testnet'
+
+jobs:
+  build-and-upload:
+    runs-on: macos-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: ${{ env.GO_VERSION }}
+
+    - name: Build initiad
+      run: |
+        make build ARCH=amd64
+        
+    - name: Prepare artifacts
+      run: |
+        mkdir -p artifacts
+        cp build/initiad artifacts/
+        cp ~/go/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libmovevm.dylib artifacts/
+        cp ~/go/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libcompiler.dylib artifacts/
+        tar -czvf initia_${{ github.sha }}_Darwin_amd64.tar.gz -C artifacts .
+
+    - name: Google Auth
+      uses: 'google-github-actions/auth@v2'
+      with:
+        credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
+    - name: Set up Cloud SDK
+      uses: 'google-github-actions/setup-gcloud@v2'
+
+    - name: Upload to GCS
+      env:
+        GCS_BUCKET: ${{ secrets.GCS_BUCKET }}
+      run: |
+        gsutil cp initia_${{ github.sha }}_Darwin_amd64.tar.gz gs://${GCS_BUCKET}/networks/${{ env.L1_NETWORK_NAME }}/binaries/
+
+    - name: Verify upload and Generate public URL
+      env:
+        GCS_BUCKET: ${{ secrets.GCS_BUCKET }}
+      run: |
+        if gsutil stat gs://${GCS_BUCKET}/networks/${{ env.L1_NETWORK_NAME }}/binaries/initia_${{ github.sha }}_Darwin_amd64.tar.gz; then
+          echo "File successfully uploaded"
+          echo "Public URL: https://storage.googleapis.com/${GCS_BUCKET}/networks/${{ env.L1_NETWORK_NAME }}/binaries/initia_${{ github.sha }}_Darwin_amd64.tar.gz" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "File upload failed"
+          exit 1
+        fi
