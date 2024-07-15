@@ -25,7 +25,7 @@ RUN if [ "$TARGETOS" = "linux" ]; then \
     fi
 
 # 실행 단계
-FROM --platform=$TARGETPLATFORM golang:1.22-slim
+FROM --platform=$TARGETPLATFORM golang:1.22
 
 WORKDIR /app
 
