@@ -1,34 +1,39 @@
-name: Build and Upload ARM Binaries
-
+name: Build Linux ARM64
 on:
   workflow_call:
 
 jobs:
-  build-arm:
-    runs-on: ubuntu-20.04
-    timeout-minutes: 60
+  build:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: '1.22.4'
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
 
-      - name: Build for arm64
-        run: |
-          GOARCH=arm64 go build -o build/initiad ./cmd/initiad
-          echo "Build for arm64 completed"
-          ls -al build/
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
-      - name: Create output directory and tarball
+      - name: Build for Linux ARM64
         run: |
-          mkdir -p ./build/initia_${GITHUB_REF#refs/tags/}_arm64
-          mv ./build/initiad ./build/initia_${GITHUB_REF#refs/tags/}_arm64/initiad
+          docker buildx create --use
+          docker buildx build --platform linux/arm64 --load -t initia-build:arm64 -f Dockerfile.arm64 .
+          docker create --name extractor initia-build:arm64
+          mkdir -p ./build/initia_${GITHUB_REF#refs/tags/}
+          docker cp extractor:/app/build/libmovevm.so ./build/initia_${GITHUB_REF#refs/tags/}/libmovevm.arm64.so
+          docker cp extractor:/app/build/libcompiler.so ./build/initia_${GITHUB_REF#refs/tags/}/libcompiler.arm64.so
+          docker cp extractor:/app/build/initiad ./build/initia_${GITHUB_REF#refs/tags/}/
+          docker rm extractor
           cd ./build
-          tar -czvf initia_${GITHUB_REF#refs/tags/}_Linux_arm64.tar.gz initia_${GITHUB_REF#refs/tags/}_arm64
+          tar -czvf initia_${GITHUB_REF#refs/tags/}_Linux_arm64.tar.gz initia_${GITHUB_REF#refs/tags/}
 
+      - name: Verify binary architecture
+        run: |
+          file ./build/initia_${GITHUB_REF#refs/tags/}/initiad
+          file ./build/initia_${GITHUB_REF#refs/tags/}/libmovevm.arm64.so
+          file ./build/initia_${GITHUB_REF#refs/tags/}/libcompiler.arm64.so
+          
       - name: Google Auth
         uses: 'google-github-actions/auth@v2'
         with:
