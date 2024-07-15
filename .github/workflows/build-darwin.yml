@@ -11,84 +11,27 @@ env:
   MOVEVM_VERSION: v0.2.12
 
 jobs:
-  build-linux:
+  build-linux-amd64:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        arch: [amd64, arm64]
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-  
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-  
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-  
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
       - name: Build
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: .github/workflows/Dockerfile
-          platforms: linux/${{ matrix.arch }}
+          file: .github/workflows/Dockerfile.linux.amd64
           load: true
-          tags: initia:${{ github.sha }}
-
-      - name: Show Docker build logs
-        if: failure()
-        run: docker buildx build --progress=plain --platform linux/${{ matrix.arch }} -f .github/workflows/Dockerfile .
-
-
+          tags: initia:linux-amd64
       - name: Export binary
         run: |
-          container_id=$(docker create initia:${{ github.sha }})
-          docker cp $container_id:/app ./app
-          tar -czvf initia_${{ github.sha }}_Linux_${{ matrix.arch }}.tar.gz -C app .
-          docker rm $container_id
-
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
+          docker create --name temp initia:linux-amd64
+          docker cp temp:/app ./app
+          tar -czvf initia_${{ github.sha }}_Linux_amd64.tar.gz -C app .
+          docker rm temp
+      - uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           service_account_key: ${{ secrets.GCP_SA_KEY }}
-          export_default_credentials: true
-
       - name: Upload to GCS
-        run: |
-          gsutil cp initia_${{ github.sha }}_Linux_${{ matrix.arch }}.tar.gz gs://your-bucket-name/networks/${{ env.L1_NETWORK_NAME }}/binaries/
-
-  build-darwin:
-    runs-on: macos-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        arch: [amd64, arm64]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: '1.22'
-
-      - name: Build
-        run: |
-          make build ARCH=${{ matrix.arch }}
-          cd build
-          cp ~/go/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libmovevm.dylib ./
-          cp ~/go/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libcompiler.dylib ./
-          tar -czvf initia_${{ github.sha }}_Darwin_${{ matrix.arch }}.tar.gz initiad libmovevm.dylib libcompiler.dylib
-
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
-        with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
-          export_default_credentials: true
-
-      - name: Upload to GCS
-        run: |
-          gsutil cp build/initia_${{ github.sha }}_Darwin_${{ matrix.arch }}.tar.gz gs://your-bucket-name/networks/${{ env.L1_NETWORK_NAME }}/binaries/
+        run: gsutil cp initia_${{ github.sha }}_Linux_amd64.tar.gz gs://your-bucket-name/networks/${{ env.L1_NETWORK_NAME }}/binaries/
