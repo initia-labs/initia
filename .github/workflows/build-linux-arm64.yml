@@ -7,12 +7,11 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  build-linux:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         arch: [amd64, arm64]
-        os: [linux, darwin]
     steps:
     - uses: actions/checkout@v2
 
@@ -22,18 +21,16 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
 
-    - name: Build for ${{ matrix.os }}-${{ matrix.arch }}
+    - name: Build for Linux-${{ matrix.arch }}
       env:
         ARCH: ${{ matrix.arch }}
-        OS: ${{ matrix.os }}
         L1_VERSION: ${{ github.sha }}
         L1_NETWORK_NAME: testnet
-        MOVEVM_VERSION: v0.2.12  # 적절한 버전으로 변경하세요
+        MOVEVM_VERSION: v0.1.0  # 적절한 버전으로 변경하세요
       run: |
-        docker buildx build --platform ${{ matrix.os }}/${{ matrix.arch }} \
-          --file .github/workflows/Dockerfile \
+        docker buildx build --platform linux/${{ matrix.arch }} \
+          --file .github/workflows/Dockerfile.linux \
           --build-arg ARCH=${{ matrix.arch }} \
-          --build-arg OS=${{ matrix.os }} \
           --build-arg L1_VERSION=${{ env.L1_VERSION }} \
           --build-arg L1_NETWORK_NAME=${{ env.L1_NETWORK_NAME }} \
           --build-arg MOVEVM_VERSION=${{ env.MOVEVM_VERSION }} \
@@ -43,5 +40,40 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
-        name: initia-${{ matrix.os }}-${{ matrix.arch }}
-        path: ./output/initia_${{ env.L1_VERSION }}_${{ matrix.os }}_${{ matrix.arch }}.tar.gz
+        name: initia-linux-${{ matrix.arch }}
+        path: ./output/initia_${{ env.L1_VERSION }}_Linux_${{ matrix.arch }}.tar.gz
+
+  build-darwin:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        arch: [amd64, arm64]
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: '1.20'
+
+    - name: Build for Darwin-${{ matrix.arch }}
+      env:
+        ARCH: ${{ matrix.arch }}
+        L1_VERSION: ${{ github.sha }}
+        L1_NETWORK_NAME: testnet
+        MOVEVM_VERSION: v0.1.0  # 적절한 버전으로 변경하세요
+      run: |
+        cd initia
+        GOOS=darwin GOARCH=${{ matrix.arch }} make build
+        cd ./build
+        cp ~/go/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libmovevm.dylib ./
+        cp ~/go/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libcompiler.dylib ./
+        tar -czvf initia_${L1_VERSION}_Darwin_${{ matrix.arch }}.tar.gz initiad libmovevm.dylib libcompiler.dylib
+        mkdir -p ../../networks/${L1_NETWORK_NAME}/binaries/
+        mv ./initia_${L1_VERSION}_Darwin_${{ matrix.arch }}.tar.gz ../../networks/${L1_NETWORK_NAME}/binaries/
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: initia-darwin-${{ matrix.arch }}
+        path: networks/${{ env.L1_NETWORK_NAME }}/binaries/initia_${{ env.L1_VERSION }}_Darwin_${{ matrix.arch }}.tar.gz
