@@ -8,7 +8,27 @@ COPY . .
 
 ENV MOVEVM_VERSION=v0.2.12
 
-RUN make build-linux-with-shared-library ARCH=amd64
+# 디버깅을 위한 환경 출력
+RUN echo "Current directory:" && \
+    pwd && \
+    echo "Directory contents:" && \
+    ls -la && \
+    echo "Makefile contents:" && \
+    cat Makefile
+
+# 빌드 명령 실행 및 오류 시 추가 정보 출력
+RUN make build-linux-with-shared-library ARCH=amd64 || { \
+    echo "Make failed. Displaying debug information:"; \
+    echo "Go version:"; \
+    go version; \
+    echo "Go environment:"; \
+    go env; \
+    echo "Make version:"; \
+    make --version; \
+    echo "Shell:"; \
+    echo $SHELL; \
+    exit 1; \
+    }
 
 FROM ubuntu:20.04
 
