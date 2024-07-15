@@ -8,47 +8,40 @@ on:
 
 env:
   L1_NETWORK_NAME: testnet
+  MOVEVM_VERSION: v0.3.4
 
 jobs:
-  build:
+  build-linux:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        platform:
-          - linux/amd64
-          - linux/arm64
-          - darwin/amd64
-          - darwin/arm64
+        arch: [amd64, arm64]
+    steps:
+      # (이전과 동일한 steps)
 
+  build-darwin:
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64, arm64]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.22'
 
       - name: Build
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: .github/workflows/Dockerfile
-          platforms: ${{ matrix.platform }}
-          load: true
-          tags: initia:${{ github.sha }}
-
-      - name: Export binary
         run: |
-          platform=${{ matrix.platform }}
-          os=${platform%/*}
-          arch=${platform#*/}
-          container_id=$(docker create initia:${{ github.sha }})
-          docker cp $container_id:/app ./app
-          tar -czvf initia_${{ github.sha }}_${os^}_${arch}.tar.gz -C app .
-          docker rm $container_id
+          make build ARCH=${{ matrix.arch }}
+          cd build
+          cp ~/go/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libmovevm.dylib ./
+          cp ~/go/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libcompiler.dylib ./
+          tar -czvf initia_${{ github.sha }}_Darwin_${{ matrix.arch }}.tar.gz initiad libmovevm.dylib libcompiler.dylib
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
@@ -59,7 +52,4 @@ jobs:
 
       - name: Upload to GCS
         run: |
-          platform=${{ matrix.platform }}
-          os=${platform%/*}
-          arch=${platform#*/}
-          gsutil cp initia_${{ github.sha }}_${os^}_${arch}.tar.gz gs://your-bucket-name/networks/${{ env.L1_NETWORK_NAME }}/binaries/
+          gsutil cp build/initia_${{ github.sha }}_Darwin_${{ matrix.arch }}.tar.gz gs://your-bucket-name/networks/${{ env.L1_NETWORK_NAME }}/binaries/
