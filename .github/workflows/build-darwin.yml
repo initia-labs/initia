@@ -1,14 +1,15 @@
-name: Build and Upload
+name: Cross-Platform Build and Upload
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ main ]
+    branches: [ "main" ]
 
 env:
   L1_NETWORK_NAME: testnet
-  MOVEVM_VERSION: v0.2.12  # 적절한 버전으로 변경하세요
+  GO_VERSION: '1.22'
+  MOVEVM_VERSION: 'v0.2.12'  # 적절한 버전으로 변경하세요
 
 jobs:
   build-and-upload:
@@ -16,49 +17,50 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
         arch: [amd64, arm64]
-        exclude:
-          - os: ubuntu-latest
-            arch: arm64
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Set up Go
-      uses: actions/setup-go@v2
-      with:
-        go-version: '1.22'
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
 
-    - name: Build for ${{ runner.os }}-${{ matrix.arch }}
-      env:
-        ARCH: ${{ matrix.arch }}
-        L1_VERSION: ${{ github.sha }}
-      run: |
-        if [ "${{ runner.os }}" == "Linux" ]; then
-          cd initia
-          make build-linux-with-shared-library
-          cd ./build
-          mv libmovevm.so libmovevm.${{ matrix.arch }}.so
-          mv libcompiler.so libcompiler.${{ matrix.arch }}.so
-          tar -czvf initia_${L1_VERSION}_Linux_${{ matrix.arch }}.tar.gz ./initiad libmovevm.${{ matrix.arch }}.so libcompiler.${{ matrix.arch }}.so
-          mkdir -p ../../networks/${L1_NETWORK_NAME}/binaries/
-          mv ./initia_${L1_VERSION}_Linux_${{ matrix.arch }}.tar.gz ../../networks/${L1_NETWORK_NAME}/binaries/
-        elif [ "${{ runner.os }}" == "macOS" ]; then
-          cd initia
-          make build
-          cd ./build
-          cp ~/go/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libmovevm.dylib ./
-          cp ~/go/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libcompiler.dylib ./
-          tar -czvf initia_${L1_VERSION}_Darwin_${{ matrix.arch }}.tar.gz initiad libmovevm.dylib libcompiler.dylib
-          mkdir -p ../../networks/${L1_NETWORK_NAME}/binaries/
-          mv ./initia_${L1_VERSION}_Darwin_${{ matrix.arch }}.tar.gz ../../networks/${L1_NETWORK_NAME}/binaries/
-        fi
+      - name: Set up QEMU
+        if: runner.os == 'Linux'
+        uses: docker/setup-qemu-action@v2
 
-    - uses: google-github-actions/setup-gcloud@v0.2.0
-      with:
-        project_id: ${{ secrets.GCP_PROJECT_ID }}
-        service_account_key: ${{ secrets.GCP_SA_KEY }}
-        export_default_credentials: true
+      - name: Build for ${{ runner.os }}-${{ matrix.arch }}
+        env:
+          ARCH: ${{ matrix.arch }}
+          L1_VERSION: ${{ github.sha }}
+        run: |
+          if [ "${{ runner.os }}" == "Linux" ]; then
+            GOOS=linux GOARCH=${{ matrix.arch }} make build-linux-with-shared-library
+            cd build
+            mv libmovevm.so libmovevm.${{ matrix.arch }}.so
+            mv libcompiler.so libcompiler.${{ matrix.arch }}.so
+            tar -czvf initia_${L1_VERSION}_Linux_${{ matrix.arch }}.tar.gz ./initiad libmovevm.${{ matrix.arch }}.so libcompiler.${{ matrix.arch }}.so
+          else
+            GOOS=darwin GOARCH=${{ matrix.arch }} make build
+            cd build
+            cp ~/go/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libmovevm.dylib ./
+            cp ~/go/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libcompiler.dylib ./
+            tar -czvf initia_${L1_VERSION}_Darwin_${{ matrix.arch }}.tar.gz initiad libmovevm.dylib libcompiler.dylib
+          fi
 
-    - name: Upload to GCS
-      run: |
-        gsutil cp networks/${L1_NETWORK_NAME}/binaries/initia_${L1_VERSION}_*.tar.gz gs://your-bucket-name/networks/${L1_NETWORK_NAME}/binaries/
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+
+      - name: Upload to GCS
+        run: |
+          if [ "${{ runner.os }}" == "Linux" ]; then
+            gsutil cp build/initia_${L1_VERSION}_Linux_${{ matrix.arch }}.tar.gz gs://your-bucket-name/networks/${{ env.L1_NETWORK_NAME }}/binaries/
+          else
+            gsutil cp build/initia_${L1_VERSION}_Darwin_${{ matrix.arch }}.tar.gz gs://your-bucket-name/networks/${{ env.L1_NETWORK_NAME }}/binaries/
+          fi
