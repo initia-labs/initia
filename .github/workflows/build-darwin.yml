@@ -20,13 +20,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
+  
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
-
+  
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-
+  
       - name: Build
         uses: docker/build-push-action@v5
         with:
@@ -35,6 +35,11 @@ jobs:
           platforms: linux/${{ matrix.arch }}
           load: true
           tags: initia:${{ github.sha }}
+
+      - name: Show Docker build logs
+        if: failure()
+        run: docker buildx build --progress=plain --platform linux/${{ matrix.arch }} -f .github/workflows/Dockerfile .
+
 
       - name: Export binary
         run: |
