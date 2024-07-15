@@ -7,32 +7,24 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Go
-        uses: actions/setup-go@v4
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build
+        uses: docker/build-push-action@v5
         with:
-          go-version: '1.22.4'
-
-      - name: Build for Linux AMD64
-        env:
-          GOARCH: amd64
+          context: .
+          file: .github/workflows/Dockerfile.linux.amd64
+          load: true
+          tags: initia:linux-amd64
+      - name: Export binary and libraries
         run: |
-          echo "Building for GOARCH=amd64"
-          make build-linux-with-shared-library GOARCH=amd64
-          cd ./build
-          mkdir -p initia_${GITHUB_REF#refs/tags/}
-          mv libmovevm.so initia_${GITHUB_REF#refs/tags/}/libmovevm.amd64.so
-          mv libcompiler.so initia_${GITHUB_REF#refs/tags/}/libcompiler.amd64.so
-          mv initiad initia_${GITHUB_REF#refs/tags/}/
-          tar -czvf initia_${GITHUB_REF#refs/tags/}_Linux_amd64.tar.gz initia_${GITHUB_REF#refs/tags/}
-
-      - name: Verify binary architecture
-        run: |
-          file ./build/initia_${GITHUB_REF#refs/tags/}/initiad
-          file ./build/initia_${GITHUB_REF#refs/tags/}/libmovevm.amd64.so
-          file ./build/initia_${GITHUB_REF#refs/tags/}/libcompiler.amd64.so
+          mkdir -p ./output
+          docker create --name temp initia:linux-amd64
+          docker cp temp:/app/initiad ./output/
+          docker cp temp:/app/libmovevm.amd64.so ./output/
+          docker cp temp:/app/libcompiler.amd64.so ./output/
+          docker rm temp
+          tar -czvf initia_${{ github.sha }}_Linux_amd64.tar.gz -C output .
 
       - name: Google Auth
         uses: 'google-github-actions/auth@v2'
@@ -46,16 +38,18 @@ jobs:
         env:
           GCS_BUCKET: ${{ secrets.GCS_BUCKET }}
         run: |
-          gsutil cp ./build/initia_${GITHUB_REF#refs/tags/}_Linux_amd64.tar.gz gs://${GCS_BUCKET}/initia/${GITHUB_REF#refs/tags/}/
+          gsutil cp initia_${{ github.sha }}_Linux_amd64.tar.gz gs://${GCS_BUCKET}/networks/testnet/binaries/
 
       - name: Verify upload and Generate public URL
         env:
           GCS_BUCKET: ${{ secrets.GCS_BUCKET }}
         run: |
-          if gsutil stat gs://${GCS_BUCKET}/initia/${GITHUB_REF#refs/tags/}/initia_${GITHUB_REF#refs/tags/}_Linux_amd64.tar.gz; then
+          if gsutil stat gs://${GCS_BUCKET}/networks/testnet/binaries/initia_${{ github.sha }}_Linux_amd64.tar.gz; then
             echo "File successfully uploaded"
-            echo "Public URL: https://storage.googleapis.com/${GCS_BUCKET}/initia/${GITHUB_REF#refs/tags/}/initia_${GITHUB_REF#refs/tags/}_Linux_amd64.tar.gz" >> $GITHUB_STEP_SUMMARY
+            echo "Public URL: https://storage.googleapis.com/${GCS_BUCKET}/networks/testnet/binaries/initia_${{ github.sha }}_Linux_amd64.tar.gz" >> $GITHUB_STEP_SUMMARY
           else
             echo "File upload failed"
+            exit 1
+          fi
             exit 1
           fi
