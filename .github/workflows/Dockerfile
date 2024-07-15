@@ -1,5 +1,5 @@
 # 빌드 단계
-FROM --platform=$BUILDPLATFORM golang:1.22-alpine AS builder
+FROM --platform=$BUILDPLATFORM golang:1.22 AS builder
 
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
@@ -9,7 +9,7 @@ ARG TARGETARCH
 WORKDIR /src
 
 # 필요한 빌드 도구 설치
-RUN apk add --no-cache git make
+RUN apt-get update && apt-get install -y git make
 
 # 소스 코드 복사
 COPY . .
@@ -25,7 +25,7 @@ RUN if [ "$TARGETOS" = "linux" ]; then \
     fi
 
 # 실행 단계
-FROM --platform=$TARGETPLATFORM alpine
+FROM --platform=$TARGETPLATFORM golang:1.22-slim
 
 WORKDIR /app
 
