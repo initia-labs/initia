@@ -26,7 +26,7 @@ jobs:
         ARCH: ${{ matrix.arch }}
         L1_VERSION: ${{ github.sha }}
         L1_NETWORK_NAME: testnet
-        MOVEVM_VERSION: v0.1.0  # 적절한 버전으로 변경하세요
+        MOVEVM_VERSION: v0.2.12  # 적절한 버전으로 변경하세요
       run: |
         docker buildx build --platform linux/${{ matrix.arch }} \
           --file .github/workflows/Dockerfile.linux \
@@ -61,7 +61,7 @@ jobs:
         ARCH: ${{ matrix.arch }}
         L1_VERSION: ${{ github.sha }}
         L1_NETWORK_NAME: testnet
-        MOVEVM_VERSION: v0.1.0  # 적절한 버전으로 변경하세요
+        MOVEVM_VERSION: v0.2.12  # 적절한 버전으로 변경하세요
       run: |
         cd initia
         GOOS=darwin GOARCH=${{ matrix.arch }} make build
