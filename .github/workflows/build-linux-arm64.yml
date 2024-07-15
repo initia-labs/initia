@@ -28,7 +28,7 @@ jobs:
         OS: ${{ matrix.os }}
         L1_VERSION: ${{ github.sha }}
         L1_NETWORK_NAME: testnet
-        MOVEVM_VERSION: v0.1.0  # 적절한 버전으로 변경하세요
+        MOVEVM_VERSION: v0.2.12  # 적절한 버전으로 변경하세요
       run: |
         docker buildx build --platform ${{ matrix.os }}/${{ matrix.arch }} \
           --file .github/workflows/Dockerfile \
