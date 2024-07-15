@@ -8,11 +8,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: '1.22.4'
-      
       - name: Build for Linux ARM64
         uses: uraimo/run-on-arch-action@v2
         with:
@@ -21,11 +16,18 @@ jobs:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           install: |
             apt-get update
-            apt-get install -y make gcc
+            apt-get install -y make gcc git curl
+            curl -OL https://go.dev/dl/go1.22.4.linux-arm64.tar.gz
+            tar -C /usr/local -xzf go1.22.4.linux-arm64.tar.gz
+            echo 'export PATH=$PATH:/usr/local/go/bin' >> $HOME/.profile
+            echo 'export PATH=$PATH:/usr/local/go/bin' >> $HOME/.bashrc
+            source $HOME/.profile
           run: |
             echo "Building for GOARCH=arm64"
             export GOARCH=arm64
             export CGO_ENABLED=1
+            export PATH=$PATH:/usr/local/go/bin
+            go version
             make build-linux-with-shared-library GOARCH=arm64
             cd ./build
             mkdir -p initia_${GITHUB_REF#refs/tags/}
@@ -33,7 +35,7 @@ jobs:
             mv libcompiler.so initia_${GITHUB_REF#refs/tags/}/libcompiler.arm64.so
             mv initiad initia_${GITHUB_REF#refs/tags/}/
             tar -czvf initia_${GITHUB_REF#refs/tags/}_Linux_arm64.tar.gz initia_${GITHUB_REF#refs/tags/}
-      
+
       - name: Move artifacts
         run: |
           mkdir -p ./artifacts
