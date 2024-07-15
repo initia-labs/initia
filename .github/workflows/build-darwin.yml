@@ -8,7 +8,7 @@ on:
 
 env:
   L1_NETWORK_NAME: testnet
-  MOVEVM_VERSION: v0.3.4
+  MOVEVM_VERSION: v0.2.12
 
 jobs:
   build-linux:
