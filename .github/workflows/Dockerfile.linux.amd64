@@ -14,10 +14,9 @@ RUN make build-linux-with-shared-library ARCH=amd64
 
 # 결과물 준비
 RUN mkdir -p /output && \
-    cd build && \
-    mv libmovevm.so libmovevm.amd64.so && \
-    mv libcompiler.so libcompiler.amd64.so && \
-    cp initiad libmovevm.amd64.so libcompiler.amd64.so /output/
+    cp build/initiad /output/ && \
+    cp build/libmovevm.so /output/libmovevm.amd64.so && \
+    cp build/libcompiler.so /output/libcompiler.amd64.so
 
 FROM ubuntu:20.04
 
