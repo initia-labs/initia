@@ -8,25 +8,23 @@ COPY . .
 
 ENV MOVEVM_VERSION=v0.2.12
 
-# Go 모듈 다운로드
+# Go 모듈 다운로드 및 빌드
 RUN go mod download
+RUN make build-linux-with-shared-library ARCH=amd64
 
-# 직접 빌드 수행
-RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o /src/build/initiad ./cmd/initiad
-
-# 공유 라이브러리 복사 (이 부분은 프로젝트 구조에 따라 조정 필요)
-RUN mkdir -p /src/build
-RUN go list -m all | grep github.com/initia-labs/movevm
-RUN find /go/pkg/mod -name "libmovevm.so"
-RUN find /go/pkg/mod -name "libcompiler.so"
-RUN cp $(find /go/pkg/mod -name "libmovevm.so" | head -n 1) /src/build/ || echo "libmovevm.so not found"
-RUN cp $(find /go/pkg/mod -name "libcompiler.so" | head -n 1) /src/build/ || echo "libcompiler.so not found"
+# 결과물 준비
+RUN mkdir -p /output && \
+    cd build && \
+    mv libmovevm.so libmovevm.amd64.so && \
+    mv libcompiler.so libcompiler.amd64.so && \
+    cp initiad libmovevm.amd64.so libcompiler.amd64.so /output/
 
 FROM ubuntu:20.04
 
 WORKDIR /app
 
-COPY --from=0 /src/build/initiad /app/
-COPY --from=0 /src/build/*.so /app/
+COPY --from=0 /output/initiad /app/
+COPY --from=0 /output/libmovevm.amd64.so /app/
+COPY --from=0 /output/libcompiler.amd64.so /app/
 
 CMD ["/app/initiad", "version"]
