@@ -17,11 +17,23 @@ COPY . .
 # MOVEVM 버전 설정 (필요에 따라 조정)
 ENV MOVEVM_VERSION=v0.2.12
 
+# 디버깅을 위한 환경 출력
+RUN echo "TARGETOS: $TARGETOS" && \
+    echo "TARGETARCH: $TARGETARCH" && \
+    echo "Current directory:" && \
+    pwd && \
+    echo "Directory contents:" && \
+    ls -la
+
 # TARGETOS와 TARGETARCH에 따라 빌드 명령 실행
 RUN if [ "$TARGETOS" = "linux" ]; then \
-        make build-linux-with-shared-library ARCH=$TARGETARCH; \
+        echo "Building for Linux" && \
+        make build-linux-with-shared-library ARCH=$TARGETARCH || (echo "Make failed" && cat Makefile && exit 1); \
     elif [ "$TARGETOS" = "darwin" ]; then \
-        make build ARCH=$TARGETARCH; \
+        echo "Building for Darwin" && \
+        make build ARCH=$TARGETARCH || (echo "Make failed" && cat Makefile && exit 1); \
+    else \
+        echo "Unknown OS: $TARGETOS" && exit 1; \
     fi
 
 # 실행 단계
