@@ -4,9 +4,9 @@ on:
   # push:
     # tags:
     #   - 'v*'
-  push:
-    branches:
-      - "main"
+  # push:
+  #   branches:
+  #     - "main"
       
 jobs:
   # build-linux-amd64:
