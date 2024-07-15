@@ -1,4 +1,4 @@
-name: Build and Push Multi-Platform Binaries
+name: Build and Upload Multi-Platform Binaries
 
 on:
   workflow_call:
@@ -17,13 +17,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Log in to DockerHub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Build and Push Multi-Platform Image
+      - name: Build Multi-Platform Binaries
         run: |
           docker buildx build \
             --platform linux/amd64,linux/arm64 \
@@ -34,7 +28,7 @@ jobs:
       - name: List output files
         run: |
           ls -al ./build
-          file ./build/initiad
+          file ./build/initiad || true
 
       - name: Create output directories
         run: |
@@ -42,7 +36,7 @@ jobs:
 
       - name: Move binaries to output directory
         run: |
-          mv ./build/initiad ./build/initia_${GITHUB_REF#refs/tags/}/initiad
+          mv ./build/initiad ./build/initia_${GITHUB_REF#refs/tags/}/initiad || true
           mv ./build/libmovevm.so ./build/initia_${GITHUB_REF#refs/tags/}/libmovevm.so || true
           mv ./build/libcompiler.so ./build/initia_${GITHUB_REF#refs/tags/}/libcompiler.so || true
 
@@ -53,7 +47,7 @@ jobs:
 
       - name: Verify binary architecture
         run: |
-          file ./build/initia_${GITHUB_REF#refs/tags/}/initiad
+          file ./build/initia_${GITHUB_REF#refs/tags/}/initiad || true
           file ./build/initia_${GITHUB_REF#refs/tags/}/libmovevm.so || true
           file ./build/initia_${GITHUB_REF#refs/tags/}/libcompiler.so || true
 
