@@ -1,67 +1,64 @@
-name: Build Darwin
+name: Build and Upload
 
 on:
-  workflow_call:
-    inputs:
-      arch:
-        required: true
-        type: string
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  L1_NETWORK_NAME: testnet
+  MOVEVM_VERSION: v0.2.12  # 적절한 버전으로 변경하세요
 
 jobs:
-  build:
-    runs-on: macos-latest
+  build-and-upload:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        arch: [amd64, arm64]
+        exclude:
+          - os: ubuntu-latest
+            arch: arm64
+    runs-on: ${{ matrix.os }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - uses: actions/checkout@v2
 
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: '1.22.4'
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: '1.22'
 
-      - name: Build for Darwin
-        env:
-          GOARCH: ${{ inputs.arch }}
-        run: |
-          make build GOARCH=${{ inputs.arch }}
+    - name: Build for ${{ runner.os }}-${{ matrix.arch }}
+      env:
+        ARCH: ${{ matrix.arch }}
+        L1_VERSION: ${{ github.sha }}
+      run: |
+        if [ "${{ runner.os }}" == "Linux" ]; then
+          cd initia
+          make build-linux-with-shared-library
           cd ./build
-          mkdir -p initia_${GITHUB_REF#refs/tags/}
-          cp ~/go/pkg/mod/github.com/initia-labs/movevm@*/api/libmovevm.dylib initia_${GITHUB_REF#refs/tags/}/libmovevm.${{ inputs.arch }}.dylib
-          cp ~/go/pkg/mod/github.com/initia-labs/movevm@*/api/libcompiler.dylib initia_${GITHUB_REF#refs/tags/}/libcompiler.${{ inputs.arch }}.dylib
-          mv initiad initia_${GITHUB_REF#refs/tags/}/
-          tar -czvf initia_${GITHUB_REF#refs/tags/}_Darwin_${{ inputs.arch }}.tar.gz initia_${GITHUB_REF#refs/tags/}
+          mv libmovevm.so libmovevm.${{ matrix.arch }}.so
+          mv libcompiler.so libcompiler.${{ matrix.arch }}.so
+          tar -czvf initia_${L1_VERSION}_Linux_${{ matrix.arch }}.tar.gz ./initiad libmovevm.${{ matrix.arch }}.so libcompiler.${{ matrix.arch }}.so
+          mkdir -p ../../networks/${L1_NETWORK_NAME}/binaries/
+          mv ./initia_${L1_VERSION}_Linux_${{ matrix.arch }}.tar.gz ../../networks/${L1_NETWORK_NAME}/binaries/
+        elif [ "${{ runner.os }}" == "macOS" ]; then
+          cd initia
+          make build
+          cd ./build
+          cp ~/go/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libmovevm.dylib ./
+          cp ~/go/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libcompiler.dylib ./
+          tar -czvf initia_${L1_VERSION}_Darwin_${{ matrix.arch }}.tar.gz initiad libmovevm.dylib libcompiler.dylib
+          mkdir -p ../../networks/${L1_NETWORK_NAME}/binaries/
+          mv ./initia_${L1_VERSION}_Darwin_${{ matrix.arch }}.tar.gz ../../networks/${L1_NETWORK_NAME}/binaries/
+        fi
 
-      - name: Verify binary architecture
-        run: |
-          file ./build/initia_${GITHUB_REF#refs/tags/}/initiad
+    - uses: google-github-actions/setup-gcloud@v0.2.0
+      with:
+        project_id: ${{ secrets.GCP_PROJECT_ID }}
+        service_account_key: ${{ secrets.GCP_SA_KEY }}
+        export_default_credentials: true
 
-      - name: Verify library architecture
-        run: |
-          file ./build/initia_${GITHUB_REF#refs/tags/}/libmovevm.${{ inputs.arch }}.dylib
-          file ./build/initia_${GITHUB_REF#refs/tags/}/libcompiler.${{ inputs.arch }}.dylib
-
-      - name: Google Auth
-        uses: 'google-github-actions/auth@v2'
-        with:
-          credentials_json: '${{ secrets.GCP_SA_KEY }}'
-
-      - name: Set up Cloud SDK
-        uses: 'google-github-actions/setup-gcloud@v2'
-
-      - name: Upload to GCS
-        env:
-          GCS_BUCKET: ${{ secrets.GCS_BUCKET }}
-        run: |
-          gsutil cp ./build/initia_${GITHUB_REF#refs/tags/}_Darwin_${{ inputs.arch }}.tar.gz gs://${GCS_BUCKET}/initia/${GITHUB_REF#refs/tags/}/
-
-      - name: Verify upload and Generate public URL
-        env:
-          GCS_BUCKET: ${{ secrets.GCS_BUCKET }}
-        run: |
-          if gsutil stat gs://${GCS_BUCKET}/initia/${GITHUB_REF#refs/tags/}/initia_${GITHUB_REF#refs/tags/}_Darwin_${{ inputs.arch }}.tar.gz; then
-            echo "File successfully uploaded"
-            echo "Public URL: https://storage.googleapis.com/${GCS_BUCKET}/initia/${GITHUB_REF#refs/tags/}/initia_${GITHUB_REF#refs/tags/}_Darwin_${{ inputs.arch }}.tar.gz" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "File upload failed"
-            exit 1
-          fi
+    - name: Upload to GCS
+      run: |
+        gsutil cp networks/${L1_NETWORK_NAME}/binaries/initia_${L1_VERSION}_*.tar.gz gs://your-bucket-name/networks/${L1_NETWORK_NAME}/binaries/
