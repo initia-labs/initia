@@ -8,15 +8,22 @@ COPY . .
 
 ENV MOVEVM_VERSION=v0.2.12
 
-# Go 모듈 다운로드 및 빌드
+# Go 모듈 다운로드
 RUN go mod download
-RUN make build-linux-with-shared-library ARCH=amd64
+
+# 직접 빌드 수행
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o /src/build/initiad ./cmd/initiad
+
+# movevm 라이브러리 다운로드 및 복사
+RUN go get github.com/initia-labs/movevm@${MOVEVM_VERSION}
+RUN cp /go/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libmovevm.so /src/build/libmovevm.amd64.so
+RUN cp /go/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libcompiler.so /src/build/libcompiler.amd64.so
 
 # 결과물 준비
 RUN mkdir -p /output && \
-    cp build/initiad /output/ && \
-    cp build/libmovevm.so /output/libmovevm.amd64.so && \
-    cp build/libcompiler.so /output/libcompiler.amd64.so
+    cp /src/build/initiad /output/ && \
+    cp /src/build/libmovevm.amd64.so /output/ && \
+    cp /src/build/libcompiler.amd64.so /output/
 
 FROM ubuntu:20.04
 
