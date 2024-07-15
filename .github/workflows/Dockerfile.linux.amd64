@@ -27,6 +27,8 @@ RUN make build-linux-with-shared-library ARCH=amd64 || { \
     make --version; \
     echo "Shell:"; \
     echo $SHELL; \
+    echo "Make verbose output:"; \
+    make build-linux-with-shared-library ARCH=amd64 -n; \
     exit 1; \
     }
 
