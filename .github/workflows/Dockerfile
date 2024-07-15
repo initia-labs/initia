@@ -1,28 +1,48 @@
-# Stage 1: Build the Go project
-FROM golang:1.22-alpine AS go-builder
+ARG OS
+ARG ARCH
+FROM --platform=$OS/$ARCH golang:1.20
 
-# Use build arguments for the target architecture
-ARG TARGETARCH
+ARG OS
+ARG ARCH
+ARG L1_VERSION
+ARG L1_NETWORK_NAME
+ARG MOVEVM_VERSION
 
-# Set environment variables
-ENV GOOS=linux
-ENV GOARCH=${TARGETARCH}
+WORKDIR /workspace
 
-# Set the working directory
-WORKDIR /code
+# 필요한 도구 설치
+RUN apt-get update && apt-get install -y make tar gzip
 
-# Copy the source code
+# 소스 코드 복사
 COPY . .
 
-# Download dependencies and build the project
-RUN go mod download
-RUN go build -o build/initiad ./cmd/initiad
+# 환경 변수 설정
+ENV OS=$OS
+ENV ARCH=$ARCH
+ENV L1_VERSION=$L1_VERSION
+ENV L1_NETWORK_NAME=$L1_NETWORK_NAME
+ENV MOVEVM_VERSION=$MOVEVM_VERSION
 
-# Stage 2: Prepare the final image
-FROM alpine:3.19
+# 빌드 스크립트 실행
+RUN if [ "$OS" = "darwin" ]; then \
+        cd initia \
+        && make build \
+        && cd ./build \
+        && cp /go/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libmovevm.dylib ./ \
+        && cp /go/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libcompiler.dylib ./ \
+        && tar -czvf initia_${L1_VERSION}_Darwin_${ARCH}.tar.gz initiad libmovevm.dylib libcompiler.dylib \
+        && mkdir -p ../../networks/${L1_NETWORK_NAME}/binaries/ \
+        && mv ./initia_${L1_VERSION}_Darwin_${ARCH}.tar.gz ../../networks/${L1_NETWORK_NAME}/binaries/ ; \
+    elif [ "$OS" = "linux" ]; then \
+        cd initia \
+        && make build-linux-with-shared-library \
+        && cd ./build \
+        && mv libmovevm.so libmovevm.${ARCH}.so \
+        && mv libcompiler.so libcompiler.${ARCH}.so \
+        && tar -czvf initia_${L1_VERSION}_Linux_${ARCH}.tar.gz ./initiad libmovevm.${ARCH}.so libcompiler.${ARCH}.so \
+        && mkdir -p ../../networks/${L1_NETWORK_NAME}/binaries/ \
+        && mv ./initia_${L1_VERSION}_Linux_${ARCH}.tar.gz ../../networks/${L1_NETWORK_NAME}/binaries/ ; \
+    fi
 
-# Copy the binary from the builder stage
-COPY --from=go-builder /code/build/initiad /usr/local/bin/initiad
-
-# Set the entrypoint
-ENTRYPOINT ["/usr/local/bin/initiad"]
+# 결과물 복사
+RUN mkdir -p /output && cp networks/${L1_NETWORK_NAME}/binaries/initia_${L1_VERSION}_*_${ARCH}.tar.gz /output/
