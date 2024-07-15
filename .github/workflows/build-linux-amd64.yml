@@ -24,7 +24,7 @@ jobs:
           docker cp temp:/app/libmovevm.amd64.so ./output/
           docker cp temp:/app/libcompiler.amd64.so ./output/
           docker rm temp
-          tar -czvf initia_${{ github.sha }}_Linux_amd64.tar.gz -C output .
+          tar -czvf initia_${{ github.sha }}_Linux_amd64.tar.gz -C output initiad libmovevm.amd64.so libcompiler.amd64.so
 
       - name: Google Auth
         uses: 'google-github-actions/auth@v2'
