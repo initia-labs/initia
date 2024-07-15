@@ -1,45 +1,109 @@
-name: Multi-Architecture Build
+name: Build and Upload Multi-Platform Binaries
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_call:
 
 jobs:
-  build-linux:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        arch: [amd64, arm64]
+  build:
+    runs-on: ubuntu-20.04
+    timeout-minutes: 60
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@v1
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
-    - name: Build for Linux-${{ matrix.arch }}
-      env:
-        ARCH: ${{ matrix.arch }}
-        L1_VERSION: ${{ github.sha }}
-        L1_NETWORK_NAME: testnet
-        MOVEVM_VERSION: v0.2.12  # 적절한 버전으로 변경하세요
-      run: |
-        docker buildx build --platform linux/${{ matrix.arch }} \
-          --file Dockerfile \
-          --build-arg ARCH=${{ matrix.arch }} \
-          --build-arg L1_VERSION=${{ env.L1_VERSION }} \
-          --build-arg L1_NETWORK_NAME=${{ env.L1_NETWORK_NAME }} \
-          --build-arg MOVEVM_VERSION=${{ env.MOVEVM_VERSION }} \
-          --output type=local,dest=./output \
-          .
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            /go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: initia-linux-${{ matrix.arch }}
-        path: ./output/initia_${{ env.L1_VERSION }}_Linux_${{ matrix.arch }}.tar.gz
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.22.4'
+
+      - name: Build Multi-Platform Binaries
+        run: |
+          docker buildx create --use
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            --output "type=local,dest=./build" \
+            --file Dockerfile \
+            --progress plain \
+            .
+          echo "Multi-platform build completed"
+          ls -al build/
+
+      - name: Create output directories
+        run: |
+          mkdir -p ./build/initia_${GITHUB_REF#refs/tags/}_amd64
+          mkdir -p ./build/initia_${GITHUB_REF#refs/tags/}_arm64
+
+      - name: Move binaries to output directories
+        run: |
+          mv ./build/linux/amd64/initiad ./build/initia_${GITHUB_REF#refs/tags/}_amd64/initiad || true
+          mv ./build/linux/amd64/libmovevm.so ./build/initia_${GITHUB_REF#refs/tags/}_amd64/libmovevm.so || true
+          mv ./build/linux/amd64/libcompiler.so ./build/initia_${GITHUB_REF#refs/tags/}_amd64/libcompiler.so || true
+          mv ./build/linux/arm64/initiad ./build/initia_${GITHUB_REF#refs/tags/}_arm64/initiad || true
+          mv ./build/linux/arm64/libmovevm.so ./build/initia_${GITHUB_REF#refs/tags/}_arm64/libmovevm.so || true
+          mv ./build/linux/arm64/libcompiler.so ./build/initia_${GITHUB_REF#refs/tags/}_arm64/libcompiler.so || true
+
+      - name: Create tarballs
+        run: |
+          cd ./build
+          tar -czvf initia_${GITHUB_REF#refs/tags/}_Linux_amd64.tar.gz initia_${GITHUB_REF#refs/tags/}_amd64
+          tar -czvf initia_${GITHUB_REF#refs/tags/}_Linux_arm64.tar.gz initia_${GITHUB_REF#refs/tags/}_arm64
+
+      - name: Verify binary architecture
+        run: |
+          file ./build/initia_${GITHUB_REF#refs/tags/}_amd64/initiad || true
+          file ./build/initia_${GITHUB_REF#refs/tags/}_amd64/libmovevm.so || true
+          file ./build/initia_${GITHUB_REF#refs/tags/}_amd64/libcompiler.so || true
+          file ./build/initia_${GITHUB_REF#refs/tags/}_arm64/initiad || true
+          file ./build/initia_${GITHUB_REF#refs/tags/}_arm64/libmovevm.so || true
+          file ./build/initia_${GITHUB_REF#refs/tags/}_arm64/libcompiler.so || true
+
+      - name: Google Auth
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
+      - name: Set up Cloud SDK
+        uses: 'google-github-actions/setup-gcloud@v2'
+
+      - name: Upload to GCS
+        env:
+          GCS_BUCKET: ${{ secrets.GCS_BUCKET }}
+        run: |
+          gsutil cp ./build/initia_${GITHUB_REF#refs/tags/}_Linux_amd64.tar.gz gs://${GCS_BUCKET}/initia/${GITHUB_REF#refs/tags}/
+          gsutil cp ./build/initia_${GITHUB_REF#refs/tags/}_Linux_arm64.tar.gz gs://${GCS_BUCKET}/initia/${GITHUB_REF#refs/tags}/
+
+      - name: Verify upload and Generate public URL
+        env:
+          GCS_BUCKET: ${{ secrets.GCS_BUCKET }}
+        run: |
+          if gsutil stat gs://${GCS_BUCKET}/initia/${GITHUB_REF#refs/tags}/initia_${GITHUB_REF#refs/tags}_Linux_amd64.tar.gz; then
+            echo "File successfully uploaded"
+            echo "Public URL: https://storage.googleapis.com/${GCS_BUCKET}/initia/${GITHUB_REF#refs/tags}/initia_${GITHUB_REF#refs/tags}_Linux_amd64.tar.gz" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "File upload failed"
+            exit 1
+          fi
+          if gsutil stat gs://${GCS_BUCKET}/initia/${GITHUB_REF#refs/tags}/initia_${GITHUB_REF#refs/tags}_Linux_arm64.tar.gz; then
+            echo "File successfully uploaded"
+            echo "Public URL: https://storage.googleapis.com/${GCS_BUCKET}/initia/${GITHUB_REF#refs/tags}/initia_${GITHUB_REF#refs/tags}_Linux_arm64.tar.gz" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "File upload failed"
+            exit 1
+          fi
