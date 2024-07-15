@@ -1,0 +1,20 @@
+FROM golang:1.22
+
+WORKDIR /src
+
+RUN apt-get update && apt-get install -y git make
+
+COPY . .
+
+ENV MOVEVM_VERSION=v0.2.12
+
+RUN make build-linux-with-shared-library ARCH=amd64
+
+FROM ubuntu:20.04
+
+WORKDIR /app
+
+COPY --from=0 /src/build/initiad /app/
+COPY --from=0 /src/build/*.so /app/
+
+CMD ["/app/initiad", "version"]
