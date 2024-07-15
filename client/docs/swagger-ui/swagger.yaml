@@ -53117,7 +53117,7 @@ paths:
           type: string
       tags:
         - Query
-  /opinit/ophost/v1/bridges/{bridge_id}/withdrawals/{withdrawal_hash}/claimed:
+  /opinit/ophost/v1/bridges/{bridge_id}/withdrawals/claimed/by_hash:
     get:
       summary: Claimed queries whether the output is claimed.
       operationId: Claimed
@@ -53161,8 +53161,8 @@ paths:
           type: string
           format: uint64
         - name: withdrawal_hash
-          in: path
-          required: true
+          in: query
+          required: false
           type: string
           format: byte
       tags:
