@@ -1,55 +1,62 @@
-name: Build Linux AMD64
+name: Build and Upload Linux AMD64
 
 on:
-  workflow_call:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  GO_VERSION: '1.22'
+  MOVEVM_VERSION: 'v0.2.12'
+  L1_NETWORK_NAME: 'testnet'
 
 jobs:
-  build:
+  build-and-upload:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v3
-      - name: Build
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: .github/workflows/Dockerfile.linux.amd64
-          load: true
-          tags: initia:linux-amd64
-      - name: Export binary and libraries
-        run: |
-          mkdir -p ./output
-          docker create --name temp initia:linux-amd64
-          docker cp temp:/app/initiad ./output/
-          docker cp temp:/app/libmovevm.amd64.so ./output/
-          docker cp temp:/app/libcompiler.amd64.so ./output/
-          docker rm temp
-          tar -czvf initia_${{ github.sha }}_Linux_amd64.tar.gz -C output initiad libmovevm.amd64.so libcompiler.amd64.so
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Google Auth
-        uses: 'google-github-actions/auth@v2'
-        with:
-          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: ${{ env.GO_VERSION }}
 
-      - name: Set up Cloud SDK
-        uses: 'google-github-actions/setup-gcloud@v2'
+    - name: Build initiad
+      run: |
+        make build-linux-with-shared-library ARCH=amd64
+        
+    - name: Prepare artifacts
+      run: |
+        mkdir -p artifacts
+        cp build/initiad artifacts/
+        cp build/libmovevm.so artifacts/libmovevm.amd64.so
+        cp build/libcompiler.so artifacts/libcompiler.amd64.so
+        tar -czvf initia_${{ github.sha }}_Linux_amd64.tar.gz -C artifacts .
 
-      - name: Upload to GCS
-        env:
-          GCS_BUCKET: ${{ secrets.GCS_BUCKET }}
-        run: |
-          gsutil cp initia_${{ github.sha }}_Linux_amd64.tar.gz gs://${GCS_BUCKET}/networks/testnet/binaries/
+    - name: Google Auth
+      uses: 'google-github-actions/auth@v2'
+      with:
+        credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
-      - name: Verify upload and Generate public URL
-        env:
-          GCS_BUCKET: ${{ secrets.GCS_BUCKET }}
-        run: |
-          if gsutil stat gs://${GCS_BUCKET}/networks/testnet/binaries/initia_${{ github.sha }}_Linux_amd64.tar.gz; then
-            echo "File successfully uploaded"
-            echo "Public URL: https://storage.googleapis.com/${GCS_BUCKET}/networks/testnet/binaries/initia_${{ github.sha }}_Linux_amd64.tar.gz" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "File upload failed"
-            exit 1
-          fi
-            exit 1
-          fi
+    - name: Set up Cloud SDK
+      uses: 'google-github-actions/setup-gcloud@v2'
+
+    - name: Upload to GCS
+      env:
+        GCS_BUCKET: ${{ secrets.GCS_BUCKET }}
+      run: |
+        gsutil cp initia_${{ github.sha }}_Linux_amd64.tar.gz gs://${GCS_BUCKET}/networks/${{ env.L1_NETWORK_NAME }}/binaries/
+
+    - name: Verify upload and Generate public URL
+      env:
+        GCS_BUCKET: ${{ secrets.GCS_BUCKET }}
+      run: |
+        if gsutil stat gs://${GCS_BUCKET}/networks/${{ env.L1_NETWORK_NAME }}/binaries/initia_${{ github.sha }}_Linux_amd64.tar.gz; then
+          echo "File successfully uploaded"
+          echo "Public URL: https://storage.googleapis.com/${GCS_BUCKET}/networks/${{ env.L1_NETWORK_NAME }}/binaries/initia_${{ github.sha }}_Linux_amd64.tar.gz" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "File upload failed"
+          exit 1
+        fi
