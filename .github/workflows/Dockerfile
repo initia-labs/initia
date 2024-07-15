@@ -15,7 +15,7 @@ RUN apk add --no-cache git make
 COPY . .
 
 # MOVEVM 버전 설정 (필요에 따라 조정)
-ENV MOVEVM_VERSION=v0.3.4
+ENV MOVEVM_VERSION=v0.2.12
 
 # TARGETOS와 TARGETARCH에 따라 빌드 명령 실행
 RUN if [ "$TARGETOS" = "linux" ]; then \
