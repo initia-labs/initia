@@ -1,10 +1,13 @@
 name: Build and Upload to GCS
 
 on:
+  # push:
+    # tags:
+    #   - 'v*'
   push:
-    tags:
-      - 'v*'
-
+    branches:
+      - "main"
+      
 jobs:
   # build-linux-amd64:
   #   uses: ./.github/workflows/build-linux-amd64.yml
