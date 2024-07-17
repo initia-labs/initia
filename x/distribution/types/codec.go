@@ -13,6 +13,7 @@ import (
 // for Amino JSON serialization.
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	legacy.RegisterAminoMsg(cdc, &MsgUpdateParams{}, "distribution/MsgUpdateParams")
+	legacy.RegisterAminoMsg(cdc, &MsgDepositValidatorRewardsPool{}, "distribution/MsgDepositValidatorRewardsPool")
 	cdc.RegisterConcrete(Params{}, "distribution/Params", nil)
 }
 
@@ -20,6 +21,7 @@ func RegisterInterfaces(registry types.InterfaceRegistry) {
 	registry.RegisterImplementations(
 		(*sdk.Msg)(nil),
 		&MsgUpdateParams{},
+		&MsgDepositValidatorRewardsPool{},
 	)
 
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
