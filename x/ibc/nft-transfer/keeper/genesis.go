@@ -61,16 +61,19 @@ func (k Keeper) ExportGenesis(ctx context.Context) *types.GenesisState {
 	}
 
 	var classData []types.ClassData
-	k.ClassData.Walk(ctx, nil, func(key []byte, value string) (stop bool, err error) {
+	err = k.ClassData.Walk(ctx, nil, func(key []byte, value string) (stop bool, err error) {
 		classData = append(classData, types.ClassData{
 			TraceHash: key,
 			Data:      value,
 		})
 		return false, nil
 	})
+	if err != nil {
+		panic(err)
+	}
 
 	var tokenData []types.TokenData
-	k.TokenData.Walk(ctx, nil, func(key collections.Pair[[]byte, string], value string) (stop bool, err error) {
+	err = k.TokenData.Walk(ctx, nil, func(key collections.Pair[[]byte, string], value string) (stop bool, err error) {
 		tokenData = append(tokenData, types.TokenData{
 			TraceHash: key.K1(),
 			TokenId:   key.K2(),
@@ -78,6 +81,9 @@ func (k Keeper) ExportGenesis(ctx context.Context) *types.GenesisState {
 		})
 		return false, nil
 	})
+	if err != nil {
+		panic(err)
+	}
 
 	params, err := k.Params.Get(ctx)
 	if err != nil {
