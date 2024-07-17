@@ -211,7 +211,7 @@ func (p Params) Validate(ac address.Codec) error {
 		return fmt.Errorf("emergency tally interval must be positive: %s", p.EmergencyTallyInterval)
 	}
 
-	if !sdk.Coins(p.EmergencyMinDeposit).IsAllGTE(p.MinDeposit) {
+	if minEmergencyDeposit := sdk.Coins(p.EmergencyMinDeposit); !minEmergencyDeposit.IsAllGTE(p.ExpeditedMinDeposit) {
 		return fmt.Errorf("emergency minimum deposit must be greater than or equal to minimum deposit")
 	}
 
