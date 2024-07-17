@@ -72,6 +72,9 @@ func (a StakeAuthorization) Accept(ctx context.Context, msg sdk.Msg) (authz.Acce
 	case *MsgBeginRedelegate:
 		validatorAddress = msg.ValidatorDstAddress
 		amount = msg.Amount
+	case *MsgCancelUnbondingDelegation:
+		validatorAddress = msg.ValidatorAddress
+		amount = msg.Amount
 	default:
 		return authz.AcceptResponse{}, sdkerrors.ErrInvalidRequest.Wrap("unknown msg type")
 	}
