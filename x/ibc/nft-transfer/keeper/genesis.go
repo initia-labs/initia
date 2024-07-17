@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"cosmossdk.io/collections"
 	"github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 )
 
@@ -15,6 +16,18 @@ func (k Keeper) InitGenesis(ctx context.Context, state types.GenesisState) {
 
 	for _, trace := range state.ClassTraces {
 		if err := k.ClassTraces.Set(ctx, trace.Hash(), trace); err != nil {
+			panic(err)
+		}
+	}
+
+	for _, data := range state.ClassData {
+		if err := k.ClassData.Set(ctx, data.TraceHash, data.Data); err != nil {
+			panic(err)
+		}
+	}
+
+	for _, data := range state.TokenData {
+		if err := k.TokenData.Set(ctx, collections.Join(data.TraceHash, data.TokenId), data.Data); err != nil {
 			panic(err)
 		}
 	}
@@ -47,6 +60,25 @@ func (k Keeper) ExportGenesis(ctx context.Context) *types.GenesisState {
 		panic(err)
 	}
 
+	var classData []types.ClassData
+	k.ClassData.Walk(ctx, nil, func(key []byte, value string) (stop bool, err error) {
+		classData = append(classData, types.ClassData{
+			TraceHash: key,
+			Data:      value,
+		})
+		return false, nil
+	})
+
+	var tokenData []types.TokenData
+	k.TokenData.Walk(ctx, nil, func(key collections.Pair[[]byte, string], value string) (stop bool, err error) {
+		tokenData = append(tokenData, types.TokenData{
+			TraceHash: key.K1(),
+			TokenId:   key.K2(),
+			Data:      value,
+		})
+		return false, nil
+	})
+
 	params, err := k.Params.Get(ctx)
 	if err != nil {
 		panic(err)
@@ -55,6 +87,8 @@ func (k Keeper) ExportGenesis(ctx context.Context) *types.GenesisState {
 	return &types.GenesisState{
 		PortId:      portID,
 		ClassTraces: allTraces,
+		ClassData:   classData,
+		TokenData:   tokenData,
 		Params:      params,
 	}
 }
