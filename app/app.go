@@ -1498,7 +1498,9 @@ func (app *InitiaApp) Close() error {
 
 	// close the oracle service
 	if app.OracleClient != nil {
-		app.OracleClient.Stop()
+		if err := app.OracleClient.Stop(); err != nil {
+			return err
+		}
 	}
 
 	return nil
