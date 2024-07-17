@@ -108,7 +108,7 @@ func (p Params) Validate(ac address.Codec) error {
 
 	if minExpeditedDeposit := sdk.Coins(p.ExpeditedMinDeposit); minExpeditedDeposit.Empty() || !minExpeditedDeposit.IsValid() {
 		return fmt.Errorf("invalid expedited minimum deposit: %s", minExpeditedDeposit)
-	} else if minExpeditedDeposit.IsAllLTE(minDeposit) {
+	} else if !minExpeditedDeposit.IsAllGT(minDeposit) {
 		return fmt.Errorf("expedited minimum deposit must be greater than minimum deposit: %s", minExpeditedDeposit)
 	}
 
