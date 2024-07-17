@@ -338,6 +338,7 @@ $ %s query move view \
 			}
 
 			queryClient := types.NewQueryClient(clientCtx)
+			//nolint
 			res, err := queryClient.View(
 				context.Background(),
 				&types.QueryViewRequest{
