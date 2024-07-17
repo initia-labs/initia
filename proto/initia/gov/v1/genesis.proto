@@ -2,11 +2,8 @@ syntax = "proto3";
 
 package initia.gov.v1;
 
-import "gogoproto/gogo.proto";
-import "google/protobuf/timestamp.proto";
 import "cosmos/gov/v1/gov.proto";
 import "initia/gov/v1/gov.proto";
-import "amino/amino.proto";
 
 option go_package = "github.com/initia-labs/initia/x/gov/types";
 

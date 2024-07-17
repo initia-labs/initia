@@ -591,7 +591,7 @@ func ReadFungibleAssetMetadata(bz []byte) (string, string, uint8) {
 	cursor += symbolLen
 
 	decimals := uint8(bz[cursor])
-	cursor += 1
+	cursor += 1 //nolint
 
 	return name, symbol, decimals
 }

@@ -26,13 +26,16 @@ jobs:
       # for private repo access
       GOPRIVATE: github.com/initia-labs,github.com/skip-mev/slinky
       GITHUB_ACCESS_TOKEN: ${{ secrets.GH_READ_TOKEN }}
+      GOLANGCI_LINT_VERSION: v1.59.1
     name: golangci-lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-go@v2.1.4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
           go-version: 1.22
-      - uses: technote-space/get-diff-action@v5
+          check-latest: true
+      - uses: technote-space/get-diff-action@v6.1.2
         id: git_diff
         with:
           PATTERNS: |
@@ -41,11 +44,27 @@ jobs:
             go.sum
       # for private repo access
       - run: git config --global url.https://${GITHUB_ACCESS_TOKEN}:x-oauth-basic@github.com/.insteadOf https://github.com/
-      - name: run go linters
-        run: |
-          make tools 
-          make lint
+      # install golangci-lint
+      - run: go install github.com/golangci/golangci-lint/cmd/golangci-lint@${GOLANGCI_LINT_VERSION}
+      - name: run go linters (long)
         if: env.GIT_DIFF
+        id: lint_long
+        run: |
+          make lint
+      - uses: technote-space/get-diff-action@v6.1.2
+        if: steps.lint_long.outcome == 'skipped'
+        with:
+          PATTERNS: |
+            **/**.go
+            go.mod
+            go.sum
+      - name: run go linters (short)
+        if: steps.lint_long.outcome == 'skipped' && env.GIT_DIFF
+        run: |
+          make lint
+        env:
+          GIT_DIFF: ${{ env.GIT_DIFF }}
+          LINT_DIFF: 1
   # Use --check or --exit-code when available (Go 1.19?)
   # https://github.com/golang/go/issues/27005
   tidy:
@@ -56,11 +75,12 @@ jobs:
     runs-on: ubuntu-latest
     name: tidy
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Setup go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
           go-version: 1.22
+          check-latest: true
       # for private repo access
       - run: git config --global url.https://${GITHUB_ACCESS_TOKEN}:x-oauth-basic@github.com/.insteadOf https://github.com/
       - run: |
