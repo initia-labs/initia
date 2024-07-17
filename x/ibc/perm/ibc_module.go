@@ -157,6 +157,14 @@ func (im IBCMiddleware) OnRecvPacket(
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) ibcexported.Acknowledgement {
+	if ok, err := im.keeper.HasPermission(ctx, packet.DestinationPort, packet.DestinationChannel, relayer); err != nil {
+		return newEmitErrorAcknowledgement(ctx, err)
+	} else if !ok {
+		panic(fmt.Errorf(
+			"all packets of the channel `%s` should be relayed by the permissioned relayers",
+			packet.DestinationChannel,
+		))
+	}
 	if permissionedRelayer, err := im.keeper.PermissionedRelayers.Get(ctx, collections.Join(packet.DestinationPort, packet.DestinationChannel)); err != nil && !errors.Is(err, collections.ErrNotFound) {
 		return newEmitErrorAcknowledgement(ctx, err)
 	} else if err == nil && !permissionedRelayer.HasRelayer(relayer.String()) {
