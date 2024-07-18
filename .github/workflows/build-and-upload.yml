@@ -1,0 +1,19 @@
+name: Build and Upload to releases
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-linux-amd64:
+    uses: ./.github/workflows/build-linux-amd64.yml
+
+  build-linux-arm64:
+    uses: ./.github/workflows/build-linux-arm64.yml
+
+  build-darwin-amd64:
+    uses: ./.github/workflows/build-darwin-amd64.yml
+
+  build-darwin-arm64:
+    uses: ./.github/workflows/build-darwin-arm64.yml
