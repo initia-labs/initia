@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Go
         uses: actions/setup-go@v4
@@ -36,11 +36,13 @@ jobs:
           else
             echo "ARCH_NAME=${{ inputs.arch }}" >> $GITHUB_ENV
           fi
+
       - name: Print environment variables
         run: |
           echo "GOARCH=${GOARCH}"
           echo "GOOS=${GOOS}"
           echo "VERSION=${VERSION}"
+
       - name: Build for Linux AMD64
         run: |
           export GOARCH=${GOARCH}
@@ -52,16 +54,10 @@ jobs:
           mv libcompiler.so initia_${VERSION}/libcompiler.${ARCH_NAME}.so
           mv initiad initia_${VERSION}/
           tar -czvf initia_${VERSION}_Linux_${ARCH_NAME}.tar.gz initia_${VERSION}
+
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: |
             ./build/initia_${{ env.VERSION }}_Linux_${{ env.ARCH_NAME }}.tar.gz
           
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            initia_${{ env.VERSION }}_Darwin_${{ env.ARCH_NAME }}.tar.gz
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_RELEASE_TOKEN }}

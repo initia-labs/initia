@@ -10,7 +10,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Set up Go
@@ -66,9 +66,7 @@ jobs:
           && rm -rf ./libmovevm.dylib ./libcompiler.dylib ./initiad
   
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: |
             initia_${{ env.VERSION }}_Darwin_${{ env.ARCH_NAME }}.tar.gz
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_RELEASE_TOKEN }}

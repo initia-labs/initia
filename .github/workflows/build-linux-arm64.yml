@@ -81,9 +81,7 @@ jobs:
         run: ls -l
         
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: |
               ./initia_${{ env.VERSION }}_Linux_${{ env.ARCH_NAME }}.tar.gz
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_RELEASE_TOKEN }}
