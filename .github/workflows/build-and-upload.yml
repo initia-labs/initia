@@ -17,4 +17,3 @@ jobs:
 
   build-darwin-arm64:
     uses: ./.github/workflows/build-darwin-arm64.yml
-    

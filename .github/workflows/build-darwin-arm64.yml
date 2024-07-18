@@ -60,4 +60,3 @@ jobs:
         with:
           files: |
             initia_${{ env.VERSION }}_Darwin_${{ env.ARCH_NAME }}.tar.gz
-            

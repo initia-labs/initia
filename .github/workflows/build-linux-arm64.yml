@@ -76,4 +76,3 @@ jobs:
         with:
           files: |
               ./initia_${{ env.VERSION }}_Linux_${{ env.ARCH_NAME }}.tar.gz
-              
