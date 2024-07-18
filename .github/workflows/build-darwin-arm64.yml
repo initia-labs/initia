@@ -71,4 +71,4 @@ jobs:
           files: |
             initia_${{ env.VERSION }}_Darwin_${{ env.ARCH_NAME }}.tar.gz
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_RELEASE_TOKEN }}
