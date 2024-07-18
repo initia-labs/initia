@@ -1,10 +1,8 @@
 name: Build Darwin AMD64
+
 on:
   workflow_call:
-    # inputs:
-    #   arch:
-    #     required: true
-    #     type: string
+
 jobs:
   build:
     runs-on: macos-13

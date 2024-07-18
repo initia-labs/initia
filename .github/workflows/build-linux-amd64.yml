@@ -1,11 +1,7 @@
 name: Build Linux AMD64
 
 on:
-  workflow_call:
-    inputs:
-      arch:
-        required: true
-        type: string
+  workflow_call
 
 jobs:
   build:
@@ -21,7 +17,7 @@ jobs:
 
       - name: Set environment variables
         run: |
-          echo "GOARCH=${{ inputs.arch }}" >> $GITHUB_ENV
+          echo "GOARCH=amd64" >> $GITHUB_ENV
           echo "GOOS=linux" >> $GITHUB_ENV
           if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
             VERSION=${GITHUB_REF#refs/tags/}
@@ -29,13 +25,7 @@ jobs:
             VERSION="v0.0.0-${GITHUB_SHA::8}"
           fi
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
-          if [ "${{ inputs.arch }}" == "amd64" ]; then
-            echo "ARCH_NAME=x86_64" >> $GITHUB_ENV
-          elif [ "${{ inputs.arch }}" == "arm64" ]; then
-            echo "ARCH_NAME=aarch64" >> $GITHUB_ENV
-          else
-            echo "ARCH_NAME=${{ inputs.arch }}" >> $GITHUB_ENV
-          fi
+          echo "ARCH_NAME=x86_64" >> $GITHUB_ENV
 
       - name: Print environment variables
         run: |
