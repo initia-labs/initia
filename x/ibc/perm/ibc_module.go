@@ -1,10 +1,8 @@
 package perm
 
 import (
-	"errors"
 	"fmt"
 
-	"cosmossdk.io/collections"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 
@@ -160,14 +158,6 @@ func (im IBCMiddleware) OnRecvPacket(
 	if ok, err := im.keeper.HasPermission(ctx, packet.DestinationPort, packet.DestinationChannel, relayer); err != nil {
 		return newEmitErrorAcknowledgement(ctx, err)
 	} else if !ok {
-		panic(fmt.Errorf(
-			"all packets of the channel `%s` should be relayed by the permissioned relayers",
-			packet.DestinationChannel,
-		))
-	}
-	if permissionedRelayer, err := im.keeper.PermissionedRelayers.Get(ctx, collections.Join(packet.DestinationPort, packet.DestinationChannel)); err != nil && !errors.Is(err, collections.ErrNotFound) {
-		return newEmitErrorAcknowledgement(ctx, err)
-	} else if err == nil && !permissionedRelayer.HasRelayer(relayer.String()) {
 		/*
 			Raise a panic to prevent abnormal relayers from disrupting operations by
 			continuously sending error acknowledgements. For instance, abnormal relaying
@@ -182,11 +172,9 @@ func (im IBCMiddleware) OnRecvPacket(
 				),
 			)
 		*/
-
 		panic(fmt.Errorf(
-			"all packets of the channel `%s` should be relayed by the relayer `%s`",
+			"all packets of the channel `%s` should be relayed by the permissioned relayers",
 			packet.DestinationChannel,
-			fmt.Sprintf("%X", permissionedRelayer),
 		))
 	}
 
