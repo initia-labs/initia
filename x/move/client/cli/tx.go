@@ -155,7 +155,7 @@ $ %s tx move execute \
 				return err
 			}
 
-			moveArgTypes, moveArgs := parseArguments(flagArgs)
+			moveArgTypes, moveArgs := ParseArguments(flagArgs)
 			if len(moveArgTypes) != len(moveArgs) {
 				return fmt.Errorf("invalid argument format len(moveArgTypes) != len(moveArgs)")
 			}
