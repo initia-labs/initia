@@ -10,7 +10,7 @@ import (
 )
 
 func Test_parseArguments(t *testing.T) {
-	argTypes, args := parseArguments("u8:1 u16:256 string:\"hello world\" string:\"hello\" vector<string>:\"hello world\",\"hello world\" vector<bool>:true,false,true")
+	argTypes, args := ParseArguments("u8:1 u16:256 string:\"hello world\" string:\"hello\" vector<string>:\"hello world\",\"hello world\" vector<bool>:true,false,true")
 	require.Equal(t, []string{"u8", "u16", "string", "string", "vector<string>", "vector<bool>"}, argTypes)
 	require.Equal(t, []string{"1", "256", "hello world", "hello", "hello world,hello world", "true,false,true"}, args)
 }

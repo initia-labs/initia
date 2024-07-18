@@ -1,17 +1,19 @@
 package movecmd
 
 import (
+	"encoding/hex"
 	"fmt"
 	"os"
 	"path"
 	"strings"
 
 	"cosmossdk.io/core/address"
-	"cosmossdk.io/errors"
+	errorsmod "cosmossdk.io/errors"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
+	"github.com/cosmos/cosmos-sdk/version"
 
 	movecli "github.com/initia-labs/initia/x/move/client/cli"
 	movetypes "github.com/initia-labs/initia/x/move/types"
@@ -108,6 +110,7 @@ func MoveCommand(ac address.Codec) *cobra.Command {
 	cmd.AddCommand(
 		moveBuildCmd(),
 		moveTestCmd(),
+		moveEncodeCmd(ac),
 		moveNewCmd(),
 		moveCleanCmd(),
 		moveDeployCmd(ac),
@@ -189,6 +192,45 @@ func moveTestCmd() *cobra.Command {
 
 	addMoveBuildFlags(cmd)
 	addMoveTestFlags(cmd)
+
+	return cmd
+}
+
+func moveEncodeCmd(ac address.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "encode '[arg arg arg...]'",
+		Short: "encode a move arguments",
+		Long: fmt.Sprintf(`
+		Provide BCS encoding for move arguments.
+
+		Supported types : u8, u16, u32, u64, u128, u256, bool, string, address, raw_hex, raw_base64,
+			vector<inner_type>, option<inner_type>, decimal128, decimal256, fixed_point32, fixed_point64
+		Example of args: address:0x1 bool:true u8:0 string:hello vector<u32>:a,b,c,d
+		
+		Example:
+		$ %s move encode 'u8:0 address:0x1 string:"hello world"'
+`, version.AppName,
+		),
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			moveArgTypes, moveArgs := movecli.ParseArguments(args[0])
+			if len(moveArgTypes) != len(moveArgs) {
+				return fmt.Errorf("invalid argument format len(moveArgTypes) != len(moveArgs)")
+			}
+
+			for i := range moveArgTypes {
+				serializer := movecli.NewSerializer()
+				bcsArg, err := movecli.BcsSerializeArg(moveArgTypes[i], moveArgs[i], serializer, ac)
+				if err != nil {
+					return err
+				}
+
+				fmt.Println("0x" + hex.EncodeToString(bcsArg))
+			}
+
+			return nil
+		},
+	}
 
 	return cmd
 }
@@ -446,7 +488,7 @@ func moveDeployCmd(ac address.Codec) *cobra.Command {
 			// request contract verify
 			if flagVerify {
 				if err := verifyContract(*vc); err != nil {
-					return errors.Wrap(err, "failed to verify published package")
+					return errorsmod.Wrap(err, "failed to verify published package")
 				}
 			}
 
@@ -510,7 +552,7 @@ func moveVerifyCmd() *cobra.Command {
 
 			err = verifyContract(*uc)
 			if err != nil {
-				return errors.Wrap(err, "failed to verify")
+				return errorsmod.Wrap(err, "failed to verify")
 			}
 
 			fmt.Println("Verification done.")

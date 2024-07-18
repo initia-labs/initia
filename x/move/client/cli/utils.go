@@ -296,7 +296,7 @@ func DivideUint256String(s string) (uint64, uint64, uint64, uint64, error) {
 	return highHigh, highLow, high, low, nil
 }
 
-func parseArguments(s string) (tt []string, args []string) {
+func ParseArguments(s string) (tt []string, args []string) {
 	if len(s) == 0 {
 		return
 	}

@@ -321,7 +321,7 @@ $ %s query move view \
 				return err
 			}
 
-			moveArgTypes, moveArgs := parseArguments(flagArgs)
+			moveArgTypes, moveArgs := ParseArguments(flagArgs)
 			if len(moveArgTypes) != len(moveArgs) {
 				return fmt.Errorf("invalid argument format len(types) != len(args)")
 			}
