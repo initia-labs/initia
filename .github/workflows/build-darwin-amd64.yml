@@ -1,10 +1,10 @@
 name: Build Darwin AMD64
 on:
   workflow_call:
-    inputs:
-      arch:
-        required: true
-        type: string
+    # inputs:
+    #   arch:
+    #     required: true
+    #     type: string
 jobs:
   build:
     runs-on: macos-13
@@ -23,7 +23,7 @@ jobs:
         run: |
           L1_NETWORK_NAME="initiation-1"
           echo "L1_NETWORK_NAME=${L1_NETWORK_NAME}" >> $GITHUB_ENV        
-          echo "GOARCH=${{ inputs.arch }}" >> $GITHUB_ENV
+          echo "GOARCH=amd64" >> $GITHUB_ENV
           echo "GOOS=darwin" >> $GITHUB_ENV
           if [[ "${{ github.ref }}" == "refs/tags/"* ]]; then
             VERSION=${GITHUB_REF#refs/tags/}
