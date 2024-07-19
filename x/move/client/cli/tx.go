@@ -221,6 +221,8 @@ $ %s tx move execute_json \
 	mint_to \
 	--type-args '0x1::native_uinit::Coin 0x1::native_uusdc::Coin' \
  	--args '["0" "0x1" "hello world"]'
+
+Note that there should be no spaces within the arguments, since each argument is separated by a space.
 `, version.AppName, bech32PrefixAccAddr,
 			),
 		),
