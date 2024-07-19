@@ -3,6 +3,7 @@ package cli
 import (
 	"encoding/base64"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math/big"
@@ -15,6 +16,7 @@ import (
 	"github.com/aptos-labs/serde-reflection/serde-generate/runtime/golang/bcs"
 	"github.com/aptos-labs/serde-reflection/serde-generate/runtime/golang/serde"
 	"github.com/initia-labs/initia/x/move/types"
+	"github.com/spf13/cobra"
 	flag "github.com/spf13/pflag"
 )
 
@@ -64,7 +66,30 @@ func asciiDecodeString(s string) ([]byte, error) {
 	return []byte(s), nil
 }
 
-func BcsSerializeArg(argType string, arg string, s serde.Serializer, ac address.Codec) ([]byte, error) {
+func BCSEncode(ac address.Codec, flagArgs []string) ([][]byte, error) {
+	bcsArgs := [][]byte{}
+	for _, flagArg := range flagArgs {
+		ss := strings.Split(flagArg, ":")
+		if len(ss) != 2 {
+			return nil, fmt.Errorf(`expect "type:value" format but got "%s"`, flagArg)
+		}
+
+		moveType := ss[0]
+		moveValue := ss[1]
+
+		serializer := NewSerializer()
+		bcsArg, err := bcsSerializeArg(moveType, moveValue, serializer, ac)
+		if err != nil {
+			return nil, err
+		}
+
+		bcsArgs = append(bcsArgs, bcsArg)
+	}
+
+	return bcsArgs, nil
+}
+
+func bcsSerializeArg(argType string, arg string, s serde.Serializer, ac address.Codec) ([]byte, error) {
 	if arg == "" {
 		err := s.SerializeBytes([]byte(arg))
 		return s.GetBytes(), err
@@ -178,21 +203,21 @@ func BcsSerializeArg(argType string, arg string, s serde.Serializer, ac address.
 			return nil, err
 		}
 		decstr := dec.MulInt64(1000000000000000000).TruncateInt().String()
-		return BcsSerializeArg("u128", decstr, s, ac)
+		return bcsSerializeArg("u128", decstr, s, ac)
 	case "decimal256":
 		dec, err := sdkmath.LegacyNewDecFromStr(arg)
 		if err != nil {
 			return nil, err
 		}
 		decstr := dec.MulInt64(1000000000000000000).TruncateInt().String()
-		return BcsSerializeArg("u256", decstr, s, ac)
+		return bcsSerializeArg("u256", decstr, s, ac)
 	case "fixed_point32":
 		dec, err := sdkmath.LegacyNewDecFromStr(arg)
 		if err != nil {
 			return nil, err
 		}
 		decstr := dec.MulInt64(4294967296).TruncateInt().String()
-		return BcsSerializeArg("u64", decstr, s, ac)
+		return bcsSerializeArg("u64", decstr, s, ac)
 	case "fixed_point64":
 		dec, err := sdkmath.LegacyNewDecFromStr(arg)
 		if err != nil {
@@ -201,7 +226,7 @@ func BcsSerializeArg(argType string, arg string, s serde.Serializer, ac address.
 		denominator := new(big.Int)
 		denominator.SetString("18446744073709551616", 10)
 		decstr := dec.MulInt(sdkmath.NewIntFromBigInt(denominator)).TruncateInt().String()
-		return BcsSerializeArg("u128", decstr, s, ac)
+		return bcsSerializeArg("u128", decstr, s, ac)
 	default:
 		if vectorRegex.MatchString(argType) {
 			vecType := getInnerType(argType)
@@ -211,7 +236,7 @@ func BcsSerializeArg(argType string, arg string, s serde.Serializer, ac address.
 				return nil, err
 			}
 			for _, item := range items {
-				_, err := BcsSerializeArg(vecType, item, s, ac)
+				_, err := bcsSerializeArg(vecType, item, s, ac)
 				if err != nil {
 					return nil, err
 				}
@@ -228,7 +253,7 @@ func BcsSerializeArg(argType string, arg string, s serde.Serializer, ac address.
 			if err := s.SerializeLen(1); err != nil {
 				return nil, err
 			}
-			_, err := BcsSerializeArg(optionType, arg, s, ac)
+			_, err := bcsSerializeArg(optionType, arg, s, ac)
 			if err != nil {
 				return nil, err
 			}
@@ -296,63 +321,77 @@ func DivideUint256String(s string) (uint64, uint64, uint64, uint64, error) {
 	return highHigh, highLow, high, low, nil
 }
 
-func ParseArguments(s string) (tt []string, args []string) {
+// Read json string array and decode it into the array of T
+func ReadAndDecodeJSONStringArray[T any](cmd *cobra.Command, flagName string) (res []T, err error) {
+	s, err := cmd.Flags().GetString(flagName)
+	if err != nil {
+		return res, err
+	}
+
+	jsonStringArray, err := readJSONStringArray(s)
+	if err != nil {
+		return res, nil
+	}
+
+	return decodeJSONStringArray[T](jsonStringArray)
+}
+
+// Decode json string array into the array of T
+func decodeJSONStringArray[T any](ss []string) ([]T, error) {
+	if len(ss) == 0 {
+		return []T{}, nil
+	}
+
+	res := make([]T, len(ss))
+
+	for i, s := range ss {
+		err := json.Unmarshal([]byte(s), &res[i])
+		if err != nil {
+			return res, err
+		}
+	}
+
+	return res, nil
+}
+
+// Read json string array.
+func ReadJSONStringArray(cmd *cobra.Command, flagName string) ([]string, error) {
+	s, err := cmd.Flags().GetString(flagName)
+	if err != nil {
+		return nil, err
+	}
+
+	return readJSONStringArray(s)
+}
+
+func readJSONStringArray(s string) ([]string, error) {
 	if len(s) == 0 {
-		return
+		return []string{}, nil
 	}
 
-	cursor := 0
-
-	var t, a string
-	var typeParsing, quoteParsing bool
-
-	typeParsing = true
-	for len(s) > cursor {
-		c := s[cursor]
-		if c == ':' {
-			typeParsing = false
-
-			cursor++
-			continue
-		} else if quoteParsing {
-			if c == '"' {
-				quoteParsing = false
-
-				cursor++
-				continue
-			}
-		} else {
-			if c == ' ' {
-				typeParsing = true
-
-				tt = append(tt, t)
-				args = append(args, a)
-
-				t = ""
-				a = ""
-
-				cursor++
-				continue
-			} else if c == '"' {
-				typeParsing = false
-				quoteParsing = true
-
-				cursor++
-				continue
-			}
-		}
-
-		if typeParsing {
-			t += string(c)
-		} else {
-			a += string(c)
-		}
-
-		cursor++
+	var args []any
+	err := json.Unmarshal([]byte(s), &args)
+	if err != nil {
+		return nil, err
 	}
 
-	tt = append(tt, t)
-	args = append(args, a)
+	res := make([]string, len(args))
+	for i, arg := range args {
+		buf := new(strings.Builder)
+		err := createNonEscapeJSONEncoder(buf).Encode(arg)
+		if err != nil {
+			return nil, err
+		}
 
-	return
+		res[i] = strings.TrimSpace(buf.String())
+	}
+
+	return res, err
+}
+
+func createNonEscapeJSONEncoder(buf *strings.Builder) *json.Encoder {
+	encoder := json.NewEncoder(buf)
+	encoder.SetEscapeHTML(false)
+	encoder.SetIndent("", "")
+	return encoder
 }

@@ -9,14 +9,58 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_parseArguments(t *testing.T) {
-	argTypes, args := ParseArguments("u8:1 u16:256 string:\"hello world\" string:\"hello\" vector<string>:\"hello world\",\"hello world\" vector<bool>:true,false,true")
-	require.Equal(t, []string{"u8", "u16", "string", "string", "vector<string>", "vector<bool>"}, argTypes)
-	require.Equal(t, []string{"1", "256", "hello world", "hello", "hello world,hello world", "true,false,true"}, args)
+func Test_readJSONStringArray(t *testing.T) {
+	testCases := []struct {
+		name   string
+		s      string
+		expRes []string
+		expErr bool
+	}{
+		{"empty", "", []string{}, false},
+		{"empty array", "[]", []string{}, false},
+		{"single element", "[\"hello\"]", []string{"\"hello\""}, false},
+		{"multiple elements", "[\"hello\",\"world\"]", []string{"\"hello\"", "\"world\""}, false},
+		{"multiple elements with spaces", "[\"hello\", \"world\", true, 234, \"123\"]", []string{"\"hello\"", "\"world\"", "true", "234", "\"123\""}, false},
+		{"invalid json", "[\"hello\", \"world\"", nil, true},
+	}
+
+	for _, tc := range testCases {
+		res, err := readJSONStringArray(tc.s)
+		if tc.expErr {
+			require.Error(t, err, tc.name)
+		} else {
+			require.NoError(t, err, tc.name)
+			require.Equal(t, tc.expRes, res, tc.name)
+		}
+	}
 }
 
-func Test_BcsSerializeArg(t *testing.T) {
+func Test_decodeJSONStringArray(t *testing.T) {
+	testCases := []struct {
+		name   string
+		ss     []string
+		expRes []string
+		expErr bool
+	}{
+		{"empty", []string{}, []string{}, false},
+		{"empty array", []string{}, []string{}, false},
+		{"single element", []string{"\"hello\""}, []string{"hello"}, false},
+		{"multiple elements", []string{"\"hello\"", "\"world\""}, []string{"hello", "world"}, false},
+		{"mismatched types", []string{"\"hello\"", "\"world\"", "true", "234", "\"123\""}, []string{}, true},
+	}
 
+	for _, tc := range testCases {
+		res, err := decodeJSONStringArray[string](tc.ss)
+		if tc.expErr {
+			require.Error(t, err, tc.name)
+		} else {
+			require.NoError(t, err, tc.name)
+			require.Equal(t, tc.expRes, res, tc.name)
+		}
+	}
+}
+
+func Test_bcsSerializeArg(t *testing.T) {
 	testCases := []struct {
 		argType string
 		arg     string
@@ -75,7 +119,7 @@ func Test_BcsSerializeArg(t *testing.T) {
 
 	for _, tc := range testCases {
 		s := NewSerializer()
-		res, err := BcsSerializeArg(tc.argType, tc.arg, s, ac)
+		res, err := bcsSerializeArg(tc.argType, tc.arg, s, ac)
 		if tc.expErr {
 			require.Error(t, err, tc.name)
 		} else {

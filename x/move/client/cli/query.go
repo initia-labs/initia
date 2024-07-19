@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"strings"
 
-	"cosmossdk.io/core/address"
 	"github.com/spf13/cobra"
 
+	"cosmossdk.io/core/address"
+	errorsmod "cosmossdk.io/errors"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -290,8 +291,8 @@ $ %s query move view \
     %s1lwjmdnks33xwnmfayc64ycprww49n33mtm92ne \
 	ManagedCoin \
 	get_balance \
-	--type-args '0x1::native_uinit::Coin 0x1::native_uusdc::Coin' \
- 	--args 'u8:0 address:0x1 string:"hello world"'
+	--type-args '["0x1::BasicCoin::getBalance<u8>", "0x1::BasicCoin::getBalance<u64>"]' \
+ 	--args '["address:0x1", "bool:true", "u8:0x01", "u128:1234", "vector<u32>:a,b,c,d", "string:hello world"]'
 `, version.AppName, bech32PrefixAccAddr,
 			),
 		),
@@ -308,37 +309,23 @@ $ %s query move view \
 				return err
 			}
 
-			var typeArgs []string
-			flagTypeArgs, err := cmd.Flags().GetString(FlagTypeArgs)
+			tyArgs, err := ReadAndDecodeJSONStringArray[string](cmd, FlagTypeArgs)
 			if err != nil {
-				return err
-			}
-			if flagTypeArgs != "" {
-				typeArgs = strings.Split(flagTypeArgs, " ")
+				return errorsmod.Wrap(err, "failed to read type args")
 			}
 
-			flagArgs, err := cmd.Flags().GetString(FlagArgs)
+			flagArgs, err := ReadAndDecodeJSONStringArray[string](cmd, FlagArgs)
 			if err != nil {
-				return err
+				return errorsmod.Wrap(err, "failed to read move args")
 			}
 
-			moveArgTypes, moveArgs := ParseArguments(flagArgs)
-			if len(moveArgTypes) != len(moveArgs) {
-				return fmt.Errorf("invalid argument format len(types) != len(args)")
-			}
-
-			bcsArgs := [][]byte{}
-			for i := range moveArgTypes {
-				serializer := NewSerializer()
-				bcsArg, err := BcsSerializeArg(moveArgTypes[i], moveArgs[i], serializer, ac)
-				if err != nil {
-					return err
-				}
-
-				bcsArgs = append(bcsArgs, bcsArg)
+			bcsArgs, err := BCSEncode(ac, flagArgs)
+			if err != nil {
+				return errorsmod.Wrap(err, "failed to encode move args")
 			}
 
 			queryClient := types.NewQueryClient(clientCtx)
+
 			//nolint
 			res, err := queryClient.View(
 				context.Background(),
@@ -346,7 +333,7 @@ $ %s query move view \
 					Address:      args[0],
 					ModuleName:   args[1],
 					FunctionName: args[2],
-					TypeArgs:     typeArgs,
+					TypeArgs:     tyArgs,
 					Args:         bcsArgs,
 				},
 			)
@@ -366,7 +353,7 @@ $ %s query move view \
 func GetCmdQueryViewJSONFunction(ac address.Codec) *cobra.Command {
 	bech32PrefixAccAddr := sdk.GetConfig().GetBech32AccountAddrPrefix()
 	cmd := &cobra.Command{
-		Use:   "view_json [module owner] [module name] [function name]",
+		Use:   "view-json [module owner] [module name] [function name]",
 		Short: "Get view json function execution result",
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`
@@ -381,8 +368,8 @@ $ %s query move view_json \
     %s1lwjmdnks33xwnmfayc64ycprww49n33mtm92ne \
 	ManagedCoin \
 	get_balance \
-	--type-args '0x1::native_uinit::Coin 0x1::native_uusdc::Coin' \
- 	--args '["0" "0x1" "hello world"]'
+	--type-args '["0x1::BasicCoin::getBalance<u8>", "0x1::BasicCoin::getBalance<u64>"]' \
+ 	--args '[0, true, "0x1", "1234", ["a","b","c","d"]]'
 
 Note that there should be no spaces within the arguments, since each argument is separated by a space.
 `, version.AppName, bech32PrefixAccAddr,
@@ -401,25 +388,18 @@ Note that there should be no spaces within the arguments, since each argument is
 				return err
 			}
 
-			var typeArgs []string
-			flagTypeArgs, err := cmd.Flags().GetString(FlagTypeArgs)
+			tyArgs, err := ReadAndDecodeJSONStringArray[string](cmd, FlagTypeArgs)
 			if err != nil {
-				return err
-			}
-			if flagTypeArgs != "" {
-				typeArgs = strings.Split(flagTypeArgs, " ")
+				return errorsmod.Wrap(err, "failed to read type args")
 			}
 
-			var moveArgs []string
-			flagArgs, err := cmd.Flags().GetString(FlagArgs)
+			moveArgs, err := ReadJSONStringArray(cmd, FlagArgs)
 			if err != nil {
-				return err
-			}
-			if flagArgs != "" {
-				moveArgs = strings.Split(flagArgs, " ")
+				return errorsmod.Wrap(err, "failed to read move args")
 			}
 
 			queryClient := types.NewQueryClient(clientCtx)
+
 			//nolint
 			res, err := queryClient.ViewJSON(
 				context.Background(),
@@ -427,19 +407,19 @@ Note that there should be no spaces within the arguments, since each argument is
 					Address:      args[0],
 					ModuleName:   args[1],
 					FunctionName: args[2],
-					TypeArgs:     typeArgs,
+					TypeArgs:     tyArgs,
 					Args:         moveArgs,
 				},
 			)
-
 			if err != nil {
 				return err
 			}
+
 			return clientCtx.PrintProto(res)
 		},
 	}
 	cmd.Flags().AddFlagSet(FlagSetTypeArgs())
-	cmd.Flags().AddFlagSet(FlagSetArgs())
+	cmd.Flags().AddFlagSet(FlagSetJSONArgs())
 	flags.AddQueryFlagsToCmd(cmd)
 	return cmd
 }
