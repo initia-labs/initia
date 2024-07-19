@@ -29,6 +29,7 @@ func GetTxCmd(ac address.Codec) *cobra.Command {
 	txCmd.AddCommand(
 		PublishCmd(ac),
 		ExecuteCmd(ac),
+		ExecuteJSONCmd(ac),
 		ScriptCmd(ac),
 	)
 	return txCmd
@@ -183,6 +184,88 @@ $ %s tx move execute \
 				FunctionName:  args[2],
 				TypeArgs:      typeArgs,
 				Args:          bcsArgs,
+			}
+
+			if err = msg.Validate(ac); err != nil {
+				return err
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+
+	cmd.Flags().AddFlagSet(FlagSetTypeArgs())
+	cmd.Flags().AddFlagSet(FlagSetArgs())
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+// ExecuteCmd will execute an entry function of a published module.
+func ExecuteJSONCmd(ac address.Codec) *cobra.Command {
+	bech32PrefixAccAddr := sdk.GetConfig().GetBech32AccountAddrPrefix()
+	cmd := &cobra.Command{
+		Use:   "execute_json [module address] [module name] [function name]",
+		Short: "Execute an entry function of a published module",
+		Long: strings.TrimSpace(
+			fmt.Sprintf(`
+Execute an entry function of a published module
+
+Supported types : u8, u16, u32, u64, u128, u256, bool, string, address, raw_hex, raw_base64,
+	vector<inner_type>, option<inner_type>, decimal128, decimal256, fixed_point32, fixed_point64
+Example of args: "0x1" "true" "0" "hello vector" ["a","b","c","d"]
+
+Example:
+$ %s tx move execute_json \
+    %s1lwjmdnks33xwnmfayc64ycprww49n33mtm92ne \
+	ManagedCoin \
+	mint_to \
+	--type-args '0x1::native_uinit::Coin 0x1::native_uusdc::Coin' \
+ 	--args '["0" "0x1" "hello world"]'
+`, version.AppName, bech32PrefixAccAddr,
+			),
+		),
+		Aliases: []string{"exj", "ej"},
+		Args:    cobra.ExactArgs(3),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			if _, err := types.AccAddressFromString(ac, args[0]); err != nil {
+				return err
+			}
+
+			var typeArgs []string
+			flagTypeArgs, err := cmd.Flags().GetString(FlagTypeArgs)
+			if err != nil {
+				return err
+			}
+			if flagTypeArgs != "" {
+				typeArgs = strings.Split(flagTypeArgs, " ")
+			}
+
+			var moveArgs []string
+			flagArgs, err := cmd.Flags().GetString(FlagArgs)
+			if err != nil {
+				return err
+			}
+			if flagArgs != "" {
+				moveArgs = strings.Split(flagArgs, " ")
+			}
+
+			sender, err := ac.BytesToString(clientCtx.FromAddress)
+			if err != nil {
+				return err
+			}
+
+			msg := types.MsgExecuteJSON{
+				Sender:        sender,
+				ModuleAddress: args[0],
+				ModuleName:    args[1],
+				FunctionName:  args[2],
+				TypeArgs:      typeArgs,
+				Args:          moveArgs,
 			}
 
 			if err = msg.Validate(ac); err != nil {

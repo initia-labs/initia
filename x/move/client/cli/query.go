@@ -32,7 +32,8 @@ func GetQueryCmd(ac address.Codec) *cobra.Command {
 		GetCmdResources(ac),
 		GetCmdTableEntry(ac),
 		GetCmdTableEntries(ac),
-		GetCmdQueryEntryFunction(ac),
+		GetCmdQueryViewFunction(ac),
+		GetCmdQueryViewJSONFunction(ac),
 		GetCmdQueryParams(),
 	)
 	return queryCmd
@@ -271,7 +272,7 @@ func GetCmdTableEntries(ac address.Codec) *cobra.Command {
 	return cmd
 }
 
-func GetCmdQueryEntryFunction(ac address.Codec) *cobra.Command {
+func GetCmdQueryViewFunction(ac address.Codec) *cobra.Command {
 	bech32PrefixAccAddr := sdk.GetConfig().GetBech32AccountAddrPrefix()
 	cmd := &cobra.Command{
 		Use:   "view [module owner] [module name] [function name]",
@@ -347,6 +348,85 @@ $ %s query move view \
 					FunctionName: args[2],
 					TypeArgs:     typeArgs,
 					Args:         bcsArgs,
+				},
+			)
+
+			if err != nil {
+				return err
+			}
+			return clientCtx.PrintProto(res)
+		},
+	}
+	cmd.Flags().AddFlagSet(FlagSetTypeArgs())
+	cmd.Flags().AddFlagSet(FlagSetArgs())
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
+func GetCmdQueryViewJSONFunction(ac address.Codec) *cobra.Command {
+	bech32PrefixAccAddr := sdk.GetConfig().GetBech32AccountAddrPrefix()
+	cmd := &cobra.Command{
+		Use:   "view_json [module owner] [module name] [function name]",
+		Short: "Get view json function execution result",
+		Long: strings.TrimSpace(
+			fmt.Sprintf(`
+Get an view function execution result
+
+Supported types : u8, u16, u32, u64, u128, u256, bool, string, address, raw_hex, raw_base64,
+	vector<inner_type>, option<inner_type>, decimal128, decimal256, fixed_point32, fixed_point64
+Example of args: "0x1" "true" "0" "hello vector" ["a","b","c","d"]
+
+Example:
+$ %s query move view_json \
+    %s1lwjmdnks33xwnmfayc64ycprww49n33mtm92ne \
+	ManagedCoin \
+	get_balance \
+	--type-args '0x1::native_uinit::Coin 0x1::native_uusdc::Coin' \
+ 	--args '["0" "0x1" "hello world"]'
+`, version.AppName, bech32PrefixAccAddr,
+			),
+		),
+		Aliases: []string{"ej"},
+		Args:    cobra.ExactArgs(3),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			_, err = types.AccAddressFromString(ac, args[0])
+			if err != nil {
+				return err
+			}
+
+			var typeArgs []string
+			flagTypeArgs, err := cmd.Flags().GetString(FlagTypeArgs)
+			if err != nil {
+				return err
+			}
+			if flagTypeArgs != "" {
+				typeArgs = strings.Split(flagTypeArgs, " ")
+			}
+
+			var moveArgs []string
+			flagArgs, err := cmd.Flags().GetString(FlagArgs)
+			if err != nil {
+				return err
+			}
+			if flagArgs != "" {
+				moveArgs = strings.Split(flagArgs, " ")
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
+			//nolint
+			res, err := queryClient.ViewJSON(
+				context.Background(),
+				&types.QueryViewJSONRequest{
+					Address:      args[0],
+					ModuleName:   args[1],
+					FunctionName: args[2],
+					TypeArgs:     typeArgs,
+					Args:         moveArgs,
 				},
 			)
 
