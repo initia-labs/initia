@@ -198,8 +198,8 @@ func moveTestCmd() *cobra.Command {
 
 func moveEncodeCmd(ac address.Codec) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "encode '[arg arg arg...]'",
-		Short: "encode a move arguments",
+		Use:   "encode [flags]",
+		Short: "encode a move arguments in BCS format",
 		Long: fmt.Sprintf(`
 		Provide BCS encoding for move arguments.
 
@@ -208,29 +208,30 @@ func moveEncodeCmd(ac address.Codec) *cobra.Command {
 		Example of args: address:0x1 bool:true u8:0 string:hello vector<u32>:a,b,c,d
 		
 		Example:
-		$ %s move encode 'u8:0 address:0x1 string:"hello world"'
+		$ %s move encode --args '["address:0x1", "bool:true", "u8:0x01", "u128:1234", "vector<u32>:a,b,c,d", "string:hello world"]'
 `, version.AppName,
 		),
-		Args: cobra.ExactArgs(1),
+		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			moveArgTypes, moveArgs := movecli.ParseArguments(args[0])
-			if len(moveArgTypes) != len(moveArgs) {
-				return fmt.Errorf("invalid argument format len(moveArgTypes) != len(moveArgs)")
+			flagArgs, err := movecli.ReadAndDecodeJSONStringArray[string](cmd, movecli.FlagArgs)
+			if err != nil {
+				return errorsmod.Wrap(err, "failed to read move args")
 			}
 
-			for i := range moveArgTypes {
-				serializer := movecli.NewSerializer()
-				bcsArg, err := movecli.BcsSerializeArg(moveArgTypes[i], moveArgs[i], serializer, ac)
-				if err != nil {
-					return err
-				}
+			bcsArgs, err := movecli.BCSEncode(ac, flagArgs)
+			if err != nil {
+				return errorsmod.Wrap(err, "failed to encode move args")
+			}
 
+			for _, bcsArg := range bcsArgs {
 				fmt.Println("0x" + hex.EncodeToString(bcsArg))
 			}
 
 			return nil
 		},
 	}
+
+	cmd.Flags().AddFlagSet(movecli.FlagSetArgs())
 
 	return cmd
 }
