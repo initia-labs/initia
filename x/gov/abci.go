@@ -130,6 +130,11 @@ func EndBlocker(ctx sdk.Context, k *keeper.Keeper) error {
 			return false, err
 		}
 
+		// emergency proposals are handled separately
+		if proposal.Emergency {
+			return false, nil
+		}
+
 		_, passed, burnDeposits, tallyResults, err := k.Tally(ctx, params, proposal)
 		if err != nil {
 			return false, err
