@@ -852,7 +852,8 @@ func NewInitiaApp(
 	govConfig := govtypes.DefaultConfig()
 	app.GovKeeper = govkeeper.NewKeeper(
 		appCodec, runtime.NewKVStoreService(keys[govtypes.StoreKey]), app.AccountKeeper, app.BankKeeper,
-		app.StakingKeeper, app.DistrKeeper, app.MsgServiceRouter(), govConfig, authorityAddr,
+		app.StakingKeeper, app.DistrKeeper, movekeeper.NewVestingKeeper(app.MoveKeeper),
+		app.MsgServiceRouter(), govConfig, authorityAddr,
 	)
 
 	/****  Module Options ****/

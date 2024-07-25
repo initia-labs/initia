@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"encoding/binary"
+	"os"
 	"testing"
 	"time"
 
@@ -424,6 +425,7 @@ func _createTestInput(
 		bankKeeper,
 		stakingKeeper,
 		distKeeper,
+		movekeeper.NewVestingKeeper(moveKeeper),
 		msgRouter,
 		govConfig,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
@@ -453,11 +455,11 @@ func _createTestInput(
 	return ctx, keepers
 }
 
-func createValidatorWithBalance(
+func createValidatorWithCoin(
 	ctx sdk.Context,
 	input TestKeepers,
-	balance int64,
-	delBalance int64,
+	balance sdk.Coins,
+	delBalance sdk.Coins,
 	index int,
 ) sdk.ValAddress {
 	valPubKey := testutilsims.CreateTestPubKeys(index)[index-1]
@@ -466,10 +468,10 @@ func createValidatorWithBalance(
 	accAddr := sdk.AccAddress(sdk.AccAddress(pubKey.Address()))
 	valAddr := sdk.ValAddress(sdk.AccAddress(pubKey.Address()))
 
-	input.Faucet.Fund(ctx, accAddr, sdk.NewCoin(bondDenom, math.NewInt(balance)))
+	input.Faucet.Fund(ctx, accAddr, balance...)
 
 	sh := stakingkeeper.NewMsgServerImpl(input.StakingKeeper)
-	_, err := sh.CreateValidator(ctx, newTestMsgCreateValidator(valAddr, valPubKey, math.NewInt(delBalance)))
+	_, err := sh.CreateValidator(ctx, newTestMsgCreateValidator(valAddr, valPubKey, delBalance...))
 	if err != nil {
 		panic(err)
 	}
@@ -484,11 +486,26 @@ func createValidatorWithBalance(
 }
 
 // newTestMsgCreateValidator test msg creator
-func newTestMsgCreateValidator(address sdk.ValAddress, pubKey cryptotypes.PubKey, amt math.Int) *stakingtypes.MsgCreateValidator {
-	commission := stakingtypes.NewCommissionRates(math.LegacyNewDecWithPrec(5, 1), math.LegacyNewDecWithPrec(5, 1), math.LegacyNewDec(0))
+func newTestMsgCreateValidator(address sdk.ValAddress, pubKey cryptotypes.PubKey, amt ...sdk.Coin) *stakingtypes.MsgCreateValidator {
+	commission := stakingtypes.NewCommissionRates(math.LegacyNewDecWithPrec(1, 1), math.LegacyNewDecWithPrec(5, 1), math.LegacyNewDec(0))
 	msg, _ := stakingtypes.NewMsgCreateValidator(
-		address.String(), pubKey, sdk.NewCoins(sdk.NewCoin(bondDenom, amt)),
+		address.String(), pubKey, amt,
 		stakingtypes.NewDescription("homeDir", "", "", "", ""), commission,
 	)
 	return msg
+}
+
+var vestingModule []byte
+
+func init() {
+	vestingModule = ReadMoveFile("Vesting")
+}
+
+func ReadMoveFile(filename string) []byte {
+	path := "../../move/keeper/binaries/" + filename + ".mv"
+	b, err := os.ReadFile(path)
+	if err != nil {
+		panic(err)
+	}
+	return b
 }

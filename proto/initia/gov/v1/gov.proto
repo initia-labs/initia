@@ -99,6 +99,25 @@ message Params {
   // These are Move function identifiers and can only be applied
   // for Move execute messages.
   repeated string low_threshold_functions = 93;
+
+  // Vesting is the vesting contract info for tally.
+  Vesting vesting = 94 [(gogoproto.nullable) = true, (amino.dont_omitempty) = false];
+}
+
+// Vesting defines the vesting contract info for MsgVestingVote.
+// At tally time, gov module would check vesting token amount.
+message Vesting {
+  option (gogoproto.equal)            = true;
+  option (gogoproto.goproto_stringer) = false;
+
+  // module_addr is the address of the vesting module.
+  string module_addr = 1;
+
+  // module_name is the name of the vesting module.
+  string module_name = 2;
+
+  // creator_addr is the address of the creator of the vesting contract.
+  string creator_addr = 3;
 }
 
 // Proposal defines the core field members of a governance proposal.

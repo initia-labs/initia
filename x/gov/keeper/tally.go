@@ -19,8 +19,8 @@ import (
 
 // Tally iterates over the votes and updates the tally of a proposal based on the voting power of the
 // voters
-func (keeper Keeper) Tally(ctx context.Context, params customtypes.Params, proposal customtypes.Proposal) (quorumReached, passed bool, burnDeposits bool, tallyResults v1.TallyResult, err error) {
-	weights, err := keeper.sk.GetVotingPowerWeights(ctx)
+func (k Keeper) Tally(ctx context.Context, params customtypes.Params, proposal customtypes.Proposal) (quorumReached, passed bool, burnDeposits bool, tallyResults v1.TallyResult, err error) {
+	weights, err := k.sk.GetVotingPowerWeights(ctx)
 	if err != nil {
 		return false, false, false, tallyResults, err
 	}
@@ -36,8 +36,8 @@ func (keeper Keeper) Tally(ctx context.Context, params customtypes.Params, propo
 	currValidators := make(map[string]customtypes.ValidatorGovInfo)
 
 	// fetch all the bonded validators, insert them into currValidators
-	err = keeper.sk.IterateBondedValidatorsByPower(ctx, func(validator stakingtypes.ValidatorI) (stop bool, err error) {
-		valAddr, err := keeper.sk.ValidatorAddressCodec().StringToBytes(validator.GetOperator())
+	err = k.sk.IterateBondedValidatorsByPower(ctx, func(validator stakingtypes.ValidatorI) (stop bool, err error) {
+		valAddr, err := k.sk.ValidatorAddressCodec().StringToBytes(validator.GetOperator())
 		if err != nil {
 			return false, err
 		}
@@ -59,8 +59,29 @@ func (keeper Keeper) Tally(ctx context.Context, params customtypes.Params, propo
 		return false, false, false, tallyResults, err
 	}
 
+	// fetch vesting table handle if vesting params are provided
+	var vestingHandle *sdk.AccAddress
+	if params.Vesting != nil {
+		vesting := *params.Vesting
+		moduleAddr, err := k.authKeeper.AddressCodec().StringToBytes(vesting.ModuleAddr)
+		if err != nil {
+			return false, false, false, tallyResults, err
+		}
+
+		creatorAddr, err := k.authKeeper.AddressCodec().StringToBytes(vesting.CreatorAddr)
+		if err != nil {
+			return false, false, false, tallyResults, err
+		}
+
+		// base denom validation will be done in vesting keeper
+		vestingHandle, err = k.vestingKeeper.GetVestingHandle(ctx, moduleAddr, vesting.ModuleName, creatorAddr)
+		if err != nil {
+			return false, false, false, tallyResults, err
+		}
+	}
+
 	rng := collections.NewPrefixedPairRange[uint64, sdk.AccAddress](proposal.Id)
-	err = keeper.Votes.Walk(ctx, rng, func(key collections.Pair[uint64, sdk.AccAddress], vote v1.Vote) (bool, error) {
+	err = k.Votes.Walk(ctx, rng, func(key collections.Pair[uint64, sdk.AccAddress], vote v1.Vote) (bool, error) {
 		// if validator, just record it in the map
 		voter := sdk.MustAccAddressFromBech32(vote.Voter)
 
@@ -70,8 +91,26 @@ func (keeper Keeper) Tally(ctx context.Context, params customtypes.Params, propo
 			currValidators[valAddrStr] = val
 		}
 
+		// add vesting voting power if vesting params are provided
+		if vestingHandle != nil {
+			amount, err := k.vestingKeeper.GetUnclaimedVestedAmount(ctx, *vestingHandle, voter)
+			if err != nil {
+				return false, err
+			}
+
+			if !amount.IsZero() {
+				votingPower := math.LegacyNewDecFromInt(amount)
+				for _, option := range vote.Options {
+					subPower := votingPower.Mul(math.LegacyMustNewDecFromStr(option.Weight))
+					results[option.Option] = results[option.Option].Add(subPower)
+				}
+				totalVotingPower = totalVotingPower.Add(votingPower)
+				stakedVotingPower = stakedVotingPower.Add(amount)
+			}
+		}
+
 		// iterate over all delegations from voter, deduct from any delegated-to validators
-		err = keeper.sk.IterateDelegations(ctx, voter, func(delegation stakingtypes.DelegationI) (stop bool, err error) {
+		err = k.sk.IterateDelegations(ctx, voter, func(delegation stakingtypes.DelegationI) (stop bool, err error) {
 			valAddrStr := delegation.GetValidatorAddr()
 
 			if val, ok := currValidators[valAddrStr]; ok {
@@ -104,7 +143,7 @@ func (keeper Keeper) Tally(ctx context.Context, params customtypes.Params, propo
 			return false, err
 		}
 
-		return false, keeper.Votes.Remove(ctx, collections.Join(vote.ProposalId, voter))
+		return false, k.Votes.Remove(ctx, collections.Join(vote.ProposalId, voter))
 	})
 	if err != nil {
 		return false, false, false, tallyResults, err
