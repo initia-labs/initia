@@ -67,6 +67,9 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	if sdkCtx.BlockTime().Sub(lastDilutionTimestamp) >= params.DilutionPeriod {
 		// dilute release rate
 		releaseRate := params.ReleaseRate.Sub(params.ReleaseRate.Mul(params.DilutionRate))
+		if releaseRate.IsNegative() {
+			releaseRate = math.LegacyZeroDec()
+		}
 
 		// update store
 		if err := k.SetReleaseRate(ctx, releaseRate); err != nil {

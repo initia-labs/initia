@@ -434,6 +434,7 @@ func _createTestInput(
 	require.NoError(t, govKeeper.ProposalID.Set(ctx, govtypesv1.DefaultStartingProposalID))
 	govParams := customgovtypes.DefaultParams()
 	govParams.MinDeposit[0].Denom = bondDenom
+	govParams.ExpeditedMinDeposit[0].Denom = bondDenom
 	govParams.EmergencyMinDeposit[0].Denom = bondDenom
 
 	require.NoError(t, govKeeper.Params.Set(ctx, govParams))
