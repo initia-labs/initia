@@ -1,5 +1,5 @@
 module TestAccount::Vesting {
-    use initia_std::fungible_asset::{Self, Metadata, FungibleAsset};
+    use initia_std::fungible_asset::{Metadata, FungibleAsset};
     use initia_std::primary_fungible_store;
     use initia_std::object::{Self, Object, ExtendRef};
     use initia_std::table::{Self, Table};
@@ -63,6 +63,7 @@ module TestAccount::Vesting {
     const EVESTING_NOT_FOUND: u64 = 3;
     const EVESTING_ALREADY_EXISTS: u64 = 4;
     const EVESTING_NOT_EXISTS: u64 = 5;
+    const EZERO_CLAIMABLE: u64 = 6;
 
     // Admin functions
 
@@ -183,9 +184,10 @@ module TestAccount::Vesting {
 
         let vesting = table::borrow_mut(&mut store.vestings, account_addr);
         let claimable_amount = calc_claimable_amount(vesting);
-        if (claimable_amount == 0) {
-            return fungible_asset::zero(store.token_metadata)
-        };
+        assert!(
+            claimable_amount > 0,
+            error::invalid_state(EZERO_CLAIMABLE)
+        );
 
         // increase the claimed amount
         vesting.claimed_amount = vesting.claimed_amount + claimable_amount;
@@ -285,6 +287,10 @@ module TestAccount::Vesting {
 
     fun calc_claimable_amount(vesting: &Vesting): u64 {
         let (_, cur_time) = block::get_block_info();
+        if (cur_time >= vesting.start_time + vesting.vesting_period) {
+            return vesting.allocation - vesting.claimed_amount
+        };
+
         let cliff_time = vesting.start_time + vesting.cliff_period;
 
         // check if the vesting is still in the cliff period
@@ -293,7 +299,11 @@ module TestAccount::Vesting {
         };
 
         // calculate elapsed claim frequencies
-        let elapsed_claim_frequencies = (cur_time - cliff_time) / vesting.claim_frequency;
+        let elapsed_claim_frequencies = if (vesting.claim_frequency > 0) {
+            (cur_time - cliff_time) / vesting.claim_frequency
+        } else {
+            0
+        };
         let elapsed_period = vesting.cliff_period + elapsed_claim_frequencies * vesting.claim_frequency;
         let vested_amount = (
             (vesting.allocation as u128) * (elapsed_period as u128) / (

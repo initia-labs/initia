@@ -99,6 +99,8 @@ func (k Keeper) Tally(ctx context.Context, params customtypes.Params, proposal c
 			}
 
 			if !amount.IsZero() {
+				// `the vesting token == the base denom`` check is done in vesting keeper,
+				// so we can safely convert the amount to voting power
 				votingPower := math.LegacyNewDecFromInt(amount)
 				for _, option := range vote.Options {
 					subPower := votingPower.Mul(math.LegacyMustNewDecFromStr(option.Weight))

@@ -27,6 +27,8 @@ func NewVestingKeeper(k *Keeper) VestingKeeper {
 	return VestingKeeper{k}
 }
 
+// GetVestingHandle returns the vesting table handle for the given module and creator
+// If the vesting token is not the base denom, it returns nil to skip the vesting voting power calculation.
 func (vk VestingKeeper) GetVestingHandle(ctx context.Context, moduleAccAddr sdk.AccAddress, moduleName string, creatorAccAddr sdk.AccAddress) (*sdk.AccAddress, error) {
 	denom, err := vk.getVestingTokenDenom(ctx, moduleAccAddr, moduleName, creatorAccAddr)
 	if err != nil {
@@ -149,6 +151,9 @@ func (vk VestingKeeper) GetUnclaimedVestedAmount(ctx context.Context, tableHandl
 	curTime := uint64(sdk.UnwrapSDKContext(ctx).BlockTime().Unix())
 	if curTime < startTime {
 		return math.ZeroInt(), nil
+	}
+	if curTime >= startTime+vestingPeriod {
+		return math.NewIntFromUint64(allocation).Sub(math.NewIntFromUint64(claimedAmount)), nil
 	}
 
 	vestedAmountInLinearVesting := math.NewIntFromUint64(allocation).
