@@ -47,7 +47,7 @@ message MsgUpdateParamsResponse {}
 //
 // Since: cosmos-sdk 0.50
 message MsgDepositValidatorRewardsPool {
-  option (amino.name)           = "cosmos-sdk/distr/MsgDepositValRewards";
+  option (amino.name)           = "distr/MsgDepositValidatorRewardsPool";
   option (cosmos.msg.v1.signer) = "depositor";
 
   option (gogoproto.equal)           = false;

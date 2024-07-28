@@ -86,11 +86,23 @@ func (k Keeper) AllocateTokens(ctx context.Context, totalPreviousPower int64, bo
 		poolDenom := rewardWeight.Denom
 		poolSize := bondedTokensSum[poolDenom]
 
+		// if poolSize is zero, skip allocation and then the poolReward will be allocated to community pool
+		if poolSize.IsZero() {
+			continue
+		}
+
 		for _, bondedTokens := range bondedTokens[poolDenom] {
+			if bondedTokens.Amount.IsZero() {
+				continue
+			}
+
 			validator := validators[bondedTokens.ValAddr]
 
 			amountFraction := math.LegacyNewDecFromInt(bondedTokens.Amount).QuoInt(poolSize)
 			reward := poolReward.MulDecTruncate(amountFraction)
+			if reward.IsZero() {
+				continue
+			}
 
 			err = k.AllocateTokensToValidatorPool(ctx, validator, poolDenom, reward)
 			if err != nil {

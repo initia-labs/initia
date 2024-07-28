@@ -108,7 +108,7 @@ func (p Params) Validate(ac address.Codec) error {
 
 	if minExpeditedDeposit := sdk.Coins(p.ExpeditedMinDeposit); minExpeditedDeposit.Empty() || !minExpeditedDeposit.IsValid() {
 		return fmt.Errorf("invalid expedited minimum deposit: %s", minExpeditedDeposit)
-	} else if minExpeditedDeposit.IsAllLTE(minDeposit) {
+	} else if !minExpeditedDeposit.IsAllGT(minDeposit) {
 		return fmt.Errorf("expedited minimum deposit must be greater than minimum deposit: %s", minExpeditedDeposit)
 	}
 
@@ -211,7 +211,7 @@ func (p Params) Validate(ac address.Codec) error {
 		return fmt.Errorf("emergency tally interval must be positive: %s", p.EmergencyTallyInterval)
 	}
 
-	if !sdk.Coins(p.EmergencyMinDeposit).IsAllGTE(p.MinDeposit) {
+	if minEmergencyDeposit := sdk.Coins(p.EmergencyMinDeposit); !minEmergencyDeposit.IsAllGTE(p.ExpeditedMinDeposit) {
 		return fmt.Errorf("emergency minimum deposit must be greater than or equal to minimum deposit")
 	}
 

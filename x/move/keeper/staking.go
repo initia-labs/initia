@@ -138,7 +138,9 @@ func (k Keeper) DelegateToValidator(ctx context.Context, valAddr sdk.ValAddress,
 
 			// overwrite empty account with module account
 			newAcc := authtypes.NewEmptyModuleAccount(delegatorModuleName)
-			newAcc.SetAccountNumber(macc.GetAccountNumber())
+			if err := newAcc.SetAccountNumber(macc.GetAccountNumber()); err != nil {
+				return sdk.NewDecCoins(), err
+			}
 
 			k.authKeeper.SetModuleAccount(ctx, newAcc)
 		}

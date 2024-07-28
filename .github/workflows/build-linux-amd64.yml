@@ -1,0 +1,52 @@
+name: Build Linux AMD64
+
+on:
+  workflow_call
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.22.4'
+
+      - name: Set environment variables
+        run: |
+          echo "GOARCH=amd64" >> $GITHUB_ENV
+          echo "GOOS=linux" >> $GITHUB_ENV
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/}
+          else
+            VERSION="v0.0.0-${GITHUB_SHA::8}"
+          fi
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          echo "ARCH_NAME=x86_64" >> $GITHUB_ENV
+
+      - name: Print environment variables
+        run: |
+          echo "GOARCH=${GOARCH}"
+          echo "GOOS=${GOOS}"
+          echo "VERSION=${VERSION}"
+
+      - name: Build for Linux AMD64
+        run: |
+          export GOARCH=${GOARCH}
+          export GOOS=${GOOS}
+          make build-linux-with-shared-library
+          cd ./build
+          mkdir -p initia_${VERSION}
+          mv libmovevm.so initia_${VERSION}/libmovevm.${ARCH_NAME}.so
+          mv libcompiler.so initia_${VERSION}/libcompiler.${ARCH_NAME}.so
+          mv initiad initia_${VERSION}/
+          tar -czvf initia_${VERSION}_Linux_${ARCH_NAME}.tar.gz initia_${VERSION}
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ./build/initia_${{ env.VERSION }}_Linux_${{ env.ARCH_NAME }}.tar.gz

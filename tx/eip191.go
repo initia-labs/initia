@@ -27,7 +27,7 @@ var _ signing.SignModeHandler = SignModeEIP191Handler{}
 
 // Mode implements signing.SignModeHandler.Mode.
 func (SignModeEIP191Handler) Mode() signingv1beta1.SignMode {
-	return signingv1beta1.SignMode_SIGN_MODE_EIP_191
+	return signingv1beta1.SignMode_SIGN_MODE_EIP_191 //nolint
 }
 
 // GetSignBytes implements SignModeHandler.GetSignBytes

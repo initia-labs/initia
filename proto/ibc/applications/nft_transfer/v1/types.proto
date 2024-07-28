@@ -6,7 +6,6 @@ option go_package = "github.com/initia-labs/initia/x/ibc/nft-transfer/types";
 
 import "gogoproto/gogo.proto";
 import "amino/amino.proto";
-import "cosmos_proto/cosmos.proto";
 
 // ClassTrace contains the base class id for ICS721 non fungible tokens and the
 // source tracing information path.

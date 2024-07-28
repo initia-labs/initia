@@ -1,4 +1,4 @@
-package ante
+package sigverify
 
 import (
 	"context"
@@ -24,7 +24,7 @@ func internalSignModeToAPI(mode signing.SignMode) (signingv1beta1.SignMode, erro
 	case signing.SignMode_SIGN_MODE_DIRECT_AUX:
 		return signingv1beta1.SignMode_SIGN_MODE_DIRECT_AUX, nil
 	case signing.SignMode_SIGN_MODE_EIP_191:
-		return signingv1beta1.SignMode_SIGN_MODE_EIP_191, nil
+		return signingv1beta1.SignMode_SIGN_MODE_EIP_191, nil //nolint
 	default:
 		return signingv1beta1.SignMode_SIGN_MODE_UNSPECIFIED, fmt.Errorf("unsupported sign mode %s", mode)
 	}

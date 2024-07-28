@@ -84,6 +84,7 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper, vc address.Codec) error 
 		}
 
 		args := [][]byte{metadata[:], valArg, rewardArg}
+		//nolint
 		if err = k.ExecuteEntryFunction(
 			ctx,
 			vmtypes.StdAddress,

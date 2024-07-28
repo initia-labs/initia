@@ -1,0 +1,62 @@
+name: Build Darwin ARM64
+
+on:
+  workflow_call:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.22.4'
+      - name: Set environment variables
+        run: |
+          L1_NETWORK_NAME="initiation-1"
+          echo "L1_NETWORK_NAME=${L1_NETWORK_NAME}" >> $GITHUB_ENV
+          MOVEVM_VERSION=$(go list -m github.com/initia-labs/movevm | awk '{print $2}')    
+          echo "MOVEVM_VERSION=${MOVEVM_VERSION}" >> $GITHUB_ENV        
+          echo "GOARCH=arm64" >> $GITHUB_ENV
+          echo "GOOS=darwin" >> $GITHUB_ENV
+          if [[ "${{ github.ref }}" == "refs/tags/"* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/}
+          else
+            VERSION="v0.0.0-${GITHUB_SHA::8}"
+          fi
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          echo "ARCH_NAME=aarch64" >> $GITHUB_ENV
+          
+      - name: Ensure dependencies
+        run: |
+          go mod tidy
+          go get github.com/initia-labs/movevm@${MOVEVM_VERSION}
+          
+      - name: Print environment variables
+        run: |
+          echo "GOARCH=${GOARCH}"
+          echo "GOOS=${GOOS}"
+          echo "VERSION=${VERSION}"
+          echo "ARCH_NAME=${ARCH_NAME}"
+          echo "L1_NETWORK_NAME=${L1_NETWORK_NAME}"
+      
+      - name: Build and Package for Darwin ARM64
+        run: |
+          cd ../initia \
+          && make build \
+          && cd ./build \
+          && cp ~/go/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libmovevm.dylib ./ \
+          && cp ~/go/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libcompiler.dylib ./ \
+          && tar -czvf initia_"$VERSION"_Darwin_"$ARCH_NAME".tar.gz initiad libmovevm.dylib libcompiler.dylib \
+          && mv ./initia_"$VERSION"_Darwin_"$ARCH_NAME".tar.gz $GITHUB_WORKSPACE/ \
+          && rm -rf ./libmovevm.dylib ./libcompiler.dylib ./initiad
+  
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            initia_${{ env.VERSION }}_Darwin_${{ env.ARCH_NAME }}.tar.gz

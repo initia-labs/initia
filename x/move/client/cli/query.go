@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"strings"
 
-	"cosmossdk.io/core/address"
 	"github.com/spf13/cobra"
 
+	"cosmossdk.io/core/address"
+	errorsmod "cosmossdk.io/errors"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -32,7 +33,8 @@ func GetQueryCmd(ac address.Codec) *cobra.Command {
 		GetCmdResources(ac),
 		GetCmdTableEntry(ac),
 		GetCmdTableEntries(ac),
-		GetCmdQueryEntryFunction(ac),
+		GetCmdQueryViewFunction(ac),
+		GetCmdQueryViewJSONFunction(ac),
 		GetCmdQueryParams(),
 	)
 	return queryCmd
@@ -271,7 +273,7 @@ func GetCmdTableEntries(ac address.Codec) *cobra.Command {
 	return cmd
 }
 
-func GetCmdQueryEntryFunction(ac address.Codec) *cobra.Command {
+func GetCmdQueryViewFunction(ac address.Codec) *cobra.Command {
 	bech32PrefixAccAddr := sdk.GetConfig().GetBech32AccountAddrPrefix()
 	cmd := &cobra.Command{
 		Use:   "view [module owner] [module name] [function name]",
@@ -289,8 +291,8 @@ $ %s query move view \
     %s1lwjmdnks33xwnmfayc64ycprww49n33mtm92ne \
 	ManagedCoin \
 	get_balance \
-	--type-args '0x1::native_uinit::Coin 0x1::native_uusdc::Coin' \
- 	--args 'u8:0 address:0x1 string:"hello world"'
+	--type-args '["0x1::BasicCoin::getBalance<u8>", "0x1::BasicCoin::getBalance<u64>"]' \
+ 	--args '["address:0x1", "bool:true", "u8:0x01", "u128:1234", "vector<u32>:a,b,c,d", "string:hello world"]'
 `, version.AppName, bech32PrefixAccAddr,
 			),
 		),
@@ -307,44 +309,31 @@ $ %s query move view \
 				return err
 			}
 
-			var typeArgs []string
-			flagTypeArgs, err := cmd.Flags().GetString(FlagTypeArgs)
+			tyArgs, err := ReadAndDecodeJSONStringArray[string](cmd, FlagTypeArgs)
 			if err != nil {
-				return err
-			}
-			if flagTypeArgs != "" {
-				typeArgs = strings.Split(flagTypeArgs, " ")
+				return errorsmod.Wrap(err, "failed to read type args")
 			}
 
-			flagArgs, err := cmd.Flags().GetString(FlagArgs)
+			flagArgs, err := ReadAndDecodeJSONStringArray[string](cmd, FlagArgs)
 			if err != nil {
-				return err
+				return errorsmod.Wrap(err, "failed to read move args")
 			}
 
-			moveArgTypes, moveArgs := parseArguments(flagArgs)
-			if len(moveArgTypes) != len(moveArgs) {
-				return fmt.Errorf("invalid argument format len(types) != len(args)")
-			}
-
-			bcsArgs := [][]byte{}
-			for i := range moveArgTypes {
-				serializer := NewSerializer()
-				bcsArg, err := BcsSerializeArg(moveArgTypes[i], moveArgs[i], serializer, ac)
-				if err != nil {
-					return err
-				}
-
-				bcsArgs = append(bcsArgs, bcsArg)
+			bcsArgs, err := BCSEncode(ac, flagArgs)
+			if err != nil {
+				return errorsmod.Wrap(err, "failed to encode move args")
 			}
 
 			queryClient := types.NewQueryClient(clientCtx)
+
+			//nolint
 			res, err := queryClient.View(
 				context.Background(),
 				&types.QueryViewRequest{
 					Address:      args[0],
 					ModuleName:   args[1],
 					FunctionName: args[2],
-					TypeArgs:     typeArgs,
+					TypeArgs:     tyArgs,
 					Args:         bcsArgs,
 				},
 			)
@@ -357,6 +346,80 @@ $ %s query move view \
 	}
 	cmd.Flags().AddFlagSet(FlagSetTypeArgs())
 	cmd.Flags().AddFlagSet(FlagSetArgs())
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
+func GetCmdQueryViewJSONFunction(ac address.Codec) *cobra.Command {
+	bech32PrefixAccAddr := sdk.GetConfig().GetBech32AccountAddrPrefix()
+	cmd := &cobra.Command{
+		Use:   "view-json [module owner] [module name] [function name]",
+		Short: "Get view json function execution result",
+		Long: strings.TrimSpace(
+			fmt.Sprintf(`
+Get an view function execution result
+
+Supported types : u8, u16, u32, u64, u128, u256, bool, string, address, raw_hex, raw_base64,
+	vector<inner_type>, option<inner_type>, decimal128, decimal256, fixed_point32, fixed_point64
+Example of args: "0x1" "true" "0" "hello vector" ["a","b","c","d"]
+
+Example:
+$ %s query move view_json \
+    %s1lwjmdnks33xwnmfayc64ycprww49n33mtm92ne \
+	ManagedCoin \
+	get_balance \
+	--type-args '["0x1::BasicCoin::getBalance<u8>", "0x1::BasicCoin::getBalance<u64>"]' \
+ 	--args '[0, true, "0x1", "1234", ["a","b","c","d"]]'
+
+Note that there should be no spaces within the arguments, since each argument is separated by a space.
+`, version.AppName, bech32PrefixAccAddr,
+			),
+		),
+		Aliases: []string{"ej"},
+		Args:    cobra.ExactArgs(3),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			_, err = types.AccAddressFromString(ac, args[0])
+			if err != nil {
+				return err
+			}
+
+			tyArgs, err := ReadAndDecodeJSONStringArray[string](cmd, FlagTypeArgs)
+			if err != nil {
+				return errorsmod.Wrap(err, "failed to read type args")
+			}
+
+			moveArgs, err := ReadJSONStringArray(cmd, FlagArgs)
+			if err != nil {
+				return errorsmod.Wrap(err, "failed to read move args")
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
+
+			//nolint
+			res, err := queryClient.ViewJSON(
+				context.Background(),
+				&types.QueryViewJSONRequest{
+					Address:      args[0],
+					ModuleName:   args[1],
+					FunctionName: args[2],
+					TypeArgs:     tyArgs,
+					Args:         moveArgs,
+				},
+			)
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+	cmd.Flags().AddFlagSet(FlagSetTypeArgs())
+	cmd.Flags().AddFlagSet(FlagSetJSONArgs())
 	flags.AddQueryFlagsToCmd(cmd)
 	return cmd
 }

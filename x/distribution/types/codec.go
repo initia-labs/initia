@@ -12,6 +12,8 @@ import (
 // and concrete types on the provided LegacyAmino codec. These types are used
 // for Amino JSON serialization.
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
+	// amino is rejecting long type names, so we register under `distr`
+	legacy.RegisterAminoMsg(cdc, &MsgDepositValidatorRewardsPool{}, "distr/MsgDepositValidatorRewardsPool")
 	legacy.RegisterAminoMsg(cdc, &MsgUpdateParams{}, "distribution/MsgUpdateParams")
 	cdc.RegisterConcrete(Params{}, "distribution/Params", nil)
 }
@@ -19,6 +21,7 @@ func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 func RegisterInterfaces(registry types.InterfaceRegistry) {
 	registry.RegisterImplementations(
 		(*sdk.Msg)(nil),
+		&MsgDepositValidatorRewardsPool{},
 		&MsgUpdateParams{},
 	)
 

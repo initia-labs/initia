@@ -12,7 +12,8 @@ option go_package = "github.com/initia-labs/initia/x/ibc/perm/types";
 // Query provides defines the gRPC querier service.
 service Query {
   // PermissionedRelayersByChannel queries a set of permissioned ibc relayers for the specific channel.
-  rpc PermissionedRelayersByChannel(QueryPermissionedRelayersByChannelRequest) returns (QueryPermissionedRelayersByChannelResponse) {
+  rpc PermissionedRelayersByChannel(QueryPermissionedRelayersByChannelRequest)
+      returns (QueryPermissionedRelayersByChannelResponse) {
     option (google.api.http).get = "/ibc/apps/perm/v1/relayers/{port_id}/{channel_id}";
   }
 

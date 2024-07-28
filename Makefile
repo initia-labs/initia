@@ -175,7 +175,7 @@ proto-format:
 	@$(protoImage) find ./ -name "*.proto" -exec clang-format -i {} \;
 
 proto-lint:
-	@$(protoImage) buf lint --error-format=json
+	@$(protoImage) buf lint --error-format=json ./proto
 
 proto-check-breaking:
 	@$(protoImage) buf breaking --against $(HTTPS_GIT)#branch=main
@@ -235,10 +235,10 @@ benchmark:
 ###############################################################################
 
 lint:
-	golangci-lint run --out-format=tab
+	golangci-lint run --out-format=tab --timeout=15m
 
 lint-fix:
-	golangci-lint run --fix --out-format=tab --issues-exit-code=0
+	golangci-lint run --fix --out-format=tab --timeout=15m
 .PHONY: lint lint-fix
 
 format:
