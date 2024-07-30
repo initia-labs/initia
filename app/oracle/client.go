@@ -205,3 +205,29 @@ func (c *GRPCClient) createConnection(ctx context.Context) error {
 
 	return nil
 }
+
+func (c *GRPCClient) MarketMap(
+	ctx context.Context,
+	req *oracleservertypes.QueryMarketMapRequest,
+	_ ...grpc.CallOption,
+) (res *oracleservertypes.QueryMarketMapResponse, err error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	start := time.Now()
+	defer func() {
+		// Observe the duration of the call as well as the error.
+		c.metrics.ObserveOracleResponseLatency(time.Since(start))
+		c.metrics.AddOracleResponse(metrics.StatusFromError(err))
+	}()
+
+	// set deadline on the context
+	ctx, cancel := context.WithTimeout(ctx, c.timeout)
+	defer cancel()
+
+	if c.client == nil {
+		return nil, fmt.Errorf("oracle client not started")
+	}
+
+	return c.client.MarketMap(ctx, req, grpc.WaitForReady(true))
+}
