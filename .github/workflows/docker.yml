@@ -63,6 +63,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
   node:
+    if: ${{ startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main' }}
     name: Node
     needs: initiad
     runs-on: ubuntu-latest
