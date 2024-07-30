@@ -1,32 +1,46 @@
-<!--
-*** Please remove the following help text before submitting: ***
+# Description
 
-Pull requests without a rationale and clear improvement may be closed
-immediately.
+Closes: #XXXX
 
--->
+<!-- Add a description of the changes that this PR introduces and the files that
+are the most critical to review. -->
 
-<!--
-Please provide clear motivation for your patch and explain how it improves
-initia user experience or initia developer experience
-significantly:
+---
 
-* Any test improvements or new tests that improve coverage are always welcome.
-* All other changes should have accompanying unit tests (see `src/test/`) or
-  functional tests (see `test/`). Contributors should note which tests cover
-  modified code. If no tests exist for a region of modified code, new tests
-  should accompany the change.
-* Bug fixes are most welcome when they come with steps to reproduce or an
-  explanation of the potential issue as well as reasoning for the way the bug
-  was fixed.
-* Features are welcome, but might be rejected due to design or scope issues.
-  If a feature is based on a lot of dependencies, contributors should first
-  consider building the system outside of initia, if possible.
--->
+## Author Checklist
 
-<!--
-Initia has a thorough review process and even the most trivial change
-needs to pass a lot of eyes and requires non-zero or even substantial time
-effort to review. There is a huge lack of active reviewers on the project, so
-patches often sit for a long time.
--->
+_All items are required. Please add a note to the item if the item is not applicable and
+please add links to any relevant follow up issues._
+
+I have...
+
+- [ ] included the correct [type prefix](https://github.com/commitizen/conventional-commit-types/blob/v3.0.0/index.json) in the PR title, you can find examples of the prefixes below:
+  <!-- * `feat`: A new feature
+  * `fix`: A bug fix
+  * `docs`: Documentation only changes
+  * `style`: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
+  * `refactor`: A code change that neither fixes a bug nor adds a feature
+  * `perf`: A code change that improves performance
+  * `test`: Adding missing tests or correcting existing tests
+  * `build`: Changes that affect the build system or external dependencies (example scopes: gulp, broccoli, npm)
+  * `ci`: Changes to our CI configuration files and scripts (example scopes: Travis, Circle, BrowserStack, SauceLabs)
+  * `chore`: Other changes that don't modify src or test files
+  * `revert`: Reverts a previous commit -->
+- [ ] confirmed `!` in the type prefix if API or client breaking change
+- [ ] targeted the correct branch
+- [ ] provided a link to the relevant issue or specification
+- [ ] reviewed "Files changed" and left comments if necessary
+- [ ] included the necessary unit and integration tests
+- [ ] updated the relevant documentation or specification, including comments for [documenting Go code](https://blog.golang.org/godoc)
+- [ ] confirmed all CI checks have passed
+
+## Reviewers Checklist
+
+_All items are required. Please add a note if the item is not applicable and please add
+your handle next to the items reviewed if you only reviewed selected items._
+
+I have...
+
+- [ ] confirmed the correct [type prefix](https://github.com/commitizen/conventional-commit-types/blob/v3.0.0/index.json) in the PR title
+- [ ] confirmed all author checklist items have been addressed
+- [ ] reviewed state machine logic, API design and naming, documentation is accurate, tests and test coverage
