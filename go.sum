@@ -727,10 +727,10 @@ github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANyt
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
 github.com/influxdata/influxdb1-client v0.0.0-20191209144304-8bf82d3c094d/go.mod h1:qj24IKcXYK6Iy9ceXlo3Tc+vtHo9lIhSX5JddghvEPo=
-github.com/initia-labs/OPinit v0.3.2 h1:TeELD5GeSJJ9meY5b5YIXDdmCZt9kZOA2Chz+IwxUHc=
-github.com/initia-labs/OPinit v0.3.2/go.mod h1:XlYsBFAKOFS6/wRIHB1vVbfonqX8QrC8cWK2GJvmX20=
-github.com/initia-labs/OPinit/api v0.3.1 h1:qCCtRZE9yw53FkBxlsOMBozMRGwz2EZVvNoDnZwfz04=
-github.com/initia-labs/OPinit/api v0.3.1/go.mod h1:Xy/Nt3ubXLQ4zKn0m7RuQOM1sj8TVdlNNyek21TGYR0=
+github.com/initia-labs/OPinit v0.4.0 h1:ICfZRbJ+KqgWt9z8seMl+6sRKbm40ELFvruvWh/KD40=
+github.com/initia-labs/OPinit v0.4.0/go.mod h1:qu3h66dk3EF3Ehnr0bRuq0ezxzVKtQvy7G/waQFG9nM=
+github.com/initia-labs/OPinit/api v0.4.0 h1:i3Cz5qPFpezeYh2R9TW2riPBb5tHwLOWOx3hrcWrM+o=
+github.com/initia-labs/OPinit/api v0.4.0/go.mod h1:Xy/Nt3ubXLQ4zKn0m7RuQOM1sj8TVdlNNyek21TGYR0=
 github.com/initia-labs/cometbft v0.0.0-20240704071957-c46468756c01 h1:EGcO68mXypbiO3rmoFsskxLEAeZFcOkJII1PsSK0rRI=
 github.com/initia-labs/cometbft v0.0.0-20240704071957-c46468756c01/go.mod h1:xOoGZrtUT+A5izWfHSJgl0gYZUE7lu7Z2XIS1vWG/QQ=
 github.com/initia-labs/movevm v0.3.4 h1:kzqs6uzTq0f5peZJNzLq/1qgnmAFfC+I9eCyPBducxM=
