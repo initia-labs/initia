@@ -31,7 +31,7 @@ jobs:
           fi
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
           echo "ARCH_NAME=aarch64" >> $GITHUB_ENV
-          
+
       - name: Build for ARM64
         env:
           DOCKER_BUILDKIT: 1
@@ -70,9 +70,12 @@ jobs:
 
       - name: List files
         run: ls -l
-        
+
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-              ./initia_${{ env.VERSION }}_Linux_${{ env.ARCH_NAME }}.tar.gz
+            ./initia_${{ env.VERSION }}_Linux_${{ env.ARCH_NAME }}.tar.gz
+        env:
+          Version: ${{ env.VERSION }}
+          ARCH_NAME: ${{ env.ARCH_NAME }}
