@@ -50702,13 +50702,14 @@ paths:
                         - COMPATIBLE
                         - IMMUTABLE
                       default: UNSPECIFIED
-                      description: |-
-                        UpgradePolicy
-                        * `compatible`
-                            Whether a compatibility check should be performed for upgrades. The check only passes if
-                            a new module has (a) the same public functions (b) for existing resources, no layout change.
-                        * `immutable`
-                            Whether the modules in the package are immutable and cannot be upgraded.
+                      description: >-
+                        UpgradePolicy is the policy for upgrading a move module.
+
+                         - UNSPECIFIED: UNSPECIFIED: a placeholder for an unspecified upgrade policy.
+                         - COMPATIBLE: COMPATBILE: Whether a compatibility check should be performed for upgrades. The check only passes if
+                        a new module has (a) the same public functions (b) for
+                        existing resources, no layout change.
+                         - IMMUTABLE: IMMUTABLE: Whether the modules in the package are immutable and cannot be upgraded.
                   title: |-
                     Module is data for the uploaded contract move code
                     ex) 0000000000000000000000000000000000000001/0/BasicCoin
@@ -50849,13 +50850,14 @@ paths:
                       - COMPATIBLE
                       - IMMUTABLE
                     default: UNSPECIFIED
-                    description: |-
-                      UpgradePolicy
-                      * `compatible`
-                          Whether a compatibility check should be performed for upgrades. The check only passes if
-                          a new module has (a) the same public functions (b) for existing resources, no layout change.
-                      * `immutable`
-                          Whether the modules in the package are immutable and cannot be upgraded.
+                    description: >-
+                      UpgradePolicy is the policy for upgrading a move module.
+
+                       - UNSPECIFIED: UNSPECIFIED: a placeholder for an unspecified upgrade policy.
+                       - COMPATIBLE: COMPATBILE: Whether a compatibility check should be performed for upgrades. The check only passes if
+                      a new module has (a) the same public functions (b) for
+                      existing resources, no layout change.
+                       - IMMUTABLE: IMMUTABLE: Whether the modules in the package are immutable and cannot be upgraded.
                 title: |-
                   Module is data for the uploaded contract move code
                   ex) 0000000000000000000000000000000000000001/0/BasicCoin
@@ -52554,8 +52556,165 @@ paths:
           format: uint64
       tags:
         - Query
+  /opinit/ophost/v1/bridges/{bridge_id}/batch_infos:
+    get:
+      summary: BatchInfos queries all batch infos.
+      operationId: BatchInfos
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              batch_infos:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    batch_info:
+                      type: object
+                      properties:
+                        submitter:
+                          type: string
+                          description: The address of the batch submitter.
+                        chain:
+                          type: string
+                          title: The target chain
+                      description: BatchInfo defines the set of batch information.
+                    output:
+                      type: object
+                      properties:
+                        output_root:
+                          type: string
+                          format: byte
+                          description: Hash of the l2 output.
+                        l1_block_time:
+                          type: string
+                          format: date-time
+                          description: >-
+                            Timestamp of the l1 block that the output root was
+                            submitted in.
+                        l2_block_number:
+                          type: string
+                          format: uint64
+                          description: >-
+                            The l2 block number that the output root was
+                            submitted in.
+                      description: Output is a l2 block submitted by proposer.
+                  description: >-
+                    BatchInfoWithOutput defines the batch information with
+                    output.
+              pagination:
+                description: pagination defines the pagination in the response.
+                type: object
+                properties:
+                  next_key:
+                    type: string
+                    format: byte
+                    description: |-
+                      next_key is the key to be passed to PageRequest.key to
+                      query the next page most efficiently. It will be empty if
+                      there are no more results.
+                  total:
+                    type: string
+                    format: uint64
+                    title: >-
+                      total is total number of results available if
+                      PageRequest.count_total
+
+                      was set, its value is undefined otherwise
+            description: >-
+              QueryBatchInfosResponse is response type for Query/BatchInfos RPC
+              method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: bridge_id
+          in: path
+          required: true
+          type: string
+          format: uint64
+        - name: pagination.key
+          description: |-
+            key is a value returned in PageResponse.next_key to begin
+            querying the next page most efficiently. Only one of offset or key
+            should be set.
+          in: query
+          required: false
+          type: string
+          format: byte
+        - name: pagination.offset
+          description: >-
+            offset is a numeric offset that can be used when key is unavailable.
+
+            It is less efficient than using key. Only one of offset or key
+            should
+
+            be set.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.limit
+          description: >-
+            limit is the total number of results to be returned in the result
+            page.
+
+            If left empty it will default to a value to be set by each app.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.count_total
+          description: >-
+            count_total is set to true  to indicate that the result set should
+            include
+
+            a count of the total number of items available for pagination in
+            UIs.
+
+            count_total is only respected when offset is used. It is ignored
+            when key
+
+            is set.
+          in: query
+          required: false
+          type: boolean
+        - name: pagination.reverse
+          description: >-
+            reverse is set to true if results are to be returned in the
+            descending order.
+
+
+            Since: cosmos-sdk 0.43
+          in: query
+          required: false
+          type: boolean
+      tags:
+        - Query
   /opinit/ophost/v1/bridges/{bridge_id}/last_finalized_output:
     get:
+      summary: LastFinalizedOutput queries last finalized output.
       operationId: LastFinalizedOutput
       responses:
         '200':
@@ -52584,6 +52743,55 @@ paths:
                     format: uint64
                     description: The l2 block number that the output root was submitted in.
                 description: Output is a l2 block submitted by proposer.
+            title: >-
+              QueryLastFinalizedOutputResponse is response type for the
+              Query/LastFinalizedOutput RPC method
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: bridge_id
+          in: path
+          required: true
+          type: string
+          format: uint64
+      tags:
+        - Query
+  /opinit/ophost/v1/bridges/{bridge_id}/next_l1_sequence:
+    get:
+      summary: NextL1Sequence queries the next l1 sequence.
+      operationId: NextL1Sequence
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              next_l1_sequence:
+                type: string
+                format: uint64
+            description: >-
+              QueryNextL1SequenceResponse is response type for the
+              Query/NextL1Sequence RPC method.
         default:
           description: An unexpected error response.
           schema:
@@ -52706,11 +52914,6 @@ paths:
         - name: bridge_id
           in: path
           required: true
-          type: string
-          format: uint64
-        - name: output_index
-          in: query
-          required: false
           type: string
           format: uint64
         - name: pagination.key
@@ -53079,6 +53282,56 @@ paths:
           in: query
           required: false
           type: string
+      tags:
+        - Query
+  /opinit/ophost/v1/bridges/{bridge_id}/withdrawals/claimed/by_hash:
+    get:
+      summary: Claimed queries whether the output is claimed.
+      operationId: Claimed
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              claimed:
+                type: boolean
+            title: >-
+              QueryClaimedResponse is response type for the Query/Claimed RPC
+              method
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: bridge_id
+          in: path
+          required: true
+          type: string
+          format: uint64
+        - name: withdrawal_hash
+          in: query
+          required: false
+          type: string
+          format: byte
       tags:
         - Query
   /opinit/ophost/v1/params:
@@ -86266,13 +86519,14 @@ definitions:
           - COMPATIBLE
           - IMMUTABLE
         default: UNSPECIFIED
-        description: |-
-          UpgradePolicy
-          * `compatible`
-              Whether a compatibility check should be performed for upgrades. The check only passes if
-              a new module has (a) the same public functions (b) for existing resources, no layout change.
-          * `immutable`
-              Whether the modules in the package are immutable and cannot be upgraded.
+        description: >-
+          UpgradePolicy is the policy for upgrading a move module.
+
+           - UNSPECIFIED: UNSPECIFIED: a placeholder for an unspecified upgrade policy.
+           - COMPATIBLE: COMPATBILE: Whether a compatibility check should be performed for upgrades. The check only passes if
+          a new module has (a) the same public functions (b) for existing
+          resources, no layout change.
+           - IMMUTABLE: IMMUTABLE: Whether the modules in the package are immutable and cannot be upgraded.
     title: |-
       Module is data for the uploaded contract move code
       ex) 0000000000000000000000000000000000000001/0/BasicCoin
@@ -86382,13 +86636,14 @@ definitions:
               - COMPATIBLE
               - IMMUTABLE
             default: UNSPECIFIED
-            description: |-
-              UpgradePolicy
-              * `compatible`
-                  Whether a compatibility check should be performed for upgrades. The check only passes if
-                  a new module has (a) the same public functions (b) for existing resources, no layout change.
-              * `immutable`
-                  Whether the modules in the package are immutable and cannot be upgraded.
+            description: >-
+              UpgradePolicy is the policy for upgrading a move module.
+
+               - UNSPECIFIED: UNSPECIFIED: a placeholder for an unspecified upgrade policy.
+               - COMPATIBLE: COMPATBILE: Whether a compatibility check should be performed for upgrades. The check only passes if
+              a new module has (a) the same public functions (b) for existing
+              resources, no layout change.
+               - IMMUTABLE: IMMUTABLE: Whether the modules in the package are immutable and cannot be upgraded.
         title: |-
           Module is data for the uploaded contract move code
           ex) 0000000000000000000000000000000000000001/0/BasicCoin
@@ -86419,13 +86674,14 @@ definitions:
                 - COMPATIBLE
                 - IMMUTABLE
               default: UNSPECIFIED
-              description: |-
-                UpgradePolicy
-                * `compatible`
-                    Whether a compatibility check should be performed for upgrades. The check only passes if
-                    a new module has (a) the same public functions (b) for existing resources, no layout change.
-                * `immutable`
-                    Whether the modules in the package are immutable and cannot be upgraded.
+              description: >-
+                UpgradePolicy is the policy for upgrading a move module.
+
+                 - UNSPECIFIED: UNSPECIFIED: a placeholder for an unspecified upgrade policy.
+                 - COMPATIBLE: COMPATBILE: Whether a compatibility check should be performed for upgrades. The check only passes if
+                a new module has (a) the same public functions (b) for existing
+                resources, no layout change.
+                 - IMMUTABLE: IMMUTABLE: Whether the modules in the package are immutable and cannot be upgraded.
           title: |-
             Module is data for the uploaded contract move code
             ex) 0000000000000000000000000000000000000001/0/BasicCoin
@@ -86928,13 +87184,14 @@ definitions:
       - COMPATIBLE
       - IMMUTABLE
     default: UNSPECIFIED
-    description: |-
-      UpgradePolicy
-      * `compatible`
-          Whether a compatibility check should be performed for upgrades. The check only passes if
-          a new module has (a) the same public functions (b) for existing resources, no layout change.
-      * `immutable`
-          Whether the modules in the package are immutable and cannot be upgraded.
+    description: >-
+      UpgradePolicy is the policy for upgrading a move module.
+
+       - UNSPECIFIED: UNSPECIFIED: a placeholder for an unspecified upgrade policy.
+       - COMPATIBLE: COMPATBILE: Whether a compatibility check should be performed for upgrades. The check only passes if
+      a new module has (a) the same public functions (b) for existing resources,
+      no layout change.
+       - IMMUTABLE: IMMUTABLE: Whether the modules in the package are immutable and cannot be upgraded.
   initia.move.v1.VMEvent:
     type: object
     properties:
@@ -87032,6 +87289,36 @@ definitions:
         type: string
         title: The target chain
     description: BatchInfo defines the set of batch information.
+  opinit.ophost.v1.BatchInfoWithOutput:
+    type: object
+    properties:
+      batch_info:
+        type: object
+        properties:
+          submitter:
+            type: string
+            description: The address of the batch submitter.
+          chain:
+            type: string
+            title: The target chain
+        description: BatchInfo defines the set of batch information.
+      output:
+        type: object
+        properties:
+          output_root:
+            type: string
+            format: byte
+            description: Hash of the l2 output.
+          l1_block_time:
+            type: string
+            format: date-time
+            description: Timestamp of the l1 block that the output root was submitted in.
+          l2_block_number:
+            type: string
+            format: uint64
+            description: The l2 block number that the output root was submitted in.
+        description: Output is a l2 block submitted by proposer.
+    description: BatchInfoWithOutput defines the batch information with output.
   opinit.ophost.v1.BridgeConfig:
     type: object
     properties:
@@ -87113,6 +87400,63 @@ definitions:
             signatures required by gogoproto.
         description: The amount to be paid by l2 creator.
     description: Params defines the set of ophost parameters.
+  opinit.ophost.v1.QueryBatchInfosResponse:
+    type: object
+    properties:
+      batch_infos:
+        type: array
+        items:
+          type: object
+          properties:
+            batch_info:
+              type: object
+              properties:
+                submitter:
+                  type: string
+                  description: The address of the batch submitter.
+                chain:
+                  type: string
+                  title: The target chain
+              description: BatchInfo defines the set of batch information.
+            output:
+              type: object
+              properties:
+                output_root:
+                  type: string
+                  format: byte
+                  description: Hash of the l2 output.
+                l1_block_time:
+                  type: string
+                  format: date-time
+                  description: >-
+                    Timestamp of the l1 block that the output root was submitted
+                    in.
+                l2_block_number:
+                  type: string
+                  format: uint64
+                  description: The l2 block number that the output root was submitted in.
+              description: Output is a l2 block submitted by proposer.
+          description: BatchInfoWithOutput defines the batch information with output.
+      pagination:
+        description: pagination defines the pagination in the response.
+        type: object
+        properties:
+          next_key:
+            type: string
+            format: byte
+            description: |-
+              next_key is the key to be passed to PageRequest.key to
+              query the next page most efficiently. It will be empty if
+              there are no more results.
+          total:
+            type: string
+            format: uint64
+            title: >-
+              total is total number of results available if
+              PageRequest.count_total
+
+              was set, its value is undefined otherwise
+    description: QueryBatchInfosResponse is response type for Query/BatchInfos RPC method.
   opinit.ophost.v1.QueryBridgeResponse:
     type: object
     properties:
@@ -87248,6 +87592,12 @@ definitions:
 
               was set, its value is undefined otherwise
     title: QueryBridgesResponse is response type for the Query/Bridges RPC method
+  opinit.ophost.v1.QueryClaimedResponse:
+    type: object
+    properties:
+      claimed:
+        type: boolean
+    title: QueryClaimedResponse is response type for the Query/Claimed RPC method
   opinit.ophost.v1.QueryLastFinalizedOutputResponse:
     type: object
     properties:
@@ -87270,6 +87620,18 @@ definitions:
             format: uint64
             description: The l2 block number that the output root was submitted in.
         description: Output is a l2 block submitted by proposer.
+    title: >-
+      QueryLastFinalizedOutputResponse is response type for the
+      Query/LastFinalizedOutput RPC method
+  opinit.ophost.v1.QueryNextL1SequenceResponse:
+    type: object
+    properties:
+      next_l1_sequence:
+        type: string
+        format: uint64
+    description: >-
+      QueryNextL1SequenceResponse is response type for the Query/NextL1Sequence
+      RPC method.
   opinit.ophost.v1.QueryOutputProposalResponse:
     type: object
     properties:
