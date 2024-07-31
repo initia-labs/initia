@@ -1181,7 +1181,6 @@ func NewInitiaApp(
 
 	// Create the vote extensions handler that will be used to extend and verify
 	// vote extensions (i.e. oracle data).
-	cps := currencypair.NewDeltaCurrencyPairStrategy(app.OracleKeeper)
 	veCodec := compression.NewCompressionVoteExtensionCodec(
 		compression.NewDefaultVoteExtensionCodec(),
 		compression.NewZLibCompressor(),
@@ -1197,7 +1196,7 @@ func NewInitiaApp(
 		app.Logger(),
 		app.OracleClient,
 		time.Second,
-		cps,
+		currencypair.NewHashCurrencyPairStrategy(app.OracleKeeper),
 		veCodec,
 		aggregator.NewOraclePriceApplier(
 			aggregator.NewDefaultVoteAggregator(
@@ -1205,7 +1204,7 @@ func NewInitiaApp(
 				aggregatorFn,
 				// we need a separate price strategy here, so that we can optimistically apply the latest prices
 				// and extend our vote based on these prices
-				currencypair.NewDeltaCurrencyPairStrategy(app.OracleKeeper),
+				currencypair.NewHashCurrencyPairStrategy(app.OracleKeeper),
 			),
 			app.OracleKeeper,
 			veCodec,
