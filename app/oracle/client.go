@@ -10,11 +10,13 @@ import (
 	"cosmossdk.io/log"
 
 	"github.com/skip-mev/slinky/oracle/config"
+	slinkygrpc "github.com/skip-mev/slinky/pkg/grpc"
 	oracleclient "github.com/skip-mev/slinky/service/clients/oracle"
 	"github.com/skip-mev/slinky/service/metrics"
 	oracleservertypes "github.com/skip-mev/slinky/service/servers/oracle/types"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/credentials/insecure"
 
 	l2slinky "github.com/initia-labs/OPinit/x/opchild/l2slinky"
@@ -172,10 +174,6 @@ func (c *GRPCClient) createConnection(ctx context.Context) error {
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
 
-	if c.blockingDial {
-		opts = append(opts, grpc.WithBlock())
-	}
-
 	// dial the client, but defer to context closure, if necessary
 	var (
 		conn *grpc.ClientConn
@@ -184,7 +182,17 @@ func (c *GRPCClient) createConnection(ctx context.Context) error {
 	)
 	go func() {
 		defer close(done)
-		conn, err = grpc.DialContext(ctx, c.addr, opts...)
+		conn, err = slinkygrpc.NewClient(c.addr, opts...)
+
+		// attempt to connect + wait for change in connection state
+		if c.blockingDial {
+			// connect
+			conn.Connect()
+
+			if err == nil {
+				conn.WaitForStateChange(ctx, connectivity.Ready)
+			}
+		}
 	}()
 
 	// wait for either the context to close or the dial to complete
@@ -198,8 +206,10 @@ func (c *GRPCClient) createConnection(ctx context.Context) error {
 		return fmt.Errorf("failed to dial oracle gRPC server: %w", err)
 	}
 
+	c.mutex.Lock()
 	c.client = oracleservertypes.NewOracleClient(conn)
 	c.conn = conn
+	c.mutex.Unlock()
 
 	c.logger.Info("oracle client started")
 
@@ -230,4 +240,27 @@ func (c *GRPCClient) MarketMap(
 	}
 
 	return c.client.MarketMap(ctx, req, grpc.WaitForReady(true))
+}
+
+// Version returns the version of the oracle service.
+func (c *GRPCClient) Version(ctx context.Context, req *oracleservertypes.QueryVersionRequest, _ ...grpc.CallOption) (res *oracleservertypes.QueryVersionResponse, err error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	start := time.Now()
+	defer func() {
+		// Observe the duration of the call as well as the error.
+		c.metrics.ObserveOracleResponseLatency(time.Since(start))
+		c.metrics.AddOracleResponse(metrics.StatusFromError(err))
+	}()
+
+	// set deadline on the context
+	ctx, cancel := context.WithTimeout(ctx, c.timeout)
+	defer cancel()
+
+	if c.client == nil {
+		return nil, fmt.Errorf("oracle client not started")
+	}
+
+	return c.client.Version(ctx, req, grpc.WaitForReady(true))
 }
