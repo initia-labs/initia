@@ -164,6 +164,7 @@ import (
 	// slinky oracle dependencies
 	oraclepreblock "github.com/skip-mev/slinky/abci/preblock/oracle"
 	oracleproposals "github.com/skip-mev/slinky/abci/proposals"
+	"github.com/skip-mev/slinky/abci/strategies/aggregator"
 	compression "github.com/skip-mev/slinky/abci/strategies/codec"
 	"github.com/skip-mev/slinky/abci/strategies/currencypair"
 	"github.com/skip-mev/slinky/abci/ve"
@@ -582,6 +583,7 @@ func NewInitiaApp(
 		runtime.NewKVStoreService(keys[forwardingtypes.StoreKey]),
 		runtime.NewTransientStoreService(tkeys[forwardingtypes.TransientStoreKey]),
 		appheaderinfo.NewHeaderInfoService(),
+		runtime.ProvideEventService(),
 		authorityAddr,
 		app.AccountKeeper,
 		app.BankKeeper,
@@ -1150,12 +1152,17 @@ func NewInitiaApp(
 	app.SetPrepareProposal(oracleProposalHandler.PrepareProposalHandler())
 	app.SetProcessProposal(oracleProposalHandler.ProcessProposalHandler())
 
+	// Create the aggregation function that will be used to aggregate oracle data
+	// from each validator.
+	aggregatorFn := voteweighted.MedianFromContext(
+		app.Logger(),
+		stakingkeeper.NewCompatibilityKeeper(app.StakingKeeper),
+		voteweighted.DefaultPowerThreshold,
+	)
+
 	app.oraclePreBlockHandler = oraclepreblock.NewOraclePreBlockHandler(
 		app.Logger(),
-		voteweighted.MedianFromContext(
-			app.Logger(),
-			stakingkeeper.NewCompatibilityKeeper(app.StakingKeeper),
-			voteweighted.DefaultPowerThreshold),
+		aggregatorFn,
 		app.OracleKeeper,
 		serviceMetrics,
 		currencypair.NewHashCurrencyPairStrategy(app.OracleKeeper),
@@ -1169,6 +1176,20 @@ func NewInitiaApp(
 		),
 	)
 
+	// see app.PreBlocker
+	// app.SetPreBlocker(oraclePreBlockHandler.WrappedPreBlocker(app.ModuleManager))
+
+	// Create the vote extensions handler that will be used to extend and verify
+	// vote extensions (i.e. oracle data).
+	veCodec := compression.NewCompressionVoteExtensionCodec(
+		compression.NewDefaultVoteExtensionCodec(),
+		compression.NewZLibCompressor(),
+	)
+	extCommitCodec := compression.NewCompressionExtendedCommitCodec(
+		compression.NewDefaultExtendedCommitCodec(),
+		compression.NewZStdCompressor(),
+	)
+
 	// Create the vote extensions handler that will be used to extend and verify
 	// vote extensions (i.e. oracle data).
 	voteExtensionsHandler := ve.NewVoteExtensionHandler(
@@ -1176,11 +1197,20 @@ func NewInitiaApp(
 		app.OracleClient,
 		time.Second,
 		currencypair.NewHashCurrencyPairStrategy(app.OracleKeeper),
-		compression.NewCompressionVoteExtensionCodec(
-			compression.NewDefaultVoteExtensionCodec(),
-			compression.NewZLibCompressor(),
+		veCodec,
+		aggregator.NewOraclePriceApplier(
+			aggregator.NewDefaultVoteAggregator(
+				app.Logger(),
+				aggregatorFn,
+				// we need a separate price strategy here, so that we can optimistically apply the latest prices
+				// and extend our vote based on these prices
+				currencypair.NewHashCurrencyPairStrategy(app.OracleKeeper),
+			),
+			app.OracleKeeper,
+			veCodec,
+			extCommitCodec,
+			app.Logger(),
 		),
-		app.oraclePreBlockHandler.PreBlocker(),
 		serviceMetrics,
 	)
 	app.SetExtendVoteHandler(voteExtensionsHandler.ExtendVoteHandler())
@@ -1272,13 +1302,7 @@ func (app *InitiaApp) Name() string { return app.BaseApp.Name() }
 
 // PreBlocker application updates every pre block
 func (app *InitiaApp) PreBlocker(ctx sdk.Context, req *abci.RequestFinalizeBlock) (*sdk.ResponsePreBlock, error) {
-	res, err := app.ModuleManager.PreBlock(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = app.oraclePreBlockHandler.PreBlocker()(ctx, req)
-	return res, err
+	return app.oraclePreBlockHandler.WrappedPreBlocker(app.ModuleManager)(ctx, req)
 }
 
 // BeginBlocker application updates every begin block
