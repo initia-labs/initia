@@ -166,7 +166,18 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig, b
 			AddFlags: addModuleInitFlags,
 			PostSetup: func(svrCtx *server.Context, clientCtx client.Context, ctx context.Context, g *errgroup.Group) error {
 				g.Go(func() error {
-					return a.app.StartOracleClient(ctx)
+					errCh := make(chan error, 1)
+					go func() {
+						err := a.app.StartOracleClient(ctx)
+						errCh <- err
+					}()
+
+					select {
+					case err := <-errCh:
+						return err
+					case <-ctx.Done():
+						return nil
+					}
 				})
 
 				return nil
