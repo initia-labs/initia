@@ -73,12 +73,16 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/group"
 	groupkeeper "github.com/cosmos/cosmos-sdk/x/group/keeper"
 	groupmodule "github.com/cosmos/cosmos-sdk/x/group/module"
+	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	"github.com/cosmos/gogoproto/proto"
 
 	packetforward "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward"
 	packetforwardkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/keeper"
 	packetforwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types"
+	ratelimit "github.com/cosmos/ibc-apps/modules/rate-limiting/v8"
+	ratelimitkeeper "github.com/cosmos/ibc-apps/modules/rate-limiting/v8/keeper"
+	ratelimittypes "github.com/cosmos/ibc-apps/modules/rate-limiting/v8/types"
 	"github.com/cosmos/ibc-go/modules/capability"
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
@@ -282,6 +286,7 @@ type InitiaApp struct {
 	OracleKeeper          *oraclekeeper.Keeper // x/oracle keeper used for the slinky oracle
 	MarketMapKeeper       *marketmapkeeper.Keeper
 	ForwardingKeeper      *forwardingkeeper.Keeper
+	RatelimitKeeper       *ratelimitkeeper.Keeper
 
 	// other slinky oracle services
 	OracleClient          oracleclient.OracleClient
@@ -351,7 +356,7 @@ func NewInitiaApp(
 		icacontrollertypes.StoreKey, ibcfeetypes.StoreKey, ibcpermtypes.StoreKey,
 		movetypes.StoreKey, auctiontypes.StoreKey, ophosttypes.StoreKey,
 		oracletypes.StoreKey, packetforwardtypes.StoreKey, ibchookstypes.StoreKey,
-		forwardingtypes.StoreKey, marketmaptypes.StoreKey,
+		forwardingtypes.StoreKey, marketmaptypes.StoreKey, ratelimittypes.StoreKey,
 	)
 	tkeys := storetypes.NewTransientStoreKeys(forwardingtypes.TransientStoreKey)
 	memKeys := storetypes.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
@@ -601,8 +606,9 @@ func NewInitiaApp(
 	var transferStack porttypes.IBCModule
 	{
 		packetForwardKeeper := &packetforwardkeeper.Keeper{}
+		rateLimitKeeper := &ratelimitkeeper.Keeper{}
 
-		// Create Transfer Keepers
+		// create Transfer Keepers
 		transferKeeper := ibctransferkeeper.NewKeeper(
 			appCodec,
 			keys[ibctransfertypes.StoreKey],
@@ -635,8 +641,8 @@ func NewInitiaApp(
 			app.IBCKeeper.ChannelKeeper,
 			app.DistrKeeper,
 			app.BankKeeper,
-			// ics4wrapper: transfer -> packet forward -> fee
-			app.IBCFeeKeeper,
+			// ics4wrapper: transfer -> packet forward -> rate limit
+			rateLimitKeeper,
 			authorityAddr,
 		)
 		app.PacketForwardKeeper = packetForwardKeeper
@@ -649,9 +655,29 @@ func NewInitiaApp(
 			packetforwardkeeper.DefaultRefundTransferPacketTimeoutTimestamp,
 		)
 
+		// create the rate limit keeper
+		*rateLimitKeeper = *ratelimitkeeper.NewKeeper(
+			appCodec,
+			runtime.NewKVStoreService(keys[ratelimittypes.StoreKey]),
+			paramtypes.Subspace{}, // empty params
+			authorityAddr,
+			app.BankKeeper,
+			app.IBCKeeper.ChannelKeeper,
+			// ics4wrapper: transfer -> packet forward -> rate limit -> fee
+			app.IBCFeeKeeper,
+		)
+		app.RatelimitKeeper = rateLimitKeeper
+
+		// rate limit middleware
+		transferStack = ratelimit.NewIBCMiddleware(
+			*app.RatelimitKeeper,
+			// receive: rate limit -> packet forward -> forwarding -> transfer
+			transferStack,
+		)
+
 		// create move middleware for transfer
 		transferStack = ibchooks.NewIBCMiddleware(
-			// receive: move -> packet forward -> forwarding -> transfer
+			// receive: move -> rate limit -> packet forward -> forwarding -> transfer
 			transferStack,
 			ibchooks.NewICS4Middleware(
 				nil, /* ics4wrapper: not used */
@@ -662,14 +688,14 @@ func NewInitiaApp(
 
 		// create ibcfee middleware for transfer
 		transferStack = ibcfee.NewIBCMiddleware(
-			// receive: fee -> move -> packet forward -> forwarding -> transfer
+			// receive: fee -> move -> rate limit -> packet forward -> forwarding -> transfer
 			transferStack,
 			*app.IBCFeeKeeper,
 		)
 
 		// create perm middleware for transfer
 		transferStack = ibcperm.NewIBCMiddleware(
-			// receive: perm -> fee -> move -> packet forward -> forwarding -> transfer
+			// receive: perm -> fee -> move -> rate limit -> packet forward -> forwarding -> transfer
 			transferStack,
 			// ics4wrapper: not used
 			nil,
@@ -740,6 +766,8 @@ func NewInitiaApp(
 			app.MsgServiceRouter(),
 			authorityAddr,
 		)
+		icaHostKeeper.WithQueryRouter(app.BaseApp.GRPCQueryRouter())
+		// icaHostKeeper.WithICS4Wrapper()
 		app.ICAHostKeeper = &icaHostKeeper
 
 		icaControllerKeeper := icacontrollerkeeper.NewKeeper(
@@ -752,6 +780,7 @@ func NewInitiaApp(
 			app.MsgServiceRouter(),
 			authorityAddr,
 		)
+		// icaControllerKeeper.WithICS4Wrapper()
 		app.ICAControllerKeeper = &icaControllerKeeper
 
 		icaAuthKeeper := icaauthkeeper.NewKeeper(
@@ -903,6 +932,7 @@ func NewInitiaApp(
 		packetforward.NewAppModule(app.PacketForwardKeeper, nil),
 		ibchooks.NewAppModule(appCodec, *app.IBCHooksKeeper),
 		forwarding.NewAppModule(app.ForwardingKeeper),
+		ratelimit.NewAppModule(appCodec, *app.RatelimitKeeper),
 	)
 
 	// BasicModuleManager defines the module BasicManager is in charge of setting up basic,
@@ -939,6 +969,7 @@ func NewInitiaApp(
 		ibcexported.ModuleName,
 		oracletypes.ModuleName,
 		marketmaptypes.ModuleName,
+		ratelimittypes.ModuleName,
 	)
 
 	app.ModuleManager.SetOrderEndBlockers(
@@ -952,6 +983,7 @@ func NewInitiaApp(
 		oracletypes.ModuleName,
 		marketmaptypes.ModuleName,
 		forwardingtypes.ModuleName,
+		ratelimittypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -968,7 +1000,7 @@ func NewInitiaApp(
 		ibcnfttransfertypes.ModuleName, icatypes.ModuleName, icaauthtypes.ModuleName, ibcfeetypes.ModuleName,
 		ibcpermtypes.ModuleName, consensusparamtypes.ModuleName, auctiontypes.ModuleName, ophosttypes.ModuleName,
 		oracletypes.ModuleName, marketmaptypes.ModuleName, packetforwardtypes.ModuleName, ibchookstypes.ModuleName,
-		forwardingtypes.ModuleName,
+		forwardingtypes.ModuleName, ratelimittypes.ModuleName,
 	}
 	app.ModuleManager.SetOrderInitGenesis(genesisModuleOrder...)
 	app.ModuleManager.SetOrderExportGenesis(genesisModuleOrder...)
