@@ -47,6 +47,10 @@ type SenderAccount struct {
 	SenderAccount sdk.AccountI
 }
 
+const (
+	DefaultGenesisAccBalance = "10000000000000000000"
+)
+
 // TestChain is a testing struct that wraps a simapp with the last TM Header, the current ABCI
 // header and the validators of the TestChain. It also contains a field called ChainID. This
 // is the clientID that *other* chains use to refer to this TestChain. The SenderAccount
@@ -109,7 +113,7 @@ func NewTestChainWithValSet(t *testing.T, coord *Coordinator, chainID string, va
 	for i := 0; i < MaxAccounts; i++ {
 		senderPrivKey := secp256k1.GenPrivKey()
 		acc := authtypes.NewBaseAccount(senderPrivKey.PubKey().Address().Bytes(), senderPrivKey.PubKey(), uint64(i), 0)
-		amount, ok := math.NewIntFromString("10000000000000000000")
+		amount, ok := math.NewIntFromString(DefaultGenesisAccBalance)
 		require.True(t, ok)
 
 		// add sender account
@@ -278,9 +282,9 @@ func (chain *TestChain) QueryConsensusStateProof(clientID string) ([]byte, clien
 
 	consensusHeight := clientState.GetLatestHeight().(clienttypes.Height)
 	consensusKey := host.FullConsensusStateKey(clientID, consensusHeight)
-	proofConsensus, _ := chain.QueryProof(consensusKey)
+	consensusProof, _ := chain.QueryProof(consensusKey)
 
-	return proofConsensus, consensusHeight
+	return consensusProof, consensusHeight
 }
 
 // NextBlock sets the last header to the current header and increments the current header to be
@@ -310,7 +314,7 @@ func (chain *TestChain) commitBlock(res *abci.ResponseFinalizeBlock) {
 	// val set changes returned from previous block get applied to the next validators
 	// of this block. See tendermint spec for details.
 	chain.Vals = chain.NextVals
-	chain.NextVals = ApplyValSetChanges(chain.T, chain.Vals, res.ValidatorUpdates)
+	chain.NextVals = ApplyValSetChanges(chain, chain.Vals, res.ValidatorUpdates)
 
 	// increment the current header
 	chain.CurrentHeader = cmtproto.Header{
@@ -343,6 +347,14 @@ func (chain *TestChain) SendMsgs(msgs ...sdk.Msg) (*abci.ExecTxResult, error) {
 	// ensure the chain has the latest time
 	chain.Coordinator.UpdateTimeForChain(chain)
 
+	// increment acc sequence regardless of success or failure tx execution
+	defer func() {
+		err := chain.SenderAccount.SetSequence(chain.SenderAccount.GetSequence() + 1)
+		if err != nil {
+			panic(err)
+		}
+	}()
+
 	resp, err := simapp.SignAndDeliver(
 		chain.T,
 		chain.TxConfig,
@@ -356,7 +368,9 @@ func (chain *TestChain) SendMsgs(msgs ...sdk.Msg) (*abci.ExecTxResult, error) {
 		chain.NextVals.Hash(),
 		chain.SenderPrivKey,
 	)
-	require.NoError(chain.T, err)
+	if err != nil {
+		return nil, err
+	}
 
 	chain.commitBlock(resp)
 
@@ -364,12 +378,8 @@ func (chain *TestChain) SendMsgs(msgs ...sdk.Msg) (*abci.ExecTxResult, error) {
 	txResult := resp.TxResults[0]
 
 	if txResult.Code != 0 {
-		require.Fail(chain.T, fmt.Sprintf("%s/%d: %q", txResult.Codespace, txResult.Code, txResult.Log))
+		return txResult, fmt.Errorf("%s/%d: %q", txResult.Codespace, txResult.Code, txResult.Log)
 	}
-
-	// increment sequence for successful transaction execution
-	err = chain.SenderAccount.SetSequence(chain.SenderAccount.GetSequence() + 1)
-	require.NoError(chain.T, err)
 
 	chain.Coordinator.IncrementTime()
 
@@ -452,7 +462,6 @@ func (chain *TestChain) ConstructUpdateTMClientHeaderWithTrustedHeight(counterpa
 	if trustedHeight.IsZero() {
 		trustedHeight = chain.GetClientState(clientID).GetLatestHeight().(clienttypes.Height)
 	}
-
 	var (
 		tmTrustedVals *cmttypes.ValidatorSet
 		ok            bool
@@ -583,11 +592,11 @@ func (chain *TestChain) CreatePortCapability(scopedKeeper capabilitykeeper.Scope
 	_, ok := chain.App.GetScopedIBCKeeper().GetCapability(chain.GetContext(), host.PortPath(portID))
 	if !ok {
 		// create capability using the IBC capability keeper
-		cap, err := chain.App.GetScopedIBCKeeper().NewCapability(chain.GetContext(), host.PortPath(portID))
+		capability, err := chain.App.GetScopedIBCKeeper().NewCapability(chain.GetContext(), host.PortPath(portID))
 		require.NoError(chain.T, err)
 
 		// claim capability using the scopedKeeper
-		err = scopedKeeper.ClaimCapability(chain.GetContext(), cap, host.PortPath(portID))
+		err = scopedKeeper.ClaimCapability(chain.GetContext(), capability, host.PortPath(portID))
 		require.NoError(chain.T, err)
 	}
 
@@ -597,10 +606,10 @@ func (chain *TestChain) CreatePortCapability(scopedKeeper capabilitykeeper.Scope
 // GetPortCapability returns the port capability for the given portID. The capability must
 // exist, otherwise testing will fail.
 func (chain *TestChain) GetPortCapability(portID string) *capabilitytypes.Capability {
-	cap, ok := chain.App.GetScopedIBCKeeper().GetCapability(chain.GetContext(), host.PortPath(portID))
+	capability, ok := chain.App.GetScopedIBCKeeper().GetCapability(chain.GetContext(), host.PortPath(portID))
 	require.True(chain.T, ok)
 
-	return cap
+	return capability
 }
 
 // CreateChannelCapability binds and claims a capability for the given portID and channelID
@@ -611,9 +620,9 @@ func (chain *TestChain) CreateChannelCapability(scopedKeeper capabilitykeeper.Sc
 	// check if the portId is already binded, if not bind it
 	_, ok := chain.App.GetScopedIBCKeeper().GetCapability(chain.GetContext(), capName)
 	if !ok {
-		cap, err := chain.App.GetScopedIBCKeeper().NewCapability(chain.GetContext(), capName)
+		capability, err := chain.App.GetScopedIBCKeeper().NewCapability(chain.GetContext(), capName)
 		require.NoError(chain.T, err)
-		err = scopedKeeper.ClaimCapability(chain.GetContext(), cap, capName)
+		err = scopedKeeper.ClaimCapability(chain.GetContext(), capability, capName)
 		require.NoError(chain.T, err)
 	}
 
@@ -623,14 +632,21 @@ func (chain *TestChain) CreateChannelCapability(scopedKeeper capabilitykeeper.Sc
 // GetChannelCapability returns the channel capability for the given portID and channelID.
 // The capability must exist, otherwise testing will fail.
 func (chain *TestChain) GetChannelCapability(portID, channelID string) *capabilitytypes.Capability {
-	cap, ok := chain.App.GetScopedIBCKeeper().GetCapability(chain.GetContext(), host.ChannelCapabilityPath(portID, channelID))
+	capability, ok := chain.App.GetScopedIBCKeeper().GetCapability(chain.GetContext(), host.ChannelCapabilityPath(portID, channelID))
 	require.True(chain.T, ok)
 
-	return cap
+	return capability
 }
 
 // GetTimeoutHeight is a convenience function which returns a IBC packet timeout height
 // to be used for testing. It returns the current IBC height + 100 blocks
 func (chain *TestChain) GetTimeoutHeight() clienttypes.Height {
 	return clienttypes.NewHeight(clienttypes.ParseChainID(chain.ChainID), uint64(chain.GetContext().BlockHeight())+100)
+}
+
+// DeleteKey deletes the specified key from the ibc store.
+func (chain *TestChain) DeleteKey(key []byte) {
+	storeKey := chain.GetInitiaApp().GetKey(exported.StoreKey)
+	kvStore := chain.GetContext().KVStore(storeKey)
+	kvStore.Delete(key)
 }

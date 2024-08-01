@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -24,6 +25,15 @@ var (
 		ControllerConnectionId: ibctesting.FirstConnectionID,
 		HostConnectionId:       ibctesting.FirstConnectionID,
 		Encoding:               icatypes.EncodingProtobuf,
+		TxType:                 icatypes.TxTypeSDKMultiMsg,
+	}))
+
+	// TestVersionWithJSONEncoding defines a reusable interchainaccounts version string that uses JSON encoding for testing purposes
+	TestVersionWithJSONEncoding = string(icatypes.ModuleCdc.MustMarshalJSON(&icatypes.Metadata{
+		Version:                icatypes.Version,
+		ControllerConnectionId: ibctesting.FirstConnectionID,
+		HostConnectionId:       ibctesting.FirstConnectionID,
+		Encoding:               icatypes.EncodingProto3JSON,
 		TxType:                 icatypes.TxTypeSDKMultiMsg,
 	}))
 )
@@ -54,14 +64,25 @@ func (suite *KeeperTestSuite) SetupTest() {
 	suite.chainB = suite.coordinator.GetChain(ibctesting.GetChainID(2))
 }
 
-func NewICAPath(chainA, chainB *ibctesting.TestChain) *ibctesting.Path {
+func NewICAPath(chainA, chainB *ibctesting.TestChain, encoding string) *ibctesting.Path {
 	path := ibctesting.NewPath(chainA, chainB)
+
+	var version string
+	switch encoding {
+	case icatypes.EncodingProtobuf:
+		version = TestVersion
+	case icatypes.EncodingProto3JSON:
+		version = TestVersionWithJSONEncoding
+	default:
+		panic(fmt.Errorf("unsupported encoding type: %s", encoding))
+	}
+
 	path.EndpointA.ChannelConfig.PortID = icatypes.HostPortID
 	path.EndpointB.ChannelConfig.PortID = icatypes.HostPortID
 	path.EndpointA.ChannelConfig.Order = channeltypes.ORDERED
 	path.EndpointB.ChannelConfig.Order = channeltypes.ORDERED
-	path.EndpointA.ChannelConfig.Version = TestVersion
-	path.EndpointB.ChannelConfig.Version = TestVersion
+	path.EndpointA.ChannelConfig.Version = version
+	path.EndpointB.ChannelConfig.Version = version
 
 	return path
 }
@@ -96,7 +117,7 @@ func RegisterInterchainAccount(endpoint *ibctesting.Endpoint, owner string) erro
 
 	channelSequence := endpoint.Chain.App.GetIBCKeeper().ChannelKeeper.GetNextChannelSequence(endpoint.Chain.GetContext())
 
-	if err := endpoint.Chain.App.GetICAControllerKeeper().RegisterInterchainAccount(endpoint.Chain.GetContext(), endpoint.ConnectionID, owner, TestVersion); err != nil {
+	if err := endpoint.Chain.GetInitiaApp().ICAControllerKeeper.RegisterInterchainAccountWithOrdering(endpoint.Chain.GetContext(), endpoint.ConnectionID, owner, TestVersion, channeltypes.ORDERED); err != nil {
 		return err
 	}
 

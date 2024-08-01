@@ -24,9 +24,10 @@ import (
 	simcli "github.com/cosmos/cosmos-sdk/x/simulation/client/cli"
 
 	initiaapp "github.com/initia-labs/initia/app"
-	initiaapporacle "github.com/initia-labs/initia/app/oracle"
 	moveconfig "github.com/initia-labs/initia/x/move/config"
 	movetypes "github.com/initia-labs/initia/x/move/types"
+
+	oracleconfig "github.com/skip-mev/slinky/oracle/config"
 )
 
 // AnteTestSuite is a test suite to be used with ante handler tests.
@@ -46,7 +47,7 @@ func (suite *AnteTestSuite) createTestApp(tempDir string) (*initiaapp.InitiaApp,
 	appOptions[server.FlagInvCheckPeriod] = simcli.FlagPeriodValue
 
 	app := initiaapp.NewInitiaApp(
-		log.NewNopLogger(), dbm.NewMemDB(), nil, true, moveconfig.DefaultMoveConfig(), initiaapporacle.DefaultConfig(), appOptions,
+		log.NewNopLogger(), dbm.NewMemDB(), nil, true, moveconfig.DefaultMoveConfig(), oracleconfig.NewDefaultAppConfig(), appOptions,
 	)
 	ctx := app.BaseApp.NewUncachedContext(false, tmproto.Header{})
 	err := app.AccountKeeper.Params.Set(ctx, authtypes.DefaultParams())
