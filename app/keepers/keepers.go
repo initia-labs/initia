@@ -3,6 +3,7 @@ package keepers
 import (
 	"os"
 
+	"cosmossdk.io/core/address"
 	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
 	evidencetypes "cosmossdk.io/x/evidence/types"
@@ -16,7 +17,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/runtime"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
@@ -94,7 +94,6 @@ import (
 
 	// slinky oracle dependencies
 
-	oracleconfig "github.com/skip-mev/slinky/oracle/config"
 	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
 	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
 	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
@@ -160,18 +159,17 @@ type AppKeepers struct {
 }
 
 func NewAppKeeper(
+	ac, vc, cc address.Codec,
 	appCodec codec.Codec,
 	bApp *baseapp.BaseApp,
 	legacyAmino *codec.LegacyAmino,
 	maccPerms map[string][]string,
-	modAccAddrs map[string]bool,
 	blockedAddress map[string]bool,
 	skipUpgradeHeights map[int64]bool,
 	homePath string,
 	invCheckPeriod uint,
 	logger log.Logger,
 	moveConfig moveconfig.MoveConfig,
-	oracleConfig oracleconfig.AppConfig,
 	appOpts servertypes.AppOptions,
 ) AppKeepers {
 	appKeepers := AppKeepers{}
@@ -184,10 +182,6 @@ func NewAppKeeper(
 		logger.Error("failed to load state streaming", "err", err)
 		os.Exit(1)
 	}
-
-	ac := authcodec.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix())
-	vc := authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix())
-	cc := authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix())
 
 	authorityAccAddr := authtypes.NewModuleAddress(govtypes.ModuleName)
 	authorityAddr, err := ac.BytesToString(authorityAccAddr)

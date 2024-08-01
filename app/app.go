@@ -197,18 +197,17 @@ func NewInitiaApp(
 
 	// Setup keepers
 	app.AppKeepers = keepers.NewAppKeeper(
+		app.ac, app.vc, app.cc,
 		appCodec,
 		bApp,
 		legacyAmino,
 		maccPerms,
-		moduleAccountAddresses,
 		blockedModuleAccountAddrs,
 		skipUpgradeHeights,
 		homePath,
 		invCheckPeriod,
 		logger,
 		moveConfig,
-		oracleConfig,
 		appOpts,
 	)
 
