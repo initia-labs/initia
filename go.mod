@@ -158,7 +158,6 @@ require (
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/lib/pq v1.10.9 // indirect
-	github.com/libp2p/go-buffer-pool v0.1.0 // indirect
 	github.com/linxGnu/grocksdb v1.8.14 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/manifoldco/promptui v0.9.0 // indirect
@@ -224,7 +223,7 @@ replace (
 
 	// use custom version for
 	// - https://github.com/initia-labs/cometbft/commit/cb3ed4ca9be4d6c55df7df2d927e9b92153bc3e2
-	github.com/cometbft/cometbft => github.com/initia-labs/cometbft v0.0.0-20240704071957-c46468756c01
+	github.com/cometbft/cometbft => github.com/initia-labs/cometbft v0.0.0-20240802022359-e0a5ce0336b6
 	// use v1.1.4 for
 	// - https://github.com/cosmos/iavl/commit/021433c2ed0b64223f90315a3421eb645e1f08fe
 	github.com/cosmos/iavl => github.com/cosmos/iavl v1.1.4
