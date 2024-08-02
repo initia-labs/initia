@@ -36,14 +36,14 @@ jobs:
         env:
           DOCKER_BUILDKIT: 1
         run: |
-          # BuildKit 활성화 및 새 빌더 생성
+          # Enable BuildKit and create a new builder
           docker buildx create --use --name arm64-builder --platform linux/arm64
           docker buildx inspect --bootstrap
 
-          # ARM64용 이미지 빌드
+          # Build the image for ARM64
           docker buildx build --platform linux/arm64 --load --tag initia/initiad-shared:arm64 . -f Dockerfile.arm64
 
-          # ARM64 이미지를 사용하여 빌드 결과물 추출
+          # Extract the build artifacts using the ARM64 image
           mkdir -p ./build
           docker create --name temp initia/initiad-shared:arm64
           docker cp temp:/usr/local/bin/initiad ./build/
@@ -51,7 +51,7 @@ jobs:
           docker cp temp:/lib/libcompiler.so ./build/
           docker rm temp
 
-          # 결과물 패키징
+          # Package the artifacts
           cd ./build
           mkdir -p initia_${VERSION}
           mv initiad initia_${VERSION}/
@@ -60,12 +60,12 @@ jobs:
           tar -czvf initia_${VERSION}_Linux_${ARCH_NAME}.tar.gz initia_${VERSION}
           mv initia_${VERSION}_Linux_${ARCH_NAME}.tar.gz ../
 
-          # 빌드 결과 확인
+          # Check the build result
           cd ..
           ls -l
           file initia_${VERSION}_Linux_${ARCH_NAME}.tar.gz
 
-          # 빌더 제거
+          # Remove the builder
           docker buildx rm arm64-builder
 
       - name: List files
