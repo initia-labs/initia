@@ -1,15 +1,14 @@
 package app
 
 import (
+	"context"
+	"strconv"
 	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-
-	// this line is used by starport scaffolding # stargate/app/moduleImport
+	grpc "google.golang.org/grpc"
 
 	stakingkeeper "github.com/initia-labs/initia/x/mstaking/keeper"
-
-	// block-sdk dependencies
 
 	// slinky oracle dependencies
 	oraclepreblock "github.com/skip-mev/slinky/abci/preblock/oracle"
@@ -22,9 +21,10 @@ import (
 	"github.com/skip-mev/slinky/pkg/math/voteweighted"
 	oracleclient "github.com/skip-mev/slinky/service/clients/oracle"
 	servicemetrics "github.com/skip-mev/slinky/service/metrics"
+	oracleservertypes "github.com/skip-mev/slinky/service/servers/oracle/types"
 
-	// unnamed import of statik for swagger UI support
-	_ "github.com/initia-labs/initia/client/docs/statik"
+	// OPinit dependencies
+	l2slinky "github.com/initia-labs/OPinit/x/opchild/l2slinky"
 )
 
 func setupSlinky(
@@ -57,6 +57,9 @@ func setupSlinky(
 	if err != nil {
 		return nil, nil, nil, nil, nil, nil, err
 	}
+
+	// wrap oracle client to feed timestamp
+	oracleClient = withTimestamp(oracleClient)
 
 	oracleProposalHandler := oracleproposals.NewProposalHandler(
 		app.Logger(),
@@ -143,4 +146,25 @@ func setupSlinky(
 	verifyVoteExtensionHandler := voteExtensionsHandler.VerifyVoteExtensionHandler()
 
 	return oracleClient, prepareProposalHandler, processProposalHandler, preBlocker, extendedVoteHandler, verifyVoteExtensionHandler, nil
+}
+
+// oracleClientWithTimestamp is oracle client to feed timestamp
+type oracleClientWithTimestamp struct {
+	oracleclient.OracleClient
+}
+
+// wrap oracle client with timestamp feeder
+func withTimestamp(oc oracleclient.OracleClient) oracleclient.OracleClient {
+	return oracleClientWithTimestamp{oc}
+}
+
+// Prices defines a method for fetching the latest prices.
+func (oc oracleClientWithTimestamp) Prices(ctx context.Context, req *oracleservertypes.QueryPricesRequest, opts ...grpc.CallOption) (*oracleservertypes.QueryPricesResponse, error) {
+	resp, err := oc.OracleClient.Prices(ctx, req, grpc.WaitForReady(true))
+	if err != nil {
+		return nil, err
+	}
+
+	resp.Prices[l2slinky.ReservedCPTimestamp] = strconv.FormatInt(resp.Timestamp.UTC().UnixNano(), 10)
+	return resp, err
 }
