@@ -1,30 +1,22 @@
 package app
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
 	"github.com/spf13/cast"
-	"golang.org/x/exp/maps"
 
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 	reflectionv1 "cosmossdk.io/api/cosmos/reflection/v1"
+	"cosmossdk.io/core/address"
 	"cosmossdk.io/log"
-	"cosmossdk.io/math"
-	storetypes "cosmossdk.io/store/types"
-	evidencetypes "cosmossdk.io/x/evidence/types"
-	"cosmossdk.io/x/feegrant"
-	feegrantkeeper "cosmossdk.io/x/feegrant/keeper"
-	feegrantmodule "cosmossdk.io/x/feegrant/module"
-	"cosmossdk.io/x/upgrade"
-	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -39,7 +31,6 @@ import (
 	nodeservice "github.com/cosmos/cosmos-sdk/client/grpc/node"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/types"
-	"github.com/cosmos/cosmos-sdk/runtime"
 	runtimeservices "github.com/cosmos/cosmos-sdk/runtime/services"
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/server/api"
@@ -51,147 +42,39 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/types/msgservice"
 	"github.com/cosmos/cosmos-sdk/version"
-	"github.com/cosmos/cosmos-sdk/x/auth"
-	cosmosante "github.com/cosmos/cosmos-sdk/x/auth/ante"
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	"github.com/cosmos/cosmos-sdk/x/auth/posthandler"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/cosmos/cosmos-sdk/x/authz"
-	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/cosmos/cosmos-sdk/x/consensus"
-	consensusparamkeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
-	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
-	crisiskeeper "github.com/cosmos/cosmos-sdk/x/crisis/keeper"
-	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
-	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
-	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-	"github.com/cosmos/cosmos-sdk/x/group"
-	groupkeeper "github.com/cosmos/cosmos-sdk/x/group/keeper"
-	groupmodule "github.com/cosmos/cosmos-sdk/x/group/module"
-	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	"github.com/cosmos/gogoproto/proto"
 
-	packetforward "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward"
-	packetforwardkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/keeper"
-	packetforwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types"
-	ratelimit "github.com/cosmos/ibc-apps/modules/rate-limiting/v8"
-	ratelimitkeeper "github.com/cosmos/ibc-apps/modules/rate-limiting/v8/keeper"
-	ratelimittypes "github.com/cosmos/ibc-apps/modules/rate-limiting/v8/types"
-	"github.com/cosmos/ibc-go/modules/capability"
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
-	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
-	ica "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts"
-	icacontroller "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller"
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/keeper"
-	icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
-	icahost "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/host"
-	icahostkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/host/keeper"
-	icahosttypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/host/types"
-	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
-	ibcfee "github.com/cosmos/ibc-go/v8/modules/apps/29-fee"
-	ibcfeekeeper "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/keeper"
-	ibcfeetypes "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/types"
-	ibctransfer "github.com/cosmos/ibc-go/v8/modules/apps/transfer"
-	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
-	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	ibc "github.com/cosmos/ibc-go/v8/modules/core"
-	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
-	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
-	solomachine "github.com/cosmos/ibc-go/v8/modules/light-clients/06-solomachine"
-	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 
-	ibcnfttransfer "github.com/initia-labs/initia/x/ibc/nft-transfer"
-	ibcnfttransferkeeper "github.com/initia-labs/initia/x/ibc/nft-transfer/keeper"
-	ibcnfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
-	ibcperm "github.com/initia-labs/initia/x/ibc/perm"
-	ibcpermkeeper "github.com/initia-labs/initia/x/ibc/perm/keeper"
-	ibcpermtypes "github.com/initia-labs/initia/x/ibc/perm/types"
 	ibctestingtypes "github.com/initia-labs/initia/x/ibc/testing/types"
-	icaauth "github.com/initia-labs/initia/x/intertx"
 	icaauthkeeper "github.com/initia-labs/initia/x/intertx/keeper"
-	icaauthtypes "github.com/initia-labs/initia/x/intertx/types"
 
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 
-	appante "github.com/initia-labs/initia/app/ante"
-	appheaderinfo "github.com/initia-labs/initia/app/header_info"
-	applanes "github.com/initia-labs/initia/app/lanes"
-	apporacle "github.com/initia-labs/initia/app/oracle"
+	"github.com/initia-labs/initia/app/keepers"
 	"github.com/initia-labs/initia/app/params"
 	cryptocodec "github.com/initia-labs/initia/crypto/codec"
-	authzmodule "github.com/initia-labs/initia/x/authz/module"
-	"github.com/initia-labs/initia/x/bank"
-	bankkeeper "github.com/initia-labs/initia/x/bank/keeper"
-	distr "github.com/initia-labs/initia/x/distribution"
-	distrkeeper "github.com/initia-labs/initia/x/distribution/keeper"
-	"github.com/initia-labs/initia/x/evidence"
-	evidencekeeper "github.com/initia-labs/initia/x/evidence/keeper"
-	"github.com/initia-labs/initia/x/genutil"
-	"github.com/initia-labs/initia/x/gov"
-	govkeeper "github.com/initia-labs/initia/x/gov/keeper"
-	ibchooks "github.com/initia-labs/initia/x/ibc-hooks"
-	ibchookskeeper "github.com/initia-labs/initia/x/ibc-hooks/keeper"
-	ibcmovehooks "github.com/initia-labs/initia/x/ibc-hooks/move-hooks"
-	ibchookstypes "github.com/initia-labs/initia/x/ibc-hooks/types"
-	"github.com/initia-labs/initia/x/move"
 	moveconfig "github.com/initia-labs/initia/x/move/config"
-	movekeeper "github.com/initia-labs/initia/x/move/keeper"
 	movetypes "github.com/initia-labs/initia/x/move/types"
-	staking "github.com/initia-labs/initia/x/mstaking"
-	stakingkeeper "github.com/initia-labs/initia/x/mstaking/keeper"
-	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
-	reward "github.com/initia-labs/initia/x/reward"
-	rewardkeeper "github.com/initia-labs/initia/x/reward/keeper"
 	rewardtypes "github.com/initia-labs/initia/x/reward/types"
-	"github.com/initia-labs/initia/x/slashing"
-	slashingkeeper "github.com/initia-labs/initia/x/slashing/keeper"
 
 	// block-sdk dependencies
-	blockabci "github.com/skip-mev/block-sdk/v2/abci"
+
 	blockchecktx "github.com/skip-mev/block-sdk/v2/abci/checktx"
-	signer_extraction "github.com/skip-mev/block-sdk/v2/adapters/signer_extraction_adapter"
-	"github.com/skip-mev/block-sdk/v2/block"
-	blockbase "github.com/skip-mev/block-sdk/v2/block/base"
-	mevlane "github.com/skip-mev/block-sdk/v2/lanes/mev"
-	"github.com/skip-mev/block-sdk/v2/x/auction"
-	auctionante "github.com/skip-mev/block-sdk/v2/x/auction/ante"
-	auctionkeeper "github.com/skip-mev/block-sdk/v2/x/auction/keeper"
-	auctiontypes "github.com/skip-mev/block-sdk/v2/x/auction/types"
 
 	// slinky oracle dependencies
-	oraclepreblock "github.com/skip-mev/slinky/abci/preblock/oracle"
-	oracleproposals "github.com/skip-mev/slinky/abci/proposals"
-	"github.com/skip-mev/slinky/abci/strategies/aggregator"
-	compression "github.com/skip-mev/slinky/abci/strategies/codec"
-	"github.com/skip-mev/slinky/abci/strategies/currencypair"
-	"github.com/skip-mev/slinky/abci/ve"
+
 	oracleconfig "github.com/skip-mev/slinky/oracle/config"
-	"github.com/skip-mev/slinky/pkg/math/voteweighted"
 	oracleclient "github.com/skip-mev/slinky/service/clients/oracle"
-	servicemetrics "github.com/skip-mev/slinky/service/metrics"
-	marketmap "github.com/skip-mev/slinky/x/marketmap"
-	marketmapkeeper "github.com/skip-mev/slinky/x/marketmap/keeper"
-	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
-	"github.com/skip-mev/slinky/x/oracle"
-	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
-	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
-
-	"github.com/initia-labs/OPinit/x/ophost"
-	ophostkeeper "github.com/initia-labs/OPinit/x/ophost/keeper"
-	ophosttypes "github.com/initia-labs/OPinit/x/ophost/types"
-	ophosttypeshook "github.com/initia-labs/OPinit/x/ophost/types/hook"
-
-	// noble forwarding keeper
-	"github.com/noble-assets/forwarding/v2/x/forwarding"
-	forwardingkeeper "github.com/noble-assets/forwarding/v2/x/forwarding/keeper"
-	forwardingtypes "github.com/noble-assets/forwarding/v2/x/forwarding/types"
 
 	// unnamed import of statik for swagger UI support
 	_ "github.com/initia-labs/initia/client/docs/statik"
@@ -200,29 +83,6 @@ import (
 var (
 	// DefaultNodeHome default home directories for the application daemon
 	DefaultNodeHome string
-
-	// module account permissions
-	maccPerms = map[string][]string{
-		authtypes.FeeCollectorName:      nil,
-		distrtypes.ModuleName:           nil,
-		icatypes.ModuleName:             nil,
-		ibcfeetypes.ModuleName:          nil,
-		rewardtypes.ModuleName:          nil,
-		stakingtypes.BondedPoolName:     {authtypes.Burner, authtypes.Staking},
-		stakingtypes.NotBondedPoolName:  {authtypes.Burner, authtypes.Staking},
-		govtypes.ModuleName:             {authtypes.Burner},
-		ibctransfertypes.ModuleName:     {authtypes.Minter, authtypes.Burner},
-		movetypes.MoveStakingModuleName: nil,
-		// x/auction's module account must be instantiated upon genesis to accrue auction rewards not
-		// distributed to proposers
-		auctiontypes.ModuleName: nil,
-		// slinky oracle permissions
-		oracletypes.ModuleName:    nil,
-		marketmaptypes.ModuleName: nil,
-
-		// this is only for testing
-		authtypes.Minter: {authtypes.Minter},
-	}
 )
 
 var (
@@ -243,62 +103,19 @@ func init() {
 // capabilities aren't needed for testing.
 type InitiaApp struct {
 	*baseapp.BaseApp
+	keepers.AppKeepers
 
+	// address codecs
+	ac, vc, cc address.Codec
+
+	// codecs
 	legacyAmino       *codec.LegacyAmino
 	appCodec          codec.Codec
 	txConfig          client.TxConfig
 	interfaceRegistry types.InterfaceRegistry
 
-	// keys to access the substores
-	keys    map[string]*storetypes.KVStoreKey
-	tkeys   map[string]*storetypes.TransientStoreKey
-	memKeys map[string]*storetypes.MemoryStoreKey
-
-	// keepers
-	AccountKeeper         *authkeeper.AccountKeeper
-	BankKeeper            *bankkeeper.BaseKeeper
-	CapabilityKeeper      *capabilitykeeper.Keeper
-	StakingKeeper         *stakingkeeper.Keeper
-	SlashingKeeper        *slashingkeeper.Keeper
-	RewardKeeper          *rewardkeeper.Keeper
-	DistrKeeper           *distrkeeper.Keeper
-	GovKeeper             *govkeeper.Keeper
-	CrisisKeeper          *crisiskeeper.Keeper
-	UpgradeKeeper         *upgradekeeper.Keeper
-	GroupKeeper           *groupkeeper.Keeper
-	ConsensusParamsKeeper *consensusparamkeeper.Keeper
-	IBCKeeper             *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
-	EvidenceKeeper        *evidencekeeper.Keeper
-	TransferKeeper        *ibctransferkeeper.Keeper
-	NftTransferKeeper     *ibcnfttransferkeeper.Keeper
-	AuthzKeeper           *authzkeeper.Keeper
-	FeeGrantKeeper        *feegrantkeeper.Keeper
-	ICAHostKeeper         *icahostkeeper.Keeper
-	ICAControllerKeeper   *icacontrollerkeeper.Keeper
-	ICAAuthKeeper         *icaauthkeeper.Keeper
-	IBCFeeKeeper          *ibcfeekeeper.Keeper
-	IBCPermKeeper         *ibcpermkeeper.Keeper
-	PacketForwardKeeper   *packetforwardkeeper.Keeper
-	MoveKeeper            *movekeeper.Keeper
-	IBCHooksKeeper        *ibchookskeeper.Keeper
-	AuctionKeeper         *auctionkeeper.Keeper // x/auction keeper used to process bids for TOB auctions
-	OPHostKeeper          *ophostkeeper.Keeper
-	OracleKeeper          *oraclekeeper.Keeper // x/oracle keeper used for the slinky oracle
-	MarketMapKeeper       *marketmapkeeper.Keeper
-	ForwardingKeeper      *forwardingkeeper.Keeper
-	RatelimitKeeper       *ratelimitkeeper.Keeper
-
-	// other slinky oracle services
-	OracleClient          oracleclient.OracleClient
-	oraclePreBlockHandler *oraclepreblock.PreBlockHandler
-
-	// make scoped keepers public for test purposes
-	ScopedIBCKeeper           capabilitykeeper.ScopedKeeper
-	ScopedTransferKeeper      capabilitykeeper.ScopedKeeper
-	ScopedNftTransferKeeper   capabilitykeeper.ScopedKeeper
-	ScopedICAHostKeeper       capabilitykeeper.ScopedKeeper
-	ScopedICAControllerKeeper capabilitykeeper.ScopedKeeper
-	ScopedICAAuthKeeper       capabilitykeeper.ScopedKeeper
+	// slinky oracle client
+	oracleClient oracleclient.OracleClient
 
 	// the module manager
 	ModuleManager      *module.Manager
@@ -323,10 +140,10 @@ func NewInitiaApp(
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *InitiaApp {
 	// load the configs
-	mempoolTxs := cast.ToInt(appOpts.Get(server.FlagMempoolMaxTxs))
+	mempoolMaxTxs := cast.ToInt(appOpts.Get(server.FlagMempoolMaxTxs))
 	queryGasLimit := cast.ToInt(appOpts.Get(server.FlagQueryGasLimit))
 
-	logger.Info("mempool max txs", "max_txs", mempoolTxs)
+	logger.Info("mempool max txs", "max_txs", mempoolMaxTxs)
 	logger.Info("query gas limit", "gas_limit", queryGasLimit)
 
 	encodingConfig := params.MakeEncodingConfig()
@@ -346,24 +163,13 @@ func NewInitiaApp(
 	bApp.SetInterfaceRegistry(interfaceRegistry)
 	bApp.SetTxEncoder(txConfig.TxEncoder())
 
-	keys := storetypes.NewKVStoreKeys(
-		authtypes.StoreKey, banktypes.StoreKey, stakingtypes.StoreKey, crisistypes.StoreKey,
-		rewardtypes.StoreKey, distrtypes.StoreKey, slashingtypes.StoreKey,
-		govtypes.StoreKey, group.StoreKey, consensusparamtypes.StoreKey,
-		ibcexported.StoreKey, upgradetypes.StoreKey, evidencetypes.StoreKey,
-		ibctransfertypes.StoreKey, ibcnfttransfertypes.StoreKey, capabilitytypes.StoreKey,
-		authzkeeper.StoreKey, feegrant.StoreKey, icahosttypes.StoreKey,
-		icacontrollertypes.StoreKey, ibcfeetypes.StoreKey, ibcpermtypes.StoreKey,
-		movetypes.StoreKey, auctiontypes.StoreKey, ophosttypes.StoreKey,
-		oracletypes.StoreKey, packetforwardtypes.StoreKey, ibchookstypes.StoreKey,
-		forwardingtypes.StoreKey, marketmaptypes.StoreKey, ratelimittypes.StoreKey,
-	)
-	tkeys := storetypes.NewTransientStoreKeys(forwardingtypes.TransientStoreKey)
-	memKeys := storetypes.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
-
-	// register streaming services
-	if err := bApp.RegisterStreamingServices(appOpts, keys); err != nil {
-		panic(err)
+	// app opts
+	homePath := cast.ToString(appOpts.Get(flags.FlagHome))
+	skipGenesisInvariants := cast.ToBool(appOpts.Get(crisis.FlagSkipGenesisInvariants))
+	invCheckPeriod := cast.ToUint(appOpts.Get(server.FlagInvCheckPeriod))
+	skipUpgradeHeights := make(map[int64]bool)
+	for _, h := range cast.ToIntSlice(appOpts.Get(server.FlagUnsafeSkipUpgrades)) {
+		skipUpgradeHeights[int64(h)] = true
 	}
 
 	app := &InitiaApp{
@@ -372,127 +178,12 @@ func NewInitiaApp(
 		appCodec:          appCodec,
 		txConfig:          txConfig,
 		interfaceRegistry: interfaceRegistry,
-		keys:              keys,
-		tkeys:             tkeys,
-		memKeys:           memKeys,
+
+		// codecs
+		ac: authcodec.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix()),
+		vc: authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix()),
+		cc: authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix()),
 	}
-
-	ac := authcodec.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix())
-	vc := authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix())
-	cc := authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix())
-
-	authorityAccAddr := authtypes.NewModuleAddress(govtypes.ModuleName)
-	authorityAddr, err := ac.BytesToString(authorityAccAddr)
-	if err != nil {
-		panic(err)
-	}
-
-	// set the BaseApp's parameter store
-	consensusParamsKeeper := consensusparamkeeper.NewKeeper(appCodec, runtime.NewKVStoreService(keys[consensusparamtypes.StoreKey]), authorityAddr, runtime.EventService{})
-	app.ConsensusParamsKeeper = &consensusParamsKeeper
-	bApp.SetParamStore(app.ConsensusParamsKeeper.ParamsStore)
-
-	// add capability keeper and ScopeToModule for ibc module
-	app.CapabilityKeeper = capabilitykeeper.NewKeeper(appCodec, keys[capabilitytypes.StoreKey], memKeys[capabilitytypes.MemStoreKey])
-
-	// grant capabilities for the ibc and ibc-transfer modules
-	app.ScopedIBCKeeper = app.CapabilityKeeper.ScopeToModule(ibcexported.ModuleName)
-	app.ScopedTransferKeeper = app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
-	app.ScopedNftTransferKeeper = app.CapabilityKeeper.ScopeToModule(ibcnfttransfertypes.ModuleName)
-	app.ScopedICAHostKeeper = app.CapabilityKeeper.ScopeToModule(icahosttypes.SubModuleName)
-	app.ScopedICAControllerKeeper = app.CapabilityKeeper.ScopeToModule(icacontrollertypes.SubModuleName)
-	app.ScopedICAAuthKeeper = app.CapabilityKeeper.ScopeToModule(icaauthtypes.ModuleName)
-
-	app.CapabilityKeeper.Seal()
-
-	// add keepers
-	app.MoveKeeper = &movekeeper.Keeper{}
-
-	accountKeeper := authkeeper.NewAccountKeeper(
-		appCodec,
-		runtime.NewKVStoreService(keys[authtypes.StoreKey]),
-		authtypes.ProtoBaseAccount,
-		maccPerms,
-		ac,
-		sdk.GetConfig().GetBech32AccountAddrPrefix(),
-		authorityAddr,
-	)
-	app.AccountKeeper = &accountKeeper
-
-	bankKeeper := bankkeeper.NewBaseKeeper(
-		appCodec,
-		runtime.NewKVStoreService(keys[banktypes.StoreKey]),
-		app.AccountKeeper,
-		movekeeper.NewMoveBankKeeper(app.MoveKeeper),
-		app.ModuleAccountAddrs(),
-		authorityAddr,
-	)
-	app.BankKeeper = &bankKeeper
-
-	app.StakingKeeper = stakingkeeper.NewKeeper(
-		appCodec,
-		runtime.NewKVStoreService(keys[stakingtypes.StoreKey]),
-		app.AccountKeeper,
-		app.BankKeeper,
-		movekeeper.NewVotingPowerKeeper(app.MoveKeeper),
-		authorityAddr,
-		vc,
-		cc,
-	)
-
-	app.RewardKeeper = rewardkeeper.NewKeeper(
-		appCodec,
-		runtime.NewKVStoreService(keys[rewardtypes.StoreKey]),
-		app.AccountKeeper,
-		app.BankKeeper,
-		authtypes.FeeCollectorName,
-		authorityAddr,
-	)
-
-	app.DistrKeeper = distrkeeper.NewKeeper(
-		appCodec,
-		runtime.NewKVStoreService(keys[distrtypes.StoreKey]),
-		app.AccountKeeper,
-		app.BankKeeper,
-		app.StakingKeeper,
-		movekeeper.NewDexKeeper(app.MoveKeeper),
-		authtypes.FeeCollectorName,
-		authorityAddr,
-	)
-
-	slashingKeeper := slashingkeeper.NewKeeper(
-		appCodec,
-		runtime.NewKVStoreService(keys[slashingtypes.StoreKey]),
-		app.StakingKeeper,
-		authorityAddr,
-	)
-	app.SlashingKeeper = &slashingKeeper
-
-	invCheckPeriod := cast.ToUint(appOpts.Get(server.FlagInvCheckPeriod))
-	app.CrisisKeeper = crisiskeeper.NewKeeper(
-		appCodec,
-		runtime.NewKVStoreService(keys[crisistypes.StoreKey]),
-		invCheckPeriod,
-		app.BankKeeper,
-		authtypes.FeeCollectorName,
-		authorityAddr,
-		ac,
-	)
-
-	// get skipUpgradeHeights from the app options
-	skipUpgradeHeights := map[int64]bool{}
-	for _, h := range cast.ToIntSlice(appOpts.Get(server.FlagUnsafeSkipUpgrades)) {
-		skipUpgradeHeights[int64(h)] = true
-	}
-	homePath := cast.ToString(appOpts.Get(flags.FlagHome))
-	app.UpgradeKeeper = upgradekeeper.NewKeeper(
-		skipUpgradeHeights,
-		runtime.NewKVStoreService(keys[upgradetypes.StoreKey]),
-		appCodec,
-		homePath,
-		app.BaseApp,
-		authorityAddr,
-	)
 
 	i := 0
 	moduleAddrs := make([]sdk.AccAddress, len(maccPerms))
@@ -501,516 +192,57 @@ func NewInitiaApp(
 		i += 1
 	}
 
-	feeGrantKeeper := feegrantkeeper.NewKeeper(appCodec, runtime.NewKVStoreService(keys[feegrant.StoreKey]), app.AccountKeeper)
-	app.FeeGrantKeeper = &feeGrantKeeper
+	moduleAccountAddresses := app.ModuleAccountAddrs()
+	blockedModuleAccountAddrs := app.BlockedModuleAccountAddrs(moduleAccountAddresses)
 
-	authzKeeper := authzkeeper.NewKeeper(runtime.NewKVStoreService(keys[authzkeeper.StoreKey]), appCodec, app.BaseApp.MsgServiceRouter(), app.AccountKeeper)
-	app.AuthzKeeper = &authzKeeper
-
-	// Create evidence Keeper for to register the IBC light client misbehaviour evidence route
-	app.EvidenceKeeper = evidencekeeper.NewKeeper(
+	// Setup keepers
+	app.AppKeepers = keepers.NewAppKeeper(
+		app.ac, app.vc, app.cc,
 		appCodec,
-		runtime.NewKVStoreService(keys[evidencetypes.StoreKey]),
-		app.StakingKeeper,
-		app.SlashingKeeper,
-		ac,
-		runtime.ProvideCometInfoService(),
-	)
-
-	groupConfig := group.DefaultConfig()
-	groupKeeper := groupkeeper.NewKeeper(
-		keys[group.StoreKey],
-		appCodec,
-		app.MsgServiceRouter(),
-		app.AccountKeeper,
-		groupConfig,
-	)
-	app.GroupKeeper = &groupKeeper
-
-	// Create IBC Keeper
-	app.IBCKeeper = ibckeeper.NewKeeper(
-		appCodec,
-		keys[ibcexported.StoreKey],
-		nil, // we don't need migration
-		app.StakingKeeper,
-		app.UpgradeKeeper,
-		app.ScopedIBCKeeper,
-		authorityAddr,
-	)
-
-	ibcFeeKeeper := ibcfeekeeper.NewKeeper(
-		appCodec,
-		keys[ibcfeetypes.StoreKey],
-		app.IBCKeeper.ChannelKeeper,
-		app.IBCKeeper.ChannelKeeper,
-		app.IBCKeeper.PortKeeper,
-		app.AccountKeeper,
-		app.BankKeeper,
-	)
-	app.IBCFeeKeeper = &ibcFeeKeeper
-
-	app.IBCPermKeeper = ibcpermkeeper.NewKeeper(
-		appCodec,
-		runtime.NewKVStoreService(keys[ibcpermtypes.StoreKey]),
-		authorityAddr,
-		ac,
-	)
-
-	marketMapKeeper := marketmapkeeper.NewKeeper(
-		runtime.NewKVStoreService(keys[marketmaptypes.StoreKey]),
-		appCodec,
-		authorityAccAddr,
-	)
-	app.MarketMapKeeper = marketMapKeeper
-
-	oracleKeeper := oraclekeeper.NewKeeper(
-		runtime.NewKVStoreService(keys[oracletypes.StoreKey]),
-		appCodec,
-		app.MarketMapKeeper,
-		authorityAccAddr,
-	)
-	app.OracleKeeper = &oracleKeeper
-
-	// Add the oracle keeper as a hook to market map keeper so new market map entries can be created
-	// and propagated to the oracle keeper.
-	app.MarketMapKeeper.SetHooks(app.OracleKeeper.Hooks())
-
-	app.IBCHooksKeeper = ibchookskeeper.NewKeeper(
-		appCodec,
-		runtime.NewKVStoreService(keys[ibchookstypes.StoreKey]),
-		authorityAddr,
-		ac,
-	)
-
-	app.ForwardingKeeper = forwardingkeeper.NewKeeper(
-		appCodec,
-		app.Logger(),
-		runtime.NewKVStoreService(keys[forwardingtypes.StoreKey]),
-		runtime.NewTransientStoreService(tkeys[forwardingtypes.TransientStoreKey]),
-		appheaderinfo.NewHeaderInfoService(),
-		runtime.ProvideEventService(),
-		authorityAddr,
-		app.AccountKeeper,
-		app.BankKeeper,
-		app.IBCKeeper.ChannelKeeper,
-		app.TransferKeeper,
-	)
-	app.BankKeeper.AppendSendRestriction(app.ForwardingKeeper.SendRestrictionFn)
-
-	////////////////////////////
-	// Transfer configuration //
-	////////////////////////////
-	// Send   : transfer -> packet forward -> fee    -> channel
-	// Receive: channel  -> perm           -> fee    -> move    -> packet forward  -> transfer
-
-	var transferStack porttypes.IBCModule
-	{
-		packetForwardKeeper := &packetforwardkeeper.Keeper{}
-		rateLimitKeeper := &ratelimitkeeper.Keeper{}
-
-		// create Transfer Keepers
-		transferKeeper := ibctransferkeeper.NewKeeper(
-			appCodec,
-			keys[ibctransfertypes.StoreKey],
-			nil, // we don't need migration
-			// ics4wrapper: transfer -> packet forward
-			packetForwardKeeper,
-			app.IBCKeeper.ChannelKeeper,
-			app.IBCKeeper.PortKeeper,
-			app.AccountKeeper,
-			app.BankKeeper,
-			app.ScopedTransferKeeper,
-			authorityAddr,
-		)
-		app.TransferKeeper = &transferKeeper
-		transferStack = ibctransfer.NewIBCModule(*app.TransferKeeper)
-
-		// forwarding middleware
-		transferStack = forwarding.NewMiddleware(
-			// receive: forwarding -> transfer
-			transferStack,
-			app.AccountKeeper,
-			app.ForwardingKeeper,
-		)
-
-		// create packet forward middleware
-		*packetForwardKeeper = *packetforwardkeeper.NewKeeper(
-			appCodec,
-			keys[packetforwardtypes.StoreKey],
-			app.TransferKeeper,
-			app.IBCKeeper.ChannelKeeper,
-			app.DistrKeeper,
-			app.BankKeeper,
-			// ics4wrapper: transfer -> packet forward -> rate limit
-			rateLimitKeeper,
-			authorityAddr,
-		)
-		app.PacketForwardKeeper = packetForwardKeeper
-		transferStack = packetforward.NewIBCMiddleware(
-			// receive: packet forward -> forwarding -> transfer
-			transferStack,
-			app.PacketForwardKeeper,
-			0,
-			packetforwardkeeper.DefaultForwardTransferPacketTimeoutTimestamp,
-			packetforwardkeeper.DefaultRefundTransferPacketTimeoutTimestamp,
-		)
-
-		// create the rate limit keeper
-		*rateLimitKeeper = *ratelimitkeeper.NewKeeper(
-			appCodec,
-			runtime.NewKVStoreService(keys[ratelimittypes.StoreKey]),
-			paramtypes.Subspace{}, // empty params
-			authorityAddr,
-			app.BankKeeper,
-			app.IBCKeeper.ChannelKeeper,
-			// ics4wrapper: transfer -> packet forward -> rate limit -> fee
-			app.IBCFeeKeeper,
-		)
-		app.RatelimitKeeper = rateLimitKeeper
-
-		// rate limit middleware
-		transferStack = ratelimit.NewIBCMiddleware(
-			*app.RatelimitKeeper,
-			// receive: rate limit -> packet forward -> forwarding -> transfer
-			transferStack,
-		)
-
-		// create move middleware for transfer
-		transferStack = ibchooks.NewIBCMiddleware(
-			// receive: move -> rate limit -> packet forward -> forwarding -> transfer
-			transferStack,
-			ibchooks.NewICS4Middleware(
-				nil, /* ics4wrapper: not used */
-				ibcmovehooks.NewMoveHooks(appCodec, ac, app.MoveKeeper),
-			),
-			app.IBCHooksKeeper,
-		)
-
-		// create ibcfee middleware for transfer
-		transferStack = ibcfee.NewIBCMiddleware(
-			// receive: fee -> move -> rate limit -> packet forward -> forwarding -> transfer
-			transferStack,
-			*app.IBCFeeKeeper,
-		)
-
-		// create perm middleware for transfer
-		transferStack = ibcperm.NewIBCMiddleware(
-			// receive: perm -> fee -> move -> rate limit -> packet forward -> forwarding -> transfer
-			transferStack,
-			// ics4wrapper: not used
-			nil,
-			*app.IBCPermKeeper,
-		)
-	}
-
-	////////////////////////////////
-	// Nft Transfer configuration //
-	////////////////////////////////
-
-	var nftTransferStack porttypes.IBCModule
-	{
-		// Create Transfer Keepers
-		app.NftTransferKeeper = ibcnfttransferkeeper.NewKeeper(
-			appCodec,
-			runtime.NewKVStoreService(keys[ibcnfttransfertypes.StoreKey]),
-			// ics4wrapper: nft transfer -> fee -> channel
-			app.IBCFeeKeeper,
-			app.IBCKeeper.ChannelKeeper,
-			app.IBCKeeper.PortKeeper,
-			app.AccountKeeper,
-			movekeeper.NewNftKeeper(app.MoveKeeper),
-			app.ScopedNftTransferKeeper,
-			authorityAddr,
-		)
-		nftTransferIBCModule := ibcnfttransfer.NewIBCModule(*app.NftTransferKeeper)
-
-		// create move middleware for nft-transfer
-		hookMiddleware := ibchooks.NewIBCMiddleware(
-			// receive: move -> nft-transfer
-			nftTransferIBCModule,
-			ibchooks.NewICS4Middleware(
-				nil, /* ics4wrapper: not used */
-				ibcmovehooks.NewMoveHooks(appCodec, ac, app.MoveKeeper),
-			),
-			app.IBCHooksKeeper,
-		)
-
-		nftTransferStack = ibcperm.NewIBCMiddleware(
-			// receive: perm -> fee -> nft transfer
-			ibcfee.NewIBCMiddleware(
-				// receive: channel -> fee -> move -> nft transfer
-				hookMiddleware,
-				*app.IBCFeeKeeper,
-			),
-			// ics4wrapper: not used
-			nil,
-			*app.IBCPermKeeper,
-		)
-	}
-
-	///////////////////////
-	// ICA configuration //
-	///////////////////////
-
-	var icaHostStack porttypes.IBCModule
-	var icaControllerStack porttypes.IBCModule
-	{
-		icaHostKeeper := icahostkeeper.NewKeeper(
-			appCodec, keys[icahosttypes.StoreKey],
-			nil, // we don't need migration
-			app.IBCFeeKeeper,
-			app.IBCKeeper.ChannelKeeper,
-			app.IBCKeeper.PortKeeper,
-			app.AccountKeeper,
-			app.ScopedICAHostKeeper,
-			app.MsgServiceRouter(),
-			authorityAddr,
-		)
-		icaHostKeeper.WithQueryRouter(app.BaseApp.GRPCQueryRouter())
-		// icaHostKeeper.WithICS4Wrapper()
-		app.ICAHostKeeper = &icaHostKeeper
-
-		icaControllerKeeper := icacontrollerkeeper.NewKeeper(
-			appCodec, keys[icacontrollertypes.StoreKey],
-			nil, // we don't need migration
-			app.IBCFeeKeeper,
-			app.IBCKeeper.ChannelKeeper,
-			app.IBCKeeper.PortKeeper,
-			app.ScopedICAControllerKeeper,
-			app.MsgServiceRouter(),
-			authorityAddr,
-		)
-		// icaControllerKeeper.WithICS4Wrapper()
-		app.ICAControllerKeeper = &icaControllerKeeper
-
-		icaAuthKeeper := icaauthkeeper.NewKeeper(
-			appCodec,
-			*app.ICAControllerKeeper,
-			app.ScopedICAAuthKeeper,
-			ac,
-		)
-		app.ICAAuthKeeper = &icaAuthKeeper
-
-		icaAuthIBCModule := icaauth.NewIBCModule(*app.ICAAuthKeeper)
-		icaHostIBCModule := icahost.NewIBCModule(*app.ICAHostKeeper)
-		icaHostStack = ibcperm.NewIBCMiddleware(
-			// receive: perm -> fee -> ica host
-			ibcfee.NewIBCMiddleware(icaHostIBCModule, *app.IBCFeeKeeper),
-			// ics4wrapper: not used
-			nil,
-			*app.IBCPermKeeper,
-		)
-		icaControllerIBCModule := icacontroller.NewIBCMiddleware(icaAuthIBCModule, *app.ICAControllerKeeper)
-		icaControllerStack = ibcperm.NewIBCMiddleware(
-			// receive: perm -> fee -> ica controller
-			ibcfee.NewIBCMiddleware(icaControllerIBCModule, *app.IBCFeeKeeper),
-			// ics4wrapper: not used
-			nil,
-			*app.IBCPermKeeper,
-		)
-	}
-
-	//////////////////////////////
-	// IBC router Configuration //
-	//////////////////////////////
-
-	// Create static IBC router, add transfer route, then set and seal it
-	ibcRouter := porttypes.NewRouter()
-	ibcRouter.AddRoute(ibctransfertypes.ModuleName, transferStack).
-		AddRoute(icahosttypes.SubModuleName, icaHostStack).
-		AddRoute(icacontrollertypes.SubModuleName, icaControllerStack).
-		AddRoute(icaauthtypes.ModuleName, icaControllerStack).
-		AddRoute(ibcnfttransfertypes.ModuleName, nftTransferStack)
-	app.IBCKeeper.SetRouter(ibcRouter)
-
-	//////////////////////////////
-	// MoveKeeper Configuration //
-	//////////////////////////////
-
-	*app.MoveKeeper = *movekeeper.NewKeeper(
-		appCodec,
-		runtime.NewKVStoreService(keys[movetypes.StoreKey]),
-		app.AccountKeeper,
-		app.BankKeeper,
-		app.OracleKeeper,
-		// app.NftTransferKeeper,
-		app.BaseApp.MsgServiceRouter(),
-		app.BaseApp.GRPCQueryRouter(),
+		bApp,
+		legacyAmino,
+		maccPerms,
+		blockedModuleAccountAddrs,
+		skipUpgradeHeights,
+		homePath,
+		invCheckPeriod,
+		logger,
 		moveConfig,
-		// staking feature
-		app.DistrKeeper,
-		app.StakingKeeper,
-		app.RewardKeeper,
-		app.DistrKeeper,
-		authtypes.FeeCollectorName,
-		authorityAddr,
-		ac, vc,
-	)
-
-	// register the staking hooks
-	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
-	app.StakingKeeper.SetHooks(
-		stakingtypes.NewMultiStakingHooks(
-			app.DistrKeeper.Hooks(),
-			app.SlashingKeeper.Hooks(),
-		),
-	)
-	app.StakingKeeper.SetSlashingHooks(app.MoveKeeper.Hooks())
-
-	// x/auction module keeper initialization
-
-	// initialize the keeper
-	auctionKeeper := auctionkeeper.NewKeeperWithRewardsAddressProvider(
-		app.appCodec,
-		app.keys[auctiontypes.StoreKey],
-		app.AccountKeeper,
-		app.BankKeeper,
-		applanes.NewRewardsAddressProvider(*app.StakingKeeper, *app.DistrKeeper),
-		authorityAddr,
-	)
-	app.AuctionKeeper = &auctionKeeper
-
-	app.OPHostKeeper = ophostkeeper.NewKeeper(
-		app.appCodec,
-		runtime.NewKVStoreService(app.keys[ophosttypes.StoreKey]),
-		app.AccountKeeper,
-		app.BankKeeper,
-		app.DistrKeeper,
-		ophosttypes.NewBridgeHooks(ophosttypeshook.NewBridgeHook(app.IBCKeeper.ChannelKeeper, app.IBCPermKeeper, ac)),
-		authorityAddr,
-	)
-
-	govConfig := govtypes.DefaultConfig()
-	app.GovKeeper = govkeeper.NewKeeper(
-		appCodec, runtime.NewKVStoreService(keys[govtypes.StoreKey]), app.AccountKeeper, app.BankKeeper,
-		app.StakingKeeper, app.DistrKeeper, app.MsgServiceRouter(), govConfig, authorityAddr,
+		appOpts,
 	)
 
 	/****  Module Options ****/
 
-	// NOTE: we may consider parsing `appOpts` inside module constructors. For the moment
-	// we prefer to be more strict in what arguments the modules expect.
-	skipGenesisInvariants := cast.ToBool(appOpts.Get(crisis.FlagSkipGenesisInvariants))
-
 	// NOTE: Any module instantiated in the module manager that is later modified
 	// must be passed by reference here.
-
-	app.ModuleManager = module.NewManager(
-		genutil.NewAppModule(
-			app.AccountKeeper, app.StakingKeeper, app, encodingConfig.TxConfig),
-		auth.NewAppModule(appCodec, *app.AccountKeeper, nil, nil),
-		bank.NewAppModule(appCodec, *app.BankKeeper, app.AccountKeeper),
-		capability.NewAppModule(appCodec, *app.CapabilityKeeper, false),
-		crisis.NewAppModule(app.CrisisKeeper, skipGenesisInvariants, nil),
-		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, *app.FeeGrantKeeper, app.interfaceRegistry),
-		gov.NewAppModule(appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper),
-		reward.NewAppModule(appCodec, *app.RewardKeeper),
-		slashing.NewAppModule(appCodec, *app.SlashingKeeper),
-		distr.NewAppModule(appCodec, *app.DistrKeeper),
-		staking.NewAppModule(appCodec, *app.StakingKeeper),
-		upgrade.NewAppModule(app.UpgradeKeeper, ac),
-		evidence.NewAppModule(*app.EvidenceKeeper),
-		authzmodule.NewAppModule(appCodec, *app.AuthzKeeper, app.interfaceRegistry),
-		groupmodule.NewAppModule(appCodec, *app.GroupKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
-		consensus.NewAppModule(appCodec, *app.ConsensusParamsKeeper),
-		move.NewAppModule(appCodec, *app.MoveKeeper, vc, maps.Keys(maccPerms)),
-		auction.NewAppModule(app.appCodec, *app.AuctionKeeper),
-		ophost.NewAppModule(appCodec, *app.OPHostKeeper),
-		// slinky modules
-		oracle.NewAppModule(appCodec, *app.OracleKeeper),
-		marketmap.NewAppModule(appCodec, app.MarketMapKeeper),
-		// ibc modules
-		ibc.NewAppModule(app.IBCKeeper),
-		ibctransfer.NewAppModule(*app.TransferKeeper),
-		ibcnfttransfer.NewAppModule(appCodec, *app.NftTransferKeeper),
-		ica.NewAppModule(app.ICAControllerKeeper, app.ICAHostKeeper),
-		icaauth.NewAppModule(appCodec, *app.ICAAuthKeeper),
-		ibcfee.NewAppModule(*app.IBCFeeKeeper),
-		ibcperm.NewAppModule(*app.IBCPermKeeper),
-		ibctm.NewAppModule(),
-		solomachine.NewAppModule(),
-		packetforward.NewAppModule(app.PacketForwardKeeper, nil),
-		ibchooks.NewAppModule(appCodec, *app.IBCHooksKeeper),
-		forwarding.NewAppModule(app.ForwardingKeeper),
-		ratelimit.NewAppModule(appCodec, *app.RatelimitKeeper),
-	)
+	app.ModuleManager = module.NewManager(appModules(app, skipGenesisInvariants)...)
 
 	// BasicModuleManager defines the module BasicManager is in charge of setting up basic,
 	// non-dependant module elements, such as codec registration and genesis verification.
 	// By default it is composed of all the module from the module manager.
 	// Additionally, app module basics can be overwritten by passing them as argument.
-	app.BasicModuleManager = module.NewBasicManagerFromManager(
-		app.ModuleManager,
-		map[string]module.AppModuleBasic{
-			genutiltypes.ModuleName: genutil.NewAppModuleBasic(genutil.DefaultMessageValidator),
-			govtypes.ModuleName:     gov.NewAppModuleBasic(appCodec),
-		})
-	app.BasicModuleManager.RegisterLegacyAminoCodec(legacyAmino)
-	app.BasicModuleManager.RegisterInterfaces(interfaceRegistry)
+	app.BasicModuleManager = newBasicManagerFromManager(app)
 
 	// NOTE: upgrade module is required to be prioritized
 	app.ModuleManager.SetOrderPreBlockers(
 		upgradetypes.ModuleName,
 	)
 
-	// During begin block slashing happens after distr.BeginBlocker so that
-	// there is nothing left over in the validator fee pool, so as to keep the
-	// CanWithdrawInvariant invariant.
-	// NOTE: staking module is required if HistoricalEntries param > 0
-	app.ModuleManager.SetOrderBeginBlockers(
-		capabilitytypes.ModuleName,
-		rewardtypes.ModuleName,
-		distrtypes.ModuleName,
-		slashingtypes.ModuleName,
-		evidencetypes.ModuleName,
-		stakingtypes.ModuleName,
-		authz.ModuleName,
-		movetypes.ModuleName,
-		ibcexported.ModuleName,
-		oracletypes.ModuleName,
-		marketmaptypes.ModuleName,
-		ratelimittypes.ModuleName,
-	)
-
-	app.ModuleManager.SetOrderEndBlockers(
-		crisistypes.ModuleName,
-		govtypes.ModuleName,
-		stakingtypes.ModuleName,
-		evidencetypes.ModuleName,
-		authz.ModuleName,
-		feegrant.ModuleName,
-		group.ModuleName,
-		oracletypes.ModuleName,
-		marketmaptypes.ModuleName,
-		forwardingtypes.ModuleName,
-		ratelimittypes.ModuleName,
-	)
-
-	// NOTE: The genutils module must occur after staking so that pools are
-	// properly initialized with tokens from genesis accounts.
-	// NOTE: Capability module must occur first so that it can initialize any capabilities
-	// so that other modules that want to create or claim capabilities afterwards in InitChain
-	// can do so safely.
-	genesisModuleOrder := []string{
-		capabilitytypes.ModuleName, authtypes.ModuleName, movetypes.ModuleName, banktypes.ModuleName,
-		distrtypes.ModuleName, stakingtypes.ModuleName, slashingtypes.ModuleName, govtypes.ModuleName,
-		rewardtypes.ModuleName, crisistypes.ModuleName, genutiltypes.ModuleName, evidencetypes.ModuleName,
-		authz.ModuleName, group.ModuleName, upgradetypes.ModuleName, feegrant.ModuleName,
-		consensusparamtypes.ModuleName, ibcexported.ModuleName, ibctransfertypes.ModuleName,
-		ibcnfttransfertypes.ModuleName, icatypes.ModuleName, icaauthtypes.ModuleName, ibcfeetypes.ModuleName,
-		ibcpermtypes.ModuleName, consensusparamtypes.ModuleName, auctiontypes.ModuleName, ophosttypes.ModuleName,
-		oracletypes.ModuleName, marketmaptypes.ModuleName, packetforwardtypes.ModuleName, ibchookstypes.ModuleName,
-		forwardingtypes.ModuleName, ratelimittypes.ModuleName,
-	}
+	// set order of module operations
+	app.ModuleManager.SetOrderBeginBlockers(orderBeginBlockers()...)
+	app.ModuleManager.SetOrderEndBlockers(orderEndBlockers()...)
+	genesisModuleOrder := orderInitBlockers()
 	app.ModuleManager.SetOrderInitGenesis(genesisModuleOrder...)
 	app.ModuleManager.SetOrderExportGenesis(genesisModuleOrder...)
 
+	// register invariants for crisis module
 	app.ModuleManager.RegisterInvariants(app.CrisisKeeper)
 
+	// register the service configurator
 	app.configurator = module.NewConfigurator(app.appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter())
-	err = app.ModuleManager.RegisterServices(app.configurator)
+	err := app.ModuleManager.RegisterServices(app.configurator)
 	if err != nil {
-		panic(err)
+		tmos.Exit(err.Error())
 	}
 
 	// register upgrade handler for later use
@@ -1020,243 +252,59 @@ func NewInitiaApp(
 
 	reflectionSvc, err := runtimeservices.NewReflectionService()
 	if err != nil {
-		panic(err)
+		tmos.Exit(err.Error())
 	}
 	reflectionv1.RegisterReflectionServiceServer(app.GRPCQueryRouter(), reflectionSvc)
 
 	// initialize stores
-	app.MountKVStores(keys)
-	app.MountTransientStores(tkeys)
-	app.MountMemoryStores(memKeys)
+	app.MountKVStores(app.GetKVStoreKey())
+	app.MountTransientStores(app.GetTransientStoreKey())
+	app.MountMemoryStores(app.GetMemoryStoreKey())
 
 	// initialize BaseApp
 	app.SetInitChainer(app.InitChainer)
-	app.SetPreBlocker(app.PreBlocker)
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.setPostHandler()
 	app.SetEndBlocker(app.EndBlocker)
 
-	//////////////////
-	/// lane start ///
-	//////////////////
+	// setup BlockSDK
 
-	// initialize and set the InitiaApp mempool. The current mempool will be the
-	// x/auction module's mempool which will extract the top bid from the current block's auction
-	// and insert the txs at the top of the block spots.
-	signerExtractor := signer_extraction.NewDefaultAdapter()
-
-	systemLane := applanes.NewSystemLane(blockbase.LaneConfig{
-		Logger:          app.Logger(),
-		TxEncoder:       app.txConfig.TxEncoder(),
-		TxDecoder:       app.txConfig.TxDecoder(),
-		MaxBlockSpace:   math.LegacyMustNewDecFromStr("0.01"),
-		MaxTxs:          1,
-		SignerExtractor: signerExtractor,
-	}, applanes.RejectMatchHandler())
-
-	factory := mevlane.NewDefaultAuctionFactory(app.txConfig.TxDecoder(), signerExtractor)
-	mevLane := mevlane.NewMEVLane(blockbase.LaneConfig{
-		Logger:          app.Logger(),
-		TxEncoder:       app.txConfig.TxEncoder(),
-		TxDecoder:       app.txConfig.TxDecoder(),
-		MaxBlockSpace:   math.LegacyMustNewDecFromStr("0.09"),
-		MaxTxs:          100,
-		SignerExtractor: signerExtractor,
-	}, factory, factory.MatchHandler())
-
-	freeLane := applanes.NewFreeLane(blockbase.LaneConfig{
-		Logger:          app.Logger(),
-		TxEncoder:       app.txConfig.TxEncoder(),
-		TxDecoder:       app.txConfig.TxDecoder(),
-		MaxBlockSpace:   math.LegacyMustNewDecFromStr("0.1"),
-		MaxTxs:          100,
-		SignerExtractor: signerExtractor,
-	}, applanes.FreeLaneMatchHandler())
-
-	defaultLane := applanes.NewDefaultLane(blockbase.LaneConfig{
-		Logger:          app.Logger(),
-		TxEncoder:       app.txConfig.TxEncoder(),
-		TxDecoder:       app.txConfig.TxDecoder(),
-		MaxBlockSpace:   math.LegacyMustNewDecFromStr("0.8"),
-		MaxTxs:          mempoolTxs,
-		SignerExtractor: signerExtractor,
-	})
-
-	lanes := []block.Lane{systemLane, mevLane, freeLane, defaultLane}
-	mempool, err := block.NewLanedMempool(app.Logger(), lanes)
+	mempool, anteHandler, checkTx, prepareProposalHandler, processProposalHandler, err := setupBlockSDK(app, mempoolMaxTxs)
 	if err != nil {
-		panic(err)
+		tmos.Exit(err.Error())
 	}
 
-	// The application's mempool is now powered by the Block SDK!
 	app.SetMempool(mempool)
-	anteHandler := app.setAnteHandler(mevLane, freeLane)
+	app.SetAnteHandler(anteHandler)
+	app.SetCheckTx(checkTx)
 
-	// set the ante handler for each lane for VerifyTx at PrepareLaneHandler
-	//
-	opt := []blockbase.LaneOption{
-		blockbase.WithAnteHandler(anteHandler),
-	}
-	systemLane.(*blockbase.BaseLane).WithOptions(
-		opt...,
-	)
-	mevLane.WithOptions(
-		opt...,
-	)
-	freeLane.(*blockbase.BaseLane).WithOptions(
-		opt...,
-	)
-	defaultLane.(*blockbase.BaseLane).WithOptions(
-		opt...,
-	)
+	// setup slinky
 
-	// override the base-app's ABCI methods (CheckTx, PrepareProposal, ProcessProposal)
-	blockProposalHandlers := blockabci.NewProposalHandler(
-		app.Logger(),
-		app.txConfig.TxDecoder(),
-		app.txConfig.TxEncoder(),
-		mempool,
-	)
-
-	// overrde base-app's CheckTx
-	mevCheckTx := blockchecktx.NewMEVCheckTxHandler(
-		app.BaseApp,
-		app.txConfig.TxDecoder(),
-		mevLane,
-		anteHandler,
-		app.BaseApp.CheckTx,
-	)
-	checkTxHandler := blockchecktx.NewMempoolParityCheckTx(
-		app.Logger(), mempool,
-		app.txConfig.TxDecoder(), mevCheckTx.CheckTx(),
-	)
-	app.SetCheckTx(checkTxHandler.CheckTx())
-
-	////////////////
-	/// lane end ///
-	////////////////
-
-	////////////////////
-	/// oracle start ///
-	////////////////////
-
-	if err := oracleConfig.ValidateBasic(); err != nil {
-		panic(err)
-	}
-
-	serviceMetrics, err := servicemetrics.NewMetricsFromConfig(
+	oracleClient, prepareProposalHandler, processProposalHandler, preBlocker, extendedVoteHandler, verifyVoteExtensionHandler, err := setupSlinky(
+		app,
 		oracleConfig,
-		app.ChainID(),
+		prepareProposalHandler,
+		processProposalHandler,
 	)
 	if err != nil {
-		panic(err)
+		tmos.Exit(err.Error())
 	}
 
-	app.OracleClient, err = apporacle.NewClientFromConfig(
-		oracleConfig,
-		app.Logger(),
-		serviceMetrics,
-	)
-	if err != nil {
-		panic(err)
-	}
+	// set oracle client
+	app.SetOracleClient(oracleClient)
 
-	oracleProposalHandler := oracleproposals.NewProposalHandler(
-		app.Logger(),
-		blockProposalHandlers.PrepareProposalHandler(),
-		blockProposalHandlers.ProcessProposalHandler(),
-		ve.NewDefaultValidateVoteExtensionsFn(
-			stakingkeeper.NewCompatibilityKeeper(app.StakingKeeper),
-		),
-		compression.NewCompressionVoteExtensionCodec(
-			compression.NewDefaultVoteExtensionCodec(),
-			compression.NewZLibCompressor(),
-		),
-		compression.NewCompressionExtendedCommitCodec(
-			compression.NewDefaultExtendedCommitCodec(),
-			compression.NewZStdCompressor(),
-		),
-		currencypair.NewHashCurrencyPairStrategy(app.OracleKeeper),
-		serviceMetrics,
-	)
-
-	// override baseapp's ProcessProposal + PrepareProposal
-	app.SetPrepareProposal(oracleProposalHandler.PrepareProposalHandler())
-	app.SetProcessProposal(oracleProposalHandler.ProcessProposalHandler())
-
-	// Create the aggregation function that will be used to aggregate oracle data
-	// from each validator.
-	aggregatorFn := voteweighted.MedianFromContext(
-		app.Logger(),
-		stakingkeeper.NewCompatibilityKeeper(app.StakingKeeper),
-		voteweighted.DefaultPowerThreshold,
-	)
-
-	app.oraclePreBlockHandler = oraclepreblock.NewOraclePreBlockHandler(
-		app.Logger(),
-		aggregatorFn,
-		app.OracleKeeper,
-		serviceMetrics,
-		currencypair.NewHashCurrencyPairStrategy(app.OracleKeeper),
-		compression.NewCompressionVoteExtensionCodec(
-			compression.NewDefaultVoteExtensionCodec(),
-			compression.NewZLibCompressor(),
-		),
-		compression.NewCompressionExtendedCommitCodec(
-			compression.NewDefaultExtendedCommitCodec(),
-			compression.NewZStdCompressor(),
-		),
-	)
-
-	// see app.PreBlocker
-	// app.SetPreBlocker(oraclePreBlockHandler.WrappedPreBlocker(app.ModuleManager))
-
-	// Create the vote extensions handler that will be used to extend and verify
-	// vote extensions (i.e. oracle data).
-	veCodec := compression.NewCompressionVoteExtensionCodec(
-		compression.NewDefaultVoteExtensionCodec(),
-		compression.NewZLibCompressor(),
-	)
-	extCommitCodec := compression.NewCompressionExtendedCommitCodec(
-		compression.NewDefaultExtendedCommitCodec(),
-		compression.NewZStdCompressor(),
-	)
-
-	// Create the vote extensions handler that will be used to extend and verify
-	// vote extensions (i.e. oracle data).
-	voteExtensionsHandler := ve.NewVoteExtensionHandler(
-		app.Logger(),
-		app.OracleClient,
-		time.Second,
-		currencypair.NewHashCurrencyPairStrategy(app.OracleKeeper),
-		veCodec,
-		aggregator.NewOraclePriceApplier(
-			aggregator.NewDefaultVoteAggregator(
-				app.Logger(),
-				aggregatorFn,
-				// we need a separate price strategy here, so that we can optimistically apply the latest prices
-				// and extend our vote based on these prices
-				currencypair.NewHashCurrencyPairStrategy(app.OracleKeeper),
-			),
-			app.OracleKeeper,
-			veCodec,
-			extCommitCodec,
-			app.Logger(),
-		),
-		serviceMetrics,
-	)
-	app.SetExtendVoteHandler(voteExtensionsHandler.ExtendVoteHandler())
-	app.SetVerifyVoteExtensionHandler(voteExtensionsHandler.VerifyVoteExtensionHandler())
-
-	//////////////////
-	/// oracle end ///
-	//////////////////
+	// override baseapp handlers
+	app.SetPrepareProposal(prepareProposalHandler)
+	app.SetProcessProposal(processProposalHandler)
+	app.SetPreBlocker(preBlocker)
+	app.SetExtendVoteHandler(extendedVoteHandler)
+	app.SetVerifyVoteExtensionHandler(verifyVoteExtensionHandler)
 
 	// At startup, after all modules have been registered, check that all prot
 	// annotations are correct.
 	protoFiles, err := proto.MergedRegistry()
 	if err != nil {
-		panic(err)
+		tmos.Exit(err.Error())
 	}
 	err = msgservice.ValidateProtoAnnotations(protoFiles)
 	if err != nil {
@@ -1289,33 +337,8 @@ func (app *InitiaApp) SetCheckTx(handler blockchecktx.CheckTx) {
 	app.checkTxHandler = handler
 }
 
-func (app *InitiaApp) setAnteHandler(
-	mevLane auctionante.MEVLane,
-	freeLane block.Lane,
-) sdk.AnteHandler {
-	anteHandler, err := appante.NewAnteHandler(
-		appante.HandlerOptions{
-			HandlerOptions: cosmosante.HandlerOptions{
-				AccountKeeper:   app.AccountKeeper,
-				BankKeeper:      app.BankKeeper,
-				FeegrantKeeper:  app.FeeGrantKeeper,
-				SignModeHandler: app.txConfig.SignModeHandler(),
-			},
-			IBCkeeper:     app.IBCKeeper,
-			MoveKeeper:    movekeeper.NewDexKeeper(app.MoveKeeper),
-			Codec:         app.appCodec,
-			TxEncoder:     app.txConfig.TxEncoder(),
-			AuctionKeeper: *app.AuctionKeeper,
-			MevLane:       mevLane,
-			FreeLane:      freeLane,
-		},
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	app.SetAnteHandler(anteHandler)
-	return anteHandler
+func (app *InitiaApp) SetOracleClient(oracleClient oracleclient.OracleClient) {
+	app.oracleClient = oracleClient
 }
 
 func (app *InitiaApp) setPostHandler() {
@@ -1323,7 +346,7 @@ func (app *InitiaApp) setPostHandler() {
 		posthandler.HandlerOptions{},
 	)
 	if err != nil {
-		panic(err)
+		tmos.Exit(err.Error())
 	}
 
 	app.SetPostHandler(postHandler)
@@ -1331,11 +354,6 @@ func (app *InitiaApp) setPostHandler() {
 
 // Name returns the name of the App
 func (app *InitiaApp) Name() string { return app.BaseApp.Name() }
-
-// PreBlocker application updates every pre block
-func (app *InitiaApp) PreBlocker(ctx sdk.Context, req *abci.RequestFinalizeBlock) (*sdk.ResponsePreBlock, error) {
-	return app.oraclePreBlockHandler.WrappedPreBlocker(app.ModuleManager)(ctx, req)
-}
 
 // BeginBlocker application updates every begin block
 func (app *InitiaApp) BeginBlocker(ctx sdk.Context) (sdk.BeginBlock, error) {
@@ -1351,10 +369,10 @@ func (app *InitiaApp) EndBlocker(ctx sdk.Context) (sdk.EndBlock, error) {
 func (app *InitiaApp) InitChainer(ctx sdk.Context, req *abci.RequestInitChain) (*abci.ResponseInitChain, error) {
 	var genesisState GenesisState
 	if err := tmjson.Unmarshal(req.AppStateBytes, &genesisState); err != nil {
-		panic(err)
+		tmos.Exit(err.Error())
 	}
 	if err := app.UpgradeKeeper.SetModuleVersionMap(ctx, app.ModuleManager.GetVersionMap()); err != nil {
-		panic(err)
+		tmos.Exit(err.Error())
 	}
 	return app.ModuleManager.InitGenesis(ctx, app.appCodec, genesisState)
 }
@@ -1368,7 +386,25 @@ func (app *InitiaApp) LoadHeight(height int64) error {
 func (app *InitiaApp) ModuleAccountAddrs() map[string]bool {
 	modAccAddrs := make(map[string]bool)
 	for acc := range maccPerms {
-		modAccAddrs[authtypes.NewModuleAddress(acc).String()] = true
+		addrStr, _ := app.ac.BytesToString(authtypes.NewModuleAddress(acc).Bytes())
+		modAccAddrs[addrStr] = true
+	}
+
+	return modAccAddrs
+}
+
+// BlockedModuleAccountAddrs returns all the app's blocked module account
+// addresses.
+func (app *InitiaApp) BlockedModuleAccountAddrs(modAccAddrs map[string]bool) map[string]bool {
+	modules := []string{
+		govtypes.ModuleName,
+		rewardtypes.ModuleName,
+	}
+
+	// remove module accounts that are ALLOWED to received funds
+	for _, module := range modules {
+		moduleAddr, _ := app.ac.BytesToString(authtypes.NewModuleAddress(module).Bytes())
+		delete(modAccAddrs, moduleAddr)
 	}
 
 	return modAccAddrs
@@ -1393,27 +429,6 @@ func (app *InitiaApp) AppCodec() codec.Codec {
 // InterfaceRegistry returns Initia's InterfaceRegistry
 func (app *InitiaApp) InterfaceRegistry() types.InterfaceRegistry {
 	return app.interfaceRegistry
-}
-
-// GetKey returns the KVStoreKey for the provided store key.
-//
-// NOTE: This is solely to be used for testing purposes.
-func (app *InitiaApp) GetKey(storeKey string) *storetypes.KVStoreKey {
-	return app.keys[storeKey]
-}
-
-// GetTKey returns the TransientStoreKey for the provided store key.
-//
-// NOTE: This is solely to be used for testing purposes.
-func (app *InitiaApp) GetTKey(storeKey string) *storetypes.TransientStoreKey {
-	return app.tkeys[storeKey]
-}
-
-// GetMemKey returns the MemStoreKey for the provided mem key.
-//
-// NOTE: This is solely used for testing purposes.
-func (app *InitiaApp) GetMemKey(storeKey string) *storetypes.MemoryStoreKey {
-	return app.memKeys[storeKey]
 }
 
 // RegisterAPIRoutes registers all application module routes with the provided
@@ -1470,7 +485,7 @@ func (app *InitiaApp) RegisterNodeService(clientCtx client.Context, cfg config.C
 func RegisterSwaggerAPI(rtr *mux.Router) {
 	statikFS, err := fs.New()
 	if err != nil {
-		panic(err)
+		tmos.Exit(err.Error())
 	}
 
 	staticServer := http.FileServer(statikFS)
@@ -1553,10 +568,18 @@ func (app *InitiaApp) Close() error {
 	}
 
 	// close the oracle service
-	if app.OracleClient != nil {
-		if err := app.OracleClient.Stop(); err != nil {
+	if app.oracleClient != nil {
+		if err := app.oracleClient.Stop(); err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (app *InitiaApp) StartOracleClient(ctx context.Context) error {
+	if app.oracleClient != nil {
+		return app.oracleClient.Start(ctx)
 	}
 
 	return nil

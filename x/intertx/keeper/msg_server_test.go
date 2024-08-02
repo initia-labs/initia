@@ -70,7 +70,7 @@ func (suite *KeeperTestSuite) TestRegisterInterchainAccount() {
 
 			owner = TestOwnerAddress // must be explicitly changed
 
-			path = NewICAPath(suite.chainA, suite.chainB)
+			path = NewICAPath(suite.chainA, suite.chainB, icatypes.EncodingProtobuf)
 			suite.coordinator.SetupConnections(path)
 
 			tc.malleate() // malleate mutates test data
@@ -144,7 +144,7 @@ func (suite *KeeperTestSuite) TestSubmitTx() {
 			icaAppA := GetICAApp(suite.chainA)
 			icaAppB := GetICAApp(suite.chainB)
 
-			path = NewICAPath(suite.chainA, suite.chainB)
+			path = NewICAPath(suite.chainA, suite.chainB, icatypes.EncodingProtobuf)
 			suite.coordinator.SetupConnections(path)
 
 			tc.malleate() // malleate mutates test data

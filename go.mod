@@ -40,7 +40,7 @@ require (
 	github.com/gorilla/mux v1.8.1
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/hashicorp/go-metrics v0.5.3
-	github.com/initia-labs/OPinit v0.4.0
+	github.com/initia-labs/OPinit v0.4.1
 	// we also need to update `LIBMOVEVM_VERSION` of Dockerfile#5
 	github.com/initia-labs/movevm v0.3.4
 	github.com/noble-assets/forwarding/v2 v2.0.0-20240521090705-86712c4c9e43
@@ -57,7 +57,7 @@ require (
 	github.com/syndtr/goleveldb v1.0.1-0.20220721030215-126854af5e6d
 	golang.org/x/crypto v0.25.0
 	golang.org/x/exp v0.0.0-20240506185415-9bf2ced13842
-	golang.org/x/sync v0.7.0 // indirect
+	golang.org/x/sync v0.7.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20240528184218-531527333157
 	google.golang.org/grpc v1.65.0
 	google.golang.org/protobuf v1.34.2
@@ -151,14 +151,13 @@ require (
 	github.com/iancoleman/strcase v0.3.0 // indirect
 	github.com/improbable-eng/grpc-web v0.15.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/initia-labs/OPinit/api v0.4.0 // indirect
+	github.com/initia-labs/OPinit/api v0.4.1 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/jmhodges/levigo v1.0.0 // indirect
 	github.com/klauspost/compress v1.17.9 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/lib/pq v1.10.9 // indirect
-	github.com/libp2p/go-buffer-pool v0.1.0 // indirect
 	github.com/linxGnu/grocksdb v1.8.14 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/manifoldco/promptui v0.9.0 // indirect
@@ -224,7 +223,7 @@ replace (
 
 	// use custom version for
 	// - https://github.com/initia-labs/cometbft/commit/cb3ed4ca9be4d6c55df7df2d927e9b92153bc3e2
-	github.com/cometbft/cometbft => github.com/initia-labs/cometbft v0.0.0-20240704071957-c46468756c01
+	github.com/cometbft/cometbft => github.com/initia-labs/cometbft v0.0.0-20240802022359-e0a5ce0336b6
 	// use v1.1.4 for
 	// - https://github.com/cosmos/iavl/commit/021433c2ed0b64223f90315a3421eb645e1f08fe
 	github.com/cosmos/iavl => github.com/cosmos/iavl v1.1.4
