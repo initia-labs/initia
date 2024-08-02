@@ -16,32 +16,78 @@ import (
 	sync "sync"
 )
 
+var _ protoreflect.List = (*_MsgSetPermissionedRelayers_4_list)(nil)
+
+type _MsgSetPermissionedRelayers_4_list struct {
+	list *[]string
+}
+
+func (x *_MsgSetPermissionedRelayers_4_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_MsgSetPermissionedRelayers_4_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfString((*x.list)[i])
+}
+
+func (x *_MsgSetPermissionedRelayers_4_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_MsgSetPermissionedRelayers_4_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_MsgSetPermissionedRelayers_4_list) AppendMutable() protoreflect.Value {
+	panic(fmt.Errorf("AppendMutable can not be called on message MsgSetPermissionedRelayers at list field Relayers as it is not of Message kind"))
+}
+
+func (x *_MsgSetPermissionedRelayers_4_list) Truncate(n int) {
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_MsgSetPermissionedRelayers_4_list) NewElement() protoreflect.Value {
+	v := ""
+	return protoreflect.ValueOfString(v)
+}
+
+func (x *_MsgSetPermissionedRelayers_4_list) IsValid() bool {
+	return x.list != nil
+}
+
 var (
-	md_MsgSetPermissionedRelayer            protoreflect.MessageDescriptor
-	fd_MsgSetPermissionedRelayer_authority  protoreflect.FieldDescriptor
-	fd_MsgSetPermissionedRelayer_port_id    protoreflect.FieldDescriptor
-	fd_MsgSetPermissionedRelayer_channel_id protoreflect.FieldDescriptor
-	fd_MsgSetPermissionedRelayer_relayer    protoreflect.FieldDescriptor
+	md_MsgSetPermissionedRelayers            protoreflect.MessageDescriptor
+	fd_MsgSetPermissionedRelayers_authority  protoreflect.FieldDescriptor
+	fd_MsgSetPermissionedRelayers_port_id    protoreflect.FieldDescriptor
+	fd_MsgSetPermissionedRelayers_channel_id protoreflect.FieldDescriptor
+	fd_MsgSetPermissionedRelayers_relayers   protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_ibc_applications_perm_v1_tx_proto_init()
-	md_MsgSetPermissionedRelayer = File_ibc_applications_perm_v1_tx_proto.Messages().ByName("MsgSetPermissionedRelayer")
-	fd_MsgSetPermissionedRelayer_authority = md_MsgSetPermissionedRelayer.Fields().ByName("authority")
-	fd_MsgSetPermissionedRelayer_port_id = md_MsgSetPermissionedRelayer.Fields().ByName("port_id")
-	fd_MsgSetPermissionedRelayer_channel_id = md_MsgSetPermissionedRelayer.Fields().ByName("channel_id")
-	fd_MsgSetPermissionedRelayer_relayer = md_MsgSetPermissionedRelayer.Fields().ByName("relayer")
+	md_MsgSetPermissionedRelayers = File_ibc_applications_perm_v1_tx_proto.Messages().ByName("MsgSetPermissionedRelayers")
+	fd_MsgSetPermissionedRelayers_authority = md_MsgSetPermissionedRelayers.Fields().ByName("authority")
+	fd_MsgSetPermissionedRelayers_port_id = md_MsgSetPermissionedRelayers.Fields().ByName("port_id")
+	fd_MsgSetPermissionedRelayers_channel_id = md_MsgSetPermissionedRelayers.Fields().ByName("channel_id")
+	fd_MsgSetPermissionedRelayers_relayers = md_MsgSetPermissionedRelayers.Fields().ByName("relayers")
 }
 
-var _ protoreflect.Message = (*fastReflection_MsgSetPermissionedRelayer)(nil)
+var _ protoreflect.Message = (*fastReflection_MsgSetPermissionedRelayers)(nil)
 
-type fastReflection_MsgSetPermissionedRelayer MsgSetPermissionedRelayer
+type fastReflection_MsgSetPermissionedRelayers MsgSetPermissionedRelayers
 
-func (x *MsgSetPermissionedRelayer) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_MsgSetPermissionedRelayer)(x)
+func (x *MsgSetPermissionedRelayers) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_MsgSetPermissionedRelayers)(x)
 }
 
-func (x *MsgSetPermissionedRelayer) slowProtoReflect() protoreflect.Message {
+func (x *MsgSetPermissionedRelayers) slowProtoReflect() protoreflect.Message {
 	mi := &file_ibc_applications_perm_v1_tx_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -53,43 +99,43 @@ func (x *MsgSetPermissionedRelayer) slowProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-var _fastReflection_MsgSetPermissionedRelayer_messageType fastReflection_MsgSetPermissionedRelayer_messageType
-var _ protoreflect.MessageType = fastReflection_MsgSetPermissionedRelayer_messageType{}
+var _fastReflection_MsgSetPermissionedRelayers_messageType fastReflection_MsgSetPermissionedRelayers_messageType
+var _ protoreflect.MessageType = fastReflection_MsgSetPermissionedRelayers_messageType{}
 
-type fastReflection_MsgSetPermissionedRelayer_messageType struct{}
+type fastReflection_MsgSetPermissionedRelayers_messageType struct{}
 
-func (x fastReflection_MsgSetPermissionedRelayer_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_MsgSetPermissionedRelayer)(nil)
+func (x fastReflection_MsgSetPermissionedRelayers_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_MsgSetPermissionedRelayers)(nil)
 }
-func (x fastReflection_MsgSetPermissionedRelayer_messageType) New() protoreflect.Message {
-	return new(fastReflection_MsgSetPermissionedRelayer)
+func (x fastReflection_MsgSetPermissionedRelayers_messageType) New() protoreflect.Message {
+	return new(fastReflection_MsgSetPermissionedRelayers)
 }
-func (x fastReflection_MsgSetPermissionedRelayer_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_MsgSetPermissionedRelayer
+func (x fastReflection_MsgSetPermissionedRelayers_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_MsgSetPermissionedRelayers
 }
 
 // Descriptor returns message descriptor, which contains only the protobuf
 // type information for the message.
-func (x *fastReflection_MsgSetPermissionedRelayer) Descriptor() protoreflect.MessageDescriptor {
-	return md_MsgSetPermissionedRelayer
+func (x *fastReflection_MsgSetPermissionedRelayers) Descriptor() protoreflect.MessageDescriptor {
+	return md_MsgSetPermissionedRelayers
 }
 
 // Type returns the message type, which encapsulates both Go and protobuf
 // type information. If the Go type information is not needed,
 // it is recommended that the message descriptor be used instead.
-func (x *fastReflection_MsgSetPermissionedRelayer) Type() protoreflect.MessageType {
-	return _fastReflection_MsgSetPermissionedRelayer_messageType
+func (x *fastReflection_MsgSetPermissionedRelayers) Type() protoreflect.MessageType {
+	return _fastReflection_MsgSetPermissionedRelayers_messageType
 }
 
 // New returns a newly allocated and mutable empty message.
-func (x *fastReflection_MsgSetPermissionedRelayer) New() protoreflect.Message {
-	return new(fastReflection_MsgSetPermissionedRelayer)
+func (x *fastReflection_MsgSetPermissionedRelayers) New() protoreflect.Message {
+	return new(fastReflection_MsgSetPermissionedRelayers)
 }
 
 // Interface unwraps the message reflection interface and
 // returns the underlying ProtoMessage interface.
-func (x *fastReflection_MsgSetPermissionedRelayer) Interface() protoreflect.ProtoMessage {
-	return (*MsgSetPermissionedRelayer)(x)
+func (x *fastReflection_MsgSetPermissionedRelayers) Interface() protoreflect.ProtoMessage {
+	return (*MsgSetPermissionedRelayers)(x)
 }
 
 // Range iterates over every populated field in an undefined order,
@@ -97,28 +143,28 @@ func (x *fastReflection_MsgSetPermissionedRelayer) Interface() protoreflect.Prot
 // Range returns immediately if f returns false.
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
-func (x *fastReflection_MsgSetPermissionedRelayer) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+func (x *fastReflection_MsgSetPermissionedRelayers) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
 	if x.Authority != "" {
 		value := protoreflect.ValueOfString(x.Authority)
-		if !f(fd_MsgSetPermissionedRelayer_authority, value) {
+		if !f(fd_MsgSetPermissionedRelayers_authority, value) {
 			return
 		}
 	}
 	if x.PortId != "" {
 		value := protoreflect.ValueOfString(x.PortId)
-		if !f(fd_MsgSetPermissionedRelayer_port_id, value) {
+		if !f(fd_MsgSetPermissionedRelayers_port_id, value) {
 			return
 		}
 	}
 	if x.ChannelId != "" {
 		value := protoreflect.ValueOfString(x.ChannelId)
-		if !f(fd_MsgSetPermissionedRelayer_channel_id, value) {
+		if !f(fd_MsgSetPermissionedRelayers_channel_id, value) {
 			return
 		}
 	}
-	if x.Relayer != "" {
-		value := protoreflect.ValueOfString(x.Relayer)
-		if !f(fd_MsgSetPermissionedRelayer_relayer, value) {
+	if len(x.Relayers) != 0 {
+		value := protoreflect.ValueOfList(&_MsgSetPermissionedRelayers_4_list{list: &x.Relayers})
+		if !f(fd_MsgSetPermissionedRelayers_relayers, value) {
 			return
 		}
 	}
@@ -135,21 +181,21 @@ func (x *fastReflection_MsgSetPermissionedRelayer) Range(f func(protoreflect.Fie
 // In other cases (aside from the nullable cases above),
 // a proto3 scalar field is populated if it contains a non-zero value, and
 // a repeated field is populated if it is non-empty.
-func (x *fastReflection_MsgSetPermissionedRelayer) Has(fd protoreflect.FieldDescriptor) bool {
+func (x *fastReflection_MsgSetPermissionedRelayers) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "ibc.applications.perm.v1.MsgSetPermissionedRelayer.authority":
+	case "ibc.applications.perm.v1.MsgSetPermissionedRelayers.authority":
 		return x.Authority != ""
-	case "ibc.applications.perm.v1.MsgSetPermissionedRelayer.port_id":
+	case "ibc.applications.perm.v1.MsgSetPermissionedRelayers.port_id":
 		return x.PortId != ""
-	case "ibc.applications.perm.v1.MsgSetPermissionedRelayer.channel_id":
+	case "ibc.applications.perm.v1.MsgSetPermissionedRelayers.channel_id":
 		return x.ChannelId != ""
-	case "ibc.applications.perm.v1.MsgSetPermissionedRelayer.relayer":
-		return x.Relayer != ""
+	case "ibc.applications.perm.v1.MsgSetPermissionedRelayers.relayers":
+		return len(x.Relayers) != 0
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: ibc.applications.perm.v1.MsgSetPermissionedRelayer"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: ibc.applications.perm.v1.MsgSetPermissionedRelayers"))
 		}
-		panic(fmt.Errorf("message ibc.applications.perm.v1.MsgSetPermissionedRelayer does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message ibc.applications.perm.v1.MsgSetPermissionedRelayers does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -159,21 +205,21 @@ func (x *fastReflection_MsgSetPermissionedRelayer) Has(fd protoreflect.FieldDesc
 // associated with the given field number.
 //
 // Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgSetPermissionedRelayer) Clear(fd protoreflect.FieldDescriptor) {
+func (x *fastReflection_MsgSetPermissionedRelayers) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "ibc.applications.perm.v1.MsgSetPermissionedRelayer.authority":
+	case "ibc.applications.perm.v1.MsgSetPermissionedRelayers.authority":
 		x.Authority = ""
-	case "ibc.applications.perm.v1.MsgSetPermissionedRelayer.port_id":
+	case "ibc.applications.perm.v1.MsgSetPermissionedRelayers.port_id":
 		x.PortId = ""
-	case "ibc.applications.perm.v1.MsgSetPermissionedRelayer.channel_id":
+	case "ibc.applications.perm.v1.MsgSetPermissionedRelayers.channel_id":
 		x.ChannelId = ""
-	case "ibc.applications.perm.v1.MsgSetPermissionedRelayer.relayer":
-		x.Relayer = ""
+	case "ibc.applications.perm.v1.MsgSetPermissionedRelayers.relayers":
+		x.Relayers = nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: ibc.applications.perm.v1.MsgSetPermissionedRelayer"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: ibc.applications.perm.v1.MsgSetPermissionedRelayers"))
 		}
-		panic(fmt.Errorf("message ibc.applications.perm.v1.MsgSetPermissionedRelayer does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message ibc.applications.perm.v1.MsgSetPermissionedRelayers does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -183,25 +229,28 @@ func (x *fastReflection_MsgSetPermissionedRelayer) Clear(fd protoreflect.FieldDe
 // the default value of a bytes scalar is guaranteed to be a copy.
 // For unpopulated composite types, it returns an empty, read-only view
 // of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_MsgSetPermissionedRelayer) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_MsgSetPermissionedRelayers) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "ibc.applications.perm.v1.MsgSetPermissionedRelayer.authority":
+	case "ibc.applications.perm.v1.MsgSetPermissionedRelayers.authority":
 		value := x.Authority
 		return protoreflect.ValueOfString(value)
-	case "ibc.applications.perm.v1.MsgSetPermissionedRelayer.port_id":
+	case "ibc.applications.perm.v1.MsgSetPermissionedRelayers.port_id":
 		value := x.PortId
 		return protoreflect.ValueOfString(value)
-	case "ibc.applications.perm.v1.MsgSetPermissionedRelayer.channel_id":
+	case "ibc.applications.perm.v1.MsgSetPermissionedRelayers.channel_id":
 		value := x.ChannelId
 		return protoreflect.ValueOfString(value)
-	case "ibc.applications.perm.v1.MsgSetPermissionedRelayer.relayer":
-		value := x.Relayer
-		return protoreflect.ValueOfString(value)
+	case "ibc.applications.perm.v1.MsgSetPermissionedRelayers.relayers":
+		if len(x.Relayers) == 0 {
+			return protoreflect.ValueOfList(&_MsgSetPermissionedRelayers_4_list{})
+		}
+		listValue := &_MsgSetPermissionedRelayers_4_list{list: &x.Relayers}
+		return protoreflect.ValueOfList(listValue)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: ibc.applications.perm.v1.MsgSetPermissionedRelayer"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: ibc.applications.perm.v1.MsgSetPermissionedRelayers"))
 		}
-		panic(fmt.Errorf("message ibc.applications.perm.v1.MsgSetPermissionedRelayer does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message ibc.applications.perm.v1.MsgSetPermissionedRelayers does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -215,21 +264,23 @@ func (x *fastReflection_MsgSetPermissionedRelayer) Get(descriptor protoreflect.F
 // empty, read-only value, then it panics.
 //
 // Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgSetPermissionedRelayer) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+func (x *fastReflection_MsgSetPermissionedRelayers) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "ibc.applications.perm.v1.MsgSetPermissionedRelayer.authority":
+	case "ibc.applications.perm.v1.MsgSetPermissionedRelayers.authority":
 		x.Authority = value.Interface().(string)
-	case "ibc.applications.perm.v1.MsgSetPermissionedRelayer.port_id":
+	case "ibc.applications.perm.v1.MsgSetPermissionedRelayers.port_id":
 		x.PortId = value.Interface().(string)
-	case "ibc.applications.perm.v1.MsgSetPermissionedRelayer.channel_id":
+	case "ibc.applications.perm.v1.MsgSetPermissionedRelayers.channel_id":
 		x.ChannelId = value.Interface().(string)
-	case "ibc.applications.perm.v1.MsgSetPermissionedRelayer.relayer":
-		x.Relayer = value.Interface().(string)
+	case "ibc.applications.perm.v1.MsgSetPermissionedRelayers.relayers":
+		lv := value.List()
+		clv := lv.(*_MsgSetPermissionedRelayers_4_list)
+		x.Relayers = *clv.list
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: ibc.applications.perm.v1.MsgSetPermissionedRelayer"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: ibc.applications.perm.v1.MsgSetPermissionedRelayers"))
 		}
-		panic(fmt.Errorf("message ibc.applications.perm.v1.MsgSetPermissionedRelayer does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message ibc.applications.perm.v1.MsgSetPermissionedRelayers does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -243,52 +294,57 @@ func (x *fastReflection_MsgSetPermissionedRelayer) Set(fd protoreflect.FieldDesc
 // It panics if the field does not contain a composite type.
 //
 // Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgSetPermissionedRelayer) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_MsgSetPermissionedRelayers) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "ibc.applications.perm.v1.MsgSetPermissionedRelayer.authority":
-		panic(fmt.Errorf("field authority of message ibc.applications.perm.v1.MsgSetPermissionedRelayer is not mutable"))
-	case "ibc.applications.perm.v1.MsgSetPermissionedRelayer.port_id":
-		panic(fmt.Errorf("field port_id of message ibc.applications.perm.v1.MsgSetPermissionedRelayer is not mutable"))
-	case "ibc.applications.perm.v1.MsgSetPermissionedRelayer.channel_id":
-		panic(fmt.Errorf("field channel_id of message ibc.applications.perm.v1.MsgSetPermissionedRelayer is not mutable"))
-	case "ibc.applications.perm.v1.MsgSetPermissionedRelayer.relayer":
-		panic(fmt.Errorf("field relayer of message ibc.applications.perm.v1.MsgSetPermissionedRelayer is not mutable"))
+	case "ibc.applications.perm.v1.MsgSetPermissionedRelayers.relayers":
+		if x.Relayers == nil {
+			x.Relayers = []string{}
+		}
+		value := &_MsgSetPermissionedRelayers_4_list{list: &x.Relayers}
+		return protoreflect.ValueOfList(value)
+	case "ibc.applications.perm.v1.MsgSetPermissionedRelayers.authority":
+		panic(fmt.Errorf("field authority of message ibc.applications.perm.v1.MsgSetPermissionedRelayers is not mutable"))
+	case "ibc.applications.perm.v1.MsgSetPermissionedRelayers.port_id":
+		panic(fmt.Errorf("field port_id of message ibc.applications.perm.v1.MsgSetPermissionedRelayers is not mutable"))
+	case "ibc.applications.perm.v1.MsgSetPermissionedRelayers.channel_id":
+		panic(fmt.Errorf("field channel_id of message ibc.applications.perm.v1.MsgSetPermissionedRelayers is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: ibc.applications.perm.v1.MsgSetPermissionedRelayer"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: ibc.applications.perm.v1.MsgSetPermissionedRelayers"))
 		}
-		panic(fmt.Errorf("message ibc.applications.perm.v1.MsgSetPermissionedRelayer does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message ibc.applications.perm.v1.MsgSetPermissionedRelayers does not contain field %s", fd.FullName()))
 	}
 }
 
 // NewField returns a new value that is assignable to the field
 // for the given descriptor. For scalars, this returns the default value.
 // For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_MsgSetPermissionedRelayer) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_MsgSetPermissionedRelayers) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "ibc.applications.perm.v1.MsgSetPermissionedRelayer.authority":
+	case "ibc.applications.perm.v1.MsgSetPermissionedRelayers.authority":
 		return protoreflect.ValueOfString("")
-	case "ibc.applications.perm.v1.MsgSetPermissionedRelayer.port_id":
+	case "ibc.applications.perm.v1.MsgSetPermissionedRelayers.port_id":
 		return protoreflect.ValueOfString("")
-	case "ibc.applications.perm.v1.MsgSetPermissionedRelayer.channel_id":
+	case "ibc.applications.perm.v1.MsgSetPermissionedRelayers.channel_id":
 		return protoreflect.ValueOfString("")
-	case "ibc.applications.perm.v1.MsgSetPermissionedRelayer.relayer":
-		return protoreflect.ValueOfString("")
+	case "ibc.applications.perm.v1.MsgSetPermissionedRelayers.relayers":
+		list := []string{}
+		return protoreflect.ValueOfList(&_MsgSetPermissionedRelayers_4_list{list: &list})
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: ibc.applications.perm.v1.MsgSetPermissionedRelayer"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: ibc.applications.perm.v1.MsgSetPermissionedRelayers"))
 		}
-		panic(fmt.Errorf("message ibc.applications.perm.v1.MsgSetPermissionedRelayer does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message ibc.applications.perm.v1.MsgSetPermissionedRelayers does not contain field %s", fd.FullName()))
 	}
 }
 
 // WhichOneof reports which field within the oneof is populated,
 // returning nil if none are populated.
 // It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_MsgSetPermissionedRelayer) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+func (x *fastReflection_MsgSetPermissionedRelayers) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in ibc.applications.perm.v1.MsgSetPermissionedRelayer", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in ibc.applications.perm.v1.MsgSetPermissionedRelayers", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -296,7 +352,7 @@ func (x *fastReflection_MsgSetPermissionedRelayer) WhichOneof(d protoreflect.One
 // GetUnknown retrieves the entire list of unknown fields.
 // The caller may only mutate the contents of the RawFields
 // if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_MsgSetPermissionedRelayer) GetUnknown() protoreflect.RawFields {
+func (x *fastReflection_MsgSetPermissionedRelayers) GetUnknown() protoreflect.RawFields {
 	return x.unknownFields
 }
 
@@ -307,7 +363,7 @@ func (x *fastReflection_MsgSetPermissionedRelayer) GetUnknown() protoreflect.Raw
 // An empty RawFields may be passed to clear the fields.
 //
 // SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgSetPermissionedRelayer) SetUnknown(fields protoreflect.RawFields) {
+func (x *fastReflection_MsgSetPermissionedRelayers) SetUnknown(fields protoreflect.RawFields) {
 	x.unknownFields = fields
 }
 
@@ -319,7 +375,7 @@ func (x *fastReflection_MsgSetPermissionedRelayer) SetUnknown(fields protoreflec
 // message type, but the details are implementation dependent.
 // Validity is not part of the protobuf data model, and may not
 // be preserved in marshaling or other operations.
-func (x *fastReflection_MsgSetPermissionedRelayer) IsValid() bool {
+func (x *fastReflection_MsgSetPermissionedRelayers) IsValid() bool {
 	return x != nil
 }
 
@@ -329,9 +385,9 @@ func (x *fastReflection_MsgSetPermissionedRelayer) IsValid() bool {
 // The returned methods type is identical to
 // "google.golang.org/protobuf/runtime/protoiface".Methods.
 // Consult the protoiface package documentation for details.
-func (x *fastReflection_MsgSetPermissionedRelayer) ProtoMethods() *protoiface.Methods {
+func (x *fastReflection_MsgSetPermissionedRelayers) ProtoMethods() *protoiface.Methods {
 	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*MsgSetPermissionedRelayer)
+		x := input.Message.Interface().(*MsgSetPermissionedRelayers)
 		if x == nil {
 			return protoiface.SizeOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -355,9 +411,11 @@ func (x *fastReflection_MsgSetPermissionedRelayer) ProtoMethods() *protoiface.Me
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		l = len(x.Relayer)
-		if l > 0 {
-			n += 1 + l + runtime.Sov(uint64(l))
+		if len(x.Relayers) > 0 {
+			for _, s := range x.Relayers {
+				l = len(s)
+				n += 1 + l + runtime.Sov(uint64(l))
+			}
 		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
@@ -369,7 +427,7 @@ func (x *fastReflection_MsgSetPermissionedRelayer) ProtoMethods() *protoiface.Me
 	}
 
 	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*MsgSetPermissionedRelayer)
+		x := input.Message.Interface().(*MsgSetPermissionedRelayers)
 		if x == nil {
 			return protoiface.MarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -388,12 +446,14 @@ func (x *fastReflection_MsgSetPermissionedRelayer) ProtoMethods() *protoiface.Me
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
 		}
-		if len(x.Relayer) > 0 {
-			i -= len(x.Relayer)
-			copy(dAtA[i:], x.Relayer)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Relayer)))
-			i--
-			dAtA[i] = 0x22
+		if len(x.Relayers) > 0 {
+			for iNdEx := len(x.Relayers) - 1; iNdEx >= 0; iNdEx-- {
+				i -= len(x.Relayers[iNdEx])
+				copy(dAtA[i:], x.Relayers[iNdEx])
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Relayers[iNdEx])))
+				i--
+				dAtA[i] = 0x22
+			}
 		}
 		if len(x.ChannelId) > 0 {
 			i -= len(x.ChannelId)
@@ -427,7 +487,7 @@ func (x *fastReflection_MsgSetPermissionedRelayer) ProtoMethods() *protoiface.Me
 		}, nil
 	}
 	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*MsgSetPermissionedRelayer)
+		x := input.Message.Interface().(*MsgSetPermissionedRelayers)
 		if x == nil {
 			return protoiface.UnmarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -459,10 +519,10 @@ func (x *fastReflection_MsgSetPermissionedRelayer) ProtoMethods() *protoiface.Me
 			fieldNum := int32(wire >> 3)
 			wireType := int(wire & 0x7)
 			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgSetPermissionedRelayer: wiretype end group for non-group")
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgSetPermissionedRelayers: wiretype end group for non-group")
 			}
 			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgSetPermissionedRelayer: illegal tag %d (wire type %d)", fieldNum, wire)
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgSetPermissionedRelayers: illegal tag %d (wire type %d)", fieldNum, wire)
 			}
 			switch fieldNum {
 			case 1:
@@ -563,7 +623,7 @@ func (x *fastReflection_MsgSetPermissionedRelayer) ProtoMethods() *protoiface.Me
 				iNdEx = postIndex
 			case 4:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Relayer", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Relayers", wireType)
 				}
 				var stringLen uint64
 				for shift := uint(0); ; shift += 7 {
@@ -591,7 +651,7 @@ func (x *fastReflection_MsgSetPermissionedRelayer) ProtoMethods() *protoiface.Me
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.Relayer = string(dAtA[iNdEx:postIndex])
+				x.Relayers = append(x.Relayers, string(dAtA[iNdEx:postIndex]))
 				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
@@ -629,23 +689,23 @@ func (x *fastReflection_MsgSetPermissionedRelayer) ProtoMethods() *protoiface.Me
 }
 
 var (
-	md_MsgSetPermissionedRelayerResponse protoreflect.MessageDescriptor
+	md_MsgSetPermissionedRelayersResponse protoreflect.MessageDescriptor
 )
 
 func init() {
 	file_ibc_applications_perm_v1_tx_proto_init()
-	md_MsgSetPermissionedRelayerResponse = File_ibc_applications_perm_v1_tx_proto.Messages().ByName("MsgSetPermissionedRelayerResponse")
+	md_MsgSetPermissionedRelayersResponse = File_ibc_applications_perm_v1_tx_proto.Messages().ByName("MsgSetPermissionedRelayersResponse")
 }
 
-var _ protoreflect.Message = (*fastReflection_MsgSetPermissionedRelayerResponse)(nil)
+var _ protoreflect.Message = (*fastReflection_MsgSetPermissionedRelayersResponse)(nil)
 
-type fastReflection_MsgSetPermissionedRelayerResponse MsgSetPermissionedRelayerResponse
+type fastReflection_MsgSetPermissionedRelayersResponse MsgSetPermissionedRelayersResponse
 
-func (x *MsgSetPermissionedRelayerResponse) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_MsgSetPermissionedRelayerResponse)(x)
+func (x *MsgSetPermissionedRelayersResponse) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_MsgSetPermissionedRelayersResponse)(x)
 }
 
-func (x *MsgSetPermissionedRelayerResponse) slowProtoReflect() protoreflect.Message {
+func (x *MsgSetPermissionedRelayersResponse) slowProtoReflect() protoreflect.Message {
 	mi := &file_ibc_applications_perm_v1_tx_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -657,43 +717,43 @@ func (x *MsgSetPermissionedRelayerResponse) slowProtoReflect() protoreflect.Mess
 	return mi.MessageOf(x)
 }
 
-var _fastReflection_MsgSetPermissionedRelayerResponse_messageType fastReflection_MsgSetPermissionedRelayerResponse_messageType
-var _ protoreflect.MessageType = fastReflection_MsgSetPermissionedRelayerResponse_messageType{}
+var _fastReflection_MsgSetPermissionedRelayersResponse_messageType fastReflection_MsgSetPermissionedRelayersResponse_messageType
+var _ protoreflect.MessageType = fastReflection_MsgSetPermissionedRelayersResponse_messageType{}
 
-type fastReflection_MsgSetPermissionedRelayerResponse_messageType struct{}
+type fastReflection_MsgSetPermissionedRelayersResponse_messageType struct{}
 
-func (x fastReflection_MsgSetPermissionedRelayerResponse_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_MsgSetPermissionedRelayerResponse)(nil)
+func (x fastReflection_MsgSetPermissionedRelayersResponse_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_MsgSetPermissionedRelayersResponse)(nil)
 }
-func (x fastReflection_MsgSetPermissionedRelayerResponse_messageType) New() protoreflect.Message {
-	return new(fastReflection_MsgSetPermissionedRelayerResponse)
+func (x fastReflection_MsgSetPermissionedRelayersResponse_messageType) New() protoreflect.Message {
+	return new(fastReflection_MsgSetPermissionedRelayersResponse)
 }
-func (x fastReflection_MsgSetPermissionedRelayerResponse_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_MsgSetPermissionedRelayerResponse
+func (x fastReflection_MsgSetPermissionedRelayersResponse_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_MsgSetPermissionedRelayersResponse
 }
 
 // Descriptor returns message descriptor, which contains only the protobuf
 // type information for the message.
-func (x *fastReflection_MsgSetPermissionedRelayerResponse) Descriptor() protoreflect.MessageDescriptor {
-	return md_MsgSetPermissionedRelayerResponse
+func (x *fastReflection_MsgSetPermissionedRelayersResponse) Descriptor() protoreflect.MessageDescriptor {
+	return md_MsgSetPermissionedRelayersResponse
 }
 
 // Type returns the message type, which encapsulates both Go and protobuf
 // type information. If the Go type information is not needed,
 // it is recommended that the message descriptor be used instead.
-func (x *fastReflection_MsgSetPermissionedRelayerResponse) Type() protoreflect.MessageType {
-	return _fastReflection_MsgSetPermissionedRelayerResponse_messageType
+func (x *fastReflection_MsgSetPermissionedRelayersResponse) Type() protoreflect.MessageType {
+	return _fastReflection_MsgSetPermissionedRelayersResponse_messageType
 }
 
 // New returns a newly allocated and mutable empty message.
-func (x *fastReflection_MsgSetPermissionedRelayerResponse) New() protoreflect.Message {
-	return new(fastReflection_MsgSetPermissionedRelayerResponse)
+func (x *fastReflection_MsgSetPermissionedRelayersResponse) New() protoreflect.Message {
+	return new(fastReflection_MsgSetPermissionedRelayersResponse)
 }
 
 // Interface unwraps the message reflection interface and
 // returns the underlying ProtoMessage interface.
-func (x *fastReflection_MsgSetPermissionedRelayerResponse) Interface() protoreflect.ProtoMessage {
-	return (*MsgSetPermissionedRelayerResponse)(x)
+func (x *fastReflection_MsgSetPermissionedRelayersResponse) Interface() protoreflect.ProtoMessage {
+	return (*MsgSetPermissionedRelayersResponse)(x)
 }
 
 // Range iterates over every populated field in an undefined order,
@@ -701,7 +761,7 @@ func (x *fastReflection_MsgSetPermissionedRelayerResponse) Interface() protorefl
 // Range returns immediately if f returns false.
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
-func (x *fastReflection_MsgSetPermissionedRelayerResponse) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+func (x *fastReflection_MsgSetPermissionedRelayersResponse) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
 }
 
 // Has reports whether a field is populated.
@@ -715,13 +775,13 @@ func (x *fastReflection_MsgSetPermissionedRelayerResponse) Range(f func(protoref
 // In other cases (aside from the nullable cases above),
 // a proto3 scalar field is populated if it contains a non-zero value, and
 // a repeated field is populated if it is non-empty.
-func (x *fastReflection_MsgSetPermissionedRelayerResponse) Has(fd protoreflect.FieldDescriptor) bool {
+func (x *fastReflection_MsgSetPermissionedRelayersResponse) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: ibc.applications.perm.v1.MsgSetPermissionedRelayerResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: ibc.applications.perm.v1.MsgSetPermissionedRelayersResponse"))
 		}
-		panic(fmt.Errorf("message ibc.applications.perm.v1.MsgSetPermissionedRelayerResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message ibc.applications.perm.v1.MsgSetPermissionedRelayersResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -731,13 +791,13 @@ func (x *fastReflection_MsgSetPermissionedRelayerResponse) Has(fd protoreflect.F
 // associated with the given field number.
 //
 // Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgSetPermissionedRelayerResponse) Clear(fd protoreflect.FieldDescriptor) {
+func (x *fastReflection_MsgSetPermissionedRelayersResponse) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: ibc.applications.perm.v1.MsgSetPermissionedRelayerResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: ibc.applications.perm.v1.MsgSetPermissionedRelayersResponse"))
 		}
-		panic(fmt.Errorf("message ibc.applications.perm.v1.MsgSetPermissionedRelayerResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message ibc.applications.perm.v1.MsgSetPermissionedRelayersResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -747,13 +807,13 @@ func (x *fastReflection_MsgSetPermissionedRelayerResponse) Clear(fd protoreflect
 // the default value of a bytes scalar is guaranteed to be a copy.
 // For unpopulated composite types, it returns an empty, read-only view
 // of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_MsgSetPermissionedRelayerResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_MsgSetPermissionedRelayersResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: ibc.applications.perm.v1.MsgSetPermissionedRelayerResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: ibc.applications.perm.v1.MsgSetPermissionedRelayersResponse"))
 		}
-		panic(fmt.Errorf("message ibc.applications.perm.v1.MsgSetPermissionedRelayerResponse does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message ibc.applications.perm.v1.MsgSetPermissionedRelayersResponse does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -767,13 +827,13 @@ func (x *fastReflection_MsgSetPermissionedRelayerResponse) Get(descriptor protor
 // empty, read-only value, then it panics.
 //
 // Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgSetPermissionedRelayerResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+func (x *fastReflection_MsgSetPermissionedRelayersResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: ibc.applications.perm.v1.MsgSetPermissionedRelayerResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: ibc.applications.perm.v1.MsgSetPermissionedRelayersResponse"))
 		}
-		panic(fmt.Errorf("message ibc.applications.perm.v1.MsgSetPermissionedRelayerResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message ibc.applications.perm.v1.MsgSetPermissionedRelayersResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -787,36 +847,36 @@ func (x *fastReflection_MsgSetPermissionedRelayerResponse) Set(fd protoreflect.F
 // It panics if the field does not contain a composite type.
 //
 // Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgSetPermissionedRelayerResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_MsgSetPermissionedRelayersResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: ibc.applications.perm.v1.MsgSetPermissionedRelayerResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: ibc.applications.perm.v1.MsgSetPermissionedRelayersResponse"))
 		}
-		panic(fmt.Errorf("message ibc.applications.perm.v1.MsgSetPermissionedRelayerResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message ibc.applications.perm.v1.MsgSetPermissionedRelayersResponse does not contain field %s", fd.FullName()))
 	}
 }
 
 // NewField returns a new value that is assignable to the field
 // for the given descriptor. For scalars, this returns the default value.
 // For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_MsgSetPermissionedRelayerResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_MsgSetPermissionedRelayersResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: ibc.applications.perm.v1.MsgSetPermissionedRelayerResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: ibc.applications.perm.v1.MsgSetPermissionedRelayersResponse"))
 		}
-		panic(fmt.Errorf("message ibc.applications.perm.v1.MsgSetPermissionedRelayerResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message ibc.applications.perm.v1.MsgSetPermissionedRelayersResponse does not contain field %s", fd.FullName()))
 	}
 }
 
 // WhichOneof reports which field within the oneof is populated,
 // returning nil if none are populated.
 // It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_MsgSetPermissionedRelayerResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+func (x *fastReflection_MsgSetPermissionedRelayersResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in ibc.applications.perm.v1.MsgSetPermissionedRelayerResponse", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in ibc.applications.perm.v1.MsgSetPermissionedRelayersResponse", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -824,7 +884,7 @@ func (x *fastReflection_MsgSetPermissionedRelayerResponse) WhichOneof(d protoref
 // GetUnknown retrieves the entire list of unknown fields.
 // The caller may only mutate the contents of the RawFields
 // if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_MsgSetPermissionedRelayerResponse) GetUnknown() protoreflect.RawFields {
+func (x *fastReflection_MsgSetPermissionedRelayersResponse) GetUnknown() protoreflect.RawFields {
 	return x.unknownFields
 }
 
@@ -835,7 +895,7 @@ func (x *fastReflection_MsgSetPermissionedRelayerResponse) GetUnknown() protoref
 // An empty RawFields may be passed to clear the fields.
 //
 // SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgSetPermissionedRelayerResponse) SetUnknown(fields protoreflect.RawFields) {
+func (x *fastReflection_MsgSetPermissionedRelayersResponse) SetUnknown(fields protoreflect.RawFields) {
 	x.unknownFields = fields
 }
 
@@ -847,7 +907,7 @@ func (x *fastReflection_MsgSetPermissionedRelayerResponse) SetUnknown(fields pro
 // message type, but the details are implementation dependent.
 // Validity is not part of the protobuf data model, and may not
 // be preserved in marshaling or other operations.
-func (x *fastReflection_MsgSetPermissionedRelayerResponse) IsValid() bool {
+func (x *fastReflection_MsgSetPermissionedRelayersResponse) IsValid() bool {
 	return x != nil
 }
 
@@ -857,9 +917,9 @@ func (x *fastReflection_MsgSetPermissionedRelayerResponse) IsValid() bool {
 // The returned methods type is identical to
 // "google.golang.org/protobuf/runtime/protoiface".Methods.
 // Consult the protoiface package documentation for details.
-func (x *fastReflection_MsgSetPermissionedRelayerResponse) ProtoMethods() *protoiface.Methods {
+func (x *fastReflection_MsgSetPermissionedRelayersResponse) ProtoMethods() *protoiface.Methods {
 	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*MsgSetPermissionedRelayerResponse)
+		x := input.Message.Interface().(*MsgSetPermissionedRelayersResponse)
 		if x == nil {
 			return protoiface.SizeOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -881,7 +941,7 @@ func (x *fastReflection_MsgSetPermissionedRelayerResponse) ProtoMethods() *proto
 	}
 
 	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*MsgSetPermissionedRelayerResponse)
+		x := input.Message.Interface().(*MsgSetPermissionedRelayersResponse)
 		if x == nil {
 			return protoiface.MarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -911,7 +971,7 @@ func (x *fastReflection_MsgSetPermissionedRelayerResponse) ProtoMethods() *proto
 		}, nil
 	}
 	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*MsgSetPermissionedRelayerResponse)
+		x := input.Message.Interface().(*MsgSetPermissionedRelayersResponse)
 		if x == nil {
 			return protoiface.UnmarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -943,10 +1003,10 @@ func (x *fastReflection_MsgSetPermissionedRelayerResponse) ProtoMethods() *proto
 			fieldNum := int32(wire >> 3)
 			wireType := int(wire & 0x7)
 			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgSetPermissionedRelayerResponse: wiretype end group for non-group")
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgSetPermissionedRelayersResponse: wiretype end group for non-group")
 			}
 			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgSetPermissionedRelayerResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgSetPermissionedRelayersResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 			}
 			switch fieldNum {
 			default:
@@ -997,23 +1057,23 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// MsgSetPermissionedRelayer defines msg to set permissioned relyer for
+// MsgSetPermissionedRelayers defines msg to set permissioned relyer for
 // the specific ibc channel.
-type MsgSetPermissionedRelayer struct {
+type MsgSetPermissionedRelayers struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
 	// authority is the address that controls the module
 	// (defaults to x/gov unless overwritten).
-	Authority string `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty"`
-	PortId    string `protobuf:"bytes,2,opt,name=port_id,json=portId,proto3" json:"port_id,omitempty"`
-	ChannelId string `protobuf:"bytes,3,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
-	Relayer   string `protobuf:"bytes,4,opt,name=relayer,proto3" json:"relayer,omitempty"`
+	Authority string   `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty"`
+	PortId    string   `protobuf:"bytes,2,opt,name=port_id,json=portId,proto3" json:"port_id,omitempty"`
+	ChannelId string   `protobuf:"bytes,3,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
+	Relayers  []string `protobuf:"bytes,4,rep,name=relayers,proto3" json:"relayers,omitempty"`
 }
 
-func (x *MsgSetPermissionedRelayer) Reset() {
-	*x = MsgSetPermissionedRelayer{}
+func (x *MsgSetPermissionedRelayers) Reset() {
+	*x = MsgSetPermissionedRelayers{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_ibc_applications_perm_v1_tx_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -1021,54 +1081,54 @@ func (x *MsgSetPermissionedRelayer) Reset() {
 	}
 }
 
-func (x *MsgSetPermissionedRelayer) String() string {
+func (x *MsgSetPermissionedRelayers) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*MsgSetPermissionedRelayer) ProtoMessage() {}
+func (*MsgSetPermissionedRelayers) ProtoMessage() {}
 
-// Deprecated: Use MsgSetPermissionedRelayer.ProtoReflect.Descriptor instead.
-func (*MsgSetPermissionedRelayer) Descriptor() ([]byte, []int) {
+// Deprecated: Use MsgSetPermissionedRelayers.ProtoReflect.Descriptor instead.
+func (*MsgSetPermissionedRelayers) Descriptor() ([]byte, []int) {
 	return file_ibc_applications_perm_v1_tx_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *MsgSetPermissionedRelayer) GetAuthority() string {
+func (x *MsgSetPermissionedRelayers) GetAuthority() string {
 	if x != nil {
 		return x.Authority
 	}
 	return ""
 }
 
-func (x *MsgSetPermissionedRelayer) GetPortId() string {
+func (x *MsgSetPermissionedRelayers) GetPortId() string {
 	if x != nil {
 		return x.PortId
 	}
 	return ""
 }
 
-func (x *MsgSetPermissionedRelayer) GetChannelId() string {
+func (x *MsgSetPermissionedRelayers) GetChannelId() string {
 	if x != nil {
 		return x.ChannelId
 	}
 	return ""
 }
 
-func (x *MsgSetPermissionedRelayer) GetRelayer() string {
+func (x *MsgSetPermissionedRelayers) GetRelayers() []string {
 	if x != nil {
-		return x.Relayer
+		return x.Relayers
 	}
-	return ""
+	return nil
 }
 
-// MsgSetPermissionedRelayerResponse defines the Msg/SetPermissionedRelayer response type.
-type MsgSetPermissionedRelayerResponse struct {
+// MsgSetPermissionedRelayersResponse defines the Msg/SetPermissionedRelayer response type.
+type MsgSetPermissionedRelayersResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 }
 
-func (x *MsgSetPermissionedRelayerResponse) Reset() {
-	*x = MsgSetPermissionedRelayerResponse{}
+func (x *MsgSetPermissionedRelayersResponse) Reset() {
+	*x = MsgSetPermissionedRelayersResponse{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_ibc_applications_perm_v1_tx_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -1076,14 +1136,14 @@ func (x *MsgSetPermissionedRelayerResponse) Reset() {
 	}
 }
 
-func (x *MsgSetPermissionedRelayerResponse) String() string {
+func (x *MsgSetPermissionedRelayersResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*MsgSetPermissionedRelayerResponse) ProtoMessage() {}
+func (*MsgSetPermissionedRelayersResponse) ProtoMessage() {}
 
-// Deprecated: Use MsgSetPermissionedRelayerResponse.ProtoReflect.Descriptor instead.
-func (*MsgSetPermissionedRelayerResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use MsgSetPermissionedRelayersResponse.ProtoReflect.Descriptor instead.
+func (*MsgSetPermissionedRelayersResponse) Descriptor() ([]byte, []int) {
 	return file_ibc_applications_perm_v1_tx_proto_rawDescGZIP(), []int{1}
 }
 
@@ -1099,54 +1159,55 @@ var file_ibc_applications_perm_v1_tx_proto_rawDesc = []byte{
 	0x6d, 0x73, 0x67, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x19, 0x63, 0x6f, 0x73, 0x6d, 0x6f,
 	0x73, 0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x70,
 	0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x14, 0x67, 0x6f, 0x67, 0x6f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f,
-	0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xb3, 0x02, 0x0a, 0x19, 0x4d,
+	0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xb8, 0x02, 0x0a, 0x1a, 0x4d,
 	0x73, 0x67, 0x53, 0x65, 0x74, 0x50, 0x65, 0x72, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x65,
-	0x64, 0x52, 0x65, 0x6c, 0x61, 0x79, 0x65, 0x72, 0x12, 0x4a, 0x0a, 0x09, 0x61, 0x75, 0x74, 0x68,
-	0x6f, 0x72, 0x69, 0x74, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x42, 0x2c, 0xf2, 0xde, 0x1f,
-	0x10, 0x79, 0x61, 0x6d, 0x6c, 0x3a, 0x22, 0x61, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x69, 0x74, 0x79,
-	0x22, 0xd2, 0xb4, 0x2d, 0x14, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x41, 0x64, 0x64, 0x72,
-	0x65, 0x73, 0x73, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x52, 0x09, 0x61, 0x75, 0x74, 0x68, 0x6f,
-	0x72, 0x69, 0x74, 0x79, 0x12, 0x2b, 0x0a, 0x07, 0x70, 0x6f, 0x72, 0x74, 0x5f, 0x69, 0x64, 0x18,
-	0x02, 0x20, 0x01, 0x28, 0x09, 0x42, 0x12, 0xf2, 0xde, 0x1f, 0x0e, 0x79, 0x61, 0x6d, 0x6c, 0x3a,
-	0x22, 0x70, 0x6f, 0x72, 0x74, 0x5f, 0x69, 0x64, 0x22, 0x52, 0x06, 0x70, 0x6f, 0x72, 0x74, 0x49,
-	0x64, 0x12, 0x34, 0x0a, 0x0a, 0x63, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x5f, 0x69, 0x64, 0x18,
-	0x03, 0x20, 0x01, 0x28, 0x09, 0x42, 0x15, 0xf2, 0xde, 0x1f, 0x11, 0x79, 0x61, 0x6d, 0x6c, 0x3a,
-	0x22, 0x63, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x5f, 0x69, 0x64, 0x22, 0x52, 0x09, 0x63, 0x68,
-	0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x49, 0x64, 0x12, 0x2c, 0x0a, 0x07, 0x72, 0x65, 0x6c, 0x61, 0x79,
-	0x65, 0x72, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x42, 0x12, 0xf2, 0xde, 0x1f, 0x0e, 0x79, 0x61,
-	0x6d, 0x6c, 0x3a, 0x22, 0x72, 0x65, 0x6c, 0x61, 0x79, 0x65, 0x72, 0x22, 0x52, 0x07, 0x72, 0x65,
-	0x6c, 0x61, 0x79, 0x65, 0x72, 0x3a, 0x39, 0x88, 0xa0, 0x1f, 0x00, 0xe8, 0xa0, 0x1f, 0x00, 0x82,
-	0xe7, 0xb0, 0x2a, 0x09, 0x61, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x69, 0x74, 0x79, 0x8a, 0xe7, 0xb0,
-	0x2a, 0x1e, 0x70, 0x65, 0x72, 0x6d, 0x2f, 0x4d, 0x73, 0x67, 0x53, 0x65, 0x74, 0x50, 0x65, 0x72,
-	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x65, 0x64, 0x52, 0x65, 0x6c, 0x61, 0x79, 0x65, 0x72,
-	0x22, 0x23, 0x0a, 0x21, 0x4d, 0x73, 0x67, 0x53, 0x65, 0x74, 0x50, 0x65, 0x72, 0x6d, 0x69, 0x73,
-	0x73, 0x69, 0x6f, 0x6e, 0x65, 0x64, 0x52, 0x65, 0x6c, 0x61, 0x79, 0x65, 0x72, 0x52, 0x65, 0x73,
-	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x32, 0x99, 0x01, 0x0a, 0x03, 0x4d, 0x73, 0x67, 0x12, 0x8a, 0x01,
-	0x0a, 0x16, 0x53, 0x65, 0x74, 0x50, 0x65, 0x72, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x65,
-	0x64, 0x52, 0x65, 0x6c, 0x61, 0x79, 0x65, 0x72, 0x12, 0x33, 0x2e, 0x69, 0x62, 0x63, 0x2e, 0x61,
-	0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x70, 0x65, 0x72, 0x6d,
-	0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x53, 0x65, 0x74, 0x50, 0x65, 0x72, 0x6d, 0x69, 0x73,
-	0x73, 0x69, 0x6f, 0x6e, 0x65, 0x64, 0x52, 0x65, 0x6c, 0x61, 0x79, 0x65, 0x72, 0x1a, 0x3b, 0x2e,
-	0x69, 0x62, 0x63, 0x2e, 0x61, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73,
-	0x2e, 0x70, 0x65, 0x72, 0x6d, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x53, 0x65, 0x74, 0x50,
+	0x64, 0x52, 0x65, 0x6c, 0x61, 0x79, 0x65, 0x72, 0x73, 0x12, 0x4a, 0x0a, 0x09, 0x61, 0x75, 0x74,
+	0x68, 0x6f, 0x72, 0x69, 0x74, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x42, 0x2c, 0xf2, 0xde,
+	0x1f, 0x10, 0x79, 0x61, 0x6d, 0x6c, 0x3a, 0x22, 0x61, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x69, 0x74,
+	0x79, 0x22, 0xd2, 0xb4, 0x2d, 0x14, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x41, 0x64, 0x64,
+	0x72, 0x65, 0x73, 0x73, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x52, 0x09, 0x61, 0x75, 0x74, 0x68,
+	0x6f, 0x72, 0x69, 0x74, 0x79, 0x12, 0x2b, 0x0a, 0x07, 0x70, 0x6f, 0x72, 0x74, 0x5f, 0x69, 0x64,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x42, 0x12, 0xf2, 0xde, 0x1f, 0x0e, 0x79, 0x61, 0x6d, 0x6c,
+	0x3a, 0x22, 0x70, 0x6f, 0x72, 0x74, 0x5f, 0x69, 0x64, 0x22, 0x52, 0x06, 0x70, 0x6f, 0x72, 0x74,
+	0x49, 0x64, 0x12, 0x34, 0x0a, 0x0a, 0x63, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x5f, 0x69, 0x64,
+	0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x42, 0x15, 0xf2, 0xde, 0x1f, 0x11, 0x79, 0x61, 0x6d, 0x6c,
+	0x3a, 0x22, 0x63, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x5f, 0x69, 0x64, 0x22, 0x52, 0x09, 0x63,
+	0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x49, 0x64, 0x12, 0x2f, 0x0a, 0x08, 0x72, 0x65, 0x6c, 0x61,
+	0x79, 0x65, 0x72, 0x73, 0x18, 0x04, 0x20, 0x03, 0x28, 0x09, 0x42, 0x13, 0xf2, 0xde, 0x1f, 0x0f,
+	0x79, 0x61, 0x6d, 0x6c, 0x3a, 0x22, 0x72, 0x65, 0x6c, 0x61, 0x79, 0x65, 0x72, 0x73, 0x22, 0x52,
+	0x08, 0x72, 0x65, 0x6c, 0x61, 0x79, 0x65, 0x72, 0x73, 0x3a, 0x3a, 0x88, 0xa0, 0x1f, 0x00, 0xe8,
+	0xa0, 0x1f, 0x00, 0x82, 0xe7, 0xb0, 0x2a, 0x09, 0x61, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x69, 0x74,
+	0x79, 0x8a, 0xe7, 0xb0, 0x2a, 0x1f, 0x70, 0x65, 0x72, 0x6d, 0x2f, 0x4d, 0x73, 0x67, 0x53, 0x65,
+	0x74, 0x50, 0x65, 0x72, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x65, 0x64, 0x52, 0x65, 0x6c,
+	0x61, 0x79, 0x65, 0x72, 0x73, 0x22, 0x24, 0x0a, 0x22, 0x4d, 0x73, 0x67, 0x53, 0x65, 0x74, 0x50,
 	0x65, 0x72, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x65, 0x64, 0x52, 0x65, 0x6c, 0x61, 0x79,
-	0x65, 0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x1a, 0x05, 0x80, 0xe7, 0xb0, 0x2a,
-	0x01, 0x42, 0xed, 0x01, 0x0a, 0x1c, 0x63, 0x6f, 0x6d, 0x2e, 0x69, 0x62, 0x63, 0x2e, 0x61, 0x70,
-	0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x70, 0x65, 0x72, 0x6d, 0x2e,
-	0x76, 0x31, 0x42, 0x07, 0x54, 0x78, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x41, 0x67,
-	0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61,
-	0x2d, 0x6c, 0x61, 0x62, 0x73, 0x2f, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2f, 0x61, 0x70, 0x69,
-	0x2f, 0x69, 0x62, 0x63, 0x2f, 0x61, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e,
-	0x73, 0x2f, 0x70, 0x65, 0x72, 0x6d, 0x2f, 0x76, 0x31, 0x3b, 0x70, 0x65, 0x72, 0x6d, 0x76, 0x31,
-	0xa2, 0x02, 0x03, 0x49, 0x41, 0x50, 0xaa, 0x02, 0x18, 0x49, 0x62, 0x63, 0x2e, 0x41, 0x70, 0x70,
-	0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x50, 0x65, 0x72, 0x6d, 0x2e, 0x56,
-	0x31, 0xca, 0x02, 0x18, 0x49, 0x62, 0x63, 0x5c, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74,
-	0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x50, 0x65, 0x72, 0x6d, 0x5c, 0x56, 0x31, 0xe2, 0x02, 0x24, 0x49,
-	0x62, 0x63, 0x5c, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x5c,
-	0x50, 0x65, 0x72, 0x6d, 0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64,
-	0x61, 0x74, 0x61, 0xea, 0x02, 0x1b, 0x49, 0x62, 0x63, 0x3a, 0x3a, 0x41, 0x70, 0x70, 0x6c, 0x69,
-	0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x3a, 0x3a, 0x50, 0x65, 0x72, 0x6d, 0x3a, 0x3a, 0x56,
-	0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x65, 0x72, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x32, 0x9c, 0x01, 0x0a, 0x03,
+	0x4d, 0x73, 0x67, 0x12, 0x8d, 0x01, 0x0a, 0x17, 0x53, 0x65, 0x74, 0x50, 0x65, 0x72, 0x6d, 0x69,
+	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x65, 0x64, 0x52, 0x65, 0x6c, 0x61, 0x79, 0x65, 0x72, 0x73, 0x12,
+	0x34, 0x2e, 0x69, 0x62, 0x63, 0x2e, 0x61, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f,
+	0x6e, 0x73, 0x2e, 0x70, 0x65, 0x72, 0x6d, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x53, 0x65,
+	0x74, 0x50, 0x65, 0x72, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x65, 0x64, 0x52, 0x65, 0x6c,
+	0x61, 0x79, 0x65, 0x72, 0x73, 0x1a, 0x3c, 0x2e, 0x69, 0x62, 0x63, 0x2e, 0x61, 0x70, 0x70, 0x6c,
+	0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x70, 0x65, 0x72, 0x6d, 0x2e, 0x76, 0x31,
+	0x2e, 0x4d, 0x73, 0x67, 0x53, 0x65, 0x74, 0x50, 0x65, 0x72, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
+	0x6e, 0x65, 0x64, 0x52, 0x65, 0x6c, 0x61, 0x79, 0x65, 0x72, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f,
+	0x6e, 0x73, 0x65, 0x1a, 0x05, 0x80, 0xe7, 0xb0, 0x2a, 0x01, 0x42, 0xed, 0x01, 0x0a, 0x1c, 0x63,
+	0x6f, 0x6d, 0x2e, 0x69, 0x62, 0x63, 0x2e, 0x61, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69,
+	0x6f, 0x6e, 0x73, 0x2e, 0x70, 0x65, 0x72, 0x6d, 0x2e, 0x76, 0x31, 0x42, 0x07, 0x54, 0x78, 0x50,
+	0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x41, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63,
+	0x6f, 0x6d, 0x2f, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2d, 0x6c, 0x61, 0x62, 0x73, 0x2f, 0x69,
+	0x6e, 0x69, 0x74, 0x69, 0x61, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x69, 0x62, 0x63, 0x2f, 0x61, 0x70,
+	0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x70, 0x65, 0x72, 0x6d, 0x2f,
+	0x76, 0x31, 0x3b, 0x70, 0x65, 0x72, 0x6d, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x49, 0x41, 0x50, 0xaa,
+	0x02, 0x18, 0x49, 0x62, 0x63, 0x2e, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f,
+	0x6e, 0x73, 0x2e, 0x50, 0x65, 0x72, 0x6d, 0x2e, 0x56, 0x31, 0xca, 0x02, 0x18, 0x49, 0x62, 0x63,
+	0x5c, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x50, 0x65,
+	0x72, 0x6d, 0x5c, 0x56, 0x31, 0xe2, 0x02, 0x24, 0x49, 0x62, 0x63, 0x5c, 0x41, 0x70, 0x70, 0x6c,
+	0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x50, 0x65, 0x72, 0x6d, 0x5c, 0x56, 0x31,
+	0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x1b, 0x49,
+	0x62, 0x63, 0x3a, 0x3a, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73,
+	0x3a, 0x3a, 0x50, 0x65, 0x72, 0x6d, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x33,
 }
 
 var (
@@ -1163,12 +1224,12 @@ func file_ibc_applications_perm_v1_tx_proto_rawDescGZIP() []byte {
 
 var file_ibc_applications_perm_v1_tx_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_ibc_applications_perm_v1_tx_proto_goTypes = []interface{}{
-	(*MsgSetPermissionedRelayer)(nil),         // 0: ibc.applications.perm.v1.MsgSetPermissionedRelayer
-	(*MsgSetPermissionedRelayerResponse)(nil), // 1: ibc.applications.perm.v1.MsgSetPermissionedRelayerResponse
+	(*MsgSetPermissionedRelayers)(nil),         // 0: ibc.applications.perm.v1.MsgSetPermissionedRelayers
+	(*MsgSetPermissionedRelayersResponse)(nil), // 1: ibc.applications.perm.v1.MsgSetPermissionedRelayersResponse
 }
 var file_ibc_applications_perm_v1_tx_proto_depIdxs = []int32{
-	0, // 0: ibc.applications.perm.v1.Msg.SetPermissionedRelayer:input_type -> ibc.applications.perm.v1.MsgSetPermissionedRelayer
-	1, // 1: ibc.applications.perm.v1.Msg.SetPermissionedRelayer:output_type -> ibc.applications.perm.v1.MsgSetPermissionedRelayerResponse
+	0, // 0: ibc.applications.perm.v1.Msg.SetPermissionedRelayers:input_type -> ibc.applications.perm.v1.MsgSetPermissionedRelayers
+	1, // 1: ibc.applications.perm.v1.Msg.SetPermissionedRelayers:output_type -> ibc.applications.perm.v1.MsgSetPermissionedRelayersResponse
 	1, // [1:2] is the sub-list for method output_type
 	0, // [0:1] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
@@ -1183,7 +1244,7 @@ func file_ibc_applications_perm_v1_tx_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_ibc_applications_perm_v1_tx_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MsgSetPermissionedRelayer); i {
+			switch v := v.(*MsgSetPermissionedRelayers); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1195,7 +1256,7 @@ func file_ibc_applications_perm_v1_tx_proto_init() {
 			}
 		}
 		file_ibc_applications_perm_v1_tx_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MsgSetPermissionedRelayerResponse); i {
+			switch v := v.(*MsgSetPermissionedRelayersResponse); i {
 			case 0:
 				return &v.state
 			case 1:
