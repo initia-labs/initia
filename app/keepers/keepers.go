@@ -391,8 +391,8 @@ func NewAppKeeper(
 	////////////////////////////
 	// Transfer configuration //
 	////////////////////////////
-	// Send   : transfer -> packet forward -> fee    -> channel
-	// Receive: channel  -> perm           -> fee    -> move    -> packet forward  -> transfer
+	// Send   : transfer -> packet forward -> rate limit -> fee  -> channel
+	// Receive: channel  -> perm           -> fee        -> move -> rate limit -> packet forward  -> forwarding -> transfer
 
 	var transferStack porttypes.IBCModule
 	{
