@@ -114,7 +114,7 @@ func (fc MempoolFeeChecker) fetchPrice(ctx sdk.Context, baseDenom, quoteDenom st
 		return math.LegacyZeroDec(), nil
 	}
 
-	if quotePrice, err := fc.keeper.GetPoolSpotPrice(ctx, quoteDenom); err != nil {
+	if quotePrice, err := fc.keeper.GetQuoteSpotPrice(ctx, quoteDenom); err != nil {
 		return math.LegacyZeroDec(), err
 	} else {
 		return quotePrice, nil
