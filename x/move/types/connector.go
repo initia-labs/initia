@@ -201,7 +201,7 @@ func DeserializeDecimal(bz []byte) (math.LegacyDec, error) {
 	}
 
 	// fractional part length is 18
-	return math.LegacyNewDecFromInt(num).Mul(math.LegacyNewDecWithPrec(1, 18)), nil
+	return math.LegacyNewDecFromIntWithPrec(num, 18), nil
 }
 
 // DeserializeUint128 deserialize uint128 bytes to math.Int
