@@ -32,7 +32,7 @@ type CollectionKeeper interface {
 
 func CollectionAddressFromClassId(classId string) (vmtypes.AccountAddress, error) {
 	if strings.HasPrefix(classId, ClassTraceClassIdPrefixMove) {
-		addrBz, err := hex.DecodeString(strings.TrimPrefix(classId, DenomTraceDenomPrefixMove))
+		addrBz, err := hex.DecodeString(strings.TrimPrefix(classId, ClassTraceClassIdPrefixMove))
 		if err != nil {
 			return vmtypes.AccountAddress{}, err
 		}
@@ -53,7 +53,7 @@ func ClassIdFromCollectionAddress(ctx context.Context, k CollectionKeeper, colle
 
 	// If a nft is not ibc, add `move/` prefix
 	if creator != vmtypes.StdAddress {
-		return DenomTraceDenomPrefixMove + collection.CanonicalString(), nil
+		return ClassTraceClassIdPrefixMove + collection.CanonicalString(), nil
 	}
 
 	// Else name == classId
