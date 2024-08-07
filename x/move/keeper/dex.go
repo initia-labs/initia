@@ -346,7 +346,7 @@ func (k DexKeeper) SwapToBase(
 		vmAddr,
 		vmtypes.StdAddress,
 		types.MoveModuleNameDex,
-		types.FunctionNameDexSwap,
+		types.FunctionNameDexSwapScript,
 		[]vmtypes.TypeTag{},
 		[][]byte{metadataLP[:], metadataQuote[:], offerAmountBz, {0}},
 	)

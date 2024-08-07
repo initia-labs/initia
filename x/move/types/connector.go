@@ -23,7 +23,7 @@ const (
 	MoveModuleNamePrimaryFungibleStore = "primary_fungible_store"
 	MoveModuleNameManagedCoin          = "managed_coin"
 	MoveModuleNameObject               = "object"
-	MoveModuleNameSimpleNft            = "initia_nft"
+	MoveModuleNameInitiaNft            = "initia_nft"
 	MoveModuleNameCollection           = "collection"
 
 	// function names for managed_coin
@@ -31,10 +31,10 @@ const (
 	FunctionNameManagedCoinSudoMint   = "sudo_mint"
 	FunctionNameManagedCoinBurn       = "burn"
 
-	// function names for simple_nft
-	FunctionNameSimpleNftInitialize = "create_collection"
-	FunctionNameSimpleNftMint       = "mint"
-	FunctionNameSimpleNftBurn       = "burn"
+	// function names for initia_nft
+	FunctionNameInitiaNftCreateCollection = "create_collection"
+	FunctionNameInitiaNftMint             = "mint"
+	FunctionNameInitiaNftBurn             = "burn"
 
 	// function names for coin
 	FunctionNameCoinBalance      = "balance"
@@ -44,27 +44,22 @@ const (
 	FunctionNameCoinWhitelist    = "whitelist"
 
 	// function names for staking
-	FunctionNameStakingInitialize           = "initialize_for_chain"
-	FunctionNameStakingDepositReward        = "deposit_reward_for_chain"
-	FunctionNameStakingDelegate             = "delegate_script"
-	FunctionNameStakingUndelegate           = "undelegate_script"
-	FunctionNameStakingRegister             = "register"
-	FunctionNameStakingDepositUnbondingCoin = "deposit_unbonding_coin_for_chain"
-	FunctionNameStakingSlashUnbondingCoin   = "slash_unbonding_for_chain"
+	FunctionNameStakingInitializeForChain           = "initialize_for_chain"
+	FunctionNameStakingDepositRewardForChain        = "deposit_reward_for_chain"
+	FunctionNameStakingDelegateScript               = "delegate_script"
+	FunctionNameStakingUndelegateScript             = "undelegate_script"
+	FunctionNameStakingRegister                     = "register"
+	FunctionNameStakingDepositUnbondingCoinForChain = "deposit_unbonding_coin_for_chain"
+	FunctionNameStakingSlashUnbondingCoinForChain   = "slash_unbonding_for_chain"
 
 	// function names for dex
-	FunctionNameDexInitialize        = "initialize_for_chain"
-	FunctionNameDexProvideLiquidity  = "provide_liquidity_script"
-	FunctionNameDexWithdrawLiquidity = "withdraw_liquidity_script"
-	FunctionNameDexRegister          = "register"
-	FunctionNameDexSwap              = "swap_script"
+	FunctionNameDexSwapScript = "swap_script"
 
 	// function names for object
 	FunctionNameObjectTransfer = "transfer"
 
 	// function names for code
 	FunctionNameCodePublish              = "publish"
-	FunctionNameCodeInitGenesis          = "init_genesis"
 	FunctionNameCodeSetAllowedPublishers = "set_allowed_publishers"
 
 	// resource names
@@ -79,7 +74,7 @@ const (
 	ResourceNameIssuer        = "Issuer"
 	ResourceNameManagingRefs  = "ManagingRefs"
 	ResourceNameCollection    = "Collection"
-	ResourceNameSimpleNft     = "InitiaNft"
+	ResourceNameInitiaNft     = "InitiaNft"
 	ResourceNameNft           = "Nft"
 )
 

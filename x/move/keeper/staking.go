@@ -333,7 +333,7 @@ func (k Keeper) DepositUnbondingCoins(
 		vmtypes.StdAddress,
 		vmtypes.StdAddress,
 		types.MoveModuleNameStaking,
-		types.FunctionNameStakingDepositUnbondingCoin,
+		types.FunctionNameStakingDepositUnbondingCoinForChain,
 		[]vmtypes.TypeTag{},
 		args,
 	)
@@ -456,7 +456,7 @@ func (k Keeper) SlashUnbondingDelegations(
 			vmtypes.StdAddress,
 			vmtypes.StdAddress,
 			types.MoveModuleNameStaking,
-			types.FunctionNameStakingSlashUnbondingCoin,
+			types.FunctionNameStakingSlashUnbondingCoinForChain,
 			[]vmtypes.TypeTag{},
 			args,
 		); err != nil {
@@ -490,7 +490,7 @@ func (k Keeper) InitializeStakingWithMetadata(
 		vmtypes.StdAddress,
 		vmtypes.StdAddress,
 		types.MoveModuleNameStaking,
-		types.FunctionNameStakingInitialize,
+		types.FunctionNameStakingInitializeForChain,
 		[]vmtypes.TypeTag{},
 		[][]byte{metadata[:]},
 	); err != nil {

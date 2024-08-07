@@ -279,7 +279,7 @@ func TestApplyStakingDeltas(t *testing.T) {
 		vmAddr,
 		vmtypes.StdAddress,
 		types.MoveModuleNameStaking,
-		types.FunctionNameStakingDelegate,
+		types.FunctionNameStakingDelegateScript,
 		[]vmtypes.TypeTag{},
 		[][]byte{metadataLP[:], valAddrArg, amountArg},
 	)
@@ -299,7 +299,7 @@ func TestApplyStakingDeltas(t *testing.T) {
 		vmAddr,
 		vmtypes.StdAddress,
 		types.MoveModuleNameStaking,
-		types.FunctionNameStakingUndelegate,
+		types.FunctionNameStakingUndelegateScript,
 		[]vmtypes.TypeTag{},
 		[][]byte{metadataLP[:], valAddrArg, halfAmountArg},
 	)
@@ -383,7 +383,7 @@ func Test_SlashUnbondingDelegations(t *testing.T) {
 		vmAddr,
 		vmtypes.StdAddress,
 		types.MoveModuleNameStaking,
-		types.FunctionNameStakingDelegate,
+		types.FunctionNameStakingDelegateScript,
 		[]vmtypes.TypeTag{},
 		[][]byte{metadataLP[:], valAddrArg, amountArg},
 	)
@@ -403,7 +403,7 @@ func Test_SlashUnbondingDelegations(t *testing.T) {
 		vmAddr,
 		vmtypes.StdAddress,
 		types.MoveModuleNameStaking,
-		types.FunctionNameStakingUndelegate,
+		types.FunctionNameStakingUndelegateScript,
 		[]vmtypes.TypeTag{},
 		[][]byte{metadataLP[:], valAddrArg, halfAmountArg},
 	)
