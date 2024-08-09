@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  initia:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        TARGETARCH: ${TARGETARCH}
+    environment:
+      - TARGETARCH=${TARGETARCH}
+    ports:
+      - "1317:1317"
+      - "9090:9090"
+      - "26656:26656"
+      - "26657:26657"
+    command: ["/usr/local/bin/initiad", "version"]
+    user: initia
+    volumes:
+      - ./data:/initia/data
