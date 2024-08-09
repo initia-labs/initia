@@ -42,9 +42,23 @@ func (k Keeper) ShareToAmount(ctx context.Context, valAddr sdk.ValAddress, share
 	return tokens.AmountOf(share.Denom).TruncateInt(), nil
 }
 
-// WithdrawRewards withdraw rewards from a validator and send the
-// withdrawn staking rewards to the move staking module account
-func (k Keeper) WithdrawRewards(ctx context.Context, valAddr sdk.ValAddress) (distrtypes.Pools, error) {
+// SafeWithdrawRewards withdraw rewards from a validator and send the withdrawn staking rewards
+// to the move staking module account.
+//
+// This function is called from the begin blocker, so we should recover the panic and return nil
+// to prevent the chain from halting.
+func (k Keeper) SafeWithdrawRewards(ctx context.Context, valAddr sdk.ValAddress) (pools distrtypes.Pools, err error) {
+	// distrKeeper.WithdrawDelegationRewards can raise panic due to some rounding inconsistencies.
+	// https://github.com/initia-labs/initia/blob/3479c41bb1624e97096e1c1f1edf574403c09fa8/x/distribution/keeper/delegation.go#L196
+	defer func() {
+		if r := recover(); r != nil {
+			k.Logger(ctx).Error("failed to withdraw rewards", "validator", valAddr, "error", r)
+
+			pools = nil
+			err = nil
+		}
+	}()
+
 	delModuleAddr := types.GetDelegatorModuleAddress(valAddr)
 	if ok, err := k.hasZeroRewards(ctx, valAddr, delModuleAddr); err != nil {
 		return nil, err
@@ -64,7 +78,7 @@ func (k Keeper) WithdrawRewards(ctx context.Context, valAddr sdk.ValAddress) (di
 	}
 	rewardDenom := params.RewardDenom
 
-	pools := make(distrtypes.Pools, 0, len(rewardPools))
+	pools = make(distrtypes.Pools, 0, len(rewardPools))
 	for _, pool := range rewardPools {
 		rewardAmount := pool.Coins.AmountOf(rewardDenom)
 		if rewardAmount.IsPositive() {
@@ -319,7 +333,7 @@ func (k Keeper) DepositUnbondingCoins(
 		vmtypes.StdAddress,
 		vmtypes.StdAddress,
 		types.MoveModuleNameStaking,
-		types.FunctionNameStakingDepositUnbondingCoin,
+		types.FunctionNameStakingDepositUnbondingCoinForChain,
 		[]vmtypes.TypeTag{},
 		args,
 	)
@@ -442,7 +456,7 @@ func (k Keeper) SlashUnbondingDelegations(
 			vmtypes.StdAddress,
 			vmtypes.StdAddress,
 			types.MoveModuleNameStaking,
-			types.FunctionNameStakingSlashUnbondingCoin,
+			types.FunctionNameStakingSlashUnbondingCoinForChain,
 			[]vmtypes.TypeTag{},
 			args,
 		); err != nil {
@@ -476,7 +490,7 @@ func (k Keeper) InitializeStakingWithMetadata(
 		vmtypes.StdAddress,
 		vmtypes.StdAddress,
 		types.MoveModuleNameStaking,
-		types.FunctionNameStakingInitialize,
+		types.FunctionNameStakingInitializeForChain,
 		[]vmtypes.TypeTag{},
 		[][]byte{metadata[:]},
 	); err != nil {

@@ -156,7 +156,7 @@ func TestWithdrawRewards(t *testing.T) {
 	require.NoError(t, err)
 
 	// withdraw zero rewards
-	_, err = input.MoveKeeper.WithdrawRewards(ctx, valAddr)
+	_, err = input.MoveKeeper.SafeWithdrawRewards(ctx, valAddr)
 	require.NoError(t, err)
 
 	moveAccOriginBalance := input.BankKeeper.GetAllBalances(ctx, types.MoveStakingModuleAddress)
@@ -165,7 +165,7 @@ func TestWithdrawRewards(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		setValidatorRewards(t, ctx, input.Faucet, input.StakingKeeper, input.DistKeeper, valAddr, sdk.NewCoin(bondDenom, math.NewInt(100)))
 		ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
-		rewards, err := input.MoveKeeper.WithdrawRewards(ctx, valAddr)
+		rewards, err := input.MoveKeeper.SafeWithdrawRewards(ctx, valAddr)
 		require.NoError(t, err)
 		accRewards = accRewards.Add(rewards.Sum()...)
 	}
@@ -279,7 +279,7 @@ func TestApplyStakingDeltas(t *testing.T) {
 		vmAddr,
 		vmtypes.StdAddress,
 		types.MoveModuleNameStaking,
-		types.FunctionNameStakingDelegate,
+		types.FunctionNameStakingDelegateScript,
 		[]vmtypes.TypeTag{},
 		[][]byte{metadataLP[:], valAddrArg, amountArg},
 	)
@@ -299,7 +299,7 @@ func TestApplyStakingDeltas(t *testing.T) {
 		vmAddr,
 		vmtypes.StdAddress,
 		types.MoveModuleNameStaking,
-		types.FunctionNameStakingUndelegate,
+		types.FunctionNameStakingUndelegateScript,
 		[]vmtypes.TypeTag{},
 		[][]byte{metadataLP[:], valAddrArg, halfAmountArg},
 	)
@@ -383,7 +383,7 @@ func Test_SlashUnbondingDelegations(t *testing.T) {
 		vmAddr,
 		vmtypes.StdAddress,
 		types.MoveModuleNameStaking,
-		types.FunctionNameStakingDelegate,
+		types.FunctionNameStakingDelegateScript,
 		[]vmtypes.TypeTag{},
 		[][]byte{metadataLP[:], valAddrArg, amountArg},
 	)
@@ -403,7 +403,7 @@ func Test_SlashUnbondingDelegations(t *testing.T) {
 		vmAddr,
 		vmtypes.StdAddress,
 		types.MoveModuleNameStaking,
-		types.FunctionNameStakingUndelegate,
+		types.FunctionNameStakingUndelegateScript,
 		[]vmtypes.TypeTag{},
 		[][]byte{metadataLP[:], valAddrArg, halfAmountArg},
 	)

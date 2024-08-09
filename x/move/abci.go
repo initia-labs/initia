@@ -44,7 +44,7 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper, vc address.Codec) error 
 			return err
 		}
 
-		rewardPools, err := k.WithdrawRewards(ctx, valAddr)
+		rewardPools, err := k.SafeWithdrawRewards(ctx, valAddr)
 		if err != nil {
 			return err
 		}
@@ -90,7 +90,7 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper, vc address.Codec) error 
 			vmtypes.StdAddress,
 			vmtypes.StdAddress,
 			types.MoveModuleNameStaking,
-			types.FunctionNameStakingDepositReward,
+			types.FunctionNameStakingDepositRewardForChain,
 			[]vmtypes.TypeTag{},
 			args,
 		); err != nil {

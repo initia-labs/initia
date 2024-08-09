@@ -34,7 +34,7 @@ require (
 	github.com/cosmos/ibc-go/modules/capability v1.0.0
 	github.com/cosmos/ibc-go/v8 v8.4.0
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.2.0
-	github.com/gogo/protobuf v1.3.3
+	github.com/gogo/protobuf v1.3.2
 	github.com/golang/mock v1.6.0
 	github.com/golang/protobuf v1.5.4
 	github.com/gorilla/mux v1.8.1
@@ -217,27 +217,26 @@ require (
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
 
+// initia custom
 replace (
-	// use cosmos fork of keyring
-	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
-
 	// use custom version for
 	// - https://github.com/initia-labs/cometbft/commit/cb3ed4ca9be4d6c55df7df2d927e9b92153bc3e2
 	github.com/cometbft/cometbft => github.com/initia-labs/cometbft v0.0.0-20240802022359-e0a5ce0336b6
 	// use v1.1.4 for
 	// - https://github.com/cosmos/iavl/commit/021433c2ed0b64223f90315a3421eb645e1f08fe
 	github.com/cosmos/iavl => github.com/cosmos/iavl v1.1.4
+)
 
+// cosmos replaces
+replace (
+	// use cosmos fork of keyring
+	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
 	// dgrijalva/jwt-go is deprecated and doesn't receive security updates.
 	// TODO: remove it: https://github.com/cosmos/cosmos-sdk/issues/13134
 	github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.4.2
-
-	// Fix upstream GHSA-h395-qcrw-5vmq vulnerability.
+	// Fix upstream GHSA-h395-qcrw-5vmq and GHSA-3vp4-m3rf-835h vulnerabilities.
 	// TODO Remove it: https://github.com/cosmos/cosmos-sdk/issues/10409
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.9.1
-
-	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
-
-	// Downgraded to avoid bugs in following commits which caused simulations to fail.
+	// replace broken goleveldb
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 )
