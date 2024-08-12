@@ -1,7 +1,6 @@
 package move_hooks
 
 import (
-	"encoding/json"
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -51,11 +50,7 @@ func (h MoveHooks) onRecvIcs20Packet(
 	//
 	// If that succeeds, we make the contract call
 	data.Receiver = intermediateSender
-	bz, err := json.Marshal(data)
-	if err != nil {
-		return newEmitErrorAcknowledgement(err)
-	}
-	packet.Data = bz
+	packet.Data = data.GetBytes()
 
 	ack := im.App.OnRecvPacket(ctx, packet, relayer)
 	if !ack.Success() {
@@ -107,11 +102,7 @@ func (h MoveHooks) onRecvIcs721Packet(
 	//
 	// If that succeeds, we make the contract call
 	data.Receiver = intermediateSender
-	bz, err := json.Marshal(data)
-	if err != nil {
-		return newEmitErrorAcknowledgement(err)
-	}
-	packet.Data = bz
+	packet.Data = data.GetBytes(packet.GetSourcePort())
 
 	ack := im.App.OnRecvPacket(ctx, packet, relayer)
 	if !ack.Success() {
