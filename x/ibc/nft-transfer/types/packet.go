@@ -71,10 +71,10 @@ func (nftpd NonFungibleTokenPacketData) ValidateBasic() error {
 }
 
 // GetBytes is a helper for serializing
-func (nftpd NonFungibleTokenPacketData) GetBytes(counterPartyPort string) []byte {
+func (nftpd NonFungibleTokenPacketData) GetBytes(counterpartyPort string) []byte {
 	var bz []byte
 	var err error
-	if isWasmPacket(counterPartyPort) {
+	if isWasmPacket(counterpartyPort) {
 		bz, err = json.Marshal(nftpd.ToWasmData())
 	} else {
 		bz, err = json.Marshal(nftpd)
@@ -87,11 +87,11 @@ func (nftpd NonFungibleTokenPacketData) GetBytes(counterPartyPort string) []byte
 }
 
 // decode packet data to NonFungibleTokenPacketData
-func DecodePacketData(packetData []byte, counterPartyPort string) (NonFungibleTokenPacketData, error) {
+func DecodePacketData(packetData []byte, counterpartyPort string) (NonFungibleTokenPacketData, error) {
 	decoder := json.NewDecoder(strings.NewReader(string(packetData)))
 	decoder.DisallowUnknownFields()
 
-	if isWasmPacket(counterPartyPort) {
+	if isWasmPacket(counterpartyPort) {
 		var wasmData NonFungibleTokenPacketDataWasm
 		if err := decoder.Decode(&wasmData); err != nil {
 			return NonFungibleTokenPacketData{}, sdkerrors.ErrInvalidRequest.Wrap(err.Error())
