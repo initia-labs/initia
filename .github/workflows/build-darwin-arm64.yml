@@ -14,7 +14,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.22.4'
+          go-version: "1.22.5"
       - name: Set environment variables
         run: |
           L1_NETWORK_NAME="initiation-1"
@@ -30,12 +30,12 @@ jobs:
           fi
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
           echo "ARCH_NAME=aarch64" >> $GITHUB_ENV
-          
+
       - name: Ensure dependencies
         run: |
           go mod tidy
           go get github.com/initia-labs/movevm@${MOVEVM_VERSION}
-          
+
       - name: Print environment variables
         run: |
           echo "GOARCH=${GOARCH}"
@@ -43,7 +43,7 @@ jobs:
           echo "VERSION=${VERSION}"
           echo "ARCH_NAME=${ARCH_NAME}"
           echo "L1_NETWORK_NAME=${L1_NETWORK_NAME}"
-      
+
       - name: Build and Package for Darwin ARM64
         run: |
           cd ../initia \
@@ -54,9 +54,12 @@ jobs:
           && tar -czvf initia_"$VERSION"_Darwin_"$ARCH_NAME".tar.gz initiad libmovevm.dylib libcompiler.dylib \
           && mv ./initia_"$VERSION"_Darwin_"$ARCH_NAME".tar.gz $GITHUB_WORKSPACE/ \
           && rm -rf ./libmovevm.dylib ./libcompiler.dylib ./initiad
-  
+
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
             initia_${{ env.VERSION }}_Darwin_${{ env.ARCH_NAME }}.tar.gz
+        env:
+          Version: ${{ env.VERSION }}
+          ARCH_NAME: ${{ env.ARCH_NAME }}

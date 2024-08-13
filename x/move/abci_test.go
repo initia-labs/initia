@@ -47,7 +47,7 @@ func Test_BeginBlocker(t *testing.T) {
 		Sender:        addr2.String(),
 		ModuleAddress: types.StdAddr.String(),
 		ModuleName:    types.MoveModuleNameStaking,
-		FunctionName:  types.FunctionNameStakingDelegate,
+		FunctionName:  types.FunctionNameStakingDelegateScript,
 		TypeArgs:      []string{},
 		Args:          [][]byte{metadataLP[:], valAddrArg, amountArg},
 	}
@@ -98,7 +98,7 @@ func Test_BeginBlocker(t *testing.T) {
 		Sender:        addr2.String(),
 		ModuleAddress: types.StdAddr.String(),
 		ModuleName:    types.MoveModuleNameStaking,
-		FunctionName:  types.FunctionNameStakingUndelegate,
+		FunctionName:  types.FunctionNameStakingUndelegateScript,
 		TypeArgs:      []string{},
 		Args:          [][]byte{metadataLP[:], valAddrArg, amountArg},
 	}

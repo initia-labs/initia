@@ -74,7 +74,7 @@ func (k Keeper) GetParams(ctx context.Context) (types.Params, error) {
 		return types.Params{}, err
 	}
 
-	allowedPublishers, err := NewCodeKeeper(&k).GetParams(ctx)
+	allowedPublishers, err := NewCodeKeeper(&k).GetAllowedPublishers(ctx)
 	if err != nil {
 		return types.Params{}, err
 	}

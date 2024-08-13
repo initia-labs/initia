@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"io"
 	"os"
@@ -9,6 +10,7 @@ import (
 	tmcli "github.com/cometbft/cometbft/libs/cli"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"golang.org/x/sync/errgroup"
 
 	"cosmossdk.io/log"
 	confixcmd "cosmossdk.io/tools/confix/cmd"
@@ -35,13 +37,14 @@ import (
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 
 	initiaapp "github.com/initia-labs/initia/app"
-	initiaapporacle "github.com/initia-labs/initia/app/oracle"
 	"github.com/initia-labs/initia/app/params"
 	movecmd "github.com/initia-labs/initia/cmd/move"
 	cryptokeyring "github.com/initia-labs/initia/crypto/keyring"
 	"github.com/initia-labs/initia/x/genutil"
 	genutilcli "github.com/initia-labs/initia/x/genutil/client/cli"
 	moveconfig "github.com/initia-labs/initia/x/move/config"
+
+	oracleconfig "github.com/skip-mev/slinky/oracle/config"
 )
 
 // NewRootCmd creates a new root command for initiad. It is called once in the
@@ -144,7 +147,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 }
 
 func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig, basicManager module.BasicManager) {
-	a := appCreator{encodingConfig}
+	a := appCreator{encodingConfig: encodingConfig}
 
 	rootCmd.AddCommand(
 		genutilcli.InitCmd(basicManager, initiaapp.DefaultNodeHome),
@@ -154,12 +157,32 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig, b
 		snapshot.Cmd(a.newApp),
 	)
 
-	server.AddCommands(
+	server.AddCommandsWithStartCmdOptions(
 		rootCmd,
 		initiaapp.DefaultNodeHome,
 		a.newApp,
 		a.appExport,
-		addModuleInitFlags,
+		server.StartCmdOptions{
+			AddFlags: addModuleInitFlags,
+			PostSetup: func(svrCtx *server.Context, clientCtx client.Context, ctx context.Context, g *errgroup.Group) error {
+				g.Go(func() error {
+					errCh := make(chan error, 1)
+					go func() {
+						err := a.app.StartOracleClient(ctx)
+						errCh <- err
+					}()
+
+					select {
+					case err := <-errCh:
+						return err
+					case <-ctx.Done():
+						return nil
+					}
+				})
+
+				return nil
+			},
+		},
 	)
 
 	// add keybase, auxiliary RPC, query, and tx child commands
@@ -249,11 +272,12 @@ func txCommand() *cobra.Command {
 }
 
 type appCreator struct {
+	app            *initiaapp.InitiaApp
 	encodingConfig params.EncodingConfig
 }
 
 // newApp is an AppCreator
-func (a appCreator) newApp(
+func (a *appCreator) newApp(
 	logger log.Logger,
 	db dbm.DB,
 	traceStore io.Writer,
@@ -261,13 +285,21 @@ func (a appCreator) newApp(
 ) servertypes.Application {
 	baseappOptions := server.DefaultBaseappOptions(appOpts)
 
-	return initiaapp.NewInitiaApp(
+	oracleConfig, err := oracleconfig.ReadConfigFromAppOpts(appOpts)
+	if err != nil {
+		logger.Error("failed to read oracle config", "error", err)
+		os.Exit(-1)
+	}
+
+	a.app = initiaapp.NewInitiaApp(
 		logger, db, traceStore, true,
 		moveconfig.GetConfig(appOpts),
-		initiaapporacle.ReadOracleConfig(appOpts),
+		oracleConfig,
 		appOpts,
 		baseappOptions...,
 	)
+
+	return a.app
 }
 
 func (a appCreator) appExport(
@@ -288,13 +320,13 @@ func (a appCreator) appExport(
 
 	var initiaApp *initiaapp.InitiaApp
 	if height != -1 {
-		initiaApp = initiaapp.NewInitiaApp(logger, db, traceStore, false, moveconfig.DefaultMoveConfig(), initiaapporacle.DefaultConfig(), appOpts)
+		initiaApp = initiaapp.NewInitiaApp(logger, db, traceStore, false, moveconfig.DefaultMoveConfig(), oracleconfig.NewDefaultAppConfig(), appOpts)
 
 		if err := initiaApp.LoadHeight(height); err != nil {
 			return servertypes.ExportedApp{}, err
 		}
 	} else {
-		initiaApp = initiaapp.NewInitiaApp(logger, db, traceStore, true, moveconfig.DefaultMoveConfig(), initiaapporacle.DefaultConfig(), appOpts)
+		initiaApp = initiaapp.NewInitiaApp(logger, db, traceStore, true, moveconfig.DefaultMoveConfig(), oracleconfig.NewDefaultAppConfig(), appOpts)
 	}
 
 	return initiaApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs, modulesToExport)

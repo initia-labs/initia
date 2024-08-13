@@ -11,7 +11,6 @@ import (
 	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
 
 	initiaapp "github.com/initia-labs/initia/app"
-	initiaapporacle "github.com/initia-labs/initia/app/oracle"
 	moveconfig "github.com/initia-labs/initia/x/move/config"
 )
 
@@ -45,17 +44,18 @@ func initAppConfig() (string, interface{}) {
 	srvCfg.Mempool.MaxTxs = 2000
 	srvCfg.QueryGasLimit = 3000000
 
-	initiaappConfig := initiaappConfig{
+	appConfig := initiaappConfig{
 		Config:     *srvCfg,
 		MoveConfig: moveconfig.DefaultMoveConfig(),
-		Oracle:     initiaapporacle.DefaultConfig(),
+		Oracle:     oracleconfig.NewDefaultAppConfig(),
 	}
+	appConfig.Oracle.ClientTimeout = 500 * time.Millisecond
 
-	initiaappTemplate := serverconfig.DefaultConfigTemplate +
+	appConfigTemplate := serverconfig.DefaultConfigTemplate +
 		moveconfig.DefaultConfigTemplate +
 		oracleconfig.DefaultConfigTemplate
 
-	return initiaappTemplate, initiaappConfig
+	return appConfigTemplate, appConfig
 }
 
 // initTendermintConfig helps to override default Tendermint Config values.

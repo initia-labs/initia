@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"math"
 	"strings"
 	"unsafe"
 
@@ -194,9 +193,6 @@ func (k Keeper) executeEntryFunction(
 
 	if isSimulation(ctx) {
 		gasForRuntime = k.config.ContractSimulationGasLimit
-	} else if gasMeter.Limit() == 0 {
-		// infinite gas meter
-		gasForRuntime = math.MaxUint64
 	}
 
 	// delegate gas metering to move vm
@@ -310,9 +306,6 @@ func (k Keeper) executeScript(
 
 	if isSimulation(ctx) {
 		gasForRuntime = k.config.ContractSimulationGasLimit
-	} else if gasMeter.Limit() == 0 {
-		// infinite gas meter
-		gasForRuntime = math.MaxUint64
 	}
 
 	// delegate gas metering to move vm

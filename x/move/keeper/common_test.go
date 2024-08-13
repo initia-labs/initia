@@ -545,6 +545,21 @@ func (router TestMsgRouter) HandlerByTypeURL(typeURL string) baseapp.MsgServiceH
 
 			return sdk.WrapServiceResult(ctx, &stakingtypes.MsgDelegateResponse{}, nil)
 		}
+	case sdk.MsgTypeURL(&movetypes.MsgExecuteJSON{}):
+		return func(ctx sdk.Context, _msg sdk.Msg) (*sdk.Result, error) {
+			msg := _msg.(*movetypes.MsgExecuteJSON)
+
+			ctx.EventManager().EmitEvent(sdk.NewEvent("move_execute_with_json",
+				sdk.NewAttribute("sender", msg.Sender),
+				sdk.NewAttribute("module_addr", msg.ModuleAddress),
+				sdk.NewAttribute("module_name", msg.ModuleName),
+				sdk.NewAttribute("function_name", msg.FunctionName),
+				sdk.NewAttribute("type_args", strings.Join(msg.TypeArgs, ",")),
+				sdk.NewAttribute("args", strings.Join(msg.Args, ",")),
+			))
+
+			return sdk.WrapServiceResult(ctx, &stakingtypes.MsgDelegateResponse{}, nil)
+		}
 	case sdk.MsgTypeURL(&movetypes.MsgScript{}):
 		return func(ctx sdk.Context, _msg sdk.Msg) (*sdk.Result, error) {
 			msg := _msg.(*movetypes.MsgScript)
@@ -559,6 +574,19 @@ func (router TestMsgRouter) HandlerByTypeURL(typeURL string) baseapp.MsgServiceH
 				sdk.NewAttribute("code_bytes", hex.EncodeToString(msg.CodeBytes)),
 				sdk.NewAttribute("type_args", strings.Join(msg.TypeArgs, ",")),
 				sdk.NewAttribute("args", strings.Join(argStrs, ",")),
+			))
+
+			return sdk.WrapServiceResult(ctx, &stakingtypes.MsgDelegateResponse{}, nil)
+		}
+	case sdk.MsgTypeURL(&movetypes.MsgScriptJSON{}):
+		return func(ctx sdk.Context, _msg sdk.Msg) (*sdk.Result, error) {
+			msg := _msg.(*movetypes.MsgScriptJSON)
+
+			ctx.EventManager().EmitEvent(sdk.NewEvent("move_script_with_json",
+				sdk.NewAttribute("sender", msg.Sender),
+				sdk.NewAttribute("code_bytes", hex.EncodeToString(msg.CodeBytes)),
+				sdk.NewAttribute("type_args", strings.Join(msg.TypeArgs, ",")),
+				sdk.NewAttribute("args", strings.Join(msg.Args, ",")),
 			))
 
 			return sdk.WrapServiceResult(ctx, &stakingtypes.MsgDelegateResponse{}, nil)

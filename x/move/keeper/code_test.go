@@ -9,15 +9,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_CodeKeeper_GetParams(t *testing.T) {
+func Test_CodeKeeper_GetAllowedPublishers(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
-	allowedPublishers, err := keeper.NewCodeKeeper(&input.MoveKeeper).GetParams(ctx)
+	allowedPublishers, err := keeper.NewCodeKeeper(&input.MoveKeeper).GetAllowedPublishers(ctx)
 	require.NoError(t, err)
 	require.Empty(t, allowedPublishers)
 }
 
-func Test_CodeKeeper_SetParams(t *testing.T) {
+func Test_CodeKeeper_SetAllowedPublishers(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 	codeKeeper := keeper.NewCodeKeeper(&input.MoveKeeper)
 

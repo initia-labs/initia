@@ -33,11 +33,12 @@ import (
 	"github.com/cosmos/ibc-go/v8/modules/core/keeper"
 
 	initiaapp "github.com/initia-labs/initia/app"
-	initiaapporacle "github.com/initia-labs/initia/app/oracle"
 	ibctestingtypes "github.com/initia-labs/initia/x/ibc/testing/types"
 	icaauthkeeper "github.com/initia-labs/initia/x/intertx/keeper"
 	moveconfig "github.com/initia-labs/initia/x/move/config"
 	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
+
+	oracleconfig "github.com/skip-mev/slinky/oracle/config"
 )
 
 func coins(amt int64) sdk.Coins {
@@ -74,7 +75,7 @@ type TestingApp interface {
 func SetupTestingApp(t *testing.T) (TestingApp, map[string]json.RawMessage) {
 	db := dbm.NewMemDB()
 	encCdc := initiaapp.MakeEncodingConfig()
-	app := initiaapp.NewInitiaApp(log.NewNopLogger(), db, nil, true, moveconfig.DefaultMoveConfig(), initiaapporacle.DefaultConfig(), testutilsims.EmptyAppOptions{})
+	app := initiaapp.NewInitiaApp(log.NewNopLogger(), db, nil, true, moveconfig.DefaultMoveConfig(), oracleconfig.NewDefaultAppConfig(), testutilsims.EmptyAppOptions{})
 	return app, initiaapp.NewDefaultGenesisState(encCdc.Codec, sdk.DefaultBondDenom)
 }
 
