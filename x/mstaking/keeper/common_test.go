@@ -439,6 +439,7 @@ func _createTestInput(
 		bankKeeper,
 		stakingKeeper,
 		distKeeper,
+		movekeeper.NewVestingKeeper(moveKeeper),
 		msgRouter,
 		govConfig,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),

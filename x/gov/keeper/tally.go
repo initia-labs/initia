@@ -59,6 +59,27 @@ func (k Keeper) Tally(ctx context.Context, params customtypes.Params, proposal c
 		return false, false, false, tallyResults, err
 	}
 
+	// fetch vesting table handle if vesting params are provided
+	var vestingHandle *sdk.AccAddress
+	if params.Vesting != nil {
+		vesting := *params.Vesting
+		moduleAddr, err := k.authKeeper.AddressCodec().StringToBytes(vesting.ModuleAddr)
+		if err != nil {
+			return false, false, false, tallyResults, err
+		}
+
+		creatorAddr, err := k.authKeeper.AddressCodec().StringToBytes(vesting.CreatorAddr)
+		if err != nil {
+			return false, false, false, tallyResults, err
+		}
+
+		// base denom validation will be done in vesting keeper
+		vestingHandle, err = k.vestingKeeper.GetVestingHandle(ctx, moduleAddr, vesting.ModuleName, creatorAddr)
+		if err != nil {
+			return false, false, false, tallyResults, err
+		}
+	}
+
 	rng := collections.NewPrefixedPairRange[uint64, sdk.AccAddress](proposal.Id)
 	err = k.Votes.Walk(ctx, rng, func(key collections.Pair[uint64, sdk.AccAddress], vote v1.Vote) (bool, error) {
 		// if validator, just record it in the map
@@ -68,6 +89,26 @@ func (k Keeper) Tally(ctx context.Context, params customtypes.Params, proposal c
 		if val, ok := currValidators[valAddrStr]; ok {
 			val.Vote = vote.Options
 			currValidators[valAddrStr] = val
+		}
+
+		// add vesting voting power if vesting params are provided
+		if vestingHandle != nil {
+			amount, err := k.vestingKeeper.GetUnclaimedVestedAmount(ctx, *vestingHandle, voter)
+			if err != nil {
+				return false, err
+			}
+
+			if !amount.IsZero() {
+				// `the vesting token == the base denom`` check is done in vesting keeper,
+				// so we can safely convert the amount to voting power
+				votingPower := math.LegacyNewDecFromInt(amount)
+				for _, option := range vote.Options {
+					subPower := votingPower.Mul(math.LegacyMustNewDecFromStr(option.Weight))
+					results[option.Option] = results[option.Option].Add(subPower)
+				}
+				totalVotingPower = totalVotingPower.Add(votingPower)
+				stakedVotingPower = stakedVotingPower.Add(amount)
+			}
 		}
 
 		// iterate over all delegations from voter, deduct from any delegated-to validators

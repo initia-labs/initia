@@ -674,7 +674,7 @@ func NewAppKeeper(
 	govConfig := govtypes.DefaultConfig()
 	appKeepers.GovKeeper = govkeeper.NewKeeper(
 		appCodec, runtime.NewKVStoreService(appKeepers.keys[govtypes.StoreKey]), appKeepers.AccountKeeper, appKeepers.BankKeeper,
-		appKeepers.StakingKeeper, appKeepers.DistrKeeper, bApp.MsgServiceRouter(), govConfig, authorityAddr,
+		appKeepers.StakingKeeper, appKeepers.DistrKeeper, movekeeper.NewVestingKeeper(appKeepers.MoveKeeper), bApp.MsgServiceRouter(), govConfig, authorityAddr,
 	)
 
 	return appKeepers

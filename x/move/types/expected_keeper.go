@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	distrtypes "github.com/initia-labs/initia/x/distribution/types"
@@ -86,4 +87,9 @@ type CommunityPoolKeeper interface {
 type OracleKeeper interface {
 	GetPriceForCurrencyPair(ctx sdk.Context, cp slinkytypes.CurrencyPair) (oracletypes.QuotePrice, error)
 	GetDecimalsForCurrencyPair(ctx sdk.Context, cp slinkytypes.CurrencyPair) (decimals uint64, err error)
+}
+
+type VestingKeeper interface {
+	GetVestingHandle(ctx context.Context, moduleAccAddr sdk.AccAddress, moduleName string, creatorAccAddr sdk.AccAddress) (*sdk.AccAddress, error)
+	GetUnclaimedVestedAmount(ctx context.Context, tableHandle, recipientAccAddr sdk.AccAddress) (math.Int, error)
 }

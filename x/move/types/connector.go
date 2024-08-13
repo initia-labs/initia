@@ -62,6 +62,10 @@ const (
 	FunctionNameCodePublish              = "publish"
 	FunctionNameCodeSetAllowedPublishers = "set_allowed_publishers"
 
+	// function names for vesting
+	FunctionNameVestingTableHandle   = "vesting_table_handle"
+	FunctionNameVestingTokenMetadata = "vesting_token_metadata"
+
 	// resource names
 	ResourceNameFungibleStore = "FungibleStore"
 	ResourceNameMetadata      = "Metadata"
@@ -589,6 +593,39 @@ func ReadFungibleAssetMetadata(bz []byte) (string, string, uint8) {
 	cursor += 1 //nolint
 
 	return name, symbol, decimals
+}
+
+func ReadVesting(bz []byte) (allocation uint64, claimedAmount uint64, startTime uint64, vestingPeriod uint64, err error) {
+	cursor := int(0)
+
+	// read allocation
+	allocation, err = vmtypes.DeserializeUint64(bz[cursor : cursor+8])
+	if err != nil {
+		return
+	}
+	cursor += 8
+
+	// read claimedAmount
+	claimedAmount, err = vmtypes.DeserializeUint64(bz[cursor : cursor+8])
+	if err != nil {
+		return
+	}
+	cursor += 8
+
+	// read startTime
+	startTime, err = vmtypes.DeserializeUint64(bz[cursor : cursor+8])
+	if err != nil {
+		return
+	}
+	cursor += 8
+
+	// rad vestingPeriod
+	vestingPeriod, err = vmtypes.DeserializeUint64(bz[cursor : cursor+8])
+	if err != nil {
+		return
+	}
+
+	return allocation, claimedAmount, startTime, vestingPeriod, nil
 }
 
 // readULEB128 converts a uleb128-encoded byte array into an int.

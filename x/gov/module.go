@@ -181,6 +181,7 @@ type ModuleInputs struct {
 	BankKeeper         types.BankKeeper
 	StakingKeeper      customtypes.StakingKeeper
 	DistributionKeeper types.DistributionKeeper
+	VestingKeeper      customtypes.VestingKeeper
 }
 
 type ModuleOutputs struct {
@@ -210,6 +211,7 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 		in.BankKeeper,
 		in.StakingKeeper,
 		in.DistributionKeeper,
+		in.VestingKeeper,
 		in.MsgServiceRouter,
 		defaultConfig,
 		authority.String(),

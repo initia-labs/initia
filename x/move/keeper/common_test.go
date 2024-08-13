@@ -442,6 +442,7 @@ func _createTestInput(
 		bankKeeper,
 		stakingKeeper,
 		distKeeper,
+		movekeeper.NewVestingKeeper(moveKeeper),
 		msgRouter,
 		govConfig,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
@@ -485,6 +486,7 @@ var stdCoinTestModule []byte
 var basicCoinMintScript []byte
 var tableGeneratorModule []byte
 var testAddressModule []byte
+var vestingModule []byte
 
 func init() {
 	basicCoinModule = ReadMoveFile("BasicCoin")
@@ -492,6 +494,7 @@ func init() {
 	stdCoinTestModule = ReadMoveFile("StdCoinTest")
 	tableGeneratorModule = ReadMoveFile("TableGenerator")
 	testAddressModule = ReadMoveFile("TestAddress")
+	vestingModule = ReadMoveFile("Vesting")
 
 	basicCoinMintScript = ReadScriptFile("main")
 }
