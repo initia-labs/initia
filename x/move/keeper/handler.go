@@ -350,11 +350,7 @@ func (k Keeper) handleExecuteResponse(
 ) error {
 	// Emit contract events
 	for _, event := range execRes.Events {
-		typeTag, err := vmapi.StringifyTypeTag(event.TypeTag)
-		if err != nil {
-			return err
-		}
-
+		typeTag := event.TypeTag
 		ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventTypeMove,
 			sdk.NewAttribute(types.AttributeKeyTypeTag, typeTag),
 			sdk.NewAttribute(types.AttributeKeyData, event.EventData),

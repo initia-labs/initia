@@ -303,10 +303,7 @@ func (q Querier) View(ctx context.Context, req *types.QueryViewRequest) (res *ty
 	events := make([]types.VMEvent, len(output.Events))
 	for i, event := range output.Events {
 		events[i].Data = event.EventData
-		events[i].TypeTag, err = vmapi.StringifyTypeTag(event.TypeTag)
-		if err != nil {
-			return
-		}
+		events[i].TypeTag = event.TypeTag
 	}
 
 	res = &types.QueryViewResponse{
@@ -374,10 +371,7 @@ func (q Querier) ViewJSON(ctx context.Context, req *types.QueryViewJSONRequest) 
 	events := make([]types.VMEvent, len(output.Events))
 	for i, event := range output.Events {
 		events[i].Data = event.EventData
-		events[i].TypeTag, err = vmapi.StringifyTypeTag(event.TypeTag)
-		if err != nil {
-			return
-		}
+		events[i].TypeTag = event.TypeTag
 	}
 
 	res = &types.QueryViewJSONResponse{
