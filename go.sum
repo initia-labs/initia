@@ -733,8 +733,6 @@ github.com/initia-labs/OPinit/api v0.4.1 h1:Q8etW92LiwekKZxzDYVFdiHF3uOpEA4nyajy
 github.com/initia-labs/OPinit/api v0.4.1/go.mod h1:Xy/Nt3ubXLQ4zKn0m7RuQOM1sj8TVdlNNyek21TGYR0=
 github.com/initia-labs/cometbft v0.0.0-20240802022359-e0a5ce0336b6 h1:ObKvj9nGiKE+MWZ/LnH3rPcXsnBVVn4c30/iw+fMsd4=
 github.com/initia-labs/cometbft v0.0.0-20240802022359-e0a5ce0336b6/go.mod h1:jHPx9vQpWzPHEAiYI/7EDKaB1NXhK6o3SArrrY8ExKc=
-github.com/initia-labs/movevm v0.3.4 h1:kzqs6uzTq0f5peZJNzLq/1qgnmAFfC+I9eCyPBducxM=
-github.com/initia-labs/movevm v0.3.4/go.mod h1:6MxR4GP5zH3JUc1IMgfqAe1e483mZVS7fshPknZPJ30=
 github.com/jhump/protoreflect v1.15.3 h1:6SFRuqU45u9hIZPJAoZ8c28T3nK64BNdp9w6jFonzls=
 github.com/jhump/protoreflect v1.15.3/go.mod h1:4ORHmSBmlCW8fh3xHmJMGyul1zNqZK4Elxc8qKP+p1k=
 github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af/go.mod h1:Nht3zPeWKUH0NzdCt2Blrr5ys8VGpn0CEB0cQHVjt7k=

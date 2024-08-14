@@ -288,7 +288,7 @@ func (q Querier) View(ctx context.Context, req *types.QueryViewRequest) (res *ty
 		return nil, errors.Wrap(sdkerrors.ErrInvalidRequest, "empty function name")
 	}
 
-	output, err := q.ExecuteViewFunction(
+	output, gasUsed, err := q.ExecuteViewFunction(
 		ctx,
 		moduleAddr,
 		req.ModuleName,
@@ -312,7 +312,7 @@ func (q Querier) View(ctx context.Context, req *types.QueryViewRequest) (res *ty
 	res = &types.QueryViewResponse{
 		Data:    output.Ret,
 		Events:  events,
-		GasUsed: output.GasUsed,
+		GasUsed: gasUsed,
 	}
 
 	return
@@ -359,7 +359,7 @@ func (q Querier) ViewJSON(ctx context.Context, req *types.QueryViewJSONRequest) 
 		return nil, errors.Wrap(sdkerrors.ErrInvalidRequest, "empty function name")
 	}
 
-	output, err := q.ExecuteViewFunctionJSON(
+	output, gasUsed, err := q.ExecuteViewFunctionJSON(
 		ctx,
 		moduleAddr,
 		req.ModuleName,
@@ -383,7 +383,7 @@ func (q Querier) ViewJSON(ctx context.Context, req *types.QueryViewJSONRequest) 
 	res = &types.QueryViewJSONResponse{
 		Data:    output.Ret,
 		Events:  events,
-		GasUsed: output.GasUsed,
+		GasUsed: gasUsed,
 	}
 
 	return

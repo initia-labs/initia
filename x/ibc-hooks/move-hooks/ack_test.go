@@ -73,7 +73,7 @@ func Test_onAckPacket_memo(t *testing.T) {
 	require.NoError(t, err)
 
 	// check the contract state
-	queryRes, err := input.MoveKeeper.ExecuteViewFunction(
+	queryRes, _, err := input.MoveKeeper.ExecuteViewFunction(
 		ctx,
 		vmtypes.StdAddress,
 		"Counter",
@@ -94,7 +94,7 @@ func Test_onAckPacket_memo(t *testing.T) {
 	require.NoError(t, err)
 
 	// check the contract state; increased by 99 if ack is success
-	queryRes, err = input.MoveKeeper.ExecuteViewFunction(
+	queryRes, _, err = input.MoveKeeper.ExecuteViewFunction(
 		ctx,
 		vmtypes.StdAddress,
 		"Counter",
@@ -111,7 +111,7 @@ func Test_onAckPacket_memo(t *testing.T) {
 	}, failedAckBz, addr)
 	require.NoError(t, err)
 
-	queryRes, err = input.MoveKeeper.ExecuteViewFunction(
+	queryRes, _, err = input.MoveKeeper.ExecuteViewFunction(
 		ctx,
 		vmtypes.StdAddress,
 		"Counter",
@@ -189,7 +189,7 @@ func Test_onAckPacket_memo_ICS721(t *testing.T) {
 	require.NoError(t, err)
 
 	// check the contract state
-	queryRes, err := input.MoveKeeper.ExecuteViewFunction(
+	queryRes, _, err := input.MoveKeeper.ExecuteViewFunction(
 		ctx,
 		vmtypes.StdAddress,
 		"Counter",
@@ -210,7 +210,7 @@ func Test_onAckPacket_memo_ICS721(t *testing.T) {
 	require.NoError(t, err)
 
 	// check the contract state; increased by 99 if ack is success
-	queryRes, err = input.MoveKeeper.ExecuteViewFunction(
+	queryRes, _, err = input.MoveKeeper.ExecuteViewFunction(
 		ctx,
 		vmtypes.StdAddress,
 		"Counter",
@@ -227,7 +227,7 @@ func Test_onAckPacket_memo_ICS721(t *testing.T) {
 	}, failedAckBz, addr)
 	require.NoError(t, err)
 
-	queryRes, err = input.MoveKeeper.ExecuteViewFunction(
+	queryRes, _, err = input.MoveKeeper.ExecuteViewFunction(
 		ctx,
 		vmtypes.StdAddress,
 		"Counter",

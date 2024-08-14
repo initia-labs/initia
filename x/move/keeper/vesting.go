@@ -64,7 +64,7 @@ func (vk VestingKeeper) getVestingTokenDenom(ctx context.Context, moduleAccAddr 
 		return "", err
 	}
 
-	output, err := vk.executeViewFunction(
+	output, _, err := vk.executeViewFunction(
 		ctx,
 		moduleAddr,
 		moduleName,
@@ -104,7 +104,7 @@ func (vk VestingKeeper) getVestingTableHandler(ctx context.Context, moduleAccAdd
 		return nil, err
 	}
 
-	output, err := vk.executeViewFunction(
+	output, _, err := vk.executeViewFunction(
 		ctx,
 		moduleAddr,
 		moduleName,

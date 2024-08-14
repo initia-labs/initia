@@ -66,7 +66,7 @@ func Test_onTimeoutPacket_memo(t *testing.T) {
 	require.NoError(t, err)
 
 	// check the contract state
-	queryRes, err := input.MoveKeeper.ExecuteViewFunction(
+	queryRes, _, err := input.MoveKeeper.ExecuteViewFunction(
 		ctx,
 		vmtypes.StdAddress,
 		"Counter",
@@ -87,7 +87,7 @@ func Test_onTimeoutPacket_memo(t *testing.T) {
 	require.NoError(t, err)
 
 	// check the contract state; increased by 99
-	queryRes, err = input.MoveKeeper.ExecuteViewFunction(
+	queryRes, _, err = input.MoveKeeper.ExecuteViewFunction(
 		ctx,
 		vmtypes.StdAddress,
 		"Counter",
@@ -159,7 +159,7 @@ func Test_onTimeoutPacket_memo_ICS721(t *testing.T) {
 	require.NoError(t, err)
 
 	// check the contract state
-	queryRes, err := input.MoveKeeper.ExecuteViewFunction(
+	queryRes, _, err := input.MoveKeeper.ExecuteViewFunction(
 		ctx,
 		vmtypes.StdAddress,
 		"Counter",
@@ -180,7 +180,7 @@ func Test_onTimeoutPacket_memo_ICS721(t *testing.T) {
 	require.NoError(t, err)
 
 	// check the contract state; increased by 99 if ack is success
-	queryRes, err = input.MoveKeeper.ExecuteViewFunction(
+	queryRes, _, err = input.MoveKeeper.ExecuteViewFunction(
 		ctx,
 		vmtypes.StdAddress,
 		"Counter",

@@ -24,7 +24,11 @@ func Test_OnReceivePacketWithoutMemo(t *testing.T) {
 		Amount:   "10000",
 		Sender:   addr.String(),
 		Receiver: addr2.String(),
-		Memo:     "",
+		Memo: `{
+			"move": {
+				"message": null
+			}
+		}`,
 	}
 
 	dataBz, err := json.Marshal(&data)
@@ -76,7 +80,7 @@ func Test_onReceiveIcs20Packet_memo(t *testing.T) {
 	require.True(t, ack.Success())
 
 	// check the contract state
-	queryRes, err := input.MoveKeeper.ExecuteViewFunction(
+	queryRes, _, err := input.MoveKeeper.ExecuteViewFunction(
 		ctx,
 		vmtypes.StdAddress,
 		"Counter",
@@ -158,7 +162,7 @@ func Test_onReceivePacket_memo_ICS721(t *testing.T) {
 	require.True(t, ack.Success())
 
 	// check the contract state
-	queryRes, err := input.MoveKeeper.ExecuteViewFunction(
+	queryRes, _, err := input.MoveKeeper.ExecuteViewFunction(
 		ctx,
 		vmtypes.StdAddress,
 		"Counter",
@@ -215,7 +219,7 @@ func Test_onReceivePacket_memo_ICS721_Wasm(t *testing.T) {
 	require.True(t, ack.Success())
 
 	// check the contract state
-	queryRes, err := input.MoveKeeper.ExecuteViewFunction(
+	queryRes, _, err := input.MoveKeeper.ExecuteViewFunction(
 		ctx,
 		vmtypes.StdAddress,
 		"Counter",
