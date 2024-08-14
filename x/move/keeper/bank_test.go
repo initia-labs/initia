@@ -213,7 +213,7 @@ func Test_BurnCoins(t *testing.T) {
 		vmtypes.TestAddress,
 		vmtypes.StdAddress,
 		"managed_coin",
-		"mint",
+		"mint_to",
 		[]vmtypes.TypeTag{},
 		[]string{fmt.Sprintf("\"%s\"", vmtypes.TestAddress.String()), fmt.Sprintf("\"%s\"", barMetadata.String()), `"1000000"`},
 	)

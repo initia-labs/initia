@@ -11,7 +11,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"golang.org/x/crypto/sha3"
 
 	moveconfig "github.com/initia-labs/initia/x/move/config"
 	"github.com/initia-labs/initia/x/move/types"
@@ -172,13 +171,6 @@ func (k Keeper) SetModule(
 	if moduleKey, err := types.GetModuleKey(addr, moduleName); err != nil {
 		return err
 	} else if err := k.VMStore.Set(ctx, moduleKey, moduleBytes); err != nil {
-		return err
-	}
-
-	checksum := sha3.Sum256(moduleBytes)
-	if checksumKey, err := types.GetChecksumKey(addr, moduleName); err != nil {
-		return err
-	} else if err := k.VMStore.Set(ctx, checksumKey, checksum[:]); err != nil {
 		return err
 	}
 
@@ -549,8 +541,6 @@ func (k Keeper) IterateVMStore(ctx context.Context, cb func(*types.Module, *type
 				KeyBytes:   key[cursor:],
 				ValueBytes: value,
 			})
-		} else if separator == types.ChecksumSeparator {
-			// ignore checksum
 		} else {
 			return true, errors.New("unknown prefix")
 		}
