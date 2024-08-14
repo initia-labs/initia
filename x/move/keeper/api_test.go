@@ -219,7 +219,7 @@ func Test_GetPrice(t *testing.T) {
 	pairIdArg, err := vmtypes.SerializeString(pairId)
 	require.NoError(t, err)
 
-	res, err := input.MoveKeeper.ExecuteViewFunction(
+	res, _, err := input.MoveKeeper.ExecuteViewFunction(
 		ctx,
 		vmtypes.StdAddress,
 		"oracle",
@@ -287,14 +287,14 @@ func Test_API_CustomQuery(t *testing.T) {
 	require.NoError(t, err)
 
 	// to sdk
-	res, err := input.MoveKeeper.ExecuteViewFunction(ctx, vmtypes.TestAddress, "TestAddress", "to_sdk", []vmtypes.TypeTag{}, [][]byte{vmAddr.Bytes()})
+	res, _, err := input.MoveKeeper.ExecuteViewFunction(ctx, vmtypes.TestAddress, "TestAddress", "to_sdk", []vmtypes.TypeTag{}, [][]byte{vmAddr.Bytes()})
 	require.NoError(t, err)
 	require.Equal(t, fmt.Sprintf("\"%s\"", addrs[0].String()), res.Ret)
 
 	// from sdk
 	inputBz, err := vmtypes.SerializeString(addrs[0].String())
 	require.NoError(t, err)
-	res, err = input.MoveKeeper.ExecuteViewFunction(ctx, vmtypes.TestAddress, "TestAddress", "from_sdk", []vmtypes.TypeTag{}, [][]byte{inputBz})
+	res, _, err = input.MoveKeeper.ExecuteViewFunction(ctx, vmtypes.TestAddress, "TestAddress", "from_sdk", []vmtypes.TypeTag{}, [][]byte{inputBz})
 	require.NoError(t, err)
 	require.Equal(t, fmt.Sprintf("\"%s\"", vmAddr.String()), res.Ret)
 }

@@ -199,17 +199,19 @@ func (k Keeper) executeEntryFunction(
 	sdkCtx = sdkCtx.WithGasMeter(storetypes.NewInfiniteGasMeter())
 
 	// run vm
+	gasBalance := gasForRuntime
 	execRes, err := k.moveVM.ExecuteEntryFunction(
+		&gasBalance,
 		types.NewVMStore(sdkCtx, k.VMStore),
 		NewApi(k, sdkCtx),
 		types.NewEnv(sdkCtx, ac, ec),
-		gasForRuntime,
 		senders,
 		payload,
 	)
 
 	// consume gas first and check error
-	gasMeter.ConsumeGas(execRes.GasUsed, "move runtime")
+	gasUsed := gasForRuntime - gasBalance
+	gasMeter.ConsumeGas(gasUsed, "move runtime")
 	if err != nil {
 		return err
 	}
@@ -312,17 +314,19 @@ func (k Keeper) executeScript(
 	sdkCtx = sdkCtx.WithGasMeter(storetypes.NewInfiniteGasMeter())
 
 	// run vm
+	gasBalance := gasForRuntime
 	execRes, err := k.moveVM.ExecuteScript(
+		&gasBalance,
 		types.NewVMStore(sdkCtx, k.VMStore),
 		NewApi(k, sdkCtx),
 		types.NewEnv(sdkCtx, ac, ec),
-		gasForRuntime,
 		senders,
 		payload,
 	)
 
 	// consume gas first and check error
-	gasMeter.ConsumeGas(execRes.GasUsed, "move runtime")
+	gasUsed := gasForRuntime - gasBalance
+	gasMeter.ConsumeGas(gasUsed, "move runtime")
 	if err != nil {
 		return err
 	}
@@ -346,11 +350,7 @@ func (k Keeper) handleExecuteResponse(
 ) error {
 	// Emit contract events
 	for _, event := range execRes.Events {
-		typeTag, err := vmapi.StringifyTypeTag(event.TypeTag)
-		if err != nil {
-			return err
-		}
-
+		typeTag := event.TypeTag
 		ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventTypeMove,
 			sdk.NewAttribute(types.AttributeKeyTypeTag, typeTag),
 			sdk.NewAttribute(types.AttributeKeyData, event.EventData),
@@ -511,7 +511,7 @@ func (k Keeper) ExecuteViewFunction(
 	functionName string,
 	typeArgs []vmtypes.TypeTag,
 	args [][]byte,
-) (vmtypes.ViewOutput, error) {
+) (vmtypes.ViewOutput, uint64, error) {
 	return k.executeViewFunction(
 		ctx,
 		moduleAddr,
@@ -530,7 +530,7 @@ func (k Keeper) ExecuteViewFunctionJSON(
 	functionName string,
 	typeArgs []vmtypes.TypeTag,
 	jsonArgs []string,
-) (vmtypes.ViewOutput, error) {
+) (vmtypes.ViewOutput, uint64, error) {
 	args := make([][]byte, len(jsonArgs))
 	for i, jsonArg := range jsonArgs {
 		// use unsafe method for fast conversion
@@ -556,7 +556,7 @@ func (k Keeper) executeViewFunction(
 	typeArgs []vmtypes.TypeTag,
 	args [][]byte,
 	isJSON bool,
-) (vmtypes.ViewOutput, error) {
+) (vmtypes.ViewOutput, uint64, error) {
 	payload, err := types.BuildExecuteViewFunctionPayload(
 		moduleAddr,
 		moduleName,
@@ -566,12 +566,12 @@ func (k Keeper) executeViewFunction(
 		isJSON,
 	)
 	if err != nil {
-		return vmtypes.ViewOutput{}, err
+		return vmtypes.ViewOutput{}, 0, err
 	}
 
 	executionCounter, err := k.ExecutionCounter.Next(ctx)
 	if err != nil {
-		return vmtypes.ViewOutput{}, err
+		return vmtypes.ViewOutput{}, 0, err
 	}
 
 	api := NewApi(k, ctx)
@@ -585,19 +585,21 @@ func (k Keeper) executeViewFunction(
 	gasMeter := sdkCtx.GasMeter()
 	gasForRuntime := gasMeter.Limit() - gasMeter.GasConsumedToLimit()
 
+	gasBalance := gasForRuntime
 	viewRes, err := k.moveVM.ExecuteViewFunction(
+		&gasBalance,
 		types.NewVMStore(ctx, k.VMStore),
 		api,
 		env,
-		gasForRuntime,
 		payload,
 	)
 	if err != nil {
-		return vmtypes.ViewOutput{}, err
+		return vmtypes.ViewOutput{}, 0, err
 	}
 
 	// consume gas first and check error
-	gasMeter.ConsumeGas(viewRes.GasUsed, "view; move runtime")
+	gasUsed := gasForRuntime - gasBalance
+	gasMeter.ConsumeGas(gasUsed, "view; move runtime")
 
-	return viewRes, nil
+	return viewRes, gasUsed, nil
 }

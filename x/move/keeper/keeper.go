@@ -11,7 +11,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"golang.org/x/crypto/sha3"
 
 	moveconfig "github.com/initia-labs/initia/x/move/config"
 	"github.com/initia-labs/initia/x/move/types"
@@ -82,22 +81,17 @@ func NewKeeper(
 		panic("authority is not a valid acc address")
 	}
 
-	if moveConfig.ModuleCacheCapacity == 0 {
-		moveConfig.ModuleCacheCapacity = moveconfig.DefaultModuleCacheCapacity
-	}
-
-	if moveConfig.ScriptCacheCapacity == 0 {
-		moveConfig.ScriptCacheCapacity = moveconfig.DefaultScriptCacheCapacity
-	}
-
 	if moveConfig.ContractSimulationGasLimit == 0 {
 		moveConfig.ContractSimulationGasLimit = moveconfig.DefaultContractSimulationGasLimit
 	}
 
-	moveVM := vm.NewVM(
-		moveConfig.ModuleCacheCapacity*1024*1024, // convert MiB to bytes
-		moveConfig.ScriptCacheCapacity*1024*1024, // convert MiB to bytes
-	)
+	moveVM, err := vm.NewVM(vmtypes.InitiaVMConfig{
+		// TODO: check this before mainnet
+		AllowUnstable: true,
+	})
+	if err != nil {
+		panic(err)
+	}
 
 	sb := collections.NewSchemaBuilder(storeService)
 	k := &Keeper{
@@ -177,13 +171,6 @@ func (k Keeper) SetModule(
 	if moduleKey, err := types.GetModuleKey(addr, moduleName); err != nil {
 		return err
 	} else if err := k.VMStore.Set(ctx, moduleKey, moduleBytes); err != nil {
-		return err
-	}
-
-	checksum := sha3.Sum256(moduleBytes)
-	if checksumKey, err := types.GetChecksumKey(addr, moduleName); err != nil {
-		return err
-	} else if err := k.VMStore.Set(ctx, checksumKey, checksum[:]); err != nil {
 		return err
 	}
 
@@ -554,8 +541,6 @@ func (k Keeper) IterateVMStore(ctx context.Context, cb func(*types.Module, *type
 				KeyBytes:   key[cursor:],
 				ValueBytes: value,
 			})
-		} else if separator == types.ChecksumSeparator {
-			// ignore checksum
 		} else {
 			return true, errors.New("unknown prefix")
 		}

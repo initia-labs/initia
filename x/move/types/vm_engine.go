@@ -16,25 +16,25 @@ type VMEngine interface {
 	) (vmtypes.ExecutionResult, error)
 	Destroy()
 	ExecuteViewFunction(
+		gasBalance *uint64,
 		kvStore api.KVStore,
 		goApi api.GoAPI,
 		env vmtypes.Env,
-		gasLimit uint64,
 		payload vmtypes.ViewFunction,
 	) (vmtypes.ViewOutput, error)
 	ExecuteEntryFunction(
+		gasBalance *uint64,
 		kvStore api.KVStore,
 		goApi api.GoAPI,
 		env vmtypes.Env,
-		gasLimit uint64,
 		senders []vmtypes.AccountAddress,
 		payload vmtypes.EntryFunction,
 	) (vmtypes.ExecutionResult, error)
 	ExecuteScript(
+		gasBalance *uint64,
 		kvStore api.KVStore,
 		goApi api.GoAPI,
 		env vmtypes.Env,
-		gasLimit uint64,
 		senders []vmtypes.AccountAddress,
 		payload vmtypes.Script,
 	) (vmtypes.ExecutionResult, error)
