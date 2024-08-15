@@ -618,7 +618,29 @@ func NewAppKeeper(
 	// MoveKeeper Configuration //
 	//////////////////////////////
 
-	*appKeepers.MoveKeeper = *movekeeper.NewKeeper(
+	queryWhitelist := movetypes.DefaultVMQueryWhiteList(ac)
+	queryWhitelist.Stargate["/initia.mstaking.v1.Query/UnbondingDelegation"] = movetypes.ProtoSet{
+		Request:  &stakingtypes.QueryUnbondingDelegationRequest{},
+		Response: &stakingtypes.QueryUnbondingDelegationResponse{},
+	}
+	queryWhitelist.Stargate["/initia.mstaking.v1.Query/Pool"] = movetypes.ProtoSet{
+		Request:  &stakingtypes.QueryPoolRequest{},
+		Response: &stakingtypes.QueryPoolResponse{},
+	}
+	queryWhitelist.Stargate["/initia.mstaking.v1.Query/DelegatorDelegations"] = movetypes.ProtoSet{
+		Request:  &stakingtypes.QueryDelegatorDelegationsRequest{},
+		Response: &stakingtypes.QueryDelegatorDelegationsResponse{},
+	}
+	queryWhitelist.Stargate["/initia.mstaking.v1.Query/Delegation"] = movetypes.ProtoSet{
+		Request:  &stakingtypes.QueryDelegationRequest{},
+		Response: &stakingtypes.QueryDelegationResponse{},
+	}
+	queryWhitelist.Stargate["/initia.mstaking.v1.Query/Redelegations"] = movetypes.ProtoSet{
+		Request:  &stakingtypes.QueryRedelegationsRequest{},
+		Response: &stakingtypes.QueryRedelegationsResponse{},
+	}
+
+	*appKeepers.MoveKeeper = movekeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(appKeepers.keys[movetypes.StoreKey]),
 		appKeepers.AccountKeeper,
@@ -636,7 +658,7 @@ func NewAppKeeper(
 		authtypes.FeeCollectorName,
 		authorityAddr,
 		ac, vc,
-	)
+	).WithVMQueryWhitelist(queryWhitelist)
 
 	// register the staking hooks
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
