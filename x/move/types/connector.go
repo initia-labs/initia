@@ -417,7 +417,7 @@ func GetQuoteSpotPrice(
 	numerator := weightQuote.MulInt(balanceBase).TruncateDec()
 	denominator := weightBase.MulInt(balanceQuote).TruncateDec()
 
-	return numerator.Quo(denominator)
+	return numerator.QuoTruncate(denominator)
 }
 
 // ReadUnbondingInfosFromStakingState util function to read unbonding coin amount from the StakingState
