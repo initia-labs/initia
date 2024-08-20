@@ -38,7 +38,7 @@ func (k Keeper) ShareToAmount(ctx context.Context, valAddr sdk.ValAddress, share
 		return math.ZeroInt(), err
 	}
 
-	tokens := val.TokensFromShares(sdk.NewDecCoins(share))
+	tokens := val.TokensFromSharesTruncated(sdk.NewDecCoins(share))
 	return tokens.AmountOf(share.Denom).TruncateInt(), nil
 }
 
