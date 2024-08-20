@@ -84,10 +84,10 @@ func (k Keeper) AllocateTokens(ctx context.Context, totalPreviousPower int64, bo
 		poolReward := feesCollected.MulDecTruncate(voteMultiplier).MulDecTruncate(poolFraction)
 
 		poolDenom := rewardWeight.Denom
-		poolSize := bondedTokensSum[poolDenom]
+		poolSize, ok := bondedTokensSum[poolDenom]
 
 		// if poolSize is zero, skip allocation and then the poolReward will be allocated to community pool
-		if poolSize.IsZero() {
+		if !ok || poolSize.IsZero() {
 			continue
 		}
 

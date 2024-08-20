@@ -40,7 +40,7 @@ func (fc MempoolFeeChecker) CheckTxFeeWithMinGasPrices(ctx sdk.Context, tx sdk.T
 	priority := int64(1)
 	if ctx.IsCheckTx() {
 		minGasPrices := ctx.MinGasPrices()
-		feeValueInBaseUnit := math.ZeroInt()
+		totalFeeBaseAmount := math.ZeroInt()
 
 		var baseDenom string
 		var err error
@@ -58,16 +58,17 @@ func (fc MempoolFeeChecker) CheckTxFeeWithMinGasPrices(ctx sdk.Context, tx sdk.T
 			minGasPrices = combinedMinGasPrices(baseDenom, baseMinGasPrice, minGasPrices)
 
 			for _, coin := range feeTx.GetFee() {
-				quotePrice, err := fc.fetchPrice(ctx, baseDenom, coin.Denom)
+				basePrice, err := fc.fetchPrice(ctx, baseDenom, coin.Denom)
 				if err != nil {
 					return nil, 1, err
 				}
 
-				quoteValueInBaseUnit := quotePrice.MulInt(coin.Amount).TruncateInt()
-				feeValueInBaseUnit = feeValueInBaseUnit.Add(quoteValueInBaseUnit)
+				quoteAmount := coin.Amount
+				baseAmount := basePrice.MulInt(quoteAmount).TruncateInt()
+				totalFeeBaseAmount = totalFeeBaseAmount.Add(baseAmount)
 			}
-			if feeValueInBaseUnit.GT(math.OneInt()) {
-				priority = feeValueInBaseUnit.Int64()
+			if totalFeeBaseAmount.GT(math.OneInt()) {
+				priority = totalFeeBaseAmount.Int64()
 			}
 		}
 
@@ -84,7 +85,7 @@ func (fc MempoolFeeChecker) CheckTxFeeWithMinGasPrices(ctx sdk.Context, tx sdk.T
 					requiredBaseAmount := requiredFees.AmountOfNoDenomValidation(baseDenom)
 
 					// converting to base token only works when the requiredBaseAmount is non-zero.
-					isSufficient = !requiredBaseAmount.IsZero() && feeValueInBaseUnit.GTE(requiredBaseAmount)
+					isSufficient = !requiredBaseAmount.IsZero() && totalFeeBaseAmount.GTE(requiredBaseAmount)
 				}
 
 				if !isSufficient {
@@ -114,9 +115,9 @@ func (fc MempoolFeeChecker) fetchPrice(ctx sdk.Context, baseDenom, quoteDenom st
 		return math.LegacyZeroDec(), nil
 	}
 
-	if quotePrice, err := fc.keeper.GetQuoteSpotPrice(ctx, quoteDenom); err != nil {
+	if basePrice, err := fc.keeper.GetBaseSpotPrice(ctx, quoteDenom); err != nil {
 		return math.LegacyZeroDec(), err
 	} else {
-		return quotePrice, nil
+		return basePrice, nil
 	}
 }

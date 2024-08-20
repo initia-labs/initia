@@ -409,13 +409,13 @@ func GetPoolWeights(
 	return weightCoinA, weightCoinB, nil
 }
 
-// GetQuoteSpotPrice return quote price in base unit
-func GetQuoteSpotPrice(
+// GetBaseSpotPrice return base coin spot price
+func GetBaseSpotPrice(
 	balanceBase, balanceQuote math.Int,
 	weightBase, weightQuote math.LegacyDec,
 ) math.LegacyDec {
-	numerator := weightQuote.MulInt(balanceBase).TruncateDec()
-	denominator := weightBase.MulInt(balanceQuote).TruncateDec()
+	numerator := weightQuote.MulInt(balanceBase)
+	denominator := weightBase.MulInt(balanceQuote)
 
 	return numerator.QuoTruncate(denominator)
 }

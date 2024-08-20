@@ -165,7 +165,7 @@ func Test_ReadWeights(t *testing.T) {
 	require.Equal(t, math.LegacyNewDecWithPrec(2, 1), weightQuote)
 }
 
-func Test_GetQuoteSpotPrice(t *testing.T) {
+func Test_GetBaseSpotPrice(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 	dexKeeper := keeper.NewDexKeeper(&input.MoveKeeper)
 
@@ -191,7 +191,7 @@ func Test_GetQuoteSpotPrice(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	quotePrice, err := dexKeeper.GetQuoteSpotPrice(ctx, denomQuote)
+	quotePrice, err := dexKeeper.GetBaseSpotPrice(ctx, denomQuote)
 	require.NoError(t, err)
 	require.Equal(t, math.LegacyOneDec(), quotePrice)
 }

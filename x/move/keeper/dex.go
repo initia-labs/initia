@@ -134,9 +134,9 @@ func (k Keeper) getMetadataLP(
 	return vmtypes.NewAccountAddressFromBytes(bz)
 }
 
-// GetQuoteSpotPrice return quote price in base unit
-// `price` * `quote_amount` == `quote_value_in_base_unit`
-func (k DexKeeper) GetQuoteSpotPrice(
+// GetBaseSpotPrice return base coin spot price
+// `base_price` * `quote_amount` == `base_amount`
+func (k DexKeeper) GetBaseSpotPrice(
 	ctx context.Context,
 	denomQuote string,
 ) (math.LegacyDec, error) {
@@ -150,7 +150,7 @@ func (k DexKeeper) GetQuoteSpotPrice(
 		return math.LegacyZeroDec(), err
 	}
 
-	return types.GetQuoteSpotPrice(balanceBase, balanceQuote, weightBase, weightQuote), nil
+	return types.GetBaseSpotPrice(balanceBase, balanceQuote, weightBase, weightQuote), nil
 }
 
 func (k DexKeeper) getPoolInfo(ctx context.Context, metadataLP vmtypes.AccountAddress) (

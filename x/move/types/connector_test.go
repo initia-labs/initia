@@ -26,8 +26,8 @@ func Test_GetDexWeight(t *testing.T) {
 	require.Equal(t, math.LegacyNewDecWithPrec(4, 1), weightQuote)
 }
 
-func Test_GetQuoteSpotPrice(t *testing.T) {
-	price := types.GetQuoteSpotPrice(
+func Test_GetBaseSpotPrice(t *testing.T) {
+	price := types.GetBaseSpotPrice(
 		math.NewInt(1_000_000),
 		math.NewInt(8_000_000),
 		math.LegacyNewDecWithPrec(2, 1),
