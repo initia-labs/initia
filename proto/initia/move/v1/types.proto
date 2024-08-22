@@ -30,9 +30,12 @@ message Params {
     (amino.dont_omitempty) = true
   ];
 
+  // flag whether to enable script execution
+  bool script_enabled = 4;
+
   // It is a list of addresses with permission to distribute contracts,
   // and an empty list is interpreted as allowing anyone to distribute.
-  repeated string allowed_publishers = 4
+  repeated string allowed_publishers = 5
       [(gogoproto.moretags) = "yaml:\"allowed_publishers\"", (amino.dont_omitempty) = true];
 }
 
@@ -53,6 +56,9 @@ message RawParams {
     (gogoproto.nullable)   = false,
     (amino.dont_omitempty) = true
   ];
+
+  // flag whether to enable script execution
+  bool script_enabled = 4;
 }
 
 // Module is data for the uploaded contract move code

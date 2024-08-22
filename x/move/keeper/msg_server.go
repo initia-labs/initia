@@ -137,9 +137,15 @@ func (ms MsgServer) ExecuteJSON(context context.Context, req *types.MsgExecuteJS
 }
 
 // Script implements script execution
-func (ms MsgServer) Script(context context.Context, req *types.MsgScript) (*types.MsgScriptResponse, error) {
+func (ms MsgServer) Script(ctx context.Context, req *types.MsgScript) (*types.MsgScriptResponse, error) {
+	if ok, err := ms.ScriptEnabled(ctx); err != nil {
+		return nil, err
+	} else if !ok {
+		return nil, errors.Wrap(types.ErrScriptDisabled, "script execution is disabled")
+	}
+
 	defer telemetry.MeasureSince(time.Now(), "move", "msg", "script")
-	ctx := sdk.UnwrapSDKContext(context)
+
 	if err := req.Validate(ms.ac); err != nil {
 		return nil, err
 	}

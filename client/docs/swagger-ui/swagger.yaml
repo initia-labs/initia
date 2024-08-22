@@ -49604,6 +49604,21 @@ paths:
                       applied
 
                       for Move execute messages.
+                  vesting:
+                    description: Vesting is the vesting contract info for tally.
+                    type: object
+                    properties:
+                      module_addr:
+                        type: string
+                        description: module_addr is the address of the vesting module.
+                      module_name:
+                        type: string
+                        description: module_name is the name of the vesting module.
+                      creator_addr:
+                        type: string
+                        description: >-
+                          creator_addr is the address of the creator of the
+                          vesting contract.
             description: >-
               QueryParamsResponse is the response type for the Query/Params RPC
               method.
@@ -51611,6 +51626,9 @@ paths:
                   contract_shared_revenue_ratio:
                     type: string
                     title: 'CSR: Percentage of fees distributed to developers'
+                  script_enabled:
+                    type: boolean
+                    title: flag whether to enable script execution
                   allowed_publishers:
                     type: array
                     items:
@@ -52888,6 +52906,12 @@ paths:
                           type: string
                           format: byte
                           description: Hash of the l2 output.
+                        l1_block_number:
+                          type: string
+                          format: uint64
+                          description: >-
+                            The l1 block number that the output root was
+                            submitted in.
                         l1_block_time:
                           type: string
                           format: date-time
@@ -53032,6 +53056,10 @@ paths:
                     type: string
                     format: byte
                     description: Hash of the l2 output.
+                  l1_block_number:
+                    type: string
+                    format: uint64
+                    description: The l1 block number that the output root was submitted in.
                   l1_block_time:
                     type: string
                     format: date-time
@@ -53150,6 +53178,12 @@ paths:
                           type: string
                           format: byte
                           description: Hash of the l2 output.
+                        l1_block_number:
+                          type: string
+                          format: uint64
+                          description: >-
+                            The l1 block number that the output root was
+                            submitted in.
                         l1_block_time:
                           type: string
                           format: date-time
@@ -53297,6 +53331,10 @@ paths:
                     type: string
                     format: byte
                     description: Hash of the l2 output.
+                  l1_block_number:
+                    type: string
+                    format: uint64
+                    description: The l1 block number that the output root was submitted in.
                   l1_block_time:
                     type: string
                     format: date-time
@@ -85581,6 +85619,21 @@ definitions:
           Low threshold functions for emergency and expedited proposal.
           These are Move function identifiers and can only be applied
           for Move execute messages.
+      vesting:
+        description: Vesting is the vesting contract info for tally.
+        type: object
+        properties:
+          module_addr:
+            type: string
+            description: module_addr is the address of the vesting module.
+          module_name:
+            type: string
+            description: module_name is the name of the vesting module.
+          creator_addr:
+            type: string
+            description: >-
+              creator_addr is the address of the creator of the vesting
+              contract.
     description: Params defines the parameters for the x/gov module.
   initia.gov.v1.Proposal:
     type: object
@@ -86338,6 +86391,21 @@ definitions:
               Low threshold functions for emergency and expedited proposal.
               These are Move function identifiers and can only be applied
               for Move execute messages.
+          vesting:
+            description: Vesting is the vesting contract info for tally.
+            type: object
+            properties:
+              module_addr:
+                type: string
+                description: module_addr is the address of the vesting module.
+              module_name:
+                type: string
+                description: module_name is the name of the vesting module.
+              creator_addr:
+                type: string
+                description: >-
+                  creator_addr is the address of the creator of the vesting
+                  contract.
     description: QueryParamsResponse is the response type for the Query/Params RPC method.
   initia.gov.v1.QueryProposalResponse:
     type: object
@@ -86956,6 +87024,21 @@ definitions:
     description: |-
       QueryProposalsResponse is the response type for the Query/Proposals RPC
       method.
+  initia.gov.v1.Vesting:
+    type: object
+    properties:
+      module_addr:
+        type: string
+        description: module_addr is the address of the vesting module.
+      module_name:
+        type: string
+        description: module_name is the name of the vesting module.
+      creator_addr:
+        type: string
+        description: creator_addr is the address of the creator of the vesting contract.
+    description: |-
+      Vesting defines the vesting contract info for MsgVestingVote.
+      At tally time, gov module would check vesting token amount.
   initia.move.v1.Module:
     type: object
     properties:
@@ -86996,6 +87079,9 @@ definitions:
       contract_shared_revenue_ratio:
         type: string
         title: 'CSR: Percentage of fees distributed to developers'
+      script_enabled:
+        type: boolean
+        title: flag whether to enable script execution
       allowed_publishers:
         type: array
         items:
@@ -87177,6 +87263,9 @@ definitions:
           contract_shared_revenue_ratio:
             type: string
             title: 'CSR: Percentage of fees distributed to developers'
+          script_enabled:
+            type: boolean
+            title: flag whether to enable script execution
           allowed_publishers:
             type: array
             items:
@@ -87788,6 +87877,10 @@ definitions:
             type: string
             format: byte
             description: Hash of the l2 output.
+          l1_block_number:
+            type: string
+            format: uint64
+            description: The l1 block number that the output root was submitted in.
           l1_block_time:
             type: string
             format: date-time
@@ -87852,6 +87945,10 @@ definitions:
         type: string
         format: byte
         description: Hash of the l2 output.
+      l1_block_number:
+        type: string
+        format: uint64
+        description: The l1 block number that the output root was submitted in.
       l1_block_time:
         type: string
         format: date-time
@@ -87910,6 +88007,10 @@ definitions:
                   type: string
                   format: byte
                   description: Hash of the l2 output.
+                l1_block_number:
+                  type: string
+                  format: uint64
+                  description: The l1 block number that the output root was submitted in.
                 l1_block_time:
                   type: string
                   format: date-time
@@ -88098,6 +88199,10 @@ definitions:
             type: string
             format: byte
             description: Hash of the l2 output.
+          l1_block_number:
+            type: string
+            format: uint64
+            description: The l1 block number that the output root was submitted in.
           l1_block_time:
             type: string
             format: date-time
@@ -88135,6 +88240,10 @@ definitions:
             type: string
             format: byte
             description: Hash of the l2 output.
+          l1_block_number:
+            type: string
+            format: uint64
+            description: The l1 block number that the output root was submitted in.
           l1_block_time:
             type: string
             format: date-time
@@ -88168,6 +88277,10 @@ definitions:
                   type: string
                   format: byte
                   description: Hash of the l2 output.
+                l1_block_number:
+                  type: string
+                  format: uint64
+                  description: The l1 block number that the output root was submitted in.
                 l1_block_time:
                   type: string
                   format: date-time

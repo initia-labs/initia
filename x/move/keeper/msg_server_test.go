@@ -66,6 +66,21 @@ func TestScriptMsg(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func Test_ScriptDisabled(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+
+	params, err := input.MoveKeeper.GetParams(ctx)
+	require.NoError(t, err)
+
+	params.ScriptEnabled = false
+	err = input.MoveKeeper.SetParams(ctx, params)
+	require.NoError(t, err)
+
+	msgServer := keeper.NewMsgServerImpl(&input.MoveKeeper)
+	_, err = msgServer.Script(ctx, nil)
+	require.ErrorIs(t, err, types.ErrScriptDisabled)
+}
+
 func Test_ExecuteMsg(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 	ms := keeper.NewMsgServerImpl(&input.MoveKeeper)

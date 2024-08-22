@@ -47,4 +47,7 @@ var (
 
 	// ErrAddressAlreadyTaken error raised when the address is already taken
 	ErrAddressAlreadyTaken = errorsmod.Register(ModuleName, 15, "address already taken")
+
+	// ErrScriptDisabled error raised when the script execution is disabled
+	ErrScriptDisabled = errorsmod.Register(ModuleName, 16, "script execution disabled")
 )
