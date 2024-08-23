@@ -14,7 +14,8 @@ import (
 
 // Default parameter values
 const (
-	DefaultBaseDenom = "uinit"
+	DefaultBaseDenom     = "uinit"
+	DefaultScriptEnabled = true
 )
 
 var (
@@ -35,6 +36,7 @@ func DefaultParams() Params {
 		BaseDenom:                  DefaultBaseDenom,
 		BaseMinGasPrice:            DefaultBaseMinGasPrice,
 		ContractSharedRevenueRatio: DefaultContractSharedRevenueRatio,
+		ScriptEnabled:              DefaultScriptEnabled,
 		AllowedPublishers:          nil,
 	}
 }
@@ -74,6 +76,7 @@ func (p Params) ToRaw() RawParams {
 		BaseDenom:                  p.BaseDenom,
 		BaseMinGasPrice:            p.BaseMinGasPrice,
 		ContractSharedRevenueRatio: p.ContractSharedRevenueRatio,
+		ScriptEnabled:              p.ScriptEnabled,
 	}
 }
 
@@ -84,6 +87,7 @@ func (p RawParams) ToParams(allowedPublishers []string) Params {
 		BaseMinGasPrice:            p.BaseMinGasPrice,
 		ContractSharedRevenueRatio: p.ContractSharedRevenueRatio,
 		AllowedPublishers:          allowedPublishers,
+		ScriptEnabled:              p.ScriptEnabled,
 	}
 }
 
