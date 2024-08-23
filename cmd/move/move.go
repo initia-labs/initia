@@ -678,22 +678,24 @@ func getBuildConfig(cmd *cobra.Command) (*types.CompilerBuildConfig, error) {
 	if err != nil {
 		return nil, err
 	}
-	namedAddressMap := make(map[string]types.AccountAddress)
-	for _, namedAddress := range strings.Split(namedAddresses, ",") {
-		v := strings.Split(namedAddress, "=")
-		if len(v) != 2 {
-			return nil, fmt.Errorf("invalid named-addresses: %s", namedAddresses)
-		}
+	if len(namedAddresses) > 0 {
+		namedAddressMap := make(map[string]types.AccountAddress)
+		for _, namedAddress := range strings.Split(namedAddresses, ",") {
+			v := strings.Split(namedAddress, "=")
+			if len(v) != 2 {
+				return nil, fmt.Errorf("invalid named-addresses: %s", namedAddresses)
+			}
 
-		name := v[0]
-		addr, err := types.NewAccountAddress(v[1]) // validate address
-		if err != nil {
-			return nil, fmt.Errorf("invalid address: %s", v[1])
-		}
+			name := v[0]
+			addr, err := types.NewAccountAddress(v[1]) // validate address
+			if err != nil {
+				return nil, fmt.Errorf("invalid address: %s", v[1])
+			}
 
-		namedAddressMap[name] = addr
+			namedAddressMap[name] = addr
+		}
+		options = append(options, buildtypes.WithNamedAddresses(namedAddressMap))
 	}
-	options = append(options, buildtypes.WithNamedAddresses(namedAddressMap))
 
 	bc := buildtypes.NewBuildConfig(options...)
 
