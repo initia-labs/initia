@@ -39,7 +39,10 @@ func (ms MsgServer) SetPermissionedRelayers(ctx context.Context, req *types.MsgS
 	}
 
 	cs.Relayers = req.Relayers
-	ms.Keeper.SetChannelState(ctx, cs)
+	err = ms.Keeper.SetChannelState(ctx, cs)
+	if err != nil {
+		return nil, err
+	}
 
 	ms.Logger(ctx).Info(
 		"IBC permissioned channel relayer",

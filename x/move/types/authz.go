@@ -120,8 +120,8 @@ func (a ExecuteAuthorization) ValidateBasic() error {
 		if len(v.ModuleName) == 0 {
 			return errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid module name: %s", v.ModuleName)
 		}
-		if v.FunctionNames == nil || len(v.FunctionNames) == 0 {
-			return errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid module names")
+		if len(v.FunctionNames) == 0 {
+			return errors.Wrap(sdkerrors.ErrInvalidRequest, "invalid module names")
 		}
 		if module, ok := moduleMap[v.ModuleAddress]; ok {
 			for _, m := range module {
