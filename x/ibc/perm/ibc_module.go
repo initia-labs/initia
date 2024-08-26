@@ -155,27 +155,16 @@ func (im IBCMiddleware) OnRecvPacket(
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) ibcexported.Acknowledgement {
-	if ok, err := im.keeper.HasPermission(ctx, packet.DestinationPort, packet.DestinationChannel, relayer); err != nil {
+	if ok, err := im.keeper.IsHalted(ctx, packet.DestinationPort, packet.DestinationChannel); err != nil {
 		return newEmitErrorAcknowledgement(ctx, err)
-	} else if !ok {
-		/*
-			Raise a panic to prevent abnormal relayers from disrupting operations by
-			continuously sending error acknowledgements. For instance, abnormal relaying
-			can interfere with oracle price fetching.
-
-			return newEmitErrorAcknowledgement(
-				ctx,
-				fmt.Errorf(
-					"all packets of the channel `%s` should be relayed by the relayer `%s`",
-					packet.DestinationChannel,
-					permissionedRelayer,
-				),
-			)
-		*/
-		panic(fmt.Errorf(
-			"all packets of the channel `%s` should be relayed by the permissioned relayers",
-			packet.DestinationChannel,
-		))
+	} else if ok {
+		return newEmitErrorAcknowledgement(
+			ctx,
+			fmt.Errorf(
+				"channel `%s` is halted, no packets should be relayed",
+				packet.DestinationChannel,
+			),
+		)
 	}
 
 	return im.app.OnRecvPacket(ctx, packet, relayer)

@@ -26,16 +26,24 @@ func Test_InitGenesis(t *testing.T) {
 	addrB := sdk.AccAddress(pubKeyB.Address())
 
 	k.InitGenesis(ctx, types.GenesisState{
-		PermissionedRelayers: []types.PermissionedRelayers{
+		ChannelStates: []types.ChannelState{
 			{
 				PortId:    portA,
 				ChannelId: channelA,
 				Relayers:  []string{addrA.String()},
+				HaltState: types.HaltState{
+					Halted:   true,
+					HaltedBy: addrA.String(),
+				},
 			},
 			{
 				PortId:    portB,
 				ChannelId: channelB,
 				Relayers:  []string{addrB.String()},
+				HaltState: types.HaltState{
+					Halted:   false,
+					HaltedBy: "",
+				},
 			},
 		},
 	})
@@ -44,9 +52,23 @@ func Test_InitGenesis(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, ok)
 
+	cs, err := k.GetChannelState(ctx, portA, channelA)
+	require.NoError(t, err)
+	require.Equal(t, types.HaltState{
+		Halted:   true,
+		HaltedBy: addrA.String(),
+	}, cs.HaltState)
+
 	ok, _ = k.HasPermission(ctx, portB, channelB, addrB)
 	require.NoError(t, err)
 	require.True(t, ok)
+
+	cs, err = k.GetChannelState(ctx, portA, channelB)
+	require.NoError(t, err)
+	require.Equal(t, types.HaltState{
+		Halted:   false,
+		HaltedBy: "",
+	}, cs.HaltState)
 }
 func Test_ExportGenesis(t *testing.T) {
 	ctx, k := _createTestInput(t, dbm.NewMemDB())
@@ -63,11 +85,15 @@ func Test_ExportGenesis(t *testing.T) {
 	addrB := sdk.AccAddress(pubKeyB.Address())
 
 	genState := types.NewGenesisState(
-		[]types.PermissionedRelayers{
+		[]types.ChannelState{
 			{
 				PortId:    portA,
 				ChannelId: channelA,
 				Relayers:  []string{addrA.String()},
+				HaltState: types.HaltState{
+					Halted:   true,
+					HaltedBy: addrA.String(),
+				},
 			},
 			{
 				PortId:    portB,

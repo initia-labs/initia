@@ -9,7 +9,6 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"cosmossdk.io/collections"
 	"cosmossdk.io/log"
 	"cosmossdk.io/store"
 	"cosmossdk.io/store/metrics"
@@ -87,17 +86,18 @@ func Test_GetPermissionedRelayers(t *testing.T) {
 	addr, addr2 := sdk.AccAddress(pubKey.Address()), sdk.AccAddress(pubKey2.Address())
 
 	// should be empty
-	_, err := k.PermissionedRelayers.Get(ctx, collections.Join(portID, channelID))
-	require.ErrorIs(t, err, collections.ErrNotFound)
+	cs, err := k.GetChannelState(ctx, portID, channelID)
+	require.NoError(t, err)
+	require.Empty(t, cs.Relayers)
 
 	// set channel relayer via msg handler
-	err = k.PermissionedRelayers.Set(ctx, collections.Join(portID, channelID), types.PermissionedRelayersList{Relayers: []string{addr.String()}})
+	err = k.SetChannelState(ctx, types.ChannelState{PortId: portID, ChannelId: channelID, Relayers: []string{addr.String()}})
 	require.NoError(t, err)
 
 	// check properly set
-	res, err := k.PermissionedRelayers.Get(ctx, collections.Join(portID, channelID))
+	cs, err = k.GetChannelState(ctx, portID, channelID)
 	require.NoError(t, err)
-	require.True(t, res.HasRelayer(addr.String()))
+	require.True(t, cs.HasRelayer(addr.String()))
 
 	// check properly set
 	ok, err := k.HasPermission(ctx, portID, channelID, addr)
@@ -108,6 +108,11 @@ func Test_GetPermissionedRelayers(t *testing.T) {
 	ok, err = k.HasPermission(ctx, portID, channelID, addr2)
 	require.NoError(t, err)
 	require.False(t, ok)
+
+	relayers, err := k.GetPermissionedRelayers(ctx, portID, channelID)
+	require.NoError(t, err)
+	require.Len(t, relayers, 1)
+	require.Equal(t, addr.String(), relayers[0].String())
 }
 
 func Test_SetPermissionedRelayers(t *testing.T) {
@@ -123,10 +128,11 @@ func Test_SetPermissionedRelayers(t *testing.T) {
 	require.NoError(t, err)
 
 	// check properly set
-	res, err := k.PermissionedRelayers.Get(ctx, collections.Join(portID, channelID))
+	cs, err := k.GetChannelState(ctx, portID, channelID)
 	require.NoError(t, err)
-	require.True(t, res.HasRelayer(addr.String()))
+	require.True(t, cs.HasRelayer(addr.String()))
 }
+
 func Test_HasPermission(t *testing.T) {
 	ctx, k := _createTestInput(t, dbm.NewMemDB())
 
@@ -141,4 +147,15 @@ func Test_HasPermission(t *testing.T) {
 	ok, err := k.HasPermission(ctx, portID, channelID, addr)
 	require.NoError(t, err)
 	require.True(t, ok)
+
+	// if no permissioned relayers are set, all relayers are allowed
+	ok, err = k.HasPermission(ctx, portID, channelID+"2", addr)
+	require.NoError(t, err)
+	require.True(t, ok)
+
+	pubKey2 := secp256k1.GenPrivKey().PubKey()
+	addr2 := sdk.AccAddress(pubKey2.Address())
+	ok, err = k.HasPermission(ctx, portID, channelID, addr2)
+	require.NoError(t, err)
+	require.False(t, ok)
 }

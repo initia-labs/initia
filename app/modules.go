@@ -143,7 +143,7 @@ func appModules(
 		ica.NewAppModule(app.ICAControllerKeeper, app.ICAHostKeeper),
 		icaauth.NewAppModule(app.appCodec, *app.ICAAuthKeeper),
 		ibcfee.NewAppModule(*app.IBCFeeKeeper),
-		ibcperm.NewAppModule(*app.IBCPermKeeper),
+		ibcperm.NewAppModule(app.appCodec, *app.IBCPermKeeper),
 		ibctm.NewAppModule(),
 		solomachine.NewAppModule(),
 		packetforward.NewAppModule(app.PacketForwardKeeper, nil),

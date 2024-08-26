@@ -34,7 +34,9 @@ var (
 )
 
 // AppModuleBasic is the IBC Transfer AppModuleBasic
-type AppModuleBasic struct{}
+type AppModuleBasic struct {
+	cdc codec.Codec
+}
 
 // Name implements AppModuleBasic interface
 func (AppModuleBasic) Name() string {
@@ -58,13 +60,13 @@ func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
 }
 
 // ValidateGenesis performs genesis state validation for the ibc transfer module.
-func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncodingConfig, bz json.RawMessage) error {
+func (b AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncodingConfig, bz json.RawMessage) error {
 	var gs types.GenesisState
 	if err := cdc.UnmarshalJSON(bz, &gs); err != nil {
 		return fmt.Errorf("failed to unmarshal %s genesis state: %w", types.ModuleName, err)
 	}
 
-	return gs.Validate()
+	return gs.Validate(b.cdc.InterfaceRegistry().SigningContext().AddressCodec())
 }
 
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the ibc-transfer module.
@@ -81,9 +83,9 @@ type AppModule struct {
 }
 
 // NewAppModule creates a new 20-transfer module
-func NewAppModule(k keeper.Keeper) AppModule {
+func NewAppModule(cdc codec.Codec, k keeper.Keeper) AppModule {
 	return AppModule{
-		AppModuleBasic: AppModuleBasic{},
+		AppModuleBasic: AppModuleBasic{cdc},
 		keeper:         k,
 	}
 }

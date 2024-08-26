@@ -33,14 +33,13 @@ func (ms MsgServer) SetPermissionedRelayers(ctx context.Context, req *types.MsgS
 		return nil, errors.Wrapf(govtypes.ErrInvalidSigner, "invalid authority; expected %s, got %s", ms.authority, req.Authority)
 	}
 
-	relayers, err := types.ToRelayerAccAddr(ms.ac, req.Relayers)
+	cs, err := ms.Keeper.GetChannelState(ctx, req.PortId, req.ChannelId)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := ms.Keeper.SetPermissionedRelayers(ctx, req.PortId, req.ChannelId, relayers); err != nil {
-		return nil, err
-	}
+	cs.Relayers = req.Relayers
+	ms.Keeper.SetChannelState(ctx, cs)
 
 	ms.Logger(ctx).Info(
 		"IBC permissioned channel relayer",
@@ -57,11 +56,99 @@ func (ms MsgServer) SetPermissionedRelayers(ctx context.Context, req *types.MsgS
 			sdk.NewAttribute(types.AttributeKeyChannelId, req.ChannelId),
 			sdk.NewAttribute(types.AttributeKeyRelayers, strings.Join(req.Relayers, ",")),
 		),
-		sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
-		),
 	})
 
 	return &types.MsgSetPermissionedRelayersResponse{}, nil
+}
+
+// HaltChannel implements types.MsgServer.
+func (ms MsgServer) HaltChannel(ctx context.Context, req *types.MsgHaltChannel) (*types.MsgHaltChannelResponse, error) {
+	if err := req.Validate(ms.Keeper.ac); err != nil {
+		return nil, err
+	}
+
+	cs, err := ms.Keeper.GetChannelState(ctx, req.PortId, req.ChannelId)
+	if err != nil {
+		return nil, err
+	}
+
+	if cs.HaltState.Halted {
+		return nil, errors.Wrap(types.ErrInvalidHaltState, "channel is already halted")
+	}
+
+	if ms.authority != req.Authority && !cs.HasRelayer(req.Authority) {
+		return nil, errors.Wrapf(govtypes.ErrInvalidSigner, "invalid authority; expected %s or one of permissinoed-relayers, got %s", ms.authority, req.Authority)
+	}
+
+	cs.HaltState.Halted = true
+	cs.HaltState.HaltedBy = req.Authority
+	err = ms.Keeper.SetChannelState(ctx, cs)
+	if err != nil {
+		return nil, err
+	}
+
+	ms.Logger(ctx).Info(
+		"IBC permissioned channel halted",
+		"port id", req.PortId,
+		"channel id", req.ChannelId,
+		"halted by", req.Authority,
+	)
+
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeHaltChannel,
+			sdk.NewAttribute(types.AttributeKeyPortId, req.PortId),
+			sdk.NewAttribute(types.AttributeKeyChannelId, req.ChannelId),
+			sdk.NewAttribute(types.AttributeKeyHaltedBy, req.Authority),
+		),
+	})
+
+	return &types.MsgHaltChannelResponse{}, nil
+}
+
+// ResumeChannel implements types.MsgServer.
+func (ms MsgServer) ResumeChannel(ctx context.Context, req *types.MsgResumeChannel) (*types.MsgResumeChannelResponse, error) {
+	if err := req.Validate(ms.Keeper.ac); err != nil {
+		return nil, err
+	}
+
+	cs, err := ms.Keeper.GetChannelState(ctx, req.PortId, req.ChannelId)
+	if err != nil {
+		return nil, err
+	}
+
+	if !cs.HaltState.Halted {
+		return nil, errors.Wrap(types.ErrInvalidHaltState, "channel is not halted")
+	}
+
+	if ms.authority != req.Authority && req.Authority != cs.HaltState.HaltedBy {
+		return nil, errors.Wrapf(govtypes.ErrInvalidSigner, "invalid authority; expected %s or %s, got %s", ms.authority, cs.HaltState.HaltedBy, req.Authority)
+	}
+
+	cs.HaltState.Halted = false
+	cs.HaltState.HaltedBy = ""
+	err = ms.Keeper.SetChannelState(ctx, cs)
+	if err != nil {
+		return nil, err
+	}
+
+	ms.Logger(ctx).Info(
+		"IBC permissioned channel resumed",
+		"port id", req.PortId,
+		"channel id", req.ChannelId,
+		"resumed by", req.Authority,
+	)
+
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeHaltChannel,
+			sdk.NewAttribute(types.AttributeKeyPortId, req.PortId),
+			sdk.NewAttribute(types.AttributeKeyChannelId, req.ChannelId),
+			sdk.NewAttribute(types.AttributeKeyResumedBy, req.Authority),
+		),
+	})
+
+	return &types.MsgResumeChannelResponse{}, nil
 }
