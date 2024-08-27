@@ -37,8 +37,8 @@ type MsgSetPermissionedRelayers struct {
 	// authority is the address that controls the module
 	// (defaults to x/gov unless overwritten).
 	Authority string   `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty" yaml:"authority"`
-	PortId    string   `protobuf:"bytes,2,opt,name=port_id,json=portId,proto3" json:"port_id,omitempty" yaml:"port_id"`
-	ChannelId string   `protobuf:"bytes,3,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty" yaml:"channel_id"`
+	ChannelId string   `protobuf:"bytes,2,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty" yaml:"channel_id"`
+	PortId    string   `protobuf:"bytes,3,opt,name=port_id,json=portId,proto3" json:"port_id,omitempty" yaml:"port_id"`
 	Relayers  []string `protobuf:"bytes,4,rep,name=relayers,proto3" json:"relayers,omitempty" yaml:"relayers"`
 }
 
@@ -112,44 +112,212 @@ func (m *MsgSetPermissionedRelayersResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgSetPermissionedRelayersResponse proto.InternalMessageInfo
 
+// MsgHaltChannel defines msg to halt the specific ibc channel.
+type MsgHaltChannel struct {
+	// authority is the address that controls the module
+	// (defaults to x/gov unless overwritten).
+	Authority string `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty" yaml:"authority"`
+	ChannelId string `protobuf:"bytes,2,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty" yaml:"channel_id"`
+	PortId    string `protobuf:"bytes,3,opt,name=port_id,json=portId,proto3" json:"port_id,omitempty" yaml:"port_id"`
+}
+
+func (m *MsgHaltChannel) Reset()         { *m = MsgHaltChannel{} }
+func (m *MsgHaltChannel) String() string { return proto.CompactTextString(m) }
+func (*MsgHaltChannel) ProtoMessage()    {}
+func (*MsgHaltChannel) Descriptor() ([]byte, []int) {
+	return fileDescriptor_9ea92a5af9136e08, []int{2}
+}
+func (m *MsgHaltChannel) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgHaltChannel) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgHaltChannel.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgHaltChannel) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgHaltChannel.Merge(m, src)
+}
+func (m *MsgHaltChannel) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgHaltChannel) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgHaltChannel.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgHaltChannel proto.InternalMessageInfo
+
+// MsgHaltChannelResponse defines the Msg/HaltChannel response type.
+type MsgHaltChannelResponse struct {
+}
+
+func (m *MsgHaltChannelResponse) Reset()         { *m = MsgHaltChannelResponse{} }
+func (m *MsgHaltChannelResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgHaltChannelResponse) ProtoMessage()    {}
+func (*MsgHaltChannelResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_9ea92a5af9136e08, []int{3}
+}
+func (m *MsgHaltChannelResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgHaltChannelResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgHaltChannelResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgHaltChannelResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgHaltChannelResponse.Merge(m, src)
+}
+func (m *MsgHaltChannelResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgHaltChannelResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgHaltChannelResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgHaltChannelResponse proto.InternalMessageInfo
+
+// MsgResumeChannel defines msg to resume the specific ibc channel.
+type MsgResumeChannel struct {
+	// authority is the address that controls the module
+	// (defaults to x/gov unless overwritten).
+	Authority string `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty" yaml:"authority"`
+	ChannelId string `protobuf:"bytes,2,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty" yaml:"channel_id"`
+	PortId    string `protobuf:"bytes,3,opt,name=port_id,json=portId,proto3" json:"port_id,omitempty" yaml:"port_id"`
+}
+
+func (m *MsgResumeChannel) Reset()         { *m = MsgResumeChannel{} }
+func (m *MsgResumeChannel) String() string { return proto.CompactTextString(m) }
+func (*MsgResumeChannel) ProtoMessage()    {}
+func (*MsgResumeChannel) Descriptor() ([]byte, []int) {
+	return fileDescriptor_9ea92a5af9136e08, []int{4}
+}
+func (m *MsgResumeChannel) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgResumeChannel) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgResumeChannel.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgResumeChannel) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgResumeChannel.Merge(m, src)
+}
+func (m *MsgResumeChannel) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgResumeChannel) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgResumeChannel.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgResumeChannel proto.InternalMessageInfo
+
+// MsgResumeChannelResponse defines the Msg/ResumeChannel response type.
+type MsgResumeChannelResponse struct {
+}
+
+func (m *MsgResumeChannelResponse) Reset()         { *m = MsgResumeChannelResponse{} }
+func (m *MsgResumeChannelResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgResumeChannelResponse) ProtoMessage()    {}
+func (*MsgResumeChannelResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_9ea92a5af9136e08, []int{5}
+}
+func (m *MsgResumeChannelResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgResumeChannelResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgResumeChannelResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgResumeChannelResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgResumeChannelResponse.Merge(m, src)
+}
+func (m *MsgResumeChannelResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgResumeChannelResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgResumeChannelResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgResumeChannelResponse proto.InternalMessageInfo
+
 func init() {
 	proto.RegisterType((*MsgSetPermissionedRelayers)(nil), "ibc.applications.perm.v1.MsgSetPermissionedRelayers")
 	proto.RegisterType((*MsgSetPermissionedRelayersResponse)(nil), "ibc.applications.perm.v1.MsgSetPermissionedRelayersResponse")
+	proto.RegisterType((*MsgHaltChannel)(nil), "ibc.applications.perm.v1.MsgHaltChannel")
+	proto.RegisterType((*MsgHaltChannelResponse)(nil), "ibc.applications.perm.v1.MsgHaltChannelResponse")
+	proto.RegisterType((*MsgResumeChannel)(nil), "ibc.applications.perm.v1.MsgResumeChannel")
+	proto.RegisterType((*MsgResumeChannelResponse)(nil), "ibc.applications.perm.v1.MsgResumeChannelResponse")
 }
 
 func init() { proto.RegisterFile("ibc/applications/perm/v1/tx.proto", fileDescriptor_9ea92a5af9136e08) }
 
 var fileDescriptor_9ea92a5af9136e08 = []byte{
-	// 449 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x92, 0xbf, 0x6f, 0xd3, 0x40,
-	0x14, 0xc7, 0xed, 0x06, 0x0a, 0xb9, 0x01, 0xa8, 0x29, 0x6a, 0xf0, 0x60, 0x17, 0x8b, 0xa1, 0x0a,
-	0xd4, 0xa7, 0x42, 0xa7, 0x88, 0x85, 0x4c, 0x14, 0xa9, 0x12, 0x72, 0x37, 0x96, 0xea, 0x6c, 0x9f,
-	0x2e, 0x27, 0xf9, 0xee, 0xac, 0x7b, 0xd7, 0xaa, 0xd9, 0x10, 0x13, 0x42, 0x42, 0xe2, 0x0f, 0x60,
-	0xe8, 0x9f, 0x90, 0x81, 0x81, 0x3f, 0x81, 0xb1, 0x62, 0x62, 0x8a, 0x50, 0x32, 0x84, 0x39, 0x7f,
-	0x01, 0xb2, 0xcf, 0x4d, 0x58, 0xbc, 0x74, 0x39, 0xbd, 0x77, 0x9f, 0xef, 0xfb, 0xa1, 0xf7, 0x1e,
-	0x7a, 0xc2, 0xd3, 0x0c, 0x93, 0xb2, 0x2c, 0x78, 0x46, 0x0c, 0x57, 0x12, 0x70, 0x49, 0xb5, 0xc0,
-	0xe7, 0x07, 0xd8, 0x5c, 0xc4, 0xa5, 0x56, 0x46, 0x79, 0x3d, 0x9e, 0x66, 0xf1, 0xff, 0x92, 0xb8,
-	0x92, 0xc4, 0xe7, 0x07, 0xfe, 0x16, 0x11, 0x5c, 0x2a, 0x5c, 0xbf, 0x56, 0xec, 0xef, 0x64, 0x0a,
-	0x84, 0x02, 0x2c, 0x80, 0x55, 0x49, 0x04, 0xb0, 0x06, 0x3c, 0xb6, 0xe0, 0xb4, 0xf6, 0xb0, 0x75,
-	0x1a, 0xb4, 0xcd, 0x14, 0x53, 0xf6, 0xbf, 0xb2, 0xec, 0x6f, 0xf4, 0x63, 0x03, 0xf9, 0xc7, 0xc0,
-	0x4e, 0xa8, 0x79, 0x47, 0xb5, 0xe0, 0x00, 0x5c, 0x49, 0x9a, 0x27, 0xb4, 0x20, 0x63, 0xaa, 0xc1,
-	0x7b, 0x8b, 0xba, 0xe4, 0xcc, 0x8c, 0x94, 0xe6, 0x66, 0xdc, 0x73, 0x77, 0xdd, 0xbd, 0xee, 0xf0,
-	0xf9, 0x72, 0x1a, 0x3e, 0x18, 0x13, 0x51, 0x0c, 0xa2, 0x15, 0x8a, 0x7e, 0x7d, 0xdf, 0xdf, 0x6e,
-	0xaa, 0xbd, 0xce, 0x73, 0x4d, 0x01, 0x4e, 0x8c, 0xe6, 0x92, 0x25, 0xeb, 0x70, 0xef, 0x19, 0xba,
-	0x53, 0x2a, 0x6d, 0x4e, 0x79, 0xde, 0xdb, 0xa8, 0x33, 0x79, 0xcb, 0x69, 0x78, 0xcf, 0x66, 0x6a,
-	0x40, 0x94, 0x6c, 0x56, 0xd6, 0x51, 0xee, 0x1d, 0x22, 0x94, 0x8d, 0x88, 0x94, 0xb4, 0xa8, 0xf4,
-	0x9d, 0x5a, 0xff, 0x68, 0x39, 0x0d, 0xb7, 0xac, 0x7e, 0xcd, 0xa2, 0xa4, 0xdb, 0x38, 0x47, 0xb9,
-	0x87, 0xd1, 0x5d, 0xdd, 0xb4, 0xde, 0xbb, 0xb5, 0xdb, 0xd9, 0xeb, 0x0e, 0x1f, 0x2e, 0xa7, 0xe1,
-	0x7d, 0x1b, 0x73, 0x4d, 0xa2, 0x64, 0x25, 0x1a, 0x0c, 0x3e, 0x5d, 0x86, 0xce, 0xdf, 0xcb, 0xd0,
-	0xf9, 0xb8, 0x98, 0xf4, 0xd7, 0xbd, 0x7e, 0x5e, 0x4c, 0xfa, 0x61, 0xbd, 0xa2, 0xf6, 0xd9, 0x44,
-	0x4f, 0x51, 0xd4, 0x4e, 0x13, 0x0a, 0xa5, 0x92, 0x40, 0x5f, 0x7c, 0x73, 0x51, 0xe7, 0x18, 0x98,
-	0xf7, 0xc5, 0x45, 0x3b, 0x6d, 0x53, 0x3e, 0x8c, 0xdb, 0x96, 0x1f, 0xb7, 0x57, 0xf0, 0x5f, 0xdd,
-	0x24, 0xea, 0xba, 0x2f, 0xff, 0xf6, 0x87, 0xc5, 0xa4, 0xef, 0x0e, 0xdf, 0xfc, 0x9c, 0x05, 0xee,
-	0xd5, 0x2c, 0x70, 0xff, 0xcc, 0x02, 0xf7, 0xeb, 0x3c, 0x70, 0xae, 0xe6, 0x81, 0xf3, 0x7b, 0x1e,
-	0x38, 0xef, 0x63, 0xc6, 0xcd, 0xe8, 0x2c, 0x8d, 0x33, 0x25, 0x30, 0x97, 0xdc, 0x70, 0xb2, 0x5f,
-	0x90, 0x14, 0x1a, 0x1b, 0x5f, 0xe0, 0xea, 0xa6, 0xeb, 0x19, 0x99, 0x71, 0x49, 0x21, 0xdd, 0xac,
-	0x0f, 0xea, 0xe5, 0xbf, 0x00, 0x00, 0x00, 0xff, 0xff, 0x0c, 0xab, 0x07, 0x3c, 0xec, 0x02, 0x00,
-	0x00,
+	// 551 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xd4, 0x54, 0x3d, 0x6f, 0xd3, 0x4e,
+	0x18, 0x8f, 0x93, 0xff, 0xbf, 0x90, 0x43, 0x94, 0xd6, 0x6d, 0xa9, 0xf1, 0x60, 0x97, 0x13, 0x43,
+	0x14, 0xa8, 0xaf, 0x2d, 0x9d, 0x22, 0x16, 0xc2, 0xd2, 0x22, 0x45, 0x42, 0xee, 0xc6, 0x52, 0x9d,
+	0xed, 0xd3, 0xe5, 0x24, 0xdb, 0x67, 0xf9, 0x2e, 0x55, 0xb3, 0x21, 0x26, 0x84, 0x84, 0xc4, 0x47,
+	0xe8, 0x47, 0xc8, 0xc0, 0xc0, 0x47, 0x60, 0xac, 0x98, 0x98, 0x22, 0x94, 0x0c, 0x61, 0x43, 0x0a,
+	0x0b, 0x23, 0xf2, 0x5b, 0x5e, 0x90, 0x5c, 0x55, 0x6c, 0x5d, 0xac, 0xbb, 0xe7, 0xf7, 0x7b, 0xde,
+	0x7e, 0xf7, 0xf8, 0x01, 0x0f, 0x99, 0xe3, 0x22, 0x1c, 0x45, 0x3e, 0x73, 0xb1, 0x64, 0x3c, 0x14,
+	0x28, 0x22, 0x71, 0x80, 0xce, 0xf6, 0x91, 0x3c, 0xb7, 0xa2, 0x98, 0x4b, 0xae, 0x6a, 0xcc, 0x71,
+	0xad, 0x45, 0x8a, 0x95, 0x50, 0xac, 0xb3, 0x7d, 0x7d, 0x1d, 0x07, 0x2c, 0xe4, 0x28, 0xfd, 0x66,
+	0x64, 0x7d, 0xdb, 0xe5, 0x22, 0xe0, 0x02, 0x05, 0x82, 0x26, 0x41, 0x02, 0x41, 0x73, 0xe0, 0x41,
+	0x06, 0x9c, 0xa6, 0x37, 0x94, 0x5d, 0x72, 0x68, 0x93, 0x72, 0xca, 0x33, 0x7b, 0x72, 0xca, 0xac,
+	0xf0, 0x73, 0x15, 0xe8, 0x1d, 0x41, 0x4f, 0x88, 0x7c, 0x45, 0xe2, 0x80, 0x09, 0xc1, 0x78, 0x48,
+	0x3c, 0x9b, 0xf8, 0xb8, 0x4f, 0x62, 0xa1, 0xbe, 0x04, 0x75, 0xdc, 0x93, 0x5d, 0x1e, 0x33, 0xd9,
+	0xd7, 0x94, 0x1d, 0xa5, 0x51, 0x6f, 0x3f, 0x99, 0x0e, 0xcd, 0xb5, 0x3e, 0x0e, 0xfc, 0x16, 0x9c,
+	0x41, 0xf0, 0xeb, 0xa7, 0xdd, 0xcd, 0x3c, 0xdb, 0x73, 0xcf, 0x8b, 0x89, 0x10, 0x27, 0x32, 0x66,
+	0x21, 0xb5, 0xe7, 0xee, 0xea, 0x21, 0x00, 0x6e, 0x17, 0x87, 0x21, 0xf1, 0x4f, 0x99, 0xa7, 0x55,
+	0xd3, 0x60, 0x5b, 0xd3, 0xa1, 0xb9, 0x9e, 0x05, 0x9b, 0x63, 0xd0, 0xae, 0xe7, 0x97, 0x63, 0x4f,
+	0x7d, 0x0c, 0x6e, 0x45, 0x3c, 0x96, 0x89, 0x4b, 0x2d, 0x75, 0x51, 0xa7, 0x43, 0x73, 0x35, 0x73,
+	0xc9, 0x01, 0x68, 0xaf, 0x24, 0xa7, 0x63, 0x4f, 0x45, 0xe0, 0x76, 0x9c, 0x97, 0xae, 0xfd, 0xb7,
+	0x53, 0x6b, 0xd4, 0xdb, 0x1b, 0xd3, 0xa1, 0x79, 0x2f, 0x63, 0x17, 0x08, 0xb4, 0x67, 0xa4, 0x56,
+	0xeb, 0xdd, 0x85, 0x59, 0xf9, 0x71, 0x61, 0x56, 0xde, 0x4e, 0x06, 0xcd, 0x79, 0xad, 0xef, 0x27,
+	0x83, 0xa6, 0x99, 0x3e, 0x51, 0xb9, 0x36, 0xf0, 0x11, 0x80, 0xe5, 0xa8, 0x4d, 0x44, 0xc4, 0x43,
+	0x41, 0xe0, 0x4f, 0x05, 0xac, 0x76, 0x04, 0x3d, 0xc2, 0xbe, 0x7c, 0x91, 0x35, 0x75, 0xc3, 0x44,
+	0x6d, 0x59, 0xe5, 0x1a, 0x6d, 0x14, 0x1a, 0x2d, 0xb4, 0x07, 0x35, 0x70, 0x7f, 0xd9, 0x32, 0xd3,
+	0xe2, 0x97, 0x02, 0xd6, 0x3a, 0x82, 0xda, 0x44, 0xf4, 0x02, 0x72, 0x43, 0xd5, 0xd8, 0x2b, 0x57,
+	0x63, 0xab, 0x50, 0x63, 0xa9, 0x41, 0xa8, 0x03, 0xed, 0x6f, 0x5b, 0xa1, 0xc8, 0xc1, 0xef, 0x2a,
+	0xa8, 0x75, 0x04, 0x55, 0x3f, 0x28, 0x60, 0xbb, 0xec, 0x1f, 0x3c, 0xb4, 0xca, 0x56, 0x83, 0x55,
+	0x3e, 0x7f, 0xfa, 0xb3, 0x7f, 0xf1, 0x2a, 0xea, 0x52, 0x19, 0xb8, 0xb3, 0x38, 0xb1, 0x8d, 0x2b,
+	0x83, 0x2d, 0x30, 0xf5, 0xbd, 0xeb, 0x32, 0x67, 0xa9, 0x38, 0xb8, 0xbb, 0x3c, 0x10, 0xcd, 0x2b,
+	0x43, 0x2c, 0x71, 0xf5, 0x83, 0xeb, 0x73, 0x8b, 0x84, 0xfa, 0xff, 0x6f, 0x26, 0x83, 0xa6, 0xd2,
+	0x3e, 0xfa, 0x32, 0x32, 0x94, 0xcb, 0x91, 0xa1, 0x7c, 0x1f, 0x19, 0xca, 0xc7, 0xb1, 0x51, 0xb9,
+	0x1c, 0x1b, 0x95, 0x6f, 0x63, 0xa3, 0xf2, 0xda, 0xa2, 0x4c, 0x76, 0x7b, 0x8e, 0xe5, 0xf2, 0x00,
+	0xb1, 0x90, 0x49, 0x86, 0x77, 0x7d, 0xec, 0x88, 0xfc, 0x8c, 0xce, 0x51, 0xb2, 0xcd, 0xd3, 0xb7,
+	0x96, 0xfd, 0x88, 0x08, 0x67, 0x25, 0x5d, 0xa5, 0x4f, 0xff, 0x04, 0x00, 0x00, 0xff, 0xff, 0x5a,
+	0xa5, 0xaa, 0x82, 0xe6, 0x05, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -166,6 +334,10 @@ const _ = grpc.SupportPackageIsVersion4
 type MsgClient interface {
 	// SetPermissionedRelayers defines a rpc handler method for MsgSetPermissionedRelayers.
 	SetPermissionedRelayers(ctx context.Context, in *MsgSetPermissionedRelayers, opts ...grpc.CallOption) (*MsgSetPermissionedRelayersResponse, error)
+	// HaltChannel defines a rpc handler method for MsgHaltChannel.
+	HaltChannel(ctx context.Context, in *MsgHaltChannel, opts ...grpc.CallOption) (*MsgHaltChannelResponse, error)
+	// ResumeChannel defines a rpc handler method for MsgResumeChannel.
+	ResumeChannel(ctx context.Context, in *MsgResumeChannel, opts ...grpc.CallOption) (*MsgResumeChannelResponse, error)
 }
 
 type msgClient struct {
@@ -185,10 +357,32 @@ func (c *msgClient) SetPermissionedRelayers(ctx context.Context, in *MsgSetPermi
 	return out, nil
 }
 
+func (c *msgClient) HaltChannel(ctx context.Context, in *MsgHaltChannel, opts ...grpc.CallOption) (*MsgHaltChannelResponse, error) {
+	out := new(MsgHaltChannelResponse)
+	err := c.cc.Invoke(ctx, "/ibc.applications.perm.v1.Msg/HaltChannel", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) ResumeChannel(ctx context.Context, in *MsgResumeChannel, opts ...grpc.CallOption) (*MsgResumeChannelResponse, error) {
+	out := new(MsgResumeChannelResponse)
+	err := c.cc.Invoke(ctx, "/ibc.applications.perm.v1.Msg/ResumeChannel", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
 	// SetPermissionedRelayers defines a rpc handler method for MsgSetPermissionedRelayers.
 	SetPermissionedRelayers(context.Context, *MsgSetPermissionedRelayers) (*MsgSetPermissionedRelayersResponse, error)
+	// HaltChannel defines a rpc handler method for MsgHaltChannel.
+	HaltChannel(context.Context, *MsgHaltChannel) (*MsgHaltChannelResponse, error)
+	// ResumeChannel defines a rpc handler method for MsgResumeChannel.
+	ResumeChannel(context.Context, *MsgResumeChannel) (*MsgResumeChannelResponse, error)
 }
 
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.
@@ -197,6 +391,12 @@ type UnimplementedMsgServer struct {
 
 func (*UnimplementedMsgServer) SetPermissionedRelayers(ctx context.Context, req *MsgSetPermissionedRelayers) (*MsgSetPermissionedRelayersResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetPermissionedRelayers not implemented")
+}
+func (*UnimplementedMsgServer) HaltChannel(ctx context.Context, req *MsgHaltChannel) (*MsgHaltChannelResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method HaltChannel not implemented")
+}
+func (*UnimplementedMsgServer) ResumeChannel(ctx context.Context, req *MsgResumeChannel) (*MsgResumeChannelResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ResumeChannel not implemented")
 }
 
 func RegisterMsgServer(s grpc1.Server, srv MsgServer) {
@@ -221,6 +421,42 @@ func _Msg_SetPermissionedRelayers_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_HaltChannel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgHaltChannel)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).HaltChannel(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ibc.applications.perm.v1.Msg/HaltChannel",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).HaltChannel(ctx, req.(*MsgHaltChannel))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_ResumeChannel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgResumeChannel)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).ResumeChannel(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ibc.applications.perm.v1.Msg/ResumeChannel",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).ResumeChannel(ctx, req.(*MsgResumeChannel))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Msg_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "ibc.applications.perm.v1.Msg",
 	HandlerType: (*MsgServer)(nil),
@@ -228,6 +464,14 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SetPermissionedRelayers",
 			Handler:    _Msg_SetPermissionedRelayers_Handler,
+		},
+		{
+			MethodName: "HaltChannel",
+			Handler:    _Msg_HaltChannel_Handler,
+		},
+		{
+			MethodName: "ResumeChannel",
+			Handler:    _Msg_ResumeChannel_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -263,17 +507,17 @@ func (m *MsgSetPermissionedRelayers) MarshalToSizedBuffer(dAtA []byte) (int, err
 			dAtA[i] = 0x22
 		}
 	}
-	if len(m.ChannelId) > 0 {
-		i -= len(m.ChannelId)
-		copy(dAtA[i:], m.ChannelId)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.ChannelId)))
-		i--
-		dAtA[i] = 0x1a
-	}
 	if len(m.PortId) > 0 {
 		i -= len(m.PortId)
 		copy(dAtA[i:], m.PortId)
 		i = encodeVarintTx(dAtA, i, uint64(len(m.PortId)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.ChannelId) > 0 {
+		i -= len(m.ChannelId)
+		copy(dAtA[i:], m.ChannelId)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.ChannelId)))
 		i--
 		dAtA[i] = 0x12
 	}
@@ -310,6 +554,140 @@ func (m *MsgSetPermissionedRelayersResponse) MarshalToSizedBuffer(dAtA []byte) (
 	return len(dAtA) - i, nil
 }
 
+func (m *MsgHaltChannel) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgHaltChannel) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgHaltChannel) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.PortId) > 0 {
+		i -= len(m.PortId)
+		copy(dAtA[i:], m.PortId)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.PortId)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.ChannelId) > 0 {
+		i -= len(m.ChannelId)
+		copy(dAtA[i:], m.ChannelId)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.ChannelId)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Authority) > 0 {
+		i -= len(m.Authority)
+		copy(dAtA[i:], m.Authority)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Authority)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgHaltChannelResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgHaltChannelResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgHaltChannelResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgResumeChannel) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgResumeChannel) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgResumeChannel) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.PortId) > 0 {
+		i -= len(m.PortId)
+		copy(dAtA[i:], m.PortId)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.PortId)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.ChannelId) > 0 {
+		i -= len(m.ChannelId)
+		copy(dAtA[i:], m.ChannelId)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.ChannelId)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Authority) > 0 {
+		i -= len(m.Authority)
+		copy(dAtA[i:], m.Authority)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Authority)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgResumeChannelResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgResumeChannelResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgResumeChannelResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
 	offset -= sovTx(v)
 	base := offset
@@ -331,11 +709,11 @@ func (m *MsgSetPermissionedRelayers) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	l = len(m.PortId)
+	l = len(m.ChannelId)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	l = len(m.ChannelId)
+	l = len(m.PortId)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
@@ -349,6 +727,66 @@ func (m *MsgSetPermissionedRelayers) Size() (n int) {
 }
 
 func (m *MsgSetPermissionedRelayersResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *MsgHaltChannel) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Authority)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.ChannelId)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.PortId)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	return n
+}
+
+func (m *MsgHaltChannelResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *MsgResumeChannel) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Authority)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.ChannelId)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.PortId)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	return n
+}
+
+func (m *MsgResumeChannelResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -426,38 +864,6 @@ func (m *MsgSetPermissionedRelayers) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field PortId", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.PortId = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 3:
-			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field ChannelId", wireType)
 			}
 			var stringLen uint64
@@ -487,6 +893,38 @@ func (m *MsgSetPermissionedRelayers) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.ChannelId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field PortId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.PortId = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 4:
 			if wireType != 2 {
@@ -568,6 +1006,398 @@ func (m *MsgSetPermissionedRelayersResponse) Unmarshal(dAtA []byte) error {
 		}
 		if fieldNum <= 0 {
 			return fmt.Errorf("proto: MsgSetPermissionedRelayersResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgHaltChannel) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgHaltChannel: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgHaltChannel: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Authority", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Authority = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ChannelId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ChannelId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field PortId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.PortId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgHaltChannelResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgHaltChannelResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgHaltChannelResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgResumeChannel) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgResumeChannel: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgResumeChannel: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Authority", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Authority = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ChannelId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ChannelId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field PortId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.PortId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgResumeChannelResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgResumeChannelResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgResumeChannelResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:

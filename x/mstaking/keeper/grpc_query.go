@@ -73,7 +73,7 @@ func (q Querier) Validator(ctx context.Context, req *types.QueryValidatorRequest
 
 	validator, err := q.Keeper.Validators.Get(ctx, valAddr)
 	if err != nil {
-		return nil, status.Errorf(codes.NotFound, err.Error())
+		return nil, status.Error(codes.NotFound, err.Error())
 	}
 
 	return &types.QueryValidatorResponse{Validator: validator}, nil
