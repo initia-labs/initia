@@ -42168,19 +42168,17 @@ paths:
           format: uint64
       tags:
         - Query
-  /ibc/apps/perm/v1/relayers:
+  /ibc/apps/perm/v1/channel_states:
     get:
-      summary: >-
-        AllPermissionedRelayers queries all sets of permissioned relayers for
-        all channels.
-      operationId: AllPermissionedRelayers
+      summary: ChannelStates queries all channel states.
+      operationId: ChannelStates
       responses:
         '200':
           description: A successful response.
           schema:
             type: object
             properties:
-              permissioned_relayers:
+              channel_states:
                 type: array
                 items:
                   type: object
@@ -42189,16 +42187,24 @@ paths:
                       type: string
                     channel_id:
                       type: string
+                    halt_state:
+                      type: object
+                      properties:
+                        halted:
+                          type: boolean
+                        halted_by:
+                          type: string
+                      description: >-
+                        HaltState defines the halt state for the specific
+                        port-id:channel-id pair.
                     relayers:
                       type: array
                       items:
                         type: string
                   description: >-
-                    PermissionedRelayer is used to specifiy the permissioned
-                    relayer for
-
-                    the specific port-id:channel-id pair.
-                description: class_trace returns the requested class id trace information.
+                    ChannelState defines the channel state for the specific
+                    port-id:channel-id pair.
+                description: channel_states returns all stored ChannelState objects.
               pagination:
                 description: pagination defines the pagination in the response.
                 type: object
@@ -42219,10 +42225,8 @@ paths:
 
                       was set, its value is undefined otherwise
             description: >-
-              QueryAllPermissionedRelayersResponse is the response type for the
-              Query/AllPermissionedRelayers RPC
-
-              method.
+              QueryChannelStatesResponse is the response type for the
+              Query/ChannelStates RPC method.
         default:
           description: An unexpected error response.
           schema:
@@ -42304,39 +42308,45 @@ paths:
           type: boolean
       tags:
         - Query
-  /ibc/apps/perm/v1/relayers/{port_id}/{channel_id}:
+  /ibc/apps/perm/v1/channel_states/{channel_id}/{port_id}:
     get:
       summary: >-
-        PermissionedRelayersByChannel queries a set of permissioned ibc relayers
-        for the specific channel.
-      operationId: PermissionedRelayersByChannel
+        ChannelState queries the channel state for the specific
+        port-id:channel-id pair.
+      operationId: ChannelState
       responses:
         '200':
           description: A successful response.
           schema:
             type: object
             properties:
-              permissioned_relayers:
+              channel_state:
                 type: object
                 properties:
                   port_id:
                     type: string
                   channel_id:
                     type: string
+                  halt_state:
+                    type: object
+                    properties:
+                      halted:
+                        type: boolean
+                      halted_by:
+                        type: string
+                    description: >-
+                      HaltState defines the halt state for the specific
+                      port-id:channel-id pair.
                   relayers:
                     type: array
                     items:
                       type: string
                 description: >-
-                  PermissionedRelayer is used to specifiy the permissioned
-                  relayer for
-
-                  the specific port-id:channel-id pair.
+                  ChannelState defines the channel state for the specific
+                  port-id:channel-id pair.
             description: >-
-              QueryPermissionedRelayerResponse is the response type for the
-              Query/PermissionedRelayer RPC
-
-              method.
+              QueryChannelStateResponse is the response type for the
+              Query/ChannelState RPC method.
         default:
           description: An unexpected error response.
           schema:
@@ -42360,11 +42370,11 @@ paths:
                       type: string
                       format: byte
       parameters:
-        - name: port_id
+        - name: channel_id
           in: path
           required: true
           type: string
-        - name: channel_id
+        - name: port_id
           in: path
           required: true
           type: string
@@ -52661,6 +52671,9 @@ paths:
                           type: string
                           format: uint64
                           description: The the first l2 block will be recorded on l1.
+                        oracle_enabled:
+                          type: boolean
+                          description: oracle_enabled is a flag to enable oracle.
                         metadata:
                           type: string
                           format: byte
@@ -52831,6 +52844,9 @@ paths:
                     type: string
                     format: uint64
                     description: The the first l2 block will be recorded on l1.
+                  oracle_enabled:
+                    type: boolean
+                    description: oracle_enabled is a flag to enable oracle.
                   metadata:
                     type: string
                     format: byte
@@ -81351,24 +81367,72 @@ definitions:
       PacketId is an identifer for a unique Packet
       Source chains refer to packets by source port/channel
       Destination chains refer to packets by destination port/channel
-  ibc.applications.perm.v1.PermissionedRelayers:
+  ibc.applications.perm.v1.ChannelState:
     type: object
     properties:
       port_id:
         type: string
       channel_id:
         type: string
+      halt_state:
+        type: object
+        properties:
+          halted:
+            type: boolean
+          halted_by:
+            type: string
+        description: >-
+          HaltState defines the halt state for the specific port-id:channel-id
+          pair.
       relayers:
         type: array
         items:
           type: string
-    description: |-
-      PermissionedRelayer is used to specifiy the permissioned relayer for
-      the specific port-id:channel-id pair.
-  ibc.applications.perm.v1.QueryAllPermissionedRelayersResponse:
+    description: >-
+      ChannelState defines the channel state for the specific port-id:channel-id
+      pair.
+  ibc.applications.perm.v1.HaltState:
     type: object
     properties:
-      permissioned_relayers:
+      halted:
+        type: boolean
+      halted_by:
+        type: string
+    description: HaltState defines the halt state for the specific port-id:channel-id pair.
+  ibc.applications.perm.v1.QueryChannelStateResponse:
+    type: object
+    properties:
+      channel_state:
+        type: object
+        properties:
+          port_id:
+            type: string
+          channel_id:
+            type: string
+          halt_state:
+            type: object
+            properties:
+              halted:
+                type: boolean
+              halted_by:
+                type: string
+            description: >-
+              HaltState defines the halt state for the specific
+              port-id:channel-id pair.
+          relayers:
+            type: array
+            items:
+              type: string
+        description: >-
+          ChannelState defines the channel state for the specific
+          port-id:channel-id pair.
+    description: >-
+      QueryChannelStateResponse is the response type for the Query/ChannelState
+      RPC method.
+  ibc.applications.perm.v1.QueryChannelStatesResponse:
+    type: object
+    properties:
+      channel_states:
         type: array
         items:
           type: object
@@ -81377,14 +81441,24 @@ definitions:
               type: string
             channel_id:
               type: string
+            halt_state:
+              type: object
+              properties:
+                halted:
+                  type: boolean
+                halted_by:
+                  type: string
+              description: >-
+                HaltState defines the halt state for the specific
+                port-id:channel-id pair.
             relayers:
               type: array
               items:
                 type: string
-          description: |-
-            PermissionedRelayer is used to specifiy the permissioned relayer for
-            the specific port-id:channel-id pair.
-        description: class_trace returns the requested class id trace information.
+          description: >-
+            ChannelState defines the channel state for the specific
+            port-id:channel-id pair.
+        description: channel_states returns all stored ChannelState objects.
       pagination:
         description: pagination defines the pagination in the response.
         type: object
@@ -81405,32 +81479,8 @@ definitions:
 
               was set, its value is undefined otherwise
     description: >-
-      QueryAllPermissionedRelayersResponse is the response type for the
-      Query/AllPermissionedRelayers RPC
-
-      method.
-  ibc.applications.perm.v1.QueryPermissionedRelayersByChannelResponse:
-    type: object
-    properties:
-      permissioned_relayers:
-        type: object
-        properties:
-          port_id:
-            type: string
-          channel_id:
-            type: string
-          relayers:
-            type: array
-            items:
-              type: string
-        description: |-
-          PermissionedRelayer is used to specifiy the permissioned relayer for
-          the specific port-id:channel-id pair.
-    description: >-
-      QueryPermissionedRelayerResponse is the response type for the
-      Query/PermissionedRelayer RPC
-
-      method.
+      QueryChannelStatesResponse is the response type for the
+      Query/ChannelStates RPC method.
   packetforward.v1.Params:
     type: object
     properties:
@@ -87933,6 +87983,9 @@ definitions:
         type: string
         format: uint64
         description: The the first l2 block will be recorded on l1.
+      oracle_enabled:
+        type: boolean
+        description: oracle_enabled is a flag to enable oracle.
       metadata:
         type: string
         format: byte
@@ -88093,6 +88146,9 @@ definitions:
             type: string
             format: uint64
             description: The the first l2 block will be recorded on l1.
+          oracle_enabled:
+            type: boolean
+            description: oracle_enabled is a flag to enable oracle.
           metadata:
             type: string
             format: byte
@@ -88154,6 +88210,9 @@ definitions:
                   type: string
                   format: uint64
                   description: The the first l2 block will be recorded on l1.
+                oracle_enabled:
+                  type: boolean
+                  description: oracle_enabled is a flag to enable oracle.
                 metadata:
                   type: string
                   format: byte
