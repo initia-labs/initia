@@ -193,7 +193,7 @@ func DeserializeUint64(bz []byte) (math.Int, error) {
 	return num, nil
 }
 
-// DeserializeBigDecimal deserialize uint128 bytes to math.Int
+// DeserializeBigDecimal deserialize BigDecimal bytes to math.LegacyDec
 func DeserializeBigDecimal(bz []byte) (math.LegacyDec, error) {
 	slices.Reverse(bz)
 	num := new(big.Int).SetBytes(bz)
