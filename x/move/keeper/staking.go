@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"cosmossdk.io/collections"
 	"cosmossdk.io/math"
@@ -17,18 +18,18 @@ import (
 )
 
 // AmountToShare convert token to share in the ratio of a validator's share/token
-func (k Keeper) AmountToShare(ctx context.Context, valAddr sdk.ValAddress, amount sdk.Coin) (math.Int, error) {
+func (k Keeper) AmountToShare(ctx context.Context, valAddr sdk.ValAddress, amount sdk.Coin) (math.LegacyDec, error) {
 	val, err := k.StakingKeeper.Validator(ctx, valAddr)
 	if err != nil {
-		return math.ZeroInt(), err
+		return math.LegacyZeroDec(), err
 	}
 
 	shares, err := val.SharesFromTokens(sdk.NewCoins(amount))
 	if err != nil {
-		return math.ZeroInt(), err
+		return math.LegacyZeroDec(), err
 	}
 
-	return shares.AmountOf(amount.Denom).TruncateInt(), err
+	return shares.AmountOf(amount.Denom), err
 }
 
 // ShareToAmount convert share to token in the ratio of a validator's token/share
@@ -238,8 +239,12 @@ func (k Keeper) ApplyStakingDeltas(
 			delegations[valAddrStr] = delegations[valAddrStr].Add(delCoin)
 		}
 
-		if delta.Undelegation > 0 {
-			undelCoin := sdk.NewDecCoin(denom, math.NewIntFromUint64(delta.Undelegation))
+		unbondingDecAmount, err := math.LegacyNewDecFromStr(delta.Undelegation)
+		if err != nil {
+			return err
+		}
+		if unbondingDecAmount.IsPositive() {
+			undelCoin := sdk.NewDecCoinFromDec(denom, unbondingDecAmount)
 			undelegations[valAddrStr] = undelegations[valAddrStr].Add(undelCoin)
 		}
 	}
@@ -440,18 +445,12 @@ func (k Keeper) SlashUnbondingDelegations(
 	}
 
 	for _, metadata := range metadatas {
-		fractionArg, err := vmtypes.SerializeString(fraction.String())
-		if err != nil {
-			return err
-		}
+		metadataArg := fmt.Sprintf("\"%s\"", metadata.String())
+		fractionArg := fmt.Sprintf("\"%s\"", fraction.String())
+		valArg := fmt.Sprintf("\"%s\"", valAddr.String())
 
-		valArg, err := vmtypes.SerializeString(valAddr.String())
-		if err != nil {
-			return err
-		}
-
-		args := [][]byte{metadata[:], valArg, fractionArg}
-		if err := k.ExecuteEntryFunction(
+		args := []string{metadataArg, valArg, fractionArg}
+		if err := k.ExecuteEntryFunctionJSON(
 			ctx,
 			vmtypes.StdAddress,
 			vmtypes.StdAddress,

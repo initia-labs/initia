@@ -190,11 +190,11 @@ func moveEncodeCmd(ac address.Codec) *cobra.Command {
 		Provide BCS encoding for move arguments.
 
 		Supported types : u8, u16, u32, u64, u128, u256, bool, string, address, raw_hex, raw_base64,
-			vector<inner_type>, option<inner_type>, decimal128, decimal256, fixed_point32, fixed_point64
+			vector<inner_type>, option<inner_type>, biguint, bigdecimal, fixed_point32, fixed_point64
 		Example of args: address:0x1 bool:true u8:0 string:hello vector<u32>:a,b,c,d
 		
 		Example:
-		$ %s move encode --args '["address:0x1", "bool:true", "u8:0x01", "u128:1234", "vector<u32>:a,b,c,d", "string:hello world"]'
+		$ %s move encode --args '["address:0x1", "bool:true", "u8:0x01", "u128:1234", "vector<u32>:a,b,c,d", "string:hello world", "bigdecimal:123.456"]'
 `, version.AppName,
 		),
 		Args: cobra.ExactArgs(0),

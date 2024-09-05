@@ -109,7 +109,7 @@ func Test_AmountToShareAPI(t *testing.T) {
 	api := keeper.NewApi(input.MoveKeeper, ctx)
 	amount, err := api.AmountToShare([]byte(valAddr.String()), metadata, 150)
 	require.NoError(t, err)
-	require.Equal(t, uint64(150), amount)
+	require.Equal(t, "150.000000000000000000", amount)
 }
 
 func Test_AmountToShareAPI_InvalidAddr(t *testing.T) {
@@ -154,7 +154,7 @@ func Test_ShareToAmountAPI(t *testing.T) {
 	require.NoError(t, err)
 
 	api := keeper.NewApi(input.MoveKeeper, ctx)
-	amount, err := api.ShareToAmount([]byte(valAddr.String()), metadata, 150)
+	amount, err := api.ShareToAmount([]byte(valAddr.String()), metadata, "150")
 	require.NoError(t, err)
 	require.Equal(t, uint64(150), amount)
 }
@@ -178,7 +178,7 @@ func Test_ShareToAmountAPI_InvalidAddr(t *testing.T) {
 	require.NoError(t, err)
 
 	api := keeper.NewApi(input.MoveKeeper, ctx)
-	_, err = api.ShareToAmount(valAddr, metadata, 150)
+	_, err = api.ShareToAmount(valAddr, metadata, "150")
 	require.Error(t, err)
 }
 

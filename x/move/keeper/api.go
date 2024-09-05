@@ -55,23 +55,23 @@ func (api GoApi) GetAccountInfo(addr vmtypes.AccountAddress) (bool /* found */, 
 }
 
 // AmountToShare convert amount to share
-func (api GoApi) AmountToShare(valBz []byte, metadata vmtypes.AccountAddress, amount uint64) (uint64, error) {
+func (api GoApi) AmountToShare(valBz []byte, metadata vmtypes.AccountAddress, amount uint64) (string, error) {
 	valAddr, err := api.vc.StringToBytes(string(valBz))
 	if err != nil {
-		return 0, err
+		return "0", err
 	}
 
 	denom, err := types.DenomFromMetadataAddress(api.ctx, NewMoveBankKeeper(&api.Keeper), metadata)
 	if err != nil {
-		return 0, err
+		return "0", err
 	}
 
 	share, err := api.Keeper.AmountToShare(api.ctx, valAddr, sdk.NewCoin(denom, math.NewIntFromUint64(amount)))
-	return share.Uint64(), err
+	return share.String(), err
 }
 
 // ShareToAmount convert share to amount
-func (api GoApi) ShareToAmount(valBz []byte, metadata vmtypes.AccountAddress, share uint64) (uint64, error) {
+func (api GoApi) ShareToAmount(valBz []byte, metadata vmtypes.AccountAddress, share string) (uint64, error) {
 	valAddr, err := api.vc.StringToBytes(string(valBz))
 	if err != nil {
 		return 0, err
@@ -82,7 +82,12 @@ func (api GoApi) ShareToAmount(valBz []byte, metadata vmtypes.AccountAddress, sh
 		return 0, err
 	}
 
-	amount, err := api.Keeper.ShareToAmount(api.ctx, valAddr, sdk.NewDecCoin(denom, math.NewIntFromUint64(share)))
+	dec, err := math.LegacyNewDecFromStr(share)
+	if err != nil {
+		return 0, err
+	}
+
+	amount, err := api.Keeper.ShareToAmount(api.ctx, valAddr, sdk.NewDecCoinFromDec(denom, dec))
 	return amount.Uint64(), err
 }
 
