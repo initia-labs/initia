@@ -129,7 +129,7 @@ func TestAmountToShare(t *testing.T) {
 	amount := sdk.NewCoin(bondDenom, math.NewInt(150))
 	share, err := input.MoveKeeper.AmountToShare(ctx, valAddr, amount)
 	require.NoError(t, err)
-	require.Equal(t, math.NewInt(150), share)
+	require.Equal(t, math.LegacyNewDecFromInt(math.NewInt(150)), share)
 }
 
 func TestShareToAmount(t *testing.T) {
@@ -330,7 +330,7 @@ func TestApplyStakingDeltas(t *testing.T) {
 
 	unbondingShare, unbondingCoinStore, err := types.ReadUnbondingInfosFromStakingState(tableEntry.ValueBytes)
 	require.NoError(t, err)
-	require.Equal(t, unbondingShare, math.NewInt(25_000_000))
+	require.Equal(t, unbondingShare, math.LegacyNewDecFromInt(math.NewInt(25_000_000)))
 
 	_, unbondingAmount, err := keeper.NewMoveBankKeeper(&input.MoveKeeper).Balance(ctx, unbondingCoinStore)
 	require.NoError(t, err)
@@ -416,9 +416,6 @@ func Test_SlashUnbondingDelegations(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, delegation.Shares, sdk.NewDecCoins(sdk.NewDecCoin(secondBondDenom, math.NewInt(25_000_000))))
 
-	// slash 5%
-	input.MoveKeeper.Hooks().SlashUnbondingDelegations(ctx, valAddr, math.LegacyNewDecWithPrec(5, 2))
-
 	// check staking state
 	tableHandle, err := input.MoveKeeper.GetStakingStatesTableHandle(ctx)
 	require.NoError(t, err)
@@ -437,9 +434,24 @@ func Test_SlashUnbondingDelegations(t *testing.T) {
 
 	unbondingShare, unbondingCoinStore, err := types.ReadUnbondingInfosFromStakingState(tableEntry.ValueBytes)
 	require.NoError(t, err)
+	require.Equal(t, unbondingShare, math.LegacyNewDecFromInt(math.NewInt(25_000_000)))
 
 	_, unbondingAmount, err := keeper.NewMoveBankKeeper(&input.MoveKeeper).Balance(ctx, unbondingCoinStore)
 	require.NoError(t, err)
+	require.Equal(t, unbondingAmount, math.NewInt(25_000_000))
+
+	// slash 5%
+	input.MoveKeeper.Hooks().SlashUnbondingDelegations(ctx, valAddr, math.LegacyNewDecWithPrec(5, 2))
+
+	// read validator entry
+	tableEntry, err = input.MoveKeeper.GetTableEntry(ctx, metadataTableHandle, keyBz)
+	require.NoError(t, err)
+
+	unbondingShare, _, err = types.ReadUnbondingInfosFromStakingState(tableEntry.ValueBytes)
+	require.NoError(t, err)
+
+	_, unbondingAmount, err = keeper.NewMoveBankKeeper(&input.MoveKeeper).Balance(ctx, unbondingCoinStore)
+	require.NoError(t, err)
 	require.Equal(t, unbondingAmount, math.NewInt(23_750_000))
-	require.Equal(t, unbondingShare, math.NewInt(25_000_000))
+	require.Equal(t, unbondingShare, math.LegacyNewDecFromInt(math.NewInt(25_000_000)))
 }

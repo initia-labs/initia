@@ -38,7 +38,7 @@ func (suite *KeeperTestSuite) CreateNftClass(
 		movetypes.MoveModuleNameInitiaNft,
 		movetypes.FunctionNameInitiaNftCreateCollection,
 		[]vmtypes.TypeTag{},
-		[][]byte{descBz, {0}, nameBz, uriBz, {0}, {0}, {0}, {0}, {0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+		[][]byte{descBz, {0}, nameBz, uriBz, {0}, {0}, {0}, {0}, {0}, {0}},
 	)
 	suite.Require().NoError(err, "MakeCollection error on chain")
 

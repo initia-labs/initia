@@ -2,6 +2,7 @@ package types
 
 import (
 	"math/big"
+	"slices"
 
 	"cosmossdk.io/errors"
 	"cosmossdk.io/math"
@@ -192,15 +193,13 @@ func DeserializeUint64(bz []byte) (math.Int, error) {
 	return num, nil
 }
 
-// DeserializeDecimal deserialize uint128 bytes to math.Int
-func DeserializeDecimal(bz []byte) (math.LegacyDec, error) {
-	num, err := DeserializeUint128(bz)
-	if err != nil {
-		return math.LegacyZeroDec(), err
-	}
+// DeserializeBigDecimal deserialize uint128 bytes to math.Int
+func DeserializeBigDecimal(bz []byte) (math.LegacyDec, error) {
+	slices.Reverse(bz)
+	num := new(big.Int).SetBytes(bz)
 
 	// fractional part length is 18
-	return math.LegacyNewDecFromIntWithPrec(num, 18), nil
+	return math.LegacyNewDecFromIntWithPrec(math.NewIntFromBigInt(num), 18), nil
 }
 
 // DeserializeUint128 deserialize uint128 bytes to math.Int
@@ -324,31 +323,46 @@ func ReadWeightsFromDexConfig(timestamp math.Int, bz []byte) (math.LegacyDec, ma
 	cursor += AddressBytesLength + 8
 
 	// before weights
-	weightCoinABefore, err := DeserializeDecimal(bz[cursor : cursor+16])
+	weightLen, len := readULEB128(bz[cursor:])
+	cursor += len
+	weightCoinABefore, err := DeserializeBigDecimal(bz[cursor : cursor+weightLen])
 	if err != nil {
 		return math.LegacyZeroDec(), math.LegacyZeroDec(), err
 	}
-	weightCoinBBefore, err := DeserializeDecimal(bz[cursor+16 : cursor+32])
-	if err != nil {
-		return math.LegacyZeroDec(), math.LegacyZeroDec(), err
-	}
-	timestampBefore, err := DeserializeUint64(bz[cursor+32 : cursor+40])
-	if err != nil {
-		return math.LegacyZeroDec(), math.LegacyZeroDec(), err
-	}
+	cursor += weightLen
 
-	cursor += 40
+	weightLen, len = readULEB128(bz[cursor:])
+	cursor += len
+	weightCoinBBefore, err := DeserializeBigDecimal(bz[cursor : cursor+weightLen])
+	if err != nil {
+		return math.LegacyZeroDec(), math.LegacyZeroDec(), err
+	}
+	cursor += weightLen
+
+	timestampBefore, err := DeserializeUint64(bz[cursor : cursor+8])
+	if err != nil {
+		return math.LegacyZeroDec(), math.LegacyZeroDec(), err
+	}
+	cursor += 8
 
 	// after weights
-	weightCoinAAfter, err := DeserializeDecimal(bz[cursor : cursor+16])
+	weightLen, len = readULEB128(bz[cursor:])
+	cursor += len
+	weightCoinAAfter, err := DeserializeBigDecimal(bz[cursor : cursor+weightLen])
 	if err != nil {
 		return math.LegacyZeroDec(), math.LegacyZeroDec(), err
 	}
-	weightCoinBAfter, err := DeserializeDecimal(bz[cursor+16 : cursor+32])
+	cursor += weightLen
+
+	weightLen, len = readULEB128(bz[cursor:])
+	cursor += len
+	weightCoinBAfter, err := DeserializeBigDecimal(bz[cursor : cursor+weightLen])
 	if err != nil {
 		return math.LegacyZeroDec(), math.LegacyZeroDec(), err
 	}
-	timestampAfter, err := DeserializeUint64(bz[cursor+32 : cursor+40])
+	cursor += weightLen
+
+	timestampAfter, err := DeserializeUint64(bz[cursor : cursor+8])
 	if err != nil {
 		return math.LegacyZeroDec(), math.LegacyZeroDec(), err
 	}
@@ -421,7 +435,7 @@ func GetBaseSpotPrice(
 }
 
 // ReadUnbondingInfosFromStakingState util function to read unbonding coin amount from the StakingState
-func ReadUnbondingInfosFromStakingState(bz []byte) (unbondingShare math.Int, unbondingCoinStore vmtypes.AccountAddress, err error) {
+func ReadUnbondingInfosFromStakingState(bz []byte) (unbondingShare math.LegacyDec, unbondingCoinStore vmtypes.AccountAddress, err error) {
 	cursor := int(0)
 
 	// read metadata
@@ -431,19 +445,22 @@ func ReadUnbondingInfosFromStakingState(bz []byte) (unbondingShare math.Int, unb
 	valLen, len := readULEB128(bz[cursor:])
 	cursor += (valLen + len)
 
-	// read total_share
-	cursor += 16
+	// read total_share(BigDecimal)
+	decLen, len := readULEB128(bz[cursor:])
+	cursor += (decLen + len)
 
-	// read unbonding_share
-	unbondingShare, err = DeserializeUint128(bz[cursor : cursor+16])
+	// read unbonding_share(BigDecimal)
+	decLen, len = readULEB128(bz[cursor:])
+	cursor += len
+	unbondingShare, err = DeserializeBigDecimal(bz[cursor : cursor+decLen])
 	if err != nil {
 		return
 	}
+	cursor += decLen
 
-	cursor += 16
-
-	// read reward_index(Decimal128)
-	cursor += 16
+	// read reward_index(BigDecimal)
+	decLen, len = readULEB128(bz[cursor:])
+	cursor += (decLen + len)
 
 	// read reward_coin_store_ref(ExtendRef)
 	cursor += AddressBytesLength + 8

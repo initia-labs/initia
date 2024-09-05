@@ -161,7 +161,7 @@ func (k NftKeeper) initializeCollection(ctx context.Context, collectionName, cla
 		types.MoveModuleNameInitiaNft,
 		types.FunctionNameInitiaNftCreateCollection,
 		[]vmtypes.TypeTag{},
-		[][]byte{collectionDescBz, {0}, collectionNameBz, collectionUriBz, {0}, {0}, {0}, {0}, {0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+		[][]byte{collectionDescBz, {0}, collectionNameBz, collectionUriBz, {0}, {0}, {0}, {0}, {0}, {0}},
 	)
 }
 

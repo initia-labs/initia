@@ -236,7 +236,7 @@ func orderInitBlockers() []string {
 		authz.ModuleName, group.ModuleName, upgradetypes.ModuleName, feegrant.ModuleName,
 		consensusparamtypes.ModuleName, ibcexported.ModuleName, ibctransfertypes.ModuleName,
 		ibcnfttransfertypes.ModuleName, icatypes.ModuleName, icaauthtypes.ModuleName, ibcfeetypes.ModuleName,
-		ibcpermtypes.ModuleName, consensusparamtypes.ModuleName, auctiontypes.ModuleName, ophosttypes.ModuleName,
+		ibcpermtypes.ModuleName, auctiontypes.ModuleName, ophosttypes.ModuleName,
 		oracletypes.ModuleName, marketmaptypes.ModuleName, packetforwardtypes.ModuleName, ibchookstypes.ModuleName,
 		forwardingtypes.ModuleName, ratelimittypes.ModuleName,
 	}
