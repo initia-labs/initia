@@ -165,6 +165,8 @@ func (oc oracleClientWithTimestamp) Prices(ctx context.Context, req *oracleserve
 		return nil, err
 	}
 
-	resp.Prices[l2slinky.ReservedCPTimestamp] = strconv.FormatInt(resp.Timestamp.UTC().UnixNano(), 10)
+	if resp != nil {
+		resp.Prices[l2slinky.ReservedCPTimestamp] = strconv.FormatInt(resp.Timestamp.UTC().UnixNano(), 10)
+	}
 	return resp, err
 }
