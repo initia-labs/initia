@@ -115,7 +115,7 @@ func GenSequenceOfTxs(b *testing.B, info *AppInfo, msgGen func(*AppInfo, int) ([
 		msgs, err := msgGen(info, i)
 		require.NoError(b, err)
 		txs[i], err = simtestutil.GenSignedMockTx(
-			rand.New(rand.NewSource(time.Now().UnixNano())),
+			rand.New(rand.NewSource(time.Now().UTC().UnixNano())),
 			info.TxConfig,
 			msgs,
 			fees,

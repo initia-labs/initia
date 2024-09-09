@@ -184,7 +184,7 @@ func TestValidateAccountInGenesis(t *testing.T) {
 
 // 				msg := banktypes.NewMsgSend(addr1, addr2, sdk.Coins{sdk.NewInt64Coin(sdk.DefaultBondDenom, 1)})
 // 				tx, err := helpers.GenSignedMockTx(
-// 					rand.New(rand.NewSource(time.Now().UnixNano())),
+// 					rand.New(rand.NewSource(time.Now().UTC().UnixNano())),
 // 					suite.encodingConfig.TxConfig,
 // 					[]sdk.Msg{msg},
 // 					sdk.Coins{sdk.NewInt64Coin(sdk.DefaultBondDenom, 10)},

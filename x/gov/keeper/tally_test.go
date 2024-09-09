@@ -168,7 +168,7 @@ func Test_Tally(t *testing.T) {
 	require.NoError(t, err)
 
 	// 15 minutes passed
-	ctx = ctx.WithBlockTime(time.Now().Add(time.Minute * 15))
+	ctx = ctx.WithBlockTime(time.Now().UTC().Add(time.Minute * 15))
 
 	quorumReached, passed, burnDeposits, tallyResults, err := input.GovKeeper.Tally(ctx, params, proposal)
 	require.NoError(t, err)
