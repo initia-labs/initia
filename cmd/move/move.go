@@ -567,8 +567,8 @@ the 'tests' directory`)
 	cmd.Flags().Bool(flagVerbose, false, "Print additional diagnostics if available")
 	cmd.Flags().Bool(flagSkipFetchLatestGitDeps, false, "Skip fetching latest git dependencies")
 	cmd.Flags().Uint32(flagBytecodeVersion, 0, "Specify the version of the bytecode the compiler is going to emit")
-	cmd.Flags().Uint32(flagCompilerVersion, 1, "Specify the version of the compiler to use")
-	cmd.Flags().Uint32(flagLanguageVersion, 1, "Specify the version of the language to use")
+	cmd.Flags().String(flagCompilerVersion, "1", "Specify the version of the compiler to use")
+	cmd.Flags().String(flagLanguageVersion, "1", "Specify the version of the language to use")
 	cmd.Flags().String(flagNamedAddresses, "", "Named addresses to use in compilation. ex: --named-addresses 'name_1=0x1,name_2=0x2'")
 }
 
@@ -662,13 +662,13 @@ func getBuildConfig(cmd *cobra.Command) (*types.CompilerBuildConfig, error) {
 	}
 	options = append(options, buildtypes.WithBytecodeVersion(bytecodeVersion))
 
-	compilerVersion, err := cmd.Flags().GetUint32(flagCompilerVersion)
+	compilerVersion, err := cmd.Flags().GetString(flagCompilerVersion)
 	if err != nil {
 		return nil, err
 	}
 	options = append(options, buildtypes.WithCompilerVersion(compilerVersion))
 
-	languageVersion, err := cmd.Flags().GetUint32(flagLanguageVersion)
+	languageVersion, err := cmd.Flags().GetString(flagLanguageVersion)
 	if err != nil {
 		return nil, err
 	}
