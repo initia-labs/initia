@@ -5,6 +5,7 @@ linters:
     - varnamelen
     - tagliatelle
     - wrapcheck
+    - typecheck
 linters-settings:
   gocyclo:
     min-complexity: 11
