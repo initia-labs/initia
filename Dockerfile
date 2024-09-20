@@ -6,7 +6,7 @@ ARG TARGETARCH
 ARG GOARCH
 
 # See https://github.com/initia-labs/movevm/releases
-ENV LIBMOVEVM_VERSION=v0.4.9
+ENV LIBMOVEVM_VERSION=v0.4.11
 
 # Install necessary packages
 RUN set -eux; apk add --no-cache ca-certificates build-base git cmake
