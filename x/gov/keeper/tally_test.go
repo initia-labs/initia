@@ -175,6 +175,6 @@ func Test_Tally(t *testing.T) {
 	require.True(t, quorumReached)
 	require.True(t, passed)
 	require.False(t, burnDeposits)
-	require.Equal(t, tallyResults.YesCount, math.LegacyNewDec(1_500_000+100_000_000).TruncateInt().String())
-	require.Equal(t, tallyResults.NoCount, math.LegacyNewDec(100_000_000).TruncateInt().String())
+	require.Equal(t, tallyResults.V1TallyResult.YesCount, math.LegacyNewDec(1_500_000+100_000_000).TruncateInt().String())
+	require.Equal(t, tallyResults.V1TallyResult.NoCount, math.LegacyNewDec(100_000_000).TruncateInt().String())
 }

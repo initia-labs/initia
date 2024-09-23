@@ -117,3 +117,46 @@ func (q CustomQueryServer) Proposals(ctx context.Context, req *customtypes.Query
 
 	return &customtypes.QueryProposalsResponse{Proposals: filteredProposals, Pagination: pageRes}, nil
 }
+
+// TallyResult queries the tally of a proposal vote
+func (q CustomQueryServer) TallyResult(ctx context.Context, req *customtypes.QueryTallyResultRequest) (*customtypes.QueryTallyResultResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid request")
+	}
+
+	if req.ProposalId == 0 {
+		return nil, status.Error(codes.InvalidArgument, "proposal id can not be 0")
+	}
+
+	proposal, err := q.Keeper.Proposals.Get(ctx, req.ProposalId)
+	if err != nil {
+		if errors.IsOf(err, collections.ErrNotFound) {
+			return nil, status.Errorf(codes.NotFound, "proposal %d doesn't exist", req.ProposalId)
+		}
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	var tallyResult customtypes.TallyResult
+
+	switch {
+	case proposal.Status == v1.StatusDepositPeriod:
+		tallyResult = customtypes.EmptyTallyResult()
+
+	case proposal.Status == v1.StatusPassed || proposal.Status == v1.StatusRejected:
+		tallyResult = proposal.FinalTallyResult
+
+	default:
+		// proposal is in voting period
+		params, err := q.Keeper.Params.Get(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		_, _, _, tallyResult, err = q.Keeper.Tally(ctx, params, proposal)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &customtypes.QueryTallyResultResponse{TallyResult: tallyResult}, nil
+}
