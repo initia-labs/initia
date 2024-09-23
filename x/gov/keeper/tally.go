@@ -184,7 +184,7 @@ func (k Keeper) Tally(ctx context.Context, params customtypes.Params, proposal c
 		TotalVestingPower: totalVestingPower.String(),
 	}
 
-	// If there is no staked or vesting coins, the proposal fails
+	// If there is no (staked + vesting) coins, the proposal fails
 	totalPower := totalVestingPower.Add(totalStakingPower)
 	if totalPower.IsZero() {
 		return false, false, false, tallyResults, nil
