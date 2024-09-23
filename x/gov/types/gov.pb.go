@@ -335,7 +335,7 @@ type TallyResult struct {
 	TallyHeight       uint64 `protobuf:"varint,1,opt,name=tally_height,json=tallyHeight,proto3" json:"tally_height,omitempty"`
 	TotalStakingPower string `protobuf:"bytes,2,opt,name=total_staking_power,json=totalStakingPower,proto3" json:"total_staking_power,omitempty"`
 	TotalVestingPower string `protobuf:"bytes,3,opt,name=total_vesting_power,json=totalVestingPower,proto3" json:"total_vesting_power,omitempty"`
-	// v1_result is the original TallyResult from cosmos-sdk,
+	// v1_tally_result is the original TallyResult from cosmos-sdk,
 	// which contains both staking and vesting power.
 	V1TallyResult *v1.TallyResult `protobuf:"bytes,4,opt,name=v1_tally_result,json=v1TallyResult,proto3" json:"v1_tally_result,omitempty"`
 }

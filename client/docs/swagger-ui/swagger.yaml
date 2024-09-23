@@ -49080,7 +49080,7 @@ paths:
                           type: string
                         v1_tally_result:
                           description: >-
-                            v1_result is the original TallyResult from
+                            v1_tally_result is the original TallyResult from
                             cosmos-sdk,
 
                             which contains both staking and vesting power.
@@ -50084,7 +50084,7 @@ paths:
                           type: string
                         v1_tally_result:
                           description: >-
-                            v1_result is the original TallyResult from
+                            v1_tally_result is the original TallyResult from
                             cosmos-sdk,
 
                             which contains both staking and vesting power.
@@ -50736,8 +50736,10 @@ paths:
                       total_vesting_power:
                         type: string
                       v1_tally_result:
-                        description: |-
-                          v1_result is the original TallyResult from cosmos-sdk,
+                        description: >-
+                          v1_tally_result is the original TallyResult from
+                          cosmos-sdk,
+
                           which contains both staking and vesting power.
                         type: object
                         properties:
@@ -51052,7 +51054,7 @@ paths:
           schema:
             type: object
             properties:
-              tally:
+              tally_result:
                 description: tally defines the requested tally.
                 type: object
                 properties:
@@ -51064,8 +51066,10 @@ paths:
                   total_vesting_power:
                     type: string
                   v1_tally_result:
-                    description: |-
-                      v1_result is the original TallyResult from cosmos-sdk,
+                    description: >-
+                      v1_tally_result is the original TallyResult from
+                      cosmos-sdk,
+
                       which contains both staking and vesting power.
                     type: object
                     properties:
@@ -86193,7 +86197,7 @@ definitions:
             type: string
           v1_tally_result:
             description: |-
-              v1_result is the original TallyResult from cosmos-sdk,
+              v1_tally_result is the original TallyResult from cosmos-sdk,
               which contains both staking and vesting power.
             type: object
             properties:
@@ -86501,7 +86505,7 @@ definitions:
                   type: string
                 v1_tally_result:
                   description: |-
-                    v1_result is the original TallyResult from cosmos-sdk,
+                    v1_tally_result is the original TallyResult from cosmos-sdk,
                     which contains both staking and vesting power.
                   type: object
                   properties:
@@ -87006,7 +87010,7 @@ definitions:
                 type: string
               v1_tally_result:
                 description: |-
-                  v1_result is the original TallyResult from cosmos-sdk,
+                  v1_tally_result is the original TallyResult from cosmos-sdk,
                   which contains both staking and vesting power.
                 type: object
                 properties:
@@ -87322,7 +87326,7 @@ definitions:
                   type: string
                 v1_tally_result:
                   description: |-
-                    v1_result is the original TallyResult from cosmos-sdk,
+                    v1_tally_result is the original TallyResult from cosmos-sdk,
                     which contains both staking and vesting power.
                   type: object
                   properties:
@@ -87437,7 +87441,7 @@ definitions:
   initia.gov.v1.QueryTallyResultResponse:
     type: object
     properties:
-      tally:
+      tally_result:
         description: tally defines the requested tally.
         type: object
         properties:
@@ -87450,7 +87454,7 @@ definitions:
             type: string
           v1_tally_result:
             description: |-
-              v1_result is the original TallyResult from cosmos-sdk,
+              v1_tally_result is the original TallyResult from cosmos-sdk,
               which contains both staking and vesting power.
             type: object
             properties:
@@ -87483,7 +87487,7 @@ definitions:
         type: string
       v1_tally_result:
         description: |-
-          v1_result is the original TallyResult from cosmos-sdk,
+          v1_tally_result is the original TallyResult from cosmos-sdk,
           which contains both staking and vesting power.
         type: object
         properties:
