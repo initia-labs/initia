@@ -2,8 +2,8 @@ syntax = "proto3";
 package initia.move.v1;
 
 import "amino/amino.proto";
-import "gogoproto/gogo.proto";
 import "cosmos/auth/v1beta1/auth.proto";
+import "gogoproto/gogo.proto";
 
 option go_package = "github.com/initia-labs/initia/x/move/types";
 

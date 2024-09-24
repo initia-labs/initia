@@ -2,10 +2,10 @@ syntax = "proto3";
 
 package ibc.applications.nft_transfer.v1;
 
-option go_package = "github.com/initia-labs/initia/x/ibc/nft-transfer/types";
-
-import "gogoproto/gogo.proto";
 import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/initia-labs/initia/x/ibc/nft-transfer/types";
 
 // ClassTrace contains the base class id for ICS721 non fungible tokens and the
 // source tracing information path.

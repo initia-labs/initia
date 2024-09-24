@@ -2,12 +2,12 @@ syntax = "proto3";
 
 package initia.intertx.v1;
 
-option go_package = "github.com/initia-labs/initia/x/intertx/types";
-
+import "amino/amino.proto";
+import "cosmos/msg/v1/msg.proto";
 import "gogoproto/gogo.proto";
 import "google/protobuf/any.proto";
-import "cosmos/msg/v1/msg.proto";
-import "amino/amino.proto";
+
+option go_package = "github.com/initia-labs/initia/x/intertx/types";
 
 // Msg defines the intertx Msg service.
 service Msg {

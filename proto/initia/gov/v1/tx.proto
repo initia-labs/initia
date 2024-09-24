@@ -1,14 +1,14 @@
 syntax = "proto3";
 package initia.gov.v1;
 
+import "amino/amino.proto";
+import "cosmos/msg/v1/msg.proto";
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+import "initia/gov/v1/gov.proto";
+
 option go_package            = "github.com/initia-labs/initia/x/gov/types";
 option (gogoproto.equal_all) = true;
-
-import "gogoproto/gogo.proto";
-import "cosmos_proto/cosmos.proto";
-import "cosmos/msg/v1/msg.proto";
-import "amino/amino.proto";
-import "initia/gov/v1/gov.proto";
 
 // Msg defines the gov Msg service.
 service Msg {
