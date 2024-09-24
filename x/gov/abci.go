@@ -220,7 +220,7 @@ func handleTallyResult(
 	k *keeper.Keeper,
 	proposal customtypes.Proposal,
 	passed, burnDeposits bool,
-	tallyResults v1.TallyResult,
+	tallyResults customtypes.TallyResult,
 ) (err error) {
 	// If an expedited proposal fails, we do not want to update
 	// the deposit at this point since the proposal is converted to regular.
@@ -333,7 +333,7 @@ func handleTallyResult(
 		logMsg = "rejected"
 	}
 
-	proposal.FinalTallyResult = &tallyResults
+	proposal.FinalTallyResult = tallyResults
 
 	err = k.SetProposal(ctx, proposal)
 	if err != nil {

@@ -39,7 +39,7 @@ message QueryChannelStatesResponse {
 // QueryChannelStateRequest is the request type for the Query/ChannelState RPC method.
 message QueryChannelStateRequest {
   string channel_id = 1;
-  string port_id = 2;
+  string port_id    = 2;
 }
 
 // QueryChannelStateResponse is the response type for the Query/ChannelState RPC method.
