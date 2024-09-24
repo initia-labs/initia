@@ -2,12 +2,12 @@ syntax = "proto3";
 
 package initia.intertx.v1;
 
-option go_package = "github.com/initia-labs/initia/x/intertx/types";
-
+import "amino/amino.proto";
+import "cosmos/msg/v1/msg.proto";
 import "gogoproto/gogo.proto";
 import "google/protobuf/any.proto";
-import "cosmos/msg/v1/msg.proto";
-import "amino/amino.proto";
+
+option go_package = "github.com/initia-labs/initia/x/intertx/types";
 
 // Msg defines the intertx Msg service.
 service Msg {
@@ -22,14 +22,14 @@ service Msg {
 // MsgRegisterAccount defines the payload for Msg/RegisterAccount
 message MsgRegisterAccount {
   option (cosmos.msg.v1.signer) = "owner";
-  option (amino.name)           = "intertx/MsgRegisterAccount";
+  option (amino.name) = "intertx/MsgRegisterAccount";
 
-  option (gogoproto.equal)           = false;
+  option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
 
-  string owner         = 1;
+  string owner = 1;
   string connection_id = 2 [(gogoproto.moretags) = "yaml:\"connection_id\""];
-  string version       = 3;
+  string version = 3;
 }
 
 // MsgRegisterAccountResponse defines the response for Msg/RegisterAccount
@@ -38,14 +38,14 @@ message MsgRegisterAccountResponse {}
 // MsgSubmitTx defines the payload for Msg/SubmitTx
 message MsgSubmitTx {
   option (cosmos.msg.v1.signer) = "owner";
-  option (amino.name)           = "intertx/MsgSubmitTx";
+  option (amino.name) = "intertx/MsgSubmitTx";
 
-  option (gogoproto.equal)           = false;
+  option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
 
-  string              owner         = 1;
-  string              connection_id = 2 [(gogoproto.moretags) = "yaml:\"connection_id\""];
-  google.protobuf.Any msg           = 3;
+  string owner = 1;
+  string connection_id = 2 [(gogoproto.moretags) = "yaml:\"connection_id\""];
+  google.protobuf.Any msg = 3;
 }
 
 // MsgSubmitTxResponse defines the response for Msg/SubmitTx

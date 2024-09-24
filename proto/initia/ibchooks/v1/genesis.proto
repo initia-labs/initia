@@ -10,6 +10,9 @@ option go_package = "github.com/initia-labs/initia/x/ibc-hooks/types";
 // GenesisState defines the mint module's genesis state.
 message GenesisState {
   // Params defines all the paramaters of the module.
-  Params       params = 1 [(gogoproto.nullable) = false];
-  repeated ACL acls   = 2 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+  Params params = 1 [(gogoproto.nullable) = false];
+  repeated ACL acls = 2 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }

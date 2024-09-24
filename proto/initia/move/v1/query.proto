@@ -7,8 +7,8 @@ import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "initia/move/v1/types.proto";
 
-option go_package                      = "github.com/initia-labs/initia/x/move/types";
-option (gogoproto.equal_all)           = false;
+option go_package = "github.com/initia-labs/initia/x/move/types";
+option (gogoproto.equal_all) = false;
 option (gogoproto.goproto_getters_all) = false;
 
 // Query provides defines the gRPC querier service
@@ -51,7 +51,7 @@ service Query {
   // Deprecated: Use Query/ViewJSON or Query/ViewJSONBatch
   // LegacyView execute view function and return the view result.
   rpc LegacyView(QueryLegacyViewRequest) returns (QueryLegacyViewResponse) {
-    option deprecated        = true;
+    option deprecated = true;
     option (google.api.http) = {
       post: "/initia/move/v1/accounts/{address}/modules/{module_name}/view_functions/{function_name}"
       body: "*"
@@ -129,7 +129,11 @@ message QueryModuleRequest {
 // method
 message QueryModuleResponse {
   option (gogoproto.equal) = true;
-  Module module            = 1 [(gogoproto.embed) = true, (gogoproto.nullable) = false, (gogoproto.jsontag) = ""];
+  Module module = 1 [
+    (gogoproto.embed) = true,
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = ""
+  ];
 }
 
 // QueryModulesRequest is the request type for the Query/Modules
@@ -144,7 +148,10 @@ message QueryModulesRequest {
 // QueryModulesResponse is the response type for the
 // Query/Modules RPC method
 message QueryModulesResponse {
-  repeated Module modules = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+  repeated Module modules = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
   // pagination defines the pagination in the response.
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
@@ -162,7 +169,11 @@ message QueryResourceRequest {
 // method
 message QueryResourceResponse {
   option (gogoproto.equal) = true;
-  Resource resource        = 1 [(gogoproto.embed) = true, (gogoproto.nullable) = false, (gogoproto.jsontag) = ""];
+  Resource resource = 1 [
+    (gogoproto.embed) = true,
+    (gogoproto.nullable) = false,
+    (gogoproto.jsontag) = ""
+  ];
 }
 
 // QueryResourcesRequest is the request type for the Query/Resources RPC
@@ -177,7 +188,10 @@ message QueryResourcesRequest {
 // QueryResourcesResponse is the response type for the Query/Resources RPC
 // method
 message QueryResourcesResponse {
-  repeated Resource resources = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+  repeated Resource resources = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
   // pagination defines the pagination in the response.
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
@@ -192,7 +206,10 @@ message QueryTableInfoRequest {
 // QueryTableInfoResponse is the response type for the Query/TableInfo RPC
 // method
 message QueryTableInfoResponse {
-  TableInfo table_info = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+  TableInfo table_info = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }
 
 // QueryTableEntryRequest is the request type for the Query/TableEntry RPC
@@ -207,7 +224,10 @@ message QueryTableEntryRequest {
 // QueryTableEntryResponse is the response type for the Query/TableEntry RPC
 // method
 message QueryTableEntryResponse {
-  TableEntry table_entry = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+  TableEntry table_entry = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }
 
 // QueryTableEntriesRequest is the request type for the Query/TableEntries RPC
@@ -222,7 +242,10 @@ message QueryTableEntriesRequest {
 // QueryTableEntriesResponse is the response type for the Query/TableEntries RPC
 // method
 message QueryTableEntriesResponse {
-  repeated TableEntry table_entries = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+  repeated TableEntry table_entries = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
   // pagination defines the pagination in the response.
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
@@ -248,9 +271,12 @@ message QueryLegacyViewRequest {
 // QueryLegacyViewResponse is the response type for the
 // QueryLegacyView RPC method
 message QueryLegacyViewResponse {
-  string           data     = 1;
-  repeated VMEvent events   = 2 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
-  uint64           gas_used = 3;
+  string data = 1;
+  repeated VMEvent events = 2 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  uint64 gas_used = 3;
 }
 
 // QueryViewRequest is the request type for the QueryView
@@ -274,21 +300,30 @@ message QueryViewRequest {
 // QueryViewResponse is the response type for the
 // QueryView RPC method
 message QueryViewResponse {
-  string           data     = 1;
-  repeated VMEvent events   = 2 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
-  uint64           gas_used = 3;
+  string data = 1;
+  repeated VMEvent events = 2 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  uint64 gas_used = 3;
 }
 
 // QueryViewBatchRequest is the request type for the QueryViewBatch
 // RPC method
 message QueryViewBatchRequest {
-  repeated QueryViewRequest requests = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+  repeated QueryViewRequest requests = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }
 
 // QueryViewBatchResponse is the response type for the
 // QueryViewBatch RPC method
 message QueryViewBatchResponse {
-  repeated QueryViewResponse responses = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+  repeated QueryViewResponse responses = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }
 
 // QueryViewJSONRequest is the request type for the QueryViewJSON
@@ -310,27 +345,36 @@ message QueryViewJSONRequest {
 // QueryViewJSONResponse is the response type for the
 // QueryViewJSON RPC method
 message QueryViewJSONResponse {
-  string           data     = 1;
-  repeated VMEvent events   = 2 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
-  uint64           gas_used = 3;
+  string data = 1;
+  repeated VMEvent events = 2 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  uint64 gas_used = 3;
 }
 
 // QueryViewJSONBatchRequest is the request type for the QueryViewJSONBatch
 // RPC method
 message QueryViewJSONBatchRequest {
-  repeated QueryViewJSONRequest requests = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+  repeated QueryViewJSONRequest requests = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }
 
 // QueryViewJSONBatchResponse is the response type for the
 // QueryViewJSONBatch RPC method
 message QueryViewJSONBatchResponse {
-  repeated QueryViewJSONResponse responses = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+  repeated QueryViewJSONResponse responses = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }
 
 // VMEvent is the event emitted from vm.
 message VMEvent {
   string type_tag = 1;
-  string data     = 2;
+  string data = 2;
 }
 
 // QueryScriptABIRequest is the request type for the Query/ScriptABI

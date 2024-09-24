@@ -10,7 +10,13 @@ option go_package = "github.com/initia-labs/initia/x/reward/types";
 // GenesisState defines the mint module's genesis state.
 message GenesisState {
   // Params defines all the paramaters of the module.
-  Params                    params                  = 1 [(gogoproto.nullable) = false];
-  google.protobuf.Timestamp last_release_timestamp  = 2 [(gogoproto.nullable) = false, (gogoproto.stdtime) = true];
-  google.protobuf.Timestamp last_dilution_timestamp = 3 [(gogoproto.nullable) = false, (gogoproto.stdtime) = true];
+  Params params = 1 [(gogoproto.nullable) = false];
+  google.protobuf.Timestamp last_release_timestamp = 2 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  google.protobuf.Timestamp last_dilution_timestamp = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
 }

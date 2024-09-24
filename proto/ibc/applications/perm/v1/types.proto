@@ -8,14 +8,14 @@ option go_package = "github.com/initia-labs/initia/x/ibc/perm/types";
 
 // ChannelState defines the channel state for the specific port-id:channel-id pair.
 message ChannelState {
-  string          port_id    = 1;
-  string          channel_id = 2;
-  HaltState       halt_state = 3 [(gogoproto.nullable) = false];
-  repeated string relayers   = 4;
+  string port_id = 1;
+  string channel_id = 2;
+  HaltState halt_state = 3 [(gogoproto.nullable) = false];
+  repeated string relayers = 4;
 }
 
 // HaltState defines the halt state for the specific port-id:channel-id pair.
 message HaltState {
-  bool   halted    = 1;
+  bool halted = 1;
   string halted_by = 2;
 }

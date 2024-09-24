@@ -51,7 +51,7 @@ message QueryParamsResponse {
 // QueryEmergencyProposalsRequest is the request type for the
 // Query/EmergencyProposals RPC method
 message QueryEmergencyProposalsRequest {
-  option (gogoproto.goproto_getters)  = false;
+  option (gogoproto.goproto_getters) = false;
   option (gogoproto.goproto_stringer) = true;
 
   // pagination defines an optional pagination for the request.
@@ -113,5 +113,8 @@ message QueryTallyResultRequest {
 // QueryTallyResultResponse is the response type for the Query/Tally RPC method.
 message QueryTallyResultResponse {
   // tally defines the requested tally.
-  TallyResult tally_result = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+  TallyResult tally_result = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }

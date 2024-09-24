@@ -1,24 +1,24 @@
 syntax = "proto3";
 package initia.mstaking.v1;
 
-import "gogoproto/gogo.proto";
-import "cosmos_proto/cosmos.proto";
-import "cosmos/base/v1beta1/coin.proto";
 import "amino/amino.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
 
 option go_package = "github.com/initia-labs/initia/x/mstaking/types";
 
 // StakeAuthorization defines authorization for delegate/undelegate/redelegate.
 message StakeAuthorization {
   option (cosmos_proto.implements_interface) = "cosmos.authz.v1beta1.Authorization";
-  option (amino.name)                        = "mstake/StakeAuthorization";
+  option (amino.name) = "mstake/StakeAuthorization";
 
   // max_tokens specifies the maximum amount of tokens can be delegate to a validator. If it is
   // empty, there is no spend limit and any amount of coins can be delegated.
   repeated cosmos.base.v1beta1.Coin max_tokens = 1 [
-    (gogoproto.moretags)     = "yaml:\"max_tokens\"",
+    (gogoproto.moretags) = "yaml:\"max_tokens\"",
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
-    (gogoproto.nullable)     = false
+    (gogoproto.nullable) = false
   ];
   // validators is the oneof that represents either allow_list or deny_list
   oneof validators {
