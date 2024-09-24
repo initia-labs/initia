@@ -10,21 +10,21 @@ import (
 
 	stakingkeeper "github.com/initia-labs/initia/x/mstaking/keeper"
 
-	// slinky oracle dependencies
-	oraclepreblock "github.com/skip-mev/slinky/abci/preblock/oracle"
-	oracleproposals "github.com/skip-mev/slinky/abci/proposals"
-	"github.com/skip-mev/slinky/abci/strategies/aggregator"
-	compression "github.com/skip-mev/slinky/abci/strategies/codec"
-	"github.com/skip-mev/slinky/abci/strategies/currencypair"
-	"github.com/skip-mev/slinky/abci/ve"
-	oracleconfig "github.com/skip-mev/slinky/oracle/config"
-	"github.com/skip-mev/slinky/pkg/math/voteweighted"
-	oracleclient "github.com/skip-mev/slinky/service/clients/oracle"
-	servicemetrics "github.com/skip-mev/slinky/service/metrics"
-	oracleservertypes "github.com/skip-mev/slinky/service/servers/oracle/types"
+	// connect oracle dependencies
+	oraclepreblock "github.com/skip-mev/connect/v2/abci/preblock/oracle"
+	oracleproposals "github.com/skip-mev/connect/v2/abci/proposals"
+	"github.com/skip-mev/connect/v2/abci/strategies/aggregator"
+	compression "github.com/skip-mev/connect/v2/abci/strategies/codec"
+	"github.com/skip-mev/connect/v2/abci/strategies/currencypair"
+	"github.com/skip-mev/connect/v2/abci/ve"
+	oracleconfig "github.com/skip-mev/connect/v2/oracle/config"
+	"github.com/skip-mev/connect/v2/pkg/math/voteweighted"
+	oracleclient "github.com/skip-mev/connect/v2/service/clients/oracle"
+	servicemetrics "github.com/skip-mev/connect/v2/service/metrics"
+	oracleservertypes "github.com/skip-mev/connect/v2/service/servers/oracle/types"
 
 	// OPinit dependencies
-	l2slinky "github.com/initia-labs/OPinit/x/opchild/l2slinky"
+	l2connect "github.com/initia-labs/OPinit/x/opchild/l2connect"
 )
 
 func setupSlinky(
@@ -166,7 +166,7 @@ func (oc oracleClientWithTimestamp) Prices(ctx context.Context, req *oracleserve
 	}
 
 	if resp != nil {
-		resp.Prices[l2slinky.ReservedCPTimestamp] = strconv.FormatInt(resp.Timestamp.UTC().UnixNano(), 10)
+		resp.Prices[l2connect.ReservedCPTimestamp] = strconv.FormatInt(resp.Timestamp.UTC().UnixNano(), 10)
 	}
 	return resp, err
 }

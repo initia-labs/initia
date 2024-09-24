@@ -1,7 +1,6 @@
 package app
 
 import (
-	"encoding/hex"
 	"encoding/json"
 
 	icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
@@ -16,7 +15,7 @@ import (
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
-	l2slinky "github.com/initia-labs/OPinit/x/opchild/l2slinky"
+	l2connect "github.com/initia-labs/OPinit/x/opchild/l2connect"
 	"github.com/initia-labs/initia/app/genesis_markets"
 	customdistrtypes "github.com/initia-labs/initia/x/distribution/types"
 	customgovtypes "github.com/initia-labs/initia/x/gov/types"
@@ -25,9 +24,9 @@ import (
 	rewardtypes "github.com/initia-labs/initia/x/reward/types"
 
 	auctiontypes "github.com/skip-mev/block-sdk/v2/x/auction/types"
-	slinkytypes "github.com/skip-mev/slinky/pkg/types"
-	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
-	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
+	connecttypes "github.com/skip-mev/connect/v2/pkg/types"
+	marketmaptypes "github.com/skip-mev/connect/v2/x/marketmap/types"
+	oracletypes "github.com/skip-mev/connect/v2/x/oracle/types"
 )
 
 // GenesisState - The genesis state of the blockchain is represented here as a map of raw json
@@ -107,16 +106,7 @@ func (genState GenesisState) AddMarketData(cdc codec.JSONCodec, ac address.Codec
 	marketGenState.MarketMap = genesis_markets.ToMarketMap(markets)
 
 	// Skip Admin account.
-	adminAddrBz, err := hex.DecodeString("51B89E89D58FFB3F9DB66263FF10A216CF388A0E")
-	if err != nil {
-		panic(err)
-	}
-
-	adminAddr, err := ac.BytesToString(adminAddrBz)
-	if err != nil {
-		panic(err)
-	}
-
+	adminAddr := "init1xhnq6h3v9mwy8mkezxj0nycvm85fnhnuq9ss23"
 	marketGenState.Params.MarketAuthorities = []string{adminAddr}
 	marketGenState.Params.Admin = adminAddr
 
@@ -124,7 +114,7 @@ func (genState GenesisState) AddMarketData(cdc codec.JSONCodec, ac address.Codec
 
 	// Initialize all markets plus ReservedCPTimestamp
 	currencyPairGenesis := make([]oracletypes.CurrencyPairGenesis, len(markets)+1)
-	cp, err := slinkytypes.CurrencyPairFromString(l2slinky.ReservedCPTimestamp)
+	cp, err := connecttypes.CurrencyPairFromString(l2connect.ReservedCPTimestamp)
 	if err != nil {
 		panic(err)
 	}

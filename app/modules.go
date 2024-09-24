@@ -72,12 +72,12 @@ import (
 	"github.com/skip-mev/block-sdk/v2/x/auction"
 	auctiontypes "github.com/skip-mev/block-sdk/v2/x/auction/types"
 
-	// slinky oracle dependencies
+	// connect oracle dependencies
 
-	marketmap "github.com/skip-mev/slinky/x/marketmap"
-	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
-	"github.com/skip-mev/slinky/x/oracle"
-	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
+	marketmap "github.com/skip-mev/connect/v2/x/marketmap"
+	marketmaptypes "github.com/skip-mev/connect/v2/x/marketmap/types"
+	"github.com/skip-mev/connect/v2/x/oracle"
+	oracletypes "github.com/skip-mev/connect/v2/x/oracle/types"
 
 	"github.com/initia-labs/OPinit/x/ophost"
 	ophosttypes "github.com/initia-labs/OPinit/x/ophost/types"
@@ -101,7 +101,7 @@ var maccPerms = map[string][]string{
 	// x/auction's module account must be instantiated upon genesis to accrue auction rewards not
 	// distributed to proposers
 	auctiontypes.ModuleName: nil,
-	// slinky oracle permissions
+	// connect oracle permissions
 	oracletypes.ModuleName:    nil,
 	marketmaptypes.ModuleName: nil,
 
@@ -133,7 +133,7 @@ func appModules(
 		move.NewAppModule(app.appCodec, *app.MoveKeeper, app.vc, maps.Keys(maccPerms)),
 		auction.NewAppModule(app.appCodec, *app.AuctionKeeper),
 		ophost.NewAppModule(app.appCodec, *app.OPHostKeeper),
-		// slinky modules
+		// connect modules
 		oracle.NewAppModule(app.appCodec, *app.OracleKeeper),
 		marketmap.NewAppModule(app.appCodec, app.MarketMapKeeper),
 		// ibc modules

@@ -18,8 +18,8 @@ import (
 
 	vmtypes "github.com/initia-labs/movevm/types"
 
-	slinkytypes "github.com/skip-mev/slinky/pkg/types"
-	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
+	connecttypes "github.com/skip-mev/connect/v2/pkg/types"
+	oracletypes "github.com/skip-mev/connect/v2/x/oracle/types"
 )
 
 func Test_GetAccountInfo(t *testing.T) {
@@ -203,7 +203,7 @@ func Test_GetPrice(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
 	pairId := "BITCOIN/USD"
-	cp, err := slinkytypes.CurrencyPairFromString(pairId)
+	cp, err := connecttypes.CurrencyPairFromString(pairId)
 	require.NoError(t, err)
 
 	price := math.NewInt(111111).MulRaw(1_000_000_000).MulRaw(1_000_000_000).MulRaw(1_000_000_000)

@@ -38,8 +38,8 @@ import (
 
 	// skip-mev dependencies
 	auctiontypes "github.com/skip-mev/block-sdk/v2/x/auction/types"
-	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
-	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
+	marketmaptypes "github.com/skip-mev/connect/v2/x/marketmap/types"
+	oracletypes "github.com/skip-mev/connect/v2/x/oracle/types"
 
 	// noble forwarding keeper
 	forwardingtypes "github.com/noble-assets/forwarding/v2/x/forwarding/types"

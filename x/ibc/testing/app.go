@@ -38,7 +38,7 @@ import (
 	moveconfig "github.com/initia-labs/initia/x/move/config"
 	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
 
-	oracleconfig "github.com/skip-mev/slinky/oracle/config"
+	oracleconfig "github.com/skip-mev/connect/v2/oracle/config"
 )
 
 func coins(amt int64) sdk.Coins {
