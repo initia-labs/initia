@@ -1,6 +1,7 @@
 package app
 
 import (
+	"encoding/hex"
 	"encoding/json"
 
 	icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
@@ -106,7 +107,14 @@ func (genState GenesisState) AddMarketData(cdc codec.JSONCodec, ac address.Codec
 	marketGenState.MarketMap = genesis_markets.ToMarketMap(markets)
 
 	// Skip Admin account.
-	adminAddr := "init1xhnq6h3v9mwy8mkezxj0nycvm85fnhnuq9ss23"
+	adminAddrBz, err := hex.DecodeString("35E60D5E2C2EDC43EED911A4F9930CD9E899DE7C")
+	if err != nil {
+		panic(err)
+	}
+	adminAddr, err := ac.BytesToString(adminAddrBz)
+	if err != nil {
+		panic(err)
+	}
 	marketGenState.Params.MarketAuthorities = []string{adminAddr}
 	marketGenState.Params.Admin = adminAddr
 
