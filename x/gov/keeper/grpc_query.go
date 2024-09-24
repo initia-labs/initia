@@ -247,6 +247,10 @@ func (q queryServer) TallyResult(ctx context.Context, req *v1.QueryTallyResultRe
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
 
+	if req.ProposalId == 0 {
+		return nil, status.Error(codes.InvalidArgument, "proposal id can not be 0")
+	}
+
 	res, err := NewCustomQueryServer(q.k).TallyResult(ctx, &customtypes.QueryTallyResultRequest{ProposalId: req.ProposalId})
 	if err != nil {
 		return nil, err
