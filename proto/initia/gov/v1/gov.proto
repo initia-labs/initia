@@ -224,3 +224,73 @@ message Proposal {
   // Since: cosmos-sdk 0.50
   string failed_reason = 18;
 }
+
+// LegacyProposal defines the core field members of a governance proposal.
+message LegacyProposal {
+  // id defines the unique id of the proposal.
+  uint64 id = 1;
+
+  // messages are the arbitrary messages to be executed if the proposal passes.
+  repeated google.protobuf.Any messages = 2;
+
+  // status defines the proposal status.
+  cosmos.gov.v1.ProposalStatus status = 3;
+
+  // final_tally_result is the final tally result of the proposal. When
+  // querying a proposal via gRPC, this field is not populated until the
+  // proposal's voting period has ended.
+  cosmos.gov.v1.TallyResult final_tally_result = 4;
+
+  // submit_time is the time of proposal submission.
+  google.protobuf.Timestamp submit_time = 5 [(gogoproto.stdtime) = true];
+
+  // deposit_end_time is the end time for deposition.
+  google.protobuf.Timestamp deposit_end_time = 6 [(gogoproto.stdtime) = true];
+
+  // total_deposit is the total deposit on the proposal.
+  repeated cosmos.base.v1beta1.Coin total_deposit = 7 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+
+  // voting_start_time is the starting time to vote on a proposal.
+  google.protobuf.Timestamp voting_start_time = 8 [(gogoproto.stdtime) = true];
+
+  // voting_end_time is the end time of voting on a proposal.
+  google.protobuf.Timestamp voting_end_time = 9 [(gogoproto.stdtime) = true];
+
+  google.protobuf.Timestamp emergency_start_time = 10 [(gogoproto.stdtime) = true];
+  google.protobuf.Timestamp emergency_next_tally_time = 11 [(gogoproto.stdtime) = true];
+
+  // metadata is any arbitrary metadata attached to the proposal.
+  // the recommended format of the metadata is to be found here:
+  // https://docs.cosmos.network/v0.47/modules/gov#proposal-3
+  string metadata = 12;
+
+  // title is the title of the proposal
+  //
+  // Since: cosmos-sdk 0.47
+  string title = 13;
+
+  // summary is a short summary of the proposal
+  //
+  // Since: cosmos-sdk 0.47
+  string summary = 14;
+
+  // proposer is the address of the proposal sumbitter
+  //
+  // Since: cosmos-sdk 0.47
+  string proposer = 15 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+
+  // expedited defines if the proposal is expedited
+  //
+  // Since: cosmos-sdk 0.50
+  bool expedited = 16;
+
+  bool emergency = 17;
+
+  // failed_reason defines the reason why the proposal failed
+  //
+  // Since: cosmos-sdk 0.50
+  string failed_reason = 18;
+}

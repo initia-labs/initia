@@ -29,7 +29,7 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
 	"github.com/cosmos/cosmos-sdk/x/gov/client/cli"
-	"github.com/cosmos/cosmos-sdk/x/gov/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	v1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	"github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 
@@ -39,7 +39,7 @@ import (
 	customcli "github.com/initia-labs/initia/x/gov/client/cli"
 )
 
-const ConsensusVersion = 1
+const ConsensusVersion = 2
 
 var (
 	_ module.AppModuleBasic = AppModuleBasic{}
@@ -67,7 +67,7 @@ func NewAppModuleBasic(cdc codec.Codec, legacyProposalHandlers ...govclient.Prop
 
 // Name returns the gov module's name.
 func (AppModuleBasic) Name() string {
-	return types.ModuleName
+	return govtypes.ModuleName
 }
 
 // RegisterLegacyAminoCodec registers the gov module's types for the given codec.
@@ -87,7 +87,7 @@ func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
 func (b AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncodingConfig, bz json.RawMessage) error {
 	var data customtypes.GenesisState
 	if err := cdc.UnmarshalJSON(bz, &data); err != nil {
-		return fmt.Errorf("failed to unmarshal %s genesis state: %w", types.ModuleName, err)
+		return fmt.Errorf("failed to unmarshal %s genesis state: %w", govtypes.ModuleName, err)
 	}
 
 	return customtypes.ValidateGenesis(&data, b.cdc.InterfaceRegistry().SigningContext().AddressCodec())
@@ -136,16 +136,16 @@ type AppModule struct {
 	AppModuleBasic
 
 	keeper        *keeper.Keeper
-	accountKeeper types.AccountKeeper
-	bankKeeper    types.BankKeeper
+	accountKeeper govtypes.AccountKeeper
+	bankKeeper    govtypes.BankKeeper
 }
 
 // NewAppModule creates a new AppModule object
 func NewAppModule(
 	cdc codec.Codec,
 	keeper *keeper.Keeper,
-	ak types.AccountKeeper,
-	bk types.BankKeeper,
+	ak govtypes.AccountKeeper,
+	bk govtypes.BankKeeper,
 ) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{cdc: cdc},
@@ -177,10 +177,10 @@ type ModuleInputs struct {
 	ModuleKey        depinject.OwnModuleKey
 	MsgServiceRouter baseapp.MessageRouter
 
-	AccountKeeper      types.AccountKeeper
-	BankKeeper         types.BankKeeper
+	AccountKeeper      govtypes.AccountKeeper
+	BankKeeper         govtypes.BankKeeper
 	StakingKeeper      customtypes.StakingKeeper
-	DistributionKeeper types.DistributionKeeper
+	DistributionKeeper govtypes.DistributionKeeper
 	VestingKeeper      customtypes.VestingKeeper
 }
 
@@ -193,13 +193,13 @@ type ModuleOutputs struct {
 }
 
 func ProvideModule(in ModuleInputs) ModuleOutputs {
-	defaultConfig := types.DefaultConfig()
+	defaultConfig := govtypes.DefaultConfig()
 	if in.Config.MaxMetadataLen != 0 {
 		defaultConfig.MaxMetadataLen = in.Config.MaxMetadataLen
 	}
 
 	// default to governance authority if not provided
-	authority := authtypes.NewModuleAddress(types.ModuleName)
+	authority := authtypes.NewModuleAddress(govtypes.ModuleName)
 	if in.Config.Authority != "" {
 		authority = authtypes.NewModuleAddressOrBech32Address(in.Config.Authority)
 	}
@@ -218,7 +218,7 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 	)
 
 	m := NewAppModule(in.Cdc, k, in.AccountKeeper, in.BankKeeper)
-	hr := v1beta1.HandlerRoute{Handler: v1beta1.ProposalHandler, RouteKey: types.RouterKey}
+	hr := v1beta1.HandlerRoute{Handler: v1beta1.ProposalHandler, RouteKey: govtypes.RouterKey}
 
 	return ModuleOutputs{Module: m, Keeper: k, HandlerRoute: hr}
 }
@@ -241,7 +241,7 @@ func InvokeAddRoutes(keeper *keeper.Keeper, routes []v1beta1.HandlerRoute) {
 	keeper.SetLegacyRouter(router)
 }
 
-func InvokeSetHooks(keeper *keeper.Keeper, govHooks map[string]types.GovHooksWrapper) error {
+func InvokeSetHooks(keeper *keeper.Keeper, govHooks map[string]govtypes.GovHooksWrapper) error {
 	if keeper == nil || govHooks == nil {
 		return nil
 	}
@@ -252,7 +252,7 @@ func InvokeSetHooks(keeper *keeper.Keeper, govHooks map[string]types.GovHooksWra
 	order := modNames
 	sort.Strings(order)
 
-	var multiHooks types.MultiGovHooks
+	var multiHooks govtypes.MultiGovHooks
 	for _, modName := range order {
 		hook, ok := govHooks[modName]
 		if !ok {
@@ -267,7 +267,7 @@ func InvokeSetHooks(keeper *keeper.Keeper, govHooks map[string]types.GovHooksWra
 
 // Name returns the gov module's name.
 func (AppModule) Name() string {
-	return types.ModuleName
+	return govtypes.ModuleName
 }
 
 // RegisterInvariants registers module invariants
@@ -278,7 +278,7 @@ func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
 // RegisterServices registers module services.
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	msgServer := keeper.NewMsgServerImpl(am.keeper)
-	v1beta1.RegisterMsgServer(cfg.MsgServer(), keeper.NewLegacyMsgServerImpl(am.accountKeeper.GetModuleAddress(types.ModuleName).String(), msgServer))
+	v1beta1.RegisterMsgServer(cfg.MsgServer(), keeper.NewLegacyMsgServerImpl(am.accountKeeper.GetModuleAddress(govtypes.ModuleName).String(), msgServer))
 	v1.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
 
 	legacyQueryServer := keeper.NewLegacyQueryServer(am.keeper)
@@ -287,6 +287,11 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 
 	customtypes.RegisterMsgServer(cfg.MsgServer(), keeper.NewCustomMsgServerImpl(am.keeper))
 	customtypes.RegisterQueryServer(cfg.QueryServer(), keeper.NewCustomQueryServer(am.keeper))
+
+	m := keeper.NewMigrator(am.keeper)
+	if err := cfg.RegisterMigration(govtypes.ModuleName, 1, m.Migrate1to2); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/gov from version 1 to 2: %v", err))
+	}
 }
 
 // InitGenesis performs genesis initialization for the gov module. It returns
