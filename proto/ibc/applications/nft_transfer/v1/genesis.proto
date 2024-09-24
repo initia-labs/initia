@@ -9,14 +9,20 @@ option go_package = "github.com/initia-labs/initia/x/ibc/nft-transfer/types";
 
 // GenesisState defines the ibc nft-transfer genesis state
 message GenesisState {
-  string              port_id      = 1 [(gogoproto.moretags) = "yaml:\"port_id\""];
+  string port_id = 1 [(gogoproto.moretags) = "yaml:\"port_id\""];
   repeated ClassTrace class_traces = 2 [
     (gogoproto.castrepeated) = "Traces",
-    (gogoproto.nullable)     = false,
-    (gogoproto.moretags)     = "yaml:\"class_traces\""
+    (gogoproto.nullable) = false,
+    (gogoproto.moretags) = "yaml:\"class_traces\""
   ];
-  repeated ClassData class_data = 3 [(gogoproto.nullable) = false, (gogoproto.moretags) = "yaml:\"class_data\""];
-  repeated TokenData token_data = 4 [(gogoproto.nullable) = false, (gogoproto.moretags) = "yaml:\"token_data\""];
+  repeated ClassData class_data = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.moretags) = "yaml:\"class_data\""
+  ];
+  repeated TokenData token_data = 4 [
+    (gogoproto.nullable) = false,
+    (gogoproto.moretags) = "yaml:\"token_data\""
+  ];
 
   Params params = 5 [(gogoproto.nullable) = false];
 }
@@ -24,14 +30,14 @@ message GenesisState {
 // ClassData contains the class trace hash and the class data
 // for genesis.
 message ClassData {
-  bytes  trace_hash = 1;
-  string data       = 2;
+  bytes trace_hash = 1;
+  string data = 2;
 }
 
 // TokenData contains the trace hash, token id, and the token data
 // for genesis.
 message TokenData {
-  bytes  trace_hash = 1;
-  string token_id   = 2;
-  string data       = 3;
+  bytes trace_hash = 1;
+  string token_id = 2;
+  string data = 3;
 }

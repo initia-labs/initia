@@ -7,8 +7,8 @@ import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "initia/ibchooks/v1/types.proto";
 
-option go_package                      = "github.com/initia-labs/initia/x/ibc-hooks/types";
-option (gogoproto.equal_all)           = false;
+option go_package = "github.com/initia-labs/initia/x/ibc-hooks/types";
+option (gogoproto.equal_all) = false;
 option (gogoproto.goproto_getters_all) = false;
 
 // Query provides defines the gRPC querier service
@@ -40,7 +40,10 @@ message QueryACLRequest {
 // method
 message QueryACLResponse {
   option (gogoproto.equal) = true;
-  ACL acl                  = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+  ACL acl = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }
 
 // QueryACLsRequest is the request type for the Query/ACLAddrs
@@ -53,7 +56,10 @@ message QueryACLsRequest {
 // QueryACLsResponse is the response type for the
 // Query/ACLAddrs RPC method
 message QueryACLsResponse {
-  repeated ACL acls = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+  repeated ACL acls = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
   // pagination defines the pagination in the response.
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
@@ -64,5 +70,8 @@ message QueryParamsRequest {}
 // QueryParamsResponse is the response type for the Query/Params RPC method.
 message QueryParamsResponse {
   // params defines the parameters of the module.
-  Params params = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+  Params params = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }

@@ -172,7 +172,7 @@ proto-pulsar-gen:
 	@$(protoImage) sh ./scripts/protocgen-pulsar.sh
 
 proto-format:
-	@$(protoImage) find ./ -name "*.proto" -exec clang-format -i {} \;
+	@$(protoImage) find ./ -name "*.proto" -exec buf format {} -w \;
 
 proto-lint:
 	@$(protoImage) buf lint --error-format=json ./proto

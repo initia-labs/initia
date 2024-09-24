@@ -7,7 +7,7 @@ import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 import "initia/ibchooks/v1/types.proto";
 
-option go_package                      = "github.com/initia-labs/initia/x/ibc-hooks/types";
+option go_package = "github.com/initia-labs/initia/x/ibc-hooks/types";
 option (gogoproto.goproto_getters_all) = false;
 
 // Msg defines the hook Msg service.
@@ -28,7 +28,7 @@ service Msg {
 // MsgUpdateACL is the message to update ACL of an address.
 message MsgUpdateACL {
   option (cosmos.msg.v1.signer) = "authority";
-  option (amino.name)           = "ibchooks/MsgUpdateACL";
+  option (amino.name) = "ibchooks/MsgUpdateACL";
 
   // authority is the address that controls the module
   // (defaults to x/gov unless overwritten).
@@ -45,7 +45,7 @@ message MsgUpdateACLResponse {}
 // MsgUpdateParams is the Msg/UpdateParams request type.
 message MsgUpdateParams {
   option (cosmos.msg.v1.signer) = "authority";
-  option (amino.name)           = "ibchooks/MsgUpdateParams";
+  option (amino.name) = "ibchooks/MsgUpdateParams";
 
   // authority is the address that controls the module
   // (defaults to x/gov unless overwritten).
@@ -53,7 +53,10 @@ message MsgUpdateParams {
   // params defines the x/hook parameters to update.
   //
   // NOTE: All parameters must be supplied.
-  Params params = 2 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+  Params params = 2 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }
 
 // MsgUpdateParamsResponse defines the response structure for executing a

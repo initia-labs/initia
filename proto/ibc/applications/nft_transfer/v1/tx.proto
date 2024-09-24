@@ -28,9 +28,9 @@ service Msg {
 // https://github.com/cosmos/ibc/tree/main/spec/app/ics-721-nft-transfer
 message MsgTransfer {
   option (cosmos.msg.v1.signer) = "sender";
-  option (amino.name)           = "nft-transfer/MsgTransfer";
+  option (amino.name) = "nft-transfer/MsgTransfer";
 
-  option (gogoproto.equal)           = false;
+  option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
 
   // the port on which the packet will be sent
@@ -42,13 +42,21 @@ message MsgTransfer {
   // the token id of the NFT
   repeated string token_ids = 4 [(gogoproto.moretags) = "yaml:\"token_ids\""];
   // the sender address
-  string sender = 5 [(gogoproto.moretags) = "yaml:\"sender\"", (cosmos_proto.scalar) = "cosmos.AddressString"];
+  string sender = 5 [
+    (gogoproto.moretags) = "yaml:\"sender\"",
+    (cosmos_proto.scalar) = "cosmos.AddressString"
+  ];
   // the recipient address on the destination chain
-  string receiver = 6 [(gogoproto.moretags) = "yaml:\"receiver\"", (cosmos_proto.scalar) = "cosmos.AddressString"];
+  string receiver = 6 [
+    (gogoproto.moretags) = "yaml:\"receiver\"",
+    (cosmos_proto.scalar) = "cosmos.AddressString"
+  ];
   // Timeout height relative to the current block height.
   // The timeout is disabled when set to 0.
-  ibc.core.client.v1.Height timeout_height = 7
-      [(gogoproto.moretags) = "yaml:\"timeout_height\"", (gogoproto.nullable) = false];
+  ibc.core.client.v1.Height timeout_height = 7 [
+    (gogoproto.moretags) = "yaml:\"timeout_height\"",
+    (gogoproto.nullable) = false
+  ];
   // Timeout timestamp in absolute nanoseconds since unix epoch.
   // The timeout is disabled when set to 0.
   uint64 timeout_timestamp = 8 [(gogoproto.moretags) = "yaml:\"timeout_timestamp\""];
@@ -65,14 +73,17 @@ message MsgTransferResponse {
 // MsgUpdateParams is the Msg/UpdateParams request type.
 message MsgUpdateParams {
   option (cosmos.msg.v1.signer) = "authority";
-  option (amino.name)           = "nft-transfer/MsgUpdateParams";
+  option (amino.name) = "nft-transfer/MsgUpdateParams";
 
   // authority is the address that controls the module (defaults to x/gov unless overwritten).
   string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   // params defines the x/nft-transfer parameters to update.
   //
   // NOTE: All parameters must be supplied.
-  Params params = 2 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+  Params params = 2 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }
 
 // MsgUpdateParamsResponse defines the response structure for executing a

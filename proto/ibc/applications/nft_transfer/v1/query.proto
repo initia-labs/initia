@@ -62,7 +62,10 @@ message QueryClassTracesRequest {
 // method.
 message QueryClassTracesResponse {
   // class_traces returns all class id traces information.
-  repeated ClassTrace class_traces = 1 [(gogoproto.castrepeated) = "Traces", (gogoproto.nullable) = false];
+  repeated ClassTrace class_traces = 1 [
+    (gogoproto.castrepeated) = "Traces",
+    (gogoproto.nullable) = false
+  ];
   // pagination defines the pagination in the response.
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
