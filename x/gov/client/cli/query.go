@@ -41,6 +41,7 @@ func GetQueryCmd(ac address.Codec) *cobra.Command {
 		GetCmdQueryProposal(),
 		GetCmdQueryProposals(ac),
 		GetCmdQueryParams(),
+		GetCmdQueryTally(),
 	)
 
 	return govQueryCmd
@@ -260,6 +261,49 @@ $ %s query gov params
 			res, err := queryClient.Params(
 				ctx,
 				&customtypes.QueryParamsRequest{},
+			)
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
+}
+
+func GetCmdQueryTally() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "tally [proposal-id]",
+		Args:  cobra.ExactArgs(1),
+		Short: "Query the tally of a proposal with the given id",
+		Long: strings.TrimSpace(
+			fmt.Sprintf(`Query the tally of a proposal with the given id.
+
+Example:
+$ %s query gov tally 1
+`,
+				version.AppName,
+			),
+		),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			proposalID, err := strconv.ParseUint(args[0], 10, 64)
+			if err != nil {
+				return fmt.Errorf("invalid proposal-id: %s", args[0])
+			}
+
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			queryClient := customtypes.NewQueryClient(clientCtx)
+
+			res, err := queryClient.TallyResult(
+				cmd.Context(),
+				&customtypes.QueryTallyResultRequest{ProposalId: proposalID},
 			)
 			if err != nil {
 				return err
