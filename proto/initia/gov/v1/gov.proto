@@ -142,6 +142,16 @@ message Vesting {
   string creator_addr = 3;
 }
 
+message TallyResult {
+  uint64 tally_height = 1;
+  string total_staking_power = 2 [(cosmos_proto.scalar) = "cosmos.Int"];
+  string total_vesting_power = 3 [(cosmos_proto.scalar) = "cosmos.Int"];
+
+  // v1_tally_result is the original TallyResult from cosmos-sdk,
+  // which contains both staking and vesting power.
+  cosmos.gov.v1.TallyResult v1_tally_result = 4;
+}
+
 // Proposal defines the core field members of a governance proposal.
 message Proposal {
   // id defines the unique id of the proposal.
@@ -156,7 +166,10 @@ message Proposal {
   // final_tally_result is the final tally result of the proposal. When
   // querying a proposal via gRPC, this field is not populated until the
   // proposal's voting period has ended.
-  cosmos.gov.v1.TallyResult final_tally_result = 4;
+  TallyResult final_tally_result = 4 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 
   // submit_time is the time of proposal submission.
   google.protobuf.Timestamp submit_time = 5 [(gogoproto.stdtime) = true];

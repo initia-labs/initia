@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdktx "github.com/cosmos/cosmos-sdk/types/tx"
@@ -19,14 +20,12 @@ func NewProposal(messages []sdk.Msg, id uint64, submitTime, depositEndTime time.
 		return Proposal{}, err
 	}
 
-	tally := v1.EmptyTallyResult()
-
 	p := Proposal{
 		Id:               id,
 		Messages:         msgs,
 		Metadata:         metadata,
 		Status:           v1.StatusDepositPeriod,
-		FinalTallyResult: &tally,
+		FinalTallyResult: EmptyTallyResult(),
 		SubmitTime:       &submitTime,
 		DepositEndTime:   &depositEndTime,
 		Title:            title,
@@ -63,7 +62,7 @@ func (p Proposal) ToV1() v1.Proposal {
 		Id:               p.Id,
 		Messages:         p.Messages,
 		Status:           p.Status,
-		FinalTallyResult: p.FinalTallyResult,
+		FinalTallyResult: p.FinalTallyResult.V1TallyResult,
 		SubmitTime:       p.SubmitTime,
 		DepositEndTime:   p.DepositEndTime,
 		TotalDeposit:     p.TotalDeposit,
@@ -142,4 +141,15 @@ func ValidProposalStatus(status v1.ProposalStatus) bool {
 		return true
 	}
 	return false
+}
+
+// EmptyTallyResult returns an empty TallyResult
+func EmptyTallyResult() TallyResult {
+	v1TallyResult := v1.EmptyTallyResult()
+	return TallyResult{
+		TallyHeight:       0,
+		TotalStakingPower: math.ZeroInt().String(),
+		TotalVestingPower: math.ZeroInt().String(),
+		V1TallyResult:     &v1TallyResult,
+	}
 }
