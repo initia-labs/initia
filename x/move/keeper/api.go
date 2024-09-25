@@ -15,7 +15,7 @@ import (
 
 	storetypes "cosmossdk.io/store/types"
 
-	slinkytypes "github.com/skip-mev/slinky/pkg/types"
+	connecttypes "github.com/skip-mev/connect/v2/pkg/types"
 )
 
 var _ vmapi.GoAPI = &GoApi{}
@@ -105,7 +105,7 @@ func (api GoApi) UnbondTimestamp() uint64 {
 }
 
 func (api GoApi) GetPrice(pairId string) ([]byte, uint64, uint64, error) {
-	cp, err := slinkytypes.CurrencyPairFromString(pairId)
+	cp, err := connecttypes.CurrencyPairFromString(pairId)
 	if err != nil {
 		return nil, 0, 0, err
 	}

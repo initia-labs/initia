@@ -14,7 +14,7 @@ import (
 	"github.com/initia-labs/initia/app/params"
 	moveconfig "github.com/initia-labs/initia/x/move/config"
 
-	oracleconfig "github.com/skip-mev/slinky/oracle/config"
+	oracleconfig "github.com/skip-mev/connect/v2/oracle/config"
 )
 
 func MakeEncodingConfig() params.EncodingConfig {

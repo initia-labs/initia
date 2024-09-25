@@ -43,7 +43,7 @@ import (
 	genutilcli "github.com/initia-labs/initia/x/genutil/client/cli"
 	moveconfig "github.com/initia-labs/initia/x/move/config"
 
-	oracleconfig "github.com/skip-mev/slinky/oracle/config"
+	oracleconfig "github.com/skip-mev/connect/v2/oracle/config"
 )
 
 // NewRootCmd creates a new root command for initiad. It is called once in the

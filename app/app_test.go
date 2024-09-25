@@ -46,7 +46,7 @@ import (
 	staking "github.com/initia-labs/initia/x/mstaking"
 	"github.com/initia-labs/initia/x/reward"
 
-	oracleconfig "github.com/skip-mev/slinky/oracle/config"
+	oracleconfig "github.com/skip-mev/connect/v2/oracle/config"
 )
 
 func TestSimAppExportAndBlockedAddrs(t *testing.T) {

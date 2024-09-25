@@ -26,7 +26,7 @@ import (
 
 	moveconfig "github.com/initia-labs/initia/x/move/config"
 
-	oracleconfig "github.com/skip-mev/slinky/oracle/config"
+	oracleconfig "github.com/skip-mev/connect/v2/oracle/config"
 )
 
 // defaultConsensusParams defines the default Tendermint consensus params used in

@@ -54053,7 +54053,7 @@ paths:
                       format: byte
       tags:
         - Query
-  /slinky/oracle/v1/get_all_tickers:
+  /connect/oracle/v2/get_all_tickers:
     get:
       summary: >-
         Get all the currency pairs the x/oracle module is tracking price-data
@@ -54108,7 +54108,7 @@ paths:
                       format: byte
       tags:
         - Query
-  /slinky/oracle/v1/get_currency_pair_mapping:
+  /connect/oracle/v2/get_currency_pair_mapping:
     get:
       summary: >-
         Get the mapping of currency pair ID -> currency pair. This is useful for
@@ -54170,7 +54170,7 @@ paths:
                       format: byte
       tags:
         - Query
-  /slinky/oracle/v1/get_price:
+  /connect/oracle/v2/get_price:
     get:
       summary: >-
         Given a CurrencyPair (or its identifier) return the latest QuotePrice
@@ -54223,10 +54223,8 @@ paths:
                   decimals represents the number of decimals that the
                   quote-price is
 
-                  represented in. For Pairs where ETHEREUM is the quote this
-                  will be 18,
-
-                  otherwise it will be 8.
+                  represented in. It is used to scale the QuotePrice to its
+                  proper value.
               id:
                 type: string
                 format: uint64
@@ -54259,17 +54257,14 @@ paths:
                       type: string
                       format: byte
       parameters:
-        - name: currency_pair.Base
-          in: query
-          required: false
-          type: string
-        - name: currency_pair.Quote
+        - name: currency_pair
+          description: CurrencyPair represents the pair that the user wishes to query.
           in: query
           required: false
           type: string
       tags:
         - Query
-  /slinky/oracle/v1/get_prices:
+  /connect/oracle/v2/get_prices:
     get:
       operationId: GetPrices
       responses:
@@ -54323,10 +54318,8 @@ paths:
                         decimals represents the number of decimals that the
                         quote-price is
 
-                        represented in. For Pairs where ETHEREUM is the quote
-                        this will be 18,
-
-                        otherwise it will be 8.
+                        represented in. It is used to scale the QuotePrice to
+                        its proper value.
                     id:
                       type: string
                       format: uint64
@@ -54373,7 +54366,7 @@ paths:
           collectionFormat: multi
       tags:
         - Query
-  /slinky/marketmap/v1/last_updated:
+  /connect/marketmap/v2/last_updated:
     get:
       summary: LastUpdated returns the last height the market map was updated at.
       operationId: LastUpdated
@@ -54415,7 +54408,7 @@ paths:
                       format: byte
       tags:
         - Query
-  /slinky/marketmap/v1/market:
+  /connect/marketmap/v2/market:
     get:
       summary: |-
         Market returns a market stored in the x/marketmap
@@ -54584,7 +54577,7 @@ paths:
           type: string
       tags:
         - Query
-  /slinky/marketmap/v1/marketmap:
+  /connect/marketmap/v2/marketmap:
     get:
       summary: |-
         MarketMap returns the full market map stored in the x/marketmap
@@ -54775,7 +54768,7 @@ paths:
                       format: byte
       tags:
         - Query
-  /slinky/marketmap/v1/params:
+  /connect/marketmap/v2/params:
     get:
       summary: Params returns the current x/marketmap module parameters.
       operationId: MarketMapParams
@@ -88904,7 +88897,7 @@ definitions:
       l2_denom:
         type: string
     title: TokenPair defines l1 and l2 token pair
-  slinky.oracle.v1.GetAllCurrencyPairsResponse:
+  connect.oracle.v2.GetAllCurrencyPairsResponse:
     type: object
     properties:
       currency_pairs:
@@ -88924,7 +88917,7 @@ definitions:
     description: |-
       GetAllCurrencyPairsResponse returns all CurrencyPairs that the module is
       currently tracking.
-  slinky.oracle.v1.GetCurrencyPairMappingResponse:
+  connect.oracle.v2.GetCurrencyPairMappingResponse:
     type: object
     properties:
       currency_pair_mapping:
@@ -88949,7 +88942,7 @@ definitions:
     description: >-
       GetCurrencyPairMappingResponse is the GetCurrencyPairMapping response
       type.
-  slinky.oracle.v1.GetPriceResponse:
+  connect.oracle.v2.GetPriceResponse:
     type: object
     properties:
       price:
@@ -88982,10 +88975,11 @@ definitions:
       decimals:
         type: string
         format: uint64
-        description: |-
+        description: >-
           decimals represents the number of decimals that the quote-price is
-          represented in. For Pairs where ETHEREUM is the quote this will be 18,
-          otherwise it will be 8.
+
+          represented in. It is used to scale the QuotePrice to its proper
+          value.
       id:
         type: string
         format: uint64
@@ -88995,7 +88989,7 @@ definitions:
       from
 
       the x/oracle query service.
-  slinky.oracle.v1.GetPricesResponse:
+  connect.oracle.v2.GetPricesResponse:
     type: object
     properties:
       prices:
@@ -89042,10 +89036,8 @@ definitions:
                 decimals represents the number of decimals that the quote-price
                 is
 
-                represented in. For Pairs where ETHEREUM is the quote this will
-                be 18,
-
-                otherwise it will be 8.
+                represented in. It is used to scale the QuotePrice to its proper
+                value.
             id:
               type: string
               format: uint64
@@ -89060,7 +89052,7 @@ definitions:
       from
 
       the x/oracle query service.
-  slinky.oracle.v1.QuotePrice:
+  connect.oracle.v2.QuotePrice:
     type: object
     properties:
       price:
@@ -89084,7 +89076,7 @@ definitions:
       CurrencyPair,
 
       where price represents the price of Base in terms of Quote
-  slinky.types.v1.CurrencyPair:
+  connect.types.v2.CurrencyPair:
     type: object
     properties:
       Base:
@@ -89094,7 +89086,7 @@ definitions:
     title: |-
       CurrencyPair is the standard representation of a pair of assets, where one
       (Base) is priced in terms of the other (Quote)
-  slinky.marketmap.v1.LastUpdatedResponse:
+  connect.marketmap.v2.LastUpdatedResponse:
     type: object
     properties:
       last_updated:
@@ -89103,7 +89095,7 @@ definitions:
     description: |-
       LastUpdatedResponse is the response type for the Query/LastUpdated RPC
       method.
-  slinky.marketmap.v1.Market:
+  connect.marketmap.v2.Market:
     type: object
     properties:
       ticker:
@@ -89224,7 +89216,7 @@ definitions:
           ProviderConfigs is the list of provider-specific configs for this
           Market.
     description: Market encapsulates a Ticker and its provider-specific configuration.
-  slinky.marketmap.v1.MarketMap:
+  connect.marketmap.v2.MarketMap:
     type: object
     properties:
       markets:
@@ -89358,7 +89350,7 @@ definitions:
 
           to be stored on-chain.
     description: MarketMap maps ticker strings to their Markets.
-  slinky.marketmap.v1.MarketMapResponse:
+  connect.marketmap.v2.MarketMapResponse:
     type: object
     properties:
       market_map:
@@ -89513,7 +89505,7 @@ definitions:
         type: string
         description: ChainId is the chain identifier for the market map.
     description: MarketMapResponse is the query response for the MarketMap query.
-  slinky.marketmap.v1.MarketResponse:
+  connect.marketmap.v2.MarketResponse:
     type: object
     properties:
       market:
@@ -89640,7 +89632,7 @@ definitions:
               ProviderConfigs is the list of provider-specific configs for this
               Market.
     description: MarketResponse is the query response for the Market query.
-  slinky.marketmap.v1.Params:
+  connect.marketmap.v2.Params:
     type: object
     properties:
       market_authorities:
@@ -89659,7 +89651,7 @@ definitions:
           list. Only governance can add to the MarketAuthorities or change the
           Admin.
     description: Params defines the parameters for the x/marketmap module.
-  slinky.marketmap.v1.ParamsResponse:
+  connect.marketmap.v2.ParamsResponse:
     type: object
     properties:
       params:
@@ -89684,7 +89676,7 @@ definitions:
               the Admin.
         description: Params defines the parameters for the x/marketmap module.
     description: ParamsResponse is the response type for the Query/Params RPC method.
-  slinky.marketmap.v1.ProviderConfig:
+  connect.marketmap.v2.ProviderConfig:
     type: object
     properties:
       name:
@@ -89739,7 +89731,7 @@ definitions:
         description: |-
           MetadataJSON is a string of JSON that encodes any extra configuration
           for the given provider config.
-  slinky.marketmap.v1.Ticker:
+  connect.marketmap.v2.Ticker:
     type: object
     properties:
       currency_pair:

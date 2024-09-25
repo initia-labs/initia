@@ -71,10 +71,10 @@ import (
 
 	blockchecktx "github.com/skip-mev/block-sdk/v2/abci/checktx"
 
-	// slinky oracle dependencies
+	// connect oracle dependencies
 
-	oracleconfig "github.com/skip-mev/slinky/oracle/config"
-	oracleclient "github.com/skip-mev/slinky/service/clients/oracle"
+	oracleconfig "github.com/skip-mev/connect/v2/oracle/config"
+	oracleclient "github.com/skip-mev/connect/v2/service/clients/oracle"
 
 	// unnamed import of statik for swagger UI support
 	_ "github.com/initia-labs/initia/client/docs/statik"
@@ -114,7 +114,7 @@ type InitiaApp struct {
 	txConfig          client.TxConfig
 	interfaceRegistry types.InterfaceRegistry
 
-	// slinky oracle client
+	// connect oracle client
 	oracleClient oracleclient.OracleClient
 
 	// the module manager
@@ -278,7 +278,7 @@ func NewInitiaApp(
 	app.SetAnteHandler(anteHandler)
 	app.SetCheckTx(checkTx)
 
-	// setup slinky
+	// setup connect
 
 	oracleClient, prepareProposalHandler, processProposalHandler, preBlocker, extendedVoteHandler, verifyVoteExtensionHandler, err := setupSlinky(
 		app,
