@@ -11,14 +11,50 @@ import (
 )
 
 var (
-	_ sdk.Msg = &MsgSetPermissionedRelayers{}
+	_ sdk.Msg = &MsgUpdateAdmin{}
+	_ sdk.Msg = &MsgUpdatePermissionedRelayers{}
 )
 
+// NewMsgUpdateAdmin creates a new MsgUpdateAdmin instance
+func NewMsgUpdateAdmin(
+	authority, portID, channelID string, admin string,
+) *MsgUpdateAdmin {
+	return &MsgUpdateAdmin{
+		Authority: authority,
+		ChannelId: channelID,
+		PortId:    portID,
+		Admin:     admin,
+	}
+}
+
+// ValidateBasic performs a basic check of the MsgUpdateAdmin fields.
+func (msg MsgUpdateAdmin) Validate(ac address.Codec) error {
+	if err := host.ChannelIdentifierValidator(msg.ChannelId); err != nil {
+		return err
+	}
+
+	if err := host.PortIdentifierValidator(msg.PortId); err != nil {
+		return err
+	}
+
+	_, err := ac.StringToBytes(msg.Authority)
+	if err != nil {
+		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "string could not be parsed as address: %v", err)
+	}
+
+	_, err = ac.StringToBytes(msg.Admin)
+	if err != nil {
+		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "string could not be parsed as address: %v", err)
+	}
+
+	return nil
+}
+
 // NewMsgSetPermissionedRelayer creates a new MsgSetPermissionedRelayer instance
-func NewMsgSetPermissionedRelayers(
+func NewMsgUpdatePermissionedRelayers(
 	authority, portID, channelID string, relayers []string,
-) *MsgSetPermissionedRelayers {
-	return &MsgSetPermissionedRelayers{
+) *MsgUpdatePermissionedRelayers {
+	return &MsgUpdatePermissionedRelayers{
 		Authority: authority,
 		ChannelId: channelID,
 		PortId:    portID,
@@ -27,7 +63,7 @@ func NewMsgSetPermissionedRelayers(
 }
 
 // ValidateBasic performs a basic check of the MsgSetPermissionedRelayer fields.
-func (msg MsgSetPermissionedRelayers) Validate(ac address.Codec) error {
+func (msg MsgUpdatePermissionedRelayers) Validate(ac address.Codec) error {
 	if err := host.ChannelIdentifierValidator(msg.ChannelId); err != nil {
 		return err
 	}
@@ -46,62 +82,6 @@ func (msg MsgSetPermissionedRelayers) Validate(ac address.Codec) error {
 		if err != nil {
 			return errors.Wrapf(sdkerrors.ErrInvalidAddress, "string could not be parsed as address: %v", err)
 		}
-	}
-
-	return nil
-}
-
-func NewMsgHaltChannel(
-	authority, portID, channelID string,
-) *MsgHaltChannel {
-	return &MsgHaltChannel{
-		Authority: authority,
-		ChannelId: channelID,
-		PortId:    portID,
-	}
-}
-
-// ValidateBasic performs a basic check of the MsgHaltChannel fields.
-func (msg MsgHaltChannel) Validate(ac address.Codec) error {
-	if err := host.ChannelIdentifierValidator(msg.ChannelId); err != nil {
-		return err
-	}
-
-	if err := host.PortIdentifierValidator(msg.PortId); err != nil {
-		return err
-	}
-
-	_, err := ac.StringToBytes(msg.Authority)
-	if err != nil {
-		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "string could not be parsed as address: %v", err)
-	}
-
-	return nil
-}
-
-func NewMsgResumeChannel(
-	authority, portID, channelID string,
-) *MsgResumeChannel {
-	return &MsgResumeChannel{
-		Authority: authority,
-		ChannelId: channelID,
-		PortId:    portID,
-	}
-}
-
-// ValidateBasic performs a basic check of the MsgResumeChannel fields.
-func (msg MsgResumeChannel) Validate(ac address.Codec) error {
-	if err := host.ChannelIdentifierValidator(msg.ChannelId); err != nil {
-		return err
-	}
-
-	if err := host.PortIdentifierValidator(msg.PortId); err != nil {
-		return err
-	}
-
-	_, err := ac.StringToBytes(msg.Authority)
-	if err != nil {
-		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "string could not be parsed as address: %v", err)
 	}
 
 	return nil

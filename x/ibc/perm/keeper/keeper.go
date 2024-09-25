@@ -73,6 +73,26 @@ func (k Keeper) SetChannelState(ctx context.Context, channelState types.ChannelS
 	return k.ChannelStates.Set(ctx, collections.Join(channelState.PortId, channelState.ChannelId), channelState)
 }
 
+// IsTaken checks if the channel has a permissioned relayer.
+func (k Keeper) IsTaken(ctx context.Context, portID, channelID string) (bool, error) {
+	return k.ChannelStates.Has(ctx, collections.Join(portID, channelID))
+}
+
+func (k Keeper) SetAdmin(ctx context.Context, portID, channelID string, admin sdk.AccAddress) error {
+	channelState, err := k.GetChannelState(ctx, portID, channelID)
+	if err != nil {
+		return err
+	}
+
+	adminStr, err := k.ac.BytesToString(admin)
+	if err != nil {
+		return err
+	}
+
+	channelState.Admin = adminStr
+	return k.SetChannelState(ctx, channelState)
+}
+
 // GetChannelState returns the permissioned relayer for the channel.
 func (k Keeper) GetChannelState(ctx context.Context, portID, channelID string) (types.ChannelState, error) {
 	channelState, err := k.ChannelStates.Get(ctx, collections.Join(portID, channelID))
@@ -86,45 +106,25 @@ func (k Keeper) GetChannelState(ctx context.Context, portID, channelID string) (
 	return channelState, nil
 }
 
-func (k Keeper) SetPermissionedRelayers(ctx context.Context, portID, channelID string, relayers []sdk.AccAddress) error {
-	permRelayers, err := k.GetChannelState(ctx, portID, channelID)
+// HasAdminPermission checks if the admin has permission to update channel state.
+func (k Keeper) HasAdminPermission(ctx context.Context, portID, channelID string, admin sdk.AccAddress) (bool, error) {
+	channelState, err := k.ChannelStates.Get(ctx, collections.Join(portID, channelID))
+	if err != nil && errors.Is(err, collections.ErrNotFound) {
+		return false, nil
+	} else if err != nil {
+		return false, err
+	}
+
+	adminStr, err := k.ac.BytesToString(admin)
 	if err != nil {
-		return err
+		return false, err
 	}
 
-	strRelayers := make([]string, len(relayers))
-	for _, relayer := range relayers {
-		relayerStr, err := k.ac.BytesToString(relayer)
-		if err != nil {
-			return err
-		}
-		strRelayers = append(strRelayers, relayerStr)
-	}
-
-	permRelayers.Relayers = strRelayers
-	return k.SetChannelState(ctx, permRelayers)
+	return channelState.Admin == adminStr, nil
 }
 
-func (k Keeper) GetPermissionedRelayers(ctx context.Context, portID, channelID string) ([]sdk.AccAddress, error) {
-	permRelayers, err := k.GetChannelState(ctx, portID, channelID)
-	if err != nil {
-		return nil, err
-	}
-
-	relayers := make([]sdk.AccAddress, len(permRelayers.Relayers))
-	for i, relayer := range permRelayers.Relayers {
-		relayerBytes, err := k.ac.StringToBytes(relayer)
-		if err != nil {
-			return nil, err
-		}
-		relayers[i] = relayerBytes
-	}
-
-	return relayers, nil
-}
-
-// HasPermission checks if the relayer has permission to relay packets on the channel.
-func (k Keeper) HasPermission(ctx context.Context, portID, channelID string, relayer sdk.AccAddress) (bool, error) {
+// HasRelayerPermission checks if the relayer has permission to relay packets on the channel.
+func (k Keeper) HasRelayerPermission(ctx context.Context, portID, channelID string, relayer sdk.AccAddress) (bool, error) {
 	permRelayers, err := k.ChannelStates.Get(ctx, collections.Join(portID, channelID))
 	if err != nil && errors.Is(err, collections.ErrNotFound) {
 		// if no permissioned relayers are set, all relayers are allowed
@@ -139,13 +139,4 @@ func (k Keeper) HasPermission(ctx context.Context, portID, channelID string, rel
 	}
 
 	return permRelayers.HasRelayer(relayerStr), nil
-}
-
-func (k Keeper) IsHalted(ctx context.Context, portID, channelID string) (bool, error) {
-	cs, err := k.GetChannelState(ctx, portID, channelID)
-	if err != nil {
-		return false, err
-	}
-
-	return cs.HaltState.Halted, nil
 }

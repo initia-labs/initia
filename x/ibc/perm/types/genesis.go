@@ -40,15 +40,13 @@ func (cs ChannelState) Validate(ac address.Codec) error {
 		return err
 	}
 
+	if _, err := ac.StringToBytes(cs.Admin); err != nil {
+		return err
+	}
+
 	for _, relayer := range cs.Relayers {
 		if _, err := ac.StringToBytes(relayer); err != nil {
 			return err
-		}
-	}
-
-	if cs.HaltState.Halted {
-		if !cs.HasRelayer(cs.HaltState.HaltedBy) {
-			return ErrInvalidHaltState.Wrap("halted by relayer not in relayers list")
 		}
 	}
 

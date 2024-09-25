@@ -42187,16 +42187,9 @@ paths:
                       type: string
                     channel_id:
                       type: string
-                    halt_state:
-                      type: object
-                      properties:
-                        halted:
-                          type: boolean
-                        halted_by:
-                          type: string
-                      description: >-
-                        HaltState defines the halt state for the specific
-                        port-id:channel-id pair.
+                    admin:
+                      type: string
+                      title: admin is the address that controls the channel relayers
                     relayers:
                       type: array
                       items:
@@ -42327,16 +42320,9 @@ paths:
                     type: string
                   channel_id:
                     type: string
-                  halt_state:
-                    type: object
-                    properties:
-                      halted:
-                        type: boolean
-                      halted_by:
-                        type: string
-                    description: >-
-                      HaltState defines the halt state for the specific
-                      port-id:channel-id pair.
+                  admin:
+                    type: string
+                    title: admin is the address that controls the channel relayers
                   relayers:
                     type: array
                     items:
@@ -52937,10 +52923,8 @@ paths:
                     bridge_config:
                       type: object
                       properties:
-                        challengers:
-                          type: array
-                          items:
-                            type: string
+                        challenger:
+                          type: string
                           description: The address of the challenger.
                         proposer:
                           type: string
@@ -53111,10 +53095,8 @@ paths:
               bridge_config:
                 type: object
                 properties:
-                  challengers:
-                    type: array
-                    items:
-                      type: string
+                  challenger:
+                    type: string
                     description: The address of the challenger.
                   proposer:
                     type: string
@@ -81673,16 +81655,9 @@ definitions:
         type: string
       channel_id:
         type: string
-      halt_state:
-        type: object
-        properties:
-          halted:
-            type: boolean
-          halted_by:
-            type: string
-        description: >-
-          HaltState defines the halt state for the specific port-id:channel-id
-          pair.
+      admin:
+        type: string
+        title: admin is the address that controls the channel relayers
       relayers:
         type: array
         items:
@@ -81690,14 +81665,6 @@ definitions:
     description: >-
       ChannelState defines the channel state for the specific port-id:channel-id
       pair.
-  ibc.applications.perm.v1.HaltState:
-    type: object
-    properties:
-      halted:
-        type: boolean
-      halted_by:
-        type: string
-    description: HaltState defines the halt state for the specific port-id:channel-id pair.
   ibc.applications.perm.v1.QueryChannelStateResponse:
     type: object
     properties:
@@ -81708,16 +81675,9 @@ definitions:
             type: string
           channel_id:
             type: string
-          halt_state:
-            type: object
-            properties:
-              halted:
-                type: boolean
-              halted_by:
-                type: string
-            description: >-
-              HaltState defines the halt state for the specific
-              port-id:channel-id pair.
+          admin:
+            type: string
+            title: admin is the address that controls the channel relayers
           relayers:
             type: array
             items:
@@ -81740,16 +81700,9 @@ definitions:
               type: string
             channel_id:
               type: string
-            halt_state:
-              type: object
-              properties:
-                halted:
-                  type: boolean
-                halted_by:
-                  type: string
-              description: >-
-                HaltState defines the halt state for the specific
-                port-id:channel-id pair.
+            admin:
+              type: string
+              title: admin is the address that controls the channel relayers
             relayers:
               type: array
               items:
@@ -88368,10 +88321,8 @@ definitions:
   opinit.ophost.v1.BridgeConfig:
     type: object
     properties:
-      challengers:
-        type: array
-        items:
-          type: string
+      challenger:
+        type: string
         description: The address of the challenger.
       proposer:
         type: string
@@ -88531,10 +88482,8 @@ definitions:
       bridge_config:
         type: object
         properties:
-          challengers:
-            type: array
-            items:
-              type: string
+          challenger:
+            type: string
             description: The address of the challenger.
           proposer:
             type: string
@@ -88595,10 +88544,8 @@ definitions:
             bridge_config:
               type: object
               properties:
-                challengers:
-                  type: array
-                  items:
-                    type: string
+                challenger:
+                  type: string
                   description: The address of the challenger.
                 proposer:
                   type: string

@@ -30,45 +30,33 @@ func Test_InitGenesis(t *testing.T) {
 			{
 				PortId:    portA,
 				ChannelId: channelA,
+				Admin:     addrA.String(),
 				Relayers:  []string{addrA.String()},
-				HaltState: types.HaltState{
-					Halted:   true,
-					HaltedBy: addrA.String(),
-				},
 			},
 			{
 				PortId:    portB,
 				ChannelId: channelB,
+				Admin:     addrB.String(),
 				Relayers:  []string{addrB.String()},
-				HaltState: types.HaltState{
-					Halted:   false,
-					HaltedBy: "",
-				},
 			},
 		},
 	})
 
-	ok, err := k.HasPermission(ctx, portA, channelA, addrA)
+	ok, err := k.HasAdminPermission(ctx, portA, channelA, addrA)
 	require.NoError(t, err)
 	require.True(t, ok)
 
-	cs, err := k.GetChannelState(ctx, portA, channelA)
-	require.NoError(t, err)
-	require.Equal(t, types.HaltState{
-		Halted:   true,
-		HaltedBy: addrA.String(),
-	}, cs.HaltState)
-
-	ok, _ = k.HasPermission(ctx, portB, channelB, addrB)
+	ok, err = k.HasRelayerPermission(ctx, portA, channelA, addrA)
 	require.NoError(t, err)
 	require.True(t, ok)
 
-	cs, err = k.GetChannelState(ctx, portA, channelB)
+	ok, err = k.HasAdminPermission(ctx, portB, channelB, addrB)
 	require.NoError(t, err)
-	require.Equal(t, types.HaltState{
-		Halted:   false,
-		HaltedBy: "",
-	}, cs.HaltState)
+	require.True(t, ok)
+
+	ok, err = k.HasAdminPermission(ctx, portB, channelB, addrB)
+	require.NoError(t, err)
+	require.True(t, ok)
 }
 func Test_ExportGenesis(t *testing.T) {
 	ctx, k := _createTestInput(t, dbm.NewMemDB())
@@ -89,15 +77,13 @@ func Test_ExportGenesis(t *testing.T) {
 			{
 				PortId:    portA,
 				ChannelId: channelA,
+				Admin:     addrA.String(),
 				Relayers:  []string{addrA.String()},
-				HaltState: types.HaltState{
-					Halted:   true,
-					HaltedBy: addrA.String(),
-				},
 			},
 			{
 				PortId:    portB,
 				ChannelId: channelB,
+				Admin:     addrB.String(),
 				Relayers:  []string{addrB.String()},
 			},
 		},

@@ -8,11 +8,8 @@ func NewChannelState(portID, channelID string) ChannelState {
 	return ChannelState{
 		ChannelId: channelID,
 		PortId:    portID,
-		HaltState: HaltState{
-			Halted:   false,
-			HaltedBy: "",
-		},
-		Relayers: []string{},
+		Admin:     "",
+		Relayers:  []string{},
 	}
 }
 

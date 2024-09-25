@@ -19,18 +19,18 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Query_PermissionedRelayersByChannel_FullMethodName = "/ibc.applications.perm.v1.Query/PermissionedRelayersByChannel"
-	Query_AllPermissionedRelayers_FullMethodName       = "/ibc.applications.perm.v1.Query/AllPermissionedRelayers"
+	Query_ChannelStates_FullMethodName = "/ibc.applications.perm.v1.Query/ChannelStates"
+	Query_ChannelState_FullMethodName  = "/ibc.applications.perm.v1.Query/ChannelState"
 )
 
 // QueryClient is the client API for Query service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type QueryClient interface {
-	// PermissionedRelayersByChannel queries a set of permissioned ibc relayers for the specific channel.
-	PermissionedRelayersByChannel(ctx context.Context, in *QueryPermissionedRelayersByChannelRequest, opts ...grpc.CallOption) (*QueryPermissionedRelayersByChannelResponse, error)
-	// AllPermissionedRelayers queries all sets of permissioned relayers for all channels.
-	AllPermissionedRelayers(ctx context.Context, in *QueryAllPermissionedRelayersRequest, opts ...grpc.CallOption) (*QueryAllPermissionedRelayersResponse, error)
+	// ChannelStates queries all channel states.
+	ChannelStates(ctx context.Context, in *QueryChannelStatesRequest, opts ...grpc.CallOption) (*QueryChannelStatesResponse, error)
+	// ChannelState queries the channel state for the specific port-id:channel-id pair.
+	ChannelState(ctx context.Context, in *QueryChannelStateRequest, opts ...grpc.CallOption) (*QueryChannelStateResponse, error)
 }
 
 type queryClient struct {
@@ -41,18 +41,18 @@ func NewQueryClient(cc grpc.ClientConnInterface) QueryClient {
 	return &queryClient{cc}
 }
 
-func (c *queryClient) PermissionedRelayersByChannel(ctx context.Context, in *QueryPermissionedRelayersByChannelRequest, opts ...grpc.CallOption) (*QueryPermissionedRelayersByChannelResponse, error) {
-	out := new(QueryPermissionedRelayersByChannelResponse)
-	err := c.cc.Invoke(ctx, Query_PermissionedRelayersByChannel_FullMethodName, in, out, opts...)
+func (c *queryClient) ChannelStates(ctx context.Context, in *QueryChannelStatesRequest, opts ...grpc.CallOption) (*QueryChannelStatesResponse, error) {
+	out := new(QueryChannelStatesResponse)
+	err := c.cc.Invoke(ctx, Query_ChannelStates_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *queryClient) AllPermissionedRelayers(ctx context.Context, in *QueryAllPermissionedRelayersRequest, opts ...grpc.CallOption) (*QueryAllPermissionedRelayersResponse, error) {
-	out := new(QueryAllPermissionedRelayersResponse)
-	err := c.cc.Invoke(ctx, Query_AllPermissionedRelayers_FullMethodName, in, out, opts...)
+func (c *queryClient) ChannelState(ctx context.Context, in *QueryChannelStateRequest, opts ...grpc.CallOption) (*QueryChannelStateResponse, error) {
+	out := new(QueryChannelStateResponse)
+	err := c.cc.Invoke(ctx, Query_ChannelState_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -63,10 +63,10 @@ func (c *queryClient) AllPermissionedRelayers(ctx context.Context, in *QueryAllP
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility
 type QueryServer interface {
-	// PermissionedRelayersByChannel queries a set of permissioned ibc relayers for the specific channel.
-	PermissionedRelayersByChannel(context.Context, *QueryPermissionedRelayersByChannelRequest) (*QueryPermissionedRelayersByChannelResponse, error)
-	// AllPermissionedRelayers queries all sets of permissioned relayers for all channels.
-	AllPermissionedRelayers(context.Context, *QueryAllPermissionedRelayersRequest) (*QueryAllPermissionedRelayersResponse, error)
+	// ChannelStates queries all channel states.
+	ChannelStates(context.Context, *QueryChannelStatesRequest) (*QueryChannelStatesResponse, error)
+	// ChannelState queries the channel state for the specific port-id:channel-id pair.
+	ChannelState(context.Context, *QueryChannelStateRequest) (*QueryChannelStateResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -74,11 +74,11 @@ type QueryServer interface {
 type UnimplementedQueryServer struct {
 }
 
-func (UnimplementedQueryServer) PermissionedRelayersByChannel(context.Context, *QueryPermissionedRelayersByChannelRequest) (*QueryPermissionedRelayersByChannelResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method PermissionedRelayersByChannel not implemented")
+func (UnimplementedQueryServer) ChannelStates(context.Context, *QueryChannelStatesRequest) (*QueryChannelStatesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ChannelStates not implemented")
 }
-func (UnimplementedQueryServer) AllPermissionedRelayers(context.Context, *QueryAllPermissionedRelayersRequest) (*QueryAllPermissionedRelayersResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AllPermissionedRelayers not implemented")
+func (UnimplementedQueryServer) ChannelState(context.Context, *QueryChannelStateRequest) (*QueryChannelStateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ChannelState not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 
@@ -93,38 +93,38 @@ func RegisterQueryServer(s grpc.ServiceRegistrar, srv QueryServer) {
 	s.RegisterService(&Query_ServiceDesc, srv)
 }
 
-func _Query_PermissionedRelayersByChannel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryPermissionedRelayersByChannelRequest)
+func _Query_ChannelStates_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryChannelStatesRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).PermissionedRelayersByChannel(ctx, in)
+		return srv.(QueryServer).ChannelStates(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Query_PermissionedRelayersByChannel_FullMethodName,
+		FullMethod: Query_ChannelStates_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).PermissionedRelayersByChannel(ctx, req.(*QueryPermissionedRelayersByChannelRequest))
+		return srv.(QueryServer).ChannelStates(ctx, req.(*QueryChannelStatesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_AllPermissionedRelayers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryAllPermissionedRelayersRequest)
+func _Query_ChannelState_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryChannelStateRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).AllPermissionedRelayers(ctx, in)
+		return srv.(QueryServer).ChannelState(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Query_AllPermissionedRelayers_FullMethodName,
+		FullMethod: Query_ChannelState_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).AllPermissionedRelayers(ctx, req.(*QueryAllPermissionedRelayersRequest))
+		return srv.(QueryServer).ChannelState(ctx, req.(*QueryChannelStateRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -137,12 +137,12 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*QueryServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "PermissionedRelayersByChannel",
-			Handler:    _Query_PermissionedRelayersByChannel_Handler,
+			MethodName: "ChannelStates",
+			Handler:    _Query_ChannelStates_Handler,
 		},
 		{
-			MethodName: "AllPermissionedRelayers",
-			Handler:    _Query_AllPermissionedRelayers_Handler,
+			MethodName: "ChannelState",
+			Handler:    _Query_ChannelState_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
