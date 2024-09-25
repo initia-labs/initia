@@ -19,15 +19,18 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Msg_SetPermissionedRelayers_FullMethodName = "/ibc.applications.perm.v1.Msg/SetPermissionedRelayers"
+	Msg_UpdateAdmin_FullMethodName                = "/ibc.applications.perm.v1.Msg/UpdateAdmin"
+	Msg_UpdatePermissionedRelayers_FullMethodName = "/ibc.applications.perm.v1.Msg/UpdatePermissionedRelayers"
 )
 
 // MsgClient is the client API for Msg service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MsgClient interface {
-	// SetPermissionedRelayers defines a rpc handler method for MsgSetPermissionedRelayers.
-	SetPermissionedRelayers(ctx context.Context, in *MsgSetPermissionedRelayers, opts ...grpc.CallOption) (*MsgSetPermissionedRelayersResponse, error)
+	// UpdateAdmin defines a rpc handler method for MsgUpdateAdmin.
+	UpdateAdmin(ctx context.Context, in *MsgUpdateAdmin, opts ...grpc.CallOption) (*MsgUpdateAdminResponse, error)
+	// UpdatePermissionedRelayers defines a rpc handler method for MsgUpdatePermissionedRelayers.
+	UpdatePermissionedRelayers(ctx context.Context, in *MsgUpdatePermissionedRelayers, opts ...grpc.CallOption) (*MsgUpdatePermissionedRelayersResponse, error)
 }
 
 type msgClient struct {
@@ -38,9 +41,18 @@ func NewMsgClient(cc grpc.ClientConnInterface) MsgClient {
 	return &msgClient{cc}
 }
 
-func (c *msgClient) SetPermissionedRelayers(ctx context.Context, in *MsgSetPermissionedRelayers, opts ...grpc.CallOption) (*MsgSetPermissionedRelayersResponse, error) {
-	out := new(MsgSetPermissionedRelayersResponse)
-	err := c.cc.Invoke(ctx, Msg_SetPermissionedRelayers_FullMethodName, in, out, opts...)
+func (c *msgClient) UpdateAdmin(ctx context.Context, in *MsgUpdateAdmin, opts ...grpc.CallOption) (*MsgUpdateAdminResponse, error) {
+	out := new(MsgUpdateAdminResponse)
+	err := c.cc.Invoke(ctx, Msg_UpdateAdmin_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) UpdatePermissionedRelayers(ctx context.Context, in *MsgUpdatePermissionedRelayers, opts ...grpc.CallOption) (*MsgUpdatePermissionedRelayersResponse, error) {
+	out := new(MsgUpdatePermissionedRelayersResponse)
+	err := c.cc.Invoke(ctx, Msg_UpdatePermissionedRelayers_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -51,8 +63,10 @@ func (c *msgClient) SetPermissionedRelayers(ctx context.Context, in *MsgSetPermi
 // All implementations must embed UnimplementedMsgServer
 // for forward compatibility
 type MsgServer interface {
-	// SetPermissionedRelayers defines a rpc handler method for MsgSetPermissionedRelayers.
-	SetPermissionedRelayers(context.Context, *MsgSetPermissionedRelayers) (*MsgSetPermissionedRelayersResponse, error)
+	// UpdateAdmin defines a rpc handler method for MsgUpdateAdmin.
+	UpdateAdmin(context.Context, *MsgUpdateAdmin) (*MsgUpdateAdminResponse, error)
+	// UpdatePermissionedRelayers defines a rpc handler method for MsgUpdatePermissionedRelayers.
+	UpdatePermissionedRelayers(context.Context, *MsgUpdatePermissionedRelayers) (*MsgUpdatePermissionedRelayersResponse, error)
 	mustEmbedUnimplementedMsgServer()
 }
 
@@ -60,8 +74,11 @@ type MsgServer interface {
 type UnimplementedMsgServer struct {
 }
 
-func (UnimplementedMsgServer) SetPermissionedRelayers(context.Context, *MsgSetPermissionedRelayers) (*MsgSetPermissionedRelayersResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetPermissionedRelayers not implemented")
+func (UnimplementedMsgServer) UpdateAdmin(context.Context, *MsgUpdateAdmin) (*MsgUpdateAdminResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateAdmin not implemented")
+}
+func (UnimplementedMsgServer) UpdatePermissionedRelayers(context.Context, *MsgUpdatePermissionedRelayers) (*MsgUpdatePermissionedRelayersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdatePermissionedRelayers not implemented")
 }
 func (UnimplementedMsgServer) mustEmbedUnimplementedMsgServer() {}
 
@@ -76,20 +93,38 @@ func RegisterMsgServer(s grpc.ServiceRegistrar, srv MsgServer) {
 	s.RegisterService(&Msg_ServiceDesc, srv)
 }
 
-func _Msg_SetPermissionedRelayers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgSetPermissionedRelayers)
+func _Msg_UpdateAdmin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgUpdateAdmin)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).SetPermissionedRelayers(ctx, in)
+		return srv.(MsgServer).UpdateAdmin(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Msg_SetPermissionedRelayers_FullMethodName,
+		FullMethod: Msg_UpdateAdmin_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).SetPermissionedRelayers(ctx, req.(*MsgSetPermissionedRelayers))
+		return srv.(MsgServer).UpdateAdmin(ctx, req.(*MsgUpdateAdmin))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_UpdatePermissionedRelayers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgUpdatePermissionedRelayers)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).UpdatePermissionedRelayers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_UpdatePermissionedRelayers_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).UpdatePermissionedRelayers(ctx, req.(*MsgUpdatePermissionedRelayers))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -102,8 +137,12 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*MsgServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "SetPermissionedRelayers",
-			Handler:    _Msg_SetPermissionedRelayers_Handler,
+			MethodName: "UpdateAdmin",
+			Handler:    _Msg_UpdateAdmin_Handler,
+		},
+		{
+			MethodName: "UpdatePermissionedRelayers",
+			Handler:    _Msg_UpdatePermissionedRelayers_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

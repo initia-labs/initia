@@ -1,13 +1,11 @@
 package types
 
 const (
-	EventTypeSetPermissionedRelayers = "update_channel_relayers"
-	EventTypeHaltChannel             = "halt_channel"
-	EventTypeResumeChannel           = "resume_channel"
+	EventTypeUpdateAdmin                = "update_admin"
+	EventTypeUpdatePermissionedRelayers = "update_permissioned_relayers"
 
 	AttributeKeyPortId    = "port_id"
 	AttributeKeyChannelId = "channel_id"
+	AttributeKeyAdmin     = "admin"
 	AttributeKeyRelayers  = "relayers"
-	AttributeKeyHaltedBy  = "halted_by"
-	AttributeKeyResumedBy = "resumed_by"
 )

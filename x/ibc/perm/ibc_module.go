@@ -155,16 +155,12 @@ func (im IBCMiddleware) OnRecvPacket(
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) ibcexported.Acknowledgement {
-	if ok, err := im.keeper.IsHalted(ctx, packet.DestinationPort, packet.DestinationChannel); err != nil {
+	if ok, err := im.keeper.HasRelayerPermission(ctx, packet.DestinationPort, packet.DestinationChannel, relayer); err != nil {
 		return newEmitErrorAcknowledgement(ctx, err)
-	} else if ok {
-		return newEmitErrorAcknowledgement(
-			ctx,
-			fmt.Errorf(
-				"channel `%s` is halted, no packets should be relayed",
-				packet.DestinationChannel,
-			),
-		)
+	} else if !ok {
+		// raise panic if relayer does not have permission to relay packets on the channel
+		// to prevent packets from being relayed without permission.
+		panic(fmt.Sprintf("relayer %s does not have permission to relay packets on channel %s", relayer, packet.DestinationChannel))
 	}
 
 	return im.app.OnRecvPacket(ctx, packet, relayer)
