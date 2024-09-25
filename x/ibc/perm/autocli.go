@@ -12,9 +12,9 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 			Service: permv1.Query_ServiceDesc.ServiceName,
 			RpcCommandOptions: []*autocliv1.RpcCommandOptions{
 				{
-					RpcMethod: "PermissionedRelayersByChannel",
-					Use:       "permissioned-relayers",
-					Alias:     []string{"relayers"},
+					RpcMethod: "ChannelState",
+					Use:       "channel-state",
+					Alias:     []string{"channel"},
 					Short:     "Query the permissioned relayers of the IBC connection",
 					Long:      "Query the permissioned relayers of the IBC connection",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
@@ -23,9 +23,9 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "AllPermissionedRelayers",
-					Use:       "all-permissioned-relayers",
-					Alias:     []string{"all-relayers"},
+					RpcMethod: "ChannelStates",
+					Use:       "channel-states",
+					Alias:     []string{"channels"},
 					Short:     "Query the permissioned relayers of all IBC connections",
 					Long:      "Query the permissioned relayers of all IBC connections",
 				},
