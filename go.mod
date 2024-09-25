@@ -218,15 +218,9 @@ require (
 )
 
 // initia custom
-replace (
-	// use custom version for
-	// - https://github.com/initia-labs/cometbft/commit/cb3ed4ca9be4d6c55df7df2d927e9b92153bc3e2
-	github.com/cometbft/cometbft => github.com/initia-labs/cometbft v0.0.0-20240923045653-ba99eb347236
-
-	// use custom version until this PR is merged
-	// - https://github.com/strangelove-ventures/cometbft-client/pull/10
-	github.com/strangelove-ventures/cometbft-client => github.com/initia-labs/cometbft-client v0.0.0-20240924071428-ef115cefa07e
-)
+// use custom version for
+// - https://github.com/initia-labs/cometbft/commit/cb3ed4ca9be4d6c55df7df2d927e9b92153bc3e2
+replace github.com/cometbft/cometbft => github.com/initia-labs/cometbft v0.0.0-20240923045653-ba99eb347236
 
 // cosmos replaces
 replace (
