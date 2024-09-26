@@ -3,7 +3,6 @@ package keeper
 import (
 	"context"
 	"errors"
-	"sync"
 
 	"golang.org/x/sync/semaphore"
 
@@ -46,9 +45,8 @@ type Keeper struct {
 
 	// TODO - remove after loader v2
 	moveVMs         []types.VMEngine
-	moveVMMutx      *sync.Mutex
+	moveVMIdx       *uint64
 	moveVMSemaphore *semaphore.Weighted
-	moveVMIdx       *int
 
 	feeCollector string
 	authority    string
@@ -92,7 +90,7 @@ func NewKeeper(
 	}
 
 	vmCount := 10
-	moveVMIdx := int(0)
+	moveVMIdx := uint64(0)
 	vms := make([]types.VMEngine, vmCount)
 	for i := 0; i < vmCount; i++ {
 		moveVM, err := vm.NewVM(vmtypes.InitiaVMConfig{
@@ -117,9 +115,8 @@ func NewKeeper(
 		grpcRouter:          grpcRouter,
 		config:              moveConfig,
 		moveVMs:             vms,
-		moveVMMutx:          new(sync.Mutex),
-		moveVMSemaphore:     semaphore.NewWeighted(int64(vmCount)),
 		moveVMIdx:           &moveVMIdx,
+		moveVMSemaphore:     semaphore.NewWeighted(int64(vmCount)),
 		distrKeeper:         distrKeeper,
 		StakingKeeper:       stakingKeeper,
 		RewardKeeper:        rewardKeeper,
