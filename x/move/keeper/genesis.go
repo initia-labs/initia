@@ -46,13 +46,10 @@ func (k Keeper) Initialize(
 		_allowedPublishers[i] = addr
 	}
 
-	// TODO - remove this after loader v2 is installed
-	vm := k.acquireVM(ctx)
-	defer k.releaseVM()
-
-	// The default upgrade policy is compatible when it's not set.
 	vmStore := types.NewVMStore(ctx, k.VMStore)
-	execRes, err := vm.Initialize(vmStore, api, env, vmtypes.NewModuleBundle(modules...), _allowedPublishers)
+	execRes, err := execVM(ctx, k, func(vm types.VMEngine) (vmtypes.ExecutionResult, error) {
+		return vm.Initialize(vmStore, api, env, vmtypes.NewModuleBundle(modules...), _allowedPublishers)
+	})
 	if err != nil {
 		return err
 	}

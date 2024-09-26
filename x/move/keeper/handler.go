@@ -164,10 +164,6 @@ func (k Keeper) executeEntryFunction(
 	args [][]byte,
 	isJSON bool,
 ) error {
-	// TODO - remove this after loader v2 is installed
-	vm := k.acquireVM(ctx)
-	defer k.releaseVM()
-
 	payload, err := types.BuildExecuteEntryFunctionPayload(
 		moduleAddr,
 		moduleName,
@@ -194,7 +190,6 @@ func (k Keeper) executeEntryFunction(
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	gasMeter := sdkCtx.GasMeter()
 	gasForRuntime := gasMeter.Limit() - gasMeter.GasConsumedToLimit()
-
 	if isSimulation(ctx) {
 		gasForRuntime = k.config.ContractSimulationGasLimit
 	}
@@ -202,16 +197,17 @@ func (k Keeper) executeEntryFunction(
 	// delegate gas metering to move vm
 	sdkCtx = sdkCtx.WithGasMeter(storetypes.NewInfiniteGasMeter())
 
-	// run vm
 	gasBalance := gasForRuntime
-	execRes, err := vm.ExecuteEntryFunction(
-		&gasBalance,
-		types.NewVMStore(sdkCtx, k.VMStore),
-		NewApi(k, sdkCtx),
-		types.NewEnv(sdkCtx, ac, ec),
-		senders,
-		payload,
-	)
+	execRes, err := execVM(ctx, k, func(vm types.VMEngine) (vmtypes.ExecutionResult, error) {
+		return vm.ExecuteEntryFunction(
+			&gasBalance,
+			types.NewVMStore(sdkCtx, k.VMStore),
+			NewApi(k, sdkCtx),
+			types.NewEnv(sdkCtx, ac, ec),
+			senders,
+			payload,
+		)
+	})
 
 	// consume gas first and check error
 	gasUsed := gasForRuntime - gasBalance
@@ -284,10 +280,6 @@ func (k Keeper) executeScript(
 	args [][]byte,
 	isJSON bool,
 ) error {
-	// TODO - remove this after loader v2 is installed
-	vm := k.acquireVM(ctx)
-	defer k.releaseVM()
-
 	// prepare payload
 	payload, err := types.BuildExecuteScriptPayload(
 		byteCodes,
@@ -313,7 +305,6 @@ func (k Keeper) executeScript(
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	gasMeter := sdkCtx.GasMeter()
 	gasForRuntime := gasMeter.Limit() - gasMeter.GasConsumedToLimit()
-
 	if isSimulation(ctx) {
 		gasForRuntime = k.config.ContractSimulationGasLimit
 	}
@@ -321,16 +312,17 @@ func (k Keeper) executeScript(
 	// delegate gas metering to move vm
 	sdkCtx = sdkCtx.WithGasMeter(storetypes.NewInfiniteGasMeter())
 
-	// run vm
 	gasBalance := gasForRuntime
-	execRes, err := vm.ExecuteScript(
-		&gasBalance,
-		types.NewVMStore(sdkCtx, k.VMStore),
-		NewApi(k, sdkCtx),
-		types.NewEnv(sdkCtx, ac, ec),
-		senders,
-		payload,
-	)
+	execRes, err := execVM(ctx, k, func(vm types.VMEngine) (vmtypes.ExecutionResult, error) {
+		return vm.ExecuteScript(
+			&gasBalance,
+			types.NewVMStore(sdkCtx, k.VMStore),
+			NewApi(k, sdkCtx),
+			types.NewEnv(sdkCtx, ac, ec),
+			senders,
+			payload,
+		)
+	})
 
 	// consume gas first and check error
 	gasUsed := gasForRuntime - gasBalance
@@ -565,10 +557,6 @@ func (k Keeper) executeViewFunction(
 	args [][]byte,
 	isJSON bool,
 ) (vmtypes.ViewOutput, uint64, error) {
-	// TODO - remove this after loader v2 is installed
-	vm := k.acquireVM(ctx)
-	defer k.releaseVM()
-
 	payload, err := types.BuildExecuteViewFunctionPayload(
 		moduleAddr,
 		moduleName,
@@ -596,15 +584,16 @@ func (k Keeper) executeViewFunction(
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	gasMeter := sdkCtx.GasMeter()
 	gasForRuntime := gasMeter.Limit() - gasMeter.GasConsumedToLimit()
-
 	gasBalance := gasForRuntime
-	viewRes, err := vm.ExecuteViewFunction(
-		&gasBalance,
-		types.NewVMStore(ctx, k.VMStore),
-		api,
-		env,
-		payload,
-	)
+	viewRes, err := execVM(ctx, k, func(vm types.VMEngine) (vmtypes.ViewOutput, error) {
+		return vm.ExecuteViewFunction(
+			&gasBalance,
+			types.NewVMStore(ctx, k.VMStore),
+			api,
+			env,
+			payload,
+		)
+	})
 	if err != nil {
 		return vmtypes.ViewOutput{}, 0, err
 	}
@@ -614,4 +603,15 @@ func (k Keeper) executeViewFunction(
 	gasMeter.ConsumeGas(gasUsed, "view; move runtime")
 
 	return viewRes, gasUsed, nil
+}
+
+// execVM runs vm in separate function statement to release right after execution
+// to avoid deadlock even if the function panics
+//
+// TODO - remove this after loader v2 is installed
+func execVM[T any](ctx context.Context, k Keeper, f func(types.VMEngine) (T, error)) (T, error) {
+	vm := k.acquireVM(ctx)
+	defer k.releaseVM()
+
+	return f(vm)
 }
