@@ -584,6 +584,7 @@ func (k Keeper) executeViewFunction(
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	gasMeter := sdkCtx.GasMeter()
 	gasForRuntime := gasMeter.Limit() - gasMeter.GasConsumedToLimit()
+
 	gasBalance := gasForRuntime
 	viewRes, err := execVM(ctx, k, func(vm types.VMEngine) (vmtypes.ViewOutput, error) {
 		return vm.ExecuteViewFunction(
@@ -594,13 +595,13 @@ func (k Keeper) executeViewFunction(
 			payload,
 		)
 	})
-	if err != nil {
-		return vmtypes.ViewOutput{}, 0, err
-	}
 
 	// consume gas first and check error
 	gasUsed := gasForRuntime - gasBalance
 	gasMeter.ConsumeGas(gasUsed, "view; move runtime")
+	if err != nil {
+		return vmtypes.ViewOutput{}, gasUsed, err
+	}
 
 	return viewRes, gasUsed, nil
 }
