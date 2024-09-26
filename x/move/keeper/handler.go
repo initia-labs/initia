@@ -164,6 +164,10 @@ func (k Keeper) executeEntryFunction(
 	args [][]byte,
 	isJSON bool,
 ) error {
+	// TODO - remove this after loader v2 is installed
+	vm := k.acquireVM(ctx)
+	defer k.releaseVM()
+
 	payload, err := types.BuildExecuteEntryFunctionPayload(
 		moduleAddr,
 		moduleName,
@@ -200,7 +204,7 @@ func (k Keeper) executeEntryFunction(
 
 	// run vm
 	gasBalance := gasForRuntime
-	execRes, err := k.moveVM.ExecuteEntryFunction(
+	execRes, err := vm.ExecuteEntryFunction(
 		&gasBalance,
 		types.NewVMStore(sdkCtx, k.VMStore),
 		NewApi(k, sdkCtx),
@@ -280,6 +284,10 @@ func (k Keeper) executeScript(
 	args [][]byte,
 	isJSON bool,
 ) error {
+	// TODO - remove this after loader v2 is installed
+	vm := k.acquireVM(ctx)
+	defer k.releaseVM()
+
 	// prepare payload
 	payload, err := types.BuildExecuteScriptPayload(
 		byteCodes,
@@ -315,7 +323,7 @@ func (k Keeper) executeScript(
 
 	// run vm
 	gasBalance := gasForRuntime
-	execRes, err := k.moveVM.ExecuteScript(
+	execRes, err := vm.ExecuteScript(
 		&gasBalance,
 		types.NewVMStore(sdkCtx, k.VMStore),
 		NewApi(k, sdkCtx),
@@ -557,6 +565,10 @@ func (k Keeper) executeViewFunction(
 	args [][]byte,
 	isJSON bool,
 ) (vmtypes.ViewOutput, uint64, error) {
+	// TODO - remove this after loader v2 is installed
+	vm := k.acquireVM(ctx)
+	defer k.releaseVM()
+
 	payload, err := types.BuildExecuteViewFunctionPayload(
 		moduleAddr,
 		moduleName,
@@ -586,7 +598,7 @@ func (k Keeper) executeViewFunction(
 	gasForRuntime := gasMeter.Limit() - gasMeter.GasConsumedToLimit()
 
 	gasBalance := gasForRuntime
-	viewRes, err := k.moveVM.ExecuteViewFunction(
+	viewRes, err := vm.ExecuteViewFunction(
 		&gasBalance,
 		types.NewVMStore(ctx, k.VMStore),
 		api,
