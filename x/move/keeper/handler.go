@@ -166,7 +166,7 @@ func (k Keeper) executeEntryFunction(
 ) error {
 	// TODO - remove this after loader v2 is installed
 	vm := k.acquireVM(ctx)
-	defer k.releaseVM(vm)
+	defer k.releaseVM()
 
 	payload, err := types.BuildExecuteEntryFunctionPayload(
 		moduleAddr,
@@ -286,7 +286,7 @@ func (k Keeper) executeScript(
 ) error {
 	// TODO - remove this after loader v2 is installed
 	vm := k.acquireVM(ctx)
-	defer k.releaseVM(vm)
+	defer k.releaseVM()
 
 	// prepare payload
 	payload, err := types.BuildExecuteScriptPayload(
@@ -567,7 +567,7 @@ func (k Keeper) executeViewFunction(
 ) (vmtypes.ViewOutput, uint64, error) {
 	// TODO - remove this after loader v2 is installed
 	vm := k.acquireVM(ctx)
-	defer k.releaseVM(vm)
+	defer k.releaseVM()
 
 	payload, err := types.BuildExecuteViewFunctionPayload(
 		moduleAddr,

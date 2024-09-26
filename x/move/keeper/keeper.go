@@ -45,9 +45,10 @@ type Keeper struct {
 	config moveconfig.MoveConfig
 
 	// TODO - remove after loader v2
-	moveVMs         *[]types.VMEngine
+	moveVMs         []types.VMEngine
 	moveVMMutx      *sync.Mutex
 	moveVMSemaphore *semaphore.Weighted
+	moveVMIdx       *int
 
 	feeCollector string
 	authority    string
@@ -91,6 +92,7 @@ func NewKeeper(
 	}
 
 	vmCount := 10
+	moveVMIdx := int(0)
 	vms := make([]types.VMEngine, vmCount)
 	for i := 0; i < vmCount; i++ {
 		moveVM, err := vm.NewVM(vmtypes.InitiaVMConfig{
@@ -114,9 +116,10 @@ func NewKeeper(
 		msgRouter:           msgRouter,
 		grpcRouter:          grpcRouter,
 		config:              moveConfig,
-		moveVMs:             &vms,
+		moveVMs:             vms,
 		moveVMMutx:          new(sync.Mutex),
 		moveVMSemaphore:     semaphore.NewWeighted(int64(vmCount)),
+		moveVMIdx:           &moveVMIdx,
 		distrKeeper:         distrKeeper,
 		StakingKeeper:       stakingKeeper,
 		RewardKeeper:        rewardKeeper,

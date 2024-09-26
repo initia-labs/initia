@@ -48,7 +48,7 @@ func (k Keeper) Initialize(
 
 	// TODO - remove this after loader v2 is installed
 	vm := k.acquireVM(ctx)
-	defer k.releaseVM(vm)
+	defer k.releaseVM()
 
 	// The default upgrade policy is compatible when it's not set.
 	vmStore := types.NewVMStore(ctx, k.VMStore)

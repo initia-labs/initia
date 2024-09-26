@@ -13,16 +13,14 @@ func (k Keeper) acquireVM(ctx context.Context) (vm types.VMEngine) {
 	}
 
 	k.moveVMMutx.Lock()
-	vm, *k.moveVMs = (*k.moveVMs)[0], (*k.moveVMs)[1:]
+	idx := *k.moveVMIdx
+	*k.moveVMIdx = (idx + 1) % len(k.moveVMs)
+	vm = k.moveVMs[idx]
 	k.moveVMMutx.Unlock()
 
 	return
 }
 
-func (k Keeper) releaseVM(vm types.VMEngine) {
-	k.moveVMMutx.Lock()
-	*k.moveVMs = append(*k.moveVMs, vm)
-	k.moveVMMutx.Unlock()
-
+func (k Keeper) releaseVM() {
 	k.moveVMSemaphore.Release(1)
 }
