@@ -7,7 +7,10 @@ import (
 )
 
 func (k Keeper) acquireVM(ctx context.Context) (vm types.VMEngine) {
-	k.moveVMSemaphore.Acquire(ctx, 1)
+	err := k.moveVMSemaphore.Acquire(ctx, 1)
+	if err != nil {
+		panic(err)
+	}
 
 	k.moveVMMutx.Lock()
 	vm, *k.moveVMs = (*k.moveVMs)[0], (*k.moveVMs)[1:]
