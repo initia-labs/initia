@@ -3,6 +3,9 @@ package keeper
 import (
 	"context"
 	"errors"
+	"sync"
+
+	"golang.org/x/sync/semaphore"
 
 	"cosmossdk.io/collections"
 	"cosmossdk.io/core/address"
@@ -41,8 +44,10 @@ type Keeper struct {
 
 	config moveconfig.MoveConfig
 
-	// moveVM instance
-	moveVM types.VMEngine
+	// TODO - remove after loader v2
+	moveVMs         *[]types.VMEngine
+	moveVMMutx      *sync.Mutex
+	moveVMSemaphore *semaphore.Weighted
 
 	feeCollector string
 	authority    string
@@ -85,12 +90,18 @@ func NewKeeper(
 		moveConfig.ContractSimulationGasLimit = moveconfig.DefaultContractSimulationGasLimit
 	}
 
-	moveVM, err := vm.NewVM(vmtypes.InitiaVMConfig{
-		// TODO: check this before mainnet
-		AllowUnstable: true,
-	})
-	if err != nil {
-		panic(err)
+	vmCount := 10
+	vms := make([]types.VMEngine, vmCount)
+	for i := 0; i < vmCount; i++ {
+		moveVM, err := vm.NewVM(vmtypes.InitiaVMConfig{
+			// TODO: check this before mainnet
+			AllowUnstable: true,
+		})
+		if err != nil {
+			panic(err)
+		}
+
+		vms[i] = &moveVM
 	}
 
 	sb := collections.NewSchemaBuilder(storeService)
@@ -103,7 +114,9 @@ func NewKeeper(
 		msgRouter:           msgRouter,
 		grpcRouter:          grpcRouter,
 		config:              moveConfig,
-		moveVM:              &moveVM,
+		moveVMs:             &vms,
+		moveVMMutx:          new(sync.Mutex),
+		moveVMSemaphore:     semaphore.NewWeighted(int64(vmCount)),
 		distrKeeper:         distrKeeper,
 		StakingKeeper:       stakingKeeper,
 		RewardKeeper:        rewardKeeper,
