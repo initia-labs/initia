@@ -35978,6 +35978,299 @@ paths:
                         }
       tags:
         - Query
+  /ibc/core/client/v1/verify_membership:
+    post:
+      summary: >-
+        VerifyMembership queries an IBC light client for proof verification of a
+        value at a given key path.
+      operationId: VerifyMembership
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                description: boolean indicating success or failure of proof verification.
+            title: >-
+              QueryVerifyMembershipResponse is the response type for the
+              Query/VerifyMembership RPC method
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                      description: >-
+                        A URL/resource name that uniquely identifies the type of
+                        the serialized
+
+                        protocol buffer message. This string must contain at
+                        least
+
+                        one "/" character. The last segment of the URL's path
+                        must represent
+
+                        the fully qualified name of the type (as in
+
+                        `path/google.protobuf.Duration`). The name should be in
+                        a canonical form
+
+                        (e.g., leading "." is not accepted).
+
+
+                        In practice, teams usually precompile into the binary
+                        all types that they
+
+                        expect it to use in the context of Any. However, for
+                        URLs which use the
+
+                        scheme `http`, `https`, or no scheme, one can optionally
+                        set up a type
+
+                        server that maps type URLs to message definitions as
+                        follows:
+
+
+                        * If no scheme is provided, `https` is assumed.
+
+                        * An HTTP GET on the URL must yield a
+                        [google.protobuf.Type][]
+                          value in binary format, or produce an error.
+                        * Applications are allowed to cache lookup results based
+                        on the
+                          URL, or have them precompiled into a binary to avoid any
+                          lookup. Therefore, binary compatibility needs to be preserved
+                          on changes to types. (Use versioned type names to manage
+                          breaking changes.)
+
+                        Note: this functionality is not currently available in
+                        the official
+
+                        protobuf release, and it is not used for type URLs
+                        beginning with
+
+                        type.googleapis.com.
+
+
+                        Schemes other than `http`, `https` (or the empty scheme)
+                        might be
+
+                        used with implementation specific semantics.
+                    value:
+                      type: string
+                      format: byte
+                      description: >-
+                        Must be a valid serialized protocol buffer of the above
+                        specified type.
+                  description: >-
+                    `Any` contains an arbitrary serialized protocol buffer
+                    message along with a
+
+                    URL that describes the type of the serialized message.
+
+
+                    Protobuf library provides support to pack/unpack Any values
+                    in the form
+
+                    of utility functions or additional generated methods of the
+                    Any type.
+
+
+                    Example 1: Pack and unpack a message in C++.
+
+                        Foo foo = ...;
+                        Any any;
+                        any.PackFrom(foo);
+                        ...
+                        if (any.UnpackTo(&foo)) {
+                          ...
+                        }
+
+                    Example 2: Pack and unpack a message in Java.
+
+                        Foo foo = ...;
+                        Any any = Any.pack(foo);
+                        ...
+                        if (any.is(Foo.class)) {
+                          foo = any.unpack(Foo.class);
+                        }
+                        // or ...
+                        if (any.isSameTypeAs(Foo.getDefaultInstance())) {
+                          foo = any.unpack(Foo.getDefaultInstance());
+                        }
+
+                    Example 3: Pack and unpack a message in Python.
+
+                        foo = Foo(...)
+                        any = Any()
+                        any.Pack(foo)
+                        ...
+                        if any.Is(Foo.DESCRIPTOR):
+                          any.Unpack(foo)
+                          ...
+
+                    Example 4: Pack and unpack a message in Go
+
+                         foo := &pb.Foo{...}
+                         any, err := anypb.New(foo)
+                         if err != nil {
+                           ...
+                         }
+                         ...
+                         foo := &pb.Foo{}
+                         if err := any.UnmarshalTo(foo); err != nil {
+                           ...
+                         }
+
+                    The pack methods provided by protobuf library will by
+                    default use
+
+                    'type.googleapis.com/full.type.name' as the type URL and the
+                    unpack
+
+                    methods only use the fully qualified type name after the
+                    last '/'
+
+                    in the type URL, for example "foo.bar.com/x/y.z" will yield
+                    type
+
+                    name "y.z".
+
+
+                    JSON
+
+
+                    The JSON representation of an `Any` value uses the regular
+
+                    representation of the deserialized, embedded message, with
+                    an
+
+                    additional field `@type` which contains the type URL.
+                    Example:
+
+                        package google.profile;
+                        message Person {
+                          string first_name = 1;
+                          string last_name = 2;
+                        }
+
+                        {
+                          "@type": "type.googleapis.com/google.profile.Person",
+                          "firstName": <string>,
+                          "lastName": <string>
+                        }
+
+                    If the embedded message type is well-known and has a custom
+                    JSON
+
+                    representation, that representation will be embedded adding
+                    a field
+
+                    `value` which holds the custom JSON in addition to the
+                    `@type`
+
+                    field. Example (for message [google.protobuf.Duration][]):
+
+                        {
+                          "@type": "type.googleapis.com/google.protobuf.Duration",
+                          "value": "1.212s"
+                        }
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              client_id:
+                type: string
+                description: client unique identifier.
+              proof:
+                type: string
+                format: byte
+                description: the proof to be verified by the client.
+              proof_height:
+                type: object
+                properties:
+                  revision_number:
+                    type: string
+                    format: uint64
+                    title: the revision that the client is currently on
+                  revision_height:
+                    type: string
+                    format: uint64
+                    title: the height within the given revision
+                description: >-
+                  Normally the RevisionHeight is incremented at each height
+                  while keeping
+
+                  RevisionNumber the same. However some consensus algorithms may
+                  choose to
+
+                  reset the height in certain conditions e.g. hard forks,
+                  state-machine
+
+                  breaking changes In these cases, the RevisionNumber is
+                  incremented so that
+
+                  height continues to be monitonically increasing even as the
+                  RevisionHeight
+
+                  gets reset
+                title: >-
+                  Height is a monotonically increasing data type
+
+                  that can be compared against another Height for the purposes
+                  of updating and
+
+                  freezing clients
+              merkle_path:
+                description: the commitment key path.
+                type: object
+                properties:
+                  key_path:
+                    type: array
+                    items:
+                      type: string
+                title: >-
+                  MerklePath is the path used to verify commitment proofs, which
+                  can be an
+
+                  arbitrary structured object (defined by a commitment type).
+
+                  MerklePath is represented from root-to-leaf
+              value:
+                type: string
+                format: byte
+                description: the value which is proven.
+              time_delay:
+                type: string
+                format: uint64
+                title: optional time delay
+              block_delay:
+                type: string
+                format: uint64
+                title: optional block delay
+            title: >-
+              QueryVerifyMembershipRequest is the request type for the
+              Query/VerifyMembership RPC method
+      tags:
+        - Query
   /ibc/core/connection/v1/client_connections/{client_id}:
     get:
       summary: |-
@@ -41875,19 +42168,17 @@ paths:
           format: uint64
       tags:
         - Query
-  /ibc/apps/perm/v1/relayers:
+  /ibc/apps/perm/v1/channel_states:
     get:
-      summary: >-
-        AllPermissionedRelayers queries all sets of permissioned relayers for
-        all channels.
-      operationId: AllPermissionedRelayers
+      summary: ChannelStates queries all channel states.
+      operationId: ChannelStates
       responses:
         '200':
           description: A successful response.
           schema:
             type: object
             properties:
-              permissioned_relayers:
+              channel_states:
                 type: array
                 items:
                   type: object
@@ -41896,16 +42187,17 @@ paths:
                       type: string
                     channel_id:
                       type: string
+                    admin:
+                      type: string
+                      title: admin is the address that controls the channel relayers
                     relayers:
                       type: array
                       items:
                         type: string
                   description: >-
-                    PermissionedRelayer is used to specifiy the permissioned
-                    relayer for
-
-                    the specific port-id:channel-id pair.
-                description: class_trace returns the requested class id trace information.
+                    ChannelState defines the channel state for the specific
+                    port-id:channel-id pair.
+                description: channel_states returns all stored ChannelState objects.
               pagination:
                 description: pagination defines the pagination in the response.
                 type: object
@@ -41926,10 +42218,8 @@ paths:
 
                       was set, its value is undefined otherwise
             description: >-
-              QueryAllPermissionedRelayersResponse is the response type for the
-              Query/AllPermissionedRelayers RPC
-
-              method.
+              QueryChannelStatesResponse is the response type for the
+              Query/ChannelStates RPC method.
         default:
           description: An unexpected error response.
           schema:
@@ -42011,39 +42301,38 @@ paths:
           type: boolean
       tags:
         - Query
-  /ibc/apps/perm/v1/relayers/{port_id}/{channel_id}:
+  /ibc/apps/perm/v1/channel_states/{channel_id}/{port_id}:
     get:
       summary: >-
-        PermissionedRelayersByChannel queries a set of permissioned ibc relayers
-        for the specific channel.
-      operationId: PermissionedRelayersByChannel
+        ChannelState queries the channel state for the specific
+        port-id:channel-id pair.
+      operationId: ChannelState
       responses:
         '200':
           description: A successful response.
           schema:
             type: object
             properties:
-              permissioned_relayers:
+              channel_state:
                 type: object
                 properties:
                   port_id:
                     type: string
                   channel_id:
                     type: string
+                  admin:
+                    type: string
+                    title: admin is the address that controls the channel relayers
                   relayers:
                     type: array
                     items:
                       type: string
                 description: >-
-                  PermissionedRelayer is used to specifiy the permissioned
-                  relayer for
-
-                  the specific port-id:channel-id pair.
+                  ChannelState defines the channel state for the specific
+                  port-id:channel-id pair.
             description: >-
-              QueryPermissionedRelayerResponse is the response type for the
-              Query/PermissionedRelayer RPC
-
-              method.
+              QueryChannelStateResponse is the response type for the
+              Query/ChannelState RPC method.
         default:
           description: An unexpected error response.
           schema:
@@ -42067,11 +42356,11 @@ paths:
                       type: string
                       format: byte
       parameters:
-        - name: port_id
+        - name: channel_id
           in: path
           required: true
           type: string
-        - name: channel_id
+        - name: port_id
           in: path
           required: true
           type: string
@@ -48768,22 +49057,41 @@ paths:
                         proposal's voting period has ended.
                       type: object
                       properties:
-                        yes_count:
+                        tally_height:
                           type: string
-                          description: yes_count is the number of yes votes on a proposal.
-                        abstain_count:
+                          format: uint64
+                        total_staking_power:
                           type: string
+                        total_vesting_power:
+                          type: string
+                        v1_tally_result:
                           description: >-
-                            abstain_count is the number of abstain votes on a
-                            proposal.
-                        no_count:
-                          type: string
-                          description: no_count is the number of no votes on a proposal.
-                        no_with_veto_count:
-                          type: string
-                          description: >-
-                            no_with_veto_count is the number of no with veto
-                            votes on a proposal.
+                            v1_tally_result is the original TallyResult from
+                            cosmos-sdk,
+
+                            which contains both staking and vesting power.
+                          type: object
+                          properties:
+                            yes_count:
+                              type: string
+                              description: >-
+                                yes_count is the number of yes votes on a
+                                proposal.
+                            abstain_count:
+                              type: string
+                              description: >-
+                                abstain_count is the number of abstain votes on
+                                a proposal.
+                            no_count:
+                              type: string
+                              description: >-
+                                no_count is the number of no votes on a
+                                proposal.
+                            no_with_veto_count:
+                              type: string
+                              description: >-
+                                no_with_veto_count is the number of no with veto
+                                votes on a proposal.
                     submit_time:
                       type: string
                       format: date-time
@@ -49311,6 +49619,21 @@ paths:
                       applied
 
                       for Move execute messages.
+                  vesting:
+                    description: Vesting is the vesting contract info for tally.
+                    type: object
+                    properties:
+                      module_addr:
+                        type: string
+                        description: module_addr is the address of the vesting module.
+                      module_name:
+                        type: string
+                        description: module_name is the name of the vesting module.
+                      creator_addr:
+                        type: string
+                        description: >-
+                          creator_addr is the address of the creator of the
+                          vesting contract.
             description: >-
               QueryParamsResponse is the response type for the Query/Params RPC
               method.
@@ -49738,22 +50061,41 @@ paths:
                         proposal's voting period has ended.
                       type: object
                       properties:
-                        yes_count:
+                        tally_height:
                           type: string
-                          description: yes_count is the number of yes votes on a proposal.
-                        abstain_count:
+                          format: uint64
+                        total_staking_power:
                           type: string
+                        total_vesting_power:
+                          type: string
+                        v1_tally_result:
                           description: >-
-                            abstain_count is the number of abstain votes on a
-                            proposal.
-                        no_count:
-                          type: string
-                          description: no_count is the number of no votes on a proposal.
-                        no_with_veto_count:
-                          type: string
-                          description: >-
-                            no_with_veto_count is the number of no with veto
-                            votes on a proposal.
+                            v1_tally_result is the original TallyResult from
+                            cosmos-sdk,
+
+                            which contains both staking and vesting power.
+                          type: object
+                          properties:
+                            yes_count:
+                              type: string
+                              description: >-
+                                yes_count is the number of yes votes on a
+                                proposal.
+                            abstain_count:
+                              type: string
+                              description: >-
+                                abstain_count is the number of abstain votes on
+                                a proposal.
+                            no_count:
+                              type: string
+                              description: >-
+                                no_count is the number of no votes on a
+                                proposal.
+                            no_with_veto_count:
+                              type: string
+                              description: >-
+                                no_with_veto_count is the number of no with veto
+                                votes on a proposal.
                     submit_time:
                       type: string
                       format: date-time
@@ -50372,22 +50714,39 @@ paths:
                       proposal's voting period has ended.
                     type: object
                     properties:
-                      yes_count:
+                      tally_height:
                         type: string
-                        description: yes_count is the number of yes votes on a proposal.
-                      abstain_count:
+                        format: uint64
+                      total_staking_power:
                         type: string
+                      total_vesting_power:
+                        type: string
+                      v1_tally_result:
                         description: >-
-                          abstain_count is the number of abstain votes on a
-                          proposal.
-                      no_count:
-                        type: string
-                        description: no_count is the number of no votes on a proposal.
-                      no_with_veto_count:
-                        type: string
-                        description: >-
-                          no_with_veto_count is the number of no with veto votes
-                          on a proposal.
+                          v1_tally_result is the original TallyResult from
+                          cosmos-sdk,
+
+                          which contains both staking and vesting power.
+                        type: object
+                        properties:
+                          yes_count:
+                            type: string
+                            description: >-
+                              yes_count is the number of yes votes on a
+                              proposal.
+                          abstain_count:
+                            type: string
+                            description: >-
+                              abstain_count is the number of abstain votes on a
+                              proposal.
+                          no_count:
+                            type: string
+                            description: no_count is the number of no votes on a proposal.
+                          no_with_veto_count:
+                            type: string
+                            description: >-
+                              no_with_veto_count is the number of no with veto
+                              votes on a proposal.
                   submit_time:
                     type: string
                     format: date-time
@@ -50671,6 +51030,257 @@ paths:
           format: uint64
       tags:
         - Query
+  /initia/gov/v1/proposals/{proposal_id}/tally:
+    get:
+      summary: TallyResult queries the tally of a proposal vote.
+      operationId: TallyResult
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              tally_result:
+                description: tally defines the requested tally.
+                type: object
+                properties:
+                  tally_height:
+                    type: string
+                    format: uint64
+                  total_staking_power:
+                    type: string
+                  total_vesting_power:
+                    type: string
+                  v1_tally_result:
+                    description: >-
+                      v1_tally_result is the original TallyResult from
+                      cosmos-sdk,
+
+                      which contains both staking and vesting power.
+                    type: object
+                    properties:
+                      yes_count:
+                        type: string
+                        description: yes_count is the number of yes votes on a proposal.
+                      abstain_count:
+                        type: string
+                        description: >-
+                          abstain_count is the number of abstain votes on a
+                          proposal.
+                      no_count:
+                        type: string
+                        description: no_count is the number of no votes on a proposal.
+                      no_with_veto_count:
+                        type: string
+                        description: >-
+                          no_with_veto_count is the number of no with veto votes
+                          on a proposal.
+            description: >-
+              QueryTallyResultResponse is the response type for the Query/Tally
+              RPC method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                      description: >-
+                        A URL/resource name that uniquely identifies the type of
+                        the serialized
+
+                        protocol buffer message. This string must contain at
+                        least
+
+                        one "/" character. The last segment of the URL's path
+                        must represent
+
+                        the fully qualified name of the type (as in
+
+                        `path/google.protobuf.Duration`). The name should be in
+                        a canonical form
+
+                        (e.g., leading "." is not accepted).
+
+
+                        In practice, teams usually precompile into the binary
+                        all types that they
+
+                        expect it to use in the context of Any. However, for
+                        URLs which use the
+
+                        scheme `http`, `https`, or no scheme, one can optionally
+                        set up a type
+
+                        server that maps type URLs to message definitions as
+                        follows:
+
+
+                        * If no scheme is provided, `https` is assumed.
+
+                        * An HTTP GET on the URL must yield a
+                        [google.protobuf.Type][]
+                          value in binary format, or produce an error.
+                        * Applications are allowed to cache lookup results based
+                        on the
+                          URL, or have them precompiled into a binary to avoid any
+                          lookup. Therefore, binary compatibility needs to be preserved
+                          on changes to types. (Use versioned type names to manage
+                          breaking changes.)
+
+                        Note: this functionality is not currently available in
+                        the official
+
+                        protobuf release, and it is not used for type URLs
+                        beginning with
+
+                        type.googleapis.com.
+
+
+                        Schemes other than `http`, `https` (or the empty scheme)
+                        might be
+
+                        used with implementation specific semantics.
+                    value:
+                      type: string
+                      format: byte
+                      description: >-
+                        Must be a valid serialized protocol buffer of the above
+                        specified type.
+                  description: >-
+                    `Any` contains an arbitrary serialized protocol buffer
+                    message along with a
+
+                    URL that describes the type of the serialized message.
+
+
+                    Protobuf library provides support to pack/unpack Any values
+                    in the form
+
+                    of utility functions or additional generated methods of the
+                    Any type.
+
+
+                    Example 1: Pack and unpack a message in C++.
+
+                        Foo foo = ...;
+                        Any any;
+                        any.PackFrom(foo);
+                        ...
+                        if (any.UnpackTo(&foo)) {
+                          ...
+                        }
+
+                    Example 2: Pack and unpack a message in Java.
+
+                        Foo foo = ...;
+                        Any any = Any.pack(foo);
+                        ...
+                        if (any.is(Foo.class)) {
+                          foo = any.unpack(Foo.class);
+                        }
+                        // or ...
+                        if (any.isSameTypeAs(Foo.getDefaultInstance())) {
+                          foo = any.unpack(Foo.getDefaultInstance());
+                        }
+
+                    Example 3: Pack and unpack a message in Python.
+
+                        foo = Foo(...)
+                        any = Any()
+                        any.Pack(foo)
+                        ...
+                        if any.Is(Foo.DESCRIPTOR):
+                          any.Unpack(foo)
+                          ...
+
+                    Example 4: Pack and unpack a message in Go
+
+                         foo := &pb.Foo{...}
+                         any, err := anypb.New(foo)
+                         if err != nil {
+                           ...
+                         }
+                         ...
+                         foo := &pb.Foo{}
+                         if err := any.UnmarshalTo(foo); err != nil {
+                           ...
+                         }
+
+                    The pack methods provided by protobuf library will by
+                    default use
+
+                    'type.googleapis.com/full.type.name' as the type URL and the
+                    unpack
+
+                    methods only use the fully qualified type name after the
+                    last '/'
+
+                    in the type URL, for example "foo.bar.com/x/y.z" will yield
+                    type
+
+                    name "y.z".
+
+
+                    JSON
+
+
+                    The JSON representation of an `Any` value uses the regular
+
+                    representation of the deserialized, embedded message, with
+                    an
+
+                    additional field `@type` which contains the type URL.
+                    Example:
+
+                        package google.profile;
+                        message Person {
+                          string first_name = 1;
+                          string last_name = 2;
+                        }
+
+                        {
+                          "@type": "type.googleapis.com/google.profile.Person",
+                          "firstName": <string>,
+                          "lastName": <string>
+                        }
+
+                    If the embedded message type is well-known and has a custom
+                    JSON
+
+                    representation, that representation will be embedded adding
+                    a field
+
+                    `value` which holds the custom JSON in addition to the
+                    `@type`
+
+                    field. Example (for message [google.protobuf.Duration][]):
+
+                        {
+                          "@type": "type.googleapis.com/google.protobuf.Duration",
+                          "value": "1.212s"
+                        }
+      parameters:
+        - name: proposal_id
+          description: proposal_id defines the unique id of the proposal.
+          in: path
+          required: true
+          type: string
+          format: uint64
+      tags:
+        - Query
   /initia/move/v1/accounts/{address}/modules:
     get:
       summary: Modules gets the module infos
@@ -50702,13 +51312,14 @@ paths:
                         - COMPATIBLE
                         - IMMUTABLE
                       default: UNSPECIFIED
-                      description: |-
-                        UpgradePolicy
-                        * `compatible`
-                            Whether a compatibility check should be performed for upgrades. The check only passes if
-                            a new module has (a) the same public functions (b) for existing resources, no layout change.
-                        * `immutable`
-                            Whether the modules in the package are immutable and cannot be upgraded.
+                      description: >-
+                        UpgradePolicy is the policy for upgrading a move module.
+
+                         - UNSPECIFIED: UNSPECIFIED: a placeholder for an unspecified upgrade policy.
+                         - COMPATIBLE: COMPATBILE: Whether a compatibility check should be performed for upgrades. The check only passes if
+                        a new module has (a) the same public functions (b) for
+                        existing resources, no layout change.
+                         - IMMUTABLE: IMMUTABLE: Whether the modules in the package are immutable and cannot be upgraded.
                   title: |-
                     Module is data for the uploaded contract move code
                     ex) 0000000000000000000000000000000000000001/0/BasicCoin
@@ -50849,13 +51460,14 @@ paths:
                       - COMPATIBLE
                       - IMMUTABLE
                     default: UNSPECIFIED
-                    description: |-
-                      UpgradePolicy
-                      * `compatible`
-                          Whether a compatibility check should be performed for upgrades. The check only passes if
-                          a new module has (a) the same public functions (b) for existing resources, no layout change.
-                      * `immutable`
-                          Whether the modules in the package are immutable and cannot be upgraded.
+                    description: >-
+                      UpgradePolicy is the policy for upgrading a move module.
+
+                       - UNSPECIFIED: UNSPECIFIED: a placeholder for an unspecified upgrade policy.
+                       - COMPATIBLE: COMPATBILE: Whether a compatibility check should be performed for upgrades. The check only passes if
+                      a new module has (a) the same public functions (b) for
+                      existing resources, no layout change.
+                       - IMMUTABLE: IMMUTABLE: Whether the modules in the package are immutable and cannot be upgraded.
                 title: |-
                   Module is data for the uploaded contract move code
                   ex) 0000000000000000000000000000000000000001/0/BasicCoin
@@ -51316,6 +51928,9 @@ paths:
                   contract_shared_revenue_ratio:
                     type: string
                     title: 'CSR: Percentage of fees distributed to developers'
+                  script_enabled:
+                    type: boolean
+                    title: flag whether to enable script execution
                   allowed_publishers:
                     type: array
                     items:
@@ -52308,10 +52923,8 @@ paths:
                     bridge_config:
                       type: object
                       properties:
-                        challengers:
-                          type: array
-                          items:
-                            type: string
+                        challenger:
+                          type: string
                           description: The address of the challenger.
                         proposer:
                           type: string
@@ -52323,9 +52936,14 @@ paths:
                             submitter:
                               type: string
                               description: The address of the batch submitter.
-                            chain:
+                            chain_type:
+                              description: The target chain type.
                               type: string
-                              title: The target chain
+                              enum:
+                                - CHAIN_TYPE_UNSPECIFIED
+                                - CHAIN_TYPE_INITIA
+                                - CHAIN_TYPE_CELESTIA
+                              default: CHAIN_TYPE_UNSPECIFIED
                         submission_interval:
                           type: string
                           description: >-
@@ -52339,14 +52957,13 @@ paths:
                           description: >-
                             The minium time duration that must elapse before a
                             withdrawal can be finalized.
-                        submission_start_time:
+                        submission_start_height:
                           type: string
-                          format: date-time
-                          description: >-
-                            The time of the first l2 block recorded.
-
-                            NOTE: this param is currently not used, but will be
-                            used for challenge in future.
+                          format: uint64
+                          description: The the first l2 block will be recorded on l1.
+                        oracle_enabled:
+                          type: boolean
+                          description: oracle_enabled is a flag to enable oracle.
                         metadata:
                           type: string
                           format: byte
@@ -52478,10 +53095,8 @@ paths:
               bridge_config:
                 type: object
                 properties:
-                  challengers:
-                    type: array
-                    items:
-                      type: string
+                  challenger:
+                    type: string
                     description: The address of the challenger.
                   proposer:
                     type: string
@@ -52493,9 +53108,14 @@ paths:
                       submitter:
                         type: string
                         description: The address of the batch submitter.
-                      chain:
+                      chain_type:
+                        description: The target chain type.
                         type: string
-                        title: The target chain
+                        enum:
+                          - CHAIN_TYPE_UNSPECIFIED
+                          - CHAIN_TYPE_INITIA
+                          - CHAIN_TYPE_CELESTIA
+                        default: CHAIN_TYPE_UNSPECIFIED
                   submission_interval:
                     type: string
                     description: >-
@@ -52508,14 +53128,13 @@ paths:
                     description: >-
                       The minium time duration that must elapse before a
                       withdrawal can be finalized.
-                  submission_start_time:
+                  submission_start_height:
                     type: string
-                    format: date-time
-                    description: >-
-                      The time of the first l2 block recorded.
-
-                      NOTE: this param is currently not used, but will be used
-                      for challenge in future.
+                    format: uint64
+                    description: The the first l2 block will be recorded on l1.
+                  oracle_enabled:
+                    type: boolean
+                    description: oracle_enabled is a flag to enable oracle.
                   metadata:
                     type: string
                     format: byte
@@ -52554,8 +53173,176 @@ paths:
           format: uint64
       tags:
         - Query
+  /opinit/ophost/v1/bridges/{bridge_id}/batch_infos:
+    get:
+      summary: BatchInfos queries all batch infos.
+      operationId: BatchInfos
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              batch_infos:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    batch_info:
+                      type: object
+                      properties:
+                        submitter:
+                          type: string
+                          description: The address of the batch submitter.
+                        chain_type:
+                          description: The target chain type.
+                          type: string
+                          enum:
+                            - CHAIN_TYPE_UNSPECIFIED
+                            - CHAIN_TYPE_INITIA
+                            - CHAIN_TYPE_CELESTIA
+                          default: CHAIN_TYPE_UNSPECIFIED
+                      description: BatchInfo defines the set of batch information.
+                    output:
+                      type: object
+                      properties:
+                        output_root:
+                          type: string
+                          format: byte
+                          description: Hash of the l2 output.
+                        l1_block_number:
+                          type: string
+                          format: uint64
+                          description: >-
+                            The l1 block number that the output root was
+                            submitted in.
+                        l1_block_time:
+                          type: string
+                          format: date-time
+                          description: >-
+                            Timestamp of the l1 block that the output root was
+                            submitted in.
+                        l2_block_number:
+                          type: string
+                          format: uint64
+                          description: >-
+                            The l2 block number that the output root was
+                            submitted in.
+                      description: Output is a l2 block submitted by proposer.
+                  description: >-
+                    BatchInfoWithOutput defines the batch information with
+                    output.
+              pagination:
+                description: pagination defines the pagination in the response.
+                type: object
+                properties:
+                  next_key:
+                    type: string
+                    format: byte
+                    description: |-
+                      next_key is the key to be passed to PageRequest.key to
+                      query the next page most efficiently. It will be empty if
+                      there are no more results.
+                  total:
+                    type: string
+                    format: uint64
+                    title: >-
+                      total is total number of results available if
+                      PageRequest.count_total
+
+                      was set, its value is undefined otherwise
+            description: >-
+              QueryBatchInfosResponse is response type for Query/BatchInfos RPC
+              method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: bridge_id
+          in: path
+          required: true
+          type: string
+          format: uint64
+        - name: pagination.key
+          description: |-
+            key is a value returned in PageResponse.next_key to begin
+            querying the next page most efficiently. Only one of offset or key
+            should be set.
+          in: query
+          required: false
+          type: string
+          format: byte
+        - name: pagination.offset
+          description: >-
+            offset is a numeric offset that can be used when key is unavailable.
+
+            It is less efficient than using key. Only one of offset or key
+            should
+
+            be set.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.limit
+          description: >-
+            limit is the total number of results to be returned in the result
+            page.
+
+            If left empty it will default to a value to be set by each app.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.count_total
+          description: >-
+            count_total is set to true  to indicate that the result set should
+            include
+
+            a count of the total number of items available for pagination in
+            UIs.
+
+            count_total is only respected when offset is used. It is ignored
+            when key
+
+            is set.
+          in: query
+          required: false
+          type: boolean
+        - name: pagination.reverse
+          description: >-
+            reverse is set to true if results are to be returned in the
+            descending order.
+
+
+            Since: cosmos-sdk 0.43
+          in: query
+          required: false
+          type: boolean
+      tags:
+        - Query
   /opinit/ophost/v1/bridges/{bridge_id}/last_finalized_output:
     get:
+      summary: LastFinalizedOutput queries last finalized output.
       operationId: LastFinalizedOutput
       responses:
         '200':
@@ -52573,6 +53360,10 @@ paths:
                     type: string
                     format: byte
                     description: Hash of the l2 output.
+                  l1_block_number:
+                    type: string
+                    format: uint64
+                    description: The l1 block number that the output root was submitted in.
                   l1_block_time:
                     type: string
                     format: date-time
@@ -52584,6 +53375,55 @@ paths:
                     format: uint64
                     description: The l2 block number that the output root was submitted in.
                 description: Output is a l2 block submitted by proposer.
+            title: >-
+              QueryLastFinalizedOutputResponse is response type for the
+              Query/LastFinalizedOutput RPC method
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: bridge_id
+          in: path
+          required: true
+          type: string
+          format: uint64
+      tags:
+        - Query
+  /opinit/ophost/v1/bridges/{bridge_id}/next_l1_sequence:
+    get:
+      summary: NextL1Sequence queries the next l1 sequence.
+      operationId: NextL1Sequence
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              next_l1_sequence:
+                type: string
+                format: uint64
+            description: >-
+              QueryNextL1SequenceResponse is response type for the
+              Query/NextL1Sequence RPC method.
         default:
           description: An unexpected error response.
           schema:
@@ -52642,6 +53482,12 @@ paths:
                           type: string
                           format: byte
                           description: Hash of the l2 output.
+                        l1_block_number:
+                          type: string
+                          format: uint64
+                          description: >-
+                            The l1 block number that the output root was
+                            submitted in.
                         l1_block_time:
                           type: string
                           format: date-time
@@ -52706,11 +53552,6 @@ paths:
         - name: bridge_id
           in: path
           required: true
-          type: string
-          format: uint64
-        - name: output_index
-          in: query
-          required: false
           type: string
           format: uint64
         - name: pagination.key
@@ -52794,6 +53635,10 @@ paths:
                     type: string
                     format: byte
                     description: Hash of the l2 output.
+                  l1_block_number:
+                    type: string
+                    format: uint64
+                    description: The l1 block number that the output root was submitted in.
                   l1_block_time:
                     type: string
                     format: date-time
@@ -53081,6 +53926,56 @@ paths:
           type: string
       tags:
         - Query
+  /opinit/ophost/v1/bridges/{bridge_id}/withdrawals/claimed/by_hash:
+    get:
+      summary: Claimed queries whether the output is claimed.
+      operationId: Claimed
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              claimed:
+                type: boolean
+            title: >-
+              QueryClaimedResponse is response type for the Query/Claimed RPC
+              method
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: bridge_id
+          in: path
+          required: true
+          type: string
+          format: uint64
+        - name: withdrawal_hash
+          in: query
+          required: false
+          type: string
+          format: byte
+      tags:
+        - Query
   /opinit/ophost/v1/params:
     get:
       summary: Parameters queries the rollup parameters.
@@ -53140,7 +54035,7 @@ paths:
                       format: byte
       tags:
         - Query
-  /slinky/oracle/v1/get_all_tickers:
+  /connect/oracle/v2/get_all_tickers:
     get:
       summary: >-
         Get all the currency pairs the x/oracle module is tracking price-data
@@ -53195,7 +54090,69 @@ paths:
                       format: byte
       tags:
         - Query
-  /slinky/oracle/v1/get_price:
+  /connect/oracle/v2/get_currency_pair_mapping:
+    get:
+      summary: >-
+        Get the mapping of currency pair ID -> currency pair. This is useful for
+
+        indexers that have access to the ID of a currency pair, but no way to
+        get
+
+        the underlying currency pair from it.
+      operationId: GetCurrencyPairMapping
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              currency_pair_mapping:
+                type: object
+                additionalProperties:
+                  type: object
+                  properties:
+                    Base:
+                      type: string
+                    Quote:
+                      type: string
+                  title: >-
+                    CurrencyPair is the standard representation of a pair of
+                    assets, where one
+
+                    (Base) is priced in terms of the other (Quote)
+                description: >-
+                  currency_pair_mapping is a mapping of the id representing the
+                  currency pair
+
+                  to the currency pair itself.
+            description: >-
+              GetCurrencyPairMappingResponse is the GetCurrencyPairMapping
+              response type.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      tags:
+        - Query
+  /connect/oracle/v2/get_price:
     get:
       summary: >-
         Given a CurrencyPair (or its identifier) return the latest QuotePrice
@@ -53248,10 +54205,8 @@ paths:
                   decimals represents the number of decimals that the
                   quote-price is
 
-                  represented in. For Pairs where ETHEREUM is the quote this
-                  will be 18,
-
-                  otherwise it will be 8.
+                  represented in. It is used to scale the QuotePrice to its
+                  proper value.
               id:
                 type: string
                 format: uint64
@@ -53284,17 +54239,14 @@ paths:
                       type: string
                       format: byte
       parameters:
-        - name: currency_pair.Base
-          in: query
-          required: false
-          type: string
-        - name: currency_pair.Quote
+        - name: currency_pair
+          description: CurrencyPair represents the pair that the user wishes to query.
           in: query
           required: false
           type: string
       tags:
         - Query
-  /slinky/oracle/v1/get_prices:
+  /connect/oracle/v2/get_prices:
     get:
       operationId: GetPrices
       responses:
@@ -53348,10 +54300,8 @@ paths:
                         decimals represents the number of decimals that the
                         quote-price is
 
-                        represented in. For Pairs where ETHEREUM is the quote
-                        this will be 18,
-
-                        otherwise it will be 8.
+                        represented in. It is used to scale the QuotePrice to
+                        its proper value.
                     id:
                       type: string
                       format: uint64
@@ -53398,7 +54348,7 @@ paths:
           collectionFormat: multi
       tags:
         - Query
-  /slinky/marketmap/v1/last_updated:
+  /connect/marketmap/v2/last_updated:
     get:
       summary: LastUpdated returns the last height the market map was updated at.
       operationId: LastUpdated
@@ -53440,7 +54390,7 @@ paths:
                       format: byte
       tags:
         - Query
-  /slinky/marketmap/v1/market:
+  /connect/marketmap/v2/market:
     get:
       summary: |-
         Market returns a market stored in the x/marketmap
@@ -53609,7 +54559,7 @@ paths:
           type: string
       tags:
         - Query
-  /slinky/marketmap/v1/marketmap:
+  /connect/marketmap/v2/marketmap:
     get:
       summary: |-
         MarketMap returns the full market map stored in the x/marketmap
@@ -53800,7 +54750,7 @@ paths:
                       format: byte
       tags:
         - Query
-  /slinky/marketmap/v1/params:
+  /connect/marketmap/v2/params:
     get:
       summary: Params returns the current x/marketmap module parameters.
       operationId: MarketMapParams
@@ -78458,6 +79408,100 @@ definitions:
     description: |-
       QueryUpgradedConsensusStateResponse is the response type for the
       Query/UpgradedConsensusState RPC method.
+  ibc.core.client.v1.QueryVerifyMembershipRequest:
+    type: object
+    properties:
+      client_id:
+        type: string
+        description: client unique identifier.
+      proof:
+        type: string
+        format: byte
+        description: the proof to be verified by the client.
+      proof_height:
+        type: object
+        properties:
+          revision_number:
+            type: string
+            format: uint64
+            title: the revision that the client is currently on
+          revision_height:
+            type: string
+            format: uint64
+            title: the height within the given revision
+        description: >-
+          Normally the RevisionHeight is incremented at each height while
+          keeping
+
+          RevisionNumber the same. However some consensus algorithms may choose
+          to
+
+          reset the height in certain conditions e.g. hard forks, state-machine
+
+          breaking changes In these cases, the RevisionNumber is incremented so
+          that
+
+          height continues to be monitonically increasing even as the
+          RevisionHeight
+
+          gets reset
+        title: >-
+          Height is a monotonically increasing data type
+
+          that can be compared against another Height for the purposes of
+          updating and
+
+          freezing clients
+      merkle_path:
+        description: the commitment key path.
+        type: object
+        properties:
+          key_path:
+            type: array
+            items:
+              type: string
+        title: >-
+          MerklePath is the path used to verify commitment proofs, which can be
+          an
+
+          arbitrary structured object (defined by a commitment type).
+
+          MerklePath is represented from root-to-leaf
+      value:
+        type: string
+        format: byte
+        description: the value which is proven.
+      time_delay:
+        type: string
+        format: uint64
+        title: optional time delay
+      block_delay:
+        type: string
+        format: uint64
+        title: optional block delay
+    title: >-
+      QueryVerifyMembershipRequest is the request type for the
+      Query/VerifyMembership RPC method
+  ibc.core.client.v1.QueryVerifyMembershipResponse:
+    type: object
+    properties:
+      success:
+        type: boolean
+        description: boolean indicating success or failure of proof verification.
+    title: >-
+      QueryVerifyMembershipResponse is the response type for the
+      Query/VerifyMembership RPC method
+  ibc.core.commitment.v1.MerklePath:
+    type: object
+    properties:
+      key_path:
+        type: array
+        items:
+          type: string
+    title: |-
+      MerklePath is the path used to verify commitment proofs, which can be an
+      arbitrary structured object (defined by a commitment type).
+      MerklePath is represented from root-to-leaf
   ibc.core.commitment.v1.MerklePrefix:
     type: object
     properties:
@@ -80604,24 +81648,50 @@ definitions:
       PacketId is an identifer for a unique Packet
       Source chains refer to packets by source port/channel
       Destination chains refer to packets by destination port/channel
-  ibc.applications.perm.v1.PermissionedRelayers:
+  ibc.applications.perm.v1.ChannelState:
     type: object
     properties:
       port_id:
         type: string
       channel_id:
         type: string
+      admin:
+        type: string
+        title: admin is the address that controls the channel relayers
       relayers:
         type: array
         items:
           type: string
-    description: |-
-      PermissionedRelayer is used to specifiy the permissioned relayer for
-      the specific port-id:channel-id pair.
-  ibc.applications.perm.v1.QueryAllPermissionedRelayersResponse:
+    description: >-
+      ChannelState defines the channel state for the specific port-id:channel-id
+      pair.
+  ibc.applications.perm.v1.QueryChannelStateResponse:
     type: object
     properties:
-      permissioned_relayers:
+      channel_state:
+        type: object
+        properties:
+          port_id:
+            type: string
+          channel_id:
+            type: string
+          admin:
+            type: string
+            title: admin is the address that controls the channel relayers
+          relayers:
+            type: array
+            items:
+              type: string
+        description: >-
+          ChannelState defines the channel state for the specific
+          port-id:channel-id pair.
+    description: >-
+      QueryChannelStateResponse is the response type for the Query/ChannelState
+      RPC method.
+  ibc.applications.perm.v1.QueryChannelStatesResponse:
+    type: object
+    properties:
+      channel_states:
         type: array
         items:
           type: object
@@ -80630,14 +81700,17 @@ definitions:
               type: string
             channel_id:
               type: string
+            admin:
+              type: string
+              title: admin is the address that controls the channel relayers
             relayers:
               type: array
               items:
                 type: string
-          description: |-
-            PermissionedRelayer is used to specifiy the permissioned relayer for
-            the specific port-id:channel-id pair.
-        description: class_trace returns the requested class id trace information.
+          description: >-
+            ChannelState defines the channel state for the specific
+            port-id:channel-id pair.
+        description: channel_states returns all stored ChannelState objects.
       pagination:
         description: pagination defines the pagination in the response.
         type: object
@@ -80658,32 +81731,8 @@ definitions:
 
               was set, its value is undefined otherwise
     description: >-
-      QueryAllPermissionedRelayersResponse is the response type for the
-      Query/AllPermissionedRelayers RPC
-
-      method.
-  ibc.applications.perm.v1.QueryPermissionedRelayersByChannelResponse:
-    type: object
-    properties:
-      permissioned_relayers:
-        type: object
-        properties:
-          port_id:
-            type: string
-          channel_id:
-            type: string
-          relayers:
-            type: array
-            items:
-              type: string
-        description: |-
-          PermissionedRelayer is used to specifiy the permissioned relayer for
-          the specific port-id:channel-id pair.
-    description: >-
-      QueryPermissionedRelayerResponse is the response type for the
-      Query/PermissionedRelayer RPC
-
-      method.
+      QueryChannelStatesResponse is the response type for the
+      Query/ChannelStates RPC method.
   packetforward.v1.Params:
     type: object
     properties:
@@ -84872,6 +85921,21 @@ definitions:
           Low threshold functions for emergency and expedited proposal.
           These are Move function identifiers and can only be applied
           for Move execute messages.
+      vesting:
+        description: Vesting is the vesting contract info for tally.
+        type: object
+        properties:
+          module_addr:
+            type: string
+            description: module_addr is the address of the vesting module.
+          module_name:
+            type: string
+            description: module_name is the name of the vesting module.
+          creator_addr:
+            type: string
+            description: >-
+              creator_addr is the address of the creator of the vesting
+              contract.
     description: Params defines the parameters for the x/gov module.
   initia.gov.v1.Proposal:
     type: object
@@ -85070,20 +86134,33 @@ definitions:
           proposal's voting period has ended.
         type: object
         properties:
-          yes_count:
+          tally_height:
             type: string
-            description: yes_count is the number of yes votes on a proposal.
-          abstain_count:
+            format: uint64
+          total_staking_power:
             type: string
-            description: abstain_count is the number of abstain votes on a proposal.
-          no_count:
+          total_vesting_power:
             type: string
-            description: no_count is the number of no votes on a proposal.
-          no_with_veto_count:
-            type: string
-            description: >-
-              no_with_veto_count is the number of no with veto votes on a
-              proposal.
+          v1_tally_result:
+            description: |-
+              v1_tally_result is the original TallyResult from cosmos-sdk,
+              which contains both staking and vesting power.
+            type: object
+            properties:
+              yes_count:
+                type: string
+                description: yes_count is the number of yes votes on a proposal.
+              abstain_count:
+                type: string
+                description: abstain_count is the number of abstain votes on a proposal.
+              no_count:
+                type: string
+                description: no_count is the number of no votes on a proposal.
+              no_with_veto_count:
+                type: string
+                description: >-
+                  no_with_veto_count is the number of no with veto votes on a
+                  proposal.
       submit_time:
         type: string
         format: date-time
@@ -85365,20 +86442,35 @@ definitions:
                 proposal's voting period has ended.
               type: object
               properties:
-                yes_count:
+                tally_height:
                   type: string
-                  description: yes_count is the number of yes votes on a proposal.
-                abstain_count:
+                  format: uint64
+                total_staking_power:
                   type: string
-                  description: abstain_count is the number of abstain votes on a proposal.
-                no_count:
+                total_vesting_power:
                   type: string
-                  description: no_count is the number of no votes on a proposal.
-                no_with_veto_count:
-                  type: string
-                  description: >-
-                    no_with_veto_count is the number of no with veto votes on a
-                    proposal.
+                v1_tally_result:
+                  description: |-
+                    v1_tally_result is the original TallyResult from cosmos-sdk,
+                    which contains both staking and vesting power.
+                  type: object
+                  properties:
+                    yes_count:
+                      type: string
+                      description: yes_count is the number of yes votes on a proposal.
+                    abstain_count:
+                      type: string
+                      description: >-
+                        abstain_count is the number of abstain votes on a
+                        proposal.
+                    no_count:
+                      type: string
+                      description: no_count is the number of no votes on a proposal.
+                    no_with_veto_count:
+                      type: string
+                      description: >-
+                        no_with_veto_count is the number of no with veto votes
+                        on a proposal.
             submit_time:
               type: string
               format: date-time
@@ -85629,6 +86721,21 @@ definitions:
               Low threshold functions for emergency and expedited proposal.
               These are Move function identifiers and can only be applied
               for Move execute messages.
+          vesting:
+            description: Vesting is the vesting contract info for tally.
+            type: object
+            properties:
+              module_addr:
+                type: string
+                description: module_addr is the address of the vesting module.
+              module_name:
+                type: string
+                description: module_name is the name of the vesting module.
+              creator_addr:
+                type: string
+                description: >-
+                  creator_addr is the address of the creator of the vesting
+                  contract.
     description: QueryParamsResponse is the response type for the Query/Params RPC method.
   initia.gov.v1.QueryProposalResponse:
     type: object
@@ -85840,20 +86947,35 @@ definitions:
               proposal's voting period has ended.
             type: object
             properties:
-              yes_count:
+              tally_height:
                 type: string
-                description: yes_count is the number of yes votes on a proposal.
-              abstain_count:
+                format: uint64
+              total_staking_power:
                 type: string
-                description: abstain_count is the number of abstain votes on a proposal.
-              no_count:
+              total_vesting_power:
                 type: string
-                description: no_count is the number of no votes on a proposal.
-              no_with_veto_count:
-                type: string
-                description: >-
-                  no_with_veto_count is the number of no with veto votes on a
-                  proposal.
+              v1_tally_result:
+                description: |-
+                  v1_tally_result is the original TallyResult from cosmos-sdk,
+                  which contains both staking and vesting power.
+                type: object
+                properties:
+                  yes_count:
+                    type: string
+                    description: yes_count is the number of yes votes on a proposal.
+                  abstain_count:
+                    type: string
+                    description: >-
+                      abstain_count is the number of abstain votes on a
+                      proposal.
+                  no_count:
+                    type: string
+                    description: no_count is the number of no votes on a proposal.
+                  no_with_veto_count:
+                    type: string
+                    description: >-
+                      no_with_veto_count is the number of no with veto votes on
+                      a proposal.
           submit_time:
             type: string
             format: date-time
@@ -86141,20 +87263,35 @@ definitions:
                 proposal's voting period has ended.
               type: object
               properties:
-                yes_count:
+                tally_height:
                   type: string
-                  description: yes_count is the number of yes votes on a proposal.
-                abstain_count:
+                  format: uint64
+                total_staking_power:
                   type: string
-                  description: abstain_count is the number of abstain votes on a proposal.
-                no_count:
+                total_vesting_power:
                   type: string
-                  description: no_count is the number of no votes on a proposal.
-                no_with_veto_count:
-                  type: string
-                  description: >-
-                    no_with_veto_count is the number of no with veto votes on a
-                    proposal.
+                v1_tally_result:
+                  description: |-
+                    v1_tally_result is the original TallyResult from cosmos-sdk,
+                    which contains both staking and vesting power.
+                  type: object
+                  properties:
+                    yes_count:
+                      type: string
+                      description: yes_count is the number of yes votes on a proposal.
+                    abstain_count:
+                      type: string
+                      description: >-
+                        abstain_count is the number of abstain votes on a
+                        proposal.
+                    no_count:
+                      type: string
+                      description: no_count is the number of no votes on a proposal.
+                    no_with_veto_count:
+                      type: string
+                      description: >-
+                        no_with_veto_count is the number of no with veto votes
+                        on a proposal.
             submit_time:
               type: string
               format: date-time
@@ -86247,6 +87384,88 @@ definitions:
     description: |-
       QueryProposalsResponse is the response type for the Query/Proposals RPC
       method.
+  initia.gov.v1.QueryTallyResultResponse:
+    type: object
+    properties:
+      tally_result:
+        description: tally defines the requested tally.
+        type: object
+        properties:
+          tally_height:
+            type: string
+            format: uint64
+          total_staking_power:
+            type: string
+          total_vesting_power:
+            type: string
+          v1_tally_result:
+            description: |-
+              v1_tally_result is the original TallyResult from cosmos-sdk,
+              which contains both staking and vesting power.
+            type: object
+            properties:
+              yes_count:
+                type: string
+                description: yes_count is the number of yes votes on a proposal.
+              abstain_count:
+                type: string
+                description: abstain_count is the number of abstain votes on a proposal.
+              no_count:
+                type: string
+                description: no_count is the number of no votes on a proposal.
+              no_with_veto_count:
+                type: string
+                description: >-
+                  no_with_veto_count is the number of no with veto votes on a
+                  proposal.
+    description: >-
+      QueryTallyResultResponse is the response type for the Query/Tally RPC
+      method.
+  initia.gov.v1.TallyResult:
+    type: object
+    properties:
+      tally_height:
+        type: string
+        format: uint64
+      total_staking_power:
+        type: string
+      total_vesting_power:
+        type: string
+      v1_tally_result:
+        description: |-
+          v1_tally_result is the original TallyResult from cosmos-sdk,
+          which contains both staking and vesting power.
+        type: object
+        properties:
+          yes_count:
+            type: string
+            description: yes_count is the number of yes votes on a proposal.
+          abstain_count:
+            type: string
+            description: abstain_count is the number of abstain votes on a proposal.
+          no_count:
+            type: string
+            description: no_count is the number of no votes on a proposal.
+          no_with_veto_count:
+            type: string
+            description: >-
+              no_with_veto_count is the number of no with veto votes on a
+              proposal.
+  initia.gov.v1.Vesting:
+    type: object
+    properties:
+      module_addr:
+        type: string
+        description: module_addr is the address of the vesting module.
+      module_name:
+        type: string
+        description: module_name is the name of the vesting module.
+      creator_addr:
+        type: string
+        description: creator_addr is the address of the creator of the vesting contract.
+    description: |-
+      Vesting defines the vesting contract info for MsgVestingVote.
+      At tally time, gov module would check vesting token amount.
   initia.move.v1.Module:
     type: object
     properties:
@@ -86266,13 +87485,14 @@ definitions:
           - COMPATIBLE
           - IMMUTABLE
         default: UNSPECIFIED
-        description: |-
-          UpgradePolicy
-          * `compatible`
-              Whether a compatibility check should be performed for upgrades. The check only passes if
-              a new module has (a) the same public functions (b) for existing resources, no layout change.
-          * `immutable`
-              Whether the modules in the package are immutable and cannot be upgraded.
+        description: >-
+          UpgradePolicy is the policy for upgrading a move module.
+
+           - UNSPECIFIED: UNSPECIFIED: a placeholder for an unspecified upgrade policy.
+           - COMPATIBLE: COMPATBILE: Whether a compatibility check should be performed for upgrades. The check only passes if
+          a new module has (a) the same public functions (b) for existing
+          resources, no layout change.
+           - IMMUTABLE: IMMUTABLE: Whether the modules in the package are immutable and cannot be upgraded.
     title: |-
       Module is data for the uploaded contract move code
       ex) 0000000000000000000000000000000000000001/0/BasicCoin
@@ -86286,6 +87506,9 @@ definitions:
       contract_shared_revenue_ratio:
         type: string
         title: 'CSR: Percentage of fees distributed to developers'
+      script_enabled:
+        type: boolean
+        title: flag whether to enable script execution
       allowed_publishers:
         type: array
         items:
@@ -86382,13 +87605,14 @@ definitions:
               - COMPATIBLE
               - IMMUTABLE
             default: UNSPECIFIED
-            description: |-
-              UpgradePolicy
-              * `compatible`
-                  Whether a compatibility check should be performed for upgrades. The check only passes if
-                  a new module has (a) the same public functions (b) for existing resources, no layout change.
-              * `immutable`
-                  Whether the modules in the package are immutable and cannot be upgraded.
+            description: >-
+              UpgradePolicy is the policy for upgrading a move module.
+
+               - UNSPECIFIED: UNSPECIFIED: a placeholder for an unspecified upgrade policy.
+               - COMPATIBLE: COMPATBILE: Whether a compatibility check should be performed for upgrades. The check only passes if
+              a new module has (a) the same public functions (b) for existing
+              resources, no layout change.
+               - IMMUTABLE: IMMUTABLE: Whether the modules in the package are immutable and cannot be upgraded.
         title: |-
           Module is data for the uploaded contract move code
           ex) 0000000000000000000000000000000000000001/0/BasicCoin
@@ -86419,13 +87643,14 @@ definitions:
                 - COMPATIBLE
                 - IMMUTABLE
               default: UNSPECIFIED
-              description: |-
-                UpgradePolicy
-                * `compatible`
-                    Whether a compatibility check should be performed for upgrades. The check only passes if
-                    a new module has (a) the same public functions (b) for existing resources, no layout change.
-                * `immutable`
-                    Whether the modules in the package are immutable and cannot be upgraded.
+              description: >-
+                UpgradePolicy is the policy for upgrading a move module.
+
+                 - UNSPECIFIED: UNSPECIFIED: a placeholder for an unspecified upgrade policy.
+                 - COMPATIBLE: COMPATBILE: Whether a compatibility check should be performed for upgrades. The check only passes if
+                a new module has (a) the same public functions (b) for existing
+                resources, no layout change.
+                 - IMMUTABLE: IMMUTABLE: Whether the modules in the package are immutable and cannot be upgraded.
           title: |-
             Module is data for the uploaded contract move code
             ex) 0000000000000000000000000000000000000001/0/BasicCoin
@@ -86465,6 +87690,9 @@ definitions:
           contract_shared_revenue_ratio:
             type: string
             title: 'CSR: Percentage of fees distributed to developers'
+          script_enabled:
+            type: boolean
+            title: flag whether to enable script execution
           allowed_publishers:
             type: array
             items:
@@ -86928,13 +88156,14 @@ definitions:
       - COMPATIBLE
       - IMMUTABLE
     default: UNSPECIFIED
-    description: |-
-      UpgradePolicy
-      * `compatible`
-          Whether a compatibility check should be performed for upgrades. The check only passes if
-          a new module has (a) the same public functions (b) for existing resources, no layout change.
-      * `immutable`
-          Whether the modules in the package are immutable and cannot be upgraded.
+    description: >-
+      UpgradePolicy is the policy for upgrading a move module.
+
+       - UNSPECIFIED: UNSPECIFIED: a placeholder for an unspecified upgrade policy.
+       - COMPATIBLE: COMPATBILE: Whether a compatibility check should be performed for upgrades. The check only passes if
+      a new module has (a) the same public functions (b) for existing resources,
+      no layout change.
+       - IMMUTABLE: IMMUTABLE: Whether the modules in the package are immutable and cannot be upgraded.
   initia.move.v1.VMEvent:
     type: object
     properties:
@@ -87028,17 +88257,72 @@ definitions:
       submitter:
         type: string
         description: The address of the batch submitter.
-      chain:
+      chain_type:
+        description: The target chain type.
         type: string
-        title: The target chain
+        enum:
+          - CHAIN_TYPE_UNSPECIFIED
+          - CHAIN_TYPE_INITIA
+          - CHAIN_TYPE_CELESTIA
+        default: CHAIN_TYPE_UNSPECIFIED
     description: BatchInfo defines the set of batch information.
+  opinit.ophost.v1.BatchInfo.ChainType:
+    type: string
+    enum:
+      - CHAIN_TYPE_UNSPECIFIED
+      - CHAIN_TYPE_INITIA
+      - CHAIN_TYPE_CELESTIA
+    default: CHAIN_TYPE_UNSPECIFIED
+    description: |-
+      ChainType defines the type of chain.
+
+       - CHAIN_TYPE_UNSPECIFIED: Unspecified chain type.
+       - CHAIN_TYPE_INITIA: The chain type of the initia chain.
+       - CHAIN_TYPE_CELESTIA: The chain type of the celestia chain.
+  opinit.ophost.v1.BatchInfoWithOutput:
+    type: object
+    properties:
+      batch_info:
+        type: object
+        properties:
+          submitter:
+            type: string
+            description: The address of the batch submitter.
+          chain_type:
+            description: The target chain type.
+            type: string
+            enum:
+              - CHAIN_TYPE_UNSPECIFIED
+              - CHAIN_TYPE_INITIA
+              - CHAIN_TYPE_CELESTIA
+            default: CHAIN_TYPE_UNSPECIFIED
+        description: BatchInfo defines the set of batch information.
+      output:
+        type: object
+        properties:
+          output_root:
+            type: string
+            format: byte
+            description: Hash of the l2 output.
+          l1_block_number:
+            type: string
+            format: uint64
+            description: The l1 block number that the output root was submitted in.
+          l1_block_time:
+            type: string
+            format: date-time
+            description: Timestamp of the l1 block that the output root was submitted in.
+          l2_block_number:
+            type: string
+            format: uint64
+            description: The l2 block number that the output root was submitted in.
+        description: Output is a l2 block submitted by proposer.
+    description: BatchInfoWithOutput defines the batch information with output.
   opinit.ophost.v1.BridgeConfig:
     type: object
     properties:
-      challengers:
-        type: array
-        items:
-          type: string
+      challenger:
+        type: string
         description: The address of the challenger.
       proposer:
         type: string
@@ -87050,9 +88334,14 @@ definitions:
           submitter:
             type: string
             description: The address of the batch submitter.
-          chain:
+          chain_type:
+            description: The target chain type.
             type: string
-            title: The target chain
+            enum:
+              - CHAIN_TYPE_UNSPECIFIED
+              - CHAIN_TYPE_INITIA
+              - CHAIN_TYPE_CELESTIA
+            default: CHAIN_TYPE_UNSPECIFIED
       submission_interval:
         type: string
         description: >-
@@ -87065,14 +88354,13 @@ definitions:
         description: >-
           The minium time duration that must elapse before a withdrawal can be
           finalized.
-      submission_start_time:
+      submission_start_height:
         type: string
-        format: date-time
-        description: >-
-          The time of the first l2 block recorded.
-
-          NOTE: this param is currently not used, but will be used for challenge
-          in future.
+        format: uint64
+        description: The the first l2 block will be recorded on l1.
+      oracle_enabled:
+        type: boolean
+        description: oracle_enabled is a flag to enable oracle.
       metadata:
         type: string
         format: byte
@@ -87085,6 +88373,10 @@ definitions:
         type: string
         format: byte
         description: Hash of the l2 output.
+      l1_block_number:
+        type: string
+        format: uint64
+        description: The l1 block number that the output root was submitted in.
       l1_block_time:
         type: string
         format: date-time
@@ -87113,6 +88405,72 @@ definitions:
             signatures required by gogoproto.
         description: The amount to be paid by l2 creator.
     description: Params defines the set of ophost parameters.
+  opinit.ophost.v1.QueryBatchInfosResponse:
+    type: object
+    properties:
+      batch_infos:
+        type: array
+        items:
+          type: object
+          properties:
+            batch_info:
+              type: object
+              properties:
+                submitter:
+                  type: string
+                  description: The address of the batch submitter.
+                chain_type:
+                  description: The target chain type.
+                  type: string
+                  enum:
+                    - CHAIN_TYPE_UNSPECIFIED
+                    - CHAIN_TYPE_INITIA
+                    - CHAIN_TYPE_CELESTIA
+                  default: CHAIN_TYPE_UNSPECIFIED
+              description: BatchInfo defines the set of batch information.
+            output:
+              type: object
+              properties:
+                output_root:
+                  type: string
+                  format: byte
+                  description: Hash of the l2 output.
+                l1_block_number:
+                  type: string
+                  format: uint64
+                  description: The l1 block number that the output root was submitted in.
+                l1_block_time:
+                  type: string
+                  format: date-time
+                  description: >-
+                    Timestamp of the l1 block that the output root was submitted
+                    in.
+                l2_block_number:
+                  type: string
+                  format: uint64
+                  description: The l2 block number that the output root was submitted in.
+              description: Output is a l2 block submitted by proposer.
+          description: BatchInfoWithOutput defines the batch information with output.
+      pagination:
+        description: pagination defines the pagination in the response.
+        type: object
+        properties:
+          next_key:
+            type: string
+            format: byte
+            description: |-
+              next_key is the key to be passed to PageRequest.key to
+              query the next page most efficiently. It will be empty if
+              there are no more results.
+          total:
+            type: string
+            format: uint64
+            title: >-
+              total is total number of results available if
+              PageRequest.count_total
+
+              was set, its value is undefined otherwise
+    description: QueryBatchInfosResponse is response type for Query/BatchInfos RPC method.
   opinit.ophost.v1.QueryBridgeResponse:
     type: object
     properties:
@@ -87124,10 +88482,8 @@ definitions:
       bridge_config:
         type: object
         properties:
-          challengers:
-            type: array
-            items:
-              type: string
+          challenger:
+            type: string
             description: The address of the challenger.
           proposer:
             type: string
@@ -87139,9 +88495,14 @@ definitions:
               submitter:
                 type: string
                 description: The address of the batch submitter.
-              chain:
+              chain_type:
+                description: The target chain type.
                 type: string
-                title: The target chain
+                enum:
+                  - CHAIN_TYPE_UNSPECIFIED
+                  - CHAIN_TYPE_INITIA
+                  - CHAIN_TYPE_CELESTIA
+                default: CHAIN_TYPE_UNSPECIFIED
           submission_interval:
             type: string
             description: >-
@@ -87154,14 +88515,13 @@ definitions:
             description: >-
               The minium time duration that must elapse before a withdrawal can
               be finalized.
-          submission_start_time:
+          submission_start_height:
             type: string
-            format: date-time
-            description: >-
-              The time of the first l2 block recorded.
-
-              NOTE: this param is currently not used, but will be used for
-              challenge in future.
+            format: uint64
+            description: The the first l2 block will be recorded on l1.
+          oracle_enabled:
+            type: boolean
+            description: oracle_enabled is a flag to enable oracle.
           metadata:
             type: string
             format: byte
@@ -87184,10 +88544,8 @@ definitions:
             bridge_config:
               type: object
               properties:
-                challengers:
-                  type: array
-                  items:
-                    type: string
+                challenger:
+                  type: string
                   description: The address of the challenger.
                 proposer:
                   type: string
@@ -87199,9 +88557,14 @@ definitions:
                     submitter:
                       type: string
                       description: The address of the batch submitter.
-                    chain:
+                    chain_type:
+                      description: The target chain type.
                       type: string
-                      title: The target chain
+                      enum:
+                        - CHAIN_TYPE_UNSPECIFIED
+                        - CHAIN_TYPE_INITIA
+                        - CHAIN_TYPE_CELESTIA
+                      default: CHAIN_TYPE_UNSPECIFIED
                 submission_interval:
                   type: string
                   description: >-
@@ -87214,14 +88577,13 @@ definitions:
                   description: >-
                     The minium time duration that must elapse before a
                     withdrawal can be finalized.
-                submission_start_time:
+                submission_start_height:
                   type: string
-                  format: date-time
-                  description: >-
-                    The time of the first l2 block recorded.
-
-                    NOTE: this param is currently not used, but will be used for
-                    challenge in future.
+                  format: uint64
+                  description: The the first l2 block will be recorded on l1.
+                oracle_enabled:
+                  type: boolean
+                  description: oracle_enabled is a flag to enable oracle.
                 metadata:
                   type: string
                   format: byte
@@ -87248,6 +88610,12 @@ definitions:
 
               was set, its value is undefined otherwise
     title: QueryBridgesResponse is response type for the Query/Bridges RPC method
+  opinit.ophost.v1.QueryClaimedResponse:
+    type: object
+    properties:
+      claimed:
+        type: boolean
+    title: QueryClaimedResponse is response type for the Query/Claimed RPC method
   opinit.ophost.v1.QueryLastFinalizedOutputResponse:
     type: object
     properties:
@@ -87261,6 +88629,10 @@ definitions:
             type: string
             format: byte
             description: Hash of the l2 output.
+          l1_block_number:
+            type: string
+            format: uint64
+            description: The l1 block number that the output root was submitted in.
           l1_block_time:
             type: string
             format: date-time
@@ -87270,6 +88642,18 @@ definitions:
             format: uint64
             description: The l2 block number that the output root was submitted in.
         description: Output is a l2 block submitted by proposer.
+    title: >-
+      QueryLastFinalizedOutputResponse is response type for the
+      Query/LastFinalizedOutput RPC method
+  opinit.ophost.v1.QueryNextL1SequenceResponse:
+    type: object
+    properties:
+      next_l1_sequence:
+        type: string
+        format: uint64
+    description: >-
+      QueryNextL1SequenceResponse is response type for the Query/NextL1Sequence
+      RPC method.
   opinit.ophost.v1.QueryOutputProposalResponse:
     type: object
     properties:
@@ -87286,6 +88670,10 @@ definitions:
             type: string
             format: byte
             description: Hash of the l2 output.
+          l1_block_number:
+            type: string
+            format: uint64
+            description: The l1 block number that the output root was submitted in.
           l1_block_time:
             type: string
             format: date-time
@@ -87319,6 +88707,10 @@ definitions:
                   type: string
                   format: byte
                   description: Hash of the l2 output.
+                l1_block_number:
+                  type: string
+                  format: uint64
+                  description: The l1 block number that the output root was submitted in.
                 l1_block_time:
                   type: string
                   format: date-time
@@ -87452,7 +88844,7 @@ definitions:
       l2_denom:
         type: string
     title: TokenPair defines l1 and l2 token pair
-  slinky.oracle.v1.GetAllCurrencyPairsResponse:
+  connect.oracle.v2.GetAllCurrencyPairsResponse:
     type: object
     properties:
       currency_pairs:
@@ -87472,7 +88864,32 @@ definitions:
     description: |-
       GetAllCurrencyPairsResponse returns all CurrencyPairs that the module is
       currently tracking.
-  slinky.oracle.v1.GetPriceResponse:
+  connect.oracle.v2.GetCurrencyPairMappingResponse:
+    type: object
+    properties:
+      currency_pair_mapping:
+        type: object
+        additionalProperties:
+          type: object
+          properties:
+            Base:
+              type: string
+            Quote:
+              type: string
+          title: >-
+            CurrencyPair is the standard representation of a pair of assets,
+            where one
+
+            (Base) is priced in terms of the other (Quote)
+        description: >-
+          currency_pair_mapping is a mapping of the id representing the currency
+          pair
+
+          to the currency pair itself.
+    description: >-
+      GetCurrencyPairMappingResponse is the GetCurrencyPairMapping response
+      type.
+  connect.oracle.v2.GetPriceResponse:
     type: object
     properties:
       price:
@@ -87505,10 +88922,11 @@ definitions:
       decimals:
         type: string
         format: uint64
-        description: |-
+        description: >-
           decimals represents the number of decimals that the quote-price is
-          represented in. For Pairs where ETHEREUM is the quote this will be 18,
-          otherwise it will be 8.
+
+          represented in. It is used to scale the QuotePrice to its proper
+          value.
       id:
         type: string
         format: uint64
@@ -87518,7 +88936,7 @@ definitions:
       from
 
       the x/oracle query service.
-  slinky.oracle.v1.GetPricesResponse:
+  connect.oracle.v2.GetPricesResponse:
     type: object
     properties:
       prices:
@@ -87565,10 +88983,8 @@ definitions:
                 decimals represents the number of decimals that the quote-price
                 is
 
-                represented in. For Pairs where ETHEREUM is the quote this will
-                be 18,
-
-                otherwise it will be 8.
+                represented in. It is used to scale the QuotePrice to its proper
+                value.
             id:
               type: string
               format: uint64
@@ -87583,7 +88999,7 @@ definitions:
       from
 
       the x/oracle query service.
-  slinky.oracle.v1.QuotePrice:
+  connect.oracle.v2.QuotePrice:
     type: object
     properties:
       price:
@@ -87607,7 +89023,7 @@ definitions:
       CurrencyPair,
 
       where price represents the price of Base in terms of Quote
-  slinky.types.v1.CurrencyPair:
+  connect.types.v2.CurrencyPair:
     type: object
     properties:
       Base:
@@ -87617,7 +89033,7 @@ definitions:
     title: |-
       CurrencyPair is the standard representation of a pair of assets, where one
       (Base) is priced in terms of the other (Quote)
-  slinky.marketmap.v1.LastUpdatedResponse:
+  connect.marketmap.v2.LastUpdatedResponse:
     type: object
     properties:
       last_updated:
@@ -87626,7 +89042,7 @@ definitions:
     description: |-
       LastUpdatedResponse is the response type for the Query/LastUpdated RPC
       method.
-  slinky.marketmap.v1.Market:
+  connect.marketmap.v2.Market:
     type: object
     properties:
       ticker:
@@ -87747,7 +89163,7 @@ definitions:
           ProviderConfigs is the list of provider-specific configs for this
           Market.
     description: Market encapsulates a Ticker and its provider-specific configuration.
-  slinky.marketmap.v1.MarketMap:
+  connect.marketmap.v2.MarketMap:
     type: object
     properties:
       markets:
@@ -87881,7 +89297,7 @@ definitions:
 
           to be stored on-chain.
     description: MarketMap maps ticker strings to their Markets.
-  slinky.marketmap.v1.MarketMapResponse:
+  connect.marketmap.v2.MarketMapResponse:
     type: object
     properties:
       market_map:
@@ -88036,7 +89452,7 @@ definitions:
         type: string
         description: ChainId is the chain identifier for the market map.
     description: MarketMapResponse is the query response for the MarketMap query.
-  slinky.marketmap.v1.MarketResponse:
+  connect.marketmap.v2.MarketResponse:
     type: object
     properties:
       market:
@@ -88163,7 +89579,7 @@ definitions:
               ProviderConfigs is the list of provider-specific configs for this
               Market.
     description: MarketResponse is the query response for the Market query.
-  slinky.marketmap.v1.Params:
+  connect.marketmap.v2.Params:
     type: object
     properties:
       market_authorities:
@@ -88182,7 +89598,7 @@ definitions:
           list. Only governance can add to the MarketAuthorities or change the
           Admin.
     description: Params defines the parameters for the x/marketmap module.
-  slinky.marketmap.v1.ParamsResponse:
+  connect.marketmap.v2.ParamsResponse:
     type: object
     properties:
       params:
@@ -88207,7 +89623,7 @@ definitions:
               the Admin.
         description: Params defines the parameters for the x/marketmap module.
     description: ParamsResponse is the response type for the Query/Params RPC method.
-  slinky.marketmap.v1.ProviderConfig:
+  connect.marketmap.v2.ProviderConfig:
     type: object
     properties:
       name:
@@ -88262,7 +89678,7 @@ definitions:
         description: |-
           MetadataJSON is a string of JSON that encodes any extra configuration
           for the given provider config.
-  slinky.marketmap.v1.Ticker:
+  connect.marketmap.v2.Ticker:
     type: object
     properties:
       currency_pair:

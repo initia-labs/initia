@@ -26,25 +26,35 @@ func Test_InitGenesis(t *testing.T) {
 	addrB := sdk.AccAddress(pubKeyB.Address())
 
 	k.InitGenesis(ctx, types.GenesisState{
-		PermissionedRelayers: []types.PermissionedRelayers{
+		ChannelStates: []types.ChannelState{
 			{
 				PortId:    portA,
 				ChannelId: channelA,
+				Admin:     addrA.String(),
 				Relayers:  []string{addrA.String()},
 			},
 			{
 				PortId:    portB,
 				ChannelId: channelB,
+				Admin:     addrB.String(),
 				Relayers:  []string{addrB.String()},
 			},
 		},
 	})
 
-	ok, err := k.HasPermission(ctx, portA, channelA, addrA)
+	ok, err := k.HasAdminPermission(ctx, portA, channelA, addrA)
 	require.NoError(t, err)
 	require.True(t, ok)
 
-	ok, _ = k.HasPermission(ctx, portB, channelB, addrB)
+	ok, err = k.HasRelayerPermission(ctx, portA, channelA, addrA)
+	require.NoError(t, err)
+	require.True(t, ok)
+
+	ok, err = k.HasAdminPermission(ctx, portB, channelB, addrB)
+	require.NoError(t, err)
+	require.True(t, ok)
+
+	ok, err = k.HasAdminPermission(ctx, portB, channelB, addrB)
 	require.NoError(t, err)
 	require.True(t, ok)
 }
@@ -63,15 +73,17 @@ func Test_ExportGenesis(t *testing.T) {
 	addrB := sdk.AccAddress(pubKeyB.Address())
 
 	genState := types.NewGenesisState(
-		[]types.PermissionedRelayers{
+		[]types.ChannelState{
 			{
 				PortId:    portA,
 				ChannelId: channelA,
+				Admin:     addrA.String(),
 				Relayers:  []string{addrA.String()},
 			},
 			{
 				PortId:    portB,
 				ChannelId: channelB,
+				Admin:     addrB.String(),
 				Relayers:  []string{addrB.String()},
 			},
 		},

@@ -4,17 +4,8 @@ linters:
     - thelper
     - varnamelen
     - tagliatelle
-    - interfacer
     - wrapcheck
-    - deadcode
-    - exhaustivestruct
-    - golint
-    - ifshort
-    - maligned
-    - nosnakecase
-    - scopelint
-    - structcheck
-    - varcheck
+    - typecheck
 linters-settings:
   gocyclo:
     min-complexity: 11

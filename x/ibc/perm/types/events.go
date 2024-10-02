@@ -1,8 +1,11 @@
 package types
 
 const (
-	EventTypeSetPermissionedRelayers = "update_channel_relayers"
-	AttributeKeyPortId               = "port_id"
-	AttributeKeyChannelId            = "channel_id"
-	AttributeKeyRelayers             = "relayers"
+	EventTypeUpdateAdmin                = "update_admin"
+	EventTypeUpdatePermissionedRelayers = "update_permissioned_relayers"
+
+	AttributeKeyPortId    = "port_id"
+	AttributeKeyChannelId = "channel_id"
+	AttributeKeyAdmin     = "admin"
+	AttributeKeyRelayers  = "relayers"
 )

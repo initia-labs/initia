@@ -4,14 +4,15 @@ import (
 	"context"
 	"time"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	distrtypes "github.com/initia-labs/initia/x/distribution/types"
 	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
 	rewardtypes "github.com/initia-labs/initia/x/reward/types"
 
-	slinkytypes "github.com/skip-mev/slinky/pkg/types"
-	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
+	connecttypes "github.com/skip-mev/connect/v2/pkg/types"
+	oracletypes "github.com/skip-mev/connect/v2/x/oracle/types"
 )
 
 // AccountKeeper is expected keeper for auth module
@@ -84,6 +85,11 @@ type CommunityPoolKeeper interface {
 }
 
 type OracleKeeper interface {
-	GetPriceForCurrencyPair(ctx sdk.Context, cp slinkytypes.CurrencyPair) (oracletypes.QuotePrice, error)
-	GetDecimalsForCurrencyPair(ctx sdk.Context, cp slinkytypes.CurrencyPair) (decimals uint64, err error)
+	GetPriceForCurrencyPair(ctx sdk.Context, cp connecttypes.CurrencyPair) (oracletypes.QuotePrice, error)
+	GetDecimalsForCurrencyPair(ctx sdk.Context, cp connecttypes.CurrencyPair) (decimals uint64, err error)
+}
+
+type VestingKeeper interface {
+	GetVestingHandle(ctx context.Context, moduleAccAddr sdk.AccAddress, moduleName string, creatorAccAddr sdk.AccAddress) (*sdk.AccAddress, error)
+	GetUnclaimedVestedAmount(ctx context.Context, tableHandle, recipientAccAddr sdk.AccAddress) (math.Int, error)
 }

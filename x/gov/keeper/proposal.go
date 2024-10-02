@@ -68,7 +68,7 @@ func (k Keeper) SubmitProposal(ctx context.Context, messages []sdk.Msg, metadata
 				return customtypes.Proposal{}, err
 			}
 
-			return customtypes.Proposal{}, errorsmod.Wrapf(types.ErrInvalidSigner, signerStr)
+			return customtypes.Proposal{}, errorsmod.Wrap(types.ErrInvalidSigner, signerStr)
 		}
 
 		// use the msg service router to see that there is a valid route for that message.
@@ -85,7 +85,7 @@ func (k Keeper) SubmitProposal(ctx context.Context, messages []sdk.Msg, metadata
 		if msg, ok := msg.(*v1.MsgExecLegacyContent); ok {
 			cacheCtx, _ := sdkCtx.CacheContext()
 			if _, err := handler(cacheCtx, msg); err != nil {
-				if errors.Is(types.ErrNoProposalHandlerExists, err) {
+				if errors.Is(err, types.ErrNoProposalHandlerExists) {
 					return customtypes.Proposal{}, err
 				}
 				return customtypes.Proposal{}, errorsmod.Wrap(types.ErrInvalidProposalContent, err.Error())

@@ -22,8 +22,8 @@ type msgServer struct {
 }
 
 // NewMsgServerImpl creates and returns a new types.MsgServer, fulfilling the intertx Msg service interface
-func NewMsgServerImpl(keeper Keeper) types.MsgServer {
-	return &msgServer{Keeper: keeper, icaControllerMsgServer: icacontrollerkeeper.NewMsgServerImpl(&keeper.icaControllerKeeper)}
+func NewMsgServerImpl(k Keeper) types.MsgServer {
+	return &msgServer{Keeper: k, icaControllerMsgServer: icacontrollerkeeper.NewMsgServerImpl(&k.icaControllerKeeper)}
 }
 
 // RegisterAccount implements the Msg/RegisterAccount interface

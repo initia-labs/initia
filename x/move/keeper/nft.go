@@ -88,8 +88,8 @@ func (k NftKeeper) Mint(
 		ctx,
 		vmtypes.StdAddress,
 		vmtypes.StdAddress,
-		types.MoveModuleNameSimpleNft,
-		types.FunctionNameSimpleNftMint,
+		types.MoveModuleNameInitiaNft,
+		types.FunctionNameInitiaNftMint,
 		[]vmtypes.TypeTag{},
 		[][]byte{collectionNameBz, tokenDescBz, tokenIDBz, tokenURIBz, {1}, append([]byte{1}, recipientAddr[:]...)},
 	)
@@ -100,12 +100,12 @@ func (k NftKeeper) Burn(ctx context.Context, ownerAddr, tokenAddr vmtypes.Accoun
 		ctx,
 		ownerAddr,
 		vmtypes.StdAddress,
-		types.MoveModuleNameSimpleNft,
-		types.FunctionNameSimpleNftBurn,
+		types.MoveModuleNameInitiaNft,
+		types.FunctionNameInitiaNftBurn,
 		[]vmtypes.TypeTag{types.TypeTagFromStructTag(vmtypes.StructTag{
 			Address: vmtypes.StdAddress,
-			Module:  types.MoveModuleNameSimpleNft,
-			Name:    types.ResourceNameSimpleNft,
+			Module:  types.MoveModuleNameInitiaNft,
+			Name:    types.ResourceNameInitiaNft,
 		})},
 		[][]byte{tokenAddr[:]},
 	)
@@ -158,10 +158,10 @@ func (k NftKeeper) initializeCollection(ctx context.Context, collectionName, cla
 		ctx,
 		vmtypes.StdAddress,
 		vmtypes.StdAddress,
-		types.MoveModuleNameSimpleNft,
-		types.FunctionNameSimpleNftInitialize,
+		types.MoveModuleNameInitiaNft,
+		types.FunctionNameInitiaNftCreateCollection,
 		[]vmtypes.TypeTag{},
-		[][]byte{collectionDescBz, {0}, collectionNameBz, collectionUriBz, {0}, {0}, {0}, {0}, {0}, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+		[][]byte{collectionDescBz, {0}, collectionNameBz, collectionUriBz, {0}, {0}, {0}, {0}, {0}, {0}},
 	)
 }
 

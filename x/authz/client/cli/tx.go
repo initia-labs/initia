@@ -256,7 +256,7 @@ Where authzItems.json contains:
 	cmd.Flags().StringSlice(FlagAllowedValidators, []string{}, "Allowed validators addresses separated by ,")
 	cmd.Flags().StringSlice(FlagDenyValidators, []string{}, "Deny validators addresses separated by ,")
 	cmd.Flags().StringSlice(FlagAllowList, []string{}, "Allowed addresses grantee is allowed to send funds separated by ,")
-	cmd.Flags().Int64(FlagExpiration, time.Now().AddDate(1, 0, 0).Unix(), "The Unix timestamp. Default is one year.")
+	cmd.Flags().Int64(FlagExpiration, time.Now().UTC().AddDate(1, 0, 0).Unix(), "The Unix timestamp. Default is one year.")
 	cmd.Flags().String(FlagType, "", "The type of move authorization, {publish|excute}")
 	cmd.Flags().String(FlagItems, "", "The items of move execute authorization, a json file path.")
 	cmd.Flags().String(FlagModules, "", "The items of move publish authorization, a comma-separated string of module names.")

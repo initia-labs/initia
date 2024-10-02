@@ -11,13 +11,14 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 
-	apporacle "github.com/initia-labs/initia/app/oracle"
 	"github.com/initia-labs/initia/app/params"
 	moveconfig "github.com/initia-labs/initia/x/move/config"
+
+	oracleconfig "github.com/skip-mev/connect/v2/oracle/config"
 )
 
 func MakeEncodingConfig() params.EncodingConfig {
-	tempApp := NewInitiaApp(log.NewNopLogger(), dbm.NewMemDB(), nil, true, moveconfig.DefaultMoveConfig(), apporacle.DefaultConfig(), EmptyAppOptions{})
+	tempApp := NewInitiaApp(log.NewNopLogger(), dbm.NewMemDB(), nil, true, moveconfig.DefaultMoveConfig(), oracleconfig.NewDefaultAppConfig(), EmptyAppOptions{})
 	encodingConfig := params.EncodingConfig{
 		InterfaceRegistry: tempApp.InterfaceRegistry(),
 		Codec:             tempApp.AppCodec(),
@@ -29,7 +30,7 @@ func MakeEncodingConfig() params.EncodingConfig {
 }
 
 func AutoCliOpts() autocli.AppOptions {
-	tempApp := NewInitiaApp(log.NewNopLogger(), dbm.NewMemDB(), nil, true, moveconfig.DefaultMoveConfig(), apporacle.DefaultConfig(), EmptyAppOptions{})
+	tempApp := NewInitiaApp(log.NewNopLogger(), dbm.NewMemDB(), nil, true, moveconfig.DefaultMoveConfig(), oracleconfig.NewDefaultAppConfig(), EmptyAppOptions{})
 	modules := make(map[string]appmodule.AppModule, 0)
 	for _, m := range tempApp.ModuleManager.Modules {
 		if moduleWithName, ok := m.(module.HasName); ok {
@@ -50,7 +51,7 @@ func AutoCliOpts() autocli.AppOptions {
 }
 
 func BasicManager() module.BasicManager {
-	tempApp := NewInitiaApp(log.NewNopLogger(), dbm.NewMemDB(), nil, true, moveconfig.DefaultMoveConfig(), apporacle.DefaultConfig(), EmptyAppOptions{})
+	tempApp := NewInitiaApp(log.NewNopLogger(), dbm.NewMemDB(), nil, true, moveconfig.DefaultMoveConfig(), oracleconfig.NewDefaultAppConfig(), EmptyAppOptions{})
 	return tempApp.BasicModuleManager
 }
 

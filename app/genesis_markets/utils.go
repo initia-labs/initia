@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
+	marketmaptypes "github.com/skip-mev/connect/v2/x/marketmap/types"
 )
 
 // ReadMarketsFromFile reads a market map configuration from a file at the given path.

@@ -34,14 +34,29 @@ func ConvertToSDKMessage(
 			if err != nil {
 				return nil, err
 			}
+			if !msg.IsJson {
+				return NewMsgExecute(
+					sender,
+					msg.ModuleAddress.String(),
+					msg.ModuleName,
+					msg.FunctionName,
+					msg.TypeArgs,
+					msg.Args,
+				), nil
+			}
 
-			return NewMsgExecute(
+			args := make([]string, len(msg.Args))
+			for i, arg := range msg.Args {
+				args[i] = string(arg)
+			}
+
+			return NewMsgExecuteJSON(
 				sender,
 				msg.ModuleAddress.String(),
 				msg.ModuleName,
 				msg.FunctionName,
 				msg.TypeArgs,
-				msg.Args,
+				args,
 			), nil
 		case *vmtypes.MoveMessage__Script:
 			sender, err := ac.BytesToString(ConvertVMAddressToSDKAddress(msg.Sender))
@@ -49,11 +64,25 @@ func ConvertToSDKMessage(
 				return nil, err
 			}
 
-			return NewMsgScript(
+			if !msg.IsJson {
+				return NewMsgScript(
+					sender,
+					msg.CodeBytes,
+					msg.TypeArgs,
+					msg.Args,
+				), nil
+			}
+
+			args := make([]string, len(msg.Args))
+			for i, arg := range msg.Args {
+				args[i] = string(arg)
+			}
+
+			return NewMsgScriptJSON(
 				sender,
 				msg.CodeBytes,
 				msg.TypeArgs,
-				msg.Args,
+				args,
 			), nil
 		}
 

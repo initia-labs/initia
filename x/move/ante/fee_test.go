@@ -38,7 +38,7 @@ func (k TestAnteKeeper) HasDexPair(_ context.Context, denomQuote string) (bool, 
 	return true, nil
 }
 
-func (k TestAnteKeeper) GetPoolSpotPrice(_ context.Context, denomQuote string) (quotePrice math.LegacyDec, err error) {
+func (k TestAnteKeeper) GetBaseSpotPrice(_ context.Context, denomQuote string) (quotePrice math.LegacyDec, err error) {
 	balances, found := k.pools[denomQuote]
 	if !found {
 		return math.LegacyZeroDec(), fmt.Errorf("not found")
@@ -49,7 +49,7 @@ func (k TestAnteKeeper) GetPoolSpotPrice(_ context.Context, denomQuote string) (
 		return math.LegacyZeroDec(), fmt.Errorf("not found")
 	}
 
-	return types.GetPoolSpotPrice(balances[0], balances[1], weights[0], weights[1]), nil
+	return types.GetBaseSpotPrice(balances[0], balances[1], weights[0], weights[1]), nil
 }
 
 func (k TestAnteKeeper) BaseDenom(_ context.Context) (string, error) {
@@ -66,8 +66,8 @@ func (suite *AnteTestSuite) TestEnsureMempoolFees() {
 
 	dexPools := make(map[string][]math.Int)
 	dexPools["atom"] = []math.Int{
-		math.NewInt(1), // base
-		math.NewInt(2), // quote
+		math.NewInt(10), // base
+		math.NewInt(20), // quote
 	}
 
 	dexWeights := make(map[string][]math.LegacyDec)

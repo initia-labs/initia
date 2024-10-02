@@ -75,9 +75,9 @@ import (
 	"github.com/initia-labs/movevm/precompile"
 	vmtypes "github.com/initia-labs/movevm/types"
 
-	"github.com/skip-mev/slinky/x/oracle"
-	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
-	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
+	"github.com/skip-mev/connect/v2/x/oracle"
+	oraclekeeper "github.com/skip-mev/connect/v2/x/oracle/keeper"
+	oracletypes "github.com/skip-mev/connect/v2/x/oracle/types"
 )
 
 var ModuleBasics = module.NewBasicManager(
@@ -442,6 +442,7 @@ func _createTestInput(
 		bankKeeper,
 		stakingKeeper,
 		distKeeper,
+		movekeeper.NewVestingKeeper(moveKeeper),
 		msgRouter,
 		govConfig,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
@@ -485,6 +486,7 @@ var stdCoinTestModule []byte
 var basicCoinMintScript []byte
 var tableGeneratorModule []byte
 var testAddressModule []byte
+var vestingModule []byte
 
 func init() {
 	basicCoinModule = ReadMoveFile("BasicCoin")
@@ -492,6 +494,7 @@ func init() {
 	stdCoinTestModule = ReadMoveFile("StdCoinTest")
 	tableGeneratorModule = ReadMoveFile("TableGenerator")
 	testAddressModule = ReadMoveFile("TestAddress")
+	vestingModule = ReadMoveFile("Vesting")
 
 	basicCoinMintScript = ReadScriptFile("main")
 }
@@ -542,6 +545,21 @@ func (router TestMsgRouter) HandlerByTypeURL(typeURL string) baseapp.MsgServiceH
 
 			return sdk.WrapServiceResult(ctx, &stakingtypes.MsgDelegateResponse{}, nil)
 		}
+	case sdk.MsgTypeURL(&movetypes.MsgExecuteJSON{}):
+		return func(ctx sdk.Context, _msg sdk.Msg) (*sdk.Result, error) {
+			msg := _msg.(*movetypes.MsgExecuteJSON)
+
+			ctx.EventManager().EmitEvent(sdk.NewEvent("move_execute_with_json",
+				sdk.NewAttribute("sender", msg.Sender),
+				sdk.NewAttribute("module_addr", msg.ModuleAddress),
+				sdk.NewAttribute("module_name", msg.ModuleName),
+				sdk.NewAttribute("function_name", msg.FunctionName),
+				sdk.NewAttribute("type_args", strings.Join(msg.TypeArgs, ",")),
+				sdk.NewAttribute("args", strings.Join(msg.Args, ",")),
+			))
+
+			return sdk.WrapServiceResult(ctx, &stakingtypes.MsgDelegateResponse{}, nil)
+		}
 	case sdk.MsgTypeURL(&movetypes.MsgScript{}):
 		return func(ctx sdk.Context, _msg sdk.Msg) (*sdk.Result, error) {
 			msg := _msg.(*movetypes.MsgScript)
@@ -556,6 +574,19 @@ func (router TestMsgRouter) HandlerByTypeURL(typeURL string) baseapp.MsgServiceH
 				sdk.NewAttribute("code_bytes", hex.EncodeToString(msg.CodeBytes)),
 				sdk.NewAttribute("type_args", strings.Join(msg.TypeArgs, ",")),
 				sdk.NewAttribute("args", strings.Join(argStrs, ",")),
+			))
+
+			return sdk.WrapServiceResult(ctx, &stakingtypes.MsgDelegateResponse{}, nil)
+		}
+	case sdk.MsgTypeURL(&movetypes.MsgScriptJSON{}):
+		return func(ctx sdk.Context, _msg sdk.Msg) (*sdk.Result, error) {
+			msg := _msg.(*movetypes.MsgScriptJSON)
+
+			ctx.EventManager().EmitEvent(sdk.NewEvent("move_script_with_json",
+				sdk.NewAttribute("sender", msg.Sender),
+				sdk.NewAttribute("code_bytes", hex.EncodeToString(msg.CodeBytes)),
+				sdk.NewAttribute("type_args", strings.Join(msg.TypeArgs, ",")),
+				sdk.NewAttribute("args", strings.Join(msg.Args, ",")),
 			))
 
 			return sdk.WrapServiceResult(ctx, &stakingtypes.MsgDelegateResponse{}, nil)

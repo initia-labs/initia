@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"cosmossdk.io/collections"
 	"cosmossdk.io/math"
@@ -17,18 +18,18 @@ import (
 )
 
 // AmountToShare convert token to share in the ratio of a validator's share/token
-func (k Keeper) AmountToShare(ctx context.Context, valAddr sdk.ValAddress, amount sdk.Coin) (math.Int, error) {
+func (k Keeper) AmountToShare(ctx context.Context, valAddr sdk.ValAddress, amount sdk.Coin) (math.LegacyDec, error) {
 	val, err := k.StakingKeeper.Validator(ctx, valAddr)
 	if err != nil {
-		return math.ZeroInt(), err
+		return math.LegacyZeroDec(), err
 	}
 
 	shares, err := val.SharesFromTokens(sdk.NewCoins(amount))
 	if err != nil {
-		return math.ZeroInt(), err
+		return math.LegacyZeroDec(), err
 	}
 
-	return shares.AmountOf(amount.Denom).TruncateInt(), err
+	return shares.AmountOf(amount.Denom), err
 }
 
 // ShareToAmount convert share to token in the ratio of a validator's token/share
@@ -38,13 +39,27 @@ func (k Keeper) ShareToAmount(ctx context.Context, valAddr sdk.ValAddress, share
 		return math.ZeroInt(), err
 	}
 
-	tokens := val.TokensFromShares(sdk.NewDecCoins(share))
+	tokens := val.TokensFromSharesTruncated(sdk.NewDecCoins(share))
 	return tokens.AmountOf(share.Denom).TruncateInt(), nil
 }
 
-// WithdrawRewards withdraw rewards from a validator and send the
-// withdrawn staking rewards to the move staking module account
-func (k Keeper) WithdrawRewards(ctx context.Context, valAddr sdk.ValAddress) (distrtypes.Pools, error) {
+// SafeWithdrawRewards withdraw rewards from a validator and send the withdrawn staking rewards
+// to the move staking module account.
+//
+// This function is called from the begin blocker, so we should recover the panic and return nil
+// to prevent the chain from halting.
+func (k Keeper) SafeWithdrawRewards(ctx context.Context, valAddr sdk.ValAddress) (pools distrtypes.Pools, err error) {
+	// distrKeeper.WithdrawDelegationRewards can raise panic due to some rounding inconsistencies.
+	// https://github.com/initia-labs/initia/blob/3479c41bb1624e97096e1c1f1edf574403c09fa8/x/distribution/keeper/delegation.go#L196
+	defer func() {
+		if r := recover(); r != nil {
+			k.Logger(ctx).Error("failed to withdraw rewards", "validator", valAddr, "error", r)
+
+			pools = nil
+			err = nil
+		}
+	}()
+
 	delModuleAddr := types.GetDelegatorModuleAddress(valAddr)
 	if ok, err := k.hasZeroRewards(ctx, valAddr, delModuleAddr); err != nil {
 		return nil, err
@@ -64,7 +79,7 @@ func (k Keeper) WithdrawRewards(ctx context.Context, valAddr sdk.ValAddress) (di
 	}
 	rewardDenom := params.RewardDenom
 
-	pools := make(distrtypes.Pools, 0, len(rewardPools))
+	pools = make(distrtypes.Pools, 0, len(rewardPools))
 	for _, pool := range rewardPools {
 		rewardAmount := pool.Coins.AmountOf(rewardDenom)
 		if rewardAmount.IsPositive() {
@@ -224,8 +239,12 @@ func (k Keeper) ApplyStakingDeltas(
 			delegations[valAddrStr] = delegations[valAddrStr].Add(delCoin)
 		}
 
-		if delta.Undelegation > 0 {
-			undelCoin := sdk.NewDecCoin(denom, math.NewIntFromUint64(delta.Undelegation))
+		unbondingDecAmount, err := math.LegacyNewDecFromStr(delta.Undelegation)
+		if err != nil {
+			return err
+		}
+		if unbondingDecAmount.IsPositive() {
+			undelCoin := sdk.NewDecCoinFromDec(denom, unbondingDecAmount)
 			undelegations[valAddrStr] = undelegations[valAddrStr].Add(undelCoin)
 		}
 	}
@@ -319,7 +338,7 @@ func (k Keeper) DepositUnbondingCoins(
 		vmtypes.StdAddress,
 		vmtypes.StdAddress,
 		types.MoveModuleNameStaking,
-		types.FunctionNameStakingDepositUnbondingCoin,
+		types.FunctionNameStakingDepositUnbondingCoinForChain,
 		[]vmtypes.TypeTag{},
 		args,
 	)
@@ -426,23 +445,17 @@ func (k Keeper) SlashUnbondingDelegations(
 	}
 
 	for _, metadata := range metadatas {
-		fractionArg, err := vmtypes.SerializeString(fraction.String())
-		if err != nil {
-			return err
-		}
+		metadataArg := fmt.Sprintf("\"%s\"", metadata.String())
+		fractionArg := fmt.Sprintf("\"%s\"", fraction.String())
+		valArg := fmt.Sprintf("\"%s\"", valAddr.String())
 
-		valArg, err := vmtypes.SerializeString(valAddr.String())
-		if err != nil {
-			return err
-		}
-
-		args := [][]byte{metadata[:], valArg, fractionArg}
-		if err := k.ExecuteEntryFunction(
+		args := []string{metadataArg, valArg, fractionArg}
+		if err := k.ExecuteEntryFunctionJSON(
 			ctx,
 			vmtypes.StdAddress,
 			vmtypes.StdAddress,
 			types.MoveModuleNameStaking,
-			types.FunctionNameStakingSlashUnbondingCoin,
+			types.FunctionNameStakingSlashUnbondingCoinForChain,
 			[]vmtypes.TypeTag{},
 			args,
 		); err != nil {
@@ -476,7 +489,7 @@ func (k Keeper) InitializeStakingWithMetadata(
 		vmtypes.StdAddress,
 		vmtypes.StdAddress,
 		types.MoveModuleNameStaking,
-		types.FunctionNameStakingInitialize,
+		types.FunctionNameStakingInitializeForChain,
 		[]vmtypes.TypeTag{},
 		[][]byte{metadata[:]},
 	); err != nil {

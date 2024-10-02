@@ -1,8 +1,7 @@
 package keeper_test
 
 import (
-	"bytes"
-	"encoding/binary"
+	"slices"
 	"testing"
 
 	"cosmossdk.io/math"
@@ -16,18 +15,14 @@ import (
 )
 
 func decToVmArgument(t *testing.T, val math.LegacyDec) []byte {
+	// big-endian bytes
 	bz := val.BigInt().Bytes()
-	diff := 16 - len(bz)
-	require.True(t, diff >= 0)
-	if diff > 0 {
-		bz = append(bytes.Repeat([]byte{0}, diff), bz...)
-	}
 
-	high := binary.BigEndian.Uint64(bz[:8])
-	low := binary.BigEndian.Uint64(bz[8:16])
+	// reverse bytes to little-endian
+	slices.Reverse(bz)
 
-	// serialize to uint128
-	bz, err := vmtypes.SerializeUint128(high, low)
+	// serialize bytes
+	bz, err := vmtypes.SerializeBytes(bz)
 	require.NoError(t, err)
 
 	return bz
@@ -165,7 +160,7 @@ func Test_ReadWeights(t *testing.T) {
 	require.Equal(t, math.LegacyNewDecWithPrec(2, 1), weightQuote)
 }
 
-func Test_GetPoolSpotPrice(t *testing.T) {
+func Test_GetBaseSpotPrice(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 	dexKeeper := keeper.NewDexKeeper(&input.MoveKeeper)
 
@@ -191,7 +186,7 @@ func Test_GetPoolSpotPrice(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	quotePrice, err := dexKeeper.GetPoolSpotPrice(ctx, denomQuote)
+	quotePrice, err := dexKeeper.GetBaseSpotPrice(ctx, denomQuote)
 	require.NoError(t, err)
 	require.Equal(t, math.LegacyOneDec(), quotePrice)
 }

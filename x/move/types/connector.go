@@ -2,6 +2,7 @@ package types
 
 import (
 	"math/big"
+	"slices"
 
 	"cosmossdk.io/errors"
 	"cosmossdk.io/math"
@@ -23,7 +24,7 @@ const (
 	MoveModuleNamePrimaryFungibleStore = "primary_fungible_store"
 	MoveModuleNameManagedCoin          = "managed_coin"
 	MoveModuleNameObject               = "object"
-	MoveModuleNameSimpleNft            = "initia_nft"
+	MoveModuleNameInitiaNft            = "initia_nft"
 	MoveModuleNameCollection           = "collection"
 
 	// function names for managed_coin
@@ -31,10 +32,10 @@ const (
 	FunctionNameManagedCoinSudoMint   = "sudo_mint"
 	FunctionNameManagedCoinBurn       = "burn"
 
-	// function names for simple_nft
-	FunctionNameSimpleNftInitialize = "create_collection"
-	FunctionNameSimpleNftMint       = "mint"
-	FunctionNameSimpleNftBurn       = "burn"
+	// function names for initia_nft
+	FunctionNameInitiaNftCreateCollection = "create_collection"
+	FunctionNameInitiaNftMint             = "mint"
+	FunctionNameInitiaNftBurn             = "burn"
 
 	// function names for coin
 	FunctionNameCoinBalance      = "balance"
@@ -44,28 +45,27 @@ const (
 	FunctionNameCoinWhitelist    = "whitelist"
 
 	// function names for staking
-	FunctionNameStakingInitialize           = "initialize_for_chain"
-	FunctionNameStakingDepositReward        = "deposit_reward_for_chain"
-	FunctionNameStakingDelegate             = "delegate_script"
-	FunctionNameStakingUndelegate           = "undelegate_script"
-	FunctionNameStakingRegister             = "register"
-	FunctionNameStakingDepositUnbondingCoin = "deposit_unbonding_coin_for_chain"
-	FunctionNameStakingSlashUnbondingCoin   = "slash_unbonding_for_chain"
+	FunctionNameStakingInitializeForChain           = "initialize_for_chain"
+	FunctionNameStakingDepositRewardForChain        = "deposit_reward_for_chain"
+	FunctionNameStakingDelegateScript               = "delegate_script"
+	FunctionNameStakingUndelegateScript             = "undelegate_script"
+	FunctionNameStakingRegister                     = "register"
+	FunctionNameStakingDepositUnbondingCoinForChain = "deposit_unbonding_coin_for_chain"
+	FunctionNameStakingSlashUnbondingCoinForChain   = "slash_unbonding_for_chain"
 
 	// function names for dex
-	FunctionNameDexInitialize        = "initialize_for_chain"
-	FunctionNameDexProvideLiquidity  = "provide_liquidity_script"
-	FunctionNameDexWithdrawLiquidity = "withdraw_liquidity_script"
-	FunctionNameDexRegister          = "register"
-	FunctionNameDexSwap              = "swap_script"
+	FunctionNameDexSwapScript = "swap_script"
 
 	// function names for object
 	FunctionNameObjectTransfer = "transfer"
 
 	// function names for code
 	FunctionNameCodePublish              = "publish"
-	FunctionNameCodeInitGenesis          = "init_genesis"
 	FunctionNameCodeSetAllowedPublishers = "set_allowed_publishers"
+
+	// function names for vesting
+	FunctionNameVestingTableHandle   = "vesting_table_handle"
+	FunctionNameVestingTokenMetadata = "vesting_token_metadata"
 
 	// resource names
 	ResourceNameFungibleStore = "FungibleStore"
@@ -79,7 +79,7 @@ const (
 	ResourceNameIssuer        = "Issuer"
 	ResourceNameManagingRefs  = "ManagingRefs"
 	ResourceNameCollection    = "Collection"
-	ResourceNameSimpleNft     = "InitiaNft"
+	ResourceNameInitiaNft     = "InitiaNft"
 	ResourceNameNft           = "Nft"
 )
 
@@ -193,15 +193,13 @@ func DeserializeUint64(bz []byte) (math.Int, error) {
 	return num, nil
 }
 
-// DeserializeDecimal deserialize uint128 bytes to math.Int
-func DeserializeDecimal(bz []byte) (math.LegacyDec, error) {
-	num, err := DeserializeUint128(bz)
-	if err != nil {
-		return math.LegacyZeroDec(), err
-	}
+// DeserializeBigDecimal deserialize BigDecimal bytes to math.LegacyDec
+func DeserializeBigDecimal(bz []byte) (math.LegacyDec, error) {
+	slices.Reverse(bz)
+	num := new(big.Int).SetBytes(bz)
 
 	// fractional part length is 18
-	return math.LegacyNewDecFromInt(num).Mul(math.LegacyNewDecWithPrec(1, 18)), nil
+	return math.LegacyNewDecFromIntWithPrec(math.NewIntFromBigInt(num), 18), nil
 }
 
 // DeserializeUint128 deserialize uint128 bytes to math.Int
@@ -325,31 +323,46 @@ func ReadWeightsFromDexConfig(timestamp math.Int, bz []byte) (math.LegacyDec, ma
 	cursor += AddressBytesLength + 8
 
 	// before weights
-	weightCoinABefore, err := DeserializeDecimal(bz[cursor : cursor+16])
+	weightLen, len := readULEB128(bz[cursor:])
+	cursor += len
+	weightCoinABefore, err := DeserializeBigDecimal(bz[cursor : cursor+weightLen])
 	if err != nil {
 		return math.LegacyZeroDec(), math.LegacyZeroDec(), err
 	}
-	weightCoinBBefore, err := DeserializeDecimal(bz[cursor+16 : cursor+32])
-	if err != nil {
-		return math.LegacyZeroDec(), math.LegacyZeroDec(), err
-	}
-	timestampBefore, err := DeserializeUint64(bz[cursor+32 : cursor+40])
-	if err != nil {
-		return math.LegacyZeroDec(), math.LegacyZeroDec(), err
-	}
+	cursor += weightLen
 
-	cursor += 40
+	weightLen, len = readULEB128(bz[cursor:])
+	cursor += len
+	weightCoinBBefore, err := DeserializeBigDecimal(bz[cursor : cursor+weightLen])
+	if err != nil {
+		return math.LegacyZeroDec(), math.LegacyZeroDec(), err
+	}
+	cursor += weightLen
+
+	timestampBefore, err := DeserializeUint64(bz[cursor : cursor+8])
+	if err != nil {
+		return math.LegacyZeroDec(), math.LegacyZeroDec(), err
+	}
+	cursor += 8
 
 	// after weights
-	weightCoinAAfter, err := DeserializeDecimal(bz[cursor : cursor+16])
+	weightLen, len = readULEB128(bz[cursor:])
+	cursor += len
+	weightCoinAAfter, err := DeserializeBigDecimal(bz[cursor : cursor+weightLen])
 	if err != nil {
 		return math.LegacyZeroDec(), math.LegacyZeroDec(), err
 	}
-	weightCoinBAfter, err := DeserializeDecimal(bz[cursor+16 : cursor+32])
+	cursor += weightLen
+
+	weightLen, len = readULEB128(bz[cursor:])
+	cursor += len
+	weightCoinBAfter, err := DeserializeBigDecimal(bz[cursor : cursor+weightLen])
 	if err != nil {
 		return math.LegacyZeroDec(), math.LegacyZeroDec(), err
 	}
-	timestampAfter, err := DeserializeUint64(bz[cursor+32 : cursor+40])
+	cursor += weightLen
+
+	timestampAfter, err := DeserializeUint64(bz[cursor : cursor+8])
 	if err != nil {
 		return math.LegacyZeroDec(), math.LegacyZeroDec(), err
 	}
@@ -410,19 +423,19 @@ func GetPoolWeights(
 	return weightCoinA, weightCoinB, nil
 }
 
-// GetPoolSpotPrice return quote price in base unit
-func GetPoolSpotPrice(
+// GetBaseSpotPrice return base coin spot price
+func GetBaseSpotPrice(
 	balanceBase, balanceQuote math.Int,
 	weightBase, weightQuote math.LegacyDec,
 ) math.LegacyDec {
 	numerator := weightQuote.MulInt(balanceBase)
 	denominator := weightBase.MulInt(balanceQuote)
 
-	return numerator.Quo(denominator)
+	return numerator.QuoTruncate(denominator)
 }
 
 // ReadUnbondingInfosFromStakingState util function to read unbonding coin amount from the StakingState
-func ReadUnbondingInfosFromStakingState(bz []byte) (unbondingShare math.Int, unbondingCoinStore vmtypes.AccountAddress, err error) {
+func ReadUnbondingInfosFromStakingState(bz []byte) (unbondingShare math.LegacyDec, unbondingCoinStore vmtypes.AccountAddress, err error) {
 	cursor := int(0)
 
 	// read metadata
@@ -432,19 +445,22 @@ func ReadUnbondingInfosFromStakingState(bz []byte) (unbondingShare math.Int, unb
 	valLen, len := readULEB128(bz[cursor:])
 	cursor += (valLen + len)
 
-	// read total_share
-	cursor += 16
+	// read total_share(BigDecimal)
+	decLen, len := readULEB128(bz[cursor:])
+	cursor += (decLen + len)
 
-	// read unbonding_share
-	unbondingShare, err = DeserializeUint128(bz[cursor : cursor+16])
+	// read unbonding_share(BigDecimal)
+	decLen, len = readULEB128(bz[cursor:])
+	cursor += len
+	unbondingShare, err = DeserializeBigDecimal(bz[cursor : cursor+decLen])
 	if err != nil {
 		return
 	}
+	cursor += decLen
 
-	cursor += 16
-
-	// read reward_index(Decimal128)
-	cursor += 16
+	// read reward_index(BigDecimal)
+	decLen, len = readULEB128(bz[cursor:])
+	cursor += (decLen + len)
 
 	// read reward_coin_store_ref(ExtendRef)
 	cursor += AddressBytesLength + 8
@@ -594,6 +610,39 @@ func ReadFungibleAssetMetadata(bz []byte) (string, string, uint8) {
 	cursor += 1 //nolint
 
 	return name, symbol, decimals
+}
+
+func ReadVesting(bz []byte) (allocation uint64, claimedAmount uint64, startTime uint64, vestingPeriod uint64, err error) {
+	cursor := int(0)
+
+	// read allocation
+	allocation, err = vmtypes.DeserializeUint64(bz[cursor : cursor+8])
+	if err != nil {
+		return
+	}
+	cursor += 8
+
+	// read claimedAmount
+	claimedAmount, err = vmtypes.DeserializeUint64(bz[cursor : cursor+8])
+	if err != nil {
+		return
+	}
+	cursor += 8
+
+	// read startTime
+	startTime, err = vmtypes.DeserializeUint64(bz[cursor : cursor+8])
+	if err != nil {
+		return
+	}
+	cursor += 8
+
+	// rad vestingPeriod
+	vestingPeriod, err = vmtypes.DeserializeUint64(bz[cursor : cursor+8])
+	if err != nil {
+		return
+	}
+
+	return allocation, claimedAmount, startTime, vestingPeriod, nil
 }
 
 // readULEB128 converts a uleb128-encoded byte array into an int.

@@ -2,10 +2,10 @@ syntax = "proto3";
 
 package initia.intertx.v1;
 
-option go_package = "github.com/initia-labs/initia/x/intertx/types";
-
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
+
+option go_package = "github.com/initia-labs/initia/x/intertx/types";
 
 // Query defines the gRPC querier service.
 service Query {
@@ -17,7 +17,7 @@ service Query {
 
 // QueryInterchainAccountRequest is the request type for the Query/InterchainAccountAddress RPC
 message QueryInterchainAccountRequest {
-  string owner         = 1;
+  string owner = 1;
   string connection_id = 2 [(gogoproto.moretags) = "yaml:\"connection_id\""];
 }
 

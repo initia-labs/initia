@@ -33,7 +33,6 @@ import (
 	ibctransfer "github.com/cosmos/ibc-go/v8/modules/apps/transfer"
 	ibc "github.com/cosmos/ibc-go/v8/modules/core"
 
-	apporacle "github.com/initia-labs/initia/app/oracle"
 	"github.com/initia-labs/initia/x/bank"
 	"github.com/initia-labs/initia/x/distribution"
 	"github.com/initia-labs/initia/x/evidence"
@@ -46,13 +45,15 @@ import (
 	moveconfig "github.com/initia-labs/initia/x/move/config"
 	staking "github.com/initia-labs/initia/x/mstaking"
 	"github.com/initia-labs/initia/x/reward"
+
+	oracleconfig "github.com/skip-mev/connect/v2/oracle/config"
 )
 
 func TestSimAppExportAndBlockedAddrs(t *testing.T) {
 	app := SetupWithGenesisAccounts(nil, nil)
 
 	// BlockedAddresses returns a map of addresses in app v1 and a map of modules name in app v2.
-	for acc := range app.ModuleAccountAddrs() {
+	for acc := range app.BlockedModuleAccountAddrs(app.ModuleAccountAddrs()) {
 		var addr sdk.AccAddress
 		if modAddr, err := sdk.AccAddressFromBech32(acc); err == nil {
 			addr = modAddr
@@ -77,7 +78,7 @@ func TestInitGenesisOnMigration(t *testing.T) {
 	db := dbm.NewMemDB()
 	logger := log.NewLogger(os.Stdout)
 	app := NewInitiaApp(
-		logger, db, nil, true, moveconfig.DefaultMoveConfig(), apporacle.DefaultConfig(), EmptyAppOptions{})
+		logger, db, nil, true, moveconfig.DefaultMoveConfig(), oracleconfig.NewDefaultAppConfig(), EmptyAppOptions{})
 	ctx := app.NewUncachedContext(false, cmtproto.Header{Height: app.LastBlockHeight()})
 
 	// Create a mock module. This module will serve as the new module we're
@@ -143,7 +144,7 @@ func TestGetKey(t *testing.T) {
 	db := dbm.NewMemDB()
 	app := NewInitiaApp(
 		log.NewLogger(os.Stdout),
-		db, nil, true, moveconfig.DefaultMoveConfig(), apporacle.DefaultConfig(), EmptyAppOptions{})
+		db, nil, true, moveconfig.DefaultMoveConfig(), oracleconfig.NewDefaultAppConfig(), EmptyAppOptions{})
 
 	require.NotEmpty(t, app.GetKey(banktypes.StoreKey))
 }
@@ -153,7 +154,7 @@ func TestChainID(t *testing.T) {
 	db := dbm.NewMemDB()
 	app := NewInitiaApp(
 		log.NewLogger(os.Stdout),
-		db, nil, true, moveconfig.DefaultMoveConfig(), apporacle.DefaultConfig(), EmptyAppOptions{}, baseapp.SetChainID(chainid),
+		db, nil, true, moveconfig.DefaultMoveConfig(), oracleconfig.NewDefaultAppConfig(), EmptyAppOptions{}, baseapp.SetChainID(chainid),
 	)
 	require.Equal(t, chainid, app.ChainID())
 }

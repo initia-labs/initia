@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 
+	"golang.org/x/sync/semaphore"
+
 	"cosmossdk.io/collections"
 	"cosmossdk.io/core/address"
 	corestoretypes "cosmossdk.io/core/store"
@@ -11,7 +13,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"golang.org/x/crypto/sha3"
 
 	moveconfig "github.com/initia-labs/initia/x/move/config"
 	"github.com/initia-labs/initia/x/move/types"
@@ -42,8 +43,10 @@ type Keeper struct {
 
 	config moveconfig.MoveConfig
 
-	// moveVM instance
-	moveVM types.VMEngine
+	// TODO - remove after loader v2
+	moveVMs         []types.VMEngine
+	moveVMIdx       *uint64
+	moveVMSemaphore *semaphore.Weighted
 
 	feeCollector string
 	authority    string
@@ -82,22 +85,24 @@ func NewKeeper(
 		panic("authority is not a valid acc address")
 	}
 
-	if moveConfig.ModuleCacheCapacity == 0 {
-		moveConfig.ModuleCacheCapacity = moveconfig.DefaultModuleCacheCapacity
-	}
-
-	if moveConfig.ScriptCacheCapacity == 0 {
-		moveConfig.ScriptCacheCapacity = moveconfig.DefaultScriptCacheCapacity
-	}
-
 	if moveConfig.ContractSimulationGasLimit == 0 {
 		moveConfig.ContractSimulationGasLimit = moveconfig.DefaultContractSimulationGasLimit
 	}
 
-	moveVM := vm.NewVM(
-		moveConfig.ModuleCacheCapacity*1024*1024, // convert MiB to bytes
-		moveConfig.ScriptCacheCapacity*1024*1024, // convert MiB to bytes
-	)
+	vmCount := 10
+	moveVMIdx := uint64(0)
+	vms := make([]types.VMEngine, vmCount)
+	for i := 0; i < vmCount; i++ {
+		moveVM, err := vm.NewVM(vmtypes.InitiaVMConfig{
+			// TODO: check this before mainnet
+			AllowUnstable: true,
+		})
+		if err != nil {
+			panic(err)
+		}
+
+		vms[i] = &moveVM
+	}
 
 	sb := collections.NewSchemaBuilder(storeService)
 	k := &Keeper{
@@ -109,7 +114,9 @@ func NewKeeper(
 		msgRouter:           msgRouter,
 		grpcRouter:          grpcRouter,
 		config:              moveConfig,
-		moveVM:              &moveVM,
+		moveVMs:             vms,
+		moveVMIdx:           &moveVMIdx,
+		moveVMSemaphore:     semaphore.NewWeighted(int64(vmCount)),
 		distrKeeper:         distrKeeper,
 		StakingKeeper:       stakingKeeper,
 		RewardKeeper:        rewardKeeper,
@@ -177,13 +184,6 @@ func (k Keeper) SetModule(
 	if moduleKey, err := types.GetModuleKey(addr, moduleName); err != nil {
 		return err
 	} else if err := k.VMStore.Set(ctx, moduleKey, moduleBytes); err != nil {
-		return err
-	}
-
-	checksum := sha3.Sum256(moduleBytes)
-	if checksumKey, err := types.GetChecksumKey(addr, moduleName); err != nil {
-		return err
-	} else if err := k.VMStore.Set(ctx, checksumKey, checksum[:]); err != nil {
 		return err
 	}
 
@@ -554,8 +554,6 @@ func (k Keeper) IterateVMStore(ctx context.Context, cb func(*types.Module, *type
 				KeyBytes:   key[cursor:],
 				ValueBytes: value,
 			})
-		} else if separator == types.ChecksumSeparator {
-			// ignore checksum
 		} else {
 			return true, errors.New("unknown prefix")
 		}

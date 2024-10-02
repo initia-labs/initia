@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"math"
 	"strings"
 	"unsafe"
 
@@ -191,29 +190,28 @@ func (k Keeper) executeEntryFunction(
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	gasMeter := sdkCtx.GasMeter()
 	gasForRuntime := gasMeter.Limit() - gasMeter.GasConsumedToLimit()
-
 	if isSimulation(ctx) {
 		gasForRuntime = k.config.ContractSimulationGasLimit
-	} else if gasMeter.Limit() == 0 {
-		// infinite gas meter
-		gasForRuntime = math.MaxUint64
 	}
 
 	// delegate gas metering to move vm
 	sdkCtx = sdkCtx.WithGasMeter(storetypes.NewInfiniteGasMeter())
 
-	// run vm
-	execRes, err := k.moveVM.ExecuteEntryFunction(
-		types.NewVMStore(sdkCtx, k.VMStore),
-		NewApi(k, sdkCtx),
-		types.NewEnv(sdkCtx, ac, ec),
-		gasForRuntime,
-		senders,
-		payload,
-	)
+	gasBalance := gasForRuntime
+	execRes, err := execVM(ctx, k, func(vm types.VMEngine) (vmtypes.ExecutionResult, error) {
+		return vm.ExecuteEntryFunction(
+			&gasBalance,
+			types.NewVMStore(sdkCtx, k.VMStore),
+			NewApi(k, sdkCtx),
+			types.NewEnv(sdkCtx, ac, ec),
+			senders,
+			payload,
+		)
+	})
 
 	// consume gas first and check error
-	gasMeter.ConsumeGas(execRes.GasUsed, "move runtime")
+	gasUsed := gasForRuntime - gasBalance
+	gasMeter.ConsumeGas(gasUsed, "move runtime")
 	if err != nil {
 		return err
 	}
@@ -307,29 +305,28 @@ func (k Keeper) executeScript(
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	gasMeter := sdkCtx.GasMeter()
 	gasForRuntime := gasMeter.Limit() - gasMeter.GasConsumedToLimit()
-
 	if isSimulation(ctx) {
 		gasForRuntime = k.config.ContractSimulationGasLimit
-	} else if gasMeter.Limit() == 0 {
-		// infinite gas meter
-		gasForRuntime = math.MaxUint64
 	}
 
 	// delegate gas metering to move vm
 	sdkCtx = sdkCtx.WithGasMeter(storetypes.NewInfiniteGasMeter())
 
-	// run vm
-	execRes, err := k.moveVM.ExecuteScript(
-		types.NewVMStore(sdkCtx, k.VMStore),
-		NewApi(k, sdkCtx),
-		types.NewEnv(sdkCtx, ac, ec),
-		gasForRuntime,
-		senders,
-		payload,
-	)
+	gasBalance := gasForRuntime
+	execRes, err := execVM(ctx, k, func(vm types.VMEngine) (vmtypes.ExecutionResult, error) {
+		return vm.ExecuteScript(
+			&gasBalance,
+			types.NewVMStore(sdkCtx, k.VMStore),
+			NewApi(k, sdkCtx),
+			types.NewEnv(sdkCtx, ac, ec),
+			senders,
+			payload,
+		)
+	})
 
 	// consume gas first and check error
-	gasMeter.ConsumeGas(execRes.GasUsed, "move runtime")
+	gasUsed := gasForRuntime - gasBalance
+	gasMeter.ConsumeGas(gasUsed, "move runtime")
 	if err != nil {
 		return err
 	}
@@ -353,11 +350,7 @@ func (k Keeper) handleExecuteResponse(
 ) error {
 	// Emit contract events
 	for _, event := range execRes.Events {
-		typeTag, err := vmapi.StringifyTypeTag(event.TypeTag)
-		if err != nil {
-			return err
-		}
-
+		typeTag := event.TypeTag
 		ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventTypeMove,
 			sdk.NewAttribute(types.AttributeKeyTypeTag, typeTag),
 			sdk.NewAttribute(types.AttributeKeyData, event.EventData),
@@ -518,7 +511,7 @@ func (k Keeper) ExecuteViewFunction(
 	functionName string,
 	typeArgs []vmtypes.TypeTag,
 	args [][]byte,
-) (vmtypes.ViewOutput, error) {
+) (vmtypes.ViewOutput, uint64, error) {
 	return k.executeViewFunction(
 		ctx,
 		moduleAddr,
@@ -537,7 +530,7 @@ func (k Keeper) ExecuteViewFunctionJSON(
 	functionName string,
 	typeArgs []vmtypes.TypeTag,
 	jsonArgs []string,
-) (vmtypes.ViewOutput, error) {
+) (vmtypes.ViewOutput, uint64, error) {
 	args := make([][]byte, len(jsonArgs))
 	for i, jsonArg := range jsonArgs {
 		// use unsafe method for fast conversion
@@ -563,7 +556,7 @@ func (k Keeper) executeViewFunction(
 	typeArgs []vmtypes.TypeTag,
 	args [][]byte,
 	isJSON bool,
-) (vmtypes.ViewOutput, error) {
+) (vmtypes.ViewOutput, uint64, error) {
 	payload, err := types.BuildExecuteViewFunctionPayload(
 		moduleAddr,
 		moduleName,
@@ -573,12 +566,12 @@ func (k Keeper) executeViewFunction(
 		isJSON,
 	)
 	if err != nil {
-		return vmtypes.ViewOutput{}, err
+		return vmtypes.ViewOutput{}, 0, err
 	}
 
 	executionCounter, err := k.ExecutionCounter.Next(ctx)
 	if err != nil {
-		return vmtypes.ViewOutput{}, err
+		return vmtypes.ViewOutput{}, 0, err
 	}
 
 	api := NewApi(k, ctx)
@@ -592,19 +585,34 @@ func (k Keeper) executeViewFunction(
 	gasMeter := sdkCtx.GasMeter()
 	gasForRuntime := gasMeter.Limit() - gasMeter.GasConsumedToLimit()
 
-	viewRes, err := k.moveVM.ExecuteViewFunction(
-		types.NewVMStore(ctx, k.VMStore),
-		api,
-		env,
-		gasForRuntime,
-		payload,
-	)
-	if err != nil {
-		return vmtypes.ViewOutput{}, err
-	}
+	gasBalance := gasForRuntime
+	viewRes, err := execVM(ctx, k, func(vm types.VMEngine) (vmtypes.ViewOutput, error) {
+		return vm.ExecuteViewFunction(
+			&gasBalance,
+			types.NewVMStore(ctx, k.VMStore),
+			api,
+			env,
+			payload,
+		)
+	})
 
 	// consume gas first and check error
-	gasMeter.ConsumeGas(viewRes.GasUsed, "view; move runtime")
+	gasUsed := gasForRuntime - gasBalance
+	gasMeter.ConsumeGas(gasUsed, "view; move runtime")
+	if err != nil {
+		return vmtypes.ViewOutput{}, gasUsed, err
+	}
 
-	return viewRes, nil
+	return viewRes, gasUsed, nil
+}
+
+// execVM runs vm in separate function statement to release right after execution
+// to avoid deadlock even if the function panics
+//
+// TODO - remove this after loader v2 is installed
+func execVM[T any](ctx context.Context, k Keeper, f func(types.VMEngine) (T, error)) (T, error) {
+	vm := k.acquireVM(ctx)
+	defer k.releaseVM()
+
+	return f(vm)
 }

@@ -11,34 +11,46 @@ option go_package = "github.com/initia-labs/initia/x/mstaking/types";
 // GenesisState defines the staking module's genesis state.
 message GenesisState {
   // params defines all the paramaters of related to deposit.
-  Params params = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+  Params params = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 
   // last_validator_powers is a special index that provides a historical list
   // of the last-block's bonded validators.
   repeated LastValidatorPower last_validator_powers = 2 [
-    (gogoproto.nullable)   = false,
+    (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true,
-    (gogoproto.moretags)   = "yaml:\"last_validator_powers\""
+    (gogoproto.moretags) = "yaml:\"last_validator_powers\""
   ];
 
   // delegations defines the validator set at genesis.
-  repeated Validator validators = 3
-      [(gogoproto.nullable) = false, (amino.dont_omitempty) = true, (gogoproto.moretags) = "yaml:\"validators\""];
+  repeated Validator validators = 3 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true,
+    (gogoproto.moretags) = "yaml:\"validators\""
+  ];
 
   // delegations defines the delegations active at genesis.
-  repeated Delegation delegations = 4
-      [(gogoproto.nullable) = false, (amino.dont_omitempty) = true, (gogoproto.moretags) = "yaml:\"delegations\""];
+  repeated Delegation delegations = 4 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true,
+    (gogoproto.moretags) = "yaml:\"delegations\""
+  ];
 
   // unbonding_delegations defines the unbonding delegations active at genesis.
   repeated UnbondingDelegation unbonding_delegations = 5 [
-    (gogoproto.nullable)   = false,
+    (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true,
-    (gogoproto.moretags)   = "yaml:\"unbonding_delegations\""
+    (gogoproto.moretags) = "yaml:\"unbonding_delegations\""
   ];
 
   // redelegations defines the redelegations active at genesis.
-  repeated Redelegation redelegations = 6
-      [(gogoproto.nullable) = false, (amino.dont_omitempty) = true, (gogoproto.moretags) = "yaml:\"redelegations\""];
+  repeated Redelegation redelegations = 6 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true,
+    (gogoproto.moretags) = "yaml:\"redelegations\""
+  ];
 
   bool exported = 7;
 
@@ -48,7 +60,7 @@ message GenesisState {
 
 // LastValidatorPower required for validator set update logic.
 message LastValidatorPower {
-  option (gogoproto.equal)           = false;
+  option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
 
   // address is the address of the validator.

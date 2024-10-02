@@ -1,7 +1,6 @@
 name: Build Linux AMD64
 
-on:
-  workflow_call
+on: workflow_call
 
 jobs:
   build:
@@ -13,7 +12,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.22.4'
+          go-version: "1.22.5"
 
       - name: Set environment variables
         run: |
@@ -50,3 +49,6 @@ jobs:
         with:
           files: |
             ./build/initia_${{ env.VERSION }}_Linux_${{ env.ARCH_NAME }}.tar.gz
+        env:
+          Version: ${{ env.VERSION }}
+          ARCH_NAME: ${{ env.ARCH_NAME }}

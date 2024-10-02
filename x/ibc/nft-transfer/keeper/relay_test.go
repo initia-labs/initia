@@ -33,7 +33,7 @@ func (suite *KeeperTestSuite) GetNFTOwner(ctx context.Context, k *keeper.Keeper,
 	ta, err := tokenAddr.BcsSerialize()
 	suite.Require().NoError(err)
 
-	res, err := moveKeeper.ExecuteViewFunction(ctx, moduleAddr, "object", "owner", typeTags, [][]byte{ta})
+	res, _, err := moveKeeper.ExecuteViewFunction(ctx, moduleAddr, "object", "owner", typeTags, [][]byte{ta})
 	suite.Require().NoError(err)
 
 	strAddr := strings.Trim(res.Ret, "\"")

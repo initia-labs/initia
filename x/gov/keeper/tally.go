@@ -19,7 +19,7 @@ import (
 
 // Tally iterates over the votes and updates the tally of a proposal based on the voting power of the
 // voters
-func (k Keeper) Tally(ctx context.Context, params customtypes.Params, proposal customtypes.Proposal) (quorumReached, passed bool, burnDeposits bool, tallyResults v1.TallyResult, err error) {
+func (k Keeper) Tally(ctx context.Context, params customtypes.Params, proposal customtypes.Proposal) (quorumReached, passed bool, burnDeposits bool, tallyResults customtypes.TallyResult, err error) {
 	weights, err := k.sk.GetVotingPowerWeights(ctx)
 	if err != nil {
 		return false, false, false, tallyResults, err
@@ -32,7 +32,8 @@ func (k Keeper) Tally(ctx context.Context, params customtypes.Params, proposal c
 	results[v1.OptionNoWithVeto] = math.LegacyZeroDec()
 
 	totalVotingPower := math.LegacyZeroDec()
-	stakedVotingPower := math.ZeroInt()
+	totalStakingPower := math.ZeroInt()
+	totalVestingPower := math.ZeroInt()
 	currValidators := make(map[string]customtypes.ValidatorGovInfo)
 
 	// fetch all the bonded validators, insert them into currValidators
@@ -51,12 +52,33 @@ func (k Keeper) Tally(ctx context.Context, params customtypes.Params, proposal c
 		)
 
 		votingPower, _ := stakingtypes.CalculateVotingPower(validator.GetBondedTokens(), weights)
-		stakedVotingPower = stakedVotingPower.Add(votingPower)
+		totalStakingPower = totalStakingPower.Add(votingPower)
 
 		return false, nil
 	})
 	if err != nil {
 		return false, false, false, tallyResults, err
+	}
+
+	// fetch vesting table handle if vesting params are provided
+	var vestingHandle *sdk.AccAddress
+	if params.Vesting != nil {
+		vesting := *params.Vesting
+		moduleAddr, err := k.authKeeper.AddressCodec().StringToBytes(vesting.ModuleAddr)
+		if err != nil {
+			return false, false, false, tallyResults, err
+		}
+
+		creatorAddr, err := k.authKeeper.AddressCodec().StringToBytes(vesting.CreatorAddr)
+		if err != nil {
+			return false, false, false, tallyResults, err
+		}
+
+		// base denom validation will be done in vesting keeper
+		vestingHandle, err = k.vestingKeeper.GetVestingHandle(ctx, moduleAddr, vesting.ModuleName, creatorAddr)
+		if err != nil {
+			return false, false, false, tallyResults, err
+		}
 	}
 
 	rng := collections.NewPrefixedPairRange[uint64, sdk.AccAddress](proposal.Id)
@@ -68,6 +90,26 @@ func (k Keeper) Tally(ctx context.Context, params customtypes.Params, proposal c
 		if val, ok := currValidators[valAddrStr]; ok {
 			val.Vote = vote.Options
 			currValidators[valAddrStr] = val
+		}
+
+		// add vesting voting power if vesting params are provided
+		if vestingHandle != nil {
+			amount, err := k.vestingKeeper.GetUnclaimedVestedAmount(ctx, *vestingHandle, voter)
+			if err != nil {
+				return false, err
+			}
+
+			if !amount.IsZero() {
+				// `the vesting token == the base denom`` check is done in vesting keeper,
+				// so we can safely convert the amount to voting power
+				votingPower := math.LegacyNewDecFromInt(amount)
+				for _, option := range vote.Options {
+					subPower := votingPower.Mul(math.LegacyMustNewDecFromStr(option.Weight))
+					results[option.Option] = results[option.Option].Add(subPower)
+				}
+				totalVotingPower = totalVotingPower.Add(votingPower)
+				totalVestingPower = totalVestingPower.Add(amount)
+			}
 		}
 
 		// iterate over all delegations from voter, deduct from any delegated-to validators
@@ -134,16 +176,22 @@ func (k Keeper) Tally(ctx context.Context, params customtypes.Params, proposal c
 		totalVotingPower = totalVotingPower.Add(votingPower)
 	}
 
-	tallyResults = v1.NewTallyResultFromMap(results)
+	v1TallyResult := v1.NewTallyResultFromMap(results)
+	tallyResults = customtypes.TallyResult{
+		V1TallyResult:     &v1TallyResult,
+		TallyHeight:       uint64(sdk.UnwrapSDKContext(ctx).BlockHeight()),
+		TotalStakingPower: totalStakingPower.String(),
+		TotalVestingPower: totalVestingPower.String(),
+	}
 
-	// TODO: Upgrade the spec to cover all of these cases & remove pseudocode.
-	// If there is no staked coins, the proposal fails
-	if stakedVotingPower.IsZero() {
+	// If there is no (staked + vesting) coins, the proposal fails
+	totalPower := totalVestingPower.Add(totalStakingPower)
+	if totalPower.IsZero() {
 		return false, false, false, tallyResults, nil
 	}
 
 	// If there is not enough quorum of votes, the proposal fails
-	percentVoting := totalVotingPower.Quo(math.LegacyNewDecFromInt(stakedVotingPower))
+	percentVoting := totalVotingPower.Quo(math.LegacyNewDecFromInt(totalPower))
 	quorum, _ := math.LegacyNewDecFromStr(params.Quorum)
 	if percentVoting.LT(quorum) {
 		return false, false, params.BurnVoteQuorum, tallyResults, nil

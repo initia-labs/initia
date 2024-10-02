@@ -15,8 +15,8 @@ func NewGenesisState(params Params, lastReleaseTimestamp time.Time, lastDilution
 func DefaultGenesisState() *GenesisState {
 	return &GenesisState{
 		Params:                DefaultParams(),
-		LastReleaseTimestamp:  time.Now(),
-		LastDilutionTimestamp: time.Now(),
+		LastReleaseTimestamp:  time.Now().UTC(),
+		LastDilutionTimestamp: time.Now().UTC(),
 	}
 }
 

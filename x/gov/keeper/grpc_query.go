@@ -251,37 +251,12 @@ func (q queryServer) TallyResult(ctx context.Context, req *v1.QueryTallyResultRe
 		return nil, status.Error(codes.InvalidArgument, "proposal id can not be 0")
 	}
 
-	proposal, err := q.k.Proposals.Get(ctx, req.ProposalId)
+	res, err := NewCustomQueryServer(q.k).TallyResult(ctx, &customtypes.QueryTallyResultRequest{ProposalId: req.ProposalId})
 	if err != nil {
-		if errors.IsOf(err, collections.ErrNotFound) {
-			return nil, status.Errorf(codes.NotFound, "proposal %d doesn't exist", req.ProposalId)
-		}
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, err
 	}
 
-	var tallyResult v1.TallyResult
-
-	switch {
-	case proposal.Status == v1.StatusDepositPeriod:
-		tallyResult = v1.EmptyTallyResult()
-
-	case proposal.Status == v1.StatusPassed || proposal.Status == v1.StatusRejected:
-		tallyResult = *proposal.FinalTallyResult
-
-	default:
-		// proposal is in voting period
-		params, err := q.k.Params.Get(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		_, _, _, tallyResult, err = q.k.Tally(ctx, params, proposal)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return &v1.QueryTallyResultResponse{Tally: &tallyResult}, nil
+	return &v1.QueryTallyResultResponse{Tally: res.TallyResult.V1TallyResult}, nil
 }
 
 var _ v1beta1.QueryServer = legacyQueryServer{}

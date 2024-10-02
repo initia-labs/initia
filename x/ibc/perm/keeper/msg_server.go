@@ -23,27 +23,72 @@ func NewMsgServerImpl(k *Keeper) MsgServer {
 	return MsgServer{k}
 }
 
-// SetPermissionedRelayer update channel relayer to restrict relaying operation of a channel to specific relayer.
-func (ms MsgServer) SetPermissionedRelayers(ctx context.Context, req *types.MsgSetPermissionedRelayers) (*types.MsgSetPermissionedRelayersResponse, error) {
+// UpdateAdmin update channel relayer to restrict relaying operation of a channel to specific relayer.
+func (ms MsgServer) UpdateAdmin(ctx context.Context, req *types.MsgUpdateAdmin) (*types.MsgUpdateAdminResponse, error) {
 	if err := req.Validate(ms.Keeper.ac); err != nil {
 		return nil, err
 	}
 
-	if ms.authority != req.Authority {
-		return nil, errors.Wrapf(govtypes.ErrInvalidSigner, "invalid authority; expected %s, got %s", ms.authority, req.Authority)
-	}
-
-	relayers, err := types.ToRelayerAccAddr(ms.ac, req.Relayers)
+	cs, err := ms.Keeper.GetChannelState(ctx, req.PortId, req.ChannelId)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := ms.Keeper.SetPermissionedRelayers(ctx, req.PortId, req.ChannelId, relayers); err != nil {
+	// gov or admin can update relayers
+	if ms.authority != req.Authority && cs.Admin != req.Authority {
+		return nil, errors.Wrapf(govtypes.ErrInvalidSigner, "invalid authority; expected %s or %s, got %s", ms.authority, cs.Admin, req.Authority)
+	}
+
+	cs.Admin = req.Admin
+	err = ms.Keeper.SetChannelState(ctx, cs)
+	if err != nil {
 		return nil, err
 	}
 
 	ms.Logger(ctx).Info(
-		"IBC permissioned channel relayer",
+		"IBC channel admin is updated",
+		"port id", req.PortId,
+		"channel id", req.ChannelId,
+		"admin", req.Admin,
+	)
+
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeUpdateAdmin,
+			sdk.NewAttribute(types.AttributeKeyPortId, req.PortId),
+			sdk.NewAttribute(types.AttributeKeyChannelId, req.ChannelId),
+			sdk.NewAttribute(types.AttributeKeyAdmin, req.Admin),
+		),
+	})
+
+	return &types.MsgUpdateAdminResponse{}, nil
+}
+
+// UpdatePermissionedRelayers update channel relayer to restrict relaying operation of a channel to specific relayer.
+func (ms MsgServer) UpdatePermissionedRelayers(ctx context.Context, req *types.MsgUpdatePermissionedRelayers) (*types.MsgUpdatePermissionedRelayersResponse, error) {
+	if err := req.Validate(ms.Keeper.ac); err != nil {
+		return nil, err
+	}
+
+	cs, err := ms.Keeper.GetChannelState(ctx, req.PortId, req.ChannelId)
+	if err != nil {
+		return nil, err
+	}
+
+	// gov or admin can update relayers
+	if ms.authority != req.Authority && cs.Admin != req.Authority {
+		return nil, errors.Wrapf(govtypes.ErrInvalidSigner, "invalid authority; expected %s or %s, got %s", ms.authority, cs.Admin, req.Authority)
+	}
+
+	cs.Relayers = req.Relayers
+	err = ms.Keeper.SetChannelState(ctx, cs)
+	if err != nil {
+		return nil, err
+	}
+
+	ms.Logger(ctx).Info(
+		"IBC channel relayers are updated",
 		"port id", req.PortId,
 		"channel id", req.ChannelId,
 		"relayers", req.Relayers,
@@ -52,16 +97,12 @@ func (ms MsgServer) SetPermissionedRelayers(ctx context.Context, req *types.MsgS
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	sdkCtx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
-			types.EventTypeSetPermissionedRelayers,
+			types.EventTypeUpdatePermissionedRelayers,
 			sdk.NewAttribute(types.AttributeKeyPortId, req.PortId),
 			sdk.NewAttribute(types.AttributeKeyChannelId, req.ChannelId),
 			sdk.NewAttribute(types.AttributeKeyRelayers, strings.Join(req.Relayers, ",")),
 		),
-		sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
-		),
 	})
 
-	return &types.MsgSetPermissionedRelayersResponse{}, nil
+	return &types.MsgUpdatePermissionedRelayersResponse{}, nil
 }

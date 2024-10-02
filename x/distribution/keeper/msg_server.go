@@ -24,8 +24,8 @@ type msgServer struct {
 
 // NewMsgServerImpl returns an implementation of the distribution MsgServer interface
 // for the provided Keeper.
-func NewMsgServerImpl(keeper Keeper) types.MsgServer {
-	return &msgServer{Keeper: keeper}
+func NewMsgServerImpl(k Keeper) types.MsgServer {
+	return &msgServer{Keeper: k}
 }
 
 var _ types.MsgServer = msgServer{}

@@ -129,7 +129,7 @@ func TestAmountToShare(t *testing.T) {
 	amount := sdk.NewCoin(bondDenom, math.NewInt(150))
 	share, err := input.MoveKeeper.AmountToShare(ctx, valAddr, amount)
 	require.NoError(t, err)
-	require.Equal(t, math.NewInt(150), share)
+	require.Equal(t, math.LegacyNewDecFromInt(math.NewInt(150)), share)
 }
 
 func TestShareToAmount(t *testing.T) {
@@ -156,7 +156,7 @@ func TestWithdrawRewards(t *testing.T) {
 	require.NoError(t, err)
 
 	// withdraw zero rewards
-	_, err = input.MoveKeeper.WithdrawRewards(ctx, valAddr)
+	_, err = input.MoveKeeper.SafeWithdrawRewards(ctx, valAddr)
 	require.NoError(t, err)
 
 	moveAccOriginBalance := input.BankKeeper.GetAllBalances(ctx, types.MoveStakingModuleAddress)
@@ -165,7 +165,7 @@ func TestWithdrawRewards(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		setValidatorRewards(t, ctx, input.Faucet, input.StakingKeeper, input.DistKeeper, valAddr, sdk.NewCoin(bondDenom, math.NewInt(100)))
 		ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
-		rewards, err := input.MoveKeeper.WithdrawRewards(ctx, valAddr)
+		rewards, err := input.MoveKeeper.SafeWithdrawRewards(ctx, valAddr)
 		require.NoError(t, err)
 		accRewards = accRewards.Add(rewards.Sum()...)
 	}
@@ -279,7 +279,7 @@ func TestApplyStakingDeltas(t *testing.T) {
 		vmAddr,
 		vmtypes.StdAddress,
 		types.MoveModuleNameStaking,
-		types.FunctionNameStakingDelegate,
+		types.FunctionNameStakingDelegateScript,
 		[]vmtypes.TypeTag{},
 		[][]byte{metadataLP[:], valAddrArg, amountArg},
 	)
@@ -299,7 +299,7 @@ func TestApplyStakingDeltas(t *testing.T) {
 		vmAddr,
 		vmtypes.StdAddress,
 		types.MoveModuleNameStaking,
-		types.FunctionNameStakingUndelegate,
+		types.FunctionNameStakingUndelegateScript,
 		[]vmtypes.TypeTag{},
 		[][]byte{metadataLP[:], valAddrArg, halfAmountArg},
 	)
@@ -330,7 +330,7 @@ func TestApplyStakingDeltas(t *testing.T) {
 
 	unbondingShare, unbondingCoinStore, err := types.ReadUnbondingInfosFromStakingState(tableEntry.ValueBytes)
 	require.NoError(t, err)
-	require.Equal(t, unbondingShare, math.NewInt(25_000_000))
+	require.Equal(t, unbondingShare, math.LegacyNewDecFromInt(math.NewInt(25_000_000)))
 
 	_, unbondingAmount, err := keeper.NewMoveBankKeeper(&input.MoveKeeper).Balance(ctx, unbondingCoinStore)
 	require.NoError(t, err)
@@ -383,7 +383,7 @@ func Test_SlashUnbondingDelegations(t *testing.T) {
 		vmAddr,
 		vmtypes.StdAddress,
 		types.MoveModuleNameStaking,
-		types.FunctionNameStakingDelegate,
+		types.FunctionNameStakingDelegateScript,
 		[]vmtypes.TypeTag{},
 		[][]byte{metadataLP[:], valAddrArg, amountArg},
 	)
@@ -403,7 +403,7 @@ func Test_SlashUnbondingDelegations(t *testing.T) {
 		vmAddr,
 		vmtypes.StdAddress,
 		types.MoveModuleNameStaking,
-		types.FunctionNameStakingUndelegate,
+		types.FunctionNameStakingUndelegateScript,
 		[]vmtypes.TypeTag{},
 		[][]byte{metadataLP[:], valAddrArg, halfAmountArg},
 	)
@@ -415,9 +415,6 @@ func Test_SlashUnbondingDelegations(t *testing.T) {
 	delegation, err = input.StakingKeeper.GetDelegation(ctx, delModuleAddr, valAddr)
 	require.NoError(t, err)
 	require.Equal(t, delegation.Shares, sdk.NewDecCoins(sdk.NewDecCoin(secondBondDenom, math.NewInt(25_000_000))))
-
-	// slash 5%
-	input.MoveKeeper.Hooks().SlashUnbondingDelegations(ctx, valAddr, math.LegacyNewDecWithPrec(5, 2))
 
 	// check staking state
 	tableHandle, err := input.MoveKeeper.GetStakingStatesTableHandle(ctx)
@@ -437,9 +434,24 @@ func Test_SlashUnbondingDelegations(t *testing.T) {
 
 	unbondingShare, unbondingCoinStore, err := types.ReadUnbondingInfosFromStakingState(tableEntry.ValueBytes)
 	require.NoError(t, err)
+	require.Equal(t, unbondingShare, math.LegacyNewDecFromInt(math.NewInt(25_000_000)))
 
 	_, unbondingAmount, err := keeper.NewMoveBankKeeper(&input.MoveKeeper).Balance(ctx, unbondingCoinStore)
 	require.NoError(t, err)
+	require.Equal(t, unbondingAmount, math.NewInt(25_000_000))
+
+	// slash 5%
+	input.MoveKeeper.Hooks().SlashUnbondingDelegations(ctx, valAddr, math.LegacyNewDecWithPrec(5, 2))
+
+	// read validator entry
+	tableEntry, err = input.MoveKeeper.GetTableEntry(ctx, metadataTableHandle, keyBz)
+	require.NoError(t, err)
+
+	unbondingShare, _, err = types.ReadUnbondingInfosFromStakingState(tableEntry.ValueBytes)
+	require.NoError(t, err)
+
+	_, unbondingAmount, err = keeper.NewMoveBankKeeper(&input.MoveKeeper).Balance(ctx, unbondingCoinStore)
+	require.NoError(t, err)
 	require.Equal(t, unbondingAmount, math.NewInt(23_750_000))
-	require.Equal(t, unbondingShare, math.NewInt(25_000_000))
+	require.Equal(t, unbondingShare, math.LegacyNewDecFromInt(math.NewInt(25_000_000)))
 }

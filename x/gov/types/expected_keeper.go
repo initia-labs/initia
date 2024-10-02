@@ -4,6 +4,7 @@ import (
 	context "context"
 
 	"cosmossdk.io/core/address"
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
@@ -23,4 +24,9 @@ type StakingKeeper interface {
 
 	GetVotingPowerWeights(ctx context.Context) (sdk.DecCoins, error)
 	ValidatorAddressCodec() address.Codec
+}
+
+type VestingKeeper interface {
+	GetVestingHandle(ctx context.Context, moduleAddr sdk.AccAddress, moduleName string, creator sdk.AccAddress) (*sdk.AccAddress, error)
+	GetUnclaimedVestedAmount(ctx context.Context, tableHandle, recipientAccAddr sdk.AccAddress) (math.Int, error)
 }

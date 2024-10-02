@@ -2,10 +2,10 @@ package keeper
 
 // Migrator is a struct for handling in-place store migrations.
 type Migrator struct {
-	keeper Keeper
+	k Keeper
 }
 
 // NewMigrator returns a new Migrator.
-func NewMigrator(keeper Keeper) Migrator {
-	return Migrator{keeper: keeper}
+func NewMigrator(k Keeper) Migrator {
+	return Migrator{k: k}
 }

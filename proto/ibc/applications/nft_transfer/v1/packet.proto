@@ -2,9 +2,9 @@ syntax = "proto3";
 
 package ibc.applications.nft_transfer.v1;
 
-option go_package = "github.com/initia-labs/initia/x/ibc/nft-transfer/types";
-
 import "gogoproto/gogo.proto";
+
+option go_package = "github.com/initia-labs/initia/x/ibc/nft-transfer/types";
 
 // NonFungibleTokenPacketData defines a struct for the packet payload
 // See NonFungibleTokenPacketData spec:

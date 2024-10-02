@@ -288,7 +288,7 @@ func (q Querier) View(ctx context.Context, req *types.QueryViewRequest) (res *ty
 		return nil, errors.Wrap(sdkerrors.ErrInvalidRequest, "empty function name")
 	}
 
-	output, err := q.ExecuteViewFunction(
+	output, gasUsed, err := q.ExecuteViewFunction(
 		ctx,
 		moduleAddr,
 		req.ModuleName,
@@ -303,16 +303,13 @@ func (q Querier) View(ctx context.Context, req *types.QueryViewRequest) (res *ty
 	events := make([]types.VMEvent, len(output.Events))
 	for i, event := range output.Events {
 		events[i].Data = event.EventData
-		events[i].TypeTag, err = vmapi.StringifyTypeTag(event.TypeTag)
-		if err != nil {
-			return
-		}
+		events[i].TypeTag = event.TypeTag
 	}
 
 	res = &types.QueryViewResponse{
 		Data:    output.Ret,
 		Events:  events,
-		GasUsed: output.GasUsed,
+		GasUsed: gasUsed,
 	}
 
 	return
@@ -359,7 +356,7 @@ func (q Querier) ViewJSON(ctx context.Context, req *types.QueryViewJSONRequest) 
 		return nil, errors.Wrap(sdkerrors.ErrInvalidRequest, "empty function name")
 	}
 
-	output, err := q.ExecuteViewFunctionJSON(
+	output, gasUsed, err := q.ExecuteViewFunctionJSON(
 		ctx,
 		moduleAddr,
 		req.ModuleName,
@@ -374,16 +371,13 @@ func (q Querier) ViewJSON(ctx context.Context, req *types.QueryViewJSONRequest) 
 	events := make([]types.VMEvent, len(output.Events))
 	for i, event := range output.Events {
 		events[i].Data = event.EventData
-		events[i].TypeTag, err = vmapi.StringifyTypeTag(event.TypeTag)
-		if err != nil {
-			return
-		}
+		events[i].TypeTag = event.TypeTag
 	}
 
 	res = &types.QueryViewJSONResponse{
 		Data:    output.Ret,
 		Events:  events,
-		GasUsed: output.GasUsed,
+		GasUsed: gasUsed,
 	}
 
 	return

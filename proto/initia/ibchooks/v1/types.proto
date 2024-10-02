@@ -4,14 +4,14 @@ package initia.ibchooks.v1;
 import "amino/amino.proto";
 import "gogoproto/gogo.proto";
 
-option go_package                      = "github.com/initia-labs/initia/x/ibc-hooks/types";
+option go_package = "github.com/initia-labs/initia/x/ibc-hooks/types";
+option (gogoproto.equal_all) = true;
 option (gogoproto.goproto_getters_all) = false;
-option (gogoproto.equal_all)           = true;
 
 // Params defines the set of hook parameters.
 message Params {
-  option (amino.name)                 = "ibc-hooks/Params";
-  option (gogoproto.equal)            = true;
+  option (amino.name) = "ibc-hooks/Params";
+  option (gogoproto.equal) = true;
   option (gogoproto.goproto_stringer) = false;
 
   // if the ACL of a address is not set,
@@ -22,5 +22,5 @@ message Params {
 // ACL defines the ACL entry of an address.
 message ACL {
   string address = 1;
-  bool   allowed = 2;
+  bool allowed = 2;
 }

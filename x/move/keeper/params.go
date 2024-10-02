@@ -48,6 +48,16 @@ func (k Keeper) ContractSharedRevenueRatio(ctx context.Context) (math.LegacyDec,
 	return params.ContractSharedRevenueRatio, nil
 }
 
+// ScriptEnabled - script execution enabled
+func (k Keeper) ScriptEnabled(ctx context.Context) (bool, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return false, err
+	}
+
+	return params.ScriptEnabled, nil
+}
+
 // SetParams sets the x/move module parameters.
 func (k Keeper) SetParams(ctx context.Context, params types.Params) error {
 	if err := k.SetRawParams(ctx, params.ToRaw()); err != nil {
@@ -74,7 +84,7 @@ func (k Keeper) GetParams(ctx context.Context) (types.Params, error) {
 		return types.Params{}, err
 	}
 
-	allowedPublishers, err := NewCodeKeeper(&k).GetParams(ctx)
+	allowedPublishers, err := NewCodeKeeper(&k).GetAllowedPublishers(ctx)
 	if err != nil {
 		return types.Params{}, err
 	}

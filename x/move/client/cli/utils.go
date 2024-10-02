@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"math/big"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -197,20 +198,30 @@ func bcsSerializeArg(argType string, arg string, s serde.Serializer, ac address.
 			High: highHigh,
 		})
 		return s.GetBytes(), nil
-	case "decimal128":
+	case "biguint":
+		n, err := sdkmath.ParseUint(arg)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse %q as biguint", err)
+		}
+
+		// convert to little endian
+		bz := n.BigInt().Bytes()
+		slices.Reverse(bz)
+
+		err = s.SerializeBytes(bz)
+		return s.GetBytes(), err
+	case "bigdecimal":
 		dec, err := sdkmath.LegacyNewDecFromStr(arg)
 		if err != nil {
 			return nil, err
 		}
-		decstr := dec.MulInt64(1000000000000000000).TruncateInt().String()
-		return bcsSerializeArg("u128", decstr, s, ac)
-	case "decimal256":
-		dec, err := sdkmath.LegacyNewDecFromStr(arg)
-		if err != nil {
-			return nil, err
-		}
-		decstr := dec.MulInt64(1000000000000000000).TruncateInt().String()
-		return bcsSerializeArg("u256", decstr, s, ac)
+
+		// convert to little endian
+		bz := dec.BigInt().Bytes()
+		slices.Reverse(bz)
+
+		err = s.SerializeBytes(bz)
+		return s.GetBytes(), err
 	case "fixed_point32":
 		dec, err := sdkmath.LegacyNewDecFromStr(arg)
 		if err != nil {

@@ -2,53 +2,48 @@ syntax = "proto3";
 
 package ibc.applications.perm.v1;
 
+import "cosmos/base/query/v1beta1/pagination.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
-import "cosmos/base/query/v1beta1/pagination.proto";
 import "ibc/applications/perm/v1/types.proto";
 
 option go_package = "github.com/initia-labs/initia/x/ibc/perm/types";
 
 // Query provides defines the gRPC querier service.
 service Query {
-  // PermissionedRelayersByChannel queries a set of permissioned ibc relayers for the specific channel.
-  rpc PermissionedRelayersByChannel(QueryPermissionedRelayersByChannelRequest)
-      returns (QueryPermissionedRelayersByChannelResponse) {
-    option (google.api.http).get = "/ibc/apps/perm/v1/relayers/{port_id}/{channel_id}";
+  // ChannelStates queries all channel states.
+  rpc ChannelStates(QueryChannelStatesRequest) returns (QueryChannelStatesResponse) {
+    option (google.api.http).get = "/ibc/apps/perm/v1/channel_states";
   }
 
-  // AllPermissionedRelayers queries all sets of permissioned relayers for all channels.
-  rpc AllPermissionedRelayers(QueryAllPermissionedRelayersRequest) returns (QueryAllPermissionedRelayersResponse) {
-    option (google.api.http).get = "/ibc/apps/perm/v1/relayers";
+  // ChannelState queries the channel state for the specific port-id:channel-id pair.
+  rpc ChannelState(QueryChannelStateRequest) returns (QueryChannelStateResponse) {
+    option (google.api.http).get = "/ibc/apps/perm/v1/channel_states/{channel_id}/{port_id}";
   }
 }
 
-// QueryPermissionedRelayersOfOneChannelRequest is the request type for the Query/PermissionedRelayer RPC
-// method
-message QueryPermissionedRelayersByChannelRequest {
-  string port_id    = 1;
-  string channel_id = 2;
-}
-
-// QueryPermissionedRelayerResponse is the response type for the Query/PermissionedRelayer RPC
-// method.
-message QueryPermissionedRelayersByChannelResponse {
-  // class_trace returns the requested class id trace information.
-  PermissionedRelayers permissioned_relayers = 1;
-}
-
-// QueryAllPermissionedRelayersRequest is the request type for the Query/AllPermissionedRelayers RPC
-// method
-message QueryAllPermissionedRelayersRequest {
+// QueryChannelStatesRequest is the request type for the Query/ChannelStates RPC method.
+message QueryChannelStatesRequest {
   // pagination defines an optional pagination for the request.
   cosmos.base.query.v1beta1.PageRequest pagination = 1;
 }
 
-// QueryAllPermissionedRelayersResponse is the response type for the Query/AllPermissionedRelayers RPC
-// method.
-message QueryAllPermissionedRelayersResponse {
-  // class_trace returns the requested class id trace information.
-  repeated PermissionedRelayers permissioned_relayers = 1 [(gogoproto.nullable) = false];
+// QueryChannelStatesResponse is the response type for the Query/ChannelStates RPC method.
+message QueryChannelStatesResponse {
+  // channel_states returns all stored ChannelState objects.
+  repeated ChannelState channel_states = 1 [(gogoproto.nullable) = false];
   // pagination defines the pagination in the response.
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// QueryChannelStateRequest is the request type for the Query/ChannelState RPC method.
+message QueryChannelStateRequest {
+  string channel_id = 1;
+  string port_id = 2;
+}
+
+// QueryChannelStateResponse is the response type for the Query/ChannelState RPC method.
+message QueryChannelStateResponse {
+  // channel_state returns the stored ChannelState object.
+  ChannelState channel_state = 1 [(gogoproto.nullable) = false];
 }

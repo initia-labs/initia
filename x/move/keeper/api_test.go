@@ -18,8 +18,8 @@ import (
 
 	vmtypes "github.com/initia-labs/movevm/types"
 
-	slinkytypes "github.com/skip-mev/slinky/pkg/types"
-	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
+	connecttypes "github.com/skip-mev/connect/v2/pkg/types"
+	oracletypes "github.com/skip-mev/connect/v2/x/oracle/types"
 )
 
 func Test_GetAccountInfo(t *testing.T) {
@@ -109,7 +109,7 @@ func Test_AmountToShareAPI(t *testing.T) {
 	api := keeper.NewApi(input.MoveKeeper, ctx)
 	amount, err := api.AmountToShare([]byte(valAddr.String()), metadata, 150)
 	require.NoError(t, err)
-	require.Equal(t, uint64(150), amount)
+	require.Equal(t, "150.000000000000000000", amount)
 }
 
 func Test_AmountToShareAPI_InvalidAddr(t *testing.T) {
@@ -154,7 +154,7 @@ func Test_ShareToAmountAPI(t *testing.T) {
 	require.NoError(t, err)
 
 	api := keeper.NewApi(input.MoveKeeper, ctx)
-	amount, err := api.ShareToAmount([]byte(valAddr.String()), metadata, 150)
+	amount, err := api.ShareToAmount([]byte(valAddr.String()), metadata, "150")
 	require.NoError(t, err)
 	require.Equal(t, uint64(150), amount)
 }
@@ -178,7 +178,7 @@ func Test_ShareToAmountAPI_InvalidAddr(t *testing.T) {
 	require.NoError(t, err)
 
 	api := keeper.NewApi(input.MoveKeeper, ctx)
-	_, err = api.ShareToAmount(valAddr, metadata, 150)
+	_, err = api.ShareToAmount(valAddr, metadata, "150")
 	require.Error(t, err)
 }
 
@@ -203,7 +203,7 @@ func Test_GetPrice(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
 	pairId := "BITCOIN/USD"
-	cp, err := slinkytypes.CurrencyPairFromString(pairId)
+	cp, err := connecttypes.CurrencyPairFromString(pairId)
 	require.NoError(t, err)
 
 	price := math.NewInt(111111).MulRaw(1_000_000_000).MulRaw(1_000_000_000).MulRaw(1_000_000_000)
@@ -219,7 +219,7 @@ func Test_GetPrice(t *testing.T) {
 	pairIdArg, err := vmtypes.SerializeString(pairId)
 	require.NoError(t, err)
 
-	res, err := input.MoveKeeper.ExecuteViewFunction(
+	res, _, err := input.MoveKeeper.ExecuteViewFunction(
 		ctx,
 		vmtypes.StdAddress,
 		"oracle",
@@ -287,14 +287,14 @@ func Test_API_CustomQuery(t *testing.T) {
 	require.NoError(t, err)
 
 	// to sdk
-	res, err := input.MoveKeeper.ExecuteViewFunction(ctx, vmtypes.TestAddress, "TestAddress", "to_sdk", []vmtypes.TypeTag{}, [][]byte{vmAddr.Bytes()})
+	res, _, err := input.MoveKeeper.ExecuteViewFunction(ctx, vmtypes.TestAddress, "TestAddress", "to_sdk", []vmtypes.TypeTag{}, [][]byte{vmAddr.Bytes()})
 	require.NoError(t, err)
 	require.Equal(t, fmt.Sprintf("\"%s\"", addrs[0].String()), res.Ret)
 
 	// from sdk
 	inputBz, err := vmtypes.SerializeString(addrs[0].String())
 	require.NoError(t, err)
-	res, err = input.MoveKeeper.ExecuteViewFunction(ctx, vmtypes.TestAddress, "TestAddress", "from_sdk", []vmtypes.TypeTag{}, [][]byte{inputBz})
+	res, _, err = input.MoveKeeper.ExecuteViewFunction(ctx, vmtypes.TestAddress, "TestAddress", "from_sdk", []vmtypes.TypeTag{}, [][]byte{inputBz})
 	require.NoError(t, err)
 	require.Equal(t, fmt.Sprintf("\"%s\"", vmAddr.String()), res.Ret)
 }

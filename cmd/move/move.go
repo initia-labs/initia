@@ -19,11 +19,9 @@ import (
 	movetypes "github.com/initia-labs/initia/x/move/types"
 
 	"github.com/initia-labs/movevm/api"
-	"github.com/initia-labs/movevm/types/compiler"
+	"github.com/initia-labs/movevm/types"
 	buildtypes "github.com/initia-labs/movevm/types/compiler/build"
-	coveragetypes "github.com/initia-labs/movevm/types/compiler/coverage"
 	docgentypes "github.com/initia-labs/movevm/types/compiler/docgen"
-	provetypes "github.com/initia-labs/movevm/types/compiler/prove"
 	testtypes "github.com/initia-labs/movevm/types/compiler/test"
 	"github.com/pelletier/go-toml"
 	"github.com/spf13/cobra"
@@ -49,6 +47,9 @@ const (
 	flagFetchDepsOnly          = "fetch-deps-only"
 	flagSkipFetchLatestGitDeps = "skip-fetch-latest-git-deps"
 	flagBytecodeVersion        = "bytecode-version"
+	flagCompilerVersion        = "compiler-version"
+	flagLanguageVersion        = "language-version"
+	flagNamedAddresses         = "named-addresses"
 	/* test options */
 	flagGasLimit                  = "gas-limit"
 	flagGasLimitShorthand         = "g"
@@ -64,20 +65,6 @@ const (
 	flagComputeCoverage           = "coverage"
 	// clean options
 	flagCleanCache = "clean-cache"
-	// prove options
-	flagProcCores           = "proc-cores"
-	flagTrace               = "trace"
-	flagTraceShorthand      = "t"
-	flagCVC5                = "cvc5"
-	flagStratificationDepth = "stratification-depth"
-	flagRandomSeed          = "random-seed"
-	flagVcTimeout           = "vc-timeout"
-	flagCheckInconsistency  = "check-inconsistency"
-	flagKeepLoops           = "keep-loops"
-	flagLoopUnroll          = "loop-unroll"
-	flagStableTestOutput    = "stable-test-output"
-	flagDump                = "dump"
-	flagVerbosity           = "verbosity"
 	// verify options
 	flagVerify = "verify"
 	// coverage options
@@ -114,7 +101,6 @@ func MoveCommand(ac address.Codec) *cobra.Command {
 		moveNewCmd(),
 		moveCleanCmd(),
 		moveDeployCmd(ac),
-		moveProveCmd(),
 		moveVerifyCmd(),
 		moveDocgenCmd(),
 	)
@@ -176,7 +162,7 @@ func moveTestCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			tc, err := getTestConfig(cmd)
+			tc, err := getTestOptions(cmd)
 			if err != nil {
 				return err
 			}
@@ -204,11 +190,11 @@ func moveEncodeCmd(ac address.Codec) *cobra.Command {
 		Provide BCS encoding for move arguments.
 
 		Supported types : u8, u16, u32, u64, u128, u256, bool, string, address, raw_hex, raw_base64,
-			vector<inner_type>, option<inner_type>, decimal128, decimal256, fixed_point32, fixed_point64
+			vector<inner_type>, option<inner_type>, biguint, bigdecimal, fixed_point32, fixed_point64
 		Example of args: address:0x1 bool:true u8:0 string:hello vector<u32>:a,b,c,d
 		
 		Example:
-		$ %s move encode --args '["address:0x1", "bool:true", "u8:0x01", "u128:1234", "vector<u32>:a,b,c,d", "string:hello world"]'
+		$ %s move encode --args '["address:0x1", "bool:true", "u8:0x01", "u128:1234", "vector<u32>:a,b,c,d", "string:hello world", "bigdecimal:123.456"]'
 `, version.AppName,
 		),
 		Args: cobra.ExactArgs(0),
@@ -247,7 +233,7 @@ func moveCoverageSummaryCmd() *cobra.Command {
 				return err
 			}
 
-			config, err := getCoverageSummaryConfig(cmd)
+			config, err := getCoverageSummaryOptions(cmd)
 			if err != nil {
 				return err
 			}
@@ -278,8 +264,8 @@ func moveCoverageSourceCmd() *cobra.Command {
 				return err
 			}
 
-			_, err = api.CoverageSource(*arg, coveragetypes.CoverageSourceConfig{
-				ModuleName: args[0],
+			_, err = api.CoverageSource(*arg, types.CompilerCoverageSourceOptions{
+				ModuleName: &args[0],
 			})
 			if err != nil {
 				return err
@@ -305,8 +291,8 @@ func moveCoverageBytecodeCmd() *cobra.Command {
 				return err
 			}
 
-			_, err = api.CoverageBytecode(*arg, coveragetypes.CoverageBytecodeConfig{
-				ModuleName: args[0],
+			_, err = api.CoverageBytecode(*arg, types.CompilerCoverageBytecodeOptions{
+				ModuleName: &args[0],
 			})
 			if err != nil {
 				return err
@@ -353,7 +339,7 @@ func moveCleanCmd() *cobra.Command {
 		Long:  "Remove previously built data and its cache",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			arg := compiler.CompilerArgument{}
+			arg := types.CompilerArguments{}
 
 			cleanCache, err := cmd.Flags().GetBool(flagCleanCache)
 			if err != nil {
@@ -507,38 +493,6 @@ func moveDeployCmd(ac address.Codec) *cobra.Command {
 	return cmd
 }
 
-func moveProveCmd() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "prove [flags]",
-		Short: "prove a move package",
-		Long:  "run formal verification of a Move package using the Move prover",
-		Args:  cobra.ExactArgs(0),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			arg, err := getCompilerArgument(cmd)
-			if err != nil {
-				return err
-			}
-
-			pc, err := getProveConfig(cmd)
-			if err != nil {
-				return err
-			}
-
-			_, err = api.ProveContract(*arg, *pc)
-			if err != nil {
-				return err
-			}
-
-			fmt.Println("Prove success")
-			return nil
-		},
-	}
-
-	addMoveBuildFlags(cmd)
-	addMoveProveFlags(cmd)
-	return cmd
-}
-
 func moveVerifyCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "verify [flags]",
@@ -576,7 +530,7 @@ func moveDocgenCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			dgc, err := getDocgenConfig(cmd)
+			dgc, err := getDocgenOptions(cmd)
 			if err != nil {
 				return err
 			}
@@ -613,6 +567,9 @@ the 'tests' directory`)
 	cmd.Flags().Bool(flagVerbose, false, "Print additional diagnostics if available")
 	cmd.Flags().Bool(flagSkipFetchLatestGitDeps, false, "Skip fetching latest git dependencies")
 	cmd.Flags().Uint32(flagBytecodeVersion, 0, "Specify the version of the bytecode the compiler is going to emit")
+	cmd.Flags().String(flagCompilerVersion, "1", "Specify the version of the compiler to use")
+	cmd.Flags().String(flagLanguageVersion, "1", "Specify the version of the language to use")
+	cmd.Flags().String(flagNamedAddresses, "", "Named addresses to use in compilation. ex: --named-addresses 'name_1=0x1,name_2=0x2'")
 }
 
 func addMoveTestFlags(cmd *cobra.Command) {
@@ -638,21 +595,6 @@ func addMoveDeployFlags(cmd *cobra.Command) {
 	cmd.Flags().Bool(flagVerify, false, "Verify the contract compared to the onchain package")
 }
 
-func addMoveProveFlags(cmd *cobra.Command) {
-	cmd.Flags().Uint(flagProcCores, provetypes.DefaultProcCores, "The number of cores to use for parallel processing of verification conditions")
-	cmd.Flags().BoolP(flagTrace, flagTraceShorthand, false, "Whether to display additional information in error reports. This may help debugging but also can make verification slower")
-	cmd.Flags().Bool(flagCVC5, false, "Whether to use cvc5 as the smt solver backend. The environment variable `CVC5_EXE` should point to the binary")
-	cmd.Flags().Uint(flagStratificationDepth, provetypes.DefaultStratificationDepth, "The depth until which stratified functions are expanded")
-	cmd.Flags().Uint(flagRandomSeed, 0, "A seed to the prover")
-	cmd.Flags().Uint(flagVcTimeout, provetypes.DefaultVcTimeout, "A (soft) timeout for the solver, per verification condition, in seconds")
-	cmd.Flags().Bool(flagCheckInconsistency, false, "Whether to check consistency of specs by injecting impossible assertions")
-	cmd.Flags().Bool(flagKeepLoops, false, "Whether to keep loops as they are and pass them on to the underlying solver")
-	cmd.Flags().Uint(flagLoopUnroll, 0, "Number of iterations to unroll loops")
-	cmd.Flags().Bool(flagStableTestOutput, false, "Whether output for e.g. diagnosis shall be stable/redacted so it can be used in test output")
-	cmd.Flags().Bool(flagDump, false, "Whether to dump intermediate step results to files")
-	cmd.Flags().StringP(flagVerbosity, flagVerboseShorthand, "", "Verbosity level")
-}
-
 func addMoveDocgenFlags(cmd *cobra.Command) {
 	cmd.Flags().Bool(flagIncludeImpl, false, "Whether to include private declarations and implementations into the generated documentation.")
 	cmd.Flags().Bool(flagIncludeSpecs, false, "Whether to include specifications in the generated documentation.")
@@ -663,7 +605,7 @@ func addMoveDocgenFlags(cmd *cobra.Command) {
 	cmd.Flags().String(flagReferencesFile, "", "Package-relative path to a file whose content is added to each generated markdown file.")
 }
 
-func getCompilerArgument(cmd *cobra.Command) (*compiler.CompilerArgument, error) {
+func getCompilerArgument(cmd *cobra.Command) (*types.CompilerArguments, error) {
 	bc, err := getBuildConfig(cmd)
 	if err != nil {
 		return nil, err
@@ -679,18 +621,18 @@ func getCompilerArgument(cmd *cobra.Command) (*compiler.CompilerArgument, error)
 		return nil, err
 	}
 
-	return &compiler.CompilerArgument{
-		PackagePath: packagePath,
+	return &types.CompilerArguments{
+		PackagePath: &packagePath,
 		Verbose:     verbose,
 		BuildConfig: *bc,
 	}, nil
 }
 
-func getBuildConfig(cmd *cobra.Command) (*buildtypes.BuildConfig, error) {
+func getBuildConfig(cmd *cobra.Command) (*types.CompilerBuildConfig, error) {
 
-	options := []func(*buildtypes.BuildConfig){}
+	options := []func(*types.CompilerBuildConfig){}
 
-	boolFlags := map[string]func(*buildtypes.BuildConfig){}
+	boolFlags := map[string]func(*types.CompilerBuildConfig){}
 	boolFlags[flagDevMode] = buildtypes.WithDevMode()
 	boolFlags[flagTestMode] = buildtypes.WithTestMode()
 	boolFlags[flagGenerateDocs] = buildtypes.WithGenerateDocs()
@@ -720,15 +662,50 @@ func getBuildConfig(cmd *cobra.Command) (*buildtypes.BuildConfig, error) {
 	}
 	options = append(options, buildtypes.WithBytecodeVersion(bytecodeVersion))
 
+	compilerVersion, err := cmd.Flags().GetString(flagCompilerVersion)
+	if err != nil {
+		return nil, err
+	}
+	options = append(options, buildtypes.WithCompilerVersion(compilerVersion))
+
+	languageVersion, err := cmd.Flags().GetString(flagLanguageVersion)
+	if err != nil {
+		return nil, err
+	}
+	options = append(options, buildtypes.WithLanguageVersion(languageVersion))
+
+	namedAddresses, err := cmd.Flags().GetString(flagNamedAddresses)
+	if err != nil {
+		return nil, err
+	}
+	if len(namedAddresses) > 0 {
+		namedAddressMap := make(map[string]types.AccountAddress)
+		for _, namedAddress := range strings.Split(namedAddresses, ",") {
+			v := strings.Split(namedAddress, "=")
+			if len(v) != 2 {
+				return nil, fmt.Errorf("invalid named-addresses: %s", namedAddresses)
+			}
+
+			name := v[0]
+			addr, err := types.NewAccountAddress(v[1]) // validate address
+			if err != nil {
+				return nil, fmt.Errorf("invalid address: %s", v[1])
+			}
+
+			namedAddressMap[name] = addr
+		}
+		options = append(options, buildtypes.WithNamedAddresses(namedAddressMap))
+	}
+
 	bc := buildtypes.NewBuildConfig(options...)
 
 	return &bc, nil
 }
 
-func getTestConfig(cmd *cobra.Command) (*testtypes.TestConfig, error) {
-	options := []func(*testtypes.TestConfig){}
+func getTestOptions(cmd *cobra.Command) (*types.CompilerTestOptions, error) {
+	options := []func(*types.CompilerTestOptions){}
 
-	boolFlags := map[string]func(*testtypes.TestConfig){}
+	boolFlags := map[string]func(*types.CompilerTestOptions){}
 	boolFlags[flagComputeCoverage] = testtypes.WithComputeCoverage()
 	boolFlags[flagReportStatistics] = testtypes.WithReportStatistics()
 	boolFlags[flagReportStorageOnError] = testtypes.WithReportStorageOnError()
@@ -752,11 +729,11 @@ func getTestConfig(cmd *cobra.Command) (*testtypes.TestConfig, error) {
 		options = append(options, testtypes.WithFilter(filter))
 	}
 
-	tc := testtypes.NewTestConfig(options...)
+	tc := testtypes.NewTestOptions(options...)
 	return &tc, nil
 }
 
-func getCoverageSummaryConfig(cmd *cobra.Command) (*coveragetypes.CoverageSummaryConfig, error) {
+func getCoverageSummaryOptions(cmd *cobra.Command) (*types.CompilerCoverageSummaryOptions, error) {
 	functions, err := cmd.Flags().GetBool(flagFunctions)
 	if err != nil {
 		return nil, err
@@ -765,78 +742,16 @@ func getCoverageSummaryConfig(cmd *cobra.Command) (*coveragetypes.CoverageSummar
 	if err != nil {
 		return nil, err
 	}
-	return &coveragetypes.CoverageSummaryConfig{
+	return &types.CompilerCoverageSummaryOptions{
 		Functions: functions,
-		OutputCSV: outputCSV,
+		OutputCsv: outputCSV,
 	}, nil
 }
 
-func getProveConfig(cmd *cobra.Command) (*provetypes.ProveConfig, error) {
-	options := []func(*provetypes.ProveConfig){}
+func getDocgenOptions(cmd *cobra.Command) (*types.CompilerDocgenOptions, error) {
+	options := []func(*types.CompilerDocgenOptions){}
 
-	boolFlags := map[string]func(*provetypes.ProveConfig){}
-	boolFlags[flagTrace] = provetypes.WithTrace()
-	boolFlags[flagCVC5] = provetypes.WithCVC5()
-	boolFlags[flagCheckInconsistency] = provetypes.WithCVC5()
-	boolFlags[flagKeepLoops] = provetypes.WithKeepLoops()
-	boolFlags[flagStableTestOutput] = provetypes.WithStableTestOutput()
-	boolFlags[flagDump] = provetypes.WithDump()
-
-	for fn, opt := range boolFlags {
-		flag, err := cmd.Flags().GetBool(fn)
-		if err != nil {
-			return nil, err
-		}
-		if flag {
-			options = append(options, opt)
-		}
-	}
-
-	procCores, err := cmd.Flags().GetUint(flagProcCores)
-	if err != nil {
-		return nil, err
-	}
-	options = append(options, provetypes.WithProcCores(procCores))
-
-	stratificationDepth, err := cmd.Flags().GetUint(flagStratificationDepth)
-	if err != nil {
-		return nil, err
-	}
-	options = append(options, provetypes.WithStratificationDepth(stratificationDepth))
-
-	randomSeed, err := cmd.Flags().GetUint(flagRandomSeed)
-	if err != nil {
-		return nil, err
-	}
-	options = append(options, provetypes.WithRandomSeed(randomSeed))
-
-	vcTimeout, err := cmd.Flags().GetUint(flagVcTimeout)
-	if err != nil {
-		return nil, err
-	}
-	options = append(options, provetypes.WithVcTimeout(vcTimeout))
-
-	loopUnroll, err := cmd.Flags().GetUint(flagLoopUnroll)
-	if err != nil {
-		return nil, err
-	}
-	options = append(options, provetypes.WithLoopUnroll(loopUnroll))
-
-	verbosity, err := cmd.Flags().GetString(flagVerbosity)
-	if err != nil {
-		return nil, err
-
-	}
-	options = append(options, provetypes.WithVerbosity(verbosity))
-
-	pc := provetypes.NewProveConfig(options...)
-	return &pc, nil
-}
-
-func getDocgenConfig(cmd *cobra.Command) (*docgentypes.DocgenConfig, error) {
-	options := []func(*docgentypes.DocgenConfig){}
-
-	boolFlags := map[string]func(*docgentypes.DocgenConfig){}
+	boolFlags := map[string]func(*types.CompilerDocgenOptions){}
 	boolFlags[flagIncludeImpl] = docgentypes.WithIncludeImpl()
 	boolFlags[flagIncludeSpecs] = docgentypes.WithIncludeSpecs()
 	boolFlags[flagSpecsInlined] = docgentypes.WithSpecsInlined()
@@ -865,6 +780,6 @@ func getDocgenConfig(cmd *cobra.Command) (*docgentypes.DocgenConfig, error) {
 		options = append(options, docgentypes.WithReferencesFile(referencesFile))
 	}
 
-	dgc := docgentypes.NewDocgenConfig(options...)
+	dgc := docgentypes.NewDocgenOptions(options...)
 	return &dgc, nil
 }
