@@ -124,7 +124,8 @@ func Test_CustomGrpcQuerier_Proposal(t *testing.T) {
 func Test_CustomGrpcQuerier_TallyResult(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
-	setupVesting(t, ctx, input)
+	now := time.Now().UTC()
+	setupVesting(t, ctx, input, now)
 
 	proposal, err := input.GovKeeper.SubmitProposal(ctx, nil, "", "test", "description", addrs[0], false)
 	require.NoError(t, err)
@@ -188,7 +189,7 @@ func Test_CustomGrpcQuerier_TallyResult(t *testing.T) {
 	require.NoError(t, err)
 
 	// 15 minutes passed
-	ctx = ctx.WithBlockTime(time.Now().UTC().Add(time.Minute * 15))
+	ctx = ctx.WithBlockTime(now.Add(time.Minute * 15))
 	cacheCtx, _ := ctx.CacheContext()
 
 	quorumReached, passed, burnDeposits, tallyResults, err := input.GovKeeper.Tally(cacheCtx, params, proposal)

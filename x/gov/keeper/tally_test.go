@@ -50,7 +50,7 @@ func Test_isLowThresholdProposal(t *testing.T) {
 	require.False(t, keeper.IsLowThresholdProposal(params, proposal))
 }
 
-func setupVesting(t *testing.T, ctx sdk.Context, input TestKeepers) {
+func setupVesting(t *testing.T, ctx sdk.Context, input TestKeepers, now time.Time) {
 	err := input.MoveKeeper.PublishModuleBundle(ctx, vmtypes.TestAddress, vmtypes.NewModuleBundle(vmtypes.NewModule(vestingModule)), movetypes.UpgradePolicy_COMPATIBLE)
 	require.NoError(t, err)
 
@@ -68,7 +68,6 @@ func setupVesting(t *testing.T, ctx sdk.Context, input TestKeepers) {
 	err = input.MoveKeeper.ExecuteEntryFunctionJSON(ctx, creatorAddr, moduleAddr, moduleName, "create_vesting_store", []vmtypes.TypeTag{}, []string{fmt.Sprintf("\"%s\"", metadata)})
 	require.NoError(t, err)
 
-	now := time.Now().UTC()
 	ctx = ctx.WithBlockTime(now)
 
 	// add vesting
@@ -104,7 +103,8 @@ func setupVesting(t *testing.T, ctx sdk.Context, input TestKeepers) {
 func Test_Tally(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
-	setupVesting(t, ctx, input)
+	now := time.Now().UTC()
+	setupVesting(t, ctx, input, now)
 
 	proposal, err := input.GovKeeper.SubmitProposal(ctx, nil, "", "test", "description", addrs[0], false)
 	require.NoError(t, err)
@@ -168,7 +168,7 @@ func Test_Tally(t *testing.T) {
 	require.NoError(t, err)
 
 	// 15 minutes passed
-	ctx = ctx.WithBlockTime(time.Now().UTC().Add(time.Minute * 15))
+	ctx = ctx.WithBlockTime(now.Add(time.Minute * 15))
 
 	quorumReached, passed, burnDeposits, tallyResults, err := input.GovKeeper.Tally(ctx, params, proposal)
 	require.NoError(t, err)
