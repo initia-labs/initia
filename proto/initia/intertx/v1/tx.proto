@@ -6,6 +6,7 @@ import "amino/amino.proto";
 import "cosmos/msg/v1/msg.proto";
 import "gogoproto/gogo.proto";
 import "google/protobuf/any.proto";
+import "ibc/core/channel/v1/channel.proto";
 
 option go_package = "github.com/initia-labs/initia/x/intertx/types";
 
@@ -30,6 +31,7 @@ message MsgRegisterAccount {
   string owner = 1;
   string connection_id = 2 [(gogoproto.moretags) = "yaml:\"connection_id\""];
   string version = 3;
+  ibc.core.channel.v1.Order ordering = 4;
 }
 
 // MsgRegisterAccountResponse defines the response for Msg/RegisterAccount
