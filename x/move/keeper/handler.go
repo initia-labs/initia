@@ -438,17 +438,17 @@ func (k Keeper) dispatchMessage(parentCtx sdk.Context, message vmtypes.CosmosMes
 			sdk.NewAttribute(types.AttributeKeySuccess, fmt.Sprintf("%v", success)),
 		)
 
-		// return error if failed and not allowed to fail
-		if !success && !allowFailure {
-			// emit failed reason event
+		if !success {
+			// return error if failed and not allowed to fail
+			if !allowFailure {
+				return
+			}
+
+			// emit failed reason event if failed and allowed to fail
 			event.AppendAttributes(sdk.NewAttribute(types.AttributeKeyReason, err.Error()))
 			parentCtx.EventManager().EmitEvent(event)
-
-			return
-		}
-
-		// commit if success
-		if success {
+		} else {
+			// commit if success
 			commit()
 		}
 
