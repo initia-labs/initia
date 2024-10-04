@@ -487,6 +487,7 @@ var basicCoinMintScript []byte
 var tableGeneratorModule []byte
 var testAddressModule []byte
 var vestingModule []byte
+var submsgModule []byte
 
 func init() {
 	basicCoinModule = ReadMoveFile("BasicCoin")
@@ -495,6 +496,7 @@ func init() {
 	tableGeneratorModule = ReadMoveFile("TableGenerator")
 	testAddressModule = ReadMoveFile("TestAddress")
 	vestingModule = ReadMoveFile("Vesting")
+	submsgModule = ReadMoveFile("submsg")
 
 	basicCoinMintScript = ReadScriptFile("main")
 }
@@ -557,6 +559,10 @@ func (router TestMsgRouter) HandlerByTypeURL(typeURL string) baseapp.MsgServiceH
 				sdk.NewAttribute("type_args", strings.Join(msg.TypeArgs, ",")),
 				sdk.NewAttribute("args", strings.Join(msg.Args, ",")),
 			))
+
+			if msg.FunctionName == "fail" {
+				return nil, fmt.Errorf("fail")
+			}
 
 			return sdk.WrapServiceResult(ctx, &stakingtypes.MsgDelegateResponse{}, nil)
 		}

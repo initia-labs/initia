@@ -9,6 +9,7 @@ const (
 	EventTypeMove                  = "move"
 	EventTypeUpgradePolicy         = "upgrade_policy"
 	EventTypeContractSharedRevenue = "contract_shared_revenue"
+	EventTypeSubmsg                = "submsg"
 
 	AttributeKeySender       = "sender"
 	AttributeKeyModuleAddr   = "module_addr"
@@ -24,4 +25,8 @@ const (
 	// upgrade policy attributes
 	AttributeKeyOriginPolicy = "origin_policy"
 	AttributeKeyNewPolicy    = "new_policy"
+
+	// submessage event attributes
+	AttributeKeySuccess = "success"
+	AttributeKeyReason  = "reason"
 )
