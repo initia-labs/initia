@@ -458,7 +458,7 @@ func (k Keeper) dispatchMessage(parentCtx sdk.Context, message vmtypes.CosmosMes
 		// reset error because it's allowed to fail
 		err = nil
 
-		// emit success event
+		// emit submessage event
 		parentCtx.EventManager().EmitEvent(event)
 
 		// if callback exists, execute it with parent context becuase it's already committed
