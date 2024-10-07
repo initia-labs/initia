@@ -12,7 +12,7 @@ import (
 	vmtypes "github.com/initia-labs/movevm/types"
 )
 
-const upgradeName = "0.5.5"
+const upgradeName = "0.5.6"
 
 // RegisterUpgradeHandlers returns upgrade handlers
 func (app *InitiaApp) RegisterUpgradeHandlers(cfg module.Configurator) {
