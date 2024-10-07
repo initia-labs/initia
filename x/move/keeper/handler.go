@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strings"
 	"unsafe"
 
@@ -413,44 +414,115 @@ func (k Keeper) handleExecuteResponse(
 func (k Keeper) DispatchMessages(ctx context.Context, messages []vmtypes.CosmosMessage) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	for _, message := range messages {
-		var msg proto.Message
-		var err error
-		if stargateMsg, ok := message.(*vmtypes.CosmosMessage__Stargate); ok {
-			msg, err = k.HandleVMStargateMsg(ctx, &stargateMsg.Value)
-			if err != nil {
-				return err
-			}
-		} else {
-			msg, err = types.ConvertToSDKMessage(ctx, NewMoveBankKeeper(&k), NewNftKeeper(&k), message, k.ac, k.vc)
-			if err != nil {
-				return err
-			}
-		}
-
-		// validate msg
-		if msg, ok := msg.(sdk.HasValidateBasic); ok {
-			if err := msg.ValidateBasic(); err != nil {
-				return err
-			}
-		}
-
-		// find the handler
-		handler := k.msgRouter.Handler(msg)
-		if handler == nil {
-			return types.ErrNotSupportedCosmosMessage
-		}
-
-		//  and execute it
-		res, err := handler(sdkCtx, msg)
+		err := k.dispatchMessage(sdkCtx, message)
 		if err != nil {
 			return err
 		}
-
-		// emit events
-		sdkCtx.EventManager().EmitEvents(res.GetEvents())
 	}
 
 	return nil
+}
+
+func (k Keeper) dispatchMessage(parentCtx sdk.Context, message vmtypes.CosmosMessage) (err error) {
+	var allowFailure bool
+	var callback *vmtypes.StargateCallback
+	var callbackSender vmtypes.AccountAddress
+
+	ctx, commit := parentCtx.CacheContext()
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("panic: %v", r)
+		}
+
+		success := err == nil
+
+		// create submsg event
+		event := sdk.NewEvent(
+			types.EventTypeSubmsg,
+			sdk.NewAttribute(types.AttributeKeySuccess, fmt.Sprintf("%v", success)),
+		)
+
+		if !success {
+			// return error if failed and not allowed to fail
+			if !allowFailure {
+				return
+			}
+
+			// emit failed reason event if failed and allowed to fail
+			event.AppendAttributes(sdk.NewAttribute(types.AttributeKeyReason, err.Error()))
+		} else {
+			// commit if success
+			commit()
+		}
+
+		// reset error because it's allowed to fail
+		err = nil
+
+		// emit submessage event
+		parentCtx.EventManager().EmitEvent(event)
+
+		// if callback exists, execute it with parent context becuase it's already committed
+		if callback != nil {
+			err = k.ExecuteEntryFunctionJSON(
+				parentCtx,
+				callbackSender,
+				callback.ModuleAddress,
+				callback.ModuleName,
+				callback.FunctionName,
+				[]vmtypes.TypeTag{},
+				[]string{
+					fmt.Sprintf("\"%d\"", callback.Id),
+					fmt.Sprintf("%v", success),
+				},
+			)
+		}
+	}()
+
+	var msg proto.Message
+	if stargateMsg, ok := message.(*vmtypes.CosmosMessage__Stargate); ok {
+		// validate basic & signer check is done in HandleVMStargateMsg
+		msg, err = k.HandleVMStargateMsg(ctx, &stargateMsg.Value)
+		if err != nil {
+			return
+		}
+
+		// callback only exists in stargate message
+		allowFailure = stargateMsg.Value.AllowFailure
+		callback = stargateMsg.Value.Callback
+		callbackSender = stargateMsg.Value.Sender
+	} else {
+		// signer check had been done in moveVM
+		msg, err = types.ConvertToSDKMessage(ctx, NewMoveBankKeeper(&k), NewNftKeeper(&k), message, k.ac, k.vc)
+		if err != nil {
+			return
+		}
+
+		// conduct validate basic
+		if msg, ok := msg.(sdk.HasValidateBasic); ok {
+			err = msg.ValidateBasic()
+			if err != nil {
+				return
+			}
+		}
+	}
+
+	// find the handler
+	handler := k.msgRouter.Handler(msg)
+	if handler == nil {
+		err = types.ErrNotSupportedCosmosMessage
+		return
+	}
+
+	//  and execute it
+	res, err := handler(ctx, msg)
+	if err != nil {
+		return
+	}
+
+	// emit events
+	ctx.EventManager().EmitEvents(res.GetEvents())
+
+	return
 }
 
 // DistributeContractSharedRevenue distribute a portion of gas fee to contract creator account
