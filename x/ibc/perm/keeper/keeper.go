@@ -126,7 +126,7 @@ func (k Keeper) HasAdminPermission(ctx context.Context, portID, channelID string
 // HasRelayerPermission checks if the relayer has permission to relay packets on the channel.
 func (k Keeper) HasRelayerPermission(ctx context.Context, portID, channelID string, relayer sdk.AccAddress) (bool, error) {
 	permRelayers, err := k.ChannelStates.Get(ctx, collections.Join(portID, channelID))
-	if err != nil && errors.Is(err, collections.ErrNotFound) {
+	if err != nil && errors.Is(err, collections.ErrNotFound) || (err == nil && len(permRelayers.Relayers) == 0) {
 		// if no permissioned relayers are set, all relayers are allowed
 		return true, nil
 	} else if err != nil {
