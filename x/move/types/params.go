@@ -19,7 +19,7 @@ const (
 )
 
 var (
-	DefaultBaseMinGasPrice            = math.LegacyNewDecWithPrec(15, 2) // 0.15
+	DefaultBaseMinGasPrice            = math.LegacyNewDecWithPrec(15, 3) // 0.015
 	DefaultContractSharedRevenueRatio = math.LegacyZeroDec()
 )
 
