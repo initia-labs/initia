@@ -296,6 +296,7 @@ func NewAppKeeper(
 	appKeepers.FeeGrantKeeper = &feeGrantKeeper
 
 	authzKeeper := authzkeeper.NewKeeper(runtime.NewKVStoreService(appKeepers.keys[authzkeeper.StoreKey]), appCodec, bApp.MsgServiceRouter(), appKeepers.AccountKeeper)
+	authzKeeper = authzKeeper.SetBankKeeper(appKeepers.BankKeeper)
 	appKeepers.AuthzKeeper = &authzKeeper
 
 	// Create evidence Keeper for to register the IBC light client misbehaviour evidence route
