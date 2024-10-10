@@ -89,7 +89,9 @@ func NewKeeper(
 		moveConfig.ContractSimulationGasLimit = moveconfig.DefaultContractSimulationGasLimit
 	}
 
-	vmCount := 10
+	// use only one VM for now because we need to clear the cache on every module upgrade.
+	// but if we have multiple VMs, only the VM that executed the module upgrade will have the cache cleared.
+	vmCount := 1
 	moveVMIdx := uint64(0)
 	vms := make([]types.VMEngine, vmCount)
 	for i := 0; i < vmCount; i++ {
