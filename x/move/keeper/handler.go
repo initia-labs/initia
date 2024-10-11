@@ -480,16 +480,16 @@ func (k Keeper) dispatchMessage(parentCtx sdk.Context, message vmtypes.CosmosMes
 
 	var msg proto.Message
 	if stargateMsg, ok := message.(*vmtypes.CosmosMessage__Stargate); ok {
+		// callback only exists in stargate message
+		allowFailure = stargateMsg.Value.AllowFailure
+		callback = stargateMsg.Value.Callback
+		callbackSender = stargateMsg.Value.Sender
+
 		// validate basic & signer check is done in HandleVMStargateMsg
 		msg, err = k.HandleVMStargateMsg(ctx, &stargateMsg.Value)
 		if err != nil {
 			return
 		}
-
-		// callback only exists in stargate message
-		allowFailure = stargateMsg.Value.AllowFailure
-		callback = stargateMsg.Value.Callback
-		callbackSender = stargateMsg.Value.Sender
 	} else {
 		// signer check had been done in moveVM
 		msg, err = types.ConvertToSDKMessage(ctx, NewMoveBankKeeper(&k), NewNftKeeper(&k), message, k.ac, k.vc)
