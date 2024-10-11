@@ -199,16 +199,14 @@ func (k Keeper) executeEntryFunction(
 	sdkCtx = sdkCtx.WithGasMeter(storetypes.NewInfiniteGasMeter())
 
 	gasBalance := gasForRuntime
-	execRes, err := execVM(ctx, k, func(vm types.VMEngine) (vmtypes.ExecutionResult, error) {
-		return vm.ExecuteEntryFunction(
-			&gasBalance,
-			types.NewVMStore(sdkCtx, k.VMStore),
-			NewApi(k, sdkCtx),
-			types.NewEnv(sdkCtx, ac, ec),
-			senders,
-			payload,
-		)
-	})
+	execRes, err := k.initiaMoveVM.ExecuteEntryFunction(
+		&gasBalance,
+		types.NewVMStore(sdkCtx, k.VMStore),
+		NewApi(k, sdkCtx),
+		types.NewEnv(sdkCtx, ac, ec),
+		senders,
+		payload,
+	)
 
 	// consume gas first and check error
 	gasUsed := gasForRuntime - gasBalance
@@ -314,16 +312,14 @@ func (k Keeper) executeScript(
 	sdkCtx = sdkCtx.WithGasMeter(storetypes.NewInfiniteGasMeter())
 
 	gasBalance := gasForRuntime
-	execRes, err := execVM(ctx, k, func(vm types.VMEngine) (vmtypes.ExecutionResult, error) {
-		return vm.ExecuteScript(
-			&gasBalance,
-			types.NewVMStore(sdkCtx, k.VMStore),
-			NewApi(k, sdkCtx),
-			types.NewEnv(sdkCtx, ac, ec),
-			senders,
-			payload,
-		)
-	})
+	execRes, err := k.initiaMoveVM.ExecuteScript(
+		&gasBalance,
+		types.NewVMStore(sdkCtx, k.VMStore),
+		NewApi(k, sdkCtx),
+		types.NewEnv(sdkCtx, ac, ec),
+		senders,
+		payload,
+	)
 
 	// consume gas first and check error
 	gasUsed := gasForRuntime - gasBalance
@@ -658,15 +654,13 @@ func (k Keeper) executeViewFunction(
 	gasForRuntime := gasMeter.Limit() - gasMeter.GasConsumedToLimit()
 
 	gasBalance := gasForRuntime
-	viewRes, err := execVM(ctx, k, func(vm types.VMEngine) (vmtypes.ViewOutput, error) {
-		return vm.ExecuteViewFunction(
-			&gasBalance,
-			types.NewVMStore(ctx, k.VMStore),
-			api,
-			env,
-			payload,
-		)
-	})
+	viewRes, err := k.initiaMoveVM.ExecuteViewFunction(
+		&gasBalance,
+		types.NewVMStore(ctx, k.VMStore),
+		api,
+		env,
+		payload,
+	)
 
 	// consume gas first and check error
 	gasUsed := gasForRuntime - gasBalance
@@ -676,15 +670,4 @@ func (k Keeper) executeViewFunction(
 	}
 
 	return viewRes, gasUsed, nil
-}
-
-// execVM runs vm in separate function statement to release right after execution
-// to avoid deadlock even if the function panics
-//
-// TODO - remove this after loader v2 is installed
-func execVM[T any](ctx context.Context, k Keeper, f func(types.VMEngine) (T, error)) (T, error) {
-	vm := k.acquireVM(ctx)
-	defer k.releaseVM()
-
-	return f(vm)
 }

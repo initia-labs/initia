@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 
-	"golang.org/x/sync/semaphore"
-
 	"cosmossdk.io/collections"
 	"cosmossdk.io/core/address"
 	corestoretypes "cosmossdk.io/core/store"
@@ -43,10 +41,7 @@ type Keeper struct {
 
 	config moveconfig.MoveConfig
 
-	// TODO - remove after loader v2
-	moveVMs         []types.VMEngine
-	moveVMIdx       *uint64
-	moveVMSemaphore *semaphore.Weighted
+	initiaMoveVM types.VMEngine
 
 	feeCollector string
 	authority    string
@@ -89,21 +84,14 @@ func NewKeeper(
 		moveConfig.ContractSimulationGasLimit = moveconfig.DefaultContractSimulationGasLimit
 	}
 
-	// use only one VM for now because we need to clear the cache on every module upgrade.
-	// but if we have multiple VMs, only the VM that executed the module upgrade will have the cache cleared.
-	vmCount := 1
-	moveVMIdx := uint64(0)
-	vms := make([]types.VMEngine, vmCount)
-	for i := 0; i < vmCount; i++ {
-		moveVM, err := vm.NewVM(vmtypes.InitiaVMConfig{
-			// TODO: check this before mainnet
-			AllowUnstable: true,
-		})
-		if err != nil {
-			panic(err)
-		}
-
-		vms[i] = &moveVM
+	moveVM, err := vm.NewVM(vmtypes.InitiaVMConfig{
+		// TODO: check this before mainnet
+		AllowUnstable:       true,
+		ScriptCacheCapacity: moveConfig.ScriptCacheCapacity,
+		ModuleCacheCapacity: moveConfig.ModuleCacheCapacity,
+	})
+	if err != nil {
+		panic(err)
 	}
 
 	sb := collections.NewSchemaBuilder(storeService)
@@ -116,9 +104,7 @@ func NewKeeper(
 		msgRouter:           msgRouter,
 		grpcRouter:          grpcRouter,
 		config:              moveConfig,
-		moveVMs:             vms,
-		moveVMIdx:           &moveVMIdx,
-		moveVMSemaphore:     semaphore.NewWeighted(int64(vmCount)),
+		initiaMoveVM:        &moveVM,
 		distrKeeper:         distrKeeper,
 		StakingKeeper:       stakingKeeper,
 		RewardKeeper:        rewardKeeper,

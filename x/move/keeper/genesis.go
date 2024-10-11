@@ -47,9 +47,7 @@ func (k Keeper) Initialize(
 	}
 
 	vmStore := types.NewVMStore(ctx, k.VMStore)
-	execRes, err := execVM(ctx, k, func(vm types.VMEngine) (vmtypes.ExecutionResult, error) {
-		return vm.Initialize(vmStore, api, env, vmtypes.NewModuleBundle(modules...), _allowedPublishers)
-	})
+	execRes, err := k.initiaMoveVM.Initialize(vmStore, api, env, vmtypes.NewModuleBundle(modules...), _allowedPublishers)
 	if err != nil {
 		return err
 	}
