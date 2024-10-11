@@ -449,7 +449,7 @@ func (k Keeper) dispatchMessage(parentCtx sdk.Context, message vmtypes.CosmosMes
 			}
 
 			// emit failed reason event if failed and allowed to fail
-			event.AppendAttributes(sdk.NewAttribute(types.AttributeKeyReason, err.Error()))
+			event = event.AppendAttributes(sdk.NewAttribute(types.AttributeKeyReason, err.Error()))
 		} else {
 			// commit if success
 			commit()
