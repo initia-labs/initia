@@ -225,3 +225,35 @@ func Test_BurnCoins(t *testing.T) {
 	require.Equal(t, sdk.NewCoin("foo", sdkmath.NewInt(500_000)), input.BankKeeper.GetBalance(ctx, twoAddr, "foo"))
 	require.Equal(t, sdk.NewCoin(barDenom, sdkmath.NewInt(500_000)), input.BankKeeper.GetBalance(ctx, twoAddr, barDenom))
 }
+
+func Test_MultiSend(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+	moveBankKeeper := keeper.NewMoveBankKeeper(&input.MoveKeeper)
+
+	bz, err := hex.DecodeString("0000000000000000000000000000000000000002")
+	require.NoError(t, err)
+	twoAddr := sdk.AccAddress(bz)
+
+	bz, err = hex.DecodeString("0000000000000000000000000000000000000003")
+	require.NoError(t, err)
+	threeAddr := sdk.AccAddress(bz)
+
+	bz, err = hex.DecodeString("0000000000000000000000000000000000000004")
+	require.NoError(t, err)
+	fourAddr := sdk.AccAddress(bz)
+
+	bz, err = hex.DecodeString("0000000000000000000000000000000000000005")
+	require.NoError(t, err)
+	fiveAddr := sdk.AccAddress(bz)
+
+	amount := sdk.NewCoins(sdk.NewCoin(bondDenom, sdkmath.NewIntFromUint64(1_000_000)))
+	input.Faucet.Fund(ctx, twoAddr, amount...)
+
+	err = moveBankKeeper.MultiSend(ctx, twoAddr, bondDenom, []sdk.AccAddress{threeAddr, fourAddr, fiveAddr}, []sdkmath.Int{sdkmath.NewIntFromUint64(300_000), sdkmath.NewIntFromUint64(400_000), sdkmath.NewIntFromUint64(300_000)})
+	require.NoError(t, err)
+
+	require.Equal(t, sdk.NewCoin(bondDenom, sdkmath.ZeroInt()), input.BankKeeper.GetBalance(ctx, twoAddr, bondDenom))
+	require.Equal(t, uint64(300_000), input.BankKeeper.GetBalance(ctx, threeAddr, bondDenom).Amount.Uint64())
+	require.Equal(t, uint64(400_000), input.BankKeeper.GetBalance(ctx, fourAddr, bondDenom).Amount.Uint64())
+	require.Equal(t, uint64(300_000), input.BankKeeper.GetBalance(ctx, fiveAddr, bondDenom).Amount.Uint64())
+}

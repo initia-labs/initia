@@ -38,11 +38,12 @@ const (
 	FunctionNameInitiaNftBurn             = "burn"
 
 	// function names for coin
-	FunctionNameCoinBalance      = "balance"
-	FunctionNameCoinRegister     = "register"
-	FunctionNameCoinTransfer     = "transfer"
-	FunctionNameCoinSudoTransfer = "sudo_transfer"
-	FunctionNameCoinWhitelist    = "whitelist"
+	FunctionNameCoinBalance       = "balance"
+	FunctionNameCoinRegister      = "register"
+	FunctionNameCoinTransfer      = "transfer"
+	FunctionNameCoinSudoTransfer  = "sudo_transfer"
+	FunctionNameCoinSudoMultiSend = "sudo_multisend"
+	FunctionNameCoinWhitelist     = "whitelist"
 
 	// function names for staking
 	FunctionNameStakingInitializeForChain           = "initialize_for_chain"

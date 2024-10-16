@@ -5,11 +5,11 @@ import (
 	"fmt"
 
 	"cosmossdk.io/core/store"
+	"cosmossdk.io/math"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	cosmosbank "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	"github.com/cosmos/cosmos-sdk/x/bank/types"
 
@@ -104,11 +104,49 @@ func (k MoveSendKeeper) SetParams(ctx context.Context, params types.Params) erro
 	return k.Params.Set(ctx, params)
 }
 
-// InputOutputCoins performs multi-send functionality. It accepts a series of
-// inputs that correspond to a series of outputs. It returns an error if the
-// inputs and outputs don't lineup or if any single transfer of tokens fails.
-func (k MoveSendKeeper) InputOutputCoins(ctx context.Context, inputs types.Input, outputs []types.Output) error {
-	return sdkerrors.ErrNotSupported
+// InputOutputCoins performs multi-send functionality. It transfers coins from a single sender
+// to multiple recipients. An error is returned upon failure.
+func (k MoveSendKeeper) InputOutputCoins(ctx context.Context, input types.Input, outputs []types.Output) error {
+	fromAddr, err := k.ak.AddressCodec().StringToBytes(input.Address)
+	if err != nil {
+		return err
+	}
+
+	addrMap := make(map[string][]byte)
+	for _, coin := range input.Coins {
+		if !coin.Amount.IsPositive() {
+			continue
+		}
+
+		recipients := make([]sdk.AccAddress, 0, len(outputs))
+		amounts := make([]math.Int, 0, len(outputs))
+		for _, output := range outputs {
+			amount := output.Coins.AmountOf(coin.Denom)
+			if !amount.IsPositive() {
+				continue
+			}
+
+			// cache bytes address
+			if _, ok := addrMap[output.Address]; !ok {
+				addr, err := k.ak.AddressCodec().StringToBytes(output.Address)
+				if err != nil {
+					return err
+				}
+
+				addrMap[output.Address] = addr
+			}
+
+			recipients = append(recipients, addrMap[output.Address])
+			amounts = append(amounts, output.Coins.AmountOf(coin.Denom))
+		}
+
+		err := k.mk.MultiSend(ctx, fromAddr, coin.Denom, recipients, amounts)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // SendCoins transfers amt coins from a sending account to a receiving account.
