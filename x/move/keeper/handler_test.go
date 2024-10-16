@@ -604,6 +604,27 @@ func TestSubmsgCallback(t *testing.T) {
 	msgData, err := input.EncodingConfig.Codec.MarshalInterfaceJSON(msg)
 	require.NoError(t, err)
 
+	// 0. invalid message should not failed
+	err = input.MoveKeeper.ExecuteEntryFunctionJSON(ctx, senderAddr, vmtypes.TestAddress,
+		"submsg",
+		"stargate",
+		[]vmtypes.TypeTag{},
+		[]string{
+			"\"abcd\"",
+			"true",
+			"\"123\"",
+			fmt.Sprintf("\"%s::submsg::callback_without_signer\"", vmtypes.TestAddress),
+		})
+	require.NoError(t, err)
+
+	events := ctx.EventManager().Events()
+	event := events[len(events)-1]
+
+	require.Equal(t, sdk.NewEvent("move",
+		sdk.NewAttribute("type_tag", "0x2::submsg::ResultEvent"),
+		sdk.NewAttribute("data", "{\"id\":\"123\",\"success\":false}"),
+	), event)
+
 	// 1. callback without signer
 	err = input.MoveKeeper.ExecuteEntryFunctionJSON(ctx, senderAddr, vmtypes.TestAddress,
 		"submsg",
@@ -617,8 +638,8 @@ func TestSubmsgCallback(t *testing.T) {
 		})
 	require.NoError(t, err)
 
-	events := ctx.EventManager().Events()
-	event := events[len(events)-1]
+	events = ctx.EventManager().Events()
+	event = events[len(events)-1]
 
 	require.Equal(t, sdk.NewEvent("move",
 		sdk.NewAttribute("type_tag", "0x2::submsg::ResultEvent"),
