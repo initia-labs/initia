@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"strings"
 	"unsafe"
 
@@ -190,10 +191,7 @@ func (k Keeper) executeEntryFunction(
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	gasMeter := sdkCtx.GasMeter()
-	gasForRuntime := gasMeter.Limit() - gasMeter.GasConsumedToLimit()
-	if isSimulation(ctx) {
-		gasForRuntime = k.config.ContractSimulationGasLimit
-	}
+	gasForRuntime := k.computeGasForRuntime(ctx, gasMeter)
 
 	// delegate gas metering to move vm
 	sdkCtx = sdkCtx.WithGasMeter(storetypes.NewInfiniteGasMeter())
@@ -305,10 +303,7 @@ func (k Keeper) executeScript(
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	gasMeter := sdkCtx.GasMeter()
-	gasForRuntime := gasMeter.Limit() - gasMeter.GasConsumedToLimit()
-	if isSimulation(ctx) {
-		gasForRuntime = k.config.ContractSimulationGasLimit
-	}
+	gasForRuntime := k.computeGasForRuntime(ctx, gasMeter)
 
 	// delegate gas metering to move vm
 	sdkCtx = sdkCtx.WithGasMeter(storetypes.NewInfiniteGasMeter())
@@ -655,7 +650,7 @@ func (k Keeper) executeViewFunction(
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	gasMeter := sdkCtx.GasMeter()
-	gasForRuntime := gasMeter.Limit() - gasMeter.GasConsumedToLimit()
+	gasForRuntime := k.computeGasForRuntime(ctx, gasMeter)
 
 	gasBalance := gasForRuntime
 	viewRes, err := execVM(ctx, k, func(vm types.VMEngine) (vmtypes.ViewOutput, error) {
@@ -687,4 +682,20 @@ func execVM[T any](ctx context.Context, k Keeper, f func(types.VMEngine) (T, err
 	defer k.releaseVM()
 
 	return f(vm)
+}
+
+func (k Keeper) computeGasForRuntime(ctx context.Context, gasMeter storetypes.GasMeter) uint64 {
+	gasForRuntime := gasMeter.Limit() - gasMeter.GasConsumedToLimit()
+	if isSimulation(ctx) {
+		gasForRuntime = k.config.ContractSimulationGasLimit
+	}
+
+	// gasUnitScale is multiplied in moveVM to scale the gas limit, so we need to divide it here
+	// if gasForRuntime is too large, it will overflow when multiplied in moveVM.
+	const gasUintScale = 100
+	if gasForRuntime > math.MaxUint64/gasUintScale {
+		return math.MaxUint64 / gasUintScale
+	}
+
+	return gasForRuntime
 }
