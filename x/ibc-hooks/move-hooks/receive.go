@@ -124,5 +124,16 @@ func (h MoveHooks) execMsg(ctx sdk.Context, msg *movetypes.MsgExecute) (*movetyp
 	}
 
 	moveMsgServer := movekeeper.NewMsgServerImpl(h.moveKeeper)
-	return moveMsgServer.Execute(ctx, msg)
+
+	// use cache context to prevent state changes if the message execution fails
+	cacheCtx, write := ctx.CacheContext()
+	res, err := moveMsgServer.Execute(cacheCtx, msg)
+	if err != nil {
+		return nil, err
+	}
+
+	// write the cache context only if the message execution was successful
+	write()
+
+	return res, nil
 }
