@@ -205,7 +205,7 @@ func bcsSerializeArg(argType string, arg string, s serde.Serializer, ac address.
 		}
 
 		// convert to little endian
-		bz := n.BigInt().Bytes()
+		bz := slices.Clone(n.BigInt().Bytes())
 		slices.Reverse(bz)
 
 		err = s.SerializeBytes(bz)
@@ -217,7 +217,7 @@ func bcsSerializeArg(argType string, arg string, s serde.Serializer, ac address.
 		}
 
 		// convert to little endian
-		bz := dec.BigInt().Bytes()
+		bz := slices.Clone(dec.BigInt().Bytes())
 		slices.Reverse(bz)
 
 		err = s.SerializeBytes(bz)

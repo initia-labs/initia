@@ -17,42 +17,24 @@ func (k Keeper) Whitelist(ctx context.Context, msg types.MsgWhitelist) error {
 		return sdkerrors.ErrNotSupported
 	}
 
-	dexKeeper := NewDexKeeper(&k)
-
 	//
 	// load metadata
 	//
-
-	denomBase, err := k.BaseDenom(ctx)
-	if err != nil {
-		return err
-	}
-
-	metadataBase, err := types.MetadataAddressFromDenom(denomBase)
-	if err != nil {
-		return err
-	}
 
 	metadataLP, err := types.AccAddressFromString(k.ac, msg.MetadataLP)
 	if err != nil {
 		return err
 	}
 
-	metadataA, metadataB, err := dexKeeper.GetPoolMetadata(ctx, metadataLP)
-	if err != nil {
+	//
+	// dex specific whitelist ops
+	//
+
+	if err := NewBalancerKeeper(&k).Whitelist(ctx, metadataLP); err != nil {
 		return err
 	}
-
-	var metadataQuote vmtypes.AccountAddress
-	if metadataBase == metadataA {
-		metadataQuote = metadataB
-	} else if metadataBase == metadataB {
-		metadataQuote = metadataA
-	} else {
-		return errors.Wrapf(
-			types.ErrInvalidDexConfig,
-			"To be whitelisted, a dex should contain `%s` in its pair", denomBase,
-		)
+	if err := NewStableSwapKeeper(&k).Whitelist(ctx, metadataLP); err != nil {
+		return err
 	}
 
 	//
@@ -73,24 +55,10 @@ func (k Keeper) Whitelist(ctx context.Context, msg types.MsgWhitelist) error {
 	}
 
 	//
-	// compute weights
-	//
-
-	weightBase, weightQuote, err := dexKeeper.getPoolWeights(ctx, metadataLP)
-	if err != nil {
-		return err
-	}
-
-	if weightBase.LT(weightQuote) {
-		return errors.Wrapf(types.ErrInvalidDexConfig,
-			"base weight `%s` must be bigger than quote weight `%s`", weightBase, weightQuote)
-	}
-
-	//
 	// load denoms
 	//
 
-	denomLP, err := types.DenomFromMetadataAddress(ctx, NewMoveBankKeeper(&k), metadataLP)
+	denomLP, err := types.DenomFromMetadataAddress(ctx, k.MoveBankKeeper(), metadataLP)
 	if err != nil {
 		return err
 	}
@@ -123,14 +91,6 @@ func (k Keeper) Whitelist(ctx context.Context, msg types.MsgWhitelist) error {
 		}
 	}
 
-	// check dex pair was registered
-
-	if found, err := dexKeeper.hasDexPair(ctx, metadataQuote); err != nil {
-		return err
-	} else if found {
-		return errors.Wrapf(types.ErrInvalidRequest, "coin `%s` was already whitelisted", metadataQuote.String())
-	}
-
 	//
 	// whitelist ops
 	//
@@ -144,12 +104,6 @@ func (k Keeper) Whitelist(ctx context.Context, msg types.MsgWhitelist) error {
 	// append denomLP reward weight to distribution keeper
 	rewardWeights = append(rewardWeights, distrtypes.RewardWeight{Denom: denomLP, Weight: msg.RewardWeight})
 	err = k.distrKeeper.SetRewardWeights(ctx, rewardWeights)
-	if err != nil {
-		return err
-	}
-
-	// store dex pair
-	err = dexKeeper.setDexPair(ctx, metadataQuote, metadataLP)
 	if err != nil {
 		return err
 	}
@@ -173,8 +127,6 @@ func (k Keeper) Delist(ctx context.Context, msg types.MsgDelist) error {
 		return sdkerrors.ErrNotSupported
 	}
 
-	dexKeeper := NewDexKeeper(&k)
-
 	//
 	// load metadata
 	//
@@ -184,8 +136,14 @@ func (k Keeper) Delist(ctx context.Context, msg types.MsgDelist) error {
 		return err
 	}
 
-	metadataA, metadataB, err := dexKeeper.GetPoolMetadata(ctx, metadataLP)
-	if err != nil {
+	//
+	// dex specific delist ops
+	//
+
+	if err := NewBalancerKeeper(&k).Delist(ctx, metadataLP); err != nil {
+		return err
+	}
+	if err := NewStableSwapKeeper(&k).Delist(ctx, metadataLP); err != nil {
 		return err
 	}
 
@@ -193,7 +151,7 @@ func (k Keeper) Delist(ctx context.Context, msg types.MsgDelist) error {
 	// load denoms
 	//
 
-	denomLP, err := types.DenomFromMetadataAddress(ctx, NewMoveBankKeeper(&k), metadataLP)
+	denomLP, err := types.DenomFromMetadataAddress(ctx, k.MoveBankKeeper(), metadataLP)
 	if err != nil {
 		return err
 	}
@@ -250,16 +208,6 @@ func (k Keeper) Delist(ctx context.Context, msg types.MsgDelist) error {
 	// remove coinLP reward weight from the distribution reward weights
 	rewardWeights = append(rewardWeights[:rewardWeightIndex], rewardWeights[rewardWeightIndex+1:]...)
 	err = k.distrKeeper.SetRewardWeights(ctx, rewardWeights)
-	if err != nil {
-		return err
-	}
-
-	// delete dex pair
-	err = dexKeeper.deleteDexPair(ctx, metadataA)
-	if err != nil {
-		return err
-	}
-	err = dexKeeper.deleteDexPair(ctx, metadataB)
 	if err != nil {
 		return err
 	}

@@ -44,13 +44,14 @@ func (k VotingPowerKeeper) GetVotingPowerWeights(ctx context.Context, bondDenoms
 				continue
 			}
 
-			balanceBase, _, err := NewDexKeeper(k.Keeper).getPoolBalances(ctx, metadataLP)
+			bk := k.MoveBankKeeper()
+			balanceBase, err := bk.GetBalance(ctx, metadataLP[:], baseDenom)
 			if err != nil {
 				// ignore error to avoid chain halt due to wrong denom
 				continue
 			}
 
-			totalShare, err := NewMoveBankKeeper(k.Keeper).GetSupply(ctx, denom)
+			totalShare, err := bk.GetSupply(ctx, denom)
 			if err != nil {
 				// ignore error to avoid chain halt due to wrong denom
 				continue

@@ -16,7 +16,7 @@ import (
 
 func decToVmArgument(t *testing.T, val math.LegacyDec) []byte {
 	// big-endian bytes
-	bz := val.BigInt().Bytes()
+	bz := slices.Clone(val.BigInt().Bytes())
 
 	// reverse bytes to little-endian
 	slices.Reverse(bz)
@@ -89,145 +89,6 @@ func createDexPool(
 	return types.NamedObjectAddress(vmtypes.TestAddress, denomLP)
 }
 
-func Test_ReadPool(t *testing.T) {
-	ctx, input := createDefaultTestInput(t)
-	dexKeeper := keeper.NewDexKeeper(&input.MoveKeeper)
-	moveBankKeeper := keeper.NewMoveBankKeeper(&input.MoveKeeper)
-
-	baseDenom := bondDenom
-	baseAmount := math.NewInt(1_000_000_000_000)
-
-	denomQuote := "uusdc"
-	quoteAmount := math.NewInt(2_500_000_000_000)
-
-	metadataQuote, err := types.MetadataAddressFromDenom(denomQuote)
-	require.NoError(t, err)
-
-	metadataLP := createDexPool(
-		t, ctx, input,
-		sdk.NewCoin(baseDenom, baseAmount), sdk.NewCoin(denomQuote, quoteAmount),
-		math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1),
-	)
-
-	// store dex pair for queries
-	err = dexKeeper.SetDexPair(ctx, types.DexPair{
-		MetadataQuote: metadataQuote.String(),
-		MetadataLP:    metadataLP.String(),
-	})
-	require.NoError(t, err)
-
-	// check pool balance
-	balanceBase, balanceQuote, err := dexKeeper.GetPoolBalances(ctx, denomQuote)
-	require.NoError(t, err)
-	require.Equal(t, baseAmount, balanceBase)
-	require.Equal(t, quoteAmount, balanceQuote)
-
-	// check share balance
-	totalShare, err := moveBankKeeper.GetSupplyWithMetadata(ctx, metadataLP)
-	require.NoError(t, err)
-	require.Equal(t, math.MaxInt(baseAmount, quoteAmount), totalShare)
-}
-
-func Test_ReadWeights(t *testing.T) {
-	ctx, input := createDefaultTestInput(t)
-	dexKeeper := keeper.NewDexKeeper(&input.MoveKeeper)
-
-	baseDenom := bondDenom
-	baseAmount := math.NewInt(1_000_000_000_000)
-
-	denomQuote := "uusdc"
-	quoteAmount := math.NewInt(4_000_000_000_000)
-
-	metadataQuote, err := types.MetadataAddressFromDenom(denomQuote)
-	require.NoError(t, err)
-
-	metadataLP := createDexPool(
-		t, ctx, input,
-		sdk.NewCoin(denomQuote, quoteAmount), sdk.NewCoin(baseDenom, baseAmount),
-		math.LegacyNewDecWithPrec(2, 1), math.LegacyNewDecWithPrec(8, 1),
-	)
-
-	// store dex pair for queries
-	err = dexKeeper.SetDexPair(ctx, types.DexPair{
-		MetadataQuote: metadataQuote.String(),
-		MetadataLP:    metadataLP.String(),
-	})
-	require.NoError(t, err)
-
-	weightBase, weightQuote, err := dexKeeper.GetPoolWeights(ctx, denomQuote)
-	require.NoError(t, err)
-	require.Equal(t, math.LegacyNewDecWithPrec(8, 1), weightBase)
-	require.Equal(t, math.LegacyNewDecWithPrec(2, 1), weightQuote)
-}
-
-func Test_GetBaseSpotPrice(t *testing.T) {
-	ctx, input := createDefaultTestInput(t)
-	dexKeeper := keeper.NewDexKeeper(&input.MoveKeeper)
-
-	baseDenom := bondDenom
-	baseAmount := math.NewInt(4_000_000_000_000)
-
-	denomQuote := "uusdc"
-	quoteAmount := math.NewInt(1_000_000_000_000)
-
-	metadataQuote, err := types.MetadataAddressFromDenom(denomQuote)
-	require.NoError(t, err)
-
-	metadataLP := createDexPool(
-		t, ctx, input,
-		sdk.NewCoin(baseDenom, baseAmount), sdk.NewCoin(denomQuote, quoteAmount),
-		math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1),
-	)
-
-	// store dex pair for queries
-	err = dexKeeper.SetDexPair(ctx, types.DexPair{
-		MetadataQuote: metadataQuote.String(),
-		MetadataLP:    metadataLP.String(),
-	})
-	require.NoError(t, err)
-
-	quotePrice, err := dexKeeper.GetBaseSpotPrice(ctx, denomQuote)
-	require.NoError(t, err)
-	require.Equal(t, math.LegacyOneDec(), quotePrice)
-}
-
-func Test_SwapToBase(t *testing.T) {
-	ctx, input := createDefaultTestInput(t)
-	dexKeeper := keeper.NewDexKeeper(&input.MoveKeeper)
-
-	baseDenom := bondDenom
-	baseAmount := math.NewInt(4_000_000_000_000)
-
-	denomQuote := "uusdc"
-	quoteAmount := math.NewInt(1_000_000_000_000)
-
-	metadataQuote, err := types.MetadataAddressFromDenom(denomQuote)
-	require.NoError(t, err)
-
-	metadataLP := createDexPool(
-		t, ctx, input,
-		sdk.NewCoin(baseDenom, baseAmount), sdk.NewCoin(denomQuote, quoteAmount),
-		math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1),
-	)
-
-	// store dex pair for queries
-	err = dexKeeper.SetDexPair(ctx, types.DexPair{
-		MetadataQuote: metadataQuote.String(),
-		MetadataLP:    metadataLP.String(),
-	})
-	require.NoError(t, err)
-
-	// create quote coin funded account
-	quoteOfferCoin := sdk.NewInt64Coin(denomQuote, 1_000)
-	fundedAddr := input.Faucet.NewFundedAccount(ctx, quoteOfferCoin)
-
-	err = dexKeeper.SwapToBase(ctx, fundedAddr, quoteOfferCoin)
-	require.NoError(t, err)
-
-	coins := input.BankKeeper.GetAllBalances(ctx, fundedAddr)
-	require.Equal(t, sdk.NewCoins(sdk.NewInt64Coin(baseDenom, 997 /* swap fee deducted */)), coins)
-}
-
 func TestDexPair(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 	dexKeeper := keeper.NewDexKeeper(&input.MoveKeeper)
@@ -268,4 +129,46 @@ func TestDexPair(t *testing.T) {
 	res, err := dexKeeper.GetMetadataLP(ctx, denom)
 	require.NoError(t, err)
 	require.Equal(t, metadataLP, res)
+}
+
+func Test_Dex_GasPrices(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+	dexKeeper := input.MoveKeeper.DexKeeper()
+
+	baseDenom := bondDenom
+	baseAmount := math.NewInt(1_000_000_000_000)
+
+	denomQuote := "uusdc"
+	quoteAmount := math.NewInt(1_000_000_000_000)
+
+	metadataQuote, err := types.MetadataAddressFromDenom(denomQuote)
+	require.NoError(t, err)
+
+	metadataLP := createDexPool(
+		t, ctx, input,
+		sdk.NewCoin(baseDenom, baseAmount), sdk.NewCoin(denomQuote, quoteAmount),
+		math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1),
+	)
+
+	// store dex pair for queries
+	err = dexKeeper.SetDexPair(ctx, types.DexPair{
+		MetadataQuote: metadataQuote.String(),
+		MetadataLP:    metadataLP.String(),
+	})
+	require.NoError(t, err)
+
+	quotePrice, err := dexKeeper.GetBaseSpotPrice(ctx, denomQuote)
+	require.NoError(t, err)
+	require.Equal(t, math.LegacyOneDec().QuoInt64(4), quotePrice)
+
+	baseGasPrice, err := dexKeeper.BaseMinGasPrice(ctx)
+	require.NoError(t, err)
+
+	quoteGasPrice, err := dexKeeper.GasPrice(ctx, denomQuote)
+	require.NoError(t, err)
+	require.Equal(t, baseGasPrice.MulInt64(4), quoteGasPrice.Amount)
+
+	quoteGasPrices, err := dexKeeper.GasPrices(ctx)
+	require.NoError(t, err)
+	require.Equal(t, sdk.NewDecCoins(sdk.NewDecCoinFromDec(denomQuote, baseGasPrice.MulInt64(4))), quoteGasPrices)
 }

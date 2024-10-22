@@ -6,14 +6,13 @@ import (
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/initia-labs/initia/x/move/keeper"
 	"github.com/initia-labs/initia/x/move/types"
 	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 func TestInitializeIBCCoin(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
-	moveBankKeeper := keeper.NewMoveBankKeeper(&input.MoveKeeper)
+	moveBankKeeper := input.MoveKeeper.MoveBankKeeper()
 
 	denomTrace := transfertypes.DenomTrace{
 		Path:      "",

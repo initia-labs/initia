@@ -12,14 +12,13 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	cosmosbanktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	"github.com/initia-labs/initia/x/move/keeper"
 	"github.com/initia-labs/initia/x/move/types"
 	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 func Test_GetBalance(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
-	moveBankKeeper := keeper.NewMoveBankKeeper(&input.MoveKeeper)
+	moveBankKeeper := input.MoveKeeper.MoveBankKeeper()
 
 	bz, err := hex.DecodeString("0000000000000000000000000000000000000002")
 	require.NoError(t, err)
@@ -41,7 +40,7 @@ func Test_GetBalance(t *testing.T) {
 
 func Test_IterateBalances(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
-	moveBankKeeper := keeper.NewMoveBankKeeper(&input.MoveKeeper)
+	moveBankKeeper := input.MoveKeeper.MoveBankKeeper()
 
 	bz, err := hex.DecodeString("0000000000000000000000000000000000000002")
 	require.NoError(t, err)
@@ -75,7 +74,7 @@ func Test_IterateBalances(t *testing.T) {
 
 func Test_GetSupply(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
-	moveBankKeeper := keeper.NewMoveBankKeeper(&input.MoveKeeper)
+	moveBankKeeper := input.MoveKeeper.MoveBankKeeper()
 
 	amount, err := moveBankKeeper.GetSupply(ctx, bondDenom)
 	require.NoError(t, err)
@@ -101,7 +100,7 @@ func Test_GetSupply(t *testing.T) {
 
 func Test_IterateSupply(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
-	moveBankKeeper := keeper.NewMoveBankKeeper(&input.MoveKeeper)
+	moveBankKeeper := input.MoveKeeper.MoveBankKeeper()
 
 	testDenom := testDenoms[0]
 
@@ -137,7 +136,7 @@ func Test_IterateSupply(t *testing.T) {
 
 func Test_SendCoins(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
-	moveBankKeeper := keeper.NewMoveBankKeeper(&input.MoveKeeper)
+	moveBankKeeper := input.MoveKeeper.MoveBankKeeper()
 
 	bz, err := hex.DecodeString("0000000000000000000000000000000000000002")
 	require.NoError(t, err)
@@ -159,7 +158,7 @@ func Test_SendCoins(t *testing.T) {
 
 func Test_GetMetadata(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
-	moveBankKeeper := keeper.NewMoveBankKeeper(&input.MoveKeeper)
+	moveBankKeeper := input.MoveKeeper.MoveBankKeeper()
 
 	metadata, err := moveBankKeeper.GetMetadata(ctx, bondDenom)
 	require.NoError(t, err)
@@ -181,7 +180,7 @@ func Test_GetMetadata(t *testing.T) {
 
 func Test_BurnCoins(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
-	moveBankKeeper := keeper.NewMoveBankKeeper(&input.MoveKeeper)
+	moveBankKeeper := input.MoveKeeper.MoveBankKeeper()
 
 	bz, err := hex.DecodeString("0000000000000000000000000000000000000002")
 	require.NoError(t, err)
