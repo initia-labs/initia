@@ -61,7 +61,7 @@ func (api GoApi) AmountToShare(valBz []byte, metadata vmtypes.AccountAddress, am
 		return "0", err
 	}
 
-	denom, err := types.DenomFromMetadataAddress(api.ctx, NewMoveBankKeeper(&api.Keeper), metadata)
+	denom, err := types.DenomFromMetadataAddress(api.ctx, api.Keeper.MoveBankKeeper(), metadata)
 	if err != nil {
 		return "0", err
 	}
@@ -77,7 +77,7 @@ func (api GoApi) ShareToAmount(valBz []byte, metadata vmtypes.AccountAddress, sh
 		return 0, err
 	}
 
-	denom, err := types.DenomFromMetadataAddress(api.ctx, NewMoveBankKeeper(&api.Keeper), metadata)
+	denom, err := types.DenomFromMetadataAddress(api.ctx, api.Keeper.MoveBankKeeper(), metadata)
 	if err != nil {
 		return 0, err
 	}

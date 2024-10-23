@@ -435,7 +435,7 @@ func (q Querier) Denom(ctx context.Context, req *types.QueryDenomRequest) (*type
 		return nil, err
 	}
 
-	denom, err := types.DenomFromMetadataAddress(ctx, NewMoveBankKeeper(q.Keeper), metadata)
+	denom, err := types.DenomFromMetadataAddress(ctx, q.Keeper.MoveBankKeeper(), metadata)
 	if err != nil {
 		return nil, err
 	}

@@ -26,6 +26,7 @@ const (
 	MoveModuleNameObject               = "object"
 	MoveModuleNameInitiaNft            = "initia_nft"
 	MoveModuleNameCollection           = "collection"
+	MoveModuleNameStableSwap           = "stableswap"
 
 	// function names for managed_coin
 	FunctionNameManagedCoinInitialize = "initialize"
@@ -196,7 +197,9 @@ func DeserializeUint64(bz []byte) (math.Int, error) {
 
 // DeserializeBigDecimal deserialize BigDecimal bytes to math.LegacyDec
 func DeserializeBigDecimal(bz []byte) (math.LegacyDec, error) {
+	bz = slices.Clone(bz)
 	slices.Reverse(bz)
+
 	num := new(big.Int).SetBytes(bz)
 
 	// fractional part length is 18
@@ -320,7 +323,7 @@ func ReadUserStoresTableHandleFromModuleStore(bz []byte) (vmtypes.AccountAddress
 func ReadWeightsFromDexConfig(timestamp math.Int, bz []byte) (math.LegacyDec, math.LegacyDec, error) {
 	cursor := int(0)
 
-	// read extend_ref
+	// read extend_ref + version
 	cursor += AddressBytesLength + 8
 
 	// before weights
@@ -429,6 +432,10 @@ func GetBaseSpotPrice(
 	balanceBase, balanceQuote math.Int,
 	weightBase, weightQuote math.LegacyDec,
 ) math.LegacyDec {
+	if balanceBase.IsZero() || balanceQuote.IsZero() {
+		return math.LegacyZeroDec()
+	}
+
 	numerator := weightQuote.MulInt(balanceBase)
 	denominator := weightBase.MulInt(balanceQuote)
 
@@ -644,6 +651,34 @@ func ReadVesting(bz []byte) (allocation uint64, claimedAmount uint64, startTime 
 	}
 
 	return allocation, claimedAmount, startTime, vestingPeriod, nil
+}
+
+// ReadStableSwapPool util function to read stable swap pool from the raw bytes (bcs)
+func ReadStableSwapPool(bz []byte) ([]vmtypes.AccountAddress, error) {
+	cursor := int(0)
+
+	// read ExtendRef
+	cursor += AddressBytesLength + 8
+
+	// read Ann
+	cursor += 8 * 4
+
+	// read fee rate (BigDecimal)
+	feeRateBzLen, len := readULEB128(bz[cursor:])
+	cursor += len + feeRateBzLen
+
+	// read metadatas
+	numMetadata, len := readULEB128(bz[cursor:])
+	cursor += len
+
+	metadata := make([]vmtypes.AccountAddress, numMetadata)
+	for i := 0; i < numMetadata; i++ {
+		metadata[i] = vmtypes.AccountAddress(bz[cursor : cursor+AddressBytesLength])
+
+		cursor += AddressBytesLength
+	}
+
+	return metadata, nil
 }
 
 // readULEB128 converts a uleb128-encoded byte array into an int.
