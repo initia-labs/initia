@@ -50,8 +50,5 @@ func RegisterTxQuery(qrt gogogrpc.Server, gpk GasPriceKeeper) {
 
 // RegisterGRPCGatewayRoutes mounts the tx query's GRPC-gateway routes on the given Mux.
 func RegisterGRPCGatewayRoutes(clientConn gogogrpc.ClientConn, mux *runtime.ServeMux) {
-	err := txtypes.RegisterQueryHandlerClient(context.Background(), mux, txtypes.NewQueryClient(clientConn))
-	if err != nil {
-		panic(err)
-	}
+	_ = txtypes.RegisterQueryHandlerClient(context.Background(), mux, txtypes.NewQueryClient(clientConn))
 }
