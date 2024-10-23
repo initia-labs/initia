@@ -6,6 +6,7 @@ import (
 	"cosmossdk.io/math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/pkg/errors"
 
 	distrtypes "github.com/initia-labs/initia/x/distribution/types"
 	"github.com/initia-labs/initia/x/move/types"
@@ -194,6 +195,9 @@ func (k DexKeeper) GasPrices(
 		if err != nil {
 			return true, err
 		}
+		if baseSpotPrice.IsZero() {
+			return true, errors.New("baseSpotPrice is zero")
+		}
 
 		gasPrice := baseGasPrice.Quo(baseSpotPrice)
 		gasPrices = gasPrices.Add(sdk.NewDecCoinFromDec(denomQuote, gasPrice))
@@ -219,6 +223,9 @@ func (k DexKeeper) GasPrice(
 	baseSpotPrice, err := k.GetBaseSpotPrice(ctx, denomQuote)
 	if err != nil {
 		return sdk.NewDecCoin(denomQuote, math.ZeroInt()), err
+	}
+	if baseSpotPrice.IsZero() {
+		return sdk.NewDecCoin(denomQuote, math.ZeroInt()), errors.New("baseSpotPrice is zero")
 	}
 
 	return sdk.NewDecCoinFromDec(denomQuote, baseGasPrice.Quo(baseSpotPrice)), nil

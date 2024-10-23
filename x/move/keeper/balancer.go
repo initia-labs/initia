@@ -228,7 +228,7 @@ func (k BalancerKeeper) poolBalances(ctx context.Context, metadataLP vmtypes.Acc
 	})
 
 	if err != nil && errors.Is(err, collections.ErrNotFound) {
-		return nil, nil
+		return []math.Int{math.ZeroInt(), math.ZeroInt()}, nil
 	} else if err != nil {
 		return nil, err
 	}
@@ -269,7 +269,7 @@ func (k BalancerKeeper) poolWeights(
 		TypeArgs: []vmtypes.TypeTag{},
 	})
 	if err != nil && errors.Is(err, collections.ErrNotFound) {
-		return nil, nil
+		return []math.LegacyDec{math.LegacyZeroDec(), math.LegacyZeroDec()}, nil
 	} else if err != nil {
 		return nil, err
 	}

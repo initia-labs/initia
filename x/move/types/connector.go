@@ -431,6 +431,10 @@ func GetBaseSpotPrice(
 	balanceBase, balanceQuote math.Int,
 	weightBase, weightQuote math.LegacyDec,
 ) math.LegacyDec {
+	if balanceBase.IsZero() || balanceQuote.IsZero() {
+		return math.LegacyZeroDec()
+	}
+
 	numerator := weightQuote.MulInt(balanceBase)
 	denominator := weightBase.MulInt(balanceQuote)
 
