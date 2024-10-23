@@ -227,7 +227,7 @@ func Test_BurnCoins(t *testing.T) {
 
 func Test_MultiSend(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
-	moveBankKeeper := keeper.NewMoveBankKeeper(&input.MoveKeeper)
+	moveBankKeeper := input.MoveKeeper.MoveBankKeeper()
 
 	bz, err := hex.DecodeString("0000000000000000000000000000000000000002")
 	require.NoError(t, err)
