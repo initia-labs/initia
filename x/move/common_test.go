@@ -112,7 +112,7 @@ func executeMsgs(t *testing.T, app *initiaapp.InitiaApp, msgs []sdk.Msg, account
 }
 
 func decToVmArgument(t *testing.T, val math.LegacyDec) []byte {
-	// big-endian bytes
+	// big-endian bytes (bytes are cloned)
 	bz := val.BigInt().Bytes()
 
 	// reverse bytes to little-endian

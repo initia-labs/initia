@@ -487,7 +487,7 @@ func (k Keeper) dispatchMessage(parentCtx sdk.Context, message vmtypes.CosmosMes
 		}
 	} else {
 		// signer check had been done in moveVM
-		msg, err = types.ConvertToSDKMessage(ctx, NewMoveBankKeeper(&k), NewNftKeeper(&k), message, k.ac, k.vc)
+		msg, err = types.ConvertToSDKMessage(ctx, k.MoveBankKeeper(), NewNftKeeper(&k), message, k.ac, k.vc)
 		if err != nil {
 			return
 		}

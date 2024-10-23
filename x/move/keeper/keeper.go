@@ -37,6 +37,12 @@ type Keeper struct {
 	bankKeeper   types.BankKeeper
 	oracleKeeper types.OracleKeeper
 
+	// internal keepers
+	moveBankKeeper   MoveBankKeeper
+	dexKeeper        DexKeeper
+	balancerKeeper   BalancerKeeper
+	stableSwapKeeper StableSwapKeeper
+
 	// Msg server router
 	msgRouter  baseapp.MessageRouter
 	grpcRouter *baseapp.GRPCQueryRouter
@@ -141,6 +147,10 @@ func NewKeeper(
 		panic(err)
 	}
 	k.Schema = schema
+	k.moveBankKeeper = NewMoveBankKeeper(k)
+	k.dexKeeper = NewDexKeeper(k)
+	k.balancerKeeper = NewBalancerKeeper(k)
+	k.stableSwapKeeper = NewStableSwapKeeper(k)
 	return k
 }
 
@@ -159,6 +169,26 @@ func (k Keeper) GetAuthority() string {
 func (k Keeper) Logger(ctx context.Context) log.Logger {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	return sdkCtx.Logger().With("module", "x/"+types.ModuleName)
+}
+
+// DexKeeper returns the dex keeper
+func (k Keeper) DexKeeper() DexKeeper {
+	return k.dexKeeper
+}
+
+// MoveBankKeeper returns the move bank keeper
+func (k Keeper) MoveBankKeeper() MoveBankKeeper {
+	return k.moveBankKeeper
+}
+
+// BalancerKeeper returns the balancer keeper
+func (k Keeper) BalancerKeeper() BalancerKeeper {
+	return k.balancerKeeper
+}
+
+// StableSwapKeeper returns the stable swap keeper
+func (k Keeper) StableSwapKeeper() StableSwapKeeper {
+	return k.stableSwapKeeper
 }
 
 // GetExecutionCounter get execution counter for genesis

@@ -2,12 +2,11 @@ package keeper
 
 import (
 	"context"
-	"errors"
 
-	"cosmossdk.io/collections"
 	"cosmossdk.io/math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/pkg/errors"
 
 	distrtypes "github.com/initia-labs/initia/x/distribution/types"
 	"github.com/initia-labs/initia/x/move/types"
@@ -54,6 +53,19 @@ func (k DexKeeper) setDexPair(
 	metadataLP vmtypes.AccountAddress,
 ) error {
 	return k.DexPairs.Set(ctx, metadataQuote[:], metadataLP[:])
+}
+
+// DeleteDexPair remove types.DexPair from the store with the given denom
+func (k DexKeeper) DeleteDexPair(
+	ctx context.Context,
+	denomQuote string,
+) error {
+	metadata, err := types.MetadataAddressFromDenom(denomQuote)
+	if err != nil {
+		return err
+	}
+
+	return k.deleteDexPair(ctx, metadata)
 }
 
 // deleteDexPair remove types.DexPair from the store
@@ -108,7 +120,7 @@ func (k DexKeeper) IterateDexPair(ctx context.Context, cb func(types.DexPair) (b
 }
 
 // GetMetadataLP return types.DexPair with the given denom
-func (k Keeper) GetMetadataLP(
+func (k DexKeeper) GetMetadataLP(
 	ctx context.Context,
 	denomQuote string,
 ) (vmtypes.AccountAddress, error) {
@@ -122,7 +134,7 @@ func (k Keeper) GetMetadataLP(
 
 // getMetadataLP return types.DexPair with the given
 // metadata
-func (k Keeper) getMetadataLP(
+func (k DexKeeper) getMetadataLP(
 	ctx context.Context,
 	metadataQuote vmtypes.AccountAddress,
 ) (vmtypes.AccountAddress, error) {
@@ -145,166 +157,78 @@ func (k DexKeeper) GetBaseSpotPrice(
 		return math.LegacyZeroDec(), err
 	}
 
-	balanceBase, balanceQuote, weightBase, weightQuote, err := k.getPoolInfo(ctx, metadataLP)
-	if err != nil {
-		return math.LegacyZeroDec(), err
-	}
-
-	return types.GetBaseSpotPrice(balanceBase, balanceQuote, weightBase, weightQuote), nil
+	return k.getBaseSpotPrice(ctx, metadataLP)
 }
 
-func (k DexKeeper) getPoolInfo(ctx context.Context, metadataLP vmtypes.AccountAddress) (
-	balanceBase math.Int,
-	balanceQuote math.Int,
-	weightBase math.LegacyDec,
-	weightQuote math.LegacyDec,
-	err error,
-) {
-	weightBase, weightQuote, err = k.getPoolWeights(ctx, metadataLP)
-	if err != nil {
-		return math.ZeroInt(), math.ZeroInt(), math.LegacyZeroDec(), math.LegacyZeroDec(), err
-	}
-
-	balanceBase, balanceQuote, err = k.getPoolBalances(ctx, metadataLP)
-	if err != nil {
-		return math.ZeroInt(), math.ZeroInt(), math.LegacyZeroDec(), math.LegacyZeroDec(), err
-	}
-
-	return
-}
-
-// GetPoolBalances return move dex pool info
-func (k DexKeeper) GetPoolBalances(
-	ctx context.Context,
-	denom string,
-) (
-	balanceBase math.Int,
-	balanceQuote math.Int,
-	err error,
-) {
-	metadataLP, err := k.GetMetadataLP(ctx, denom)
-	if err != nil {
-		return math.ZeroInt(), math.ZeroInt(), err
-	}
-
-	return k.getPoolBalances(ctx, metadataLP)
-}
-
-func (k DexKeeper) isReverse(
+func (k DexKeeper) getBaseSpotPrice(
 	ctx context.Context,
 	metadataLP vmtypes.AccountAddress,
-) (bool, error) {
-	denomBase, err := k.BaseDenom(ctx)
+) (math.LegacyDec, error) {
+	// for now, we only support balancer dex
+	return k.BalancerKeeper().GetBaseSpotPrice(ctx, metadataLP)
+}
+
+// GasPrices return gas prices for all dex pairs
+func (k DexKeeper) GasPrices(
+	ctx context.Context,
+) (sdk.DecCoins, error) {
+	baseGasPrice, err := k.BaseMinGasPrice(ctx)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 
-	metadataBase, err := types.MetadataAddressFromDenom(denomBase)
-	if err != nil {
-		return false, err
-	}
+	gasPrices := sdk.NewDecCoins()
+	err = k.DexPairs.Walk(ctx, nil, func(key, value []byte) (stop bool, err error) {
+		metadataQuote, err := vmtypes.NewAccountAddressFromBytes(key)
+		if err != nil {
+			return true, err
+		}
+		denomQuote, err := types.DenomFromMetadataAddress(ctx, k.MoveBankKeeper(), metadataQuote)
+		if err != nil {
+			return true, err
+		}
+		metadataLP, err := vmtypes.NewAccountAddressFromBytes(value)
+		if err != nil {
+			return true, err
+		}
+		baseSpotPrice, err := k.getBaseSpotPrice(ctx, metadataLP)
+		if err != nil {
+			return true, err
+		}
+		if baseSpotPrice.IsZero() {
+			return true, errors.New("baseSpotPrice is zero")
+		}
 
-	metadataA, metadataB, err := k.GetPoolMetadata(ctx, metadataLP)
-	if err != nil {
-		return false, err
-	}
-
-	if metadataBase == metadataA {
+		gasPrice := baseGasPrice.Quo(baseSpotPrice)
+		gasPrices = gasPrices.Add(sdk.NewDecCoinFromDec(denomQuote, gasPrice))
 		return false, nil
-	} else if metadataBase == metadataB {
-		return true, nil
-	}
-
-	return false, types.ErrInvalidDexConfig.Wrapf("the pair does not contain `%s`", denomBase)
-}
-
-// getPoolBalances return move dex pool info
-func (k DexKeeper) getPoolBalances(
-	ctx context.Context,
-	metadataLP vmtypes.AccountAddress,
-) (balanceBase, balanceQuote math.Int, err error) {
-	bz, err := k.GetResourceBytes(ctx, metadataLP, vmtypes.StructTag{
-		Address:  vmtypes.StdAddress,
-		Module:   types.MoveModuleNameDex,
-		Name:     types.ResourceNamePool,
-		TypeArgs: []vmtypes.TypeTag{},
 	})
-
-	if err != nil && errors.Is(err, collections.ErrNotFound) {
-		return math.ZeroInt(), math.ZeroInt(), nil
-	} else if err != nil {
-		return math.ZeroInt(), math.ZeroInt(), err
-	}
-
-	storeA, storeB, err := types.ReadStoresFromPool(bz)
 	if err != nil {
-		return math.ZeroInt(), math.ZeroInt(), err
+		return nil, err
 	}
 
-	_, balanceA, err := NewMoveBankKeeper(k.Keeper).Balance(ctx, storeA)
-	if err != nil {
-		return math.ZeroInt(), math.ZeroInt(), err
-	}
-
-	_, balanceB, err := NewMoveBankKeeper(k.Keeper).Balance(ctx, storeB)
-	if err != nil {
-		return math.ZeroInt(), math.ZeroInt(), err
-	}
-
-	if ok, err := k.isReverse(ctx, metadataLP); err != nil {
-		return math.ZeroInt(), math.ZeroInt(), err
-	} else if ok {
-		return balanceB, balanceA, nil
-	}
-
-	return balanceA, balanceB, nil
+	return gasPrices, nil
 }
 
-// GetPoolWeights return base, quote dex weights
-func (k DexKeeper) GetPoolWeights(
+// GasPrice return gas price for the given denom
+func (k DexKeeper) GasPrice(
 	ctx context.Context,
 	denomQuote string,
-) (weightBase math.LegacyDec, weightB math.LegacyDec, err error) {
-	metadataLP, err := k.GetMetadataLP(ctx, denomQuote)
+) (sdk.DecCoin, error) {
+	baseGasPrice, err := k.BaseMinGasPrice(ctx)
 	if err != nil {
-		return math.LegacyZeroDec(), math.LegacyZeroDec(), err
+		return sdk.NewDecCoin(denomQuote, math.ZeroInt()), err
 	}
 
-	return k.getPoolWeights(ctx, metadataLP)
-}
-
-// getPoolWeights return base, quote dex weights with quote denom struct tag
-func (k DexKeeper) getPoolWeights(
-	ctx context.Context,
-	metadataLP vmtypes.AccountAddress,
-) (weightBase math.LegacyDec, weightQuote math.LegacyDec, err error) {
-	bz, err := k.GetResourceBytes(ctx, metadataLP, vmtypes.StructTag{
-		Address:  vmtypes.StdAddress,
-		Module:   types.MoveModuleNameDex,
-		Name:     types.ResourceNameConfig,
-		TypeArgs: []vmtypes.TypeTag{},
-	})
-
-	if err != nil && errors.Is(err, collections.ErrNotFound) {
-		return math.LegacyZeroDec(), math.LegacyZeroDec(), nil
-	} else if err != nil {
-		return math.LegacyZeroDec(), math.LegacyZeroDec(), err
-	}
-
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	timestamp := math.NewInt(sdkCtx.BlockTime().Unix())
-	weightA, weightB, err := types.ReadWeightsFromDexConfig(timestamp, bz)
+	baseSpotPrice, err := k.GetBaseSpotPrice(ctx, denomQuote)
 	if err != nil {
-		return math.LegacyDec{}, math.LegacyDec{}, err
+		return sdk.NewDecCoin(denomQuote, math.ZeroInt()), err
+	}
+	if baseSpotPrice.IsZero() {
+		return sdk.NewDecCoin(denomQuote, math.ZeroInt()), errors.New("baseSpotPrice is zero")
 	}
 
-	if ok, err := k.isReverse(ctx, metadataLP); err != nil {
-		return math.LegacyZeroDec(), math.LegacyZeroDec(), err
-	} else if ok {
-		return weightB, weightA, nil
-	}
-
-	return weightA, weightB, nil
+	return sdk.NewDecCoinFromDec(denomQuote, baseGasPrice.Quo(baseSpotPrice)), nil
 }
 
 func (k DexKeeper) SwapToBase(
@@ -334,52 +258,32 @@ func (k DexKeeper) SwapToBase(
 		return err
 	}
 
-	// build argument bytes
-	offerAmountBz, err := vmtypes.SerializeUint64(quoteCoin.Amount.Uint64())
-	if err != nil {
-		return err
-	}
-
-	// swap quote coin to base coin
-	return k.ExecuteEntryFunction(
-		ctx,
-		vmAddr,
-		vmtypes.StdAddress,
-		types.MoveModuleNameDex,
-		types.FunctionNameDexSwapScript,
-		[]vmtypes.TypeTag{},
-		[][]byte{metadataLP[:], metadataQuote[:], offerAmountBz, {0}},
-	)
+	// for now, we only support balancer dex
+	return k.BalancerKeeper().SwapToBase(ctx, vmAddr, metadataLP, metadataQuote, quoteCoin.Amount)
 }
 
-func (k DexKeeper) GetPoolMetadata(
+func (k DexKeeper) PoolBalances(
 	ctx context.Context,
-	metadataLP vmtypes.AccountAddress,
-) (metadataA, metadataB vmtypes.AccountAddress, err error) {
-	bz, err := k.GetResourceBytes(ctx, metadataLP, vmtypes.StructTag{
-		Address:  vmtypes.StdAddress,
-		Module:   types.MoveModuleNameDex,
-		Name:     types.ResourceNamePool,
-		TypeArgs: []vmtypes.TypeTag{},
-	})
+	denomQuote string,
+) ([]math.Int, error) {
+	metadataLP, err := k.GetMetadataLP(ctx, denomQuote)
 	if err != nil {
-		return vmtypes.AccountAddress{}, vmtypes.AccountAddress{}, err
+		return nil, err
 	}
 
-	storeA, storeB, err := types.ReadStoresFromPool(bz)
+	// for now, we only support balancer dex
+	return k.BalancerKeeper().poolBalances(ctx, metadataLP)
+}
+
+func (k DexKeeper) PoolWeights(
+	ctx context.Context,
+	denomQuote string,
+) ([]math.LegacyDec, error) {
+	metadataLP, err := k.GetMetadataLP(ctx, denomQuote)
 	if err != nil {
-		return vmtypes.AccountAddress{}, vmtypes.AccountAddress{}, err
+		return nil, err
 	}
 
-	metadataA, _, err = NewMoveBankKeeper(k.Keeper).Balance(ctx, storeA)
-	if err != nil {
-		return vmtypes.AccountAddress{}, vmtypes.AccountAddress{}, err
-	}
-
-	metadataB, _, err = NewMoveBankKeeper(k.Keeper).Balance(ctx, storeB)
-	if err != nil {
-		return vmtypes.AccountAddress{}, vmtypes.AccountAddress{}, err
-	}
-
-	return metadataA, metadataB, nil
+	// for now, we only support balancer dex
+	return k.BalancerKeeper().poolWeights(ctx, metadataLP)
 }
