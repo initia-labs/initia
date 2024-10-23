@@ -107,8 +107,8 @@ func (k msgServer) MultiSend(goCtx context.Context, msg *types.MsgMultiSend) (*t
 		return nil, err
 	}
 
-	for _, out := range msg.Outputs {
-		if base, ok := k.Keeper.(BaseKeeper); ok {
+	if base, ok := k.Keeper.(BaseKeeper); ok {
+		for _, out := range msg.Outputs {
 			accAddr, err := base.ak.AddressCodec().StringToBytes(out.Address)
 			if err != nil {
 				return nil, err
@@ -117,9 +117,10 @@ func (k msgServer) MultiSend(goCtx context.Context, msg *types.MsgMultiSend) (*t
 			if k.BlockedAddr(accAddr) {
 				return nil, errorsmod.Wrapf(sdkerrors.ErrUnauthorized, "%s is not allowed to receive funds", out.Address)
 			}
-		} else {
-			return nil, sdkerrors.ErrInvalidRequest.Wrapf("invalid keeper type: %T", k.Keeper)
+
 		}
+	} else {
+		return nil, sdkerrors.ErrInvalidRequest.Wrapf("invalid keeper type: %T", k.Keeper)
 	}
 
 	err := k.InputOutputCoins(ctx, msg.Inputs[0], msg.Outputs)

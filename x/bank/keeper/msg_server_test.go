@@ -236,6 +236,20 @@ func TestMsgMultiSend(t *testing.T) {
 			expErrMsg: "is not allowed to receive funds",
 		},
 		{
+			name: "input/output amount mismatch",
+			input: &banktypes.MsgMultiSend{
+				Inputs: []banktypes.Input{
+					{Address: addrs[0].String(), Coins: origCoins},
+				},
+				Outputs: []banktypes.Output{
+					{Address: addrs[1].String(), Coins: origCoins},
+					{Address: addrs[2].String(), Coins: sendCoins},
+				},
+			},
+			expErr:    true,
+			expErrMsg: "sum inputs != sum outputs",
+		},
+		{
 			name: "valid send",
 			input: &banktypes.MsgMultiSend{
 				Inputs: []banktypes.Input{

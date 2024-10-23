@@ -540,6 +540,12 @@ func (k MoveBankKeeper) MultiSend(
 	recipients []sdk.AccAddress,
 	amounts []math.Int,
 ) error {
+	if len(recipients) != len(amounts) {
+		return moderrors.Wrapf(types.ErrInvalidRequest, "recipients and amounts length mismatch")
+	} else if len(recipients) == 0 {
+		return moderrors.Wrapf(types.ErrInvalidRequest, "recipients and amounts length should be greater than 0")
+	}
+
 	senderVMAddr, err := vmtypes.NewAccountAddressFromBytes(sender)
 	if err != nil {
 		return err

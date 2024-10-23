@@ -107,6 +107,12 @@ func (k MoveSendKeeper) SetParams(ctx context.Context, params types.Params) erro
 // InputOutputCoins performs multi-send functionality. It transfers coins from a single sender
 // to multiple recipients. An error is returned upon failure.
 func (k MoveSendKeeper) InputOutputCoins(ctx context.Context, input types.Input, outputs []types.Output) error {
+	// Safety check ensuring that when sending coins the keeper must maintain the
+	// Check supply invariant and validity of Coins.
+	if err := types.ValidateInputOutputs(input, outputs); err != nil {
+		return err
+	}
+
 	fromAddr, err := k.ak.AddressCodec().StringToBytes(input.Address)
 	if err != nil {
 		return err
@@ -140,7 +146,7 @@ func (k MoveSendKeeper) InputOutputCoins(ctx context.Context, input types.Input,
 			amounts = append(amounts, output.Coins.AmountOf(coin.Denom))
 		}
 
-		err := k.mk.MultiSend(ctx, fromAddr, coin.Denom, recipients, amounts)
+		err = k.mk.MultiSend(ctx, fromAddr, coin.Denom, recipients, amounts)
 		if err != nil {
 			return err
 		}
