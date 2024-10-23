@@ -118,7 +118,46 @@ func (k MoveSendKeeper) InputOutputCoins(ctx context.Context, input types.Input,
 		return err
 	}
 
+	// event emission
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(types.AttributeKeySender, input.Address),
+		),
+	)
+
+	// emit coin spent event
+	sdkCtx.EventManager().EmitEvent(
+		types.NewCoinSpentEvent(fromAddr, input.Coins),
+	)
+
+	// emit coin received events and do address caching
 	addrMap := make(map[string][]byte)
+	for _, output := range outputs {
+		addr, err := k.ak.AddressCodec().StringToBytes(output.Address)
+		if err != nil {
+			return err
+		}
+
+		// cache bytes address
+		addrMap[output.Address] = addr
+
+		// emit coin received event
+		sdkCtx.EventManager().EmitEvent(
+			types.NewCoinReceivedEvent(addr, output.Coins),
+		)
+
+		// emit transfer event (for compatibility with cosmos bank)
+		sdkCtx.EventManager().EmitEvent(
+			sdk.NewEvent(
+				types.EventTypeTransfer,
+				sdk.NewAttribute(types.AttributeKeyRecipient, output.Address),
+				sdk.NewAttribute(sdk.AttributeKeyAmount, output.Coins.String()),
+			),
+		)
+	}
+
 	for _, coin := range input.Coins {
 		if !coin.Amount.IsPositive() {
 			continue
@@ -130,16 +169,6 @@ func (k MoveSendKeeper) InputOutputCoins(ctx context.Context, input types.Input,
 			amount := output.Coins.AmountOf(coin.Denom)
 			if !amount.IsPositive() {
 				continue
-			}
-
-			// cache bytes address
-			if _, ok := addrMap[output.Address]; !ok {
-				addr, err := k.ak.AddressCodec().StringToBytes(output.Address)
-				if err != nil {
-					return err
-				}
-
-				addrMap[output.Address] = addr
 			}
 
 			recipients = append(recipients, addrMap[output.Address])
