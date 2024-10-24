@@ -233,6 +233,48 @@ func TestInstantUnbondFromBondedValidator(t *testing.T) {
 	require.True(t, val.IsUnbonding())
 }
 
+func TestApplyStakingDeltas_BaseDenom(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+
+	// add second BondDenom to staking keeper
+	input.StakingKeeper.SetBondDenoms(ctx, []string{bondDenom})
+
+	// initialize staking
+	valAddr := createValidatorWithBalance(t, ctx, input, 100_000_000, 100_000)
+
+	// mint not possible for lp coin, so transfer from the 0x2
+	_, _, addr := keyPubAddr()
+	input.Faucet.Mint(ctx, addr, sdk.NewCoin(bondDenom, math.NewInt(100_000_000)))
+
+	// delegate coins via move staking module
+	valAddrArg, err := vmtypes.SerializeString(valAddr.String())
+	require.NoError(t, err)
+
+	amountArg, err := vmtypes.SerializeUint64(50_000_000)
+	require.NoError(t, err)
+
+	metadataAddr, err := types.MetadataAddressFromDenom(bondDenom)
+	require.NoError(t, err)
+
+	vmAddr, err := vmtypes.NewAccountAddressFromBytes(addr)
+	require.NoError(t, err)
+	err = input.MoveKeeper.ExecuteEntryFunction(
+		ctx,
+		vmAddr,
+		vmtypes.StdAddress,
+		types.MoveModuleNameStaking,
+		types.FunctionNameStakingDelegateScript,
+		[]vmtypes.TypeTag{},
+		[][]byte{metadataAddr[:], valAddrArg, amountArg},
+	)
+	require.NoError(t, err)
+
+	delModuleAddr := types.GetDelegatorModuleAddress(valAddr)
+	delegation, err := input.StakingKeeper.GetDelegation(ctx, delModuleAddr, valAddr)
+	require.NoError(t, err)
+	require.Equal(t, delegation.Shares, sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, math.NewInt(50_000_000))))
+}
+
 func TestApplyStakingDeltas(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 

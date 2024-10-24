@@ -15,6 +15,7 @@ func (k Keeper) Initialize(
 	ctx context.Context,
 	moduleBytes [][]byte,
 	allowedPublishers []string,
+	baseDenom string,
 ) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	ctx = sdkCtx.WithTxBytes(make([]byte, 32))
@@ -53,6 +54,21 @@ func (k Keeper) Initialize(
 	if err != nil {
 		return err
 	}
+	if err = k.handleExecuteResponse(sdkCtx, sdkCtx.GasMeter(), execRes); err != nil {
+		return err
+	}
+
+	// if staking keeper is available, initialize move staking module.
+	if k.StakingKeeper != nil {
+		if err := k.moveBankKeeper.InitializeCoin(ctx, baseDenom); err != nil {
+			return err
+		}
+
+		// initialize move staking module if staking keeper is available
+		if err := k.InitializeStaking(ctx, baseDenom); err != nil {
+			return err
+		}
+	}
 
 	return k.handleExecuteResponse(sdkCtx, sdkCtx.GasMeter(), execRes)
 }
@@ -74,7 +90,7 @@ func (k Keeper) InitGenesis(ctx context.Context, moduleNames []string, genState 
 	}
 
 	if len(genState.GetModules()) == 0 {
-		if err := k.Initialize(ctx, genState.GetStdlibs(), params.AllowedPublishers); err != nil {
+		if err := k.Initialize(ctx, genState.GetStdlibs(), params.AllowedPublishers, params.BaseDenom); err != nil {
 			return err
 		}
 	}

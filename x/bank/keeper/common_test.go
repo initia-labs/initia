@@ -394,7 +394,7 @@ func _createTestInput(
 	moduleBytes, err := precompile.ReadStdlib()
 	require.NoError(t, err)
 
-	err = moveKeeper.Initialize(ctx, moduleBytes, moveParams.AllowedPublishers)
+	err = moveKeeper.Initialize(ctx, moduleBytes, moveParams.AllowedPublishers, bondDenom)
 	require.NoError(t, err)
 
 	faucet := NewTestFaucet(t, ctx, bankKeeper, *moveKeeper, authtypes.Minter, initialTotalSupply()...)
