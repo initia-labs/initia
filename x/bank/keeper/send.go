@@ -166,17 +166,24 @@ func (k MoveSendKeeper) InputOutputCoins(ctx context.Context, input types.Input,
 		recipients := make([]sdk.AccAddress, 0, len(outputs))
 		amounts := make([]math.Int, 0, len(outputs))
 		for _, output := range outputs {
+			// Create account if recipient does not exist.
+			outAddress := addrMap[output.Address]
+			accExists := k.ak.HasAccount(ctx, outAddress)
+			if !accExists {
+				defer telemetry.IncrCounter(1, "new", "account")
+				k.ak.SetAccount(ctx, k.ak.NewAccountWithAddress(ctx, outAddress))
+			}
+
 			amount := output.Coins.AmountOf(coin.Denom)
 			if !amount.IsPositive() {
 				continue
 			}
 
-			recipients = append(recipients, addrMap[output.Address])
+			recipients = append(recipients, outAddress)
 			amounts = append(amounts, output.Coins.AmountOf(coin.Denom))
 		}
 
-		err = k.mk.MultiSend(ctx, fromAddr, coin.Denom, recipients, amounts)
-		if err != nil {
+		if err = k.mk.MultiSend(ctx, fromAddr, coin.Denom, recipients, amounts); err != nil {
 			return err
 		}
 	}
