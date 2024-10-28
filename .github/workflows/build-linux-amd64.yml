@@ -53,7 +53,7 @@ jobs:
           pushd build
           mkdir -p initia_${VERSION}_static
           mv initiad initia_${VERSION}_static/
-          tar -czvf initia_${VERSION}_Linux_${ARCH_NAME}_static.tar.gz initia_${VERSION}
+          tar -czvf initia_${VERSION}_Linux_${ARCH_NAME}_static.tar.gz initia_${VERSION}_static
           popd
 
       - name: Release
