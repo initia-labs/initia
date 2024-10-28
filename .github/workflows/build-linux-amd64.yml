@@ -37,22 +37,24 @@ jobs:
           export GOARCH=${GOARCH}
           export GOOS=${GOOS}
           make build-linux-with-shared-library
-          cd ./build
+          pushd build
           mkdir -p initia_${VERSION}
           mv libmovevm.so initia_${VERSION}/libmovevm.${ARCH_NAME}.so
           mv libcompiler.so initia_${VERSION}/libcompiler.${ARCH_NAME}.so
           mv initiad initia_${VERSION}/
           tar -czvf initia_${VERSION}_Linux_${ARCH_NAME}.tar.gz initia_${VERSION}
+          popd
 
       - name: Static Build for Linux AMD64
         run: |
           export GOARCH=${GOARCH}
           export GOOS=${GOOS}
           make build-linux
-          cd ./build
+          pushd build
           mkdir -p initia_${VERSION}
           mv initiad initia_${VERSION}/
           tar -czvf initia_${VERSION}_Linux_${ARCH_NAME}_static.tar.gz initia_${VERSION}
+          popd
 
       - name: Release
         uses: softprops/action-gh-release@v2
