@@ -51,8 +51,8 @@ jobs:
           export GOOS=${GOOS}
           make build-linux
           pushd build
-          mkdir -p initia_${VERSION}
-          mv initiad initia_${VERSION}/
+          mkdir -p initia_${VERSION}_static
+          mv initiad initia_${VERSION}_static/
           tar -czvf initia_${VERSION}_Linux_${ARCH_NAME}_static.tar.gz initia_${VERSION}
           popd
 
