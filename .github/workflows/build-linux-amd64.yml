@@ -44,11 +44,22 @@ jobs:
           mv initiad initia_${VERSION}/
           tar -czvf initia_${VERSION}_Linux_${ARCH_NAME}.tar.gz initia_${VERSION}
 
+      - name: Static Build for Linux AMD64
+        run: |
+          export GOARCH=${GOARCH}
+          export GOOS=${GOOS}
+          make build-linux
+          cd ./build
+          mkdir -p initia_${VERSION}
+          mv initiad initia_${VERSION}/
+          tar -czvf initia_${VERSION}_Linux_${ARCH_NAME}_static.tar.gz initia_${VERSION}
+
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
             ./build/initia_${{ env.VERSION }}_Linux_${{ env.ARCH_NAME }}.tar.gz
+            ./build/initia_${{ env.VERSION }}_Linux_${{ env.ARCH_NAME }}_static.tar.gz
         env:
           Version: ${{ env.VERSION }}
           ARCH_NAME: ${{ env.ARCH_NAME }}
