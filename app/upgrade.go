@@ -62,11 +62,11 @@ func (app *InitiaApp) RegisterUpgradeHandlers(cfg module.Configurator) {
 					value = checksum[:]
 				} else if separator >= movetypes.TableInfoSeparator {
 					return true, errors.New("unknown prefix")
-				}
-
-				err = app.MoveKeeper.VMStore.Remove(ctx, key)
-				if err != nil {
-					return true, err
+				} else {
+					err = app.MoveKeeper.VMStore.Remove(ctx, key)
+					if err != nil {
+						return true, err
+					}
 				}
 				key[cursor] = key[cursor] + 1
 				kvs = append(kvs, KV{
