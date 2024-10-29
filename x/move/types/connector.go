@@ -63,6 +63,7 @@ const (
 
 	// function names for code
 	FunctionNameCodePublish              = "publish"
+	FunctionNameCodePublishV2            = "publish_v2"
 	FunctionNameCodeSetAllowedPublishers = "set_allowed_publishers"
 
 	// function names for vesting

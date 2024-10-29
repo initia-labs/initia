@@ -205,6 +205,22 @@ func (k Keeper) GetExecutionCounter(
 	return counter, nil
 }
 
+// SetChecksum store checksum bytes
+// This function should be used only when Migration
+func (k Keeper) SetChecksum(
+	ctx context.Context,
+	addr vmtypes.AccountAddress,
+	moduleName string,
+	checksum []byte,
+) error {
+	if checksumKey, err := types.GetChecksumKey(addr, moduleName); err != nil {
+		return err
+	} else if err := k.VMStore.Set(ctx, checksumKey, checksum); err != nil {
+		return err
+	}
+	return nil
+}
+
 // SetModule store Module bytes
 // This function should be used only when InitGenesis
 func (k Keeper) SetModule(
