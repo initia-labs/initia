@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 
 	sdkerrors "cosmossdk.io/errors"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
@@ -55,6 +56,10 @@ func (app *InitiaApp) RegisterUpgradeHandlers(cfg module.Configurator) {
 
 			err = app.MoveKeeper.VMStore.Walk(ctx, nil, func(key, value []byte) (stop bool, err error) {
 				cursor := movetypes.AddressBytesLength
+				if len(key) <= cursor {
+					return true, fmt.Errorf("invalid key length: %d", len(key))
+				}
+
 				separator := key[cursor]
 
 				if separator == movetypes.ModuleSeparator {
@@ -87,7 +92,7 @@ func (app *InitiaApp) RegisterUpgradeHandlers(cfg module.Configurator) {
 			}
 
 			// 3. update new modules
-			codesBz, err := vmprecompile.ReadStdlib("object_code_deployment.move", "coin.move", "dex.move", "json.move", "bech32.move", "hash.move")
+			codesBz, err := vmprecompile.ReadStdlib("object_code_deployment.move", "coin.move", "cosmos.move", "dex.move", "json.move", "bech32.move", "hash.move")
 			if err != nil {
 				return nil, err
 			}
