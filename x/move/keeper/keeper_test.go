@@ -53,6 +53,28 @@ func TestSetModule(t *testing.T) {
 	}, module)
 }
 
+func TestGetAndSetChecksum(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+
+	err := input.MoveKeeper.PublishModuleBundle(ctx,
+		vmtypes.StdAddress,
+		vmtypes.NewModuleBundle(vmtypes.NewModule(basicCoinModule)),
+		types.UpgradePolicy_IMMUTABLE,
+	)
+	require.NoError(t, err)
+
+	basicCoinChecksum := types.ModuleBzToChecksum(basicCoinModule)
+
+	checksum, err := input.MoveKeeper.GetChecksum(ctx, vmtypes.StdAddress, "BasicCoin")
+	require.NoError(t, err)
+
+	require.Equal(t, types.Checksum{
+		Address:    vmtypes.StdAddress.String(),
+		ModuleName: "BasicCoin",
+		Checksum:   basicCoinChecksum[:],
+	}, checksum)
+}
+
 func TestGetAndSetResource(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
@@ -155,6 +177,9 @@ func TestIterateVMStore(t *testing.T) {
 	data, err := vmtypes.SerializeUint64(100)
 	require.NoError(t, err)
 
+	basicCoinChecksum := types.ModuleBzToChecksum(basicCoinModule)
+	input.MoveKeeper.SetChecksum(ctx, vmtypes.StdAddress, "BasicCoin", basicCoinChecksum[:])
+
 	input.MoveKeeper.SetResource(ctx, vmtypes.TestAddress, structTag, data)
 	input.MoveKeeper.SetTableInfo(ctx, types.TableInfo{
 		Address:   vmtypes.TestAddress.String(),
@@ -166,7 +191,7 @@ func TestIterateVMStore(t *testing.T) {
 		KeyBytes:   []byte{1, 2, 3},
 		ValueBytes: []byte{4, 5, 6},
 	})
-	input.MoveKeeper.IterateVMStore(ctx, func(module *types.Module, resource *types.Resource, tableInfo *types.TableInfo, tableEntry *types.TableEntry) {
+	input.MoveKeeper.IterateVMStore(ctx, func(module *types.Module, checksum *types.Checksum, resource *types.Resource, tableInfo *types.TableInfo, tableEntry *types.TableEntry) {
 		if module != nil && module.ModuleName == "BasicCoin" {
 			require.Equal(t, types.Module{
 				Address:       "0x1",
@@ -174,6 +199,14 @@ func TestIterateVMStore(t *testing.T) {
 				RawBytes:      basicCoinModule,
 				UpgradePolicy: types.UpgradePolicy_COMPATIBLE,
 			}, *module)
+		}
+
+		if checksum != nil && checksum.ModuleName == "BasicCoin" {
+			require.Equal(t, types.Checksum{
+				Address:    "0x1",
+				ModuleName: "BasicCoin",
+				Checksum:   basicCoinChecksum[:],
+			}, *checksum)
 		}
 
 		if resource != nil && resource.Address == "0x2" {

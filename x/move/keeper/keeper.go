@@ -221,6 +221,29 @@ func (k Keeper) SetChecksum(
 	return nil
 }
 
+// GetChecksum return checksum of module of the given account address and name
+func (k Keeper) GetChecksum(
+	ctx context.Context,
+	addr vmtypes.AccountAddress,
+	moduleName string,
+) (types.Checksum, error) {
+	bz, err := types.GetChecksumKey(addr, moduleName)
+	if err != nil {
+		return types.Checksum{}, err
+	}
+
+	checksumBytes, err := k.VMStore.Get(ctx, bz)
+	if err != nil {
+		return types.Checksum{}, err
+	}
+
+	return types.Checksum{
+		Address:    addr.String(),
+		ModuleName: moduleName,
+		Checksum:   checksumBytes,
+	}, nil
+}
+
 // SetModule store Module bytes
 // This function should be used only when InitGenesis
 func (k Keeper) SetModule(
@@ -526,7 +549,7 @@ func (k Keeper) SetTableEntry(
 }
 
 // IterateVMStore iterate VMStore store for genesis export
-func (k Keeper) IterateVMStore(ctx context.Context, cb func(*types.Module, *types.Resource, *types.TableInfo, *types.TableEntry)) error {
+func (k Keeper) IterateVMStore(ctx context.Context, cb func(*types.Module, *types.Checksum, *types.Resource, *types.TableInfo, *types.TableEntry)) error {
 	err := k.VMStore.Walk(ctx, nil, func(key, value []byte) (stop bool, err error) {
 		cursor := types.AddressBytesLength
 		addrBytes := key[:cursor]
@@ -555,6 +578,18 @@ func (k Keeper) IterateVMStore(ctx context.Context, cb func(*types.Module, *type
 				ModuleName:    string(moduleName),
 				RawBytes:      value,
 				UpgradePolicy: policy,
+			}, nil, nil, nil, nil)
+		} else if separator == types.ChecksumSeparator {
+			// Checksum
+			moduleName, err := vmtypes.BcsDeserializeIdentifier(key[cursor:])
+			if err != nil {
+				return true, err
+			}
+
+			cb(nil, &types.Checksum{
+				Address:    vmAddr.String(),
+				ModuleName: string(moduleName),
+				Checksum:   value,
 			}, nil, nil, nil)
 		} else if separator == types.ResourceSeparator {
 			// Resource
@@ -568,7 +603,7 @@ func (k Keeper) IterateVMStore(ctx context.Context, cb func(*types.Module, *type
 				return true, err
 			}
 
-			cb(nil, &types.Resource{
+			cb(nil, nil, &types.Resource{
 				Address:   vmAddr.String(),
 				StructTag: structTagStr,
 				RawBytes:  value,
@@ -590,14 +625,14 @@ func (k Keeper) IterateVMStore(ctx context.Context, cb func(*types.Module, *type
 				return true, err
 			}
 
-			cb(nil, nil, &types.TableInfo{
+			cb(nil, nil, nil, &types.TableInfo{
 				Address:   vmAddr.String(),
 				KeyType:   keyType,
 				ValueType: valueType,
 			}, nil)
 		} else if separator == types.TableEntrySeparator {
 			// Table Entry
-			cb(nil, nil, nil, &types.TableEntry{
+			cb(nil, nil, nil, nil, &types.TableEntry{
 				Address:    vmAddr.String(),
 				KeyBytes:   key[cursor:],
 				ValueBytes: value,

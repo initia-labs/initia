@@ -64,7 +64,6 @@ message RawParams {
 }
 
 // Module is data for the uploaded contract move code
-// ex) 0000000000000000000000000000000000000001/0/BasicCoin
 message Module {
   string address = 1;
   string module_name = 2;
@@ -73,8 +72,14 @@ message Module {
   UpgradePolicy upgrade_policy = 5;
 }
 
+// Checksum is checksum of the uploaded contract move code
+message Checksum {
+  string address = 1;
+  string module_name = 2;
+  bytes checksum = 3;
+}
+
 // Resource is data for the stored move resource
-// ex) 0000000000000000000000000000000000000002/2/0x1::BasicCoin::Coin<0x1::BasicCoin::Initia>
 message Resource {
   string address = 1;
   string struct_tag = 2;
