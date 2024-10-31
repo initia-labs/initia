@@ -40,7 +40,7 @@ require (
 	github.com/hashicorp/go-metrics v0.5.3
 	github.com/initia-labs/OPinit v0.5.5
 	// we also need to update `LIBMOVEVM_VERSION` of Dockerfile#9
-	github.com/initia-labs/movevm v0.5.1
+	github.com/initia-labs/movevm v0.6.0
 	github.com/noble-assets/forwarding/v2 v2.0.0-20240521090705-86712c4c9e43
 	github.com/pelletier/go-toml v1.9.5
 	github.com/pkg/errors v0.9.1
@@ -233,7 +233,6 @@ replace (
 	// TODO Remove it: https://github.com/cosmos/cosmos-sdk/issues/10409
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.8.1
 
-	github.com/initia-labs/movevm => ../movevm
 	// Downgraded to avoid bugs in following commits which caused simulations to fail.
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 )
