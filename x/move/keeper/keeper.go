@@ -85,8 +85,7 @@ func NewKeeper(
 	}
 
 	moveVM, err := vm.NewVM(vmtypes.InitiaVMConfig{
-		// TODO: check this before mainnet
-		AllowUnstable:       true,
+		AllowUnstable:       false,
 		ScriptCacheCapacity: moveConfig.ScriptCacheCapacity,
 		ModuleCacheCapacity: moveConfig.ModuleCacheCapacity,
 	})
