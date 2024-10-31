@@ -46,6 +46,8 @@ func (app *InitiaApp) RegisterUpgradeHandlers(cfg module.Configurator) {
 			}
 			kvs := make([]KV, 0)
 
+			rmKeys := make([][]byte, 0)
+
 			//  Previous:
 			// 	ModuleSeparator     = byte(0)
 			// 	ResourceSeparator   = byte(1)
@@ -84,10 +86,7 @@ func (app *InitiaApp) RegisterUpgradeHandlers(cfg module.Configurator) {
 				} else if separator >= movetypes.TableInfoSeparator {
 					return true, errors.New("unknown prefix")
 				} else {
-					err = app.MoveKeeper.VMStore.Remove(ctx, key)
-					if err != nil {
-						return true, err
-					}
+					rmKeys = append(rmKeys, key)
 				}
 				key[cursor] = key[cursor] + 1
 				kvs = append(kvs, KV{
@@ -101,6 +100,13 @@ func (app *InitiaApp) RegisterUpgradeHandlers(cfg module.Configurator) {
 			}
 
 			fmt.Println("4. storing all kvs")
+
+			for _, key := range rmKeys {
+				err = app.MoveKeeper.VMStore.Remove(ctx, key)
+				if err != nil {
+					return nil, err
+				}
+			}
 
 			for _, kv := range kvs {
 				err = app.MoveKeeper.VMStore.Set(ctx, kv.key, kv.value)
