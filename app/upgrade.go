@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 
+	"cosmossdk.io/collections"
 	sdkerrors "cosmossdk.io/errors"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
@@ -35,14 +36,6 @@ func (app *InitiaApp) RegisterUpgradeHandlers(cfg module.Configurator) {
 
 			// 2. update vm data with new seperator and add checksums of each module
 
-			type KV struct {
-				key   []byte
-				value []byte
-			}
-			kvs := make([]KV, 0)
-
-			rmKeys := make([][]byte, 0)
-
 			//  Previous:
 			// 	ModuleSeparator     = byte(0)
 			// 	ResourceSeparator   = byte(1)
@@ -56,7 +49,7 @@ func (app *InitiaApp) RegisterUpgradeHandlers(cfg module.Configurator) {
 			// 	TableEntrySeparator = byte(3)
 			//	TableInfoSeparator  = byte(4)
 
-			err = app.MoveKeeper.VMStore.Walk(ctx, nil, func(key, value []byte) (stop bool, err error) {
+			err = app.MoveKeeper.VMStore.Walk(ctx, new(collections.Range[[]byte]).Descending(), func(key, value []byte) (stop bool, err error) {
 				key = bytes.Clone(key)
 				value = bytes.Clone(value)
 
@@ -73,32 +66,20 @@ func (app *InitiaApp) RegisterUpgradeHandlers(cfg module.Configurator) {
 				} else if separator >= movetypes.TableInfoSeparator {
 					return true, errors.New("unknown prefix")
 				} else {
-					rmKeys = append(rmKeys, bytes.Clone(key))
+					err = app.MoveKeeper.VMStore.Remove(ctx, bytes.Clone(key))
+					if err != nil {
+						return true, err
+					}
 				}
-
 				key[cursor] = key[cursor] + 1
-				kvs = append(kvs, KV{
-					key:   key,
-					value: value,
-				})
+				err = app.MoveKeeper.VMStore.Set(ctx, key, value)
+				if err != nil {
+					return true, err
+				}
 				return false, nil
 			})
 			if err != nil {
 				return nil, err
-			}
-
-			for _, key := range rmKeys {
-				err = app.MoveKeeper.VMStore.Remove(ctx, key)
-				if err != nil {
-					return nil, err
-				}
-			}
-
-			for _, kv := range kvs {
-				err = app.MoveKeeper.VMStore.Set(ctx, kv.key, kv.value)
-				if err != nil {
-					return nil, err
-				}
 			}
 
 			// 3. update new modules

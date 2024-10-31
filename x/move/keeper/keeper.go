@@ -543,7 +543,16 @@ func (k Keeper) SetTableEntry(
 
 // IterateVMStore iterate VMStore store for genesis export
 func (k Keeper) IterateVMStore(ctx context.Context, cb func(*types.Module, *types.Checksum, *types.Resource, *types.TableInfo, *types.TableEntry)) error {
-	err := k.VMStore.Walk(ctx, nil, func(key, value []byte) (stop bool, err error) {
+	return k.walkVMStore(ctx, cb, nil)
+}
+
+// ReverseIterateVMStore iterate VMStore store for genesis export
+func (k Keeper) ReverseIterateVMStore(ctx context.Context, cb func(*types.Module, *types.Checksum, *types.Resource, *types.TableInfo, *types.TableEntry)) error {
+	return k.walkVMStore(ctx, cb, new(collections.Range[[]byte]).Descending())
+}
+
+func (k Keeper) walkVMStore(ctx context.Context, cb func(*types.Module, *types.Checksum, *types.Resource, *types.TableInfo, *types.TableEntry), ranger collections.Ranger[[]byte]) error {
+	err := k.VMStore.Walk(ctx, ranger, func(key, value []byte) (stop bool, err error) {
 		cursor := types.AddressBytesLength
 		addrBytes := key[:cursor]
 		separator := key[cursor]
