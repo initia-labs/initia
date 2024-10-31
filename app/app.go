@@ -63,6 +63,7 @@ import (
 	"github.com/initia-labs/initia/app/keepers"
 	"github.com/initia-labs/initia/app/params"
 	cryptocodec "github.com/initia-labs/initia/crypto/codec"
+	initiatx "github.com/initia-labs/initia/tx"
 	moveconfig "github.com/initia-labs/initia/x/move/config"
 	movetypes "github.com/initia-labs/initia/x/move/types"
 	rewardtypes "github.com/initia-labs/initia/x/reward/types"
@@ -439,6 +440,9 @@ func (app *InitiaApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.API
 	// Register new tx routes from grpc-gateway.
 	authtx.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 
+	// Register new tx query routes from grpc-gateway.
+	initiatx.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
+
 	// Register new tendermint queries routes from grpc-gateway.
 	cmtservice.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 
@@ -463,10 +467,8 @@ func (app *InitiaApp) Simulate(txBytes []byte) (sdk.GasInfo, *sdk.Result, error)
 
 // RegisterTxService implements the Application.RegisterTxService method.
 func (app *InitiaApp) RegisterTxService(clientCtx client.Context) {
-	authtx.RegisterTxService(
-		app.BaseApp.GRPCQueryRouter(), clientCtx,
-		app.Simulate, app.interfaceRegistry,
-	)
+	authtx.RegisterTxService(app.BaseApp.GRPCQueryRouter(), clientCtx, app.Simulate, app.interfaceRegistry)
+	initiatx.RegisterTxQuery(app.GRPCQueryRouter(), app.MoveKeeper.DexKeeper())
 }
 
 // RegisterTendermintService implements the Application.RegisterTendermintService method.

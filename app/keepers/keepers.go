@@ -296,6 +296,7 @@ func NewAppKeeper(
 	appKeepers.FeeGrantKeeper = &feeGrantKeeper
 
 	authzKeeper := authzkeeper.NewKeeper(runtime.NewKVStoreService(appKeepers.keys[authzkeeper.StoreKey]), appCodec, bApp.MsgServiceRouter(), appKeepers.AccountKeeper)
+	authzKeeper = authzKeeper.SetBankKeeper(appKeepers.BankKeeper)
 	appKeepers.AuthzKeeper = &authzKeeper
 
 	// Create evidence Keeper for to register the IBC light client misbehaviour evidence route
@@ -638,6 +639,18 @@ func NewAppKeeper(
 	queryWhitelist.Stargate["/initia.mstaking.v1.Query/Redelegations"] = movetypes.ProtoSet{
 		Request:  &stakingtypes.QueryRedelegationsRequest{},
 		Response: &stakingtypes.QueryRedelegationsResponse{},
+	}
+	queryWhitelist.Stargate["/connect.oracle.v2.Query/GetAllCurrencyPairs"] = movetypes.ProtoSet{
+		Request:  &oracletypes.GetAllCurrencyPairsResponse{},
+		Response: &oracletypes.GetAllCurrencyPairsResponse{},
+	}
+	queryWhitelist.Stargate["/connect.oracle.v2.Query/GetPrice"] = movetypes.ProtoSet{
+		Request:  &oracletypes.GetPriceRequest{},
+		Response: &oracletypes.GetPriceResponse{},
+	}
+	queryWhitelist.Stargate["/connect.oracle.v2.Query/GetPrices"] = movetypes.ProtoSet{
+		Request:  &oracletypes.GetPricesRequest{},
+		Response: &oracletypes.GetPricesResponse{},
 	}
 
 	*appKeepers.MoveKeeper = movekeeper.NewKeeper(

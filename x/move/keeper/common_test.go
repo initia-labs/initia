@@ -49,6 +49,10 @@ import (
 	govtypesv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 
+	ibcfee "github.com/cosmos/ibc-go/v8/modules/apps/29-fee"
+	ibctransfer "github.com/cosmos/ibc-go/v8/modules/apps/transfer"
+	ibcnfttransfer "github.com/initia-labs/initia/x/ibc/nft-transfer"
+
 	initiaapp "github.com/initia-labs/initia/app"
 	initiaappparams "github.com/initia-labs/initia/app/params"
 	"github.com/initia-labs/initia/x/bank"
@@ -90,6 +94,9 @@ var ModuleBasics = module.NewBasicManager(
 	slashing.AppModuleBasic{},
 	move.AppModuleBasic{},
 	oracle.AppModuleBasic{},
+	ibctransfer.AppModuleBasic{},
+	ibcnfttransfer.AppModuleBasic{},
+	ibcfee.AppModuleBasic{},
 )
 
 // Bond denom should be set for staking test

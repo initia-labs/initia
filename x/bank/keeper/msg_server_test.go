@@ -170,6 +170,120 @@ func TestMsgSend(t *testing.T) {
 	}
 }
 
+func TestMsgMultiSend(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+
+	origDenom := "sendableCoin"
+	origCoins := sdk.NewCoins(sdk.NewInt64Coin(origDenom, 100))
+	sendCoins := sdk.NewCoins(sdk.NewInt64Coin(origDenom, 50))
+	input.BankKeeper.SetSendEnabled(ctx, origDenom, true)
+
+	testCases := []struct {
+		name      string
+		input     *banktypes.MsgMultiSend
+		expErr    bool
+		expErrMsg string
+	}{
+		{
+			name:      "no inputs to send transaction",
+			input:     &banktypes.MsgMultiSend{},
+			expErr:    true,
+			expErrMsg: "no inputs to send transaction",
+		},
+		{
+			name: "no inputs to send transaction",
+			input: &banktypes.MsgMultiSend{
+				Outputs: []banktypes.Output{
+					{Address: addrs[4].String(), Coins: sendCoins},
+				},
+			},
+			expErr:    true,
+			expErrMsg: "no inputs to send transaction",
+		},
+		{
+			name: "more than one inputs to send transaction",
+			input: &banktypes.MsgMultiSend{
+				Inputs: []banktypes.Input{
+					{Address: addrs[0].String(), Coins: origCoins},
+					{Address: addrs[0].String(), Coins: origCoins},
+				},
+			},
+			expErr:    true,
+			expErrMsg: "multiple senders not allowed",
+		},
+		{
+			name: "no outputs to send transaction",
+			input: &banktypes.MsgMultiSend{
+				Inputs: []banktypes.Input{
+					{Address: addrs[0].String(), Coins: origCoins},
+				},
+			},
+			expErr:    true,
+			expErrMsg: "no outputs to send transaction",
+		},
+		{
+			name: "invalid send to blocked address",
+			input: &banktypes.MsgMultiSend{
+				Inputs: []banktypes.Input{
+					{Address: addrs[0].String(), Coins: origCoins},
+				},
+				Outputs: []banktypes.Output{
+					{Address: addrs[1].String(), Coins: sendCoins},
+					{Address: authtypes.NewModuleAddress(govtypes.ModuleName).String(), Coins: sendCoins},
+				},
+			},
+			expErr:    true,
+			expErrMsg: "is not allowed to receive funds",
+		},
+		{
+			name: "input/output amount mismatch",
+			input: &banktypes.MsgMultiSend{
+				Inputs: []banktypes.Input{
+					{Address: addrs[0].String(), Coins: origCoins},
+				},
+				Outputs: []banktypes.Output{
+					{Address: addrs[1].String(), Coins: origCoins},
+					{Address: addrs[2].String(), Coins: sendCoins},
+				},
+			},
+			expErr:    true,
+			expErrMsg: "sum inputs != sum outputs",
+		},
+		{
+			name: "valid send",
+			input: &banktypes.MsgMultiSend{
+				Inputs: []banktypes.Input{
+					{Address: addrs[0].String(), Coins: origCoins},
+				},
+				Outputs: []banktypes.Output{
+					{Address: addrs[1].String(), Coins: sendCoins},
+					{Address: addrs[2].String(), Coins: sendCoins},
+				},
+			},
+			expErr: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			if len(tc.input.Inputs) > 0 && !tc.input.Inputs[0].Coins.IsZero() && tc.input.Inputs[0].Address != "" {
+				fromAddr, err := input.AccountKeeper.AddressCodec().StringToBytes(tc.input.Inputs[0].Address)
+				require.NoError(t, err)
+				input.Faucet.Fund(ctx, fromAddr, tc.input.Inputs[0].Coins...)
+			}
+
+			_, err := bankkeeper.NewMsgServerImpl(input.BankKeeper).MultiSend(ctx, tc.input)
+			if tc.expErr {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), tc.expErrMsg)
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
+}
+
 func TestMsgSetSendEnabled(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 

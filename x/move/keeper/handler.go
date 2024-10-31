@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"strings"
 	"unsafe"
 
@@ -190,10 +191,7 @@ func (k Keeper) executeEntryFunction(
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	gasMeter := sdkCtx.GasMeter()
-	gasForRuntime := gasMeter.Limit() - gasMeter.GasConsumedToLimit()
-	if isSimulation(ctx) {
-		gasForRuntime = k.config.ContractSimulationGasLimit
-	}
+	gasForRuntime := k.computeGasForRuntime(ctx, gasMeter)
 
 	// delegate gas metering to move vm
 	sdkCtx = sdkCtx.WithGasMeter(storetypes.NewInfiniteGasMeter())
@@ -303,10 +301,7 @@ func (k Keeper) executeScript(
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	gasMeter := sdkCtx.GasMeter()
-	gasForRuntime := gasMeter.Limit() - gasMeter.GasConsumedToLimit()
-	if isSimulation(ctx) {
-		gasForRuntime = k.config.ContractSimulationGasLimit
-	}
+	gasForRuntime := k.computeGasForRuntime(ctx, gasMeter)
 
 	// delegate gas metering to move vm
 	sdkCtx = sdkCtx.WithGasMeter(storetypes.NewInfiniteGasMeter())
@@ -420,10 +415,6 @@ func (k Keeper) DispatchMessages(ctx context.Context, messages []vmtypes.CosmosM
 }
 
 func (k Keeper) dispatchMessage(parentCtx sdk.Context, message vmtypes.CosmosMessage) (err error) {
-	var allowFailure bool
-	var callback *vmtypes.StargateCallback
-	var callbackSender vmtypes.AccountAddress
-
 	ctx, commit := parentCtx.CacheContext()
 	defer func() {
 		if r := recover(); r != nil {
@@ -440,12 +431,12 @@ func (k Keeper) dispatchMessage(parentCtx sdk.Context, message vmtypes.CosmosMes
 
 		if !success {
 			// return error if failed and not allowed to fail
-			if !allowFailure {
+			if !message.AllowFailure {
 				return
 			}
 
 			// emit failed reason event if failed and allowed to fail
-			event.AppendAttributes(sdk.NewAttribute(types.AttributeKeyReason, err.Error()))
+			event = event.AppendAttributes(sdk.NewAttribute(types.AttributeKeyReason, err.Error()))
 		} else {
 			// commit if success
 			commit()
@@ -458,48 +449,27 @@ func (k Keeper) dispatchMessage(parentCtx sdk.Context, message vmtypes.CosmosMes
 		parentCtx.EventManager().EmitEvent(event)
 
 		// if callback exists, execute it with parent context becuase it's already committed
-		if callback != nil {
+		if message.Callback != nil {
 			err = k.ExecuteEntryFunctionJSON(
 				parentCtx,
-				callbackSender,
-				callback.ModuleAddress,
-				callback.ModuleName,
-				callback.FunctionName,
+				message.Sender,
+				message.Callback.ModuleAddress,
+				message.Callback.ModuleName,
+				message.Callback.FunctionName,
 				[]vmtypes.TypeTag{},
 				[]string{
-					fmt.Sprintf("\"%d\"", callback.Id),
+					fmt.Sprintf("\"%d\"", message.Callback.Id),
 					fmt.Sprintf("%v", success),
 				},
 			)
 		}
 	}()
 
+	// validate basic & signer check is done in HandleVMStargateMsg
 	var msg proto.Message
-	if stargateMsg, ok := message.(*vmtypes.CosmosMessage__Stargate); ok {
-		// validate basic & signer check is done in HandleVMStargateMsg
-		msg, err = k.HandleVMStargateMsg(ctx, &stargateMsg.Value)
-		if err != nil {
-			return
-		}
-
-		// callback only exists in stargate message
-		allowFailure = stargateMsg.Value.AllowFailure
-		callback = stargateMsg.Value.Callback
-		callbackSender = stargateMsg.Value.Sender
-	} else {
-		// signer check had been done in moveVM
-		msg, err = types.ConvertToSDKMessage(ctx, NewMoveBankKeeper(&k), NewNftKeeper(&k), message, k.ac, k.vc)
-		if err != nil {
-			return
-		}
-
-		// conduct validate basic
-		if msg, ok := msg.(sdk.HasValidateBasic); ok {
-			err = msg.ValidateBasic()
-			if err != nil {
-				return
-			}
-		}
+	msg, err = k.HandleVMStargateMsg(ctx, &message)
+	if err != nil {
+		return
 	}
 
 	// find the handler
@@ -651,7 +621,7 @@ func (k Keeper) executeViewFunction(
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	gasMeter := sdkCtx.GasMeter()
-	gasForRuntime := gasMeter.Limit() - gasMeter.GasConsumedToLimit()
+	gasForRuntime := k.computeGasForRuntime(ctx, gasMeter)
 
 	gasBalance := gasForRuntime
 	viewRes, err := k.initiaMoveVM.ExecuteViewFunction(
@@ -670,4 +640,20 @@ func (k Keeper) executeViewFunction(
 	}
 
 	return viewRes, gasUsed, nil
+}
+
+func (k Keeper) computeGasForRuntime(ctx context.Context, gasMeter storetypes.GasMeter) uint64 {
+	gasForRuntime := gasMeter.Limit() - gasMeter.GasConsumedToLimit()
+	if isSimulation(ctx) {
+		gasForRuntime = k.config.ContractSimulationGasLimit
+	}
+
+	// gasUnitScale is multiplied in moveVM to scale the gas limit, so we need to divide it here
+	// if gasForRuntime is too large, it will overflow when multiplied in moveVM.
+	const gasUintScale = 100
+	if gasForRuntime > math.MaxUint64/gasUintScale {
+		return math.MaxUint64 / gasUintScale
+	}
+
+	return gasForRuntime
 }

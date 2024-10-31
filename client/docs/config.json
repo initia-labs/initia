@@ -271,6 +271,9 @@
           "Params": "MarketMapParams"
         }
       }
+    },
+    {
+      "url": "./tmp-swagger-gen/initia/tx/v1/query.swagger.json"
     }
   ]
 }

@@ -16,7 +16,6 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/initia-labs/initia/x/move/keeper"
 	"github.com/initia-labs/initia/x/move/types"
 	vmtypes "github.com/initia-labs/movevm/types"
 )
@@ -249,7 +248,7 @@ func TestApplyStakingDeltas(t *testing.T) {
 		math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1),
 	)
 
-	secondBondDenom, err := types.DenomFromMetadataAddress(ctx, keeper.NewMoveBankKeeper(&input.MoveKeeper), metadataLP)
+	secondBondDenom, err := types.DenomFromMetadataAddress(ctx, input.MoveKeeper.MoveBankKeeper(), metadataLP)
 	require.NoError(t, err)
 
 	// add second BondDenom to staking keeper
@@ -332,7 +331,7 @@ func TestApplyStakingDeltas(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, unbondingShare, math.LegacyNewDecFromInt(math.NewInt(25_000_000)))
 
-	_, unbondingAmount, err := keeper.NewMoveBankKeeper(&input.MoveKeeper).Balance(ctx, unbondingCoinStore)
+	_, unbondingAmount, err := input.MoveKeeper.MoveBankKeeper().Balance(ctx, unbondingCoinStore)
 	require.NoError(t, err)
 	require.Equal(t, unbondingAmount, math.NewInt(25_000_000))
 }
@@ -352,7 +351,7 @@ func Test_SlashUnbondingDelegations(t *testing.T) {
 		math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1),
 	)
 
-	secondBondDenom, err := types.DenomFromMetadataAddress(ctx, keeper.NewMoveBankKeeper(&input.MoveKeeper), metadataLP)
+	secondBondDenom, err := types.DenomFromMetadataAddress(ctx, input.MoveKeeper.MoveBankKeeper(), metadataLP)
 	require.NoError(t, err)
 
 	// add second BondDenom to staking keeper
@@ -436,7 +435,7 @@ func Test_SlashUnbondingDelegations(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, unbondingShare, math.LegacyNewDecFromInt(math.NewInt(25_000_000)))
 
-	_, unbondingAmount, err := keeper.NewMoveBankKeeper(&input.MoveKeeper).Balance(ctx, unbondingCoinStore)
+	_, unbondingAmount, err := input.MoveKeeper.MoveBankKeeper().Balance(ctx, unbondingCoinStore)
 	require.NoError(t, err)
 	require.Equal(t, unbondingAmount, math.NewInt(25_000_000))
 
@@ -450,7 +449,7 @@ func Test_SlashUnbondingDelegations(t *testing.T) {
 	unbondingShare, _, err = types.ReadUnbondingInfosFromStakingState(tableEntry.ValueBytes)
 	require.NoError(t, err)
 
-	_, unbondingAmount, err = keeper.NewMoveBankKeeper(&input.MoveKeeper).Balance(ctx, unbondingCoinStore)
+	_, unbondingAmount, err = input.MoveKeeper.MoveBankKeeper().Balance(ctx, unbondingCoinStore)
 	require.NoError(t, err)
 	require.Equal(t, unbondingAmount, math.NewInt(23_750_000))
 	require.Equal(t, unbondingShare, math.LegacyNewDecFromInt(math.NewInt(25_000_000)))

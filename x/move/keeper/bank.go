@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -529,5 +530,63 @@ func (k MoveBankKeeper) SendCoin(
 		[]vmtypes.TypeTag{},
 		[][]byte{toVmAddr[:], metadata[:], amountBz},
 		false,
+	)
+}
+
+func (k MoveBankKeeper) MultiSend(
+	ctx context.Context,
+	sender sdk.AccAddress,
+	denom string,
+	recipients []sdk.AccAddress,
+	amounts []math.Int,
+) error {
+	if len(recipients) != len(amounts) {
+		return moderrors.Wrapf(types.ErrInvalidRequest, "recipients and amounts length mismatch")
+	} else if len(recipients) == 0 {
+		return moderrors.Wrapf(types.ErrInvalidRequest, "recipients and amounts length should be greater than 0")
+	}
+
+	senderVMAddr, err := vmtypes.NewAccountAddressFromBytes(sender)
+	if err != nil {
+		return err
+	}
+
+	metadata, err := types.MetadataAddressFromDenom(denom)
+	if err != nil {
+		return err
+	}
+	metadataArg, err := json.Marshal(metadata.String())
+	if err != nil {
+		return err
+	}
+
+	recipientAddrs := make([]string, len(recipients))
+	for i, toAddr := range recipients {
+		toVmAddr, err := vmtypes.NewAccountAddressFromBytes(toAddr)
+		if err != nil {
+			return err
+		}
+
+		recipientAddrs[i] = toVmAddr.String()
+	}
+	recipientsArg, err := json.Marshal(recipientAddrs)
+	if err != nil {
+		return err
+	}
+
+	amountsArg, err := json.Marshal(amounts)
+	if err != nil {
+		return err
+	}
+
+	return k.executeEntryFunction(
+		ctx,
+		[]vmtypes.AccountAddress{vmtypes.StdAddress, senderVMAddr},
+		vmtypes.StdAddress,
+		types.MoveModuleNameCoin,
+		types.FunctionNameCoinSudoMultiSend,
+		[]vmtypes.TypeTag{},
+		[][]byte{metadataArg, recipientsArg, amountsArg},
+		true,
 	)
 }

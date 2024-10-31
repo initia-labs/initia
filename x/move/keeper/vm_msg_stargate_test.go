@@ -31,14 +31,14 @@ func Test_HandleVMStargateMsg(t *testing.T) {
 	}`, sdk.MsgTypeURL(&govtypes.MsgVote{}), addrs[1]))
 
 	// unauthorized test
-	_, err = input.MoveKeeper.HandleVMStargateMsg(ctx, &vmtypes.StargateMessage{
+	_, err = input.MoveKeeper.HandleVMStargateMsg(ctx, &vmtypes.CosmosMessage{
 		Sender: addr0,
 		Data:   jsonData,
 	})
 	require.ErrorIs(t, err, sdkerrors.ErrUnauthorized)
 
 	// valid test
-	res, err := input.MoveKeeper.HandleVMStargateMsg(ctx, &vmtypes.StargateMessage{
+	res, err := input.MoveKeeper.HandleVMStargateMsg(ctx, &vmtypes.CosmosMessage{
 		Sender: addr1,
 		Data:   jsonData,
 	})

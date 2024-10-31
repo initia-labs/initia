@@ -229,7 +229,7 @@ func (k Keeper) ApplyStakingDeltas(
 			undelegationValAddrs = append(undelegationValAddrs, valAddrStr)
 		}
 
-		denom, err := types.DenomFromMetadataAddress(ctx, NewMoveBankKeeper(&k), delta.Metadata)
+		denom, err := types.DenomFromMetadataAddress(ctx, k.MoveBankKeeper(), delta.Metadata)
 		if err != nil {
 			return err
 		}
@@ -434,7 +434,7 @@ func (k Keeper) SlashUnbondingDelegations(
 			return err
 		}
 
-		_, unbondingAmount, err := NewMoveBankKeeper(&k).Balance(ctx, unbondingCoinStore)
+		_, unbondingAmount, err := k.MoveBankKeeper().Balance(ctx, unbondingCoinStore)
 		if err != nil {
 			return err
 		}

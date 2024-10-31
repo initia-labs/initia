@@ -22,6 +22,7 @@ type MoveBankKeeper interface {
 	SendCoins(ctx context.Context, fromAddr sdk.AccAddress, toAddr sdk.AccAddress, amt sdk.Coins) error
 	MintCoins(ctx context.Context, addr sdk.AccAddress, amount sdk.Coins) error
 	BurnCoins(ctx context.Context, addr sdk.AccAddress, amount sdk.Coins) error
+	MultiSend(ctx context.Context, fromAddr sdk.AccAddress, denom string, toAddrs []sdk.AccAddress, amounts []math.Int) error
 
 	// supply
 	GetSupply(ctx context.Context, denom string) (math.Int, error)
