@@ -59,8 +59,8 @@ const DefaultConfigTemplate = `
 [move]
 # The maximum gas amount can be used in a tx simulation call.
 contract-simulation-gas-limit = "{{ .MoveConfig.ContractSimulationGasLimit }}"
-# The capacity of the script cache.
+# The capacity of the script cache in (MiB).
 script-cache-capacity = "{{ .MoveConfig.ScriptCacheCapacity }}"
-# The capacity of the module cache.
+# The capacity of the module cache in (MiB).
 module-cache-capacity = "{{ .MoveConfig.ModuleCacheCapacity }}"
 `
