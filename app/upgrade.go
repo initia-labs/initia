@@ -64,35 +64,36 @@ func (app *InitiaApp) RegisterUpgradeHandlers(cfg module.Configurator) {
 			fmt.Println("3. loading all kvs")
 
 			err = app.MoveKeeper.VMStore.Walk(ctx, nil, func(key, value []byte) (stop bool, err error) {
-				cursor := movetypes.AddressBytesLength
-				if len(key) <= cursor {
-					return true, fmt.Errorf("invalid key length: %d", len(key))
+				kv := KV{
+					key:   bytes.Clone(key),
+					value: bytes.Clone(value),
 				}
 
-				separator := key[cursor]
+				cursor := movetypes.AddressBytesLength
+				if len(kv.key) <= cursor {
+					return true, fmt.Errorf("invalid key length: %d", len(kv.key))
+				}
+
+				separator := kv.key[cursor]
 
 				if separator == movetypes.ModuleSeparator {
-					identifier, err := vmtypes.BcsDeserializeIdentifier(key[cursor+1:])
+					identifier, err := vmtypes.BcsDeserializeIdentifier(kv.key[cursor+1:])
 					if err != nil {
 						return true, err
 					}
 
 					fmt.Println("module", identifier)
 
-					checksum := movetypes.ModuleBzToChecksum(value)
+					checksum := movetypes.ModuleBzToChecksum(kv.value)
 					fmt.Println("checksum", hex.EncodeToString(checksum[:]))
 
-					value = checksum[:]
+					kv.value = checksum[:]
 				} else if separator >= movetypes.TableInfoSeparator {
 					return true, errors.New("unknown prefix")
 				} else {
-					rmKeys = append(rmKeys, key)
+					rmKeys = append(rmKeys, bytes.Clone(kv.key))
 				}
-				key[cursor] = key[cursor] + 1
-				kvs = append(kvs, KV{
-					key:   bytes.Clone(key),
-					value: bytes.Clone(value),
-				})
+				kv.key[cursor] = kv.key[cursor] + 1
 				return false, nil
 			})
 			if err != nil {
