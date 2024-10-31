@@ -3,7 +3,6 @@ package app
 import (
 	"bytes"
 	"context"
-	"encoding/hex"
 	"errors"
 	"fmt"
 
@@ -24,8 +23,6 @@ func (app *InitiaApp) RegisterUpgradeHandlers(cfg module.Configurator) {
 		upgradeName,
 		func(ctx context.Context, _ upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
 
-			fmt.Println("upgrade to 0.6.0")
-
 			// 1. publish new code module first
 			codeModuleBz, err := vmprecompile.ReadStdlib("code.mv")
 			if err != nil {
@@ -35,8 +32,6 @@ func (app *InitiaApp) RegisterUpgradeHandlers(cfg module.Configurator) {
 			if err != nil {
 				return nil, err
 			}
-
-			fmt.Println("2. set code module")
 
 			// 2. update vm data with new seperator and add checksums of each module
 
@@ -61,46 +56,36 @@ func (app *InitiaApp) RegisterUpgradeHandlers(cfg module.Configurator) {
 			// 	TableEntrySeparator = byte(3)
 			//	TableInfoSeparator  = byte(4)
 
-			fmt.Println("3. loading all kvs")
-
 			err = app.MoveKeeper.VMStore.Walk(ctx, nil, func(key, value []byte) (stop bool, err error) {
-				kv := KV{
-					key:   bytes.Clone(key),
-					value: bytes.Clone(value),
-				}
+				key = bytes.Clone(key)
+				value = bytes.Clone(value)
 
 				cursor := movetypes.AddressBytesLength
-				if len(kv.key) <= cursor {
-					return true, fmt.Errorf("invalid key length: %d", len(kv.key))
+				if len(key) <= cursor {
+					return true, fmt.Errorf("invalid key length: %d", len(key))
 				}
 
-				separator := kv.key[cursor]
+				separator := key[cursor]
 
 				if separator == movetypes.ModuleSeparator {
-					identifier, err := vmtypes.BcsDeserializeIdentifier(kv.key[cursor+1:])
-					if err != nil {
-						return true, err
-					}
-
-					fmt.Println("module", identifier)
-
-					checksum := movetypes.ModuleBzToChecksum(kv.value)
-					fmt.Println("checksum", hex.EncodeToString(checksum[:]))
-
-					kv.value = checksum[:]
+					checksum := movetypes.ModuleBzToChecksum(value)
+					value = checksum[:]
 				} else if separator >= movetypes.TableInfoSeparator {
 					return true, errors.New("unknown prefix")
 				} else {
-					rmKeys = append(rmKeys, bytes.Clone(kv.key))
+					rmKeys = append(rmKeys, bytes.Clone(key))
 				}
-				kv.key[cursor] = kv.key[cursor] + 1
+
+				key[cursor] = key[cursor] + 1
+				kvs = append(kvs, KV{
+					key:   key,
+					value: value,
+				})
 				return false, nil
 			})
 			if err != nil {
 				return nil, err
 			}
-
-			fmt.Println("4. storing all kvs")
 
 			for _, key := range rmKeys {
 				err = app.MoveKeeper.VMStore.Remove(ctx, key)
@@ -117,8 +102,6 @@ func (app *InitiaApp) RegisterUpgradeHandlers(cfg module.Configurator) {
 			}
 
 			// 3. update new modules
-
-			fmt.Println("5. upgrading modules")
 
 			codesBz, err := vmprecompile.ReadStdlib("object_code_deployment.mv", "coin.mv", "cosmos.mv", "dex.mv", "json.mv", "bech32.mv", "hash.mv", "collection.mv")
 			if err != nil {
