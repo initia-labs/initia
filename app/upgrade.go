@@ -3,6 +3,7 @@ package app
 import (
 	"bytes"
 	"context"
+	"encoding/hex"
 	"errors"
 	"fmt"
 
@@ -23,8 +24,10 @@ func (app *InitiaApp) RegisterUpgradeHandlers(cfg module.Configurator) {
 		upgradeName,
 		func(ctx context.Context, _ upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
 
+			fmt.Println("upgrade to 0.6.0")
+
 			// 1. publish new code module first
-			codeModuleBz, err := vmprecompile.ReadStdlib("code.move")
+			codeModuleBz, err := vmprecompile.ReadStdlib("code.mv")
 			if err != nil {
 				return nil, err
 			}
@@ -32,6 +35,8 @@ func (app *InitiaApp) RegisterUpgradeHandlers(cfg module.Configurator) {
 			if err != nil {
 				return nil, err
 			}
+
+			fmt.Println("2. set code module")
 
 			// 2. update vm data with new seperator and add checksums of each module
 
@@ -54,6 +59,8 @@ func (app *InitiaApp) RegisterUpgradeHandlers(cfg module.Configurator) {
 			// 	TableEntrySeparator = byte(3)
 			//	TableInfoSeparator  = byte(4)
 
+			fmt.Println("3. loading all kvs")
+
 			err = app.MoveKeeper.VMStore.Walk(ctx, nil, func(key, value []byte) (stop bool, err error) {
 				cursor := movetypes.AddressBytesLength
 				if len(key) <= cursor {
@@ -63,7 +70,16 @@ func (app *InitiaApp) RegisterUpgradeHandlers(cfg module.Configurator) {
 				separator := key[cursor]
 
 				if separator == movetypes.ModuleSeparator {
+					identifier, err := vmtypes.BcsDeserializeIdentifier(key[cursor+1:])
+					if err != nil {
+						return true, err
+					}
+
+					fmt.Println("module", identifier)
+
 					checksum := movetypes.ModuleBzToChecksum(value)
+					fmt.Println("checksum", hex.EncodeToString(checksum[:]))
+
 					value = checksum[:]
 				} else if separator >= movetypes.TableInfoSeparator {
 					return true, errors.New("unknown prefix")
@@ -84,6 +100,8 @@ func (app *InitiaApp) RegisterUpgradeHandlers(cfg module.Configurator) {
 				return nil, err
 			}
 
+			fmt.Println("4. storing all kvs")
+
 			for _, kv := range kvs {
 				err = app.MoveKeeper.VMStore.Set(ctx, kv.key, kv.value)
 				if err != nil {
@@ -92,7 +110,10 @@ func (app *InitiaApp) RegisterUpgradeHandlers(cfg module.Configurator) {
 			}
 
 			// 3. update new modules
-			codesBz, err := vmprecompile.ReadStdlib("object_code_deployment.move", "coin.move", "cosmos.move", "dex.move", "json.move", "bech32.move", "hash.move")
+
+			fmt.Println("5. upgrading modules")
+
+			codesBz, err := vmprecompile.ReadStdlib("object_code_deployment.mv", "coin.mv", "cosmos.mv", "dex.mv", "json.mv", "bech32.mv", "hash.mv", "collection.mv")
 			if err != nil {
 				return nil, err
 			}

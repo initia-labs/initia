@@ -90,6 +90,14 @@ func NewKeeper(
 		moveConfig.ContractSimulationGasLimit = moveconfig.DefaultContractSimulationGasLimit
 	}
 
+	if moveConfig.ModuleCacheCapacity == 0 {
+		moveConfig.ModuleCacheCapacity = moveconfig.DefaultModuleCacheCapacity
+	}
+
+	if moveConfig.ScriptCacheCapacity == 0 {
+		moveConfig.ScriptCacheCapacity = moveconfig.DefaultScriptCacheCapacity
+	}
+
 	moveVM, err := vm.NewVM(vmtypes.InitiaVMConfig{
 		AllowUnstable:       false,
 		ScriptCacheCapacity: moveConfig.ScriptCacheCapacity,
