@@ -51,7 +51,6 @@ func (app *InitiaApp) RegisterUpgradeHandlers(cfg module.Configurator) {
 
 			err = app.MoveKeeper.VMStore.Walk(ctx, new(collections.Range[[]byte]).Descending(), func(key, value []byte) (stop bool, err error) {
 				key = bytes.Clone(key)
-				value = bytes.Clone(value)
 
 				cursor := movetypes.AddressBytesLength
 				if len(key) <= cursor {
@@ -59,23 +58,21 @@ func (app *InitiaApp) RegisterUpgradeHandlers(cfg module.Configurator) {
 				}
 
 				separator := key[cursor]
-
 				if separator == movetypes.ModuleSeparator {
 					checksum := movetypes.ModuleBzToChecksum(value)
 					value = checksum[:]
 				} else if separator >= movetypes.TableInfoSeparator {
 					return true, errors.New("unknown prefix")
-				} else {
-					err = app.MoveKeeper.VMStore.Remove(ctx, bytes.Clone(key))
-					if err != nil {
-						return true, err
-					}
+				} else if err = app.MoveKeeper.VMStore.Remove(ctx, key); err != nil {
+					return true, err
 				}
+
 				key[cursor] = key[cursor] + 1
 				err = app.MoveKeeper.VMStore.Set(ctx, key, value)
 				if err != nil {
 					return true, err
 				}
+
 				return false, nil
 			})
 			if err != nil {
