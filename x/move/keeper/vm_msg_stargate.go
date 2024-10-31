@@ -14,7 +14,7 @@ import (
 	vmtypes "github.com/initia-labs/movevm/types"
 )
 
-func (k Keeper) HandleVMStargateMsg(ctx context.Context, req *vmtypes.StargateMessage) (proto.Message, error) {
+func (k Keeper) HandleVMStargateMsg(ctx context.Context, req *vmtypes.CosmosMessage) (proto.Message, error) {
 	var sdkMsg sdk.Msg
 	err := k.cdc.UnmarshalInterfaceJSON(req.Data, &sdkMsg)
 	if err != nil {

@@ -25,6 +25,8 @@ func (k Keeper) queryCustom(ctx sdk.Context, req *vmtypes.CustomQuery) ([]byte, 
 		return nil, types.ErrNotSupportedCustomQuery
 	}
 
+	// create cache context for query
+	ctx, _ = ctx.CacheContext()
 	return customQuery(ctx, req.Data)
 }
 
@@ -44,6 +46,8 @@ func (k Keeper) queryStargate(ctx sdk.Context, req *vmtypes.StargateQuery) ([]by
 		return nil, err
 	}
 
+	// create cache context for query
+	ctx, _ = ctx.CacheContext()
 	res, err := route(ctx, &abci.RequestQuery{
 		Data: reqData,
 		Path: req.Path,

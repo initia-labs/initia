@@ -65,9 +65,10 @@ var (
 	ParamsKey = []byte{0x31} // prefix for parameters for module x/move
 
 	ModuleSeparator     = byte(0)
-	ResourceSeparator   = byte(1)
-	TableEntrySeparator = byte(2)
-	TableInfoSeparator  = byte(3)
+	ChecksumSeparator   = byte(1)
+	ResourceSeparator   = byte(2)
+	TableEntrySeparator = byte(3)
+	TableInfoSeparator  = byte(4)
 )
 
 // GetModulePrefix returns the prefix key of an account module store

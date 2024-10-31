@@ -197,16 +197,14 @@ func (k Keeper) executeEntryFunction(
 	sdkCtx = sdkCtx.WithGasMeter(storetypes.NewInfiniteGasMeter())
 
 	gasBalance := gasForRuntime
-	execRes, err := execVM(ctx, k, func(vm types.VMEngine) (vmtypes.ExecutionResult, error) {
-		return vm.ExecuteEntryFunction(
-			&gasBalance,
-			types.NewVMStore(sdkCtx, k.VMStore),
-			NewApi(k, sdkCtx),
-			types.NewEnv(sdkCtx, ac, ec),
-			senders,
-			payload,
-		)
-	})
+	execRes, err := k.initiaMoveVM.ExecuteEntryFunction(
+		&gasBalance,
+		types.NewVMStore(sdkCtx, k.VMStore),
+		NewApi(k, sdkCtx),
+		types.NewEnv(sdkCtx, ac, ec),
+		senders,
+		payload,
+	)
 
 	// consume gas first and check error
 	gasUsed := gasForRuntime - gasBalance
@@ -309,16 +307,14 @@ func (k Keeper) executeScript(
 	sdkCtx = sdkCtx.WithGasMeter(storetypes.NewInfiniteGasMeter())
 
 	gasBalance := gasForRuntime
-	execRes, err := execVM(ctx, k, func(vm types.VMEngine) (vmtypes.ExecutionResult, error) {
-		return vm.ExecuteScript(
-			&gasBalance,
-			types.NewVMStore(sdkCtx, k.VMStore),
-			NewApi(k, sdkCtx),
-			types.NewEnv(sdkCtx, ac, ec),
-			senders,
-			payload,
-		)
-	})
+	execRes, err := k.initiaMoveVM.ExecuteScript(
+		&gasBalance,
+		types.NewVMStore(sdkCtx, k.VMStore),
+		NewApi(k, sdkCtx),
+		types.NewEnv(sdkCtx, ac, ec),
+		senders,
+		payload,
+	)
 
 	// consume gas first and check error
 	gasUsed := gasForRuntime - gasBalance
@@ -419,10 +415,6 @@ func (k Keeper) DispatchMessages(ctx context.Context, messages []vmtypes.CosmosM
 }
 
 func (k Keeper) dispatchMessage(parentCtx sdk.Context, message vmtypes.CosmosMessage) (err error) {
-	var allowFailure bool
-	var callback *vmtypes.StargateCallback
-	var callbackSender vmtypes.AccountAddress
-
 	ctx, commit := parentCtx.CacheContext()
 	defer func() {
 		if r := recover(); r != nil {
@@ -439,7 +431,7 @@ func (k Keeper) dispatchMessage(parentCtx sdk.Context, message vmtypes.CosmosMes
 
 		if !success {
 			// return error if failed and not allowed to fail
-			if !allowFailure {
+			if !message.AllowFailure {
 				return
 			}
 
@@ -457,48 +449,27 @@ func (k Keeper) dispatchMessage(parentCtx sdk.Context, message vmtypes.CosmosMes
 		parentCtx.EventManager().EmitEvent(event)
 
 		// if callback exists, execute it with parent context becuase it's already committed
-		if callback != nil {
+		if message.Callback != nil {
 			err = k.ExecuteEntryFunctionJSON(
 				parentCtx,
-				callbackSender,
-				callback.ModuleAddress,
-				callback.ModuleName,
-				callback.FunctionName,
+				message.Sender,
+				message.Callback.ModuleAddress,
+				message.Callback.ModuleName,
+				message.Callback.FunctionName,
 				[]vmtypes.TypeTag{},
 				[]string{
-					fmt.Sprintf("\"%d\"", callback.Id),
+					fmt.Sprintf("\"%d\"", message.Callback.Id),
 					fmt.Sprintf("%v", success),
 				},
 			)
 		}
 	}()
 
+	// validate basic & signer check is done in HandleVMStargateMsg
 	var msg proto.Message
-	if stargateMsg, ok := message.(*vmtypes.CosmosMessage__Stargate); ok {
-		// callback only exists in stargate message
-		allowFailure = stargateMsg.Value.AllowFailure
-		callback = stargateMsg.Value.Callback
-		callbackSender = stargateMsg.Value.Sender
-
-		// validate basic & signer check is done in HandleVMStargateMsg
-		msg, err = k.HandleVMStargateMsg(ctx, &stargateMsg.Value)
-		if err != nil {
-			return
-		}
-	} else {
-		// signer check had been done in moveVM
-		msg, err = types.ConvertToSDKMessage(ctx, k.MoveBankKeeper(), NewNftKeeper(&k), message, k.ac, k.vc)
-		if err != nil {
-			return
-		}
-
-		// conduct validate basic
-		if msg, ok := msg.(sdk.HasValidateBasic); ok {
-			err = msg.ValidateBasic()
-			if err != nil {
-				return
-			}
-		}
+	msg, err = k.HandleVMStargateMsg(ctx, &message)
+	if err != nil {
+		return
 	}
 
 	// find the handler
@@ -653,15 +624,13 @@ func (k Keeper) executeViewFunction(
 	gasForRuntime := k.computeGasForRuntime(ctx, gasMeter)
 
 	gasBalance := gasForRuntime
-	viewRes, err := execVM(ctx, k, func(vm types.VMEngine) (vmtypes.ViewOutput, error) {
-		return vm.ExecuteViewFunction(
-			&gasBalance,
-			types.NewVMStore(ctx, k.VMStore),
-			api,
-			env,
-			payload,
-		)
-	})
+	viewRes, err := k.initiaMoveVM.ExecuteViewFunction(
+		&gasBalance,
+		types.NewVMStore(ctx, k.VMStore),
+		api,
+		env,
+		payload,
+	)
 
 	// consume gas first and check error
 	gasUsed := gasForRuntime - gasBalance
@@ -671,17 +640,6 @@ func (k Keeper) executeViewFunction(
 	}
 
 	return viewRes, gasUsed, nil
-}
-
-// execVM runs vm in separate function statement to release right after execution
-// to avoid deadlock even if the function panics
-//
-// TODO - remove this after loader v2 is installed
-func execVM[T any](ctx context.Context, k Keeper, f func(types.VMEngine) (T, error)) (T, error) {
-	vm := k.acquireVM(ctx)
-	defer k.releaseVM()
-
-	return f(vm)
 }
 
 func (k Keeper) computeGasForRuntime(ctx context.Context, gasMeter storetypes.GasMeter) uint64 {
