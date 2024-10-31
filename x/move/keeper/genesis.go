@@ -104,6 +104,17 @@ func (k Keeper) InitGenesis(ctx context.Context, moduleNames []string, genState 
 		}
 	}
 
+	for _, checksum := range genState.GetChecksums() {
+		addr, err := types.AccAddressFromString(k.ac, checksum.Address)
+		if err != nil {
+			return err
+		}
+
+		if err := k.SetChecksum(ctx, addr, checksum.ModuleName, checksum.Checksum); err != nil {
+			return err
+		}
+	}
+
 	for _, resource := range genState.GetResources() {
 		addr, err := types.AccAddressFromString(k.ac, resource.Address)
 		if err != nil {
@@ -154,17 +165,23 @@ func (k Keeper) ExportGenesis(ctx context.Context) *types.GenesisState {
 	}
 
 	var modules []types.Module
+	var checksums []types.Checksum
 	var resources []types.Resource
 	var tableEntries []types.TableEntry
 	var tableInfos []types.TableInfo
 	err = k.IterateVMStore(ctx, func(
 		module *types.Module,
+		checksum *types.Checksum,
 		resource *types.Resource,
 		tableInfo *types.TableInfo,
 		tableEntry *types.TableEntry,
 	) {
 		if module != nil {
 			modules = append(modules, *module)
+		}
+
+		if checksum != nil {
+			checksums = append(checksums, *checksum)
 		}
 
 		if resource != nil {
@@ -196,6 +213,7 @@ func (k Keeper) ExportGenesis(ctx context.Context) *types.GenesisState {
 	}
 
 	genState.Modules = modules
+	genState.Checksums = checksums
 	genState.Resources = resources
 	genState.TableInfos = tableInfos
 	genState.TableEntries = tableEntries

@@ -87,6 +87,22 @@ func GetModuleKey(addr vmtypes.AccountAddress, moduleName string) ([]byte, error
 	return append(append(addr.Bytes(), ModuleSeparator), bz...), nil
 }
 
+// GetModulePrefix returns the prefix key of an account module store
+func GetChecksumPrefix(addr vmtypes.AccountAddress) []byte {
+	return append(addr.Bytes(), ChecksumSeparator)
+}
+
+// GetModuleKey returns the key of the published move module
+func GetChecksumKey(addr vmtypes.AccountAddress, moduleName string) ([]byte, error) {
+	identifier := vmtypes.Identifier(moduleName)
+	bz, err := identifier.BcsSerialize()
+	if err != nil {
+		return nil, err
+	}
+
+	return append(append(addr.Bytes(), ChecksumSeparator), bz...), nil
+}
+
 // GetResourcePrefix returns the prefix key of an account resource store
 func GetResourcePrefix(addr vmtypes.AccountAddress) []byte {
 	return append(addr.Bytes(), ResourceSeparator)

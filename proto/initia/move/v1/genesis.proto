@@ -20,22 +20,27 @@ message GenesisState {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
-  repeated Resource resources = 5 [
+  repeated Checksum checksums = 5 [
+    (gogoproto.jsontag) = "checksums,omitempty",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  repeated Resource resources = 6 [
     (gogoproto.jsontag) = "resources,omitempty",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
-  repeated TableInfo table_infos = 6 [
+  repeated TableInfo table_infos = 7 [
     (gogoproto.jsontag) = "table_infos,omitempty",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
-  repeated TableEntry table_entries = 7 [
+  repeated TableEntry table_entries = 8 [
     (gogoproto.jsontag) = "table_entries,omitempty",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
-  repeated DexPair dex_pairs = 8 [
+  repeated DexPair dex_pairs = 9 [
     (gogoproto.jsontag) = "dex_pairs,omitempty",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true

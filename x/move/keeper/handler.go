@@ -18,7 +18,6 @@ import (
 	"github.com/cosmos/gogoproto/proto"
 	"github.com/initia-labs/initia/x/move/ante"
 	"github.com/initia-labs/initia/x/move/types"
-	vmapi "github.com/initia-labs/movevm/api"
 	vmtypes "github.com/initia-labs/movevm/types"
 )
 
@@ -33,21 +32,6 @@ func isSimulation(
 	return sdkCtx.ExecMode() == sdk.ExecModeSimulate
 }
 
-// extract module address and module name from the compiled module bytes
-func (k Keeper) extractModuleIdentifier(moduleBundle vmtypes.ModuleBundle) ([]string, error) {
-	modules := make([]string, len(moduleBundle.Codes))
-	for i, moduleBz := range moduleBundle.Codes {
-		moduleAddr, moduleName, err := vmapi.ReadModuleInfo(moduleBz.Code)
-		if err != nil {
-			return nil, err
-		}
-
-		modules[i] = vmtypes.NewModuleId(moduleAddr, moduleName).String()
-	}
-
-	return modules, nil
-}
-
 ////////////////////////////////////////
 // Publish Functions
 
@@ -57,16 +41,6 @@ func (k Keeper) PublishModuleBundle(
 	moduleBundle vmtypes.ModuleBundle,
 	upgradePolicy types.UpgradePolicy,
 ) error {
-	moduleIds, err := k.extractModuleIdentifier(moduleBundle)
-	if err != nil {
-		return err
-	}
-
-	moduleIdBz, err := json.Marshal(&moduleIds)
-	if err != nil {
-		return err
-	}
-
 	moduleCodes := make([]string, len(moduleBundle.Codes))
 	for i, moduleCode := range moduleBundle.Codes {
 		// bytes -> hex string
@@ -88,11 +62,10 @@ func (k Keeper) PublishModuleBundle(
 		sender,
 		vmtypes.StdAddress,
 		types.MoveModuleNameCode,
-		types.FunctionNameCodePublish,
+		types.FunctionNameCodePublishV2,
 		[]vmtypes.TypeTag{},
 		[]string{
 			// use unsafe method for fast conversion
-			unsafe.String(unsafe.SliceData(moduleIdBz), len(moduleIdBz)),
 			unsafe.String(unsafe.SliceData(moduleCodesBz), len(moduleCodesBz)),
 			unsafe.String(unsafe.SliceData(upgradePolicyBz), len(upgradePolicyBz)),
 		},
