@@ -26,11 +26,21 @@ func NewSystemLane(
 	lane := &blockbase.BaseLane{}
 	proposalHandler := NewDefaultProposalHandler(lane)
 
+	mempool, err := NewMempool(
+		blockbase.NewDefaultTxPriority(),
+		cfg.SignerExtractor,
+		cfg.MaxTxs,
+		cfg.MaxBlockSpace,
+		cfg.TxEncoder,
+	)
+	if err != nil {
+		panic(err)
+	}
 	_lane, err := blockbase.NewBaseLane(
 		cfg,
 		SystemLaneName,
 		blockbase.WithMatchHandler(matchFn),
-		blockbase.WithMempool(NewMempool(blockbase.NewDefaultTxPriority(), cfg.SignerExtractor, cfg.MaxTxs)),
+		blockbase.WithMempool(mempool),
 		blockbase.WithPrepareLaneHandler(proposalHandler.PrepareLaneHandler()),
 		blockbase.WithProcessLaneHandler(proposalHandler.ProcessLaneHandler()),
 	)
