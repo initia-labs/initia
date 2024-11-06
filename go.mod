@@ -38,7 +38,7 @@ require (
 	github.com/gorilla/mux v1.8.1
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/hashicorp/go-metrics v0.5.3
-	github.com/initia-labs/OPinit v0.5.5
+	github.com/initia-labs/OPinit v0.5.6
 	// we also need to update `LIBMOVEVM_VERSION` of Dockerfile#9
 	github.com/initia-labs/movevm v0.6.0
 	github.com/noble-assets/forwarding/v2 v2.0.0-20240521090705-86712c4c9e43
