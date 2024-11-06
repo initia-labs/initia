@@ -34,6 +34,28 @@ func Test_MempoolInsert(t *testing.T) {
 	signerExtractor := signer_extraction.NewDefaultAdapter()
 	encodingConfig := params.MakeEncodingConfig()
 	txEncoder := encodingConfig.TxConfig.TxEncoder()
+
+	// cannot create mempool with negative ratio
+	_, err := lanes.NewMempool(
+		blockbase.NewDefaultTxPriority(),
+		signerExtractor,
+		1, // max txs
+		math.LegacyNewDecFromInt(math.NewInt(-1)), // max block space
+		txEncoder,
+	)
+	require.Error(t, err)
+
+	// cannot create mempool with ratio greater than 1
+	_, err = lanes.NewMempool(
+		blockbase.NewDefaultTxPriority(),
+		signerExtractor,
+		1,                                        // max txs
+		math.LegacyNewDecFromInt(math.NewInt(2)), // max block space
+		txEncoder,
+	)
+	require.Error(t, err)
+
+	// valid creation
 	mempool, err := lanes.NewMempool(
 		blockbase.NewDefaultTxPriority(),
 		signerExtractor,

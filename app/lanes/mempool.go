@@ -53,6 +53,11 @@ func NewMempool[C comparable](
 ) (*Mempool[C], error) {
 	if !ratio.IsPositive() {
 		return nil, errors.New("mempool creation; ratio must be positive")
+	} else if ratio.GT(math.LegacyOneDec()) {
+		return nil, errors.New("mempool creation; ratio must be less than or equal to 1")
+	}
+	if txEncoder == nil {
+		return nil, errors.New("mempool creation; tx encoder is nil")
 	}
 
 	return &Mempool[C]{
