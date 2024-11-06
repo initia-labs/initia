@@ -5,10 +5,13 @@ import (
 	"errors"
 	"fmt"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkmempool "github.com/cosmos/cosmos-sdk/types/mempool"
+
 	signer_extraction "github.com/skip-mev/block-sdk/v2/adapters/signer_extraction_adapter"
 	blockbase "github.com/skip-mev/block-sdk/v2/block/base"
+	"github.com/skip-mev/block-sdk/v2/block/proposals"
 )
 
 type (
@@ -33,11 +36,30 @@ type (
 		// txCache is a map of all transactions in the mempool. It is used
 		// to quickly check if a transaction is already in the mempool.
 		txCache map[txKey]struct{}
+
+		// ratio defines the relative percentage of block space that can be
+		// used by this lane.
+		ratio math.LegacyDec
+
+		// txEncoder defines tx encoder.
+		txEncoder sdk.TxEncoder
 	}
 )
 
 // NewMempool returns a new Mempool.
-func NewMempool[C comparable](txPriority blockbase.TxPriority[C], extractor signer_extraction.Adapter, maxTx int) *Mempool[C] {
+func NewMempool[C comparable](
+	txPriority blockbase.TxPriority[C], extractor signer_extraction.Adapter,
+	maxTx int, ratio math.LegacyDec, txEncoder sdk.TxEncoder,
+) (*Mempool[C], error) {
+	if !ratio.IsPositive() {
+		return nil, errors.New("mempool creation; ratio must be positive")
+	} else if ratio.GT(math.LegacyOneDec()) {
+		return nil, errors.New("mempool creation; ratio must be less than or equal to 1")
+	}
+	if txEncoder == nil {
+		return nil, errors.New("mempool creation; tx encoder is nil")
+	}
+
 	return &Mempool[C]{
 		index: blockbase.NewPriorityMempool(
 			blockbase.PriorityNonceMempoolConfig[C]{
@@ -48,7 +70,9 @@ func NewMempool[C comparable](txPriority blockbase.TxPriority[C], extractor sign
 		),
 		extractor: extractor,
 		txCache:   make(map[txKey]struct{}),
-	}
+		ratio:     ratio,
+		txEncoder: txEncoder,
+	}, nil
 }
 
 // Priority returns the priority of the transaction.
@@ -89,6 +113,10 @@ func (cm *Mempool[C]) Contains(tx sdk.Tx) bool {
 
 // Insert inserts a transaction into the mempool.
 func (cm *Mempool[C]) Insert(ctx context.Context, tx sdk.Tx) error {
+	if err := cm.AssertLaneLimits(sdk.UnwrapSDKContext(ctx), tx); err != nil {
+		return err
+	}
+
 	if err := cm.index.Insert(ctx, tx); err != nil {
 		return fmt.Errorf("failed to insert tx into auction index: %w", err)
 	}
@@ -129,4 +157,34 @@ func (cm *Mempool[C]) getTxKey(tx sdk.Tx) (txKey, error) {
 	sender := sig.Signer.String()
 	nonce := sig.Sequence
 	return txKey{nonce, sender}, nil
+}
+
+// AssertLaneLimits asserts that the transaction does not exceed the lane's max size and gas limit.
+func (cm *Mempool[C]) AssertLaneLimits(ctx sdk.Context, tx sdk.Tx) error {
+	maxBlockSize, maxGasLimit := proposals.GetBlockLimits(ctx)
+	maxLaneTxSize := cm.ratio.MulInt64(maxBlockSize).TruncateInt().Int64()
+	maxLaneGasLimit := cm.ratio.MulInt(math.NewIntFromUint64(maxGasLimit)).TruncateInt().Uint64()
+
+	txBytes, err := cm.txEncoder(tx)
+	if err != nil {
+		return fmt.Errorf("failed to encode transaction: %w", err)
+	}
+
+	gasTx, ok := tx.(sdk.FeeTx)
+	if !ok {
+		return fmt.Errorf("failed to cast transaction to gas tx")
+	}
+
+	txSize := int64(len(txBytes))
+	txGasLimit := gasTx.GetGas()
+
+	if txSize > maxLaneTxSize {
+		return fmt.Errorf("tx size %d exceeds max lane size %d", txSize, maxLaneTxSize)
+	}
+
+	if txGasLimit > maxLaneGasLimit {
+		return fmt.Errorf("tx gas limit %d exceeds max lane gas limit %d", txGasLimit, maxLaneGasLimit)
+	}
+
+	return nil
 }
