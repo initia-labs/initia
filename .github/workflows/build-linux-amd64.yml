@@ -49,7 +49,7 @@ jobs:
           export GOARCH=${GOARCH}
           export GOOS=${GOOS}
           make build-linux
-          mkdir -p release-${GOOS}-${ARCH_NAME}_static
+          mkdir -p release-${GOOS}-${ARCH_NAME}-static
           mv ./build/initiad ./release-${GOOS}-${ARCH_NAME}-static/initiad
           tar -czvf initia_${VERSION}_Linux_${ARCH_NAME}_static.tar.gz -C release-${GOOS}-${ARCH_NAME}-static initiad
           make clean
