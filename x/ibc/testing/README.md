@@ -2,7 +2,7 @@
 
 ## Components
 
-The testing package comprises of four parts constructed as a stack.
+The testing package consists of four parts constructed as a stack.
 
 - coordinator
 - chain
@@ -194,7 +194,7 @@ type Endpoint struct {
 The fields empty after `NewPath` is called are `ClientID`, `ConnectionID` and
 `ChannelID` as the clients, connections, and channels for these endpoints have not yet been created. The
 `ClientConfig`, `ConnectionConfig` and `ChannelConfig` contain all the necessary information for clients,
-connections, and channels to be initialized. If you would like to use endpoints which are intitialized to
+connections, and channels to be initialized. If you would like to use endpoints which are initialized to
 use your Port IDs, you might add a helper function similar to the one found in transfer:
 
 ```go
