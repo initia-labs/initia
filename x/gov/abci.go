@@ -130,11 +130,6 @@ func EndBlocker(ctx sdk.Context, k *keeper.Keeper) error {
 			return false, err
 		}
 
-		// emergency proposals are handled separately
-		if proposal.Emergency {
-			return false, nil
-		}
-
 		_, passed, burnDeposits, tallyResults, err := k.Tally(ctx, params, proposal)
 		if err != nil {
 			return false, err
@@ -185,6 +180,7 @@ func EndBlocker(ctx sdk.Context, k *keeper.Keeper) error {
 			return false, err
 		}
 
+		// quorum not reached; schedule the next tally
 		if !quorumReached {
 			nextTallyTime := ctx.BlockTime().Add(params.EmergencyTallyInterval)
 			if err = k.EmergencyProposalsQueue.Set(ctx, collections.Join(nextTallyTime, proposal.Id), proposal.Id); err != nil {
