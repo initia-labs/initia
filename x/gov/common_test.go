@@ -59,7 +59,7 @@ var (
 	emergencyTallyInterval = time.Minute * 10
 )
 
-func createDefaultApp(t *testing.T) *initiaapp.InitiaApp {
+func createDefaultApp(_ *testing.T) *initiaapp.InitiaApp {
 	app := initiaapp.SetupWithGenesisAccounts(nil, authtypes.GenesisAccounts{
 		&authtypes.BaseAccount{Address: addrs[0].String()},
 	},
@@ -124,7 +124,7 @@ func createTextProposalMsg(t *testing.T, initialTokenAmount int64, expedited boo
 	return newProposalMsg
 }
 
-func createDepositMsg(t *testing.T, depositor sdk.AccAddress, proposalID uint64, amount sdk.Coins) *v1.MsgDeposit {
+func createDepositMsg(_ *testing.T, depositor sdk.AccAddress, proposalID uint64, amount sdk.Coins) *v1.MsgDeposit {
 	newDepositMsg := v1.NewMsgDeposit(
 		depositor,
 		proposalID,
@@ -133,7 +133,7 @@ func createDepositMsg(t *testing.T, depositor sdk.AccAddress, proposalID uint64,
 	return newDepositMsg
 }
 
-func createVoteMsg(t *testing.T, voter sdk.AccAddress, proposalID uint64, option v1.VoteOption) *v1.MsgVote {
+func createVoteMsg(_ *testing.T, voter sdk.AccAddress, proposalID uint64, option v1.VoteOption) *v1.MsgVote {
 	newVoteMsg := v1.NewMsgVote(
 		voter,
 		proposalID,
