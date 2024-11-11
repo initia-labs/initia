@@ -30,6 +30,9 @@ func Test_Params(t *testing.T) {
 	params.EmergencyTallyInterval = 0
 	require.Error(t, params.Validate(ac))
 
+	params.EmergencyTallyInterval = params.VotingPeriod
+	require.Error(t, params.Validate(ac))
+
 	params.EmergencyTallyInterval = _emergencyTallyInterval
 
 	_minDeposit := params.MinDeposit
