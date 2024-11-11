@@ -297,7 +297,7 @@ func TestEmergencyProposal_Rejected_VotingPeriodOver(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, proposal.Status, v1.StatusVotingPeriod)
 
-	// voting period is over; so proposal should be finished
+	// Voting period is over; the proposal should be finished
 	newHeader = ctx.BlockHeader()
 	newHeader.Time = ctx.BlockHeader().Time.Add(votingPeriod)
 	ctx = ctx.WithBlockHeader(newHeader)
