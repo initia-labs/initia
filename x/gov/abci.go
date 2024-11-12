@@ -185,8 +185,8 @@ func EndBlocker(ctx sdk.Context, k *keeper.Keeper) error {
 			return false, err
 		}
 
-		// quorum not reached and the proposal is not expired; schedule the next tally
-		if !quorumReached && !proposal.VotingEndTime.Before(ctx.BlockTime()) {
+		// schedule the next tally only if quorum is not reached and voting period is not over
+		if !quorumReached && proposal.VotingEndTime.After(ctx.BlockTime()) {
 			nextTallyTime := ctx.BlockTime().Add(params.EmergencyTallyInterval)
 
 			// if the next tally time is after the voting end time, set it to the voting end time

@@ -211,7 +211,7 @@ func (p Params) Validate(ac address.Codec) error {
 		return fmt.Errorf("emergency tally interval must be positive: %s", p.EmergencyTallyInterval)
 	}
 	if p.EmergencyTallyInterval.Seconds() >= p.VotingPeriod.Seconds() {
-		return fmt.Errorf("emergency tally interval %s must be strictly less that the voting period %s", p.EmergencyTallyInterval, p.VotingPeriod)
+		return fmt.Errorf("emergency tally interval %s must be strictly less than the voting period %s", p.EmergencyTallyInterval, p.VotingPeriod)
 	}
 
 	if minEmergencyDeposit := sdk.Coins(p.EmergencyMinDeposit); !minEmergencyDeposit.IsAllGTE(p.ExpeditedMinDeposit) {
