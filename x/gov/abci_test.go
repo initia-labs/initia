@@ -259,3 +259,52 @@ func TestTickSingleProposal(t *testing.T) {
 		})
 	}
 }
+
+func TestEmergencyProposal_Rejected_VotingPeriodOver(t *testing.T) {
+	app := createAppWithSimpleValidators(t)
+	ctx := app.BaseApp.NewContext(false)
+	initTime := ctx.BlockHeader().Time
+
+	govMsgSvr := keeper.NewMsgServerImpl(app.GovKeeper)
+	propMsg := createTextProposalMsg(t, emergencyMinDeposit[0].Amount.Int64(), false)
+	_, err := govMsgSvr.SubmitProposal(ctx, propMsg)
+	require.NoError(t, err)
+
+	newHeader := ctx.BlockHeader()
+	newHeader.Time = ctx.BlockHeader().Time.Add(time.Minute)
+	ctx = ctx.WithBlockHeader(newHeader)
+
+	proposal, err := app.GovKeeper.Proposals.Get(ctx, 1)
+	require.NoError(t, err)
+	require.True(t, proposal.Emergency)
+	require.True(t, proposal.EmergencyStartTime.Equal(ctx.BlockTime().Add(-time.Minute)))
+	require.True(t, proposal.EmergencyNextTallyTime.Equal(ctx.BlockTime().Add(emergencyTallyInterval-time.Minute)))
+	require.True(t, proposal.SubmitTime.Equal(initTime))
+	require.True(t, proposal.DepositEndTime.Equal(initTime.Add(depositPeriod)))
+	require.Equal(t, proposal.Status, v1.StatusVotingPeriod)
+	require.True(t, proposal.VotingStartTime.Equal(ctx.BlockTime().Add(-time.Minute)))
+	require.True(t, proposal.VotingEndTime.Equal(ctx.BlockTime().Add(votingPeriod-time.Minute)))
+
+	// not enough votes
+
+	newHeader = ctx.BlockHeader()
+	newHeader.Time = ctx.BlockHeader().Time.Add(time.Minute)
+	ctx = ctx.WithBlockHeader(newHeader)
+
+	err = gov.EndBlocker(ctx, app.GovKeeper)
+	require.NoError(t, err)
+	proposal, err = app.GovKeeper.Proposals.Get(ctx, 1)
+	require.NoError(t, err)
+	require.Equal(t, proposal.Status, v1.StatusVotingPeriod)
+
+	// Voting period is over; the proposal should be finished
+	newHeader = ctx.BlockHeader()
+	newHeader.Time = ctx.BlockHeader().Time.Add(votingPeriod)
+	ctx = ctx.WithBlockHeader(newHeader)
+
+	err = gov.EndBlocker(ctx, app.GovKeeper)
+	require.NoError(t, err)
+	proposal, err = app.GovKeeper.Proposals.Get(ctx, 1)
+	require.NoError(t, err)
+	require.Equal(t, proposal.Status, v1.StatusRejected)
+}
