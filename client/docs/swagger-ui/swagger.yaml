@@ -12102,7 +12102,7 @@ paths:
                       vetoed. Default value: 1/3.
               params:
                 description: |-
-                  params defines all the paramaters of x/gov module.
+                  params defines all the parameters of x/gov module.
 
                   Since: cosmos-sdk 0.47
                 type: object
@@ -20343,7 +20343,7 @@ paths:
         - Query
   /cosmos/feegrant/v1beta1/allowance/{granter}/{grantee}:
     get:
-      summary: Allowance returns granted allwance to the grantee by the granter.
+      summary: Allowance returns granted allowance to the grantee by the granter.
       operationId: Allowance
       responses:
         '200':
@@ -34969,7 +34969,7 @@ paths:
           format: uint64
         - name: latest_height
           description: >-
-            latest_height overrrides the height field and queries the latest
+            latest_height overrides the height field and queries the latest
             stored
 
             ConsensusState.
@@ -36564,7 +36564,7 @@ paths:
                               identifier
                         description: >-
                           Version defines the versioning scheme used to
-                          negotiate the IBC verison in
+                          negotiate the IBC version in
 
                           the connection handshake.
                       title: >-
@@ -36973,7 +36973,7 @@ paths:
                             identifier
                       description: >-
                         Version defines the versioning scheme used to negotiate
-                        the IBC verison in
+                        the IBC version in
 
                         the connection handshake.
                     description: >-
@@ -44811,7 +44811,7 @@ paths:
                       type: string
                       format: uint64
                       title: >-
-                        unbonding id, uniquely identifing an unbonding of this
+                        unbonding id, uniquely identifying an unbonding of this
                         validator
                   description: >-
                     Validator defines a validator, together with the total
@@ -45477,7 +45477,7 @@ paths:
                     type: string
                     format: uint64
                     title: >-
-                      unbonding id, uniquely identifing an unbonding of this
+                      unbonding id, uniquely identifying an unbonding of this
                       validator
                 description: >-
                   Validator defines a validator, together with the total amount
@@ -46588,7 +46588,7 @@ paths:
                       type: string
                       format: uint64
                       title: >-
-                        unbonding id, uniquely identifing an unbonding of this
+                        unbonding id, uniquely identifying an unbonding of this
                         validator
                   description: >-
                     Validator defines a validator, together with the total
@@ -47252,7 +47252,7 @@ paths:
                     type: string
                     format: uint64
                     title: >-
-                      unbonding id, uniquely identifing an unbonding of this
+                      unbonding id, uniquely identifying an unbonding of this
                       validator
                 description: >-
                   Validator defines a validator, together with the total amount
@@ -51316,7 +51316,7 @@ paths:
                         UpgradePolicy is the policy for upgrading a move module.
 
                          - UNSPECIFIED: UNSPECIFIED: a placeholder for an unspecified upgrade policy.
-                         - COMPATIBLE: COMPATBILE: Whether a compatibility check should be performed for upgrades. The check only passes if
+                         - COMPATIBLE: COMPATIBLE: Whether a compatibility check should be performed for upgrades. The check only passes if
                         a new module has (a) the same public functions (b) for
                         existing resources, no layout change.
                          - IMMUTABLE: IMMUTABLE: Whether the modules in the package are immutable and cannot be upgraded.
@@ -51462,7 +51462,7 @@ paths:
                       UpgradePolicy is the policy for upgrading a move module.
 
                        - UNSPECIFIED: UNSPECIFIED: a placeholder for an unspecified upgrade policy.
-                       - COMPATIBLE: COMPATBILE: Whether a compatibility check should be performed for upgrades. The check only passes if
+                       - COMPATIBLE: COMPATIBLE: Whether a compatibility check should be performed for upgrades. The check only passes if
                       a new module has (a) the same public functions (b) for
                       existing resources, no layout change.
                        - IMMUTABLE: IMMUTABLE: Whether the modules in the package are immutable and cannot be upgraded.
@@ -52473,7 +52473,7 @@ paths:
   /initia/move/v1/view/json:
     post:
       summary: >-
-        ViewJSON execute view function with json arguemtns and return the view
+        ViewJSON execute view function with json arguments and return the view
         result
       operationId: ViewJSON
       responses:
@@ -52560,7 +52560,7 @@ paths:
   /initia/move/v1/view/json/batch:
     post:
       summary: >-
-        ViewJSONBatch execute multiple view functions with json arguemtns and
+        ViewJSONBatch execute multiple view functions with json arguments and
         return the view results
       operationId: ViewJSONBatch
       responses:
@@ -52943,7 +52943,7 @@ paths:
                         finalization_period:
                           type: string
                           description: >-
-                            The minium time duration that must elapse before a
+                            The minimum time duration that must elapse before a
                             withdrawal can be finalized.
                         submission_start_height:
                           type: string
@@ -53114,7 +53114,7 @@ paths:
                   finalization_period:
                     type: string
                     description: >-
-                      The minium time duration that must elapse before a
+                      The minimum time duration that must elapse before a
                       withdrawal can be finalized.
                   submission_start_height:
                     type: string
@@ -65859,7 +65859,7 @@ definitions:
               vetoed. Default value: 1/3.
       params:
         description: |-
-          params defines all the paramaters of x/gov module.
+          params defines all the parameters of x/gov module.
 
           Since: cosmos-sdk 0.47
         type: object
@@ -68743,7 +68743,7 @@ definitions:
       gas to be used by the transaction. The ratio yields an effective
       "gasprice",
 
-      which must be above some miminum to be accepted into the mempool.
+      which must be above some minimum to be accepted into the mempool.
   cosmos.tx.v1beta1.GetBlockWithTxsResponse:
     type: object
     properties:
@@ -79635,7 +79635,7 @@ definitions:
               title: list of features compatible with the specified identifier
           description: >-
             Version defines the versioning scheme used to negotiate the IBC
-            verison in
+            version in
 
             the connection handshake.
         description: >-
@@ -79757,7 +79757,7 @@ definitions:
               title: list of features compatible with the specified identifier
           description: >-
             Version defines the versioning scheme used to negotiate the IBC
-            verison in
+            version in
 
             the connection handshake.
         title: >-
@@ -80342,7 +80342,7 @@ definitions:
                   title: list of features compatible with the specified identifier
               description: >-
                 Version defines the versioning scheme used to negotiate the IBC
-                verison in
+                version in
 
                 the connection handshake.
             description: >-
@@ -80479,7 +80479,7 @@ definitions:
                     title: list of features compatible with the specified identifier
                 description: >-
                   Version defines the versioning scheme used to negotiate the
-                  IBC verison in
+                  IBC version in
 
                   the connection handshake.
               title: >-
@@ -80625,7 +80625,7 @@ definitions:
           type: string
         title: list of features compatible with the specified identifier
     description: |-
-      Version defines the versioning scheme used to negotiate the IBC verison in
+      Version defines the versioning scheme used to negotiate the IBC version in
       the connection handshake.
   ibc.applications.transfer.v1.DenomTrace:
     type: object
@@ -81747,7 +81747,7 @@ definitions:
         format: uint64
         title: packet sequence
     title: |-
-      PacketId is an identifer for a unique Packet
+      PacketId is an identifier for a unique Packet
       Source chains refer to packets by source port/channel
       Destination chains refer to packets by destination port/channel
   ibc.applications.perm.v1.ChannelState:
@@ -83211,7 +83211,7 @@ definitions:
           unbonding_id:
             type: string
             format: uint64
-            title: unbonding id, uniquely identifing an unbonding of this validator
+            title: unbonding id, uniquely identifying an unbonding of this validator
         description: >-
           Validator defines a validator, together with the total amount of the
 
@@ -83572,7 +83572,9 @@ definitions:
             unbonding_id:
               type: string
               format: uint64
-              title: unbonding id, uniquely identifing an unbonding of this validator
+              title: >-
+                unbonding id, uniquely identifying an unbonding of this
+                validator
           description: >-
             Validator defines a validator, together with the total amount of the
 
@@ -84461,7 +84463,7 @@ definitions:
           unbonding_id:
             type: string
             format: uint64
-            title: unbonding id, uniquely identifing an unbonding of this validator
+            title: unbonding id, uniquely identifying an unbonding of this validator
         description: >-
           Validator defines a validator, together with the total amount of the
 
@@ -84932,7 +84934,9 @@ definitions:
             unbonding_id:
               type: string
               format: uint64
-              title: unbonding id, uniquely identifing an unbonding of this validator
+              title: >-
+                unbonding id, uniquely identifying an unbonding of this
+                validator
           description: >-
             Validator defines a validator, together with the total amount of the
 
@@ -85858,7 +85862,7 @@ definitions:
       unbonding_id:
         type: string
         format: uint64
-        title: unbonding id, uniquely identifing an unbonding of this validator
+        title: unbonding id, uniquely identifying an unbonding of this validator
     description: >-
       Validator defines a validator, together with the total amount of the
 
@@ -87591,7 +87595,7 @@ definitions:
           UpgradePolicy is the policy for upgrading a move module.
 
            - UNSPECIFIED: UNSPECIFIED: a placeholder for an unspecified upgrade policy.
-           - COMPATIBLE: COMPATBILE: Whether a compatibility check should be performed for upgrades. The check only passes if
+           - COMPATIBLE: COMPATIBLE: Whether a compatibility check should be performed for upgrades. The check only passes if
           a new module has (a) the same public functions (b) for existing
           resources, no layout change.
            - IMMUTABLE: IMMUTABLE: Whether the modules in the package are immutable and cannot be upgraded.
@@ -87709,7 +87713,7 @@ definitions:
               UpgradePolicy is the policy for upgrading a move module.
 
                - UNSPECIFIED: UNSPECIFIED: a placeholder for an unspecified upgrade policy.
-               - COMPATIBLE: COMPATBILE: Whether a compatibility check should be performed for upgrades. The check only passes if
+               - COMPATIBLE: COMPATIBLE: Whether a compatibility check should be performed for upgrades. The check only passes if
               a new module has (a) the same public functions (b) for existing
               resources, no layout change.
                - IMMUTABLE: IMMUTABLE: Whether the modules in the package are immutable and cannot be upgraded.
@@ -87745,7 +87749,7 @@ definitions:
                 UpgradePolicy is the policy for upgrading a move module.
 
                  - UNSPECIFIED: UNSPECIFIED: a placeholder for an unspecified upgrade policy.
-                 - COMPATIBLE: COMPATBILE: Whether a compatibility check should be performed for upgrades. The check only passes if
+                 - COMPATIBLE: COMPATIBLE: Whether a compatibility check should be performed for upgrades. The check only passes if
                 a new module has (a) the same public functions (b) for existing
                 resources, no layout change.
                  - IMMUTABLE: IMMUTABLE: Whether the modules in the package are immutable and cannot be upgraded.
@@ -88244,7 +88248,7 @@ definitions:
       UpgradePolicy is the policy for upgrading a move module.
 
        - UNSPECIFIED: UNSPECIFIED: a placeholder for an unspecified upgrade policy.
-       - COMPATIBLE: COMPATBILE: Whether a compatibility check should be performed for upgrades. The check only passes if
+       - COMPATIBLE: COMPATIBLE: Whether a compatibility check should be performed for upgrades. The check only passes if
       a new module has (a) the same public functions (b) for existing resources,
       no layout change.
        - IMMUTABLE: IMMUTABLE: Whether the modules in the package are immutable and cannot be upgraded.
@@ -88436,7 +88440,7 @@ definitions:
       finalization_period:
         type: string
         description: >-
-          The minium time duration that must elapse before a withdrawal can be
+          The minimum time duration that must elapse before a withdrawal can be
           finalized.
       submission_start_height:
         type: string
@@ -88597,7 +88601,7 @@ definitions:
           finalization_period:
             type: string
             description: >-
-              The minium time duration that must elapse before a withdrawal can
+              The minimum time duration that must elapse before a withdrawal can
               be finalized.
           submission_start_height:
             type: string
@@ -88659,7 +88663,7 @@ definitions:
                 finalization_period:
                   type: string
                   description: >-
-                    The minium time duration that must elapse before a
+                    The minimum time duration that must elapse before a
                     withdrawal can be finalized.
                 submission_start_height:
                   type: string

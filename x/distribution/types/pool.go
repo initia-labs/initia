@@ -230,7 +230,7 @@ func NewPool(denom string, coins sdk.Coins) Pool {
 	return Pool{denom, sdk.NewCoins(coins...)}
 }
 
-// IsEmpty returns wether the pool coins are empty or not
+// IsEmpty returns whether the pool coins are empty or not
 func (pool Pool) IsEmpty() bool {
 	return pool.Coins.IsZero()
 }

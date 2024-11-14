@@ -62,10 +62,10 @@ func Test_decodeJSONStringArray(t *testing.T) {
 
 func Test_BCSEncode(t *testing.T) {
 	testCases := []struct {
-		arg    string
-		expRes []byte
-		expErr bool
-		name   string
+		arg     string
+		express []byte
+		expErr  bool
+		name    string
 	}{
 		{"raw_hex:014c6f72656d00497073756d02", []byte{0x0d, 0x01, 0x4c, 0x6f, 0x72, 0x65, 0x6d, 0x00, 0x49, 0x70, 0x73, 0x75, 0x6d, 0x02}, false, "raw_hex \\x01Lorem\\x00Ipsum\\x02"},
 		{"raw_base64:AUxvcmVtAElwc3VtAg==", []byte{0x0d, 0x01, 0x4c, 0x6f, 0x72, 0x65, 0x6d, 0x00, 0x49, 0x70, 0x73, 0x75, 0x6d, 0x02}, false, "raw_base64 \\x01Lorem\\x00Ipsum\\x02"},
@@ -122,7 +122,7 @@ func Test_BCSEncode(t *testing.T) {
 			require.Error(t, err, tc.name)
 		} else {
 			require.NoError(t, err, tc.name)
-			require.Equal(t, tc.expRes, res[0], tc.name)
+			require.Equal(t, tc.express, res[0], tc.name)
 		}
 	}
 }

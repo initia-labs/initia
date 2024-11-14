@@ -258,7 +258,7 @@ func TestWhitelistProposal_StableSwapPool(t *testing.T) {
 	require.NoError(t, err)
 	require.NotContains(t, rewardWeights, distrtypes.RewardWeight{Denom: denomLP, Weight: math.LegacyOneDec()})
 
-	// check dex pair update (currnetly registeration itself is not performed)
+	// check dex pair update (currently registration itself is not performed)
 	found, err = dexKeeper.HasDexPair(ctx, denomCoinB)
 	require.NoError(t, err)
 	require.False(t, found)

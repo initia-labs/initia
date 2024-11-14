@@ -626,7 +626,7 @@ type GenesisState struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Params defines all the paramaters of the module.
+	// Params defines all the parameters of the module.
 	Params                *Params                `protobuf:"bytes,1,opt,name=params,proto3" json:"params,omitempty"`
 	LastReleaseTimestamp  *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=last_release_timestamp,json=lastReleaseTimestamp,proto3" json:"last_release_timestamp,omitempty"`
 	LastDilutionTimestamp *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=last_dilution_timestamp,json=lastDilutionTimestamp,proto3" json:"last_dilution_timestamp,omitempty"`

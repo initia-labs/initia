@@ -388,7 +388,7 @@ func (k Keeper) SlashRedelegation(
 		}
 
 		// tokens of a redelegation currently live in the destination validator
-		// therefor we must burn tokens from the destination-validator's bonding status
+		// therefore we must burn tokens from the destination-validator's bonding status
 		switch {
 		case dstValidator.IsBonded():
 			bondedBurnedAmount = bondedBurnedAmount.Add(tokensToBurn...)
