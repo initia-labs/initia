@@ -1,0 +1,28 @@
+name: Spell Check
+
+on:
+  pull_request:
+
+jobs:
+  spellcheck:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run codespell
+        continue-on-error: true
+        run: |
+          sudo apt-get install codespell -y
+          codespell -w --skip="*.pulsar.go,*.pb.go,*.pb.gw.go,*.cosmos_orm.go,*.json,*.git,*.js,crypto/keys,fuzz,*.h,proto/tendermint,*.bin,go.sum,go.mod,statik.go,*.map" --ignore-words=.github/config/.codespellignore
+      - uses: peter-evans/create-pull-request@v7.0.5
+        if: github.event_name != 'pull_request'
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: fix typos"
+          title: "chore: fix typos"
+          branch: "chore/fix-typos"
+          delete-branch: true
+          body: |
+            This PR fixes typos in the codebase.
+            Please review it, and merge if everything is fine.
+            If there are proto changes, run `make proto-gen` and commit the changes.
