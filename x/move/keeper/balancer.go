@@ -206,7 +206,7 @@ func (k BalancerKeeper) poolMetadata(ctx context.Context, metadataLP vmtypes.Acc
 		return nil, err
 	}
 
-	metadata, _, err := k.Keeper.MoveBankKeeper().Balance(ctx, storeA)
+	metadataA, _, err := k.Keeper.MoveBankKeeper().Balance(ctx, storeA)
 	if err != nil {
 		return nil, err
 	}
@@ -216,7 +216,7 @@ func (k BalancerKeeper) poolMetadata(ctx context.Context, metadataLP vmtypes.Acc
 		return nil, err
 	}
 
-	return []vmtypes.AccountAddress{metadata, metadataB}, nil
+	return []vmtypes.AccountAddress{metadataA, metadataB}, nil
 }
 
 func (k BalancerKeeper) poolBalances(ctx context.Context, metadataLP vmtypes.AccountAddress) (balances []math.Int, err error) {

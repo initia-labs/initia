@@ -13,7 +13,7 @@ func Test_readJSONStringArray(t *testing.T) {
 	testCases := []struct {
 		name   string
 		s      string
-		express []string
+		expRes []string
 		expErr bool
 	}{
 		{"empty", "", []string{}, false},
@@ -30,17 +30,17 @@ func Test_readJSONStringArray(t *testing.T) {
 			require.Error(t, err, tc.name)
 		} else {
 			require.NoError(t, err, tc.name)
-			require.Equal(t, tc.express, res, tc.name)
+			require.Equal(t, tc.expRes, res, tc.name)
 		}
 	}
 }
 
 func Test_decodeJSONStringArray(t *testing.T) {
 	testCases := []struct {
-		name   string
-		ss     []string
+		name    string
+		ss      []string
 		express []string
-		expErr bool
+		expErr  bool
 	}{
 		{"empty", []string{}, []string{}, false},
 		{"empty array", []string{}, []string{}, false},
@@ -62,10 +62,10 @@ func Test_decodeJSONStringArray(t *testing.T) {
 
 func Test_BCSEncode(t *testing.T) {
 	testCases := []struct {
-		arg    string
+		arg     string
 		express []byte
-		expErr bool
-		name   string
+		expErr  bool
+		name    string
 	}{
 		{"raw_hex:014c6f72656d00497073756d02", []byte{0x0d, 0x01, 0x4c, 0x6f, 0x72, 0x65, 0x6d, 0x00, 0x49, 0x70, 0x73, 0x75, 0x6d, 0x02}, false, "raw_hex \\x01Lorem\\x00Ipsum\\x02"},
 		{"raw_base64:AUxvcmVtAElwc3VtAg==", []byte{0x0d, 0x01, 0x4c, 0x6f, 0x72, 0x65, 0x6d, 0x00, 0x49, 0x70, 0x73, 0x75, 0x6d, 0x02}, false, "raw_base64 \\x01Lorem\\x00Ipsum\\x02"},
