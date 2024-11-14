@@ -37,10 +37,10 @@ func Test_readJSONStringArray(t *testing.T) {
 
 func Test_decodeJSONStringArray(t *testing.T) {
 	testCases := []struct {
-		name    string
-		ss      []string
-		express []string
-		expErr  bool
+		name   string
+		ss     []string
+		expRes []string
+		expErr bool
 	}{
 		{"empty", []string{}, []string{}, false},
 		{"empty array", []string{}, []string{}, false},
@@ -55,7 +55,7 @@ func Test_decodeJSONStringArray(t *testing.T) {
 			require.Error(t, err, tc.name)
 		} else {
 			require.NoError(t, err, tc.name)
-			require.Equal(t, tc.express, res, tc.name)
+			require.Equal(t, tc.expRes, res, tc.name)
 		}
 	}
 }
