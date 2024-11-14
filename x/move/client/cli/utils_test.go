@@ -13,7 +13,7 @@ func Test_readJSONStringArray(t *testing.T) {
 	testCases := []struct {
 		name   string
 		s      string
-		expRes []string
+		express []string
 		expErr bool
 	}{
 		{"empty", "", []string{}, false},
@@ -30,7 +30,7 @@ func Test_readJSONStringArray(t *testing.T) {
 			require.Error(t, err, tc.name)
 		} else {
 			require.NoError(t, err, tc.name)
-			require.Equal(t, tc.expRes, res, tc.name)
+			require.Equal(t, tc.express, res, tc.name)
 		}
 	}
 }
@@ -39,7 +39,7 @@ func Test_decodeJSONStringArray(t *testing.T) {
 	testCases := []struct {
 		name   string
 		ss     []string
-		expRes []string
+		express []string
 		expErr bool
 	}{
 		{"empty", []string{}, []string{}, false},
@@ -55,7 +55,7 @@ func Test_decodeJSONStringArray(t *testing.T) {
 			require.Error(t, err, tc.name)
 		} else {
 			require.NoError(t, err, tc.name)
-			require.Equal(t, tc.expRes, res, tc.name)
+			require.Equal(t, tc.express, res, tc.name)
 		}
 	}
 }
@@ -63,7 +63,7 @@ func Test_decodeJSONStringArray(t *testing.T) {
 func Test_BCSEncode(t *testing.T) {
 	testCases := []struct {
 		arg    string
-		expRes []byte
+		express []byte
 		expErr bool
 		name   string
 	}{
@@ -122,7 +122,7 @@ func Test_BCSEncode(t *testing.T) {
 			require.Error(t, err, tc.name)
 		} else {
 			require.NoError(t, err, tc.name)
-			require.Equal(t, tc.expRes, res[0], tc.name)
+			require.Equal(t, tc.express, res[0], tc.name)
 		}
 	}
 }

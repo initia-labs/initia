@@ -319,7 +319,7 @@ func (k Keeper) SetResource(
 	return k.VMStore.Set(ctx, bz, resourceBytes)
 }
 
-// HasResource return boolean wether the store contains a data with the resource key
+// HasResource return boolean whether the store contains a data with the resource key
 func (k Keeper) HasResource(
 	ctx context.Context,
 	addr vmtypes.AccountAddress,

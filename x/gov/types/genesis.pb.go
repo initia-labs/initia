@@ -33,7 +33,7 @@ type GenesisState struct {
 	Votes []*v1.Vote `protobuf:"bytes,3,rep,name=votes,proto3" json:"votes,omitempty"`
 	// proposals defines all the proposals present at genesis.
 	Proposals []*Proposal `protobuf:"bytes,4,rep,name=proposals,proto3" json:"proposals,omitempty"`
-	// params defines all the paramaters of x/gov module.
+	// params defines all the parameters of x/gov module.
 	Params *Params `protobuf:"bytes,5,opt,name=params,proto3" json:"params,omitempty"`
 	// The constitution allows builders to lay a foundation and define purpose.
 	// This is an immutable string set in genesis.

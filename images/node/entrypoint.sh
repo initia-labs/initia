@@ -16,7 +16,7 @@ fi;
 mkdir -p "${INITIAD_HOME}"
 
 # `initiad init` does NOT take cmd env vars into account for some reason
-# so we have to manually insert flags with the corresponsing values
+# so we have to manually insert flags with the corresponding values
 initiad --home "${INITIAD_HOME}" init "${INITIAD_MONIKER}"
 
 wget -O "${CONFIG_DIR}/genesis.json" "${GENESIS_URL}"

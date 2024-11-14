@@ -61,7 +61,7 @@ const (
 	flagReportStatistics          = "statistics"
 	flagReportStatisticsShorthand = "s"
 	flagReportStorageOnError      = "state-on-error"          // original move cli uses snake case, not kebab.
-	flagIgnoreCompileWarnings     = "ignore-compile-warnings" // original move cli uses snake case, noe kebab.
+	flagIgnoreCompileWarnings     = "ignore-compile-warnings" // original move cli uses snake case, not kebab.
 	fiagCheckStacklessVM          = "stackless"
 	flagComputeCoverage           = "coverage"
 	// clean options

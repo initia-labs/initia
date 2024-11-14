@@ -102,7 +102,7 @@ func (k msgServer) MultiSend(goCtx context.Context, msg *types.MsgMultiSend) (*t
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	// NOTE: totalIn == totalOut should already have been checked
+	// NOTE: total In == total Out should already have been checked
 	if err := k.IsSendEnabledCoins(ctx, in.Coins...); err != nil {
 		return nil, err
 	}

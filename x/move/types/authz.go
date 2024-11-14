@@ -17,7 +17,7 @@ import (
 )
 
 // it has similar issue with gasCostPerIterarion in staking/type/authz.go
-// TODO: Revisit this once we have propoer gas fee framework.
+// TODO: Revisit this once we have proper gas fee framework.
 // Tracking issues https://github.com/cosmos/cosmos-sdk/issues/9054, https://github.com/cosmos/cosmos-sdk/discussions/9072
 const gasCostPerMatchTest = uint64(100)
 const gasCostPerIteration = uint64(10)

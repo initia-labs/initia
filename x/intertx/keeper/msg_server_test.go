@@ -35,7 +35,7 @@ func (suite *KeeperTestSuite) TestRegisterInterchainAccount() {
 			false,
 		},
 		{
-			"faliure - owner is empty",
+			"failure - owner is empty",
 			func() {
 				owner = ""
 			},

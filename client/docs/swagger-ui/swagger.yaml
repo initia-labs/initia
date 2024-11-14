@@ -44811,7 +44811,7 @@ paths:
                       type: string
                       format: uint64
                       title: >-
-                        unbonding id, uniquely identifing an unbonding of this
+                        unbonding id, uniquely identifying an unbonding of this
                         validator
                   description: >-
                     Validator defines a validator, together with the total
@@ -45477,7 +45477,7 @@ paths:
                     type: string
                     format: uint64
                     title: >-
-                      unbonding id, uniquely identifing an unbonding of this
+                      unbonding id, uniquely identifying an unbonding of this
                       validator
                 description: >-
                   Validator defines a validator, together with the total amount
@@ -46588,7 +46588,7 @@ paths:
                       type: string
                       format: uint64
                       title: >-
-                        unbonding id, uniquely identifing an unbonding of this
+                        unbonding id, uniquely identifying an unbonding of this
                         validator
                   description: >-
                     Validator defines a validator, together with the total
@@ -47252,7 +47252,7 @@ paths:
                     type: string
                     format: uint64
                     title: >-
-                      unbonding id, uniquely identifing an unbonding of this
+                      unbonding id, uniquely identifying an unbonding of this
                       validator
                 description: >-
                   Validator defines a validator, together with the total amount
@@ -51316,7 +51316,7 @@ paths:
                         UpgradePolicy is the policy for upgrading a move module.
 
                          - UNSPECIFIED: UNSPECIFIED: a placeholder for an unspecified upgrade policy.
-                         - COMPATIBLE: COMPATBILE: Whether a compatibility check should be performed for upgrades. The check only passes if
+                         - COMPATIBLE: COMPATIBLE: Whether a compatibility check should be performed for upgrades. The check only passes if
                         a new module has (a) the same public functions (b) for
                         existing resources, no layout change.
                          - IMMUTABLE: IMMUTABLE: Whether the modules in the package are immutable and cannot be upgraded.
@@ -51462,7 +51462,7 @@ paths:
                       UpgradePolicy is the policy for upgrading a move module.
 
                        - UNSPECIFIED: UNSPECIFIED: a placeholder for an unspecified upgrade policy.
-                       - COMPATIBLE: COMPATBILE: Whether a compatibility check should be performed for upgrades. The check only passes if
+                       - COMPATIBLE: COMPATIBLE: Whether a compatibility check should be performed for upgrades. The check only passes if
                       a new module has (a) the same public functions (b) for
                       existing resources, no layout change.
                        - IMMUTABLE: IMMUTABLE: Whether the modules in the package are immutable and cannot be upgraded.
@@ -52473,7 +52473,7 @@ paths:
   /initia/move/v1/view/json:
     post:
       summary: >-
-        ViewJSON execute view function with json arguemtns and return the view
+        ViewJSON execute view function with json arguments and return the view
         result
       operationId: ViewJSON
       responses:
@@ -52560,7 +52560,7 @@ paths:
   /initia/move/v1/view/json/batch:
     post:
       summary: >-
-        ViewJSONBatch execute multiple view functions with json arguemtns and
+        ViewJSONBatch execute multiple view functions with json arguments and
         return the view results
       operationId: ViewJSONBatch
       responses:
@@ -83211,7 +83211,7 @@ definitions:
           unbonding_id:
             type: string
             format: uint64
-            title: unbonding id, uniquely identifing an unbonding of this validator
+            title: unbonding id, uniquely identifying an unbonding of this validator
         description: >-
           Validator defines a validator, together with the total amount of the
 
@@ -83572,7 +83572,9 @@ definitions:
             unbonding_id:
               type: string
               format: uint64
-              title: unbonding id, uniquely identifing an unbonding of this validator
+              title: >-
+                unbonding id, uniquely identifying an unbonding of this
+                validator
           description: >-
             Validator defines a validator, together with the total amount of the
 
@@ -84461,7 +84463,7 @@ definitions:
           unbonding_id:
             type: string
             format: uint64
-            title: unbonding id, uniquely identifing an unbonding of this validator
+            title: unbonding id, uniquely identifying an unbonding of this validator
         description: >-
           Validator defines a validator, together with the total amount of the
 
@@ -84932,7 +84934,9 @@ definitions:
             unbonding_id:
               type: string
               format: uint64
-              title: unbonding id, uniquely identifing an unbonding of this validator
+              title: >-
+                unbonding id, uniquely identifying an unbonding of this
+                validator
           description: >-
             Validator defines a validator, together with the total amount of the
 
@@ -85858,7 +85862,7 @@ definitions:
       unbonding_id:
         type: string
         format: uint64
-        title: unbonding id, uniquely identifing an unbonding of this validator
+        title: unbonding id, uniquely identifying an unbonding of this validator
     description: >-
       Validator defines a validator, together with the total amount of the
 
@@ -87591,7 +87595,7 @@ definitions:
           UpgradePolicy is the policy for upgrading a move module.
 
            - UNSPECIFIED: UNSPECIFIED: a placeholder for an unspecified upgrade policy.
-           - COMPATIBLE: COMPATBILE: Whether a compatibility check should be performed for upgrades. The check only passes if
+           - COMPATIBLE: COMPATIBLE: Whether a compatibility check should be performed for upgrades. The check only passes if
           a new module has (a) the same public functions (b) for existing
           resources, no layout change.
            - IMMUTABLE: IMMUTABLE: Whether the modules in the package are immutable and cannot be upgraded.
@@ -87709,7 +87713,7 @@ definitions:
               UpgradePolicy is the policy for upgrading a move module.
 
                - UNSPECIFIED: UNSPECIFIED: a placeholder for an unspecified upgrade policy.
-               - COMPATIBLE: COMPATBILE: Whether a compatibility check should be performed for upgrades. The check only passes if
+               - COMPATIBLE: COMPATIBLE: Whether a compatibility check should be performed for upgrades. The check only passes if
               a new module has (a) the same public functions (b) for existing
               resources, no layout change.
                - IMMUTABLE: IMMUTABLE: Whether the modules in the package are immutable and cannot be upgraded.
@@ -87745,7 +87749,7 @@ definitions:
                 UpgradePolicy is the policy for upgrading a move module.
 
                  - UNSPECIFIED: UNSPECIFIED: a placeholder for an unspecified upgrade policy.
-                 - COMPATIBLE: COMPATBILE: Whether a compatibility check should be performed for upgrades. The check only passes if
+                 - COMPATIBLE: COMPATIBLE: Whether a compatibility check should be performed for upgrades. The check only passes if
                 a new module has (a) the same public functions (b) for existing
                 resources, no layout change.
                  - IMMUTABLE: IMMUTABLE: Whether the modules in the package are immutable and cannot be upgraded.
@@ -88244,7 +88248,7 @@ definitions:
       UpgradePolicy is the policy for upgrading a move module.
 
        - UNSPECIFIED: UNSPECIFIED: a placeholder for an unspecified upgrade policy.
-       - COMPATIBLE: COMPATBILE: Whether a compatibility check should be performed for upgrades. The check only passes if
+       - COMPATIBLE: COMPATIBLE: Whether a compatibility check should be performed for upgrades. The check only passes if
       a new module has (a) the same public functions (b) for existing resources,
       no layout change.
        - IMMUTABLE: IMMUTABLE: Whether the modules in the package are immutable and cannot be upgraded.

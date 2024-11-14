@@ -32,7 +32,7 @@ type UpgradePolicy int32
 const (
 	// UNSPECIFIED: a placeholder for an unspecified upgrade policy.
 	UpgradePolicy_UNSPECIFIED UpgradePolicy = 0
-	// COMPATBILE: Whether a compatibility check should be performed for upgrades. The check only passes if
+	// COMPATIBLE: Whether a compatibility check should be performed for upgrades. The check only passes if
 	// a new module has (a) the same public functions (b) for existing resources, no layout change.
 	UpgradePolicy_COMPATIBLE UpgradePolicy = 1
 	// IMMUTABLE: Whether the modules in the package are immutable and cannot be upgraded.
@@ -390,7 +390,7 @@ func (m *UpgradePolicyProto) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_UpgradePolicyProto proto.InternalMessageInfo
 
-// DexPair contains coin metdata address
+// DexPair contains coin metadata address
 // std::dex::Pool and std::dex::Config resources.
 type DexPair struct {
 	MetadataQuote string `protobuf:"bytes,1,opt,name=metadata_quote,json=metadataQuote,proto3" json:"metadata_quote,omitempty"`

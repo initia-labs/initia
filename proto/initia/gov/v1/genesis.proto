@@ -17,7 +17,7 @@ message GenesisState {
   repeated cosmos.gov.v1.Vote votes = 3;
   // proposals defines all the proposals present at genesis.
   repeated Proposal proposals = 4;
-  // params defines all the paramaters of x/gov module.
+  // params defines all the parameters of x/gov module.
   Params params = 5;
   // The constitution allows builders to lay a foundation and define purpose.
   // This is an immutable string set in genesis.

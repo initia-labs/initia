@@ -140,7 +140,7 @@ func (k Keeper) hasZeroRewards(ctx context.Context, validatorAddr sdk.ValAddress
 
 // DelegateToValidator withdraw staking coins from the move module account
 // and send the coins to a delegator module account for a validator and
-// consequentially delegate the deposited coins to a validator.
+// consequently delegate the deposited coins to a validator.
 func (k Keeper) DelegateToValidator(ctx context.Context, valAddr sdk.ValAddress, delCoins sdk.Coins) (sdk.DecCoins, error) {
 	delegatorModuleName := types.GetDelegatorModuleName(valAddr)
 	delModuleAddr := authtypes.NewModuleAddress(delegatorModuleName)

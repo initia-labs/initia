@@ -34,7 +34,7 @@ func (app *InitiaApp) RegisterUpgradeHandlers(cfg module.Configurator) {
 				return nil, err
 			}
 
-			// 2. update vm data with new seperator and add checksums of each module
+			// 2. update vm data with new separator and add checksums of each module
 
 			//  Previous:
 			// 	ModuleSeparator     = byte(0)
