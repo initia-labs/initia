@@ -142,6 +142,7 @@ message Vesting {
   string creator_addr = 3;
 }
 
+// TallyResult defines the result of a tally.
 message TallyResult {
   uint64 tally_height = 1;
   string total_staking_power = 2 [(cosmos_proto.scalar) = "cosmos.Int"];
