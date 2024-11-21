@@ -12,7 +12,7 @@ require (
 	cosmossdk.io/depinject v1.0.0
 	cosmossdk.io/errors v1.0.1
 	cosmossdk.io/log v1.4.1
-	cosmossdk.io/math v1.3.0
+	cosmossdk.io/math v1.4.0
 	cosmossdk.io/simapp v0.0.0-20231211060251-d8fb76d4c267
 	cosmossdk.io/store v1.1.1
 	cosmossdk.io/tools/confix v0.1.2
@@ -42,7 +42,7 @@ require (
 	github.com/hashicorp/go-metrics v0.5.3
 	github.com/initia-labs/OPinit v0.5.6
 	// we also need to update `LIBMOVEVM_VERSION` of Dockerfile#9
-	github.com/initia-labs/movevm v0.6.0
+	github.com/initia-labs/movevm v0.6.1
 	github.com/noble-assets/forwarding/v2 v2.0.0-20240521090705-86712c4c9e43
 	github.com/pelletier/go-toml v1.9.5
 	github.com/pkg/errors v0.9.1
