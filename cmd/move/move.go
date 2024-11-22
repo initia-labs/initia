@@ -578,8 +578,8 @@ the 'tests' directory`)
 	cmd.Flags().Bool(flagVerbose, false, "Print additional diagnostics if available")
 	cmd.Flags().Bool(flagSkipFetchLatestGitDeps, false, "Skip fetching latest git dependencies")
 	cmd.Flags().Uint32(flagBytecodeVersion, 0, "Specify the version of the bytecode the compiler is going to emit")
-	cmd.Flags().String(flagCompilerVersion, "1", "Specify the version of the compiler to use")
-	cmd.Flags().String(flagLanguageVersion, "1", "Specify the version of the language to use")
+	cmd.Flags().String(flagCompilerVersion, "2", "Specify the version of the compiler to use")
+	cmd.Flags().String(flagLanguageVersion, "2", "Specify the version of the language to use")
 	cmd.Flags().String(flagNamedAddresses, "", "Named addresses to use in compilation. ex: --named-addresses 'name_1=0x1,name_2=0x2'")
 }
 
