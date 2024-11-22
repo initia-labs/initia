@@ -44836,7 +44836,7 @@ paths:
                     bonded shares
 
                     multiplied by exchange rate.
-                description: validators defines the the validators' info of a delegator.
+                description: validators defines the validators' info of a delegator.
               pagination:
                 description: pagination defines the pagination in the response.
                 type: object
@@ -83596,7 +83596,7 @@ definitions:
             exchange rate. Voting power can be calculated as total bonded shares
 
             multiplied by exchange rate.
-        description: validators defines the the validators' info of a delegator.
+        description: validators defines the validators' info of a delegator.
       pagination:
         description: pagination defines the pagination in the response.
         type: object
@@ -87557,6 +87557,7 @@ definitions:
             description: >-
               no_with_veto_count is the number of no with veto votes on a
               proposal.
+    description: TallyResult defines the result of a tally.
   initia.gov.v1.Vesting:
     type: object
     properties:

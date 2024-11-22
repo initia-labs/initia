@@ -331,6 +331,7 @@ func (m *Vesting) GetCreatorAddr() string {
 	return ""
 }
 
+// TallyResult defines the result of a tally.
 type TallyResult struct {
 	TallyHeight       uint64 `protobuf:"varint,1,opt,name=tally_height,json=tallyHeight,proto3" json:"tally_height,omitempty"`
 	TotalStakingPower string `protobuf:"bytes,2,opt,name=total_staking_power,json=totalStakingPower,proto3" json:"total_staking_power,omitempty"`
