@@ -221,6 +221,7 @@ require (
 // initia custom
 // use custom version for
 // - https://github.com/initia-labs/cometbft/commit/cb3ed4ca9be4d6c55df7df2d927e9b92153bc3e2
+// - https://github.com/initia-labs/cometbft/pull/14
 replace github.com/cometbft/cometbft => github.com/initia-labs/cometbft v0.0.0-20241203094337-c2365d00759c
 
 // cosmos replaces
