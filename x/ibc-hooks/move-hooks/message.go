@@ -1,6 +1,8 @@
 package move_hooks
 
 import (
+	"encoding/json"
+
 	movetypes "github.com/initia-labs/initia/x/move/types"
 )
 
@@ -49,4 +51,46 @@ type HookData struct {
 	// at `OnTimeoutPacket` and `OnAcknowledgementPacket` of
 	// sender chain.
 	AsyncCallback *AsyncCallback `json:"async_callback,omitempty"`
+}
+
+// asyncCallback is same as AsyncCallback.
+type asyncCallback struct {
+	// callback id should be issued form the executor contract
+	Id            uint64 `json:"id"`
+	ModuleAddress string `json:"module_address"`
+	ModuleName    string `json:"module_name"`
+}
+
+// asyncCallbackStringID is same as AsyncCallback but
+// it has Id as string.
+type asyncCallbackStringID struct {
+	// callback id should be issued form the executor contract
+	Id            uint64 `json:"id,string"`
+	ModuleAddress string `json:"module_address"`
+	ModuleName    string `json:"module_name"`
+}
+
+// UnmarshalJSON implements the json unmarshaler interface.
+// custom unmarshaler is required because we have to handle
+// id as string and uint64.
+func (a *AsyncCallback) UnmarshalJSON(bz []byte) error {
+	var ac asyncCallback
+	err := json.Unmarshal(bz, &ac)
+	if err != nil {
+		var aStr asyncCallbackStringID
+		err := json.Unmarshal(bz, &aStr)
+		if err != nil {
+			return err
+		}
+
+		a.Id = aStr.Id
+		a.ModuleAddress = aStr.ModuleAddress
+		a.ModuleName = aStr.ModuleName
+		return nil
+	}
+
+	a.Id = ac.Id
+	a.ModuleAddress = ac.ModuleAddress
+	a.ModuleName = ac.ModuleName
+	return nil
 }
