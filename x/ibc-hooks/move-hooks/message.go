@@ -77,15 +77,15 @@ func (a *AsyncCallback) UnmarshalJSON(bz []byte) error {
 	var ac asyncCallback
 	err := json.Unmarshal(bz, &ac)
 	if err != nil {
-		var aStr asyncCallbackStringID
-		err := json.Unmarshal(bz, &aStr)
+		var acStr asyncCallbackStringID
+		err := json.Unmarshal(bz, &acStr)
 		if err != nil {
 			return err
 		}
 
-		a.Id = aStr.Id
-		a.ModuleAddress = aStr.ModuleAddress
-		a.ModuleName = aStr.ModuleName
+		a.Id = acStr.Id
+		a.ModuleAddress = acStr.ModuleAddress
+		a.ModuleName = acStr.ModuleName
 		return nil
 	}
 
