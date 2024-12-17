@@ -1,10 +1,12 @@
 package keeper_test
 
 import (
+	"crypto/rand"
+
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
 
-	sdktypes "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 	ibctesting "github.com/initia-labs/initia/x/ibc/testing"
@@ -51,7 +53,7 @@ func (suite *KeeperTestSuite) CreateNftClass(
 
 func (suite *KeeperTestSuite) MintNft(
 	endpoint *ibctesting.Endpoint,
-	receiver sdktypes.AccAddress,
+	receiver sdk.AccAddress,
 	classId, className, tokenId, tokenUri, tokenData string,
 ) {
 	classNameBz, err := vmtypes.SerializeString(className)
@@ -224,6 +226,39 @@ func (suite *KeeperTestSuite) TestSendAndReceive() {
 			suite.ConfirmClassId(pathA2B.EndpointA, classId, targetClassId)
 		}
 	})
+
+	// transfer from chainA to chainB (non-existing account)
+	suite.Run("transfer A->B (non-existing account)", func() {
+		{
+			sender := pathA2B.EndpointA.Chain.SenderAccount.GetAddress()
+
+			// random receiver account
+			receiver := make(sdk.AccAddress, 20)
+			_, err := rand.Read(receiver)
+			suite.NoError(err)
+
+			packet = suite.transferNft(
+				pathA2B.EndpointA,
+				pathA2B.EndpointB,
+				targetClassId,
+				nftId,
+				sender.String(),
+				receiver.String(),
+			)
+
+			targetClassId = suite.receiverNft(
+				pathA2B.EndpointA,
+				pathA2B.EndpointB,
+				packet,
+			)
+
+			suite.ConfirmClassId(pathA2B.EndpointB, classId, targetClassId)
+
+			// receiver account should be created
+			suite.True(suite.chainB.App.GetAccountKeeper().HasAccount(suite.chainB.GetContext(), receiver))
+		}
+	})
+
 }
 
 func (suite *KeeperTestSuite) transferNft(
