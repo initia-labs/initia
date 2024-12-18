@@ -5162,6 +5162,7 @@ func (x *Vesting) GetCreatorAddr() string {
 	return ""
 }
 
+// TallyResult defines the result of a tally.
 type TallyResult struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

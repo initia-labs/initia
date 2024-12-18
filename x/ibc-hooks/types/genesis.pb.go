@@ -26,7 +26,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // GenesisState defines the mint module's genesis state.
 type GenesisState struct {
-	// Params defines all the paramaters of the module.
+	// Params defines all the parameters of the module.
 	Params Params `protobuf:"bytes,1,opt,name=params,proto3" json:"params"`
 	Acls   []ACL  `protobuf:"bytes,2,rep,name=acls,proto3" json:"acls"`
 }

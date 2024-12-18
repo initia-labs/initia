@@ -41,7 +41,8 @@ var _ sdk.Tx = MockTx{}
 var _ sdk.FeeTx = &MockTx{}
 
 type MockTx struct {
-	msgs []sdk.Msg
+	msgs     []sdk.Msg
+	gasLimit uint64
 }
 
 func (tx MockTx) GetMsgsV2() ([]protov2.Message, error) {
@@ -53,7 +54,7 @@ func (tx MockTx) GetMsgs() []sdk.Msg {
 }
 
 func (tx MockTx) GetGas() uint64 {
-	return 0
+	return tx.gasLimit
 }
 
 func (tx MockTx) GetFee() sdk.Coins {

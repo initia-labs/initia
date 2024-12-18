@@ -12997,7 +12997,7 @@ type Validator struct {
 	VotingPower string `protobuf:"bytes,12,opt,name=voting_power,json=votingPower,proto3" json:"voting_power,omitempty"`
 	// strictly positive if this validator's unbonding has been stopped by external modules
 	UnbondingOnHoldRefCount int64 `protobuf:"varint,13,opt,name=unbonding_on_hold_ref_count,json=unbondingOnHoldRefCount,proto3" json:"unbonding_on_hold_ref_count,omitempty"`
-	// unbonding id, uniquely identifing an unbonding of this validator
+	// unbonding id, uniquely identifying an unbonding of this validator
 	UnbondingId uint64 `protobuf:"varint,14,opt,name=unbonding_id,json=unbondingId,proto3" json:"unbonding_id,omitempty"`
 }
 

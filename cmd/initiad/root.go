@@ -37,6 +37,7 @@ import (
 
 	initiaapp "github.com/initia-labs/initia/app"
 	"github.com/initia-labs/initia/app/params"
+	initiacmdflags "github.com/initia-labs/initia/cmd/flags"
 	movecmd "github.com/initia-labs/initia/cmd/move"
 	cryptokeyring "github.com/initia-labs/initia/crypto/keyring"
 	"github.com/initia-labs/initia/x/genutil"
@@ -161,7 +162,10 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig, b
 		a.newApp,
 		a.appExport,
 		server.StartCmdOptions{
-			AddFlags: addModuleInitFlags,
+			AddFlags: func(startCmd *cobra.Command) {
+				crisis.AddModuleInitFlags(startCmd)
+				initiacmdflags.AddCometBFTFlags(startCmd)
+			},
 			PostSetup: func(svrCtx *server.Context, clientCtx client.Context, ctx context.Context, g *errgroup.Group) error {
 				g.Go(func() error {
 					errCh := make(chan error, 1)
@@ -193,11 +197,7 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig, b
 	)
 
 	// add move commands
-	rootCmd.AddCommand(movecmd.MoveCommand(encodingConfig.InterfaceRegistry.SigningContext().AddressCodec()))
-}
-
-func addModuleInitFlags(startCmd *cobra.Command) {
-	crisis.AddModuleInitFlags(startCmd)
+	rootCmd.AddCommand(movecmd.MoveCommand(encodingConfig.InterfaceRegistry.SigningContext().AddressCodec(), false))
 }
 
 func genesisCommand(encodingConfig params.EncodingConfig, basicManager module.BasicManager) *cobra.Command {

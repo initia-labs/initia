@@ -176,13 +176,13 @@ func (p Params) Validate(ac address.Codec) error {
 
 	minInitialDepositRatio, err := math.LegacyNewDecFromStr(p.MinInitialDepositRatio)
 	if err != nil {
-		return fmt.Errorf("invalid mininum initial deposit ratio of proposal: %w", err)
+		return fmt.Errorf("invalid minimum initial deposit ratio of proposal: %w", err)
 	}
 	if minInitialDepositRatio.IsNegative() {
-		return fmt.Errorf("mininum initial deposit ratio of proposal must be positive: %s", minInitialDepositRatio)
+		return fmt.Errorf("minimum initial deposit ratio of proposal must be positive: %s", minInitialDepositRatio)
 	}
 	if minInitialDepositRatio.GT(math.LegacyOneDec()) {
-		return fmt.Errorf("mininum initial deposit ratio of proposal is too large: %s", minInitialDepositRatio)
+		return fmt.Errorf("minimum initial deposit ratio of proposal is too large: %s", minInitialDepositRatio)
 	}
 
 	proposalCancelRate, err := math.LegacyNewDecFromStr(p.ProposalCancelRatio)
@@ -209,6 +209,9 @@ func (p Params) Validate(ac address.Codec) error {
 
 	if p.EmergencyTallyInterval.Seconds() <= 0 {
 		return fmt.Errorf("emergency tally interval must be positive: %s", p.EmergencyTallyInterval)
+	}
+	if p.EmergencyTallyInterval.Seconds() >= p.VotingPeriod.Seconds() {
+		return fmt.Errorf("emergency tally interval %s must be strictly less than the voting period %s", p.EmergencyTallyInterval, p.VotingPeriod)
 	}
 
 	if minEmergencyDeposit := sdk.Coins(p.EmergencyMinDeposit); !minEmergencyDeposit.IsAllGTE(p.ExpeditedMinDeposit) {

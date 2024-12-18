@@ -12102,7 +12102,7 @@ paths:
                       vetoed. Default value: 1/3.
               params:
                 description: |-
-                  params defines all the paramaters of x/gov module.
+                  params defines all the parameters of x/gov module.
 
                   Since: cosmos-sdk 0.47
                 type: object
@@ -20343,7 +20343,7 @@ paths:
         - Query
   /cosmos/feegrant/v1beta1/allowance/{granter}/{grantee}:
     get:
-      summary: Allowance returns granted allwance to the grantee by the granter.
+      summary: Allowance returns granted allowance to the grantee by the granter.
       operationId: Allowance
       responses:
         '200':
@@ -34969,7 +34969,7 @@ paths:
           format: uint64
         - name: latest_height
           description: >-
-            latest_height overrrides the height field and queries the latest
+            latest_height overrides the height field and queries the latest
             stored
 
             ConsensusState.
@@ -36564,7 +36564,7 @@ paths:
                               identifier
                         description: >-
                           Version defines the versioning scheme used to
-                          negotiate the IBC verison in
+                          negotiate the IBC version in
 
                           the connection handshake.
                       title: >-
@@ -36973,7 +36973,7 @@ paths:
                             identifier
                       description: >-
                         Version defines the versioning scheme used to negotiate
-                        the IBC verison in
+                        the IBC version in
 
                         the connection handshake.
                     description: >-
@@ -44811,7 +44811,7 @@ paths:
                       type: string
                       format: uint64
                       title: >-
-                        unbonding id, uniquely identifing an unbonding of this
+                        unbonding id, uniquely identifying an unbonding of this
                         validator
                   description: >-
                     Validator defines a validator, together with the total
@@ -44836,7 +44836,7 @@ paths:
                     bonded shares
 
                     multiplied by exchange rate.
-                description: validators defines the the validators' info of a delegator.
+                description: validators defines the validators' info of a delegator.
               pagination:
                 description: pagination defines the pagination in the response.
                 type: object
@@ -45477,7 +45477,7 @@ paths:
                     type: string
                     format: uint64
                     title: >-
-                      unbonding id, uniquely identifing an unbonding of this
+                      unbonding id, uniquely identifying an unbonding of this
                       validator
                 description: >-
                   Validator defines a validator, together with the total amount
@@ -46588,7 +46588,7 @@ paths:
                       type: string
                       format: uint64
                       title: >-
-                        unbonding id, uniquely identifing an unbonding of this
+                        unbonding id, uniquely identifying an unbonding of this
                         validator
                   description: >-
                     Validator defines a validator, together with the total
@@ -47252,7 +47252,7 @@ paths:
                     type: string
                     format: uint64
                     title: >-
-                      unbonding id, uniquely identifing an unbonding of this
+                      unbonding id, uniquely identifying an unbonding of this
                       validator
                 description: >-
                   Validator defines a validator, together with the total amount
@@ -51316,13 +51316,11 @@ paths:
                         UpgradePolicy is the policy for upgrading a move module.
 
                          - UNSPECIFIED: UNSPECIFIED: a placeholder for an unspecified upgrade policy.
-                         - COMPATIBLE: COMPATBILE: Whether a compatibility check should be performed for upgrades. The check only passes if
+                         - COMPATIBLE: COMPATIBLE: Whether a compatibility check should be performed for upgrades. The check only passes if
                         a new module has (a) the same public functions (b) for
                         existing resources, no layout change.
                          - IMMUTABLE: IMMUTABLE: Whether the modules in the package are immutable and cannot be upgraded.
-                  title: |-
-                    Module is data for the uploaded contract move code
-                    ex) 0000000000000000000000000000000000000001/0/BasicCoin
+                  title: Module is data for the uploaded contract move code
               pagination:
                 description: pagination defines the pagination in the response.
                 type: object
@@ -51464,13 +51462,11 @@ paths:
                       UpgradePolicy is the policy for upgrading a move module.
 
                        - UNSPECIFIED: UNSPECIFIED: a placeholder for an unspecified upgrade policy.
-                       - COMPATIBLE: COMPATBILE: Whether a compatibility check should be performed for upgrades. The check only passes if
+                       - COMPATIBLE: COMPATIBLE: Whether a compatibility check should be performed for upgrades. The check only passes if
                       a new module has (a) the same public functions (b) for
                       existing resources, no layout change.
                        - IMMUTABLE: IMMUTABLE: Whether the modules in the package are immutable and cannot be upgraded.
-                title: |-
-                  Module is data for the uploaded contract move code
-                  ex) 0000000000000000000000000000000000000001/0/BasicCoin
+                title: Module is data for the uploaded contract move code
             title: |-
               QueryModuleResponse is the response type for the Query/Module RPC
               method
@@ -51637,11 +51633,7 @@ paths:
                     raw_bytes:
                       type: string
                       format: byte
-                  title: >-
-                    Resource is data for the stored move resource
-
-                    ex)
-                    0000000000000000000000000000000000000002/2/0x1::BasicCoin::Coin<0x1::BasicCoin::Initia>
+                  title: Resource is data for the stored move resource
               pagination:
                 description: pagination defines the pagination in the response.
                 type: object
@@ -51774,11 +51766,7 @@ paths:
                   raw_bytes:
                     type: string
                     format: byte
-                title: >-
-                  Resource is data for the stored move resource
-
-                  ex)
-                  0000000000000000000000000000000000000002/2/0x1::BasicCoin::Coin<0x1::BasicCoin::Initia>
+                title: Resource is data for the stored move resource
             title: >-
               QueryResourceResponse is the response type for the Query/Resource
               RPC
@@ -52485,7 +52473,7 @@ paths:
   /initia/move/v1/view/json:
     post:
       summary: >-
-        ViewJSON execute view function with json arguemtns and return the view
+        ViewJSON execute view function with json arguments and return the view
         result
       operationId: ViewJSON
       responses:
@@ -52572,7 +52560,7 @@ paths:
   /initia/move/v1/view/json/batch:
     post:
       summary: >-
-        ViewJSONBatch execute multiple view functions with json arguemtns and
+        ViewJSONBatch execute multiple view functions with json arguments and
         return the view results
       operationId: ViewJSONBatch
       responses:
@@ -52955,7 +52943,7 @@ paths:
                         finalization_period:
                           type: string
                           description: >-
-                            The minium time duration that must elapse before a
+                            The minimum time duration that must elapse before a
                             withdrawal can be finalized.
                         submission_start_height:
                           type: string
@@ -53126,7 +53114,7 @@ paths:
                   finalization_period:
                     type: string
                     description: >-
-                      The minium time duration that must elapse before a
+                      The minimum time duration that must elapse before a
                       withdrawal can be finalized.
                   submission_start_height:
                     type: string
@@ -54806,6 +54794,120 @@ paths:
                     value:
                       type: string
                       format: byte
+      tags:
+        - Query
+  /initia/tx/v1/gas_prices:
+    get:
+      summary: GasPrices returns the gas prices for the network.
+      operationId: GasPrices
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              gas_prices:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    denom:
+                      type: string
+                    amount:
+                      type: string
+                  description: >-
+                    DecCoin defines a token with a denomination and a decimal
+                    amount.
+
+
+                    NOTE: The amount field is an Dec which implements the custom
+                    method
+
+                    signatures required by gogoproto.
+            description: >-
+              QueryGasPricesResponse is the response type for the
+              Query/GasPrices RPC method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      tags:
+        - Query
+  /initia/tx/v1/gas_prices/{denom}:
+    get:
+      summary: GasPrice returns the gas price for the network.
+      operationId: GasPrice
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              gas_price:
+                type: object
+                properties:
+                  denom:
+                    type: string
+                  amount:
+                    type: string
+                description: >-
+                  DecCoin defines a token with a denomination and a decimal
+                  amount.
+
+
+                  NOTE: The amount field is an Dec which implements the custom
+                  method
+
+                  signatures required by gogoproto.
+            description: >-
+              QueryGasPriceResponse is the response type for the Query/GasPrice
+              RPC method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: denom
+          description: denom defines the denomination of the gas price to query.
+          in: path
+          required: true
+          type: string
       tags:
         - Query
 definitions:
@@ -65757,7 +65859,7 @@ definitions:
               vetoed. Default value: 1/3.
       params:
         description: |-
-          params defines all the paramaters of x/gov module.
+          params defines all the parameters of x/gov module.
 
           Since: cosmos-sdk 0.47
         type: object
@@ -68641,7 +68743,7 @@ definitions:
       gas to be used by the transaction. The ratio yields an effective
       "gasprice",
 
-      which must be above some miminum to be accepted into the mempool.
+      which must be above some minimum to be accepted into the mempool.
   cosmos.tx.v1beta1.GetBlockWithTxsResponse:
     type: object
     properties:
@@ -79533,7 +79635,7 @@ definitions:
               title: list of features compatible with the specified identifier
           description: >-
             Version defines the versioning scheme used to negotiate the IBC
-            verison in
+            version in
 
             the connection handshake.
         description: >-
@@ -79655,7 +79757,7 @@ definitions:
               title: list of features compatible with the specified identifier
           description: >-
             Version defines the versioning scheme used to negotiate the IBC
-            verison in
+            version in
 
             the connection handshake.
         title: >-
@@ -80240,7 +80342,7 @@ definitions:
                   title: list of features compatible with the specified identifier
               description: >-
                 Version defines the versioning scheme used to negotiate the IBC
-                verison in
+                version in
 
                 the connection handshake.
             description: >-
@@ -80377,7 +80479,7 @@ definitions:
                     title: list of features compatible with the specified identifier
                 description: >-
                   Version defines the versioning scheme used to negotiate the
-                  IBC verison in
+                  IBC version in
 
                   the connection handshake.
               title: >-
@@ -80523,7 +80625,7 @@ definitions:
           type: string
         title: list of features compatible with the specified identifier
     description: |-
-      Version defines the versioning scheme used to negotiate the IBC verison in
+      Version defines the versioning scheme used to negotiate the IBC version in
       the connection handshake.
   ibc.applications.transfer.v1.DenomTrace:
     type: object
@@ -81645,7 +81747,7 @@ definitions:
         format: uint64
         title: packet sequence
     title: |-
-      PacketId is an identifer for a unique Packet
+      PacketId is an identifier for a unique Packet
       Source chains refer to packets by source port/channel
       Destination chains refer to packets by destination port/channel
   ibc.applications.perm.v1.ChannelState:
@@ -83109,7 +83211,7 @@ definitions:
           unbonding_id:
             type: string
             format: uint64
-            title: unbonding id, uniquely identifing an unbonding of this validator
+            title: unbonding id, uniquely identifying an unbonding of this validator
         description: >-
           Validator defines a validator, together with the total amount of the
 
@@ -83470,7 +83572,9 @@ definitions:
             unbonding_id:
               type: string
               format: uint64
-              title: unbonding id, uniquely identifing an unbonding of this validator
+              title: >-
+                unbonding id, uniquely identifying an unbonding of this
+                validator
           description: >-
             Validator defines a validator, together with the total amount of the
 
@@ -83492,7 +83596,7 @@ definitions:
             exchange rate. Voting power can be calculated as total bonded shares
 
             multiplied by exchange rate.
-        description: validators defines the the validators' info of a delegator.
+        description: validators defines the validators' info of a delegator.
       pagination:
         description: pagination defines the pagination in the response.
         type: object
@@ -84359,7 +84463,7 @@ definitions:
           unbonding_id:
             type: string
             format: uint64
-            title: unbonding id, uniquely identifing an unbonding of this validator
+            title: unbonding id, uniquely identifying an unbonding of this validator
         description: >-
           Validator defines a validator, together with the total amount of the
 
@@ -84830,7 +84934,9 @@ definitions:
             unbonding_id:
               type: string
               format: uint64
-              title: unbonding id, uniquely identifing an unbonding of this validator
+              title: >-
+                unbonding id, uniquely identifying an unbonding of this
+                validator
           description: >-
             Validator defines a validator, together with the total amount of the
 
@@ -85756,7 +85862,7 @@ definitions:
       unbonding_id:
         type: string
         format: uint64
-        title: unbonding id, uniquely identifing an unbonding of this validator
+        title: unbonding id, uniquely identifying an unbonding of this validator
     description: >-
       Validator defines a validator, together with the total amount of the
 
@@ -87451,6 +87557,7 @@ definitions:
             description: >-
               no_with_veto_count is the number of no with veto votes on a
               proposal.
+    description: TallyResult defines the result of a tally.
   initia.gov.v1.Vesting:
     type: object
     properties:
@@ -87489,13 +87596,11 @@ definitions:
           UpgradePolicy is the policy for upgrading a move module.
 
            - UNSPECIFIED: UNSPECIFIED: a placeholder for an unspecified upgrade policy.
-           - COMPATIBLE: COMPATBILE: Whether a compatibility check should be performed for upgrades. The check only passes if
+           - COMPATIBLE: COMPATIBLE: Whether a compatibility check should be performed for upgrades. The check only passes if
           a new module has (a) the same public functions (b) for existing
           resources, no layout change.
            - IMMUTABLE: IMMUTABLE: Whether the modules in the package are immutable and cannot be upgraded.
-    title: |-
-      Module is data for the uploaded contract move code
-      ex) 0000000000000000000000000000000000000001/0/BasicCoin
+    title: Module is data for the uploaded contract move code
   initia.move.v1.Params:
     type: object
     properties:
@@ -87609,13 +87714,11 @@ definitions:
               UpgradePolicy is the policy for upgrading a move module.
 
                - UNSPECIFIED: UNSPECIFIED: a placeholder for an unspecified upgrade policy.
-               - COMPATIBLE: COMPATBILE: Whether a compatibility check should be performed for upgrades. The check only passes if
+               - COMPATIBLE: COMPATIBLE: Whether a compatibility check should be performed for upgrades. The check only passes if
               a new module has (a) the same public functions (b) for existing
               resources, no layout change.
                - IMMUTABLE: IMMUTABLE: Whether the modules in the package are immutable and cannot be upgraded.
-        title: |-
-          Module is data for the uploaded contract move code
-          ex) 0000000000000000000000000000000000000001/0/BasicCoin
+        title: Module is data for the uploaded contract move code
     title: |-
       QueryModuleResponse is the response type for the Query/Module RPC
       method
@@ -87647,13 +87750,11 @@ definitions:
                 UpgradePolicy is the policy for upgrading a move module.
 
                  - UNSPECIFIED: UNSPECIFIED: a placeholder for an unspecified upgrade policy.
-                 - COMPATIBLE: COMPATBILE: Whether a compatibility check should be performed for upgrades. The check only passes if
+                 - COMPATIBLE: COMPATIBLE: Whether a compatibility check should be performed for upgrades. The check only passes if
                 a new module has (a) the same public functions (b) for existing
                 resources, no layout change.
                  - IMMUTABLE: IMMUTABLE: Whether the modules in the package are immutable and cannot be upgraded.
-          title: |-
-            Module is data for the uploaded contract move code
-            ex) 0000000000000000000000000000000000000001/0/BasicCoin
+          title: Module is data for the uploaded contract move code
       pagination:
         description: pagination defines the pagination in the response.
         type: object
@@ -87716,11 +87817,7 @@ definitions:
           raw_bytes:
             type: string
             format: byte
-        title: >-
-          Resource is data for the stored move resource
-
-          ex)
-          0000000000000000000000000000000000000002/2/0x1::BasicCoin::Coin<0x1::BasicCoin::Initia>
+        title: Resource is data for the stored move resource
     title: |-
       QueryResourceResponse is the response type for the Query/Resource RPC
       method
@@ -87741,11 +87838,7 @@ definitions:
             raw_bytes:
               type: string
               format: byte
-          title: >-
-            Resource is data for the stored move resource
-
-            ex)
-            0000000000000000000000000000000000000002/2/0x1::BasicCoin::Coin<0x1::BasicCoin::Initia>
+          title: Resource is data for the stored move resource
       pagination:
         description: pagination defines the pagination in the response.
         type: object
@@ -88118,11 +88211,7 @@ definitions:
       raw_bytes:
         type: string
         format: byte
-    title: >-
-      Resource is data for the stored move resource
-
-      ex)
-      0000000000000000000000000000000000000002/2/0x1::BasicCoin::Coin<0x1::BasicCoin::Initia>
+    title: Resource is data for the stored move resource
   initia.move.v1.TableEntry:
     type: object
     properties:
@@ -88160,7 +88249,7 @@ definitions:
       UpgradePolicy is the policy for upgrading a move module.
 
        - UNSPECIFIED: UNSPECIFIED: a placeholder for an unspecified upgrade policy.
-       - COMPATIBLE: COMPATBILE: Whether a compatibility check should be performed for upgrades. The check only passes if
+       - COMPATIBLE: COMPATIBLE: Whether a compatibility check should be performed for upgrades. The check only passes if
       a new module has (a) the same public functions (b) for existing resources,
       no layout change.
        - IMMUTABLE: IMMUTABLE: Whether the modules in the package are immutable and cannot be upgraded.
@@ -88352,7 +88441,7 @@ definitions:
       finalization_period:
         type: string
         description: >-
-          The minium time duration that must elapse before a withdrawal can be
+          The minimum time duration that must elapse before a withdrawal can be
           finalized.
       submission_start_height:
         type: string
@@ -88513,7 +88602,7 @@ definitions:
           finalization_period:
             type: string
             description: >-
-              The minium time duration that must elapse before a withdrawal can
+              The minimum time duration that must elapse before a withdrawal can
               be finalized.
           submission_start_height:
             type: string
@@ -88575,7 +88664,7 @@ definitions:
                 finalization_period:
                   type: string
                   description: >-
-                    The minium time duration that must elapse before a
+                    The minimum time duration that must elapse before a
                     withdrawal can be finalized.
                 submission_start_height:
                   type: string
@@ -89727,3 +89816,41 @@ definitions:
       feed is scaled to a number of decimal places and has a minimum number of
 
       providers required to consider the ticker valid.
+  initia.tx.v1.QueryGasPriceResponse:
+    type: object
+    properties:
+      gas_price:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          DecCoin defines a token with a denomination and a decimal amount.
+
+          NOTE: The amount field is an Dec which implements the custom method
+          signatures required by gogoproto.
+    description: >-
+      QueryGasPriceResponse is the response type for the Query/GasPrice RPC
+      method.
+  initia.tx.v1.QueryGasPricesResponse:
+    type: object
+    properties:
+      gas_prices:
+        type: array
+        items:
+          type: object
+          properties:
+            denom:
+              type: string
+            amount:
+              type: string
+          description: |-
+            DecCoin defines a token with a denomination and a decimal amount.
+
+            NOTE: The amount field is an Dec which implements the custom method
+            signatures required by gogoproto.
+    description: >-
+      QueryGasPricesResponse is the response type for the Query/GasPrices RPC
+      method.

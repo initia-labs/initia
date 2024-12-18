@@ -4,8 +4,6 @@ import (
 	"context"
 
 	"github.com/hashicorp/go-metrics"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	errorsmod "cosmossdk.io/errors"
 	"github.com/cosmos/cosmos-sdk/telemetry"
@@ -85,7 +83,52 @@ func (k msgServer) Send(goCtx context.Context, msg *types.MsgSend) (*types.MsgSe
 }
 
 func (k msgServer) MultiSend(goCtx context.Context, msg *types.MsgMultiSend) (*types.MsgMultiSendResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "not supported")
+	if len(msg.Inputs) == 0 {
+		return nil, types.ErrNoInputs
+	}
+
+	if len(msg.Inputs) != 1 {
+		return nil, types.ErrMultipleSenders
+	}
+
+	if len(msg.Outputs) == 0 {
+		return nil, types.ErrNoOutputs
+	}
+
+	in := msg.Inputs[0]
+	if err := types.ValidateInputOutputs(in, msg.Outputs); err != nil {
+		return nil, err
+	}
+
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	// NOTE: totalIn == totalOut should already have been checked
+	if err := k.IsSendEnabledCoins(ctx, in.Coins...); err != nil {
+		return nil, err
+	}
+
+	if base, ok := k.Keeper.(BaseKeeper); ok {
+		for _, out := range msg.Outputs {
+			accAddr, err := base.ak.AddressCodec().StringToBytes(out.Address)
+			if err != nil {
+				return nil, err
+			}
+
+			if k.BlockedAddr(accAddr) {
+				return nil, errorsmod.Wrapf(sdkerrors.ErrUnauthorized, "%s is not allowed to receive funds", out.Address)
+			}
+
+		}
+	} else {
+		return nil, sdkerrors.ErrInvalidRequest.Wrapf("invalid keeper type: %T", k.Keeper)
+	}
+
+	err := k.InputOutputCoins(ctx, msg.Inputs[0], msg.Outputs)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.MsgMultiSendResponse{}, nil
 }
 
 func (k msgServer) UpdateParams(goCtx context.Context, req *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {

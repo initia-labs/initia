@@ -76,7 +76,7 @@ service Query {
     };
   }
 
-  // ViewJSON execute view function with json arguemtns and return the view result
+  // ViewJSON execute view function with json arguments and return the view result
   rpc ViewJSON(QueryViewJSONRequest) returns (QueryViewJSONResponse) {
     option (google.api.http) = {
       post: "/initia/move/v1/view/json"
@@ -84,7 +84,7 @@ service Query {
     };
   }
 
-  // ViewJSONBatch execute multiple view functions with json arguemtns and return the view results
+  // ViewJSONBatch execute multiple view functions with json arguments and return the view results
   rpc ViewJSONBatch(QueryViewJSONBatchRequest) returns (QueryViewJSONBatchResponse) {
     option (google.api.http) = {
       post: "/initia/move/v1/view/json/batch"

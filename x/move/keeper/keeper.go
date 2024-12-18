@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 
-	"golang.org/x/sync/semaphore"
-
 	"cosmossdk.io/collections"
 	"cosmossdk.io/core/address"
 	corestoretypes "cosmossdk.io/core/store"
@@ -37,16 +35,19 @@ type Keeper struct {
 	bankKeeper   types.BankKeeper
 	oracleKeeper types.OracleKeeper
 
+	// internal keepers
+	moveBankKeeper   MoveBankKeeper
+	dexKeeper        DexKeeper
+	balancerKeeper   BalancerKeeper
+	stableSwapKeeper StableSwapKeeper
+
 	// Msg server router
 	msgRouter  baseapp.MessageRouter
 	grpcRouter *baseapp.GRPCQueryRouter
 
 	config moveconfig.MoveConfig
 
-	// TODO - remove after loader v2
-	moveVMs         []types.VMEngine
-	moveVMIdx       *uint64
-	moveVMSemaphore *semaphore.Weighted
+	initiaMoveVM types.VMEngine
 
 	feeCollector string
 	authority    string
@@ -89,19 +90,21 @@ func NewKeeper(
 		moveConfig.ContractSimulationGasLimit = moveconfig.DefaultContractSimulationGasLimit
 	}
 
-	vmCount := 10
-	moveVMIdx := uint64(0)
-	vms := make([]types.VMEngine, vmCount)
-	for i := 0; i < vmCount; i++ {
-		moveVM, err := vm.NewVM(vmtypes.InitiaVMConfig{
-			// TODO: check this before mainnet
-			AllowUnstable: true,
-		})
-		if err != nil {
-			panic(err)
-		}
+	if moveConfig.ModuleCacheCapacity == 0 {
+		moveConfig.ModuleCacheCapacity = moveconfig.DefaultModuleCacheCapacity
+	}
 
-		vms[i] = &moveVM
+	if moveConfig.ScriptCacheCapacity == 0 {
+		moveConfig.ScriptCacheCapacity = moveconfig.DefaultScriptCacheCapacity
+	}
+
+	moveVM, err := vm.NewVM(vmtypes.InitiaVMConfig{
+		AllowUnstable:       false,
+		ScriptCacheCapacity: moveConfig.ScriptCacheCapacity,
+		ModuleCacheCapacity: moveConfig.ModuleCacheCapacity,
+	})
+	if err != nil {
+		panic(err)
 	}
 
 	sb := collections.NewSchemaBuilder(storeService)
@@ -114,9 +117,7 @@ func NewKeeper(
 		msgRouter:           msgRouter,
 		grpcRouter:          grpcRouter,
 		config:              moveConfig,
-		moveVMs:             vms,
-		moveVMIdx:           &moveVMIdx,
-		moveVMSemaphore:     semaphore.NewWeighted(int64(vmCount)),
+		initiaMoveVM:        &moveVM,
 		distrKeeper:         distrKeeper,
 		StakingKeeper:       stakingKeeper,
 		RewardKeeper:        rewardKeeper,
@@ -139,6 +140,10 @@ func NewKeeper(
 		panic(err)
 	}
 	k.Schema = schema
+	k.moveBankKeeper = NewMoveBankKeeper(k)
+	k.dexKeeper = NewDexKeeper(k)
+	k.balancerKeeper = NewBalancerKeeper(k)
+	k.stableSwapKeeper = NewStableSwapKeeper(k)
 	return k
 }
 
@@ -159,6 +164,26 @@ func (k Keeper) Logger(ctx context.Context) log.Logger {
 	return sdkCtx.Logger().With("module", "x/"+types.ModuleName)
 }
 
+// DexKeeper returns the dex keeper
+func (k Keeper) DexKeeper() DexKeeper {
+	return k.dexKeeper
+}
+
+// MoveBankKeeper returns the move bank keeper
+func (k Keeper) MoveBankKeeper() MoveBankKeeper {
+	return k.moveBankKeeper
+}
+
+// BalancerKeeper returns the balancer keeper
+func (k Keeper) BalancerKeeper() BalancerKeeper {
+	return k.balancerKeeper
+}
+
+// StableSwapKeeper returns the stable swap keeper
+func (k Keeper) StableSwapKeeper() StableSwapKeeper {
+	return k.stableSwapKeeper
+}
+
 // GetExecutionCounter get execution counter for genesis
 func (k Keeper) GetExecutionCounter(
 	ctx context.Context,
@@ -171,6 +196,45 @@ func (k Keeper) GetExecutionCounter(
 	}
 
 	return counter, nil
+}
+
+// SetChecksum store checksum bytes
+// This function should be used only when Migration
+func (k Keeper) SetChecksum(
+	ctx context.Context,
+	addr vmtypes.AccountAddress,
+	moduleName string,
+	checksum []byte,
+) error {
+	if checksumKey, err := types.GetChecksumKey(addr, moduleName); err != nil {
+		return err
+	} else if err := k.VMStore.Set(ctx, checksumKey, checksum); err != nil {
+		return err
+	}
+	return nil
+}
+
+// GetChecksum return checksum of module of the given account address and name
+func (k Keeper) GetChecksum(
+	ctx context.Context,
+	addr vmtypes.AccountAddress,
+	moduleName string,
+) (types.Checksum, error) {
+	bz, err := types.GetChecksumKey(addr, moduleName)
+	if err != nil {
+		return types.Checksum{}, err
+	}
+
+	checksumBytes, err := k.VMStore.Get(ctx, bz)
+	if err != nil {
+		return types.Checksum{}, err
+	}
+
+	return types.Checksum{
+		Address:    addr.String(),
+		ModuleName: moduleName,
+		Checksum:   checksumBytes,
+	}, nil
 }
 
 // SetModule store Module bytes
@@ -255,7 +319,7 @@ func (k Keeper) SetResource(
 	return k.VMStore.Set(ctx, bz, resourceBytes)
 }
 
-// HasResource return boolean wether the store contains a data with the resource key
+// HasResource return boolean whether the store contains a data with the resource key
 func (k Keeper) HasResource(
 	ctx context.Context,
 	addr vmtypes.AccountAddress,
@@ -478,8 +542,17 @@ func (k Keeper) SetTableEntry(
 }
 
 // IterateVMStore iterate VMStore store for genesis export
-func (k Keeper) IterateVMStore(ctx context.Context, cb func(*types.Module, *types.Resource, *types.TableInfo, *types.TableEntry)) error {
-	err := k.VMStore.Walk(ctx, nil, func(key, value []byte) (stop bool, err error) {
+func (k Keeper) IterateVMStore(ctx context.Context, cb func(*types.Module, *types.Checksum, *types.Resource, *types.TableInfo, *types.TableEntry)) error {
+	return k.walkVMStore(ctx, cb, nil)
+}
+
+// ReverseIterateVMStore iterate VMStore store for genesis export
+func (k Keeper) ReverseIterateVMStore(ctx context.Context, cb func(*types.Module, *types.Checksum, *types.Resource, *types.TableInfo, *types.TableEntry)) error {
+	return k.walkVMStore(ctx, cb, new(collections.Range[[]byte]).Descending())
+}
+
+func (k Keeper) walkVMStore(ctx context.Context, cb func(*types.Module, *types.Checksum, *types.Resource, *types.TableInfo, *types.TableEntry), ranger collections.Ranger[[]byte]) error {
+	err := k.VMStore.Walk(ctx, ranger, func(key, value []byte) (stop bool, err error) {
 		cursor := types.AddressBytesLength
 		addrBytes := key[:cursor]
 		separator := key[cursor]
@@ -507,6 +580,18 @@ func (k Keeper) IterateVMStore(ctx context.Context, cb func(*types.Module, *type
 				ModuleName:    string(moduleName),
 				RawBytes:      value,
 				UpgradePolicy: policy,
+			}, nil, nil, nil, nil)
+		} else if separator == types.ChecksumSeparator {
+			// Checksum
+			moduleName, err := vmtypes.BcsDeserializeIdentifier(key[cursor:])
+			if err != nil {
+				return true, err
+			}
+
+			cb(nil, &types.Checksum{
+				Address:    vmAddr.String(),
+				ModuleName: string(moduleName),
+				Checksum:   value,
 			}, nil, nil, nil)
 		} else if separator == types.ResourceSeparator {
 			// Resource
@@ -520,7 +605,7 @@ func (k Keeper) IterateVMStore(ctx context.Context, cb func(*types.Module, *type
 				return true, err
 			}
 
-			cb(nil, &types.Resource{
+			cb(nil, nil, &types.Resource{
 				Address:   vmAddr.String(),
 				StructTag: structTagStr,
 				RawBytes:  value,
@@ -542,14 +627,14 @@ func (k Keeper) IterateVMStore(ctx context.Context, cb func(*types.Module, *type
 				return true, err
 			}
 
-			cb(nil, nil, &types.TableInfo{
+			cb(nil, nil, nil, &types.TableInfo{
 				Address:   vmAddr.String(),
 				KeyType:   keyType,
 				ValueType: valueType,
 			}, nil)
 		} else if separator == types.TableEntrySeparator {
 			// Table Entry
-			cb(nil, nil, nil, &types.TableEntry{
+			cb(nil, nil, nil, nil, &types.TableEntry{
 				Address:    vmAddr.String(),
 				KeyBytes:   key[cursor:],
 				ValueBytes: value,

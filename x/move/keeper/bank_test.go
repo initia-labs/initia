@@ -12,14 +12,13 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	cosmosbanktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	"github.com/initia-labs/initia/x/move/keeper"
 	"github.com/initia-labs/initia/x/move/types"
 	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 func Test_GetBalance(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
-	moveBankKeeper := keeper.NewMoveBankKeeper(&input.MoveKeeper)
+	moveBankKeeper := input.MoveKeeper.MoveBankKeeper()
 
 	bz, err := hex.DecodeString("0000000000000000000000000000000000000002")
 	require.NoError(t, err)
@@ -41,7 +40,7 @@ func Test_GetBalance(t *testing.T) {
 
 func Test_IterateBalances(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
-	moveBankKeeper := keeper.NewMoveBankKeeper(&input.MoveKeeper)
+	moveBankKeeper := input.MoveKeeper.MoveBankKeeper()
 
 	bz, err := hex.DecodeString("0000000000000000000000000000000000000002")
 	require.NoError(t, err)
@@ -75,7 +74,7 @@ func Test_IterateBalances(t *testing.T) {
 
 func Test_GetSupply(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
-	moveBankKeeper := keeper.NewMoveBankKeeper(&input.MoveKeeper)
+	moveBankKeeper := input.MoveKeeper.MoveBankKeeper()
 
 	amount, err := moveBankKeeper.GetSupply(ctx, bondDenom)
 	require.NoError(t, err)
@@ -101,7 +100,7 @@ func Test_GetSupply(t *testing.T) {
 
 func Test_IterateSupply(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
-	moveBankKeeper := keeper.NewMoveBankKeeper(&input.MoveKeeper)
+	moveBankKeeper := input.MoveKeeper.MoveBankKeeper()
 
 	testDenom := testDenoms[0]
 
@@ -137,7 +136,7 @@ func Test_IterateSupply(t *testing.T) {
 
 func Test_SendCoins(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
-	moveBankKeeper := keeper.NewMoveBankKeeper(&input.MoveKeeper)
+	moveBankKeeper := input.MoveKeeper.MoveBankKeeper()
 
 	bz, err := hex.DecodeString("0000000000000000000000000000000000000002")
 	require.NoError(t, err)
@@ -159,7 +158,7 @@ func Test_SendCoins(t *testing.T) {
 
 func Test_GetMetadata(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
-	moveBankKeeper := keeper.NewMoveBankKeeper(&input.MoveKeeper)
+	moveBankKeeper := input.MoveKeeper.MoveBankKeeper()
 
 	metadata, err := moveBankKeeper.GetMetadata(ctx, bondDenom)
 	require.NoError(t, err)
@@ -181,7 +180,7 @@ func Test_GetMetadata(t *testing.T) {
 
 func Test_BurnCoins(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
-	moveBankKeeper := keeper.NewMoveBankKeeper(&input.MoveKeeper)
+	moveBankKeeper := input.MoveKeeper.MoveBankKeeper()
 
 	bz, err := hex.DecodeString("0000000000000000000000000000000000000002")
 	require.NoError(t, err)
@@ -224,4 +223,36 @@ func Test_BurnCoins(t *testing.T) {
 
 	require.Equal(t, sdk.NewCoin("foo", sdkmath.NewInt(500_000)), input.BankKeeper.GetBalance(ctx, twoAddr, "foo"))
 	require.Equal(t, sdk.NewCoin(barDenom, sdkmath.NewInt(500_000)), input.BankKeeper.GetBalance(ctx, twoAddr, barDenom))
+}
+
+func Test_MultiSend(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+	moveBankKeeper := input.MoveKeeper.MoveBankKeeper()
+
+	bz, err := hex.DecodeString("0000000000000000000000000000000000000002")
+	require.NoError(t, err)
+	twoAddr := sdk.AccAddress(bz)
+
+	bz, err = hex.DecodeString("0000000000000000000000000000000000000003")
+	require.NoError(t, err)
+	threeAddr := sdk.AccAddress(bz)
+
+	bz, err = hex.DecodeString("0000000000000000000000000000000000000004")
+	require.NoError(t, err)
+	fourAddr := sdk.AccAddress(bz)
+
+	bz, err = hex.DecodeString("0000000000000000000000000000000000000005")
+	require.NoError(t, err)
+	fiveAddr := sdk.AccAddress(bz)
+
+	amount := sdk.NewCoins(sdk.NewCoin(bondDenom, sdkmath.NewIntFromUint64(1_000_000)))
+	input.Faucet.Fund(ctx, twoAddr, amount...)
+
+	err = moveBankKeeper.MultiSend(ctx, twoAddr, bondDenom, []sdk.AccAddress{threeAddr, fourAddr, fiveAddr}, []sdkmath.Int{sdkmath.NewIntFromUint64(300_000), sdkmath.NewIntFromUint64(400_000), sdkmath.NewIntFromUint64(300_000)})
+	require.NoError(t, err)
+
+	require.Equal(t, sdk.NewCoin(bondDenom, sdkmath.ZeroInt()), input.BankKeeper.GetBalance(ctx, twoAddr, bondDenom))
+	require.Equal(t, uint64(300_000), input.BankKeeper.GetBalance(ctx, threeAddr, bondDenom).Amount.Uint64())
+	require.Equal(t, uint64(400_000), input.BankKeeper.GetBalance(ctx, fourAddr, bondDenom).Amount.Uint64())
+	require.Equal(t, uint64(300_000), input.BankKeeper.GetBalance(ctx, fiveAddr, bondDenom).Amount.Uint64())
 }

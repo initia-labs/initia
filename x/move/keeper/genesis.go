@@ -15,6 +15,7 @@ func (k Keeper) Initialize(
 	ctx context.Context,
 	moduleBytes [][]byte,
 	allowedPublishers []string,
+	baseDenom string,
 ) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	ctx = sdkCtx.WithTxBytes(make([]byte, 32))
@@ -47,11 +48,24 @@ func (k Keeper) Initialize(
 	}
 
 	vmStore := types.NewVMStore(ctx, k.VMStore)
-	execRes, err := execVM(ctx, k, func(vm types.VMEngine) (vmtypes.ExecutionResult, error) {
-		return vm.Initialize(vmStore, api, env, vmtypes.NewModuleBundle(modules...), _allowedPublishers)
-	})
+	execRes, err := k.initiaMoveVM.Initialize(vmStore, api, env, vmtypes.NewModuleBundle(modules...), _allowedPublishers)
 	if err != nil {
 		return err
+	}
+	if err = k.handleExecuteResponse(sdkCtx, sdkCtx.GasMeter(), execRes); err != nil {
+		return err
+	}
+
+	// if staking keeper is available, initialize move staking module.
+	if k.StakingKeeper != nil {
+		if err := k.moveBankKeeper.InitializeCoin(ctx, baseDenom); err != nil {
+			return err
+		}
+
+		// initialize move staking module if staking keeper is available
+		if err := k.InitializeStaking(ctx, baseDenom); err != nil {
+			return err
+		}
 	}
 
 	return k.handleExecuteResponse(sdkCtx, sdkCtx.GasMeter(), execRes)
@@ -74,7 +88,7 @@ func (k Keeper) InitGenesis(ctx context.Context, moduleNames []string, genState 
 	}
 
 	if len(genState.GetModules()) == 0 {
-		if err := k.Initialize(ctx, genState.GetStdlibs(), params.AllowedPublishers); err != nil {
+		if err := k.Initialize(ctx, genState.GetStdlibs(), params.AllowedPublishers, params.BaseDenom); err != nil {
 			return err
 		}
 	}
@@ -86,6 +100,17 @@ func (k Keeper) InitGenesis(ctx context.Context, moduleNames []string, genState 
 		}
 
 		if err := k.SetModule(ctx, addr, module.ModuleName, module.RawBytes); err != nil {
+			return err
+		}
+	}
+
+	for _, checksum := range genState.GetChecksums() {
+		addr, err := types.AccAddressFromString(k.ac, checksum.Address)
+		if err != nil {
+			return err
+		}
+
+		if err := k.SetChecksum(ctx, addr, checksum.ModuleName, checksum.Checksum); err != nil {
 			return err
 		}
 	}
@@ -140,17 +165,23 @@ func (k Keeper) ExportGenesis(ctx context.Context) *types.GenesisState {
 	}
 
 	var modules []types.Module
+	var checksums []types.Checksum
 	var resources []types.Resource
 	var tableEntries []types.TableEntry
 	var tableInfos []types.TableInfo
 	err = k.IterateVMStore(ctx, func(
 		module *types.Module,
+		checksum *types.Checksum,
 		resource *types.Resource,
 		tableInfo *types.TableInfo,
 		tableEntry *types.TableEntry,
 	) {
 		if module != nil {
 			modules = append(modules, *module)
+		}
+
+		if checksum != nil {
+			checksums = append(checksums, *checksum)
 		}
 
 		if resource != nil {
@@ -182,6 +213,7 @@ func (k Keeper) ExportGenesis(ctx context.Context) *types.GenesisState {
 	}
 
 	genState.Modules = modules
+	genState.Checksums = checksums
 	genState.Resources = resources
 	genState.TableInfos = tableInfos
 	genState.TableEntries = tableEntries

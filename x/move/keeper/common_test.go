@@ -49,6 +49,10 @@ import (
 	govtypesv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 
+	ibcfee "github.com/cosmos/ibc-go/v8/modules/apps/29-fee"
+	ibctransfer "github.com/cosmos/ibc-go/v8/modules/apps/transfer"
+	ibcnfttransfer "github.com/initia-labs/initia/x/ibc/nft-transfer"
+
 	initiaapp "github.com/initia-labs/initia/app"
 	initiaappparams "github.com/initia-labs/initia/app/params"
 	"github.com/initia-labs/initia/x/bank"
@@ -90,6 +94,9 @@ var ModuleBasics = module.NewBasicManager(
 	slashing.AppModuleBasic{},
 	move.AppModuleBasic{},
 	oracle.AppModuleBasic{},
+	ibctransfer.AppModuleBasic{},
+	ibcnfttransfer.AppModuleBasic{},
+	ibcfee.AppModuleBasic{},
 )
 
 // Bond denom should be set for staking test
@@ -419,7 +426,7 @@ func _createTestInput(
 	// append test module
 	moduleBytes = append(moduleBytes, basicCoinModule)
 
-	err = moveKeeper.Initialize(ctx, moduleBytes, moveParams.AllowedPublishers)
+	err = moveKeeper.Initialize(ctx, moduleBytes, moveParams.AllowedPublishers, bondDenom)
 	require.NoError(t, err)
 
 	faucet := NewTestFaucet(t, ctx, bankKeeper, *moveKeeper, authtypes.Minter, initialTotalSupply()...)
@@ -487,6 +494,7 @@ var basicCoinMintScript []byte
 var tableGeneratorModule []byte
 var testAddressModule []byte
 var vestingModule []byte
+var submsgModule []byte
 
 func init() {
 	basicCoinModule = ReadMoveFile("BasicCoin")
@@ -495,6 +503,7 @@ func init() {
 	tableGeneratorModule = ReadMoveFile("TableGenerator")
 	testAddressModule = ReadMoveFile("TestAddress")
 	vestingModule = ReadMoveFile("Vesting")
+	submsgModule = ReadMoveFile("submsg")
 
 	basicCoinMintScript = ReadScriptFile("main")
 }
@@ -557,6 +566,10 @@ func (router TestMsgRouter) HandlerByTypeURL(typeURL string) baseapp.MsgServiceH
 				sdk.NewAttribute("type_args", strings.Join(msg.TypeArgs, ",")),
 				sdk.NewAttribute("args", strings.Join(msg.Args, ",")),
 			))
+
+			if msg.FunctionName == "fail" {
+				return nil, fmt.Errorf("fail")
+			}
 
 			return sdk.WrapServiceResult(ctx, &stakingtypes.MsgDelegateResponse{}, nil)
 		}

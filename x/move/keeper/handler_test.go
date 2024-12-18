@@ -166,7 +166,7 @@ func TestDispatchDelegateMessage(t *testing.T) {
 	require.NoError(t, err)
 
 	events := ctx.EventManager().Events()
-	event := events[len(events)-1]
+	event := events[len(events)-2]
 
 	require.Equal(t, sdk.NewEvent("delegate",
 		sdk.NewAttribute("delegator_address", delegator.String()),
@@ -200,7 +200,7 @@ func TestDispatchFundCommunityPoolMessage(t *testing.T) {
 	require.NoError(t, err)
 
 	events := ctx.EventManager().Events()
-	event := events[len(events)-1]
+	event := events[len(events)-2]
 
 	require.Equal(t, sdk.NewEvent("fund_community_pool",
 		sdk.NewAttribute("depositor_address", depositor.String()),
@@ -269,7 +269,7 @@ func TestDispatchTransferMessage(t *testing.T) {
 	require.NoError(t, err)
 
 	events := ctx.EventManager().Events()
-	event := events[len(events)-1]
+	event := events[len(events)-2]
 
 	require.Equal(t, sdk.NewEvent("transfer",
 		sdk.NewAttribute("sender", sender.String()),
@@ -336,7 +336,7 @@ func TestDispatchPayFeeMessage(t *testing.T) {
 	require.NoError(t, err)
 
 	events := ctx.EventManager().Events()
-	event := events[len(events)-1]
+	event := events[len(events)-2]
 
 	require.Equal(t, sdk.NewEvent("pay_fee",
 		sdk.NewAttribute("signer", sender.String()),
@@ -387,7 +387,7 @@ func TestDispatchFundMoveExecute(t *testing.T) {
 	require.NoError(t, err)
 
 	events := ctx.EventManager().Events()
-	event := events[len(events)-1]
+	event := events[len(events)-2]
 
 	require.Equal(t, sdk.NewEvent("move_execute",
 		sdk.NewAttribute("sender", sender.String()),
@@ -437,7 +437,7 @@ func TestDispatchFundMoveExecuteWithJson(t *testing.T) {
 	require.NoError(t, err)
 
 	events := ctx.EventManager().Events()
-	event := events[len(events)-1]
+	event := events[len(events)-2]
 
 	require.Equal(t, sdk.NewEvent("move_execute_with_json",
 		sdk.NewAttribute("sender", sender.String()),
@@ -480,7 +480,7 @@ func TestDispatchFundMoveScript(t *testing.T) {
 	require.NoError(t, err)
 
 	events := ctx.EventManager().Events()
-	event := events[len(events)-1]
+	event := events[len(events)-2]
 
 	require.Equal(t, sdk.NewEvent("move_script",
 		sdk.NewAttribute("sender", sender.String()),
@@ -521,7 +521,7 @@ func TestDispatchFundMoveScriptWithJson(t *testing.T) {
 	require.NoError(t, err)
 
 	events := ctx.EventManager().Events()
-	event := events[len(events)-1]
+	event := events[len(events)-2]
 
 	require.Equal(t, sdk.NewEvent("move_script_with_json",
 		sdk.NewAttribute("sender", sender.String()),
@@ -580,4 +580,142 @@ func Test_ContractSharedRevenue(t *testing.T) {
 	// 0x1 should be zero, but 0x2 should receive the coins
 	require.Equal(t, math.ZeroInt(), input.BankKeeper.GetBalance(ctx, types.ConvertVMAddressToSDKAddress(stdAddr), bondDenom).Amount)
 	require.Equal(t, revenueRatio.MulInt64(200).TruncateInt(), input.BankKeeper.GetBalance(ctx, types.ConvertVMAddressToSDKAddress(twoAddr), bondDenom).Amount)
+}
+
+func TestSubmsgCallback(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+
+	err := input.MoveKeeper.PublishModuleBundle(ctx, vmtypes.TestAddress, vmtypes.NewModuleBundle(vmtypes.NewModule(submsgModule)), types.UpgradePolicy_COMPATIBLE)
+	require.NoError(t, err)
+
+	sender := addrs[0]
+	senderAddr, err := vmtypes.NewAccountAddressFromBytes(sender)
+	require.NoError(t, err)
+
+	// submsg bytes
+	msg := types.NewMsgExecuteJSON(
+		sender.String(),
+		vmtypes.StdAddress.String(),
+		"module_name",
+		"fail",
+		[]string{"type_arg1", "type_arg2"},
+		[]string{"\"arg1\"", "\"arg2\""},
+	)
+	msgData, err := input.EncodingConfig.Codec.MarshalInterfaceJSON(msg)
+	require.NoError(t, err)
+
+	// 0. invalid message should not failed
+	err = input.MoveKeeper.ExecuteEntryFunctionJSON(ctx, senderAddr, vmtypes.TestAddress,
+		"submsg",
+		"stargate",
+		[]vmtypes.TypeTag{},
+		[]string{
+			"\"abcd\"",
+			"true",
+			"\"123\"",
+			fmt.Sprintf("\"%s::submsg::callback_without_signer\"", vmtypes.TestAddress),
+		})
+	require.NoError(t, err)
+
+	events := ctx.EventManager().Events()
+	event := events[len(events)-1]
+
+	require.Equal(t, sdk.NewEvent("move",
+		sdk.NewAttribute("type_tag", "0x2::submsg::ResultEvent"),
+		sdk.NewAttribute("data", "{\"id\":\"123\",\"success\":false}"),
+	), event)
+
+	// 1. callback without signer
+	err = input.MoveKeeper.ExecuteEntryFunctionJSON(ctx, senderAddr, vmtypes.TestAddress,
+		"submsg",
+		"stargate",
+		[]vmtypes.TypeTag{},
+		[]string{
+			fmt.Sprintf("\"%s\"", hex.EncodeToString(msgData)),
+			"true",
+			"\"123\"",
+			fmt.Sprintf("\"%s::submsg::callback_without_signer\"", vmtypes.TestAddress),
+		})
+	require.NoError(t, err)
+
+	events = ctx.EventManager().Events()
+	event = events[len(events)-1]
+
+	require.Equal(t, sdk.NewEvent("move",
+		sdk.NewAttribute("type_tag", "0x2::submsg::ResultEvent"),
+		sdk.NewAttribute("data", "{\"id\":\"123\",\"success\":false}"),
+	), event)
+
+	// events should not be committed
+	for _, e := range events {
+		require.NotEqual(t, e.Type, "move_execute_with_json")
+	}
+
+	// 2. callback with signer
+	err = input.MoveKeeper.ExecuteEntryFunctionJSON(ctx, senderAddr, vmtypes.TestAddress,
+		"submsg",
+		"stargate",
+		[]vmtypes.TypeTag{},
+		[]string{
+			fmt.Sprintf("\"%s\"", hex.EncodeToString(msgData)),
+			"true",
+			"\"234\"",
+			fmt.Sprintf("\"%s::submsg::callback_with_signer\"", vmtypes.TestAddress),
+		})
+	require.NoError(t, err)
+
+	events = ctx.EventManager().Events()
+	event = events[len(events)-1]
+
+	require.Equal(t, sdk.NewEvent("move",
+		sdk.NewAttribute("type_tag", "0x2::submsg::ResultEventWithSigner"),
+		sdk.NewAttribute("data", fmt.Sprintf("{\"account\":\"%s\",\"id\":\"234\",\"success\":false}", senderAddr)),
+	), event)
+
+	// events should not be committed
+	for _, e := range events {
+		require.NotEqual(t, e.Type, "move_execute_with_json")
+	}
+
+	// 3. success case
+	msg = types.NewMsgExecuteJSON(
+		sender.String(),
+		vmtypes.StdAddress.String(),
+		"module_name",
+		"function_name",
+		[]string{"type_arg1", "type_arg2"},
+		[]string{"\"arg1\"", "\"arg2\""},
+	)
+	msgData, err = input.EncodingConfig.Codec.MarshalInterfaceJSON(msg)
+	require.NoError(t, err)
+
+	err = input.MoveKeeper.ExecuteEntryFunctionJSON(ctx, senderAddr, vmtypes.TestAddress,
+		"submsg",
+		"stargate",
+		[]vmtypes.TypeTag{},
+		[]string{
+			fmt.Sprintf("\"%s\"", hex.EncodeToString(msgData)),
+			"true",
+			"\"345\"",
+			fmt.Sprintf("\"%s::submsg::callback_with_signer\"", vmtypes.TestAddress),
+		})
+	require.NoError(t, err)
+
+	events = ctx.EventManager().Events()
+	event = events[len(events)-1]
+
+	require.Equal(t, sdk.NewEvent("move",
+		sdk.NewAttribute("type_tag", "0x2::submsg::ResultEventWithSigner"),
+		sdk.NewAttribute("data", fmt.Sprintf("{\"account\":\"%s\",\"id\":\"345\",\"success\":true}", senderAddr)),
+	), event)
+
+	// events should be committed
+	var found bool
+	for _, e := range events {
+		if e.Type == "move_execute_with_json" {
+			found = true
+			break
+		}
+	}
+	require.True(t, found)
 }

@@ -12989,7 +12989,7 @@ type QueryValidatorResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// validator defines the the validator info.
+	// validator defines the validator info.
 	Validator *Validator `protobuf:"bytes,1,opt,name=validator,proto3" json:"validator,omitempty"`
 }
 
@@ -13726,7 +13726,7 @@ type QueryDelegatorValidatorsResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// validators defines the the validators' info of a delegator.
+	// validators defines the validators' info of a delegator.
 	Validators []*Validator `protobuf:"bytes,1,rep,name=validators,proto3" json:"validators,omitempty"`
 	// pagination defines the pagination in the response.
 	Pagination *v1beta1.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
@@ -13820,7 +13820,7 @@ type QueryDelegatorValidatorResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// validator defines the the validator info.
+	// validator defines the validator info.
 	Validator *Validator `protobuf:"bytes,1,opt,name=validator,proto3" json:"validator,omitempty"`
 }
 

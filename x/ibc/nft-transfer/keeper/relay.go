@@ -269,6 +269,11 @@ func (k Keeper) OnRecvPacket(ctx sdk.Context, packet channeltypes.Packet, data t
 		return err
 	}
 
+	// create account if receiver does not exist
+	if !k.authKeeper.HasAccount(ctx, receiver) {
+		k.authKeeper.SetAccount(ctx, k.authKeeper.NewAccountWithAddress(ctx, receiver))
+	}
+
 	labels := []metrics.Label{
 		telemetry.NewLabel(coretypes.LabelSourcePort, packet.GetSourcePort()),
 		telemetry.NewLabel(coretypes.LabelSourceChannel, packet.GetSourceChannel()),
@@ -420,7 +425,7 @@ func (k Keeper) OnRecvPacket(ctx sdk.Context, packet channeltypes.Packet, data t
 	return nil
 }
 
-// OnAcknowledgementPacket responds to the the success or failure of a packet
+// OnAcknowledgementPacket responds to the success or failure of a packet
 // acknowledgement written on the receiving chain. If the acknowledgement
 // was a success then nothing occurs. If the acknowledgement failed, then
 // the sender is refunded their tokens using the refundPacketToken function.

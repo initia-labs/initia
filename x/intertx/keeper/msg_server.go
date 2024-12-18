@@ -35,6 +35,8 @@ func (k msgServer) RegisterAccount(goCtx context.Context, msg *types.MsgRegister
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	icaMsg := icacontrollertypes.NewMsgRegisterInterchainAccount(msg.ConnectionId, msg.Owner, msg.Version)
+	icaMsg.Ordering = msg.Ordering
+
 	if _, err := k.icaControllerMsgServer.RegisterInterchainAccount(ctx, icaMsg); err != nil {
 		return nil, err
 	}

@@ -124,5 +124,10 @@ func (h MoveHooks) execMsg(ctx sdk.Context, msg *movetypes.MsgExecute) (*movetyp
 	}
 
 	moveMsgServer := movekeeper.NewMsgServerImpl(h.moveKeeper)
-	return moveMsgServer.Execute(ctx, msg)
+	res, err := moveMsgServer.Execute(ctx, msg)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }

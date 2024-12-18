@@ -18,7 +18,7 @@ import (
 )
 
 func decToVmArgument(t *testing.T, val math.LegacyDec) []byte {
-	// big-endian bytes
+	// big-endian bytes (bytes are cloned)
 	bz := val.BigInt().Bytes()
 
 	// reverse bytes to little-endian
@@ -492,7 +492,7 @@ func Test_Delegate(t *testing.T) {
 	baseDenom := bondDenom
 	metadataLP := createDexPool(t, ctx, input, sdk.NewInt64Coin(baseDenom, 1_000_000_000), sdk.NewInt64Coin("uusdc", 2_500_000_000), math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1))
 
-	secondBondDenom, err := movetypes.DenomFromMetadataAddress(ctx, movekeeper.NewMoveBankKeeper(&input.MoveKeeper), metadataLP)
+	secondBondDenom, err := movetypes.DenomFromMetadataAddress(ctx, input.MoveKeeper.MoveBankKeeper(), metadataLP)
 	require.NoError(t, err)
 
 	// update params
@@ -536,7 +536,7 @@ func Test_Unbond(t *testing.T) {
 	baseDenom := bondDenom
 	metadataLP := createDexPool(t, ctx, input, sdk.NewInt64Coin(baseDenom, 1_000_000_000), sdk.NewInt64Coin("uusdc", 2_500_000_000), math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1))
 
-	secondBondDenom, err := movetypes.DenomFromMetadataAddress(ctx, movekeeper.NewMoveBankKeeper(&input.MoveKeeper), metadataLP)
+	secondBondDenom, err := movetypes.DenomFromMetadataAddress(ctx, input.MoveKeeper.MoveBankKeeper(), metadataLP)
 	require.NoError(t, err)
 
 	// update params
@@ -574,7 +574,7 @@ func Test_UnbondAfterSlash(t *testing.T) {
 	baseDenom := bondDenom
 	metadataLP := createDexPool(t, ctx, input, sdk.NewInt64Coin(baseDenom, 1_000_000_000), sdk.NewInt64Coin("uusdc", 2_500_000_000), math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1))
 
-	secondBondDenom, err := movetypes.DenomFromMetadataAddress(ctx, movekeeper.NewMoveBankKeeper(&input.MoveKeeper), metadataLP)
+	secondBondDenom, err := movetypes.DenomFromMetadataAddress(ctx, input.MoveKeeper.MoveBankKeeper(), metadataLP)
 	require.NoError(t, err)
 
 	// update params
@@ -631,7 +631,7 @@ func Test_Undelegate(t *testing.T) {
 	baseDenom := bondDenom
 	metadataLP := createDexPool(t, ctx, input, sdk.NewInt64Coin(baseDenom, 1_000_000_000), sdk.NewInt64Coin("uusdc", 2_500_000_000), math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1))
 
-	secondBondDenom, err := movetypes.DenomFromMetadataAddress(ctx, movekeeper.NewMoveBankKeeper(&input.MoveKeeper), metadataLP)
+	secondBondDenom, err := movetypes.DenomFromMetadataAddress(ctx, input.MoveKeeper.MoveBankKeeper(), metadataLP)
 	require.NoError(t, err)
 
 	// update params
@@ -675,7 +675,7 @@ func Test_BeginRedelegation(t *testing.T) {
 	baseDenom := bondDenom
 	metadataLP := createDexPool(t, ctx, input, sdk.NewInt64Coin(baseDenom, 1_000_000_000), sdk.NewInt64Coin("uusdc", 2_500_000_000), math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1))
 
-	secondBondDenom, err := movetypes.DenomFromMetadataAddress(ctx, movekeeper.NewMoveBankKeeper(&input.MoveKeeper), metadataLP)
+	secondBondDenom, err := movetypes.DenomFromMetadataAddress(ctx, input.MoveKeeper.MoveBankKeeper(), metadataLP)
 	require.NoError(t, err)
 
 	// update params
@@ -720,7 +720,7 @@ func Test_ValidateUnbondAmount(t *testing.T) {
 	baseDenom := bondDenom
 	metadataLP := createDexPool(t, ctx, input, sdk.NewInt64Coin(baseDenom, 1_000_000_000), sdk.NewInt64Coin("uusdc", 2_500_000_000), math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1))
 
-	secondBondDenom, err := movetypes.DenomFromMetadataAddress(ctx, movekeeper.NewMoveBankKeeper(&input.MoveKeeper), metadataLP)
+	secondBondDenom, err := movetypes.DenomFromMetadataAddress(ctx, input.MoveKeeper.MoveBankKeeper(), metadataLP)
 	require.NoError(t, err)
 
 	// update params

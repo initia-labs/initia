@@ -64,7 +64,6 @@ message RawParams {
 }
 
 // Module is data for the uploaded contract move code
-// ex) 0000000000000000000000000000000000000001/0/BasicCoin
 message Module {
   string address = 1;
   string module_name = 2;
@@ -73,8 +72,14 @@ message Module {
   UpgradePolicy upgrade_policy = 5;
 }
 
+// Checksum is checksum of the uploaded contract move code
+message Checksum {
+  string address = 1;
+  string module_name = 2;
+  bytes checksum = 3;
+}
+
 // Resource is data for the stored move resource
-// ex) 0000000000000000000000000000000000000002/2/0x1::BasicCoin::Coin<0x1::BasicCoin::Initia>
 message Resource {
   string address = 1;
   string struct_tag = 2;
@@ -102,7 +107,7 @@ message TableEntry {
 enum UpgradePolicy {
   // UNSPECIFIED: a placeholder for an unspecified upgrade policy.
   UNSPECIFIED = 0;
-  // COMPATBILE: Whether a compatibility check should be performed for upgrades. The check only passes if
+  // COMPATIBLE: Whether a compatibility check should be performed for upgrades. The check only passes if
   // a new module has (a) the same public functions (b) for existing resources, no layout change.
   COMPATIBLE = 1;
   // IMMUTABLE: Whether the modules in the package are immutable and cannot be upgraded.
@@ -114,7 +119,7 @@ message UpgradePolicyProto {
   UpgradePolicy policy = 1;
 }
 
-// DexPair contains coin metdata address
+// DexPair contains coin metadata address
 // std::dex::Pool and std::dex::Config resources.
 message DexPair {
   string metadata_quote = 1;

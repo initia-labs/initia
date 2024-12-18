@@ -5,6 +5,8 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"math"
 	"strings"
 	"unsafe"
 
@@ -16,7 +18,6 @@ import (
 	"github.com/cosmos/gogoproto/proto"
 	"github.com/initia-labs/initia/x/move/ante"
 	"github.com/initia-labs/initia/x/move/types"
-	vmapi "github.com/initia-labs/movevm/api"
 	vmtypes "github.com/initia-labs/movevm/types"
 )
 
@@ -31,21 +32,6 @@ func isSimulation(
 	return sdkCtx.ExecMode() == sdk.ExecModeSimulate
 }
 
-// extract module address and module name from the compiled module bytes
-func (k Keeper) extractModuleIdentifier(moduleBundle vmtypes.ModuleBundle) ([]string, error) {
-	modules := make([]string, len(moduleBundle.Codes))
-	for i, moduleBz := range moduleBundle.Codes {
-		moduleAddr, moduleName, err := vmapi.ReadModuleInfo(moduleBz.Code)
-		if err != nil {
-			return nil, err
-		}
-
-		modules[i] = vmtypes.NewModuleId(moduleAddr, moduleName).String()
-	}
-
-	return modules, nil
-}
-
 ////////////////////////////////////////
 // Publish Functions
 
@@ -55,16 +41,6 @@ func (k Keeper) PublishModuleBundle(
 	moduleBundle vmtypes.ModuleBundle,
 	upgradePolicy types.UpgradePolicy,
 ) error {
-	moduleIds, err := k.extractModuleIdentifier(moduleBundle)
-	if err != nil {
-		return err
-	}
-
-	moduleIdBz, err := json.Marshal(&moduleIds)
-	if err != nil {
-		return err
-	}
-
 	moduleCodes := make([]string, len(moduleBundle.Codes))
 	for i, moduleCode := range moduleBundle.Codes {
 		// bytes -> hex string
@@ -86,11 +62,10 @@ func (k Keeper) PublishModuleBundle(
 		sender,
 		vmtypes.StdAddress,
 		types.MoveModuleNameCode,
-		types.FunctionNameCodePublish,
+		types.FunctionNameCodePublishV2,
 		[]vmtypes.TypeTag{},
 		[]string{
 			// use unsafe method for fast conversion
-			unsafe.String(unsafe.SliceData(moduleIdBz), len(moduleIdBz)),
 			unsafe.String(unsafe.SliceData(moduleCodesBz), len(moduleCodesBz)),
 			unsafe.String(unsafe.SliceData(upgradePolicyBz), len(upgradePolicyBz)),
 		},
@@ -189,25 +164,20 @@ func (k Keeper) executeEntryFunction(
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	gasMeter := sdkCtx.GasMeter()
-	gasForRuntime := gasMeter.Limit() - gasMeter.GasConsumedToLimit()
-	if isSimulation(ctx) {
-		gasForRuntime = k.config.ContractSimulationGasLimit
-	}
+	gasForRuntime := k.computeGasForRuntime(ctx, gasMeter)
 
 	// delegate gas metering to move vm
 	sdkCtx = sdkCtx.WithGasMeter(storetypes.NewInfiniteGasMeter())
 
 	gasBalance := gasForRuntime
-	execRes, err := execVM(ctx, k, func(vm types.VMEngine) (vmtypes.ExecutionResult, error) {
-		return vm.ExecuteEntryFunction(
-			&gasBalance,
-			types.NewVMStore(sdkCtx, k.VMStore),
-			NewApi(k, sdkCtx),
-			types.NewEnv(sdkCtx, ac, ec),
-			senders,
-			payload,
-		)
-	})
+	execRes, err := k.initiaMoveVM.ExecuteEntryFunction(
+		&gasBalance,
+		types.NewVMStore(sdkCtx, k.VMStore),
+		NewApi(k, sdkCtx),
+		types.NewEnv(sdkCtx, ac, ec),
+		senders,
+		payload,
+	)
 
 	// consume gas first and check error
 	gasUsed := gasForRuntime - gasBalance
@@ -304,25 +274,20 @@ func (k Keeper) executeScript(
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	gasMeter := sdkCtx.GasMeter()
-	gasForRuntime := gasMeter.Limit() - gasMeter.GasConsumedToLimit()
-	if isSimulation(ctx) {
-		gasForRuntime = k.config.ContractSimulationGasLimit
-	}
+	gasForRuntime := k.computeGasForRuntime(ctx, gasMeter)
 
 	// delegate gas metering to move vm
 	sdkCtx = sdkCtx.WithGasMeter(storetypes.NewInfiniteGasMeter())
 
 	gasBalance := gasForRuntime
-	execRes, err := execVM(ctx, k, func(vm types.VMEngine) (vmtypes.ExecutionResult, error) {
-		return vm.ExecuteScript(
-			&gasBalance,
-			types.NewVMStore(sdkCtx, k.VMStore),
-			NewApi(k, sdkCtx),
-			types.NewEnv(sdkCtx, ac, ec),
-			senders,
-			payload,
-		)
-	})
+	execRes, err := k.initiaMoveVM.ExecuteScript(
+		&gasBalance,
+		types.NewVMStore(sdkCtx, k.VMStore),
+		NewApi(k, sdkCtx),
+		types.NewEnv(sdkCtx, ac, ec),
+		senders,
+		payload,
+	)
 
 	// consume gas first and check error
 	gasUsed := gasForRuntime - gasBalance
@@ -413,44 +378,90 @@ func (k Keeper) handleExecuteResponse(
 func (k Keeper) DispatchMessages(ctx context.Context, messages []vmtypes.CosmosMessage) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	for _, message := range messages {
-		var msg proto.Message
-		var err error
-		if stargateMsg, ok := message.(*vmtypes.CosmosMessage__Stargate); ok {
-			msg, err = k.HandleVMStargateMsg(ctx, &stargateMsg.Value)
-			if err != nil {
-				return err
-			}
-		} else {
-			msg, err = types.ConvertToSDKMessage(ctx, NewMoveBankKeeper(&k), NewNftKeeper(&k), message, k.ac, k.vc)
-			if err != nil {
-				return err
-			}
-		}
-
-		// validate msg
-		if msg, ok := msg.(sdk.HasValidateBasic); ok {
-			if err := msg.ValidateBasic(); err != nil {
-				return err
-			}
-		}
-
-		// find the handler
-		handler := k.msgRouter.Handler(msg)
-		if handler == nil {
-			return types.ErrNotSupportedCosmosMessage
-		}
-
-		//  and execute it
-		res, err := handler(sdkCtx, msg)
+		err := k.dispatchMessage(sdkCtx, message)
 		if err != nil {
 			return err
 		}
-
-		// emit events
-		sdkCtx.EventManager().EmitEvents(res.GetEvents())
 	}
 
 	return nil
+}
+
+func (k Keeper) dispatchMessage(parentCtx sdk.Context, message vmtypes.CosmosMessage) (err error) {
+	ctx, commit := parentCtx.CacheContext()
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("panic: %v", r)
+		}
+
+		success := err == nil
+
+		// create submsg event
+		event := sdk.NewEvent(
+			types.EventTypeSubmsg,
+			sdk.NewAttribute(types.AttributeKeySuccess, fmt.Sprintf("%v", success)),
+		)
+
+		if !success {
+			// return error if failed and not allowed to fail
+			if !message.AllowFailure {
+				return
+			}
+
+			// emit failed reason event if failed and allowed to fail
+			event = event.AppendAttributes(sdk.NewAttribute(types.AttributeKeyReason, err.Error()))
+		} else {
+			// commit if success
+			commit()
+		}
+
+		// reset error because it's allowed to fail
+		err = nil
+
+		// emit submessage event
+		parentCtx.EventManager().EmitEvent(event)
+
+		// if callback exists, execute it with parent context because it's already committed
+		if message.Callback != nil {
+			err = k.ExecuteEntryFunctionJSON(
+				parentCtx,
+				message.Sender,
+				message.Callback.ModuleAddress,
+				message.Callback.ModuleName,
+				message.Callback.FunctionName,
+				[]vmtypes.TypeTag{},
+				[]string{
+					fmt.Sprintf("\"%d\"", message.Callback.Id),
+					fmt.Sprintf("%v", success),
+				},
+			)
+		}
+	}()
+
+	// validate basic & signer check is done in HandleVMStargateMsg
+	var msg proto.Message
+	msg, err = k.HandleVMStargateMsg(ctx, &message)
+	if err != nil {
+		return
+	}
+
+	// find the handler
+	handler := k.msgRouter.Handler(msg)
+	if handler == nil {
+		err = types.ErrNotSupportedCosmosMessage
+		return
+	}
+
+	//  and execute it
+	res, err := handler(ctx, msg)
+	if err != nil {
+		return
+	}
+
+	// emit events
+	ctx.EventManager().EmitEvents(res.GetEvents())
+
+	return
 }
 
 // DistributeContractSharedRevenue distribute a portion of gas fee to contract creator account
@@ -583,18 +594,16 @@ func (k Keeper) executeViewFunction(
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	gasMeter := sdkCtx.GasMeter()
-	gasForRuntime := gasMeter.Limit() - gasMeter.GasConsumedToLimit()
+	gasForRuntime := k.computeGasForRuntime(ctx, gasMeter)
 
 	gasBalance := gasForRuntime
-	viewRes, err := execVM(ctx, k, func(vm types.VMEngine) (vmtypes.ViewOutput, error) {
-		return vm.ExecuteViewFunction(
-			&gasBalance,
-			types.NewVMStore(ctx, k.VMStore),
-			api,
-			env,
-			payload,
-		)
-	})
+	viewRes, err := k.initiaMoveVM.ExecuteViewFunction(
+		&gasBalance,
+		types.NewVMStore(ctx, k.VMStore),
+		api,
+		env,
+		payload,
+	)
 
 	// consume gas first and check error
 	gasUsed := gasForRuntime - gasBalance
@@ -606,13 +615,18 @@ func (k Keeper) executeViewFunction(
 	return viewRes, gasUsed, nil
 }
 
-// execVM runs vm in separate function statement to release right after execution
-// to avoid deadlock even if the function panics
-//
-// TODO - remove this after loader v2 is installed
-func execVM[T any](ctx context.Context, k Keeper, f func(types.VMEngine) (T, error)) (T, error) {
-	vm := k.acquireVM(ctx)
-	defer k.releaseVM()
+func (k Keeper) computeGasForRuntime(ctx context.Context, gasMeter storetypes.GasMeter) uint64 {
+	gasForRuntime := gasMeter.Limit() - gasMeter.GasConsumedToLimit()
+	if isSimulation(ctx) {
+		gasForRuntime = k.config.ContractSimulationGasLimit
+	}
 
-	return f(vm)
+	// gasUnitScale is multiplied in moveVM to scale the gas limit, so we need to divide it here
+	// if gasForRuntime is too large, it will overflow when multiplied in moveVM.
+	const gasUintScale = 100
+	if gasForRuntime > math.MaxUint64/gasUintScale {
+		return math.MaxUint64 / gasUintScale
+	}
+
+	return gasForRuntime
 }

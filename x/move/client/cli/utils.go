@@ -204,7 +204,7 @@ func bcsSerializeArg(argType string, arg string, s serde.Serializer, ac address.
 			return nil, fmt.Errorf("failed to parse %q as biguint", err)
 		}
 
-		// convert to little endian
+		// convert to little endian (bytes are cloned)
 		bz := n.BigInt().Bytes()
 		slices.Reverse(bz)
 
@@ -216,7 +216,7 @@ func bcsSerializeArg(argType string, arg string, s serde.Serializer, ac address.
 			return nil, err
 		}
 
-		// convert to little endian
+		// convert to little endian (bytes are cloned)
 		bz := dec.BigInt().Bytes()
 		slices.Reverse(bz)
 

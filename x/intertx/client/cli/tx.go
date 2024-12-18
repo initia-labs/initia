@@ -15,6 +15,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 )
 
 // GetTxCmd creates and returns the intertx tx command
@@ -55,6 +57,11 @@ func getRegisterAccountCmd(ac address.Codec) *cobra.Command {
 				viper.GetString(FlagVersion),
 			)
 
+			ordered := viper.GetBool(FlagOrdered)
+			if ordered {
+				msg.Ordering = channeltypes.ORDERED
+			}
+
 			if err := msg.Validate(ac); err != nil {
 				return err
 			}
@@ -65,6 +72,7 @@ func getRegisterAccountCmd(ac address.Codec) *cobra.Command {
 
 	cmd.Flags().AddFlagSet(fsConnectionID)
 	cmd.Flags().AddFlagSet(fsVersion)
+	cmd.Flags().AddFlagSet(fsOrdered)
 	_ = cmd.MarkFlagRequired(FlagConnectionID)
 
 	flags.AddTxFlagsToCmd(cmd)

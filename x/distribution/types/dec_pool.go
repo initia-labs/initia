@@ -291,7 +291,7 @@ func NewDecPool(denom string, coins sdk.DecCoins) DecPool {
 	return DecPool{denom, sdk.NewDecCoins(coins...)}
 }
 
-// IsEmpty returns wether the pool coins are empty or not
+// IsEmpty returns whether the pool coins are empty or not
 func (pool DecPool) IsEmpty() bool {
 	return pool.DecCoins.IsZero()
 }

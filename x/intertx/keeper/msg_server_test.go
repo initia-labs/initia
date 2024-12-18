@@ -35,7 +35,7 @@ func (suite *KeeperTestSuite) TestRegisterInterchainAccount() {
 			false,
 		},
 		{
-			"faliure - owner is empty",
+			"failure - owner is empty",
 			func() {
 				owner = ""
 			},
@@ -77,6 +77,7 @@ func (suite *KeeperTestSuite) TestRegisterInterchainAccount() {
 
 			msgSrv := keeper.NewMsgServerImpl(*GetICAApp(suite.chainA).GetICAAuthKeeper())
 			msg := types.NewMsgRegisterAccount(owner, path.EndpointA.ConnectionID, path.EndpointA.ChannelConfig.Version)
+			msg.Ordering = channeltypes.ORDERED
 
 			res, err := msgSrv.RegisterAccount(sdk.WrapSDKContext(suite.chainA.GetContext()), msg)
 

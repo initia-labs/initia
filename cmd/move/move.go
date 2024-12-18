@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"runtime/debug"
 	"strings"
 
 	"cosmossdk.io/core/address"
@@ -60,7 +61,7 @@ const (
 	flagReportStatistics          = "statistics"
 	flagReportStatisticsShorthand = "s"
 	flagReportStorageOnError      = "state-on-error"          // original move cli uses snake case, not kebab.
-	flagIgnoreCompileWarnings     = "ignore-compile-warnings" // original move cli uses snake case, noe kebab.
+	flagIgnoreCompileWarnings     = "ignore-compile-warnings" // original move cli uses snake case, not kebab.
 	fiagCheckStacklessVM          = "stackless"
 	flagComputeCoverage           = "coverage"
 	// clean options
@@ -85,7 +86,7 @@ const (
 	defaultInstallDir  = "."
 )
 
-func MoveCommand(ac address.Codec) *cobra.Command {
+func MoveCommand(ac address.Codec, useMinlib bool) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:                        "move",
 		Short:                      "move subcommands",
@@ -98,7 +99,7 @@ func MoveCommand(ac address.Codec) *cobra.Command {
 		moveBuildCmd(),
 		moveTestCmd(),
 		moveEncodeCmd(ac),
-		moveNewCmd(),
+		moveNewCmd(useMinlib),
 		moveCleanCmd(),
 		moveDeployCmd(ac),
 		moveVerifyCmd(),
@@ -307,7 +308,7 @@ func moveCoverageBytecodeCmd() *cobra.Command {
 	return cmd
 }
 
-func moveNewCmd() *cobra.Command {
+func moveNewCmd(useMinlib bool) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "new <NAME>",
 		Short: "create a new move package",
@@ -319,7 +320,17 @@ func moveNewCmd() *cobra.Command {
 				return err
 			}
 
-			_, err = api.CreateContractPackage(*arg, args[0])
+			movevmVersion := ""
+			info, ok := debug.ReadBuildInfo()
+			if ok {
+				for _, dep := range info.Deps {
+					if dep.Path == "github.com/initia-labs/movevm" {
+						movevmVersion = dep.Version
+					}
+				}
+			}
+
+			_, err = api.CreateContractPackage(*arg, args[0], movevmVersion, useMinlib)
 			if err != nil {
 				return err
 			}
@@ -567,8 +578,8 @@ the 'tests' directory`)
 	cmd.Flags().Bool(flagVerbose, false, "Print additional diagnostics if available")
 	cmd.Flags().Bool(flagSkipFetchLatestGitDeps, false, "Skip fetching latest git dependencies")
 	cmd.Flags().Uint32(flagBytecodeVersion, 0, "Specify the version of the bytecode the compiler is going to emit")
-	cmd.Flags().String(flagCompilerVersion, "1", "Specify the version of the compiler to use")
-	cmd.Flags().String(flagLanguageVersion, "1", "Specify the version of the language to use")
+	cmd.Flags().String(flagCompilerVersion, "2", "Specify the version of the compiler to use")
+	cmd.Flags().String(flagLanguageVersion, "2", "Specify the version of the language to use")
 	cmd.Flags().String(flagNamedAddresses, "", "Named addresses to use in compilation. ex: --named-addresses 'name_1=0x1,name_2=0x2'")
 }
 

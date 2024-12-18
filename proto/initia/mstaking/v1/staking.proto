@@ -134,7 +134,7 @@ message Validator {
   // strictly positive if this validator's unbonding has been stopped by external modules
   int64 unbonding_on_hold_ref_count = 13;
 
-  // unbonding id, uniquely identifing an unbonding of this validator
+  // unbonding id, uniquely identifying an unbonding of this validator
   uint64 unbonding_id = 14;
 }
 

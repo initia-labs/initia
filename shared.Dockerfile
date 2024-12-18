@@ -3,7 +3,7 @@ FROM golang:1.22-bullseye AS go-builder
 # Install minimum necessary dependencies, build Cosmos SDK, remove packages
 RUN apt update
 RUN apt install -y curl git build-essential
-# debug: for live editting in the image
+# debug: for live editing in the image
 RUN apt install -y vim
 
 WORKDIR /code
