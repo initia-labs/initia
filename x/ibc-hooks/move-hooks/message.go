@@ -2,6 +2,8 @@ package move_hooks
 
 import (
 	"encoding/json"
+	"fmt"
+	"strings"
 
 	movetypes "github.com/initia-labs/initia/x/move/types"
 )
@@ -53,44 +55,50 @@ type HookData struct {
 	AsyncCallback *AsyncCallback `json:"async_callback,omitempty"`
 }
 
-// asyncCallback is same as AsyncCallback.
-type asyncCallback struct {
-	// callback id should be issued form the executor contract
-	Id            uint64 `json:"id"`
-	ModuleAddress string `json:"module_address"`
-	ModuleName    string `json:"module_name"`
-}
-
-// asyncCallbackStringID is same as AsyncCallback but
-// it has Id as string.
-type asyncCallbackStringID struct {
-	// callback id should be issued form the executor contract
-	Id            uint64 `json:"id,string"`
-	ModuleAddress string `json:"module_address"`
-	ModuleName    string `json:"module_name"`
+// intermediateCallback is used internally for JSON unmarshaling
+type intermediateCallback struct {
+	Id            interface{} `json:"id"`
+	ModuleAddress string      `json:"module_address"`
+	ModuleName    string      `json:"module_name"`
 }
 
 // UnmarshalJSON implements the json unmarshaler interface.
-// custom unmarshaler is required because we have to handle
-// id as string and uint64.
+// It handles both string and numeric id formats and validates the module address.
 func (a *AsyncCallback) UnmarshalJSON(bz []byte) error {
-	var ac asyncCallback
-	err := json.Unmarshal(bz, &ac)
-	if err != nil {
-		var acStr asyncCallbackStringID
-		err := json.Unmarshal(bz, &acStr)
-		if err != nil {
-			return err
-		}
-
-		a.Id = acStr.Id
-		a.ModuleAddress = acStr.ModuleAddress
-		a.ModuleName = acStr.ModuleName
-		return nil
+	var ic intermediateCallback
+	if err := json.Unmarshal(bz, &ic); err != nil {
+		return fmt.Errorf("failed to unmarshal AsyncCallback: %w", err)
 	}
 
-	a.Id = ac.Id
-	a.ModuleAddress = ac.ModuleAddress
-	a.ModuleName = ac.ModuleName
+	// Validate required fields
+	if ic.ModuleAddress == "" {
+		return fmt.Errorf("module_address cannot be empty")
+	}
+	if ic.ModuleName == "" {
+		return fmt.Errorf("module_name cannot be empty")
+	}
+
+	// Validate module address format (assuming it should start with "0x")
+	if !strings.HasPrefix(ic.ModuleAddress, "0x") {
+		return fmt.Errorf("invalid module_address format: must start with '0x'")
+	}
+
+	// Handle ID based on type
+	switch v := ic.Id.(type) {
+	case float64:
+		a.Id = uint64(v)
+	case string:
+		var err error
+		var parsed float64
+		if err = json.Unmarshal([]byte(v), &parsed); err != nil {
+			return fmt.Errorf("invalid id format: %w", err)
+		}
+		a.Id = uint64(parsed)
+	default:
+		return fmt.Errorf("invalid id type: expected string or number")
+	}
+
+	a.ModuleAddress = ic.ModuleAddress
+	a.ModuleName = ic.ModuleName
 	return nil
 }
