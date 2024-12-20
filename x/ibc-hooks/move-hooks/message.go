@@ -78,20 +78,25 @@ func (a *AsyncCallback) UnmarshalJSON(bz []byte) error {
 		return fmt.Errorf("module_name cannot be empty")
 	}
 
-	// Validate module address format (assuming it should start with "0x")
+	// Validate module address format
 	if !strings.HasPrefix(ic.ModuleAddress, "0x") {
 		return fmt.Errorf("invalid module_address format: must start with '0x'")
 	}
 
-	// Handle ID based on type
+	// Handle ID based on type with overflow checking
 	switch v := ic.Id.(type) {
 	case float64:
+		if v < 0 || v > float64(^uint64(0)) || v != float64(uint64(v)) {
+			return fmt.Errorf("id value out of range or contains decimals")
+		}
 		a.Id = uint64(v)
 	case string:
-		var err error
 		var parsed float64
-		if err = json.Unmarshal([]byte(v), &parsed); err != nil {
+		if err := json.Unmarshal([]byte(v), &parsed); err != nil {
 			return fmt.Errorf("invalid id format: %w", err)
+		}
+		if parsed < 0 || parsed > float64(^uint64(0)) || parsed != float64(uint64(parsed)) {
+			return fmt.Errorf("id value out of range or contains decimals")
 		}
 		a.Id = uint64(parsed)
 	default:

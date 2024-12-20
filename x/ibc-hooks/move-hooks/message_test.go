@@ -100,4 +100,70 @@ func Test_Unmarshal_AsyncCallback(t *testing.T) {
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "invalid character")
 	})
+
+	t.Run("id with decimal value", func(t *testing.T) {
+		var callback movehooks.AsyncCallback
+		err := json.Unmarshal([]byte(`{
+			"id": 99.5,
+			"module_address": "0x1",
+			"module_name": "Counter"
+		}`), &callback)
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "id value out of range or contains decimals")
+	})
+
+	t.Run("id with string decimal value", func(t *testing.T) {
+		var callback movehooks.AsyncCallback
+		err := json.Unmarshal([]byte(`{
+			"id": "99.5",
+			"module_address": "0x1",
+			"module_name": "Counter"
+		}`), &callback)
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "id value out of range or contains decimals")
+	})
+
+	t.Run("negative id value", func(t *testing.T) {
+		var callback movehooks.AsyncCallback
+		err := json.Unmarshal([]byte(`{
+			"id": -1,
+			"module_address": "0x1",
+			"module_name": "Counter"
+		}`), &callback)
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "id value out of range or contains decimals")
+	})
+
+	t.Run("negative string id value", func(t *testing.T) {
+		var callback movehooks.AsyncCallback
+		err := json.Unmarshal([]byte(`{
+			"id": "-1",
+			"module_address": "0x1",
+			"module_name": "Counter"
+		}`), &callback)
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "id value out of range or contains decimals")
+	})
+
+	t.Run("id value exceeding uint64 max", func(t *testing.T) {
+		var callback movehooks.AsyncCallback
+		err := json.Unmarshal([]byte(`{
+			"id": 18446744073709551616,
+			"module_address": "0x1",
+			"module_name": "Counter"
+		}`), &callback)
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "id value out of range or contains decimals")
+	})
+
+	t.Run("string id value exceeding uint64 max", func(t *testing.T) {
+		var callback movehooks.AsyncCallback
+		err := json.Unmarshal([]byte(`{
+			"id": "18446744073709551616",
+			"module_address": "0x1",
+			"module_name": "Counter"
+		}`), &callback)
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "id value out of range or contains decimals")
+	})
 }
