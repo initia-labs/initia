@@ -17,8 +17,20 @@ import (
 	oracleconfig "github.com/skip-mev/connect/v2/oracle/config"
 )
 
+func newTempApp() *InitiaApp {
+	return NewInitiaApp(
+		log.NewNopLogger(),
+		dbm.NewMemDB(),
+		nil,
+		true,
+		moveconfig.DefaultMoveConfig(),
+		oracleconfig.NewDefaultAppConfig(),
+		EmptyAppOptions{},
+	)
+}
+
 func MakeEncodingConfig() params.EncodingConfig {
-	tempApp := NewInitiaApp(log.NewNopLogger(), dbm.NewMemDB(), nil, true, moveconfig.DefaultMoveConfig(), oracleconfig.NewDefaultAppConfig(), EmptyAppOptions{})
+	tempApp := newTempApp()
 	encodingConfig := params.EncodingConfig{
 		InterfaceRegistry: tempApp.InterfaceRegistry(),
 		Codec:             tempApp.AppCodec(),
@@ -30,7 +42,7 @@ func MakeEncodingConfig() params.EncodingConfig {
 }
 
 func AutoCliOpts() autocli.AppOptions {
-	tempApp := NewInitiaApp(log.NewNopLogger(), dbm.NewMemDB(), nil, true, moveconfig.DefaultMoveConfig(), oracleconfig.NewDefaultAppConfig(), EmptyAppOptions{})
+	tempApp := newTempApp()
 	modules := make(map[string]appmodule.AppModule, 0)
 	for _, m := range tempApp.ModuleManager.Modules {
 		if moduleWithName, ok := m.(module.HasName); ok {
@@ -51,7 +63,7 @@ func AutoCliOpts() autocli.AppOptions {
 }
 
 func BasicManager() module.BasicManager {
-	tempApp := NewInitiaApp(log.NewNopLogger(), dbm.NewMemDB(), nil, true, moveconfig.DefaultMoveConfig(), oracleconfig.NewDefaultAppConfig(), EmptyAppOptions{})
+	tempApp := newTempApp()
 	return tempApp.BasicModuleManager
 }
 
