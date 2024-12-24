@@ -27,6 +27,7 @@ func TestNonFungibleTokenPacketDataValidateBasic(t *testing.T) {
 		{"invalid token uris", NewNonFungibleTokenPacketData(classId, "", "", []string{"1", "2"}, []string{""}, []string{"", ""}, addr1, addr2, ""), false},
 		{"missing sender address", NewNonFungibleTokenPacketData(classId, "", "", []string{"1", "2", "3"}, []string{"", "", ""}, []string{"", "", ""}, emptyAddr, addr2, ""), false},
 		{"missing recipient address", NewNonFungibleTokenPacketData(classId, "", "", []string{"1", "2", "3"}, []string{"", "", ""}, []string{"", "", ""}, addr1, emptyAddr, ""), false},
+		{"duplicate token ids", NewNonFungibleTokenPacketData(classId, "", "", []string{"1", "2", "3", "1"}, []string{"", "", "", ""}, []string{"", "", "", ""}, addr1, addr2, ""), false},
 	}
 
 	for i, tc := range testCases {

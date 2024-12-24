@@ -62,10 +62,16 @@ func (nftpd NonFungibleTokenPacketData) ValidateBasic() error {
 	if len(nftpd.TokenIds) != len(nftpd.TokenData) || len(nftpd.TokenIds) != len(nftpd.TokenUris) {
 		return errors.Wrap(ErrInvalidPacket, "all token infos should have same length")
 	}
+	seenTokens := make(map[string]struct{})
 	for _, tokenId := range nftpd.TokenIds {
-		if len(tokenId) == 0 {
-			return errors.Wrap(ErrInvalidTokenIds, "invalid zero length token id")
-		}
+			if len(tokenId) == 0 {
+					return errors.Wrap(ErrInvalidTokenIds, "invalid zero length token id")
+			}
+			// check duplicate
+			if _, exists := seenTokens[tokenId]; exists {
+					return errors.Wrapf(ErrInvalidTokenIds, "duplicate token id: %s", tokenId)
+			}
+			seenTokens[tokenId] = struct{}{}
 	}
 	return ValidatePrefixedClassId(nftpd.ClassId)
 }
