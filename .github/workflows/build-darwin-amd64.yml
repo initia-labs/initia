@@ -46,16 +46,26 @@ jobs:
           echo "MOVEVM_VERSION=${MOVEVM_VERSION}"
           echo "L1_NETWORK_NAME=${L1_NETWORK_NAME}"
 
-      - name: Build and Package for Darwin ADM64
+      - name: Build and Package for Darwin AMD64
         run: |
-          cd ../initia \
-          && make build \
-          && cd ./build \
-          && cp ~/go/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libmovevm.dylib ./ \
-          && cp ~/go/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libcompiler.dylib ./ \
-          && tar -czvf initia_"$VERSION"_Darwin_"$ARCH_NAME".tar.gz initiad libmovevm.dylib libcompiler.dylib \
-          && mv ./initia_"$VERSION"_Darwin_"$ARCH_NAME".tar.gz $GITHUB_WORKSPACE/ \
-          && rm -rf ./libmovevm.dylib ./libcompiler.dylib ./initiad
+          make build
+          
+          # Create build directory if not exists
+          mkdir -p build
+          
+          # Copy required dylib files
+          cp "${HOME}/go/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libmovevm.dylib" build/
+          cp "${HOME}/go/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libcompiler.dylib" build/
+          
+          # Create archive
+          cd build && \
+          tar -czvf "initia_${VERSION}_Darwin_${ARCH_NAME}.tar.gz" \
+            initiad libmovevm.dylib libcompiler.dylib
+          
+          # Move archive to workspace and cleanup
+          mv "initia_${VERSION}_Darwin_${ARCH_NAME}.tar.gz" "${GITHUB_WORKSPACE}/"
+          rm -f libmovevm.dylib libcompiler.dylib initiad
+
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
