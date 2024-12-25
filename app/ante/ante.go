@@ -98,7 +98,7 @@ func buildAnteDecorators(options HandlerOptions, freeLaneFeeChecker func(sdk.Con
 		ante.NewSetPubKeyDecorator(options.AccountKeeper), // Must be called before signature verification.
 		ante.NewValidateSigCountDecorator(options.AccountKeeper),
 		ante.NewSigGasConsumeDecorator(options.AccountKeeper, sigverify.DefaultSigVerificationGasConsumer),
-		sigverify.NewSigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
+		sigverify.NewSigVerificationDecorator(options.AccountKeeper, sigGasConsumer),
 		ante.NewIncrementSequenceDecorator(options.AccountKeeper),
 		ibcante.NewRedundantRelayDecorator(options.IBCkeeper),
 		auctionante.NewAuctionDecorator(options.AuctionKeeper, options.TxEncoder, options.MevLane),
