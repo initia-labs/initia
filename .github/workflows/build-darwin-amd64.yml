@@ -54,8 +54,8 @@ jobs:
           mkdir -p build
           
           # Copy required dylib files
-          cp "${HOME}/go/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libmovevm.dylib" build/
-          cp "${HOME}/go/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libcompiler.dylib" build/
+          cp "$(go env GOPATH)/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libmovevm.dylib" build/
+          cp "$(go env GOPATH)/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libcompiler.dylib" build/
           
           # Create archive
           cd build && \
