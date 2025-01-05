@@ -508,7 +508,7 @@ func VerifyAddressLen() func(addr []byte) error {
 	return func(addr []byte) error {
 		addrLen := len(addr)
 		if addrLen != 20 && addrLen != movetypes.AddressBytesLength {
-			return sdkerrors.ErrInvalidAddress
+			return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "address length must be 20 or %d bytes, got %d bytes", movetypes.AddressBytesLength, addrLen)
 		}
 		return nil
 	}
@@ -565,14 +565,16 @@ func (app *InitiaApp) DefaultGenesis() map[string]json.RawMessage {
 // Close closes the underlying baseapp, the oracle service, and the prometheus server if required.
 // This method blocks on the closure of both the prometheus server, and the oracle-service
 func (app *InitiaApp) Close() error {
-	if err := app.BaseApp.Close(); err != nil {
-		return err
+	if app.BaseApp != nil {
+		if err := app.BaseApp.Close(); err != nil {
+			return fmt.Errorf("failed to close BaseApp: %w", err)
+		}
 	}
 
 	// close the oracle service
 	if app.oracleClient != nil {
 		if err := app.oracleClient.Stop(); err != nil {
-			return err
+			return fmt.Errorf("failed to stop oracle client: %w", err)
 		}
 	}
 
