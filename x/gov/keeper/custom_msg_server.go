@@ -14,7 +14,7 @@ type customMsgServer struct {
 	*Keeper
 }
 
-// NewMsgServerImpl returns an implementation of the gov MsgServer interface
+// NewCustomMsgServerImpl returns an implementation of the gov CustomMsgServer interface
 // for the provided Keeper.
 func NewCustomMsgServerImpl(keeper *Keeper) customtypes.MsgServer {
 	return &customMsgServer{Keeper: keeper}

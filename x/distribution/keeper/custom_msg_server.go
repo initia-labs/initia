@@ -16,7 +16,7 @@ type customMsgServer struct {
 	Keeper
 }
 
-// NewMsgServerImpl returns an implementation of the distribution MsgServer interface
+// NewCustomMsgServerImpl returns an implementation of the distribution CustomMsgServer interface
 // for the provided Keeper.
 func NewCustomMsgServerImpl(k Keeper) customtypes.MsgServer {
 	return &customMsgServer{Keeper: k}
