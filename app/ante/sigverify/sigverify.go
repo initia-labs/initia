@@ -25,133 +25,139 @@ import (
 	"github.com/initia-labs/initia/crypto/ethsecp256k1"
 )
 
+// Simulation signature values used to estimate gas consumption.
 var (
-	// simulation signature values used to estimate gas consumption
 	key                = make([]byte, secp256k1.PubKeySize)
 	simSecp256k1Pubkey = &secp256k1.PubKey{Key: key}
 )
 
 func init() {
-	// This decodes a valid hex string into a sepc256k1Pubkey for use in transaction simulation
+	// Decode a valid hex string into a secp256k1 public key for transaction simulation.
 	bz, _ := hex.DecodeString("035AD6810A47F073553FF30D2FCC7E0D3B1C0B74B61A1AAA2582344037151E143A")
 	copy(key, bz)
 	simSecp256k1Pubkey.Key = key
 }
 
-// SigVerificationDecorator verifies all signatures for a tx and return an error if any are invalid. Note,
-// the SigVerificationDecorator will not check signatures on ReCheck.
-//
-// CONTRACT: Pubkeys are set in context for all signers before this decorator runs
-// CONTRACT: Tx must implement SigVerifiableTx interface
+// SigVerificationDecorator verifies all signatures in a transaction and ensures their validity.
+// Note: This decorator skips signature verification during ReCheckTx.
 type SigVerificationDecorator struct {
-	ak              authante.AccountKeeper
+	accountKeeper    authante.AccountKeeper
 	signModeHandler *txsigning.HandlerMap
 }
 
-func NewSigVerificationDecorator(ak authante.AccountKeeper, signModeHandler *txsigning.HandlerMap) SigVerificationDecorator {
+// NewSigVerificationDecorator creates a new SigVerificationDecorator.
+func NewSigVerificationDecorator(accountKeeper authante.AccountKeeper, signModeHandler *txsigning.HandlerMap) SigVerificationDecorator {
 	return SigVerificationDecorator{
-		ak:              ak,
+		accountKeeper:    accountKeeper,
 		signModeHandler: signModeHandler,
 	}
 }
 
-func (svd SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
+// AnteHandle verifies signatures and enforces sequence numbers in transactions.
+func (svd SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
 	sigTx, ok := tx.(authsigning.Tx)
 	if !ok {
 		return ctx, errorsmod.Wrap(sdkerrors.ErrTxDecode, "invalid transaction type")
 	}
 
-	// stdSigs contains the sequence number, account number, and signatures.
-	// When simulating, this would just be a 0-length slice.
-	sigs, err := sigTx.GetSignaturesV2()
+	// Get signatures and signers from the transaction.
+	signatures, err := sigTx.GetSignaturesV2()
 	if err != nil {
 		return ctx, err
 	}
-
 	signers, err := sigTx.GetSigners()
 	if err != nil {
 		return ctx, err
 	}
 
-	// check that signer length and signature length are the same
-	if len(sigs) != len(signers) {
-		return ctx, errorsmod.Wrapf(sdkerrors.ErrUnauthorized, "invalid number of signer;  expected: %d, got %d", len(signers), len(sigs))
+	// Ensure the number of signatures matches the number of signers.
+	if len(signatures) != len(signers) {
+		return ctx, errorsmod.Wrapf(sdkerrors.ErrUnauthorized, "mismatch in number of signers and signatures: expected %d, got %d", len(signers), len(signatures))
 	}
 
-	for i, sig := range sigs {
-		acc, err := authante.GetSignerAcc(ctx, svd.ak, signers[i])
-		if err != nil {
+	for i, signature := range signatures {
+		if err := svd.verifySignature(ctx, signers[i], signature, tx, simulate); err != nil {
 			return ctx, err
-		}
-
-		// retrieve pubkey
-		pubKey := acc.GetPubKey()
-		if !simulate && pubKey == nil {
-			return ctx, errorsmod.Wrap(sdkerrors.ErrInvalidPubKey, "pubkey on account is not set")
-		}
-
-		// Check account sequence number.
-		if sig.Sequence != acc.GetSequence() {
-			return ctx, errorsmod.Wrapf(
-				sdkerrors.ErrWrongSequence,
-				"account sequence mismatch, expected %d, got %d", acc.GetSequence(), sig.Sequence,
-			)
-		}
-
-		// retrieve signer data
-		genesis := ctx.BlockHeight() == 0
-		chainID := ctx.ChainID()
-		var accNum uint64
-		if !genesis {
-			accNum = acc.GetAccountNumber()
-		}
-
-		// no need to verify signatures on recheck tx
-		if !simulate && !ctx.IsReCheckTx() {
-			anyPk, _ := codectypes.NewAnyWithValue(pubKey)
-
-			signerData := txsigning.SignerData{
-				Address:       acc.GetAddress().String(),
-				ChainID:       chainID,
-				AccountNumber: accNum,
-				Sequence:      acc.GetSequence(),
-				PubKey: &anypb.Any{
-					TypeUrl: anyPk.TypeUrl,
-					Value:   anyPk.Value,
-				},
-			}
-			adaptableTx, ok := tx.(authsigning.V2AdaptableTx)
-			if !ok {
-				return ctx, fmt.Errorf("expected tx to implement V2AdaptableTx, got %T", tx)
-			}
-			txData := adaptableTx.GetSigningTxData()
-			err = verifySignature(ctx, pubKey, signerData, sig.Data, svd.signModeHandler, txData)
-			if err != nil {
-				var errMsg string
-				if authante.OnlyLegacyAminoSigners(sig.Data) {
-					// If all signers are using SIGN_MODE_LEGACY_AMINO, we rely on VerifySignature to check account sequence number,
-					// and therefore communicate sequence number as a potential cause of error.
-					errMsg = fmt.Sprintf("signature verification failed; please verify account number (%d), sequence (%d) and chain-id (%s)", accNum, acc.GetSequence(), chainID)
-				} else {
-					errMsg = fmt.Sprintf("signature verification failed; please verify account number (%d) and chain-id (%s): (%s)", accNum, chainID, err.Error())
-				}
-				return ctx, errorsmod.Wrap(sdkerrors.ErrUnauthorized, errMsg)
-
-			}
 		}
 	}
 
 	return next(ctx, tx, simulate)
 }
 
-// defaultSigVerificationGasConsumer is the default implementation of SignatureVerificationGasConsumer. It consumes gas
-// for signature verification based upon the public key type. The cost is fetched from the given params and is matched
-// by the concrete type.
+// verifySignature performs validation on a single signature.
+func (svd SigVerificationDecorator) verifySignature(ctx sdk.Context, signer sdk.AccAddress, signature signing.SignatureV2, tx sdk.Tx, simulate bool) error {
+	// Get the signer account.
+	account, err := authante.GetSignerAcc(ctx, svd.accountKeeper, signer)
+	if err != nil {
+		return err
+	}
+
+	pubKey := account.GetPubKey()
+	if !simulate && pubKey == nil {
+		return errorsmod.Wrap(sdkerrors.ErrInvalidPubKey, "account pubkey is not set")
+	}
+
+	// Check sequence number.
+	if signature.Sequence != account.GetSequence() {
+		return errorsmod.Wrapf(sdkerrors.ErrWrongSequence, "sequence mismatch: expected %d, got %d", account.GetSequence(), signature.Sequence)
+	}
+
+	// Skip signature verification for ReCheckTx.
+	if !simulate && !ctx.IsReCheckTx() {
+		return svd.performSignatureVerification(ctx, account, pubKey, signature, tx)
+	}
+
+	return nil
+}
+
+// performSignatureVerification verifies the signature using the provided pubkey and signer data.
+func (svd SigVerificationDecorator) performSignatureVerification(ctx sdk.Context, account types.AccountI, pubKey sdk.PubKey, signature signing.SignatureV2, tx sdk.Tx) error {
+	genesis := ctx.BlockHeight() == 0
+	chainID := ctx.ChainID()
+	accountNumber := account.GetAccountNumber()
+	if genesis {
+		accountNumber = 0
+	}
+
+	anyPk, _ := codectypes.NewAnyWithValue(pubKey)
+	signerData := txsigning.SignerData{
+		Address:       account.GetAddress().String(),
+		ChainID:       chainID,
+		AccountNumber: accountNumber,
+		Sequence:      account.GetSequence(),
+		PubKey: &anypb.Any{
+			TypeUrl: anyPk.TypeUrl,
+			Value:   anyPk.Value,
+		},
+	}
+
+	adaptableTx, ok := tx.(authsigning.V2AdaptableTx)
+	if !ok {
+		return fmt.Errorf("expected tx to implement V2AdaptableTx, got %T", tx)
+	}
+
+	txData := adaptableTx.GetSigningTxData()
+	err := verifySignature(ctx, pubKey, signerData, signature.Data, svd.signModeHandler, txData)
+	if err != nil {
+		return wrapSignatureError(err, signerData, account.GetSequence())
+	}
+
+	return nil
+}
+
+// wrapSignatureError provides a detailed error message for signature verification failures.
+func wrapSignatureError(err error, signerData txsigning.SignerData, sequence uint64) error {
+	return errorsmod.Wrap(sdkerrors.ErrUnauthorized, fmt.Sprintf(
+		"signature verification failed: verify account number (%d), sequence (%d), and chain-id (%s): %s",
+		signerData.AccountNumber, sequence, signerData.ChainID, err.Error(),
+	))
+}
+
+// DefaultSigVerificationGasConsumer calculates gas consumption based on the public key type.
 func DefaultSigVerificationGasConsumer(
 	meter storetypes.GasMeter, sig signing.SignatureV2, params types.Params,
 ) error {
-	pubkey := sig.PubKey
-	switch pubkey := pubkey.(type) {
+	switch pubkey := sig.PubKey.(type) {
 	case *ed25519.PubKey:
 		meter.ConsumeGas(params.SigVerifyCostED25519, "ante verify: ed25519")
 		return errorsmod.Wrap(sdkerrors.ErrInvalidPubKey, "ED25519 public keys are unsupported")
@@ -165,44 +171,32 @@ func DefaultSigVerificationGasConsumer(
 		return nil
 
 	case multisig.PubKey:
-		multisignature, ok := sig.Data.(*signing.MultiSignatureData)
-		if !ok {
-			return fmt.Errorf("expected %T, got, %T", &signing.MultiSignatureData{}, sig.Data)
-		}
-		err := consumeMultisignatureVerificationGas(meter, multisignature, pubkey, params, sig.Sequence)
-		if err != nil {
-			return err
-		}
-		return nil
+		return consumeMultisignatureVerificationGas(meter, sig.Data.(*signing.MultiSignatureData), pubkey, params, sig.Sequence)
 
 	default:
 		return errorsmod.Wrapf(sdkerrors.ErrInvalidPubKey, "unrecognized public key type: %T", pubkey)
 	}
 }
 
-// consumeMultisignatureVerificationGas consumes gas from a GasMeter for verifying a multisig pubkey signature
+// consumeMultisignatureVerificationGas calculates gas for multisignature verification.
 func consumeMultisignatureVerificationGas(
 	meter storetypes.GasMeter, sig *signing.MultiSignatureData, pubkey multisig.PubKey,
 	params types.Params, accSeq uint64,
 ) error {
 	size := sig.BitArray.Count()
-	sigIndex := 0
-
-	for i := 0; i < size; i++ {
+	for i, sigIndex := 0, 0; i < size; i++ {
 		if !sig.BitArray.GetIndex(i) {
 			continue
 		}
-		sigV2 := signing.SignatureV2{
+		subSig := signing.SignatureV2{
 			PubKey:   pubkey.GetPubKeys()[i],
 			Data:     sig.Signatures[sigIndex],
 			Sequence: accSeq,
 		}
-		err := DefaultSigVerificationGasConsumer(meter, sigV2, params)
-		if err != nil {
+		if err := DefaultSigVerificationGasConsumer(meter, subSig, params); err != nil {
 			return err
 		}
 		sigIndex++
 	}
-
 	return nil
 }

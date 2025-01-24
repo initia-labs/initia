@@ -9,23 +9,18 @@ import (
 	"github.com/skip-mev/block-sdk/v2/block/proposals"
 )
 
-// DefaultProposalHandler returns a default implementation of the PrepareLaneHandler and
-// ProcessLaneHandler.
+// DefaultProposalHandler provides default implementations for the PrepareLaneHandler and ProcessLaneHandler.
 type DefaultProposalHandler struct {
 	lane *blockbase.BaseLane
 }
 
-// NewDefaultProposalHandler returns a new default proposal handler.
+// NewDefaultProposalHandler creates a new instance of DefaultProposalHandler.
 func NewDefaultProposalHandler(lane *blockbase.BaseLane) *DefaultProposalHandler {
-	return &DefaultProposalHandler{
-		lane: lane,
-	}
+	return &DefaultProposalHandler{lane: lane}
 }
 
-// DefaultPrepareLaneHandler returns a default implementation of the PrepareLaneHandler. It
-// selects all transactions in the mempool that are valid and not already in the partial
-// proposal. It will continue to reap transactions until the maximum blockspace/gas for this
-// lane has been reached. Additionally, any transactions that are invalid will be returned.
+// PrepareLaneHandler returns a default implementation of the PrepareLaneHandler.
+// It selects transactions that meet blockspace/gas constraints and excludes invalid ones.
 func (h *DefaultProposalHandler) PrepareLaneHandler() blockbase.PrepareLaneHandler {
 	return func(ctx sdk.Context, proposal proposals.Proposal, limit proposals.LaneLimits) ([]sdk.Tx, []sdk.Tx, error) {
 		var (
@@ -35,90 +30,27 @@ func (h *DefaultProposalHandler) PrepareLaneHandler() blockbase.PrepareLaneHandl
 			txsToRemove  []sdk.Tx
 		)
 
-		// Select all transactions in the mempool that are valid and not already in the
-		// partial proposal.
 		for iterator := h.lane.Select(ctx, nil); iterator != nil; iterator = iterator.Next() {
 			tx := iterator.Tx()
 
 			txInfo, err := h.lane.GetTxInfo(ctx, tx)
 			if err != nil {
-				h.lane.Logger().Info("failed to get hash of tx", "err", err)
-
-				txsToRemove = append(txsToRemove, tx)
+				h.logAndAppend("failed to get tx info", tx, err, &txsToRemove)
 				continue
 			}
 
-			// Double check that the transaction belongs to this lane.
-			if !h.lane.Match(ctx, tx) {
-				h.lane.Logger().Info(
-					"failed to select tx for lane; tx does not belong to lane",
-					"tx_hash", txInfo.Hash,
-					"lane", h.lane.Name(),
-				)
-
-				txsToRemove = append(txsToRemove, tx)
-				continue
-			}
-
-			// if the transaction is already in the (partial) block proposal, we skip it.
-			if proposal.Contains(txInfo.Hash) {
-				h.lane.Logger().Info(
-					"failed to select tx for lane; tx is already in proposal",
-					"tx_hash", txInfo.Hash,
-					"lane", h.lane.Name(),
-				)
-
-				continue
-			}
-
-			// If the transaction is too large, we skip it.
-			if updatedSize := totalSize + txInfo.Size; updatedSize > limit.MaxTxBytes {
-				h.lane.Logger().Debug(
-					"failed to select tx for lane; tx bytes above the maximum allowed",
-					"lane", h.lane.Name(),
-					"tx_size", txInfo.Size,
-					"total_size", totalSize,
-					"max_tx_bytes", limit.MaxTxBytes,
-					"tx_hash", txInfo.Hash,
-				)
-
-				if txInfo.Size > limit.MaxTxBytes {
-					txsToRemove = append(txsToRemove, tx)
-				}
-
-				continue
-			}
-
-			// If the gas limit of the transaction is too large, we skip it.
-			if updatedGas := totalGas + txInfo.GasLimit; updatedGas > limit.MaxGasLimit {
-				h.lane.Logger().Debug(
-					"failed to select tx for lane; gas limit above the maximum allowed",
-					"lane", h.lane.Name(),
-					"tx_gas", txInfo.GasLimit,
-					"total_gas", totalGas,
-					"max_gas", limit.MaxGasLimit,
-					"tx_hash", txInfo.Hash,
-				)
-
-				if txInfo.GasLimit > limit.MaxGasLimit {
-					txsToRemove = append(txsToRemove, tx)
-				}
-
+			// Validate transaction eligibility for this lane.
+			if !h.validateTxEligibility(ctx, proposal, tx, txInfo, limit, totalSize, totalGas, &txsToRemove) {
 				continue
 			}
 
 			// Verify the transaction.
 			if err = h.lane.VerifyTx(ctx, tx, false); err != nil {
-				h.lane.Logger().Info(
-					"failed to verify tx",
-					"tx_hash", txInfo.Hash,
-					"err", err,
-				)
-
-				txsToRemove = append(txsToRemove, tx)
+				h.logAndAppend("failed to verify tx", tx, err, &txsToRemove)
 				continue
 			}
 
+			// Update totals and include the transaction.
 			totalSize += txInfo.Size
 			totalGas += txInfo.GasLimit
 			txsToInclude = append(txsToInclude, tx)
@@ -128,12 +60,8 @@ func (h *DefaultProposalHandler) PrepareLaneHandler() blockbase.PrepareLaneHandl
 	}
 }
 
-// DefaultProcessLaneHandler returns a default implementation of the ProcessLaneHandler. It verifies
-// the following invariants:
-//  1. Transactions belonging to the lane must be contiguous from the beginning of the partial proposal.
-//  2. Transactions that do not belong to the lane must be contiguous from the end of the partial proposal.
-//  3. Transactions must be ordered respecting the priority defined by the lane (e.g. gas price).
-//  4. Transactions must be valid according to the verification logic of the lane.
+// ProcessLaneHandler returns a default implementation of the ProcessLaneHandler.
+// Ensures transactions meet lane-specific constraints and are correctly prioritized.
 func (h *DefaultProposalHandler) ProcessLaneHandler() blockbase.ProcessLaneHandler {
 	return func(ctx sdk.Context, partialProposal []sdk.Tx) ([]sdk.Tx, []sdk.Tx, error) {
 		if len(partialProposal) == 0 {
@@ -141,33 +69,120 @@ func (h *DefaultProposalHandler) ProcessLaneHandler() blockbase.ProcessLaneHandl
 		}
 
 		for index, tx := range partialProposal {
+			// Check if the transaction belongs to this lane.
 			if !h.lane.Match(ctx, tx) {
-				// If the transaction does not belong to this lane, we return the remaining transactions
-				// iff there are no matches in the remaining transactions after this index.
-				if index+1 < len(partialProposal) {
-					if err := h.lane.VerifyNoMatches(ctx, partialProposal[index+1:]); err != nil {
-						return nil, nil, fmt.Errorf("failed to verify no matches: %w", err)
-					}
-				}
-
-				return partialProposal[:index], partialProposal[index:], nil
+				return h.handleNonMatchingTransactions(ctx, partialProposal, index)
 			}
 
-			// If the transactions do not respect the priority defined by the mempool, we consider the proposal
-			// to be invalid
-			if index > 0 {
-				if v, err := h.lane.Compare(ctx, partialProposal[index-1], tx); v == -1 || err != nil {
-					return nil, nil, fmt.Errorf("transaction at index %d has a higher priority than %d", index, index-1)
-				}
+			// Validate transaction priority.
+			if err := h.validateTxPriority(ctx, partialProposal, index); err != nil {
+				return nil, nil, err
 			}
 
+			// Verify the transaction.
 			if err := h.lane.VerifyTx(ctx, tx, false); err != nil {
 				return nil, nil, fmt.Errorf("failed to verify tx: %w", err)
 			}
 		}
 
-		// This means we have processed all transactions in the partial proposal i.e.
-		// all of the transactions belong to this lane. There are no remaining transactions.
+		// All transactions are valid and belong to this lane.
 		return partialProposal, nil, nil
+	}
+}
+
+// validateTxEligibility checks if a transaction is eligible for inclusion in the lane.
+func (h *DefaultProposalHandler) validateTxEligibility(
+	ctx sdk.Context,
+	proposal proposals.Proposal,
+	tx sdk.Tx,
+	txInfo *blockbase.TxInfo,
+	limit proposals.LaneLimits,
+	totalSize int64,
+	totalGas uint64,
+	txsToRemove *[]sdk.Tx,
+) bool {
+	// Check if transaction belongs to this lane.
+	if !h.lane.Match(ctx, tx) {
+		h.logAndAppend("tx does not belong to lane", tx, nil, txsToRemove)
+		return false
+	}
+
+	// Check if the transaction is already in the proposal.
+	if proposal.Contains(txInfo.Hash) {
+		h.lane.Logger().Info(
+			"tx already in proposal",
+			"tx_hash", txInfo.Hash,
+			"lane", h.lane.Name(),
+		)
+		return false
+	}
+
+	// Check size limits.
+	if updatedSize := totalSize + txInfo.Size; updatedSize > limit.MaxTxBytes {
+		h.logTxLimitExceeded("tx size exceeds max limit", txInfo, totalSize, limit.MaxTxBytes, txsToRemove)
+		return false
+	}
+
+	// Check gas limits.
+	if updatedGas := totalGas + txInfo.GasLimit; updatedGas > limit.MaxGasLimit {
+		h.logTxLimitExceeded("tx gas exceeds max limit", txInfo, totalGas, limit.MaxGasLimit, txsToRemove)
+		return false
+	}
+
+	return true
+}
+
+// validateTxPriority checks if transactions are correctly ordered based on lane priority.
+func (h *DefaultProposalHandler) validateTxPriority(ctx sdk.Context, partialProposal []sdk.Tx, index int) error {
+	if index > 0 {
+		prevTx := partialProposal[index-1]
+		currentTx := partialProposal[index]
+
+		priority, err := h.lane.Compare(ctx, prevTx, currentTx)
+		if priority == -1 || err != nil {
+			return fmt.Errorf("tx at index %d has higher priority than index %d", index, index-1)
+		}
+	}
+	return nil
+}
+
+// handleNonMatchingTransactions processes transactions that do not belong to the lane.
+func (h *DefaultProposalHandler) handleNonMatchingTransactions(
+	ctx sdk.Context,
+	partialProposal []sdk.Tx,
+	index int,
+) ([]sdk.Tx, []sdk.Tx, error) {
+	if index+1 < len(partialProposal) {
+		if err := h.lane.VerifyNoMatches(ctx, partialProposal[index+1:]); err != nil {
+			return nil, nil, fmt.Errorf("failed to verify no matches: %w", err)
+		}
+	}
+	return partialProposal[:index], partialProposal[index:], nil
+}
+
+// logAndAppend logs an error and appends the transaction to the remove list.
+func (h *DefaultProposalHandler) logAndAppend(message string, tx sdk.Tx, err error, txsToRemove *[]sdk.Tx) {
+	h.lane.Logger().Info(message, "err", err)
+	*txsToRemove = append(*txsToRemove, tx)
+}
+
+// logTxLimitExceeded logs and handles transactions exceeding size or gas limits.
+func (h *DefaultProposalHandler) logTxLimitExceeded(
+	message string,
+	txInfo *blockbase.TxInfo,
+	totalValue int64,
+	maxValue int64,
+	txsToRemove *[]sdk.Tx,
+) {
+	h.lane.Logger().Debug(
+		message,
+		"tx_hash", txInfo.Hash,
+		"lane", h.lane.Name(),
+		"value", txInfo.Size,
+		"total_value", totalValue,
+		"max_value", maxValue,
+	)
+	if txInfo.Size > maxValue {
+		*txsToRemove = append(*txsToRemove, txInfo.Tx)
 	}
 }

@@ -20,44 +20,24 @@ type (
 		sender string
 	}
 
-	// Mempool defines a mempool that orders transactions based on the
-	// txPriority. The mempool is a wrapper on top of the SDK's Priority Nonce mempool.
-	// It include's additional helper functions that allow users to determine if a
-	// transaction is already in the mempool and to compare the priority of two
-	// transactions.
+	// Mempool manages transaction priority, provides helper functions, and wraps the SDK's Priority Nonce mempool.
 	Mempool[C comparable] struct {
-		// index defines an index of transactions.
-		index sdkmempool.Mempool
-
-		// signerExtractor defines the signer extraction adapter that allows us to
-		// extract the signer from a transaction.
-		extractor signer_extraction.Adapter
-
-		// txCache is a map of all transactions in the mempool. It is used
-		// to quickly check if a transaction is already in the mempool.
-		txCache map[txKey]struct{}
-
-		// ratio defines the relative percentage of block space that can be
-		// used by this lane.
-		ratio math.LegacyDec
-
-		// txEncoder defines tx encoder.
-		txEncoder sdk.TxEncoder
+		index     sdkmempool.Mempool        // Priority nonce-based mempool.
+		extractor signer_extraction.Adapter // Adapter to extract signer information.
+		txCache   map[txKey]struct{}        // Cache for quick lookup of transactions in the mempool.
+		ratio     math.LegacyDec            // Block space ratio allowed for this lane.
+		txEncoder sdk.TxEncoder             // Transaction encoder.
 	}
 )
 
-// NewMempool returns a new Mempool.
+// NewMempool creates a new instance of Mempool.
 func NewMempool[C comparable](
 	txPriority blockbase.TxPriority[C], extractor signer_extraction.Adapter,
 	maxTx int, ratio math.LegacyDec, txEncoder sdk.TxEncoder,
 ) (*Mempool[C], error) {
-	if !ratio.IsPositive() {
-		return nil, errors.New("mempool creation; ratio must be positive")
-	} else if ratio.GT(math.LegacyOneDec()) {
-		return nil, errors.New("mempool creation; ratio must be less than or equal to 1")
-	}
-	if txEncoder == nil {
-		return nil, errors.New("mempool creation; tx encoder is nil")
+	// Validate inputs.
+	if err := validateMempoolConfig(ratio, txEncoder); err != nil {
+		return nil, err
 	}
 
 	return &Mempool[C]{
@@ -75,94 +55,107 @@ func NewMempool[C comparable](
 	}, nil
 }
 
-// Priority returns the priority of the transaction.
-func (cm *Mempool[C]) Priority(ctx sdk.Context, tx sdk.Tx) any {
-	return 1
+// validateMempoolConfig validates the configuration parameters for creating a Mempool.
+func validateMempoolConfig(ratio math.LegacyDec, txEncoder sdk.TxEncoder) error {
+	if !ratio.IsPositive() {
+		return errors.New("mempool creation: ratio must be positive")
+	}
+	if ratio.GT(math.LegacyOneDec()) {
+		return errors.New("mempool creation: ratio must be less than or equal to 1")
+	}
+	if txEncoder == nil {
+		return errors.New("mempool creation: tx encoder is nil")
+	}
+	return nil
 }
 
-// CountTx returns the number of transactions in the mempool.
+// Priority returns the transaction priority.
+func (cm *Mempool[C]) Priority(ctx sdk.Context, tx sdk.Tx) any {
+	return 1 // Fixed priority for now; extend as needed.
+}
+
+// CountTx returns the total number of transactions in the mempool.
 func (cm *Mempool[C]) CountTx() int {
 	return cm.index.CountTx()
 }
 
-// Select returns an iterator of all transactions in the mempool. NOTE: If you
-// remove a transaction from the mempool while iterating over the transactions,
-// the iterator will not be aware of the removal and will continue to iterate
-// over the removed transaction. Be sure to reset the iterator if you remove a transaction.
+// Select provides an iterator over all transactions in the mempool.
 func (cm *Mempool[C]) Select(ctx context.Context, txs [][]byte) sdkmempool.Iterator {
 	return cm.index.Select(ctx, txs)
 }
 
-// Compare return 0 to ignore priority check in ProcessLaneHandler.
+// Compare ignores priority check and returns a constant value for ProcessLaneHandler.
 func (cm *Mempool[C]) Compare(ctx sdk.Context, this sdk.Tx, other sdk.Tx) (int, error) {
 	return 0, nil
 }
 
-// Contains returns true if the transaction is contained in the mempool.
+// Contains checks whether a transaction exists in the mempool.
 func (cm *Mempool[C]) Contains(tx sdk.Tx) bool {
-	if key, err := cm.getTxKey(tx); err != nil {
+	key, err := cm.getTxKey(tx)
+	if err != nil {
 		return false
-	} else {
-		if _, ok := cm.txCache[key]; ok {
-			return true
-		} else {
-			return false
-		}
 	}
+	_, exists := cm.txCache[key]
+	return exists
 }
 
-// Insert inserts a transaction into the mempool.
+// Insert adds a transaction to the mempool after validating lane limits.
 func (cm *Mempool[C]) Insert(ctx context.Context, tx sdk.Tx) error {
-	if err := cm.AssertLaneLimits(sdk.UnwrapSDKContext(ctx), tx); err != nil {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	// Validate lane limits.
+	if err := cm.AssertLaneLimits(sdkCtx, tx); err != nil {
 		return err
 	}
 
+	// Insert into the underlying priority mempool.
 	if err := cm.index.Insert(ctx, tx); err != nil {
 		return fmt.Errorf("failed to insert tx into auction index: %w", err)
 	}
 
-	if key, err := cm.getTxKey(tx); err != nil {
+	// Cache the transaction.
+	key, err := cm.getTxKey(tx)
+	if err != nil {
 		return err
-	} else {
-		cm.txCache[key] = struct{}{}
 	}
+	cm.txCache[key] = struct{}{}
 
 	return nil
 }
 
-// Remove removes a transaction from the mempool.
+// Remove deletes a transaction from the mempool and its cache.
 func (cm *Mempool[C]) Remove(tx sdk.Tx) error {
+	// Remove from the priority mempool.
 	if err := cm.index.Remove(tx); err != nil && !errors.Is(err, sdkmempool.ErrTxNotFound) {
 		return fmt.Errorf("failed to remove transaction from the mempool: %w", err)
 	}
 
-	if key, err := cm.getTxKey(tx); err != nil {
+	// Remove from the cache.
+	key, err := cm.getTxKey(tx)
+	if err != nil {
 		return err
-	} else {
-		delete(cm.txCache, key)
 	}
+	delete(cm.txCache, key)
 
 	return nil
 }
 
+// getTxKey generates a unique key for a transaction based on its nonce and sender.
 func (cm *Mempool[C]) getTxKey(tx sdk.Tx) (txKey, error) {
 	signers, err := cm.extractor.GetSigners(tx)
-	if err != nil {
-		return txKey{}, err
+	if err != nil || len(signers) == 0 {
+		return txKey{}, fmt.Errorf("failed to extract signer from transaction: %w", err)
 	}
-	if len(signers) == 0 {
-		return txKey{}, fmt.Errorf("attempted to remove a tx with no signatures")
-	}
-	sig := signers[0]
-	sender := sig.Signer.String()
-	nonce := sig.Sequence
-	return txKey{nonce, sender}, nil
+
+	// Use the first signer for indexing.
+	signer := signers[0]
+	return txKey{nonce: signer.Sequence, sender: signer.Signer.String()}, nil
 }
 
-// AssertLaneLimits asserts that the transaction does not exceed the lane's max size and gas limit.
+// AssertLaneLimits ensures the transaction does not exceed the lane's size or gas limits.
 func (cm *Mempool[C]) AssertLaneLimits(ctx sdk.Context, tx sdk.Tx) error {
 	maxBlockSize, maxGasLimit := proposals.GetBlockLimits(ctx)
-	maxLaneTxSize := cm.ratio.MulInt64(maxBlockSize).TruncateInt().Int64()
+	maxLaneTxSize := cm.ratio.MulInt64(maxBlockSize).TruncateInt64()
 	maxLaneGasLimit := cm.ratio.MulInt(math.NewIntFromUint64(maxGasLimit)).TruncateInt().Uint64()
 
 	txBytes, err := cm.txEncoder(tx)
@@ -172,18 +165,18 @@ func (cm *Mempool[C]) AssertLaneLimits(ctx sdk.Context, tx sdk.Tx) error {
 
 	gasTx, ok := tx.(sdk.FeeTx)
 	if !ok {
-		return fmt.Errorf("failed to cast transaction to gas tx")
+		return errors.New("transaction does not implement FeeTx interface")
 	}
 
+	// Validate size and gas limits.
 	txSize := int64(len(txBytes))
 	txGasLimit := gasTx.GetGas()
 
 	if txSize > maxLaneTxSize {
-		return fmt.Errorf("tx size %d exceeds max lane size %d", txSize, maxLaneTxSize)
+		return fmt.Errorf("transaction size %d exceeds max lane size %d", txSize, maxLaneTxSize)
 	}
-
 	if txGasLimit > maxLaneGasLimit {
-		return fmt.Errorf("tx gas limit %d exceeds max lane gas limit %d", txGasLimit, maxLaneGasLimit)
+		return fmt.Errorf("transaction gas limit %d exceeds max lane gas limit %d", txGasLimit, maxLaneGasLimit)
 	}
 
 	return nil
