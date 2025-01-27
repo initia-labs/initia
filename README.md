@@ -21,7 +21,7 @@ Initia's product stack unifies the architecture, offering users a singular chain
 ## Documentation
 
 - [General Users](https://docs.initia.xyz)
-  - Learn more about Initia on our document's ```About``` section. Learn about what makes Initia unique, such as the Initia architecture, ecosystem, the enshrined liquidity mechanism, and vested interest program.
+  - Learn more about Initia in our document's ```About``` section. Learn about what makes Initia unique, such as the Initia architecture, ecosystem, the enshrined liquidity mechanism, and vested interest program.
 - [Validators](https://docs.initia.xyz/run-initia-node/running-initia-node)
   - For validators who want to provide security to the Initia ecosystem, please visit our ```Running Initia Node``` section of the docs. Here, you will be able to learn step-by-step the ways to boot an Initia node.
 - [Builders](https://docs.initia.xyz/build-on-initia/getting-started)
