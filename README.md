@@ -1,37 +1,81 @@
-![image (1)](https://github.com/initia-labs/initia/assets/160459432/3b7812ec-be55-417d-8ca2-dee77a294874)
+<div align="center">
+  <a href="https://initia.xyz">
+    <img src="https://github.com/initia-labs/initia/assets/160459432/3b7812ec-be55-417d-8ca2-dee77a294874" alt="Initia Logo" width="500">
+  </a>
+</div>
 
-[![codecov](https://codecov.io/gh/initia-labs/initia/graph/badge.svg?token=CQ8FELH3BU)](https://codecov.io/gh/initia-labs/initia)
-[![Go Report Card](https://goreportcard.com/badge/github.com/initia-labs/initia)](https://goreportcard.com/report/github.com/initia-labs/initia)
+# 🚀 Welcome to **Initia** – A Network for Interwoven Rollups  
 
-# Welcome to Initia, a Network for Interwoven Rollups
+**Initia** reconstructs the blockchain stack by integrating a **foundational Layer 1** with a **bespoke Layer 2 infrastructure**.  
+This enables a **seamless modular network** while harmonizing economic interests across users, developers, and app-chains.
 
-At its core, Initia reconstructs the entire technological stack, introducing a foundational Layer 1 blockchain integrated with a bespoke Layer 2 infrastructure. This integration fosters a tightly knit ecosystem of modular networks. Owning the complete technological stack enables Initia to implement chain-level mechanisms that harmonize the economic interests of users, developers, Layer 2 app-chains, and the Layer 1 chain itself.
-
-The Initia Layer 1 serves as an orchestration layer, facilitating coordination of security, liquidity, routing, and interoperability across the network of interwoven rollups via the VM-Agnostic Optimistic Rollup framework—the OPinit Stack. This framework, supported by fraud proofs and rollback capabilities, allows for the secure scaling of rollups based on CosmosSDK in environments like EVM, MoveVM, or WasmVM, all while leveraging Celestia's Data Availability (DA) layer.
-
-## Native Apps
-
-Initia's product stack unifies the architecture, offering users a singular chain experience when interacting with thousands of interwoven rollups and reducing entry barriers:
-
-- [InitiaScan](https://scan.initia.tech/initiation-1): A multi-chain explorer with VM-specific tools and information.
-- [Initia App](https://app.testnet.initia.xyz): A centralized platform for all things related to Initia.
-- [Initia Usernames](https://usernames.testnet.initia.xyz): A blockchain-wide on-chain identity system.
-- [Initia Wallet](https://chromewebstore.google.com/detail/initia-wallet/ffbceckpkpbcmgiaehlloocglmijnpmp): A dedicated wallet designed for navigating the expansive Initia ecosystem.
-
-## Documentation
-
-- [General Users](https://docs.initia.xyz)
-  - Learn more about Initia on our document's ```About``` section. Learn about what makes Initia unique, such as the Initia architecture, ecosystem, the enshrined liquidity mechanism, and vested interest program.
-- [Validators](https://docs.initia.xyz/run-initia-node/running-initia-node)
-  - For validators who want to provide security to the Initia ecosystem, please visit our ```Running Initia Node``` section of the docs. Here, you will be able to learn step-by-step the ways to boot an Initia node.
-- [Builders](https://docs.initia.xyz/build-on-initia/getting-started)
-  - Whether you are an L2 (Minitia) builder or a DApp builder on both layers, start with reading the ```Build on Initia``` section. This document provides the instructions for building on MoveVM, EVM, and WasmVM, and all the tips on building on Initia.
-
-## Community
-
-Join the Initia community for questions and updates!
-
-- [Twitter](https://twitter.com/initiaFDN)
-- [Discord](https://discord.gg/initia)
-- [Medium](https://medium.com/@initiafdn)
+<div align="center">
   
+[![Code Coverage](https://codecov.io/gh/initia-labs/initia/graph/badge.svg?token=CQ8FELH3BU)](https://codecov.io/gh/initia-labs/initia)
+[![Go Report Card](https://goreportcard.com/badge/github.com/initia-labs/initia)](https://goreportcard.com/report/github.com/initia-labs/initia)
+[![GitHub Repo stars](https://img.shields.io/github/stars/initia-labs/initia?logo=github&color=yellow)](https://github.com/initia-labs/initia/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/initia-labs/initia?logo=github&color=blue)](https://github.com/initia-labs/initia/network/members)
+[![GitHub last commit](https://img.shields.io/github/last-commit/initia-labs/initia?logo=git)](https://github.com/initia-labs/initia/commits/main)
+[![Discord](https://img.shields.io/discord/924442927399313448?logo=discord&color=5865F2)](https://discord.gg/initia)
+[![Twitter Follow](https://img.shields.io/twitter/follow/initiaFDN?style=flat&logo=twitter)](https://x.com/initiaFDN)
+
+</div>
+
+---
+
+## 🛠 **Initia Stack**  
+
+The **Initia Layer 1** acts as an **orchestration layer**, managing security, liquidity, routing, and interoperability between rollups.  
+It utilizes the **VM-Agnostic Optimistic Rollup framework – OPinit Stack**, ensuring **scalability with fraud proofs and rollback capabilities**.  
+
+Supported environments:  
+✅ **CosmosSDK**  
+✅ **EVM**  
+✅ **MoveVM**  
+✅ **WasmVM**  
+
+💡 **Powered by Celestia's Data Availability (DA) layer.**  
+
+---
+
+## 📦 **Native Apps**  
+
+Initia provides a **unified experience** for users interacting with thousands of interwoven rollups.  
+
+🔹 **[InitiaScan](https://scan.initia.tech/initiation-1)** – Multi-chain explorer with VM-specific tools.  
+🔹 **[Initia App](https://app.testnet.initia.xyz)** – Centralized platform for Initia interactions.  
+🔹 **[Initia Usernames](https://usernames.testnet.initia.xyz)** – Blockchain-wide identity system.  
+🔹 **[Initia Wallet](https://chromewebstore.google.com/detail/initia-wallet/ffbceckpkpbcmgiaehlloocglmijnpmp)** – Secure wallet for navigating the Initia ecosystem.  
+
+---
+
+## 📖 **Documentation**  
+
+Explore the full **Initia documentation** at [docs.initia.xyz](https://docs.initia.xyz).  
+
+### 🛠 **General Users**  
+- Learn more about Initia in the **["About"](https://docs.initia.xyz/about)** section.  
+- Understand **Initia's architecture, ecosystem, liquidity mechanisms, and vested interest program**.  
+
+### 🔧 **Validators**  
+- Follow the **["Running Initia Node"](https://docs.initia.xyz/run-initia-node/running-initia-node)** guide.  
+- Step-by-step instructions for setting up and securing **Initia nodes**.  
+
+### 🚀 **Builders**  
+- Start with **["Build on Initia"](https://docs.initia.xyz/build-on-initia/getting-started)**.  
+- Guides for developing on **MoveVM, EVM, and WasmVM**.  
+
+---
+
+## 💬 **Join the Community**  
+<p align="left">
+  <a href="https://twitter.com/initiaFDN">
+    <img src="https://img.shields.io/badge/Twitter-000000?logo=x&logoColor=white&style=for-the-badge" alt="Twitter">
+  </a>
+  <a href="https://discord.gg/initia">
+    <img src="https://img.shields.io/badge/Discord-5865F2?logo=discord&logoColor=white&style=for-the-badge" alt="Discord">
+  </a>
+  <a href="https://medium.com/@initiafdn">
+    <img src="https://img.shields.io/badge/Medium-12100E?logo=medium&logoColor=white&style=for-the-badge" alt="Medium">
+  </a>
+</p>
