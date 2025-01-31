@@ -1,7 +1,6 @@
 package types
 
 import (
-	fmt "fmt"
 	"strings"
 
 	"cosmossdk.io/core/address"
@@ -10,8 +9,6 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-
-	proto "github.com/cosmos/gogoproto/proto"
 )
 
 var (
@@ -59,12 +56,7 @@ func NewMsgSubmitTx(sdkMsg sdk.Msg, connectionID, owner string) (*MsgSubmitTx, e
 
 // PackTxMsgAny marshals the sdk.Msg payload to a protobuf Any type
 func PackTxMsgAny(sdkMsg sdk.Msg) (*codectypes.Any, error) {
-	msg, ok := sdkMsg.(proto.Message)
-	if !ok {
-		return nil, fmt.Errorf("can't proto marshal %T", sdkMsg)
-	}
-
-	protoAny, err := codectypes.NewAnyWithValue(msg)
+	protoAny, err := codectypes.NewAnyWithValue(sdkMsg)
 	if err != nil {
 		return nil, err
 	}
