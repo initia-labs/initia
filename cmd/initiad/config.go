@@ -43,6 +43,7 @@ func initAppConfig() (string, interface{}) {
 	srvCfg.MinGasPrices = fmt.Sprintf("0%s", initiaapp.BondDenom)
 	srvCfg.Mempool.MaxTxs = 2000
 	srvCfg.QueryGasLimit = 3000000
+	srvCfg.InterBlockCache = false
 
 	appConfig := initiaappConfig{
 		Config:     *srvCfg,

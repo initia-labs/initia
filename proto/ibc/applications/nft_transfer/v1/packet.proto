@@ -29,25 +29,3 @@ message NonFungibleTokenPacketData {
   // optional memo field for future use
   string memo = 9;
 }
-
-// NonFungibleTokenPacketDataWasm to support wams nft transfer.
-message NonFungibleTokenPacketDataWasm {
-  // collection id == extension struct tag
-  string class_id = 1 [(gogoproto.jsontag) = "classId,omitempty"];
-  // collection url
-  string class_uri = 2 [(gogoproto.jsontag) = "classUri,omitempty"];
-  // collection data
-  string class_data = 3 [(gogoproto.jsontag) = "classData,omitempty"];
-  // nft token ids
-  repeated string token_ids = 4 [(gogoproto.jsontag) = "tokenIds,omitempty"];
-  // nft token uris
-  repeated string token_uris = 5 [(gogoproto.jsontag) = "tokenUris,omitempty"];
-  // nft token data array
-  repeated string token_data = 6 [(gogoproto.jsontag) = "tokenData,omitempty"];
-  // sender of nft
-  string sender = 7;
-  // receiver of nft
-  string receiver = 8;
-  // optional memo field for future use
-  string memo = 9;
-}

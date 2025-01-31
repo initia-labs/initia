@@ -50,4 +50,7 @@ var (
 
 	// ErrScriptDisabled error raised when the script execution is disabled
 	ErrScriptDisabled = errorsmod.Register(ModuleName, 16, "script execution disabled")
+
+	// ErrVMQueryFailed error raised when the query execution failed
+	ErrVMQueryFailed = errorsmod.Register(ModuleName, 17, "vm query failed")
 )

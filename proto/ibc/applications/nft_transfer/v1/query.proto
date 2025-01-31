@@ -23,12 +23,12 @@ service Query {
 
   // ClassHash queries a class id hash information.
   rpc ClassHash(QueryClassHashRequest) returns (QueryClassHashResponse) {
-    option (google.api.http).get = "/ibc/apps/nft_transfer/v1/class_hashs/{trace}";
+    option (google.api.http).get = "/ibc/apps/nft_transfer/v1/class_hashes/{trace=**}";
   }
 
   // EscrowAddress returns the escrow address for a particular port and channel id.
   rpc EscrowAddress(QueryEscrowAddressRequest) returns (QueryEscrowAddressResponse) {
-    option (google.api.http).get = "/ibc/apps/nft_transfer/v1/channels/{channel_id}/ports/{port_id}/escrow_address";
+    option (google.api.http).get = "/ibc/apps/nft_transfer/v1/channels/{channel_id=**}/ports/{port_id}/escrow_address";
   }
 
   // Params queries all parameters of the ibc-transfer module.

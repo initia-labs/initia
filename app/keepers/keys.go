@@ -42,7 +42,7 @@ import (
 	oracletypes "github.com/skip-mev/connect/v2/x/oracle/types"
 
 	// noble forwarding keeper
-	forwardingtypes "github.com/noble-assets/forwarding/v2/x/forwarding/types"
+	forwardingtypes "github.com/noble-assets/forwarding/v2/types"
 )
 
 func (appKeepers *AppKeepers) GenerateKeys() {

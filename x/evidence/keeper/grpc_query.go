@@ -10,7 +10,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/types/query"
 
-	proto "github.com/gogo/protobuf/proto"
+	proto "github.com/cosmos/gogoproto/proto"
 
 	"cosmossdk.io/x/evidence/exported"
 	"cosmossdk.io/x/evidence/types"

@@ -23,6 +23,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	"github.com/initia-labs/initia/crypto/ethsecp256k1"
+
+	forwardingtypes "github.com/noble-assets/forwarding/v2/types"
 )
 
 var (
@@ -169,10 +171,13 @@ func DefaultSigVerificationGasConsumer(
 		if !ok {
 			return fmt.Errorf("expected %T, got, %T", &signing.MultiSignatureData{}, sig.Data)
 		}
-		err := consumeMultisignatureVerificationGas(meter, multisignature, pubkey, params, sig.Sequence)
+		err := consumeMultiSignatureVerificationGas(meter, multisignature, pubkey, params, sig.Sequence)
 		if err != nil {
 			return err
 		}
+		return nil
+
+	case *forwardingtypes.ForwardingPubKey:
 		return nil
 
 	default:
@@ -180,8 +185,8 @@ func DefaultSigVerificationGasConsumer(
 	}
 }
 
-// consumeMultisignatureVerificationGas consumes gas from a GasMeter for verifying a multisig pubkey signature
-func consumeMultisignatureVerificationGas(
+// consumeMultiSignatureVerificationGas consumes gas from a GasMeter for verifying a multisig pubkey signature
+func consumeMultiSignatureVerificationGas(
 	meter storetypes.GasMeter, sig *signing.MultiSignatureData, pubkey multisig.PubKey,
 	params types.Params, accSeq uint64,
 ) error {

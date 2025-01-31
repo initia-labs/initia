@@ -86,7 +86,7 @@ func (a *AsyncCallback) UnmarshalJSON(bz []byte) error {
 	// Handle ID based on type with overflow checking
 	switch v := ic.Id.(type) {
 	case float64:
-		if v < 0 || v > float64(^uint64(0)) || v != float64(uint64(v)) {
+		if v < 0 || v >= float64(^uint64(0)) || v != float64(uint64(v)) {
 			return fmt.Errorf("id value out of range or contains decimals")
 		}
 		a.Id = uint64(v)
@@ -95,7 +95,7 @@ func (a *AsyncCallback) UnmarshalJSON(bz []byte) error {
 		if err := json.Unmarshal([]byte(v), &parsed); err != nil {
 			return fmt.Errorf("invalid id format: %w", err)
 		}
-		if parsed < 0 || parsed > float64(^uint64(0)) || parsed != float64(uint64(parsed)) {
+		if parsed < 0 || parsed >= float64(^uint64(0)) || parsed != float64(uint64(parsed)) {
 			return fmt.Errorf("id value out of range or contains decimals")
 		}
 		a.Id = uint64(parsed)

@@ -32,9 +32,8 @@ require (
 	github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8 v8.0.2
 	github.com/cosmos/ibc-apps/modules/rate-limiting/v8 v8.0.0
 	github.com/cosmos/ibc-go/modules/capability v1.0.1
-	github.com/cosmos/ibc-go/v8 v8.5.0
+	github.com/cosmos/ibc-go/v8 v8.5.1
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.3.0
-	github.com/gogo/protobuf v1.3.2
 	github.com/golang/mock v1.6.0
 	github.com/golang/protobuf v1.5.4
 	github.com/gorilla/mux v1.8.1
@@ -43,7 +42,7 @@ require (
 	github.com/initia-labs/OPinit v0.6.2
 	// we also need to update `LIBMOVEVM_VERSION` of Dockerfile#9
 	github.com/initia-labs/movevm v0.6.1
-	github.com/noble-assets/forwarding/v2 v2.0.0-20240521090705-86712c4c9e43
+	github.com/noble-assets/forwarding/v2 v2.0.0
 	github.com/pelletier/go-toml v1.9.5
 	github.com/pkg/errors v0.9.1
 	github.com/rakyll/statik v0.1.7
@@ -94,7 +93,6 @@ require (
 	github.com/cometbft/cometbft-db v0.14.1 // indirect
 	github.com/cosmos/btcutil v1.0.5 // indirect
 	github.com/cosmos/gogogateway v1.2.0 // indirect
-	github.com/cosmos/iavl v1.2.2 // indirect
 	github.com/cosmos/ics23/go v0.11.0 // indirect
 	github.com/cosmos/interchain-security/v6 v6.0.0 // indirect
 	github.com/cosmos/ledger-cosmos-go v0.13.3 // indirect
@@ -119,6 +117,7 @@ require (
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/godbus/dbus v0.0.0-20190726142602-4481cbc300e2 // indirect
 	github.com/gogo/googleapis v1.4.1 // indirect
+	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/glog v1.2.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/snappy v0.0.5-0.20220116011046-fa5810519dcb // indirect
@@ -218,19 +217,15 @@ require (
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
 
-// initia custom
-// use custom version for
-// - https://github.com/initia-labs/cometbft/commit/cb3ed4ca9be4d6c55df7df2d927e9b92153bc3e2
-// - https://github.com/initia-labs/cometbft/pull/14
-replace github.com/cometbft/cometbft => github.com/initia-labs/cometbft v0.0.0-20241203094337-c2365d00759c
-
 // cosmos replaces
 replace (
 	// use cosmos fork of keyring
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
+
 	// dgrijalva/jwt-go is deprecated and doesn't receive security updates.
 	// TODO: remove it: https://github.com/cosmos/cosmos-sdk/issues/13134
 	github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.4.2
+
 	// Fix upstream GHSA-h395-qcrw-5vmq vulnerability.
 	// TODO Remove it: https://github.com/cosmos/cosmos-sdk/issues/10409
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.8.1
@@ -238,3 +233,12 @@ replace (
 	// Downgraded to avoid bugs in following commits which caused simulations to fail.
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 )
+
+// indirect custom dependencies
+require github.com/cosmos/iavl v1.2.4 // indirect
+
+// initia custom
+// use custom version for
+// - https://github.com/initia-labs/cometbft/commit/cb3ed4ca9be4d6c55df7df2d927e9b92153bc3e2
+// - https://github.com/initia-labs/cometbft/pull/14
+replace github.com/cometbft/cometbft => github.com/initia-labs/cometbft v0.0.0-20250109064621-3f569d13aaba

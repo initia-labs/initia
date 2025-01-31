@@ -541,9 +541,9 @@ var (
 
 	pattern_Query_ClassTraces_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"ibc", "apps", "nft_transfer", "v1", "class_traces"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_ClassHash_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"ibc", "apps", "nft_transfer", "v1", "class_hashs", "trace"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_ClassHash_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 3, 0, 4, 1, 5, 5}, []string{"ibc", "apps", "nft_transfer", "v1", "class_hashes", "trace"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_EscrowAddress_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 1, 0, 4, 1, 5, 7, 2, 8}, []string{"ibc", "apps", "nft_transfer", "v1", "channels", "channel_id", "ports", "port_id", "escrow_address"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_EscrowAddress_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 3, 0, 4, 1, 5, 5, 2, 6, 1, 0, 4, 1, 5, 7, 2, 8}, []string{"ibc", "apps", "nft_transfer", "v1", "channels", "channel_id", "ports", "port_id", "escrow_address"}, "", runtime.AssumeColonVerbOpt(false)))
 
 	pattern_Query_Params_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"ibc", "apps", "nft_transfer", "v1", "params"}, "", runtime.AssumeColonVerbOpt(false)))
 )

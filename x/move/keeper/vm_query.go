@@ -1,14 +1,25 @@
 package keeper
 
 import (
+	"fmt"
+
 	abci "github.com/cometbft/cometbft/abci/types"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/initia-labs/initia/x/move/types"
 	vmtypes "github.com/initia-labs/movevm/types"
 )
 
-func (k Keeper) HandleVMQuery(ctx sdk.Context, req *vmtypes.QueryRequest) ([]byte, error) {
+func (k Keeper) HandleVMQuery(ctx sdk.Context, req *vmtypes.QueryRequest) (res []byte, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("panic in HandleVMQuery: %v", r)
+		}
+
+		err = types.ErrVMQueryFailed.Wrap(err.Error())
+	}()
+
 	switch {
 	case req.Custom != nil:
 		return k.queryCustom(ctx, req.Custom)
