@@ -24,7 +24,7 @@ func Test_VMQuery_Stargate(t *testing.T) {
 			Data: nil,
 		},
 	})
-	require.ErrorIs(t, err, types.ErrNotSupportedStargateQuery)
+	require.ErrorContains(t, err, types.ErrNotSupportedStargateQuery.Error())
 
 	proposal := govtypes.Proposal{
 		Id:      1,
@@ -64,7 +64,7 @@ func Test_VMQuery_Custom(t *testing.T) {
 			Data: nil,
 		},
 	})
-	require.ErrorIs(t, err, types.ErrNotSupportedCustomQuery)
+	require.ErrorContains(t, err, types.ErrNotSupportedCustomQuery.Error())
 
 	reqBz, err := json.Marshal(types.ToSDKAddressRequest{
 		VMAddr: vmtypes.StdAddress.String(),
