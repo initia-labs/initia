@@ -37,7 +37,7 @@ func (h MoveHooks) OnRecvPacketOverride(im ibchooks.IBCMiddleware, ctx sdk.Conte
 		return h.onRecvIcs20Packet(ctx, im, packet, relayer, ics20Data)
 	}
 
-	if isIcs721, ics721Data := isIcs721Packet(packet.Data, packet.SourcePort); isIcs721 {
+	if isIcs721, ics721Data := isIcs721Packet(packet.Data); isIcs721 {
 		return h.onRecvIcs721Packet(ctx, im, packet, relayer, ics721Data)
 	}
 
@@ -49,7 +49,7 @@ func (h MoveHooks) OnAcknowledgementPacketOverride(im ibchooks.IBCMiddleware, ct
 		return h.onAckIcs20Packet(ctx, im, packet, acknowledgement, relayer, ics20Data)
 	}
 
-	if isIcs721, ics721Data := isIcs721Packet(packet.Data, packet.DestinationPort); isIcs721 {
+	if isIcs721, ics721Data := isIcs721Packet(packet.Data); isIcs721 {
 		return h.onAckIcs721Packet(ctx, im, packet, acknowledgement, relayer, ics721Data)
 	}
 
@@ -61,7 +61,7 @@ func (h MoveHooks) OnTimeoutPacketOverride(im ibchooks.IBCMiddleware, ctx sdk.Co
 		return h.onTimeoutIcs20Packet(ctx, im, packet, relayer, ics20Data)
 	}
 
-	if isIcs721, ics721Data := isIcs721Packet(packet.Data, packet.DestinationPort); isIcs721 {
+	if isIcs721, ics721Data := isIcs721Packet(packet.Data); isIcs721 {
 		return h.onTimeoutIcs721Packet(ctx, im, packet, relayer, ics721Data)
 	}
 

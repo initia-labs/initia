@@ -83,8 +83,8 @@ import (
 	ophosttypes "github.com/initia-labs/OPinit/x/ophost/types"
 
 	// noble forwarding keeper
-	"github.com/noble-assets/forwarding/v2/x/forwarding"
-	forwardingtypes "github.com/noble-assets/forwarding/v2/x/forwarding/types"
+	forwarding "github.com/noble-assets/forwarding/v2"
+	forwardingtypes "github.com/noble-assets/forwarding/v2/types"
 )
 
 var maccPerms = map[string][]string{

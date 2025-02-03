@@ -38,8 +38,8 @@ func isIcs20Packet(packetData []byte) (isIcs20 bool, ics20data transfertypes.Fun
 	return true, data
 }
 
-func isIcs721Packet(packetData []byte, counterpartyPort string) (isIcs721 bool, ics721data nfttransfertypes.NonFungibleTokenPacketData) {
-	if data, err := nfttransfertypes.DecodePacketData(packetData, counterpartyPort); err != nil {
+func isIcs721Packet(packetData []byte) (isIcs721 bool, ics721data nfttransfertypes.NonFungibleTokenPacketData) {
+	if data, err := nfttransfertypes.DecodePacketData(packetData); err != nil {
 		return false, data
 	} else {
 		return true, data

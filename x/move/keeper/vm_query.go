@@ -1,14 +1,35 @@
 package keeper
 
 import (
+	"fmt"
+
 	abci "github.com/cometbft/cometbft/abci/types"
+
+	errorsmod "cosmossdk.io/errors"
+	storetypes "cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	"github.com/initia-labs/initia/x/move/types"
 	vmtypes "github.com/initia-labs/movevm/types"
 )
 
-func (k Keeper) HandleVMQuery(ctx sdk.Context, req *vmtypes.QueryRequest) ([]byte, error) {
+func (k Keeper) HandleVMQuery(ctx sdk.Context, req *vmtypes.QueryRequest) (res []byte, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			switch rType := r.(type) {
+			case storetypes.ErrorOutOfGas:
+				err = errorsmod.Wrapf(sdkerrors.ErrOutOfGas, "Query gas limit exceeded, out of gas in location: %v", rType.Descriptor)
+			default:
+				err = fmt.Errorf("panic in HandleVMQuery: %v", r)
+			}
+		}
+
+		if err != nil {
+			err = types.ErrVMQueryFailed.Wrap(err.Error())
+		}
+	}()
+
 	switch {
 	case req.Custom != nil:
 		return k.queryCustom(ctx, req.Custom)

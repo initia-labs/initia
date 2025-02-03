@@ -249,14 +249,13 @@ func Test_API_Query(t *testing.T) {
 	api := keeper.NewApi(input.MoveKeeper, ctx.WithBlockTime(now))
 
 	// out of gas
-	require.Panics(t, func() {
-		_, _, _ = api.Query(vmtypes.QueryRequest{
-			Stargate: &vmtypes.StargateQuery{
-				Path: "/initia.gov.v1.Query/Proposal",
-				Data: []byte(`{"proposal_id": "1"}`),
-			},
-		}, 100)
-	})
+	_, _, err = api.Query(vmtypes.QueryRequest{
+		Stargate: &vmtypes.StargateQuery{
+			Path: "/initia.gov.v1.Query/Proposal",
+			Data: []byte(`{"proposal_id": "1"}`),
+		},
+	}, 100)
+	require.ErrorContains(t, err, "out of gas")
 
 	// valid query
 	gasBalance := uint64(2000)

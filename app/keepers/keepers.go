@@ -104,9 +104,9 @@ import (
 	ophosttypeshook "github.com/initia-labs/OPinit/x/ophost/types/hook"
 
 	// noble forwarding keeper
-	"github.com/noble-assets/forwarding/v2/x/forwarding"
-	forwardingkeeper "github.com/noble-assets/forwarding/v2/x/forwarding/keeper"
-	forwardingtypes "github.com/noble-assets/forwarding/v2/x/forwarding/types"
+	forwarding "github.com/noble-assets/forwarding/v2"
+	forwardingkeeper "github.com/noble-assets/forwarding/v2/keeper"
+	forwardingtypes "github.com/noble-assets/forwarding/v2/types"
 )
 
 type AppKeepers struct {
@@ -641,7 +641,7 @@ func NewAppKeeper(
 		Response: &stakingtypes.QueryRedelegationsResponse{},
 	}
 	queryWhitelist.Stargate["/connect.oracle.v2.Query/GetAllCurrencyPairs"] = movetypes.ProtoSet{
-		Request:  &oracletypes.GetAllCurrencyPairsResponse{},
+		Request:  &oracletypes.GetAllCurrencyPairsRequest{},
 		Response: &oracletypes.GetAllCurrencyPairsResponse{},
 	}
 	queryWhitelist.Stargate["/connect.oracle.v2.Query/GetPrice"] = movetypes.ProtoSet{

@@ -34,18 +34,13 @@ func Test_isIcs20Packet(t *testing.T) {
 
 func Test_isIcs721Packet(t *testing.T) {
 	nftTransferMsg := nfttransfertypes.NewNonFungibleTokenPacketData("class_id", "uri", "data", []string{"1", "2", "3"}, []string{"uri1", "uri2", "uri3"}, []string{"data1", "data2", "data3"}, "sender", "receiver", "memo")
-	ok, _nftTransferMsg := isIcs721Packet(nftTransferMsg.GetBytes("ics721"), "ics721")
-	require.True(t, ok)
-	require.Equal(t, nftTransferMsg, _nftTransferMsg)
-
-	// isWasmPacket
-	ok, _nftTransferMsg = isIcs721Packet(nftTransferMsg.GetBytes("wasm.contract"), "wasm.contract")
+	ok, _nftTransferMsg := isIcs721Packet(nftTransferMsg.GetBytes())
 	require.True(t, ok)
 	require.Equal(t, nftTransferMsg, _nftTransferMsg)
 
 	// invalid
 	transferMsg := transfertypes.NewFungibleTokenPacketData("denom", "1000000", "0x1", "0x2", "memo")
-	ok, _ = isIcs721Packet(transferMsg.GetBytes(), "ics721")
+	ok, _ = isIcs721Packet(transferMsg.GetBytes())
 	require.False(t, ok)
 }
 

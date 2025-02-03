@@ -1,7 +1,6 @@
 package types
 
 import (
-	"encoding/json"
 	"strings"
 	"time"
 
@@ -64,87 +63,61 @@ func (nftpd NonFungibleTokenPacketData) ValidateBasic() error {
 	}
 	seenTokens := make(map[string]struct{})
 	for _, tokenId := range nftpd.TokenIds {
-			if len(tokenId) == 0 {
-					return errors.Wrap(ErrInvalidTokenIds, "invalid zero length token id")
-			}
-			// check duplicate
-			if _, exists := seenTokens[tokenId]; exists {
-					return errors.Wrapf(ErrInvalidTokenIds, "duplicate token id: %s", tokenId)
-			}
-			seenTokens[tokenId] = struct{}{}
+		if len(tokenId) == 0 {
+			return errors.Wrap(ErrInvalidTokenIds, "invalid zero length token id")
+		}
+		// check duplicate
+		if _, exists := seenTokens[tokenId]; exists {
+			return errors.Wrapf(ErrInvalidTokenIds, "duplicate token id: %s", tokenId)
+		}
+		seenTokens[tokenId] = struct{}{}
 	}
 	return ValidatePrefixedClassId(nftpd.ClassId)
 }
 
 // GetBytes is a helper for serializing
-func (nftpd NonFungibleTokenPacketData) GetBytes(counterpartyPort string) []byte {
-	var bz []byte
-	var err error
-	if isWasmPacket(counterpartyPort) {
-		bz, err = json.Marshal(nftpd.ToWasmData())
-	} else {
-		bz, err = json.Marshal(nftpd)
-	}
-	if err != nil {
-		panic(err)
+func (nftpd NonFungibleTokenPacketData) GetBytes() []byte {
+	// Format will reshape tokenUris and tokenData in NonFungibleTokenPacketData:
+	// 1. if tokenUris/tokenData is ["","",""] or [], then set it to nil.
+	// 2. if tokenUris/tokenData is ["a","b","c"] or ["a", "", "c"], then keep it.
+	// NOTE: Only use this before sending pkg.
+	if requireShape(nftpd.TokenUris) {
+		nftpd.TokenUris = nil
 	}
 
-	return sdk.MustSortJSON(bz)
+	if requireShape(nftpd.TokenData) {
+		nftpd.TokenData = nil
+	}
+
+	return sdk.MustSortJSON(mustProtoMarshalJSON(&nftpd))
+}
+
+// requireShape checks if TokenUris/TokenData needs to be set as nil
+func requireShape(contents []string) bool {
+	if contents == nil {
+		return false
+	}
+
+	// empty slice of string
+	if len(contents) == 0 {
+		return true
+	}
+
+	emptyStringCount := 0
+	for _, v := range contents {
+		if len(v) == 0 {
+			emptyStringCount++
+		}
+	}
+	return emptyStringCount == len(contents)
 }
 
 // decode packet data to NonFungibleTokenPacketData
-func DecodePacketData(packetData []byte, counterpartyPort string) (NonFungibleTokenPacketData, error) {
-	decoder := json.NewDecoder(strings.NewReader(string(packetData)))
-	decoder.DisallowUnknownFields()
-
-	if isWasmPacket(counterpartyPort) {
-		var wasmData NonFungibleTokenPacketDataWasm
-		if err := decoder.Decode(&wasmData); err != nil {
-			return NonFungibleTokenPacketData{}, sdkerrors.ErrInvalidRequest.Wrap(err.Error())
-		}
-		return wasmData.ToPacketData(), nil
-	}
-
+func DecodePacketData(packetData []byte) (NonFungibleTokenPacketData, error) {
 	var data NonFungibleTokenPacketData
-	if err := decoder.Decode(&data); err != nil {
+	if err := unmarshalProtoJSON(packetData, &data); err != nil {
 		return NonFungibleTokenPacketData{}, sdkerrors.ErrInvalidRequest.Wrap(err.Error())
 	}
 
 	return data, nil
-}
-
-func (wasmData *NonFungibleTokenPacketDataWasm) ToPacketData() NonFungibleTokenPacketData {
-	data := NonFungibleTokenPacketData{
-		ClassId:   wasmData.ClassId,
-		ClassUri:  wasmData.ClassUri,
-		ClassData: wasmData.ClassData,
-		TokenIds:  wasmData.TokenIds,
-		TokenUris: wasmData.TokenUris,
-		TokenData: wasmData.TokenData,
-		Sender:    wasmData.Sender,
-		Receiver:  wasmData.Receiver,
-		Memo:      wasmData.Memo,
-	}
-
-	return data
-}
-
-func (data *NonFungibleTokenPacketData) ToWasmData() NonFungibleTokenPacketDataWasm {
-	return NonFungibleTokenPacketDataWasm{
-		ClassId:   data.ClassId,
-		ClassUri:  data.ClassUri,
-		ClassData: data.ClassData,
-		TokenIds:  data.TokenIds,
-		TokenUris: data.TokenUris,
-		TokenData: data.TokenData,
-		Sender:    data.Sender,
-		Receiver:  data.Receiver,
-		Memo:      data.Memo,
-	}
-}
-
-const wasmPortPrefix = "wasm."
-
-func isWasmPacket(port string) bool {
-	return strings.HasPrefix(port, wasmPortPrefix)
 }

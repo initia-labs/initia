@@ -1,7 +1,7 @@
 package intertx
 
 import (
-	proto "github.com/gogo/protobuf/proto"
+	proto "github.com/cosmos/gogoproto/proto"
 
 	errorsmod "cosmossdk.io/errors"
 	"github.com/initia-labs/initia/x/intertx/keeper"

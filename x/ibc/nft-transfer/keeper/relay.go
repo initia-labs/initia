@@ -219,7 +219,7 @@ func (k Keeper) sendNftTransfer(
 	)
 	if _, err := k.ics4Wrapper.SendPacket(
 		ctx, channelCap, sourcePort, sourceChannel,
-		timeoutHeight, timeoutTimestamp, packetData.GetBytes(destinationPort),
+		timeoutHeight, timeoutTimestamp, packetData.GetBytes(),
 	); err != nil {
 		return 0, err
 	}

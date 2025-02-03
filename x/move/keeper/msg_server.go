@@ -98,7 +98,7 @@ func (ms MsgServer) Execute(context context.Context, req *types.MsgExecute) (*ty
 
 // ExecuteJSON implements entry function execution feature
 func (ms MsgServer) ExecuteJSON(context context.Context, req *types.MsgExecuteJSON) (*types.MsgExecuteJSONResponse, error) {
-	defer telemetry.MeasureSince(time.Now(), "move", "msg", "execute")
+	defer telemetry.MeasureSince(time.Now(), "move", "msg", "execute_json")
 	ctx := sdk.UnwrapSDKContext(context)
 	if err := req.Validate(ms.ac); err != nil {
 		return nil, err
