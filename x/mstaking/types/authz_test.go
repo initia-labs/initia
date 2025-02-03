@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/authz"
 
@@ -26,7 +27,7 @@ func TestNewStakeAuthorization(t *testing.T) {
 			allowedValidators: []string{"val1", "val2"},
 			deniedValidators:  nil,
 			authzType:         types.AuthorizationType_AUTHORIZATION_TYPE_DELEGATE,
-			amount:           sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(1000))),
+			amount:           sdk.NewCoins(sdk.NewCoin("stake", math.NewInt(1000))),
 			expectError:      false,
 		},
 		{
@@ -34,7 +35,7 @@ func TestNewStakeAuthorization(t *testing.T) {
 			allowedValidators: nil,
 			deniedValidators:  []string{"val1", "val2"},
 			authzType:         types.AuthorizationType_AUTHORIZATION_TYPE_UNDELEGATE,
-			amount:           sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(1000))),
+			amount:           sdk.NewCoins(sdk.NewCoin("stake", math.NewInt(1000))),
 			expectError:      false,
 		},
 	}
@@ -83,7 +84,7 @@ func TestStakeAuthorization_ValidateBasic(t *testing.T) {
 		{
 			name: "valid authorization",
 			auth: types.StakeAuthorization{
-				MaxTokens:         sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(1000))),
+				MaxTokens:         sdk.NewCoins(sdk.NewCoin("stake", math.NewInt(1000))),
 				AuthorizationType: types.AuthorizationType_AUTHORIZATION_TYPE_DELEGATE,
 			},
 			expectError: false,
@@ -91,7 +92,7 @@ func TestStakeAuthorization_ValidateBasic(t *testing.T) {
 		{
 			name: "invalid - negative coins",
 			auth: types.StakeAuthorization{
-				MaxTokens:         sdk.Coins{sdk.Coin{Denom: "stake", Amount: sdk.NewInt(-1000)}},
+				MaxTokens:         sdk.Coins{sdk.Coin{Denom: "stake", Amount: math.NewInt(-1000)}},
 				AuthorizationType: types.AuthorizationType_AUTHORIZATION_TYPE_DELEGATE,
 			},
 			expectError: true,
@@ -99,7 +100,7 @@ func TestStakeAuthorization_ValidateBasic(t *testing.T) {
 		{
 			name: "invalid - unspecified authorization type",
 			auth: types.StakeAuthorization{
-				MaxTokens:         sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(1000))),
+				MaxTokens:         sdk.NewCoins(sdk.NewCoin("stake", math.NewInt(1000))),
 				AuthorizationType: types.AuthorizationType_AUTHORIZATION_TYPE_UNSPECIFIED,
 			},
 			expectError: true,
@@ -135,13 +136,13 @@ func TestStakeAuthorization_Accept(t *testing.T) {
 						Address: []string{"val1"},
 					},
 				},
-				MaxTokens:         sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(1000))),
+				MaxTokens:         sdk.NewCoins(sdk.NewCoin("stake", math.NewInt(1000))),
 				AuthorizationType: types.AuthorizationType_AUTHORIZATION_TYPE_DELEGATE,
 			},
 			msg: &types.MsgDelegate{
 				DelegatorAddress: "delegator",
 				ValidatorAddress: "val1",
-				Amount:          sdk.NewCoin("stake", sdk.NewInt(500)),
+				Amount:          sdk.NewCoin("stake", math.NewInt(500)),
 			},
 			expectError: false,
 		},
@@ -153,13 +154,13 @@ func TestStakeAuthorization_Accept(t *testing.T) {
 						Address: []string{"val1"},
 					},
 				},
-				MaxTokens:         sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(1000))),
+				MaxTokens:         sdk.NewCoins(sdk.NewCoin("stake", math.NewInt(1000))),
 				AuthorizationType: types.AuthorizationType_AUTHORIZATION_TYPE_DELEGATE,
 			},
 			msg: &types.MsgDelegate{
 				DelegatorAddress: "delegator",
 				ValidatorAddress: "val2",
-				Amount:          sdk.NewCoin("stake", sdk.NewInt(500)),
+				Amount:          sdk.NewCoin("stake", math.NewInt(500)),
 			},
 			expectError: true,
 		},
@@ -171,13 +172,13 @@ func TestStakeAuthorization_Accept(t *testing.T) {
 						Address: []string{"val1"},
 					},
 				},
-				MaxTokens:         sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(1000))),
+				MaxTokens:         sdk.NewCoins(sdk.NewCoin("stake", math.NewInt(1000))),
 				AuthorizationType: types.AuthorizationType_AUTHORIZATION_TYPE_DELEGATE,
 			},
 			msg: &types.MsgDelegate{
 				DelegatorAddress: "delegator",
 				ValidatorAddress: "val1",
-				Amount:          sdk.NewCoin("stake", sdk.NewInt(500)),
+				Amount:          sdk.NewCoin("stake", math.NewInt(500)),
 			},
 			expectError: true,
 		},
@@ -189,13 +190,13 @@ func TestStakeAuthorization_Accept(t *testing.T) {
 						Address: []string{"val1"},
 					},
 				},
-				MaxTokens:         sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(400))),
+				MaxTokens:         sdk.NewCoins(sdk.NewCoin("stake", math.NewInt(400))),
 				AuthorizationType: types.AuthorizationType_AUTHORIZATION_TYPE_DELEGATE,
 			},
 			msg: &types.MsgDelegate{
 				DelegatorAddress: "delegator",
 				ValidatorAddress: "val1",
-				Amount:          sdk.NewCoin("stake", sdk.NewInt(500)),
+				Amount:          sdk.NewCoin("stake", math.NewInt(500)),
 			},
 			expectError: true,
 		},
