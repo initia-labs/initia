@@ -85,8 +85,8 @@ type CommunityPoolKeeper interface {
 }
 
 type OracleKeeper interface {
-	GetPriceForCurrencyPair(ctx sdk.Context, cp connecttypes.CurrencyPair) (oracletypes.QuotePrice, error)
-	GetDecimalsForCurrencyPair(ctx sdk.Context, cp connecttypes.CurrencyPair) (decimals uint64, err error)
+	GetPriceForCurrencyPair(ctx context.Context, cp connecttypes.CurrencyPair) (oracletypes.QuotePrice, error)
+	GetDecimalsForCurrencyPair(ctx context.Context, cp connecttypes.CurrencyPair) (decimals uint64, err error)
 }
 
 type VestingKeeper interface {

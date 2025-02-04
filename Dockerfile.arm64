@@ -1,4 +1,4 @@
-FROM arm64v8/golang:1.22-bullseye AS go-builder
+FROM arm64v8/golang:1.23-bullseye AS go-builder
 
 # Install minimum necessary dependencies, build Cosmos SDK, remove packages
 RUN apt update

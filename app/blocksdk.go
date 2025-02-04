@@ -128,16 +128,20 @@ func setupBlockSDK(
 		app.BaseApp.CheckTx,
 	)
 	checkTxHandler := blockchecktx.NewMempoolParityCheckTx(
-		app.Logger(), mempool,
-		app.txConfig.TxDecoder(), mevCheckTx.CheckTx(),
+		app.Logger(),
+		mempool,
+		app.txConfig.TxDecoder(),
+		mevCheckTx.CheckTx(),
+		app.BaseApp,
 	)
 	checkTx := checkTxHandler.CheckTx()
 
-	proposalHandler := blockabci.NewProposalHandler(
+	proposalHandler := blockabci.New(
 		app.Logger(),
 		app.txConfig.TxDecoder(),
 		app.txConfig.TxEncoder(),
 		mempool,
+		true,
 	)
 
 	prepareProposalHandler := proposalHandler.PrepareProposalHandler()

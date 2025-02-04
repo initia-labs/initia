@@ -1,5 +1,5 @@
 # Stage 1: Build the Go project
-FROM golang:1.22-alpine3.19 AS go-builder
+FROM golang:1.23-alpine AS go-builder
 
 # Use build arguments for the target architecture
 ARG TARGETARCH

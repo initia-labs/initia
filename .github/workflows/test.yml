@@ -27,7 +27,7 @@ jobs:
     steps:
       - uses: actions/setup-go@v3
         with:
-          go-version: 1.22
+          go-version: 1.23
       - name: Install openssl
         run: sudo apt-get install libssl-dev
       - uses: actions/checkout@v3
