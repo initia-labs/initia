@@ -120,8 +120,6 @@ func TestStakeAuthorization_ValidateBasic(t *testing.T) {
 }
 
 func TestStakeAuthorization_Accept(t *testing.T) {
-	ctx := sdk.Context{}.WithGasMeter(sdk.NewInfiniteGasMeter())
-	
 	tests := []struct {
 		name        string
 		auth        types.StakeAuthorization
@@ -142,7 +140,7 @@ func TestStakeAuthorization_Accept(t *testing.T) {
 			msg: &types.MsgDelegate{
 				DelegatorAddress: "delegator",
 				ValidatorAddress: "val1",
-				Amount:          sdk.NewCoin("stake", math.NewInt(500)),
+				Amount:          sdk.NewCoins(sdk.NewCoin("stake", math.NewInt(500))),
 			},
 			expectError: false,
 		},
@@ -160,7 +158,7 @@ func TestStakeAuthorization_Accept(t *testing.T) {
 			msg: &types.MsgDelegate{
 				DelegatorAddress: "delegator",
 				ValidatorAddress: "val2",
-				Amount:          sdk.NewCoin("stake", math.NewInt(500)),
+				Amount:          sdk.NewCoins(sdk.NewCoin("stake", math.NewInt(500))),
 			},
 			expectError: true,
 		},
@@ -178,7 +176,7 @@ func TestStakeAuthorization_Accept(t *testing.T) {
 			msg: &types.MsgDelegate{
 				DelegatorAddress: "delegator",
 				ValidatorAddress: "val1",
-				Amount:          sdk.NewCoin("stake", math.NewInt(500)),
+				Amount:          sdk.NewCoins(sdk.NewCoin("stake", math.NewInt(500))),
 			},
 			expectError: true,
 		},
@@ -196,7 +194,7 @@ func TestStakeAuthorization_Accept(t *testing.T) {
 			msg: &types.MsgDelegate{
 				DelegatorAddress: "delegator",
 				ValidatorAddress: "val1",
-				Amount:          sdk.NewCoin("stake", math.NewInt(500)),
+				Amount:          sdk.NewCoins(sdk.NewCoin("stake", math.NewInt(500))),
 			},
 			expectError: true,
 		},
@@ -215,8 +213,8 @@ func TestStakeAuthorization_Accept(t *testing.T) {
 			
 			// Check if authorization should be deleted (when max tokens are used up)
 			if tc.auth.MaxTokens != nil {
-				msgCoins := sdk.NewCoins(tc.msg.(*types.MsgDelegate).Amount)
-				if tc.auth.MaxTokens.IsEqual(msgCoins) {
+				msgCoins := tc.msg.(*types.MsgDelegate).Amount
+				if tc.auth.MaxTokens.Equal(msgCoins) {
 					require.True(t, resp.Delete)
 				}
 			}
