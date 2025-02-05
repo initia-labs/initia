@@ -13,11 +13,9 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/cosmos/cosmos-sdk/version"
 
 	movecli "github.com/initia-labs/initia/x/move/client/cli"
-	movetypes "github.com/initia-labs/initia/x/move/types"
 
 	"github.com/initia-labs/movevm/api"
 	"github.com/initia-labs/movevm/types"
@@ -102,6 +100,7 @@ func MoveCommand(ac address.Codec, useMinlib bool) *cobra.Command {
 		moveNewCmd(useMinlib),
 		moveCleanCmd(),
 		moveDeployCmd(ac),
+		deployObjectCmd(ac),
 		moveVerifyCmd(),
 		moveDocgenCmd(),
 	)
@@ -400,108 +399,6 @@ func getModuleBundle(packagePath string) ([][]byte, error) {
 	}
 
 	return moduleBundle, nil
-}
-
-func moveDeployCmd(ac address.Codec) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "deploy [flags]",
-		Short: "deploy a whole move package",
-		Long:  "deploy a whole move package. This command occurs a tx to publish module bundle.",
-		Args:  cobra.ExactArgs(0),
-		RunE: func(cmd *cobra.Command, args []string) error {
-
-			// build package
-			flagBuild, err := cmd.Flags().GetBool(flagBuild)
-			if err != nil {
-				return err
-			}
-
-			if flagBuild {
-				arg, err := getCompilerArgument(cmd)
-				if err != nil {
-					return err
-				}
-
-				_, err = api.BuildContract(*arg)
-				if err != nil {
-					return err
-				}
-			}
-
-			// verify package
-			flagVerify, err := cmd.Flags().GetBool(flagVerify)
-			if err != nil {
-				return err
-			}
-
-			var vc *verifyConfig
-			if flagVerify { // load verify config here to check flags validation before publishing
-				vc, err = getVerifyConfig(cmd)
-				if err != nil {
-					return err
-				}
-			}
-
-			// deploy package
-			clientCtx, err := client.GetClientTxContext(cmd)
-			if err != nil {
-				return err
-			}
-
-			packagePath, err := cmd.Flags().GetString(flagPackagePath)
-			if err != nil {
-				return err
-			}
-
-			module_bundle, err := getModuleBundle(packagePath)
-			if err != nil {
-				return err
-			}
-
-			upgradePolicyStr, err := cmd.Flags().GetString(movecli.FlagUpgradePolicy)
-			if err != nil {
-				return err
-			}
-
-			upgradePolicy, found := movetypes.UpgradePolicy_value[upgradePolicyStr]
-			if !found {
-				return fmt.Errorf("invalid upgrade-policy `%s`", upgradePolicyStr)
-			}
-
-			msg := movetypes.MsgPublish{
-				Sender:        clientCtx.FromAddress.String(),
-				CodeBytes:     module_bundle,
-				UpgradePolicy: movetypes.UpgradePolicy(upgradePolicy),
-			}
-
-			if err = msg.Validate(ac); err != nil {
-				return err
-			}
-
-			err = tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
-			if err != nil {
-				return err
-			}
-
-			// request contract verify
-			if flagVerify {
-				if err := verifyContract(*vc); err != nil {
-					return errorsmod.Wrap(err, "failed to verify published package")
-				}
-			}
-
-			return nil
-		},
-	}
-
-	// add flat set for upgrade policy
-	cmd.Flags().AddFlagSet(movecli.FlagSetUpgradePolicy())
-
-	addMoveDeployFlags(cmd)
-	addMoveBuildFlags(cmd)
-	addMoveVerifyFlags(cmd, false)
-	flags.AddTxFlagsToCmd(cmd)
-	return cmd
 }
 
 func moveVerifyCmd() *cobra.Command {
