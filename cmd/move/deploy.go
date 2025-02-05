@@ -97,6 +97,9 @@ the target name to '_' in the Move.toml file.
 			if err != nil {
 				return err
 			}
+
+			// Add 2 here because the sequence number will be incremented by 1
+			// during the deployment transaction.
 			seq += 2
 
 			var buf []byte
