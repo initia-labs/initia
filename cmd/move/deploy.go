@@ -72,10 +72,15 @@ var OBJECT_CODE_DEPLOYMENT_DOMAIN_SEPARATOR string = "initia_std::object_code_de
 
 func deployObjectCmd(ac address.Codec) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "deploy-object [addr-name] [flags]",
-		Short: "build a move package",
-		Long:  "Build a move package. The provided path must specify the path of move package to build",
-		Args:  cobra.ExactArgs(1),
+		Use:   "deploy-object [target-name] [flags]",
+		Short: "build and deploy a move package via @std::object_code_deployment",
+		Long: `
+Build and deploy a move package via @std::object_code_deployment.
+
+This command adds the named address to the build config, so the user must set 
+the target name to '_' in the Move.toml file.
+`,
+		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 
 			arg, err := getCompilerArgument(cmd)
