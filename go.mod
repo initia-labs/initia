@@ -1,8 +1,6 @@
 module github.com/initia-labs/initia
 
-go 1.23.1
-
-toolchain go1.23.2
+go 1.23.6
 
 require (
 	cosmossdk.io/api v0.7.6
