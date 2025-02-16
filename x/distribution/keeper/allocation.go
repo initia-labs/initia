@@ -20,7 +20,9 @@ func (k Keeper) beforeAllocateTokens(ctx context.Context) error {
 
 	for _, coin := range feesCollected {
 		if err := k.dexKeeper.SwapToBase(ctx, feeCollectorAddr, coin); err != nil {
-			return err
+			k.Logger(ctx).Error("failed to swap fee to base coin", "error", err)
+			// TODO - rollback this after we change to call `sudo_swap` in the next version
+			// return err
 		}
 	}
 
