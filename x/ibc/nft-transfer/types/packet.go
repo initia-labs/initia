@@ -52,18 +52,21 @@ func (nftpd NonFungibleTokenPacketData) ValidateBasic() error {
 	if strings.TrimSpace(nftpd.Receiver) == "" {
 		return errors.Wrap(sdkerrors.ErrInvalidAddress, "receiver address cannot be blank")
 	}
-	if len(nftpd.ClassId) == 0 {
+	if strings.TrimSpace(nftpd.ClassId) == "" {
 		return errors.Wrap(ErrInvalidClassId, "invalid zero length class id")
 	}
 	if len(nftpd.TokenIds) == 0 {
 		return errors.Wrap(ErrInvalidTokenIds, "invalid zero length token ids")
 	}
-	if len(nftpd.TokenIds) != len(nftpd.TokenData) || len(nftpd.TokenIds) != len(nftpd.TokenUris) {
-		return errors.Wrap(ErrInvalidPacket, "all token infos should have same length")
+	if len(nftpd.TokenIds) != len(nftpd.TokenUris) {
+		return errors.Wrap(ErrInvalidPacket, "the length of tokenUri must be 0 or the same as the length of TokenIds")
+	}
+	if len(nftpd.TokenIds) != len(nftpd.TokenData) {
+		return errors.Wrap(ErrInvalidPacket, "the length of tokenData must be 0 or the same as the length of TokenIds")
 	}
 	seenTokens := make(map[string]struct{})
 	for _, tokenId := range nftpd.TokenIds {
-		if len(tokenId) == 0 {
+		if strings.TrimSpace(tokenId) == "" {
 			return errors.Wrap(ErrInvalidTokenIds, "invalid zero length token id")
 		}
 		// check duplicate
@@ -117,6 +120,14 @@ func DecodePacketData(packetData []byte) (NonFungibleTokenPacketData, error) {
 	var data NonFungibleTokenPacketData
 	if err := unmarshalProtoJSON(packetData, &data); err != nil {
 		return NonFungibleTokenPacketData{}, sdkerrors.ErrInvalidRequest.Wrap(err.Error())
+	}
+
+	// reshape tokenUris and tokenData from nil to ["","",""]
+	if len(data.TokenUris) == 0 {
+		data.TokenUris = make([]string, len(data.TokenIds))
+	}
+	if len(data.TokenData) == 0 {
+		data.TokenData = make([]string, len(data.TokenIds))
 	}
 
 	return data, nil

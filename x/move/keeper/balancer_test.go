@@ -3,11 +3,14 @@ package keeper_test
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+
 	"github.com/initia-labs/initia/x/move/keeper"
 	"github.com/initia-labs/initia/x/move/types"
-	"github.com/stretchr/testify/require"
 )
 
 func Test_ReadPool(t *testing.T) {
@@ -142,9 +145,14 @@ func Test_SwapToBase(t *testing.T) {
 	quoteOfferCoin := sdk.NewInt64Coin(denomQuote, 1_000)
 	fundedAddr := input.Faucet.NewFundedAccount(ctx, quoteOfferCoin)
 
-	err = dexKeeper.SwapToBase(ctx, fundedAddr, quoteOfferCoin)
+	// transfer to fee collector'
+	feeCollectorAddr := authtypes.NewModuleAddress(authtypes.FeeCollectorName)
+	err = input.BankKeeper.SendCoins(ctx, fundedAddr, feeCollectorAddr, sdk.NewCoins(quoteOfferCoin))
 	require.NoError(t, err)
 
-	coins := input.BankKeeper.GetAllBalances(ctx, fundedAddr)
+	err = dexKeeper.SwapToBase(ctx, feeCollectorAddr, quoteOfferCoin)
+	require.NoError(t, err)
+
+	coins := input.BankKeeper.GetAllBalances(ctx, feeCollectorAddr)
 	require.Equal(t, sdk.NewCoins(sdk.NewInt64Coin(baseDenom, 997 /* swap fee deducted */)), coins)
 }

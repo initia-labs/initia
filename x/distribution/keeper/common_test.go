@@ -610,7 +610,7 @@ type TestVotingPowerKeeper struct {
 
 func NewTestVotingPowerKeeper() *TestVotingPowerKeeper {
 	return &TestVotingPowerKeeper{
-		weights: sdk.DecCoins{sdk.DecCoin{bondDenom, math.LegacyNewDec(1)}},
+		weights: sdk.DecCoins{{Denom: bondDenom, Amount: math.LegacyNewDec(1)}},
 	}
 }
 

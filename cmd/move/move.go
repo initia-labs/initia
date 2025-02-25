@@ -374,6 +374,11 @@ func getModuleBundle(packagePath string) ([][]byte, error) {
 
 	manifest, err := toml.LoadFile(path.Join(packagePath, "Move.toml"))
 	if err != nil {
+		dir, err := os.Getwd()
+		if err != nil {
+			return nil, err
+		}
+		fmt.Println("SIBONG", dir, path.Join(packagePath, "Move.toml"))
 		return nil, err
 	}
 	packageName, ok := manifest.Get("package.name").(string)

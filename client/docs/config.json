@@ -274,6 +274,17 @@
     },
     {
       "url": "./tmp-swagger-gen/initia/tx/v1/query.swagger.json"
+    },
+    {
+      "url": "./tmp-swagger-gen/sdk/auction/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "AuctionParams"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/sdk/mempool/v1/query.swagger.json"
     }
   ]
 }
