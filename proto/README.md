@@ -1,6 +1,6 @@
 # Maintaining Initia Proto Files
 
-All of the Initia proto files are defined here. This folder should
+All the Initia proto files are defined here. This folder should
 be synced regularly with buf.build/initia-labs/initia regularly by
 a maintainer by running `buf push` in this folder.
 
