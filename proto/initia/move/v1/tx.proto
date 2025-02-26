@@ -319,7 +319,7 @@ message MsgWhitelistResponse {}
 // from the whitelist of various features.
 message MsgDelist {
   option (cosmos.msg.v1.signer) = "authority";
-  option (amino.name) = "move/MsgWhitelist";
+  option (amino.name) = "move/MsgDelist";
 
   // authority is the address that controls the module
   // (defaults to x/gov unless overwritten).

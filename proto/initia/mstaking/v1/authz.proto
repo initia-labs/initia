@@ -11,7 +11,7 @@ option go_package = "github.com/initia-labs/initia/x/mstaking/types";
 // StakeAuthorization defines authorization for delegate/undelegate/redelegate.
 message StakeAuthorization {
   option (cosmos_proto.implements_interface) = "cosmos.authz.v1beta1.Authorization";
-  option (amino.name) = "mstake/StakeAuthorization";
+  option (amino.name) = "mstaking/StakeAuthorization";
 
   // max_tokens specifies the maximum amount of tokens can be delegate to a validator. If it is
   // empty, there is no spend limit and any amount of coins can be delegated.
@@ -24,9 +24,9 @@ message StakeAuthorization {
   oneof validators {
     // allow_list specifies list of validator addresses to whom grantee can delegate tokens on behalf of granter's
     // account.
-    Validators allow_list = 2 [(amino.oneof_name) = "mstake/StakeAuthorization/AllowList"];
+    Validators allow_list = 2 [(amino.oneof_name) = "mstaking/StakeAuthorization/AllowList"];
     // deny_list specifies list of validator addresses to whom grantee can not delegate tokens.
-    Validators deny_list = 3 [(amino.oneof_name) = "mstake/StakeAuthorization/DenyList"];
+    Validators deny_list = 3 [(amino.oneof_name) = "mstaking/StakeAuthorization/DenyList"];
   }
   // Validators defines list of validator addresses.
   message Validators {
