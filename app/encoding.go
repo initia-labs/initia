@@ -17,6 +17,7 @@ import (
 	oracleconfig "github.com/skip-mev/connect/v2/oracle/config"
 )
 
+// newTempApp creates a temporary InitiaApp instance for configuration purposes.
 func newTempApp() *InitiaApp {
 	return NewInitiaApp(
 		log.NewNopLogger(),
@@ -29,20 +30,22 @@ func newTempApp() *InitiaApp {
 	)
 }
 
+// MakeEncodingConfig generates the encoding configuration for the application.
 func MakeEncodingConfig() params.EncodingConfig {
 	tempApp := newTempApp()
-	encodingConfig := params.EncodingConfig{
+	return params.EncodingConfig{
 		InterfaceRegistry: tempApp.InterfaceRegistry(),
 		Codec:             tempApp.AppCodec(),
 		TxConfig:          tempApp.TxConfig(),
 		Amino:             tempApp.LegacyAmino(),
 	}
-
-	return encodingConfig
 }
 
+// AutoCliOpts prepares the AutoCLI options for the application.
 func AutoCliOpts() autocli.AppOptions {
 	tempApp := newTempApp()
+
+	// Extract modules with AutoCLI support
 	modules := make(map[string]appmodule.AppModule, 0)
 	for _, m := range tempApp.ModuleManager.Modules {
 		if moduleWithName, ok := m.(module.HasName); ok {
@@ -62,19 +65,19 @@ func AutoCliOpts() autocli.AppOptions {
 	}
 }
 
+// BasicManager returns the BasicManager for the application.
 func BasicManager() module.BasicManager {
 	tempApp := newTempApp()
 	return tempApp.BasicModuleManager
 }
 
-// EmptyAppOptions is a stub implementing AppOptions
+// EmptyAppOptions is a stub implementation of AppOptions.
 type EmptyAppOptions struct{}
 
-// Get implements AppOptions
+// Get retrieves the value for a given option key.
 func (ao EmptyAppOptions) Get(o string) interface{} {
 	if o == flags.FlagHome {
 		return DefaultNodeHome
 	}
-
 	return nil
 }
