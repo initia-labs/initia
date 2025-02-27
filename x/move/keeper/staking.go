@@ -379,69 +379,56 @@ func (k Keeper) SlashUnbondingDelegations(
 		return err
 	}
 
-	bondDenoms, err := k.StakingKeeper.BondDenoms(ctx)
+	// compute validator address in BCS serialized bytes
+	valAddrKeyBz, err := vmtypes.SerializeString(valAddr.String())
 	if err != nil {
 		return err
 	}
 
-	metadatas := make([]vmtypes.AccountAddress, 0, len(bondDenoms))
-	for _, bondDenom := range bondDenoms {
-		metadata, err := types.MetadataAddressFromDenom(bondDenom)
-		if err != nil {
-			return err
-		}
+	var metadatas []vmtypes.AccountAddress
 
-		// check whether there is staking state for the given denom
-		if ok, err := k.HasTableEntry(ctx, stakingStatesTableHandle, metadata[:]); err != nil {
-			return err
-		} else if !ok {
-			continue
-		}
-
-		// read metadata entry
-		tableEntry, err := k.GetTableEntryBytes(ctx, stakingStatesTableHandle, metadata[:])
-		if err != nil {
-			return err
-		}
+	// iterate all existing staking denoms
+	prefixBytes := types.GetTableEntryPrefix(stakingStatesTableHandle)
+	if err := k.VMStore.Walk(ctx, new(collections.Range[[]byte]).Prefix(collections.NewPrefix(prefixBytes)), func(key, value []byte) (stop bool, err error) {
+		metadata := vmtypes.AccountAddress(key[len(prefixBytes):])
 
 		// metadata table handle
-		metadataTableHandle, err := types.ReadTableHandleFromTable(tableEntry.ValueBytes)
+		metadataTableHandle, err := types.ReadTableHandleFromTable(value)
 		if err != nil {
-			return err
-		}
-
-		// check whether the validator has non-zero unbonding balances
-		keyBz, err := vmtypes.SerializeString(valAddr.String())
-		if err != nil {
-			return err
+			return true, err
 		}
 
 		// check whether there is staking state for the validator
-		if ok, err := k.HasTableEntry(ctx, metadataTableHandle, keyBz); err != nil {
-			return err
+		if ok, err := k.HasTableEntry(ctx, metadataTableHandle, valAddrKeyBz); err != nil {
+			return true, err
 		} else if !ok {
-			continue
+			return false, nil
 		}
 
 		// read validator entry
-		tableEntry, err = k.GetTableEntry(ctx, metadataTableHandle, keyBz)
+		tableEntry, err := k.GetTableEntry(ctx, metadataTableHandle, valAddrKeyBz)
 		if err != nil {
-			return err
+			return true, err
 		}
 
+		// check whether the validator has non-zero unbonding balances
 		_, unbondingCoinStore, err := types.ReadUnbondingInfosFromStakingState(tableEntry.ValueBytes)
 		if err != nil {
-			return err
+			return true, err
 		}
 
 		_, unbondingAmount, err := k.MoveBankKeeper().Balance(ctx, unbondingCoinStore)
 		if err != nil {
-			return err
+			return true, err
 		}
 
 		if unbondingAmount.IsPositive() {
 			metadatas = append(metadatas, metadata)
 		}
+
+		return false, nil
+	}); err != nil {
+		return err
 	}
 
 	for _, metadata := range metadatas {
