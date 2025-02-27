@@ -185,7 +185,9 @@ func buildContract(arg *vmtypes.CompilerArguments) error {
 	if newPwd, err := os.Getwd(); err != nil {
 		return err
 	} else if pwd != newPwd {
-		os.Chdir(pwd)
+		if err := os.Chdir(pwd); err != nil {
+			return err
+		}
 	}
 
 	return nil
