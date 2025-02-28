@@ -383,6 +383,38 @@ func (q Querier) DelegatorValidators(ctx context.Context, req *types.QueryDelega
 	return &types.QueryDelegatorValidatorsResponse{Validators: validators, Pagination: pageRes}, nil
 }
 
+func (q Querier) DelegatorSumDelegationBalances(ctx context.Context, req *types.QueryDelegatorSumDelegationBalancesRequest) (*types.QueryDelegatorSumDelegationBalancesResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "empty request")
+	}
+
+	if req.DelegatorAddr == "" {
+		return nil, status.Error(codes.InvalidArgument, "delegator address cannot be empty")
+	}
+
+	delAddr, err := q.authKeeper.AddressCodec().StringToBytes(req.DelegatorAddr)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	delegations, err := q.GetAllDelegatorDelegations(ctx, delAddr)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	delegationResps, err := delegationsToDelegationResponses(ctx, q.Keeper, delegations)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	var allBalances sdk.Coins
+	for _, delegationResp := range delegationResps {
+		allBalances = allBalances.Add(delegationResp.Balance...)
+	}
+
+	return &types.QueryDelegatorSumDelegationBalancesResponse{Balance: allBalances}, nil
+}
+
 // Pool queries the pool info
 func (q Querier) Pool(ctx context.Context, _ *types.QueryPoolRequest) (*types.QueryPoolResponse, error) {
 	bondedPool := q.GetBondedPool(ctx)
