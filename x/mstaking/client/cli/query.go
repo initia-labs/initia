@@ -267,7 +267,7 @@ $ %s query staking delegation %s1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9p %s1gghju
 			queryClient := types.NewQueryClient(clientCtx)
 
 			delAddrStr := args[0]
-			if _, err := vc.StringToBytes(delAddrStr); err != nil {
+			if _, err := ac.StringToBytes(delAddrStr); err != nil {
 				return err
 			}
 
@@ -432,7 +432,7 @@ $ %s query staking unbonding-delegation %s1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9
 			queryClient := types.NewQueryClient(clientCtx)
 
 			delAddrStr := args[0]
-			if _, err := vc.StringToBytes(delAddrStr); err != nil {
+			if _, err := ac.StringToBytes(delAddrStr); err != nil {
 				return err
 			}
 
@@ -542,7 +542,7 @@ $ %s query staking redelegation %s1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9p %s1l2r
 			queryClient := types.NewQueryClient(clientCtx)
 
 			delAddrStr := args[0]
-			if _, err := vc.StringToBytes(delAddrStr); err != nil {
+			if _, err := ac.StringToBytes(delAddrStr); err != nil {
 				return err
 			}
 
