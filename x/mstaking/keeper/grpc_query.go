@@ -383,7 +383,7 @@ func (q Querier) DelegatorValidators(ctx context.Context, req *types.QueryDelega
 	return &types.QueryDelegatorValidatorsResponse{Validators: validators, Pagination: pageRes}, nil
 }
 
-func (q Querier) DelegatorSumDelegationBalances(ctx context.Context, req *types.QueryDelegatorSumDelegationBalancesRequest) (*types.QueryDelegatorSumDelegationBalancesResponse, error) {
+func (q Querier) DelegatorTotalDelegationBalance(ctx context.Context, req *types.QueryDelegatorTotalDelegationBalanceRequest) (*types.QueryDelegatorTotalDelegationBalanceResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
@@ -412,7 +412,7 @@ func (q Querier) DelegatorSumDelegationBalances(ctx context.Context, req *types.
 		allBalances = allBalances.Add(delegationResp.Balance...)
 	}
 
-	return &types.QueryDelegatorSumDelegationBalancesResponse{Balance: allBalances}, nil
+	return &types.QueryDelegatorTotalDelegationBalanceResponse{Balance: allBalances}, nil
 }
 
 // Pool queries the pool info

@@ -80,10 +80,10 @@ service Query {
       "{validator_addr}";
   }
 
-  // DelegatorSumDelegationBalances queries sum of all the delegations' balance of a
+  // DelegatorTotalDelegationBalance queries sum of all the delegations' balance of a
   // delegator.
-  rpc DelegatorSumDelegationBalances(QueryDelegatorSumDelegationBalancesRequest) returns (QueryDelegatorSumDelegationBalancesResponse) {
-    option (google.api.http).get = "/initia/mstaking/v1/delegators/{delegator_addr}/sum_delegation_balances";
+  rpc DelegatorTotalDelegationBalance(QueryDelegatorTotalDelegationBalanceRequest) returns (QueryDelegatorTotalDelegationBalanceResponse) {
+    option (google.api.http).get = "/initia/mstaking/v1/delegators/{delegator_addr}/total_delegation_balance";
   }
 
   // Pool queries the pool info.
@@ -322,16 +322,16 @@ message QueryDelegatorValidatorResponse {
   Validator validator = 1 [(gogoproto.nullable) = false];
 }
 
-// QueryDelegatorSumDelegationBalancesRequest is request type for the
-// Query/DelegatorSumDelegationBalances RPC method.
-message QueryDelegatorSumDelegationBalancesRequest {
+// QueryDelegatorTotalDelegationBalanceRequest is request type for the
+// Query/DelegatorTotalDelegationBalance RPC method.
+message QueryDelegatorTotalDelegationBalanceRequest {
   // delegator_addr defines the delegator address to query for.
   string delegator_addr = 1;
 }
 
-// QueryDelegatorSumDelegationBalancesResponse is response type for the
-// Query/DelegatorSumDelegationBalances RPC method.
-message QueryDelegatorSumDelegationBalancesResponse {
+// QueryDelegatorTotalDelegationBalanceResponse is response type for the
+// Query/DelegatorTotalDelegationBalance RPC method.
+message QueryDelegatorTotalDelegationBalanceResponse {
   // balance defines the sum of all the delegations' balance of a delegator.
   repeated cosmos.base.v1beta1.Coin balance = 1 [
     (gogoproto.moretags) = "yaml:\"balance\"",

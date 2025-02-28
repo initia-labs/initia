@@ -177,7 +177,7 @@ func Test_grpcQueryDelegatorDelegations(t *testing.T) {
 	}
 }
 
-func Test_grpcQueryDelegatorSumDelegationBalances(t *testing.T) {
+func Test_grpcQueryDelegatorTotalDelegationBalance(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
 	valAddr1 := createValidatorWithBalance(ctx, input, 100_000_000, 2_000_000, 1)
@@ -195,12 +195,12 @@ func Test_grpcQueryDelegatorSumDelegationBalances(t *testing.T) {
 	require.Equal(t, sdk.NewDecCoinsFromCoins(bondCoins...), shares)
 
 	// query delegator delegations
-	req := types.QueryDelegatorSumDelegationBalancesRequest{
+	req := types.QueryDelegatorTotalDelegationBalanceRequest{
 		DelegatorAddr: delAddrStr1,
 	}
 
 	querier := keeper.Querier{&input.StakingKeeper}
-	res, err := querier.DelegatorSumDelegationBalances(ctx, &req)
+	res, err := querier.DelegatorTotalDelegationBalance(ctx, &req)
 	require.NoError(t, err)
 
 	// 1_000_000 (validator creation) + 2_000_000 (extra bond to valAddr2)

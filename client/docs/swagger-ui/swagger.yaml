@@ -44253,14 +44253,14 @@ paths:
           type: boolean
       tags:
         - Query
-  /initia/mstaking/v1/delegators/{delegator_addr}/sum_delegation_balances:
+  /initia/mstaking/v1/delegators/{delegator_addr}/total_delegation_balance:
     get:
       summary: >-
-        DelegatorSumDelegationBalances queries sum of all the delegations'
+        DelegatorTotalDelegationBalance queries sum of all the delegations'
         balance of a
 
         delegator.
-      operationId: DelegatorSumDelegationBalances
+      operationId: DelegatorTotalDelegationBalance
       responses:
         '200':
           description: A successful response.
@@ -44288,10 +44288,10 @@ paths:
                   balance defines the sum of all the delegations' balance of a
                   delegator.
             description: >-
-              QueryDelegatorSumDelegationBalancesResponse is response type for
+              QueryDelegatorTotalDelegationBalanceResponse is response type for
               the
 
-              Query/DelegatorSumDelegationBalances RPC method.
+              Query/DelegatorTotalDelegationBalance RPC method.
         default:
           description: An unexpected error response.
           schema:
@@ -83684,7 +83684,7 @@ definitions:
     description: |-
       QueryDelegatorDelegationsResponse is response type for the
       Query/DelegatorDelegations RPC method.
-  initia.mstaking.v1.QueryDelegatorSumDelegationBalancesResponse:
+  initia.mstaking.v1.QueryDelegatorTotalDelegationBalanceResponse:
     type: object
     properties:
       balance:
@@ -83705,8 +83705,8 @@ definitions:
           balance defines the sum of all the delegations' balance of a
           delegator.
     description: |-
-      QueryDelegatorSumDelegationBalancesResponse is response type for the
-      Query/DelegatorSumDelegationBalances RPC method.
+      QueryDelegatorTotalDelegationBalanceResponse is response type for the
+      Query/DelegatorTotalDelegationBalance RPC method.
   initia.mstaking.v1.QueryDelegatorUnbondingDelegationsResponse:
     type: object
     properties:
