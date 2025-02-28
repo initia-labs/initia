@@ -2,6 +2,7 @@ syntax = "proto3";
 package initia.mstaking.v1;
 
 import "cosmos/base/query/v1beta1/pagination.proto";
+import "cosmos/base/v1beta1/coin.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "initia/mstaking/v1/staking.proto";
@@ -77,6 +78,12 @@ service Query {
     option (google.api.http).get =
       "/initia/mstaking/v1/delegators/{delegator_addr}/validators/"
       "{validator_addr}";
+  }
+
+  // DelegatorTotalDelegationBalance queries sum of all the delegations' balance of a
+  // delegator.
+  rpc DelegatorTotalDelegationBalance(QueryDelegatorTotalDelegationBalanceRequest) returns (QueryDelegatorTotalDelegationBalanceResponse) {
+    option (google.api.http).get = "/initia/mstaking/v1/delegators/{delegator_addr}/total_delegation_balance";
   }
 
   // Pool queries the pool info.
@@ -313,6 +320,24 @@ message QueryDelegatorValidatorRequest {
 message QueryDelegatorValidatorResponse {
   // validator defines the validator info.
   Validator validator = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryDelegatorTotalDelegationBalanceRequest is request type for the
+// Query/DelegatorTotalDelegationBalance RPC method.
+message QueryDelegatorTotalDelegationBalanceRequest {
+  // delegator_addr defines the delegator address to query for.
+  string delegator_addr = 1;
+}
+
+// QueryDelegatorTotalDelegationBalanceResponse is response type for the
+// Query/DelegatorTotalDelegationBalance RPC method.
+message QueryDelegatorTotalDelegationBalanceResponse {
+  // balance defines the sum of all the delegations' balance of a delegator.
+  repeated cosmos.base.v1beta1.Coin balance = 1 [
+    (gogoproto.moretags) = "yaml:\"balance\"",
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
+    (gogoproto.nullable) = false
+  ];
 }
 
 // QueryPoolRequest is request type for the Query/Pool RPC method.

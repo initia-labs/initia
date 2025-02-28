@@ -177,6 +177,36 @@ func Test_grpcQueryDelegatorDelegations(t *testing.T) {
 	}
 }
 
+func Test_grpcQueryDelegatorTotalDelegationBalance(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+
+	valAddr1 := createValidatorWithBalance(ctx, input, 100_000_000, 2_000_000, 1)
+	delAddrStr1, err := input.AccountKeeper.AddressCodec().BytesToString(valAddr1)
+	require.NoError(t, err)
+
+	valAddr2 := createValidatorWithBalance(ctx, input, 100_000_000, 2_000_000, 2)
+	bondCoins := sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(1_000_000)))
+
+	validator, err := input.StakingKeeper.Validators.Get(ctx, valAddr2)
+	require.NoError(t, err)
+
+	shares, err := input.StakingKeeper.Delegate(ctx, valAddr1.Bytes(), bondCoins, types.Unbonded, validator, true)
+	require.NoError(t, err)
+	require.Equal(t, sdk.NewDecCoinsFromCoins(bondCoins...), shares)
+
+	// query delegator delegations
+	req := types.QueryDelegatorTotalDelegationBalanceRequest{
+		DelegatorAddr: delAddrStr1,
+	}
+
+	querier := keeper.Querier{&input.StakingKeeper}
+	res, err := querier.DelegatorTotalDelegationBalance(ctx, &req)
+	require.NoError(t, err)
+
+	// 1_000_000 (validator creation) + 2_000_000 (extra bond to valAddr2)
+	require.Equal(t, res.Balance, sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(3_000_000))))
+}
+
 func Test_grpcQueryDelegatorUnbondingDelegations(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
