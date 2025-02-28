@@ -3,9 +3,9 @@ FROM golang:1.23-alpine AS go-builder
 
 # Use build arguments for the target architecture
 ARG TARGETARCH
-ARG GOARCH
+ARG GOARCH=${TARGETARCH}
 
-# See https://github.com/initia-labs/movevm/releases
+# MoveVM Version
 ENV LIBMOVEVM_VERSION=v0.6.1
 
 # Install necessary packages
@@ -15,48 +15,48 @@ WORKDIR /code
 COPY . /code/
 
 # Install mimalloc
-RUN git clone --depth 1 https://github.com/microsoft/mimalloc; cd mimalloc; mkdir build; cd build; cmake ..; make -j$(nproc); make install
+RUN git clone --depth 1 https://github.com/microsoft/mimalloc; \
+    cd mimalloc; mkdir build; cd build; \
+    cmake ..; make -j$(nproc); make install
+
 ENV MIMALLOC_RESERVE_HUGE_OS_PAGES=4
 
-# Determine GOARCH and download the appropriate libraries
+# Determine architecture-specific libraries
 RUN set -eux; \
     case "${TARGETARCH}" in \
-        "amd64") export GOARCH="amd64"; ARCH="x86_64";; \
-        "arm64") export GOARCH="arm64"; ARCH="aarch64";; \
+        "amd64") ARCH="x86_64";; \
+        "arm64") ARCH="aarch64";; \
         *) echo "Unsupported architecture: ${TARGETARCH}"; exit 1;; \
     esac; \
     echo "Using GOARCH=${GOARCH} and ARCH=${ARCH}"; \
     wget -O /lib/libmovevm_muslc.${ARCH}.a https://github.com/initia-labs/movevm/releases/download/${LIBMOVEVM_VERSION}/libmovevm_muslc.${ARCH}.a; \
     wget -O /lib/libcompiler_muslc.${ARCH}.a https://github.com/initia-labs/movevm/releases/download/${LIBMOVEVM_VERSION}/libcompiler_muslc.${ARCH}.a; \
     cp /lib/libmovevm_muslc.${ARCH}.a /lib/libmovevm_muslc.a; \
-    cp /lib/libcompiler_muslc.${ARCH}.a /lib/libcompiler_muslc.a
+    cp /lib/libcompiler_muslc.${ARCH}.a /lib/libcompiler_muslc.a; \
+    sha256sum /lib/libmovevm_muslc.${ARCH}.a | grep EXPECTED_HASH; \
+    sha256sum /lib/libcompiler_muslc.${ARCH}.a | grep EXPECTED_HASH
 
-# Verify the library hashes (optional, uncomment if needed)
-# RUN sha256sum /lib/libmovevm_muslc.${ARCH}.a | grep ...
-# RUN sha256sum /lib/libcompiler_muslc.${ARCH}.a | grep ...
-
-# Build the project with the specified architecture and linker flags
-RUN LEDGER_ENABLED=false BUILD_TAGS=muslc GOARCH=${GOARCH} LDFLAGS="-linkmode=external -extldflags \"-L/code/mimalloc/build -lmimalloc -Wl,-z,muldefs -static\"" make build
+# Build the project with architecture-specific flags
+RUN set -eux; \
+    CGO_ENABLED=1 BUILD_TAGS=muslc GOARCH=${GOARCH} \
+    LDFLAGS="-linkmode=external -extldflags '-L/code/mimalloc/build -lmimalloc -Wl,-z,muldefs -static -static-libgcc'" \
+    make build
 
 # Stage 2: Create the final image
 FROM alpine:3.19
 
-RUN addgroup initia \
-    && adduser -G initia -D -h /initia initia
+# Add user and group for security
+RUN addgroup -S initia && adduser -S -G initia -h /initia initia
 
 WORKDIR /initia
 
+# Copy built binary from previous stage
 COPY --from=go-builder /code/build/initiad /usr/local/bin/initiad
 
 USER initia
 
-# rest server
-EXPOSE 1317
-# grpc
-EXPOSE 9090
-# tendermint p2p
-EXPOSE 26656
-# tendermint rpc
-EXPOSE 26657
+# Expose necessary ports
+EXPOSE 1317 9090 26656 26657
 
+# Run the application
 CMD ["/usr/local/bin/initiad", "version"]
