@@ -189,14 +189,6 @@
       "url": "./tmp-swagger-gen/ibc/applications/perm/v1/query.swagger.json"
     },
     {
-      "url": "./tmp-swagger-gen/packetforward/v1/query.swagger.json",
-      "operationIds": {
-        "rename": {
-          "Params": "PFMParams"
-        }
-      }
-    },
-    {
       "url": "./tmp-swagger-gen/initia/intertx/v1/query.swagger.json"
     },
     {
