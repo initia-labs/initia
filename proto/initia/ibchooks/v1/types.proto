@@ -10,7 +10,7 @@ option (gogoproto.goproto_getters_all) = false;
 
 // Params defines the set of hook parameters.
 message Params {
-  option (amino.name) = "ibc-hooks/Params";
+  option (amino.name) = "ibchooks/Params";
   option (gogoproto.equal) = true;
   option (gogoproto.goproto_stringer) = false;
 

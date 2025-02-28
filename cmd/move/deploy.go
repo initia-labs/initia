@@ -42,7 +42,7 @@ func moveDeployCmd(ac address.Codec) *cobra.Command {
 					return err
 				}
 
-				_, err = api.BuildContract(*arg)
+				err = buildContract(arg)
 				if err != nil {
 					return err
 				}
@@ -152,9 +152,10 @@ the target name to '_' in the Move.toml file.
 				}{
 					Field0: objectAddressName,
 					Field1: objectVmAddr,
-				})
+				},
+			)
 
-			_, err = api.BuildContract(*arg)
+			err = buildContract(arg)
 			if err != nil {
 				return err
 			}
@@ -166,6 +167,30 @@ the target name to '_' in the Move.toml file.
 	addMoveBuildFlags(cmd)
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
+}
+
+func buildContract(arg *vmtypes.CompilerArguments) error {
+	pwd, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+
+	_, err = api.BuildContract(*arg)
+	if err != nil {
+		return err
+	}
+
+	// move build api changes the working directory
+	// so we need to change it back
+	if newPwd, err := os.Getwd(); err != nil {
+		return err
+	} else if pwd != newPwd {
+		if err := os.Chdir(pwd); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func deploy(cmd *cobra.Command, ac address.Codec, isObjectDeployment, verify bool) error {

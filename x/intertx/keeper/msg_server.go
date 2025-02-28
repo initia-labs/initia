@@ -62,11 +62,8 @@ func (k msgServer) SubmitTx(goCtx context.Context, msg *types.MsgSubmitTx) (*typ
 		Data: data,
 	}
 
-	// timeoutTimestamp set to max value with the unsigned bit shifted to satisfy hermes timestamp conversion
-	// it is the responsibility of the auth module developer to ensure an appropriate timeout timestamp
-	timeoutTimestamp := ctx.BlockTime().Add(time.Minute).UnixNano()
-
-	icaMsg := icacontrollertypes.NewMsgSendTx(msg.Owner, msg.ConnectionId, uint64(timeoutTimestamp), packetData)
+	relativeTimeoutTimestamp := uint64((time.Minute * 5).Nanoseconds())
+	icaMsg := icacontrollertypes.NewMsgSendTx(msg.Owner, msg.ConnectionId, uint64(relativeTimeoutTimestamp), packetData)
 	_, err = k.icaControllerMsgServer.SendTx(ctx, icaMsg)
 	if err != nil {
 		return nil, err

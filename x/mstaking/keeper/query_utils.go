@@ -9,32 +9,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// Return all validators that a delegator is bonded to. If maxRetrieve is supplied, the respective amount will be returned.
-func (k Keeper) GetDelegatorValidators(
-	ctx context.Context, delegatorAddr sdk.AccAddress, maxRetrieve uint32,
-) (types.Validators, error) {
-	validators := make([]types.Validator, maxRetrieve)
-	err := k.Delegations.Walk(ctx, collections.NewPrefixedPairRange[[]byte, []byte](delegatorAddr), func(key collections.Pair[[]byte, []byte], delegation types.Delegation) (stop bool, err error) {
-		valAddr, err := k.validatorAddressCodec.StringToBytes(delegation.GetValidatorAddr())
-		if err != nil {
-			return true, err
-		}
-
-		validator, err := k.Validators.Get(ctx, valAddr)
-		if err != nil {
-			return true, err
-		}
-
-		validators = append(validators, validator)
-		return len(validators) == int(maxRetrieve), err
-	})
-
-	return types.Validators{
-		Validators:     validators,
-		ValidatorCodec: k.validatorAddressCodec,
-	}, err
-}
-
 // return a validator that a delegator is bonded to
 func (k Keeper) GetDelegatorValidator(
 	ctx context.Context, delegatorAddr sdk.AccAddress, validatorAddr sdk.ValAddress,

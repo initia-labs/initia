@@ -71,6 +71,8 @@ import (
 	// block-sdk dependencies
 
 	blockchecktx "github.com/skip-mev/block-sdk/v2/abci/checktx"
+	"github.com/skip-mev/block-sdk/v2/block"
+	blockservice "github.com/skip-mev/block-sdk/v2/block/service"
 
 	// connect oracle dependencies
 
@@ -449,6 +451,9 @@ func (app *InitiaApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.API
 	// Register node gRPC service for grpc-gateway.
 	nodeservice.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 
+	// Register the Block SDK mempool API routes.
+	blockservice.RegisterGRPCGatewayRoutes(apiSvr.ClientCtx, apiSvr.GRPCGatewayRouter)
+
 	// Register grpc-gateway routes for all modules.
 	app.BasicModuleManager.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 
@@ -469,6 +474,14 @@ func (app *InitiaApp) Simulate(txBytes []byte) (sdk.GasInfo, *sdk.Result, error)
 func (app *InitiaApp) RegisterTxService(clientCtx client.Context) {
 	authtx.RegisterTxService(app.BaseApp.GRPCQueryRouter(), clientCtx, app.Simulate, app.interfaceRegistry)
 	initiatx.RegisterTxQuery(app.GRPCQueryRouter(), app.MoveKeeper.DexKeeper())
+
+	// Register the Block SDK mempool transaction service.
+	mempool, ok := app.Mempool().(block.Mempool)
+	if !ok {
+		panic("mempool is not a block.Mempool")
+	}
+
+	blockservice.RegisterMempoolService(app.GRPCQueryRouter(), mempool)
 }
 
 // RegisterTendermintService implements the Application.RegisterTendermintService method.

@@ -56,7 +56,7 @@ const (
 	FunctionNameStakingSlashUnbondingCoinForChain   = "slash_unbonding_for_chain"
 
 	// function names for dex
-	FunctionNameDexSwapScript = "swap_script"
+	FunctionNameDexSudoSwap = "sudo_swap"
 
 	// function names for object
 	FunctionNameObjectTransfer = "transfer"

@@ -58,14 +58,15 @@ func (k BalancerKeeper) SwapToBase(
 	}
 
 	// swap quote coin to base coin
-	return k.ExecuteEntryFunction(
+	return k.executeEntryFunction(
 		ctx,
-		trader,
+		[]vmtypes.AccountAddress{vmtypes.StdAddress, trader},
 		vmtypes.StdAddress,
 		types.MoveModuleNameDex,
-		types.FunctionNameDexSwapScript,
+		types.FunctionNameDexSudoSwap,
 		[]vmtypes.TypeTag{},
 		[][]byte{metadataLP[:], metadataQuote[:], offerAmountBz, {0}},
+		false,
 	)
 }
 

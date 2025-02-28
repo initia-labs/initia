@@ -338,7 +338,7 @@ func TestCalculateRewardsAfterManySlashes(t *testing.T) {
 	require.True(t, slashedTokens.IsAllPositive(), "expected positive slashed tokens, got: %s", slashedTokens)
 
 	// fetch the validator again
-	val, err = input.StakingKeeper.Validator(ctx, valAddr1)
+	_, err = input.StakingKeeper.Validator(ctx, valAddr1)
 	require.NoError(t, err)
 
 	// increase block height
