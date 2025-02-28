@@ -632,6 +632,10 @@ func NewAppKeeper(
 		Request:  &stakingtypes.QueryDelegatorDelegationsRequest{},
 		Response: &stakingtypes.QueryDelegatorDelegationsResponse{},
 	}
+	queryWhitelist.Stargate["/initia.mstaking.v1.Query/DelegatorTotalDelegationBalance"] = movetypes.ProtoSet{
+		Request:  &stakingtypes.QueryDelegatorTotalDelegationBalanceRequest{},
+		Response: &stakingtypes.QueryDelegatorTotalDelegationBalanceResponse{},
+	}
 	queryWhitelist.Stargate["/initia.mstaking.v1.Query/Delegation"] = movetypes.ProtoSet{
 		Request:  &stakingtypes.QueryDelegationRequest{},
 		Response: &stakingtypes.QueryDelegationResponse{},
