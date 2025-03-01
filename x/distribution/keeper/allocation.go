@@ -80,7 +80,7 @@ func (k Keeper) AllocateTokens(ctx context.Context, totalPreviousPower int64, bo
 
 	// allocate rewards proportionally to reward power
 	for _, rewardWeight := range rewardWeights {
-		poolFraction := rewardWeight.Weight.Quo(weightsSum)
+		poolFraction := rewardWeight.Weight.QuoTruncate(weightsSum)
 		poolReward := feesCollected.MulDecTruncate(voteMultiplier).MulDecTruncate(poolFraction)
 
 		poolDenom := rewardWeight.Denom

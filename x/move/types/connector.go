@@ -412,7 +412,7 @@ func GetPoolWeights(
 	timestampBefore, timestampAfter, timestamp math.Int,
 ) (math.LegacyDec, math.LegacyDec, error) {
 	if timestampBefore.GT(timestamp) {
-		return math.LegacyZeroDec(), math.LegacyZeroDec(), ErrInvalidDexConfig
+		return weightCoinABefore, weightCoinBBefore, nil
 	}
 
 	if timestamp.GTE(timestampAfter) {

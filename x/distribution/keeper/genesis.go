@@ -122,7 +122,14 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data customtypes.GenesisState) {
 	if balances.IsZero() {
 		k.authKeeper.SetModuleAccount(ctx, moduleAcc)
 	}
-	if !balances.Equal(moduleHoldingsInt) {
+
+	// It is hard to block fungible asset transfer from move side,
+	// so we can't guarantee the ModuleAccount is always equal to the sum
+	// of the distribution rewards and community pool. Instead, we decide to check
+	// if the ModuleAccount balance is greater than or equal to the sum of
+	// the distribution rewards and community pool.
+	broken := !balances.IsAllGTE(moduleHoldingsInt)
+	if broken {
 		panic(fmt.Sprintf("distribution module balance does not match the module holdings: %s <-> %s", balances, moduleHoldingsInt))
 	}
 }

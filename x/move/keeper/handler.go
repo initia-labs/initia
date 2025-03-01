@@ -391,7 +391,13 @@ func (k Keeper) dispatchMessage(parentCtx sdk.Context, message vmtypes.CosmosMes
 	ctx, commit := parentCtx.CacheContext()
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("panic: %v", r)
+			switch r.(type) {
+			case storetypes.ErrorOutOfGas:
+				// propagate out of gas error
+				panic(r)
+			default:
+				err = fmt.Errorf("panic: %v", r)
+			}
 		}
 
 		success := err == nil
@@ -580,28 +586,25 @@ func (k Keeper) executeViewFunction(
 		return vmtypes.ViewOutput{}, 0, err
 	}
 
-	executionCounter, err := k.ExecutionCounter.Next(ctx)
+	ac := types.NextAccountNumber(ctx, k.authKeeper)
+	ec, err := k.ExecutionCounter.Next(ctx)
 	if err != nil {
 		return vmtypes.ViewOutput{}, 0, err
 	}
-
-	api := NewApi(k, ctx)
-	env := types.NewEnv(
-		ctx,
-		types.NextAccountNumber(ctx, k.authKeeper),
-		executionCounter,
-	)
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	gasMeter := sdkCtx.GasMeter()
 	gasForRuntime := k.computeGasForRuntime(ctx, gasMeter)
 
+	// delegate gas metering to move vm
+	sdkCtx = sdkCtx.WithGasMeter(storetypes.NewInfiniteGasMeter())
+
 	gasBalance := gasForRuntime
 	viewRes, err := k.initiaMoveVM.ExecuteViewFunction(
 		&gasBalance,
-		types.NewVMStore(ctx, k.VMStore),
-		api,
-		env,
+		types.NewVMStore(sdkCtx, k.VMStore),
+		NewApi(k, sdkCtx),
+		types.NewEnv(sdkCtx, ac, ec),
 		payload,
 	)
 
