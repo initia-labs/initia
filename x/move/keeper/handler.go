@@ -586,28 +586,25 @@ func (k Keeper) executeViewFunction(
 		return vmtypes.ViewOutput{}, 0, err
 	}
 
-	executionCounter, err := k.ExecutionCounter.Next(ctx)
+	ac := types.NextAccountNumber(ctx, k.authKeeper)
+	ec, err := k.ExecutionCounter.Next(ctx)
 	if err != nil {
 		return vmtypes.ViewOutput{}, 0, err
 	}
-
-	api := NewApi(k, ctx)
-	env := types.NewEnv(
-		ctx,
-		types.NextAccountNumber(ctx, k.authKeeper),
-		executionCounter,
-	)
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	gasMeter := sdkCtx.GasMeter()
 	gasForRuntime := k.computeGasForRuntime(ctx, gasMeter)
 
+	// delegate gas metering to move vm
+	sdkCtx = sdkCtx.WithGasMeter(storetypes.NewInfiniteGasMeter())
+
 	gasBalance := gasForRuntime
 	viewRes, err := k.initiaMoveVM.ExecuteViewFunction(
 		&gasBalance,
-		types.NewVMStore(ctx, k.VMStore),
-		api,
-		env,
+		types.NewVMStore(sdkCtx, k.VMStore),
+		NewApi(k, sdkCtx),
+		types.NewEnv(sdkCtx, ac, ec),
 		payload,
 	)
 
