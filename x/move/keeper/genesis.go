@@ -68,7 +68,7 @@ func (k Keeper) Initialize(
 		}
 	}
 
-	return k.handleExecuteResponse(sdkCtx, sdkCtx.GasMeter(), execRes)
+	return nil
 }
 
 // InitGenesis sets supply information for genesis.
