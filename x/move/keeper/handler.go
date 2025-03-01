@@ -391,7 +391,13 @@ func (k Keeper) dispatchMessage(parentCtx sdk.Context, message vmtypes.CosmosMes
 	ctx, commit := parentCtx.CacheContext()
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("panic: %v", r)
+			switch r.(type) {
+			case storetypes.ErrorOutOfGas:
+				// propagate out of gas error
+				panic(r)
+			default:
+				err = fmt.Errorf("panic: %v", r)
+			}
 		}
 
 		success := err == nil
