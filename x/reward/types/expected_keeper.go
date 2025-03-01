@@ -12,8 +12,6 @@ type AccountKeeper interface {
 	AddressCodec() address.Codec
 	GetModuleAddress(name string) sdk.AccAddress
 
-	// TODO remove with genesis 2-phases refactor https://github.com/cosmos/cosmos-sdk/issues/2862
-	SetModuleAccount(context.Context, sdk.ModuleAccountI)
 	GetModuleAccount(ctx context.Context, moduleName string) sdk.ModuleAccountI
 }
 
