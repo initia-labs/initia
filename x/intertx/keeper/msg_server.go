@@ -37,7 +37,15 @@ func (k msgServer) RegisterAccount(goCtx context.Context, msg *types.MsgRegister
 	icaMsg := icacontrollertypes.NewMsgRegisterInterchainAccount(msg.ConnectionId, msg.Owner, msg.Version)
 	icaMsg.Ordering = msg.Ordering
 
-	if _, err := k.icaControllerMsgServer.RegisterInterchainAccount(ctx, icaMsg); err != nil {
+	// validate the icaMsg
+	err := icaMsg.ValidateBasic()
+	if err != nil {
+		return nil, err
+	}
+
+	// send the icaMsg to the ica controller
+	_, err = k.icaControllerMsgServer.RegisterInterchainAccount(ctx, icaMsg)
+	if err != nil {
 		return nil, err
 	}
 
@@ -64,6 +72,14 @@ func (k msgServer) SubmitTx(goCtx context.Context, msg *types.MsgSubmitTx) (*typ
 
 	relativeTimeoutTimestamp := uint64((time.Minute * 5).Nanoseconds())
 	icaMsg := icacontrollertypes.NewMsgSendTx(msg.Owner, msg.ConnectionId, uint64(relativeTimeoutTimestamp), packetData)
+
+	// validate the icaMsg
+	err = icaMsg.ValidateBasic()
+	if err != nil {
+		return nil, err
+	}
+
+	// send the icaMsg to the ica controller
 	_, err = k.icaControllerMsgServer.SendTx(ctx, icaMsg)
 	if err != nil {
 		return nil, err
