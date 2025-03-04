@@ -11,13 +11,6 @@ on:
       - "**.go"
       - "go.mod"
       - "go.sum"
-  pull_request:
-    branches:
-      - "main"
-    paths:
-      - "**.go"
-      - "go.mod"
-      - "go.sum"
 
 env:
   REGISTRY: ghcr.io
@@ -61,6 +54,8 @@ jobs:
           push: ${{ startsWith(github.ref, 'refs/tags') }} # push image only for tags
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+        env:
+          VERSION: ${{ github.ref_name }}
 
   node:
     if: ${{ startsWith(github.ref, 'refs/tags/') }}
