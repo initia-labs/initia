@@ -22,7 +22,7 @@ func (h MoveHooks) onRecvIcs20Packet(
 	data transfertypes.FungibleTokenPacketData,
 ) ibcexported.Acknowledgement {
 	isMoveRouted, hookData, err := validateAndParseMemo(data.GetMemo())
-	if !isMoveRouted || hookData.Message == nil {
+	if !isMoveRouted || (err == nil && hookData.Message == nil) {
 		return im.App.OnRecvPacket(ctx, packet, relayer)
 	} else if err != nil {
 		return newEmitErrorAcknowledgement(err)
@@ -74,7 +74,7 @@ func (h MoveHooks) onRecvIcs721Packet(
 	data nfttransfertypes.NonFungibleTokenPacketData,
 ) ibcexported.Acknowledgement {
 	isMoveRouted, hookData, err := validateAndParseMemo(data.GetMemo())
-	if !isMoveRouted || hookData.Message == nil {
+	if !isMoveRouted || (err == nil && hookData.Message == nil) {
 		return im.App.OnRecvPacket(ctx, packet, relayer)
 	} else if err != nil {
 		return newEmitErrorAcknowledgement(err)
