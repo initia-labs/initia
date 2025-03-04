@@ -33,5 +33,5 @@ Join the Initia community for questions and updates!
 
 - [Twitter](https://x.com/initia)
 - [Discord](https://discord.gg/initia)
-- [Medium](https://medium.com/@initiafdn)
+- [Medium](https://medium.com/@initialabs)
   
