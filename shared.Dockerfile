@@ -9,7 +9,7 @@ RUN apt install -y vim
 WORKDIR /code
 COPY . /code/
 
-RUN LEDGER_ENABLED=false make build
+RUN VERSION=${VERSION} LEDGER_ENABLED=false make build
 
 RUN cp /go/pkg/mod/github.com/initia\-labs/movevm@v*/api/libmovevm.`uname -m`.so /lib/libmovevm.so
 RUN cp /go/pkg/mod/github.com/initia\-labs/movevm@v*/api/libcompiler.`uname -m`.so /lib/libcompiler.so

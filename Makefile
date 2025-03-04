@@ -120,15 +120,15 @@ endif
 
 build-linux:
 	mkdir -p $(BUILDDIR)
-	docker build --no-cache --tag initia/initiad ./
-	docker create --name temp initia/initiad:latest
+	docker build --no-cache --tag initia/initiad ./ 
+	docker create --name temp initia/initiad:latest --env VERSION=$(VERSION)
 	docker cp temp:/usr/local/bin/initiad $(BUILDDIR)/
 	docker rm temp
 
 build-linux-with-shared-library:
 	mkdir -p $(BUILDDIR)
 	docker build --tag initia/initiad-shared ./ -f ./shared.Dockerfile
-	docker create --name temp initia/initiad-shared:latest
+	docker create --name temp initia/initiad-shared:latest --env VERSION=$(VERSION)
 	docker cp temp:/usr/local/bin/initiad $(BUILDDIR)/
 	docker cp temp:/lib/libmovevm.so $(BUILDDIR)/
 	docker cp temp:/lib/libcompiler.so $(BUILDDIR)/

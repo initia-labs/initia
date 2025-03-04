@@ -36,7 +36,7 @@ RUN set -eux; \
 # RUN sha256sum /lib/libcompiler_muslc.${ARCH}.a | grep ...
 
 # Build the project with the specified architecture and linker flags
-RUN LEDGER_ENABLED=false BUILD_TAGS=muslc GOARCH=${GOARCH} LDFLAGS="-linkmode=external -extldflags \"-L/code/mimalloc/build -lmimalloc -Wl,-z,muldefs -static\"" make build
+RUN VERSION=${VERSION} LEDGER_ENABLED=false BUILD_TAGS=muslc GOARCH=${GOARCH} LDFLAGS="-linkmode=external -extldflags \"-L/code/mimalloc/build -lmimalloc -Wl,-z,muldefs -static\"" make build
 
 # Stage 2: Create the final image
 FROM alpine:3.19
