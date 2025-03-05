@@ -50,7 +50,7 @@ func (k Keeper) ShareToAmount(ctx context.Context, valAddr sdk.ValAddress, share
 // to prevent the chain from halting.
 func (k Keeper) SafeWithdrawRewards(ctx context.Context, valAddr sdk.ValAddress) (pools distrtypes.Pools, err error) {
 	// distrKeeper.WithdrawDelegationRewards can raise panic due to some rounding inconsistencies.
-	// https://github.com/initia-labs/initia/v1/blob/3479c41bb1624e97096e1c1f1edf574403c09fa8/x/distribution/keeper/delegation.go#L196
+	// https://github.com/initia-labs/initia/blob/3479c41bb1624e97096e1c1f1edf574403c09fa8/x/distribution/keeper/delegation.go#L196
 	defer func() {
 		if r := recover(); r != nil {
 			k.Logger(ctx).Error("failed to withdraw rewards", "validator", valAddr, "error", r)
