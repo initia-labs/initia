@@ -22,5 +22,5 @@ done
 cd ..
 
 # move proto files to the right places
-cp -r github.com/initia-labs/initia/* ./
+cp -r github.com/initia-labs/initia/v1/* ./
 rm -rf github.com

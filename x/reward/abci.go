@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"cosmossdk.io/math"
-	"github.com/initia-labs/initia/x/reward/keeper"
-	"github.com/initia-labs/initia/x/reward/types"
+	"github.com/initia-labs/initia/v1/x/reward/keeper"
+	"github.com/initia-labs/initia/v1/x/reward/types"
 
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"

@@ -8,8 +8,8 @@ import (
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/initia-labs/initia/x/mstaking/keeper"
-	"github.com/initia-labs/initia/x/mstaking/types"
+	"github.com/initia-labs/initia/v1/x/mstaking/keeper"
+	"github.com/initia-labs/initia/v1/x/mstaking/types"
 )
 
 // WriteValidators returns a slice of bonded genesis validators.

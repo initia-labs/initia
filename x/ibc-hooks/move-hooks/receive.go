@@ -8,10 +8,10 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 
-	ibchooks "github.com/initia-labs/initia/x/ibc-hooks"
-	nfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
-	movekeeper "github.com/initia-labs/initia/x/move/keeper"
-	movetypes "github.com/initia-labs/initia/x/move/types"
+	ibchooks "github.com/initia-labs/initia/v1/x/ibc-hooks"
+	nfttransfertypes "github.com/initia-labs/initia/v1/x/ibc/nft-transfer/types"
+	movekeeper "github.com/initia-labs/initia/v1/x/move/keeper"
+	movetypes "github.com/initia-labs/initia/v1/x/move/types"
 )
 
 func (h MoveHooks) onRecvIcs20Packet(

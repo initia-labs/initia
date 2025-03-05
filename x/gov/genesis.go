@@ -8,8 +8,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/gov/types"
 	v1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 
-	"github.com/initia-labs/initia/x/gov/keeper"
-	customtypes "github.com/initia-labs/initia/x/gov/types"
+	"github.com/initia-labs/initia/v1/x/gov/keeper"
+	customtypes "github.com/initia-labs/initia/v1/x/gov/types"
 )
 
 // InitGenesis - store genesis parameters

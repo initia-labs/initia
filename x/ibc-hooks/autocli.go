@@ -2,7 +2,7 @@ package ibc_hooks
 
 import (
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
-	ibchooksv1 "github.com/initia-labs/initia/api/initia/ibchooks/v1"
+	ibchooksv1 "github.com/initia-labs/initia/v1/api/initia/ibchooks/v1"
 )
 
 // AutoCLIOptions implements the autocli.HasAutoCLIConfig interface.

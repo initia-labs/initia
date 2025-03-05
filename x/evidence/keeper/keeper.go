@@ -17,7 +17,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	customtypes "github.com/initia-labs/initia/x/evidence/types"
+	customtypes "github.com/initia-labs/initia/v1/x/evidence/types"
 )
 
 // Keeper defines the evidence module's keeper. The keeper is responsible for

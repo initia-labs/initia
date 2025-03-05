@@ -14,7 +14,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/distribution/types"
 
-	customtypes "github.com/initia-labs/initia/x/distribution/types"
+	customtypes "github.com/initia-labs/initia/v1/x/distribution/types"
 )
 
 // Keeper of the distribution store

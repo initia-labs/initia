@@ -7,9 +7,9 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	distrtypes "github.com/initia-labs/initia/x/distribution/types"
-	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
-	rewardtypes "github.com/initia-labs/initia/x/reward/types"
+	distrtypes "github.com/initia-labs/initia/v1/x/distribution/types"
+	stakingtypes "github.com/initia-labs/initia/v1/x/mstaking/types"
+	rewardtypes "github.com/initia-labs/initia/v1/x/reward/types"
 
 	connecttypes "github.com/skip-mev/connect/v2/pkg/types"
 	oracletypes "github.com/skip-mev/connect/v2/x/oracle/types"

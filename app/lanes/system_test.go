@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	opchildtypes "github.com/initia-labs/OPinit/x/opchild/types"
-	lanes "github.com/initia-labs/initia/app/lanes"
+	lanes "github.com/initia-labs/initia/v1/app/lanes"
 )
 
 func Test_RejectMatchHandler(t *testing.T) {

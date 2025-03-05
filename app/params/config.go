@@ -7,7 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 
-	tx "github.com/initia-labs/initia/tx"
+	tx "github.com/initia-labs/initia/v1/tx"
 )
 
 type config struct {

@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"cosmossdk.io/core/address"
-	"github.com/initia-labs/initia/x/intertx/types"
+	"github.com/initia-labs/initia/v1/x/intertx/types"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"

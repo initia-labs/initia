@@ -6,7 +6,7 @@ import (
 
 	"cosmossdk.io/collections"
 	"cosmossdk.io/math"
-	"github.com/initia-labs/initia/x/mstaking/types"
+	"github.com/initia-labs/initia/v1/x/mstaking/types"
 	"github.com/stretchr/testify/require"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"

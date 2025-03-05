@@ -3,7 +3,7 @@ package cli
 import (
 	flag "github.com/spf13/pflag"
 
-	"github.com/initia-labs/initia/x/mstaking/types"
+	"github.com/initia-labs/initia/v1/x/mstaking/types"
 )
 
 const (

@@ -3,8 +3,8 @@ package keeper_test
 import (
 	"testing"
 
-	"github.com/initia-labs/initia/x/ibc-hooks/keeper"
-	"github.com/initia-labs/initia/x/ibc-hooks/types"
+	"github.com/initia-labs/initia/v1/x/ibc-hooks/keeper"
+	"github.com/initia-labs/initia/v1/x/ibc-hooks/types"
 	"github.com/stretchr/testify/require"
 )
 

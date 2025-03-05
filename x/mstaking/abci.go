@@ -8,8 +8,8 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/telemetry"
 
-	"github.com/initia-labs/initia/x/mstaking/keeper"
-	"github.com/initia-labs/initia/x/mstaking/types"
+	"github.com/initia-labs/initia/v1/x/mstaking/keeper"
+	"github.com/initia-labs/initia/v1/x/mstaking/types"
 )
 
 // BeginBlocker will persist the current header and validator set as a historical entry

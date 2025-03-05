@@ -15,7 +15,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/version"
 
-	movecli "github.com/initia-labs/initia/x/move/client/cli"
+	movecli "github.com/initia-labs/initia/v1/x/move/client/cli"
 
 	"github.com/initia-labs/movevm/api"
 	"github.com/initia-labs/movevm/types"

@@ -11,9 +11,9 @@ import (
 
 	"cosmossdk.io/core/appmodule"
 
-	"github.com/initia-labs/initia/x/reward/client/cli"
-	"github.com/initia-labs/initia/x/reward/keeper"
-	"github.com/initia-labs/initia/x/reward/types"
+	"github.com/initia-labs/initia/v1/x/reward/client/cli"
+	"github.com/initia-labs/initia/v1/x/reward/keeper"
+	"github.com/initia-labs/initia/v1/x/reward/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"

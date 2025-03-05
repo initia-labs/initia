@@ -8,8 +8,8 @@ import (
 
 	govtypesv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 
-	govtypes "github.com/initia-labs/initia/x/gov/types"
-	"github.com/initia-labs/initia/x/move/types"
+	govtypes "github.com/initia-labs/initia/v1/x/gov/types"
+	"github.com/initia-labs/initia/v1/x/move/types"
 
 	vmtypes "github.com/initia-labs/movevm/types"
 )

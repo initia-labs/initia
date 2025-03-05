@@ -23,9 +23,9 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	simcli "github.com/cosmos/cosmos-sdk/x/simulation/client/cli"
 
-	initiaapp "github.com/initia-labs/initia/app"
-	moveconfig "github.com/initia-labs/initia/x/move/config"
-	movetypes "github.com/initia-labs/initia/x/move/types"
+	initiaapp "github.com/initia-labs/initia/v1/app"
+	moveconfig "github.com/initia-labs/initia/v1/x/move/config"
+	movetypes "github.com/initia-labs/initia/v1/x/move/types"
 
 	oracleconfig "github.com/skip-mev/connect/v2/oracle/config"
 )

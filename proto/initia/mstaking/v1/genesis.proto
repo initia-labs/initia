@@ -6,7 +6,7 @@ import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 import "initia/mstaking/v1/staking.proto";
 
-option go_package = "github.com/initia-labs/initia/x/mstaking/types";
+option go_package = "github.com/initia-labs/initia/v1/x/mstaking/types";
 
 // GenesisState defines the staking module's genesis state.
 message GenesisState {

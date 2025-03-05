@@ -4,7 +4,7 @@ package initia.move.v1;
 import "amino/amino.proto";
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/initia-labs/initia/x/move/types";
+option go_package = "github.com/initia-labs/initia/v1/x/move/types";
 option (gogoproto.equal_all) = true;
 option (gogoproto.goproto_getters_all) = false;
 

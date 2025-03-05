@@ -9,9 +9,9 @@ import (
 
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 
-	appante "github.com/initia-labs/initia/app/ante"
-	applanes "github.com/initia-labs/initia/app/lanes"
-	movekeeper "github.com/initia-labs/initia/x/move/keeper"
+	appante "github.com/initia-labs/initia/v1/app/ante"
+	applanes "github.com/initia-labs/initia/v1/app/lanes"
+	movekeeper "github.com/initia-labs/initia/v1/x/move/keeper"
 
 	// block-sdk dependencies
 

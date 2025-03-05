@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/initia-labs/initia/x/ibc/nft-transfer/keeper"
-	"github.com/initia-labs/initia/x/ibc/nft-transfer/types"
-	ibctesting "github.com/initia-labs/initia/x/ibc/testing"
+	"github.com/initia-labs/initia/v1/x/ibc/nft-transfer/keeper"
+	"github.com/initia-labs/initia/v1/x/ibc/nft-transfer/types"
+	ibctesting "github.com/initia-labs/initia/v1/x/ibc/testing"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"

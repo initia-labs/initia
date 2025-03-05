@@ -37,7 +37,7 @@ import (
 	"github.com/cosmos/ibc-go/v8/testing/mock"
 	"github.com/cosmos/ibc-go/v8/testing/simapp"
 
-	initiaapp "github.com/initia-labs/initia/app"
+	initiaapp "github.com/initia-labs/initia/v1/app"
 )
 
 var MaxAccounts = 10

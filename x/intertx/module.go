@@ -9,9 +9,9 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 
-	"github.com/initia-labs/initia/x/intertx/client/cli"
-	"github.com/initia-labs/initia/x/intertx/keeper"
-	"github.com/initia-labs/initia/x/intertx/types"
+	"github.com/initia-labs/initia/v1/x/intertx/client/cli"
+	"github.com/initia-labs/initia/v1/x/intertx/keeper"
+	"github.com/initia-labs/initia/v1/x/intertx/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"

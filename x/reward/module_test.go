@@ -7,7 +7,7 @@ import (
 
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	"github.com/initia-labs/initia/x/reward/types"
+	"github.com/initia-labs/initia/v1/x/reward/types"
 )
 
 func TestItCreatesModuleAccountOnInitBlock(t *testing.T) {

@@ -20,7 +20,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/initia-labs/initia/x/evidence/keeper"
+	"github.com/initia-labs/initia/v1/x/evidence/keeper"
 )
 
 const ConsensusVersion = 1

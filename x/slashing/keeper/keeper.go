@@ -14,8 +14,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	customstakingtypes "github.com/initia-labs/initia/x/mstaking/types"
-	customtypes "github.com/initia-labs/initia/x/slashing/types"
+	customstakingtypes "github.com/initia-labs/initia/v1/x/mstaking/types"
+	customtypes "github.com/initia-labs/initia/v1/x/slashing/types"
 )
 
 // Keeper of the slashing store

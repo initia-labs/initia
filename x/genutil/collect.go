@@ -20,7 +20,7 @@ import (
 	cosmosgenutil "github.com/cosmos/cosmos-sdk/x/genutil"
 	"github.com/cosmos/cosmos-sdk/x/genutil/types"
 
-	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
+	stakingtypes "github.com/initia-labs/initia/v1/x/mstaking/types"
 )
 
 // GenAppStateFromConfig gets the genesis app state from the config

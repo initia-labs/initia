@@ -13,8 +13,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	"github.com/initia-labs/initia/x/move/ante"
-	"github.com/initia-labs/initia/x/move/types"
+	"github.com/initia-labs/initia/v1/x/move/ante"
+	"github.com/initia-labs/initia/v1/x/move/types"
 	vmtypes "github.com/initia-labs/movevm/types"
 )
 

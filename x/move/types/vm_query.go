@@ -5,7 +5,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/gogoproto/proto"
 
-	govtypes "github.com/initia-labs/initia/x/gov/types"
+	govtypes "github.com/initia-labs/initia/v1/x/gov/types"
 )
 
 type VMQueryWhiteList struct {

@@ -13,7 +13,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	"github.com/initia-labs/initia/x/mstaking/types"
+	"github.com/initia-labs/initia/v1/x/mstaking/types"
 )
 
 // return a specific delegation

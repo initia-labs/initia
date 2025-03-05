@@ -28,7 +28,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	"github.com/cosmos/cosmos-sdk/x/genutil/types"
 
-	initiaapp "github.com/initia-labs/initia/app"
+	initiaapp "github.com/initia-labs/initia/v1/app"
 )
 
 const (

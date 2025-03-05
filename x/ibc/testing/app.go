@@ -32,11 +32,11 @@ import (
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/keeper"
 	"github.com/cosmos/ibc-go/v8/modules/core/keeper"
 
-	initiaapp "github.com/initia-labs/initia/app"
-	ibctestingtypes "github.com/initia-labs/initia/x/ibc/testing/types"
-	icaauthkeeper "github.com/initia-labs/initia/x/intertx/keeper"
-	moveconfig "github.com/initia-labs/initia/x/move/config"
-	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
+	initiaapp "github.com/initia-labs/initia/v1/app"
+	ibctestingtypes "github.com/initia-labs/initia/v1/x/ibc/testing/types"
+	icaauthkeeper "github.com/initia-labs/initia/v1/x/intertx/keeper"
+	moveconfig "github.com/initia-labs/initia/v1/x/move/config"
+	stakingtypes "github.com/initia-labs/initia/v1/x/mstaking/types"
 
 	oracleconfig "github.com/skip-mev/connect/v2/oracle/config"
 )

@@ -16,7 +16,7 @@ import (
 	v1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	"github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 
-	customtypes "github.com/initia-labs/initia/x/gov/types"
+	customtypes "github.com/initia-labs/initia/v1/x/gov/types"
 )
 
 // Keeper defines the governance module Keeper

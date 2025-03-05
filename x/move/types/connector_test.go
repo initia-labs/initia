@@ -7,7 +7,7 @@ import (
 	"cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
 
-	"github.com/initia-labs/initia/x/move/types"
+	"github.com/initia-labs/initia/v1/x/move/types"
 )
 
 func Test_GetDexWeight(t *testing.T) {

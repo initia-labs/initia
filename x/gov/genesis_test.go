@@ -3,10 +3,10 @@ package gov_test
 import (
 	"testing"
 
-	"github.com/initia-labs/initia/x/gov"
+	"github.com/initia-labs/initia/v1/x/gov"
 	"github.com/stretchr/testify/require"
 
-	customtypes "github.com/initia-labs/initia/x/gov/types"
+	customtypes "github.com/initia-labs/initia/v1/x/gov/types"
 )
 
 func TestExportImportState(t *testing.T) {

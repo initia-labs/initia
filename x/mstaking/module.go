@@ -19,9 +19,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	cosmostypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	"github.com/initia-labs/initia/x/mstaking/client/cli"
-	"github.com/initia-labs/initia/x/mstaking/keeper"
-	"github.com/initia-labs/initia/x/mstaking/types"
+	"github.com/initia-labs/initia/v1/x/mstaking/client/cli"
+	"github.com/initia-labs/initia/v1/x/mstaking/keeper"
+	"github.com/initia-labs/initia/v1/x/mstaking/types"
 )
 
 const ConsensusVersion = 1

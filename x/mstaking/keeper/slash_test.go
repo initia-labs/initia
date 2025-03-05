@@ -5,8 +5,8 @@ import (
 
 	"cosmossdk.io/math"
 	abci "github.com/cometbft/cometbft/abci/types"
-	"github.com/initia-labs/initia/x/mstaking/keeper"
-	"github.com/initia-labs/initia/x/mstaking/types"
+	"github.com/initia-labs/initia/v1/x/mstaking/keeper"
+	"github.com/initia-labs/initia/v1/x/mstaking/types"
 	"github.com/stretchr/testify/require"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"

@@ -11,8 +11,8 @@ import (
 	"cosmossdk.io/core/address"
 	"github.com/spf13/cobra"
 
-	movetypes "github.com/initia-labs/initia/x/move/types"
-	mstaking "github.com/initia-labs/initia/x/mstaking/types"
+	movetypes "github.com/initia-labs/initia/v1/x/move/types"
+	mstaking "github.com/initia-labs/initia/v1/x/mstaking/types"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"

@@ -12,8 +12,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	moveconfig "github.com/initia-labs/initia/x/move/config"
-	"github.com/initia-labs/initia/x/move/types"
+	moveconfig "github.com/initia-labs/initia/v1/x/move/config"
+	"github.com/initia-labs/initia/v1/x/move/types"
 
 	vm "github.com/initia-labs/movevm"
 	vmapi "github.com/initia-labs/movevm/api"

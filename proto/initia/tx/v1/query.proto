@@ -5,7 +5,7 @@ import "cosmos/base/v1beta1/coin.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 
-option go_package = "github.com/initia-labs/initia/tx/types";
+option go_package = "github.com/initia-labs/initia/v1/tx/types";
 
 // Query provides defines the gRPC querier service.
 service Query {

@@ -10,8 +10,8 @@ import (
 
 	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
 
-	initiaapp "github.com/initia-labs/initia/app"
-	moveconfig "github.com/initia-labs/initia/x/move/config"
+	initiaapp "github.com/initia-labs/initia/v1/app"
+	moveconfig "github.com/initia-labs/initia/v1/x/move/config"
 )
 
 // initiaappConfig initia specify app config

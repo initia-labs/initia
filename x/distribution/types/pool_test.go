@@ -9,7 +9,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/initia-labs/initia/x/distribution/types"
+	"github.com/initia-labs/initia/v1/x/distribution/types"
 )
 
 var (

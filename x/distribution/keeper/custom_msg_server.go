@@ -9,7 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/distribution/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
-	customtypes "github.com/initia-labs/initia/x/distribution/types"
+	customtypes "github.com/initia-labs/initia/v1/x/distribution/types"
 )
 
 type customMsgServer struct {

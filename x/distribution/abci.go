@@ -7,7 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/distribution/types"
 
-	"github.com/initia-labs/initia/x/distribution/keeper"
+	"github.com/initia-labs/initia/v1/x/distribution/keeper"
 )
 
 // BeginBlocker sets the proposer for determining distribution during endblock

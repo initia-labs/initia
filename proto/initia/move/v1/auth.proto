@@ -5,7 +5,7 @@ import "amino/amino.proto";
 import "cosmos/auth/v1beta1/auth.proto";
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/initia-labs/initia/x/move/types";
+option go_package = "github.com/initia-labs/initia/v1/x/move/types";
 
 // ObjectAccount defines an account for objects that holds coins without pubkey.
 message ObjectAccount {

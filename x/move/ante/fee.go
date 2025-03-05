@@ -7,7 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	movetypes "github.com/initia-labs/initia/x/move/types"
+	movetypes "github.com/initia-labs/initia/v1/x/move/types"
 )
 
 // MempoolFeeChecker will check if the transaction's fee is at least as large

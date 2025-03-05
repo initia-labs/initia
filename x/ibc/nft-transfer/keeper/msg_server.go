@@ -9,7 +9,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
-	"github.com/initia-labs/initia/x/ibc/nft-transfer/types"
+	"github.com/initia-labs/initia/v1/x/ibc/nft-transfer/types"
 )
 
 type MsgServer struct {

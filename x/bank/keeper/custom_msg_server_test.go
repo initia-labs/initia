@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	cosmosbanktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/initia-labs/initia/x/bank/keeper"
-	"github.com/initia-labs/initia/x/bank/types"
+	"github.com/initia-labs/initia/v1/x/bank/keeper"
+	"github.com/initia-labs/initia/v1/x/bank/types"
 	"github.com/stretchr/testify/require"
 )
 

@@ -4,7 +4,7 @@ import (
 	proto "github.com/cosmos/gogoproto/proto"
 
 	errorsmod "cosmossdk.io/errors"
-	"github.com/initia-labs/initia/x/intertx/keeper"
+	"github.com/initia-labs/initia/v1/x/intertx/keeper"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"

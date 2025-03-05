@@ -5,8 +5,8 @@ import (
 
 	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/types"
-	"github.com/initia-labs/initia/x/distribution/keeper"
-	customTypes "github.com/initia-labs/initia/x/distribution/types"
+	"github.com/initia-labs/initia/v1/x/distribution/keeper"
+	customTypes "github.com/initia-labs/initia/v1/x/distribution/types"
 	"github.com/stretchr/testify/require"
 )
 

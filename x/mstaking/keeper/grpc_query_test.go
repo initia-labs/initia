@@ -8,8 +8,8 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/initia-labs/initia/x/mstaking/keeper"
-	"github.com/initia-labs/initia/x/mstaking/types"
+	"github.com/initia-labs/initia/v1/x/mstaking/keeper"
+	"github.com/initia-labs/initia/v1/x/mstaking/types"
 )
 
 func Test_grpcQueryValidators(t *testing.T) {

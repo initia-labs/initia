@@ -8,7 +8,7 @@ import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 import "initia/distribution/v1/distribution.proto";
 
-option go_package = "github.com/initia-labs/initia/x/distribution/types";
+option go_package = "github.com/initia-labs/initia/v1/x/distribution/types";
 option (gogoproto.equal_all) = true;
 
 // Msg defines the distribution Msg service.

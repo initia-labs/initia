@@ -8,7 +8,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	grpc "google.golang.org/grpc"
 
-	stakingkeeper "github.com/initia-labs/initia/x/mstaking/keeper"
+	stakingkeeper "github.com/initia-labs/initia/v1/x/mstaking/keeper"
 
 	// connect oracle dependencies
 	oraclepreblock "github.com/skip-mev/connect/v2/abci/preblock/oracle"

@@ -10,7 +10,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/slashing/types"
 
-	"github.com/initia-labs/initia/x/slashing/keeper"
+	"github.com/initia-labs/initia/v1/x/slashing/keeper"
 )
 
 // BeginBlocker check for infraction evidence or downtime of validators

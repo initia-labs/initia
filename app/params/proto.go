@@ -11,7 +11,7 @@ import (
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	"github.com/cosmos/gogoproto/proto"
 
-	"github.com/initia-labs/initia/tx"
+	"github.com/initia-labs/initia/v1/tx"
 )
 
 // MakeEncodingConfig creates an EncodingConfig for an amino based test configuration.

@@ -2,7 +2,7 @@ version: v1
 managed:
   enabled: true
   go_package_prefix:
-    default: github.com/initia-labs/initia/api
+    default: github.com/initia-labs/initia/v1/api
     except:
       - buf.build/googleapis/googleapis
       - buf.build/cosmos/gogo-proto

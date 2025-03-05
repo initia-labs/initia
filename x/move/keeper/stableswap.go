@@ -5,7 +5,7 @@ import (
 	"slices"
 
 	moderrors "cosmossdk.io/errors"
-	"github.com/initia-labs/initia/x/move/types"
+	"github.com/initia-labs/initia/v1/x/move/types"
 	vmtypes "github.com/initia-labs/movevm/types"
 )
 

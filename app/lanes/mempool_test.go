@@ -19,8 +19,8 @@ import (
 	signer_extraction "github.com/skip-mev/block-sdk/v2/adapters/signer_extraction_adapter"
 	blockbase "github.com/skip-mev/block-sdk/v2/block/base"
 
-	lanes "github.com/initia-labs/initia/app/lanes"
-	"github.com/initia-labs/initia/app/params"
+	lanes "github.com/initia-labs/initia/v1/app/lanes"
+	"github.com/initia-labs/initia/v1/app/params"
 )
 
 func Test_MempoolInsert(t *testing.T) {

@@ -10,7 +10,7 @@ import "google/protobuf/any.proto";
 import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
 
-option go_package = "github.com/initia-labs/initia/x/gov/types";
+option go_package = "github.com/initia-labs/initia/v1/x/gov/types";
 // option (gogoproto.equal_all) = true;
 
 // Params defines the parameters for the x/gov module.

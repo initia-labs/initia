@@ -6,7 +6,7 @@ import "cosmos/base/v1beta1/coin.proto";
 import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/initia-labs/initia/x/mstaking/types";
+option go_package = "github.com/initia-labs/initia/v1/x/mstaking/types";
 
 // StakeAuthorization defines authorization for delegate/undelegate/redelegate.
 message StakeAuthorization {

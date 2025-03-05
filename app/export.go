@@ -8,8 +8,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 
-	staking "github.com/initia-labs/initia/x/mstaking"
-	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
+	staking "github.com/initia-labs/initia/v1/x/mstaking"
+	stakingtypes "github.com/initia-labs/initia/v1/x/mstaking/types"
 )
 
 // ExportAppStateAndValidators exports the state of the application for a genesis

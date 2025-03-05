@@ -8,9 +8,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	ibctesting "github.com/initia-labs/initia/x/ibc/testing"
-	"github.com/initia-labs/initia/x/intertx/keeper"
-	"github.com/initia-labs/initia/x/intertx/types"
+	ibctesting "github.com/initia-labs/initia/v1/x/ibc/testing"
+	"github.com/initia-labs/initia/v1/x/intertx/keeper"
+	"github.com/initia-labs/initia/v1/x/intertx/types"
 )
 
 func (suite *KeeperTestSuite) TestRegisterInterchainAccount() {

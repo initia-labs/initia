@@ -13,7 +13,7 @@ import (
 	cosmosbank "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	"github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	customtypes "github.com/initia-labs/initia/x/bank/types"
+	customtypes "github.com/initia-labs/initia/v1/x/bank/types"
 )
 
 var _ cosmosbank.SendKeeper = (*MoveSendKeeper)(nil)

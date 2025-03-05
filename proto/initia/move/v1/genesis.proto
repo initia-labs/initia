@@ -5,7 +5,7 @@ import "amino/amino.proto";
 import "gogoproto/gogo.proto";
 import "initia/move/v1/types.proto";
 
-option go_package = "github.com/initia-labs/initia/x/move/types";
+option go_package = "github.com/initia-labs/initia/v1/x/move/types";
 
 // GenesisState - genesis state of x/move
 message GenesisState {

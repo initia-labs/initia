@@ -5,7 +5,7 @@ import (
 
 	"cosmossdk.io/math"
 
-	"github.com/initia-labs/initia/x/reward/types"
+	"github.com/initia-labs/initia/v1/x/reward/types"
 )
 
 // SetReleaseRate update release rate params

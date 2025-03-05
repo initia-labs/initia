@@ -3,8 +3,8 @@ package reward_test
 import (
 	"testing"
 
-	initiaapp "github.com/initia-labs/initia/app"
-	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
+	initiaapp "github.com/initia-labs/initia/v1/app"
+	stakingtypes "github.com/initia-labs/initia/v1/x/mstaking/types"
 
 	"github.com/stretchr/testify/require"
 

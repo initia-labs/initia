@@ -9,7 +9,7 @@ import (
 	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
-	ibctesting "github.com/initia-labs/initia/x/ibc/testing"
+	ibctesting "github.com/initia-labs/initia/v1/x/ibc/testing"
 )
 
 var (

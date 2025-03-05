@@ -12,7 +12,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/cosmos/cosmos-sdk/version"
 
-	"github.com/initia-labs/initia/x/ibc/perm/types"
+	"github.com/initia-labs/initia/v1/x/ibc/perm/types"
 )
 
 // NewUpdateAdmin returns the command to create a MsgUpdateAdmin transaction

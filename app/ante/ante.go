@@ -10,10 +10,10 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 
-	"github.com/initia-labs/initia/app/ante/accnum"
-	"github.com/initia-labs/initia/app/ante/sigverify"
-	moveante "github.com/initia-labs/initia/x/move/ante"
-	movetypes "github.com/initia-labs/initia/x/move/types"
+	"github.com/initia-labs/initia/v1/app/ante/accnum"
+	"github.com/initia-labs/initia/v1/app/ante/sigverify"
+	moveante "github.com/initia-labs/initia/v1/x/move/ante"
+	movetypes "github.com/initia-labs/initia/v1/x/move/types"
 
 	"github.com/skip-mev/block-sdk/v2/block"
 	auctionante "github.com/skip-mev/block-sdk/v2/x/auction/ante"

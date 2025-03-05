@@ -25,8 +25,8 @@ import (
 	cosmosgenutil "github.com/cosmos/cosmos-sdk/x/genutil"
 	cosmostypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 
-	"github.com/initia-labs/initia/x/genutil"
-	"github.com/initia-labs/initia/x/mstaking/client/cli"
+	"github.com/initia-labs/initia/v1/x/genutil"
+	"github.com/initia-labs/initia/v1/x/mstaking/client/cli"
 )
 
 // GenTxCmd builds the application's gentx command.

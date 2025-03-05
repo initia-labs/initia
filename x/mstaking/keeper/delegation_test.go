@@ -9,9 +9,9 @@ import (
 	"cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
 
-	movekeeper "github.com/initia-labs/initia/x/move/keeper"
-	movetypes "github.com/initia-labs/initia/x/move/types"
-	"github.com/initia-labs/initia/x/mstaking/types"
+	movekeeper "github.com/initia-labs/initia/v1/x/move/keeper"
+	movetypes "github.com/initia-labs/initia/v1/x/move/types"
+	"github.com/initia-labs/initia/v1/x/mstaking/types"
 	vmtypes "github.com/initia-labs/movevm/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"

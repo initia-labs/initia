@@ -9,8 +9,8 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
-	"github.com/initia-labs/initia/x/gov/keeper"
-	"github.com/initia-labs/initia/x/gov/types"
+	"github.com/initia-labs/initia/v1/x/gov/keeper"
+	"github.com/initia-labs/initia/v1/x/gov/types"
 )
 
 func Test_CustomMsgServer_UpdateParams(t *testing.T) {

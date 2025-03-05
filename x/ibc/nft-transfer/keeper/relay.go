@@ -16,7 +16,7 @@ import (
 	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
 	coretypes "github.com/cosmos/ibc-go/v8/modules/core/types"
 
-	"github.com/initia-labs/initia/x/ibc/nft-transfer/types"
+	"github.com/initia-labs/initia/v1/x/ibc/nft-transfer/types"
 )
 
 // SendNftTransfer handles transfer sending logic. There are 2 possible cases:

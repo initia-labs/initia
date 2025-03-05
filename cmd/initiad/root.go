@@ -35,14 +35,14 @@ import (
 	cosmosgenutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 
-	initiaapp "github.com/initia-labs/initia/app"
-	"github.com/initia-labs/initia/app/params"
-	initiacmdflags "github.com/initia-labs/initia/cmd/flags"
-	movecmd "github.com/initia-labs/initia/cmd/move"
-	cryptokeyring "github.com/initia-labs/initia/crypto/keyring"
-	"github.com/initia-labs/initia/x/genutil"
-	genutilcli "github.com/initia-labs/initia/x/genutil/client/cli"
-	moveconfig "github.com/initia-labs/initia/x/move/config"
+	initiaapp "github.com/initia-labs/initia/v1/app"
+	"github.com/initia-labs/initia/v1/app/params"
+	initiacmdflags "github.com/initia-labs/initia/v1/cmd/flags"
+	movecmd "github.com/initia-labs/initia/v1/cmd/move"
+	cryptokeyring "github.com/initia-labs/initia/v1/crypto/keyring"
+	"github.com/initia-labs/initia/v1/x/genutil"
+	genutilcli "github.com/initia-labs/initia/v1/x/genutil/client/cli"
+	moveconfig "github.com/initia-labs/initia/v1/x/move/config"
 
 	oracleconfig "github.com/skip-mev/connect/v2/oracle/config"
 )

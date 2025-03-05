@@ -19,7 +19,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/authz"
 	"github.com/cosmos/cosmos-sdk/x/authz/keeper"
 
-	"github.com/initia-labs/initia/x/authz/client/cli"
+	"github.com/initia-labs/initia/v1/x/authz/client/cli"
 )
 
 const ConsensusVersion = 1

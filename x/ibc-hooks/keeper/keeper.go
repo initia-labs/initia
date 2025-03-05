@@ -10,7 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/initia-labs/initia/x/ibc-hooks/types"
+	"github.com/initia-labs/initia/v1/x/ibc-hooks/types"
 )
 
 type Keeper struct {

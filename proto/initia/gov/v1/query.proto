@@ -9,7 +9,7 @@ import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "initia/gov/v1/gov.proto";
 
-option go_package = "github.com/initia-labs/initia/x/gov/types";
+option go_package = "github.com/initia-labs/initia/v1/x/gov/types";
 
 // Query defines the gRPC querier service for gov module.
 service Query {

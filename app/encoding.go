@@ -11,8 +11,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 
-	"github.com/initia-labs/initia/app/params"
-	moveconfig "github.com/initia-labs/initia/x/move/config"
+	"github.com/initia-labs/initia/v1/app/params"
+	moveconfig "github.com/initia-labs/initia/v1/x/move/config"
 
 	oracleconfig "github.com/skip-mev/connect/v2/oracle/config"
 )

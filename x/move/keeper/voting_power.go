@@ -6,8 +6,8 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/initia-labs/initia/x/move/types"
-	mstakingtypes "github.com/initia-labs/initia/x/mstaking/types"
+	"github.com/initia-labs/initia/v1/x/move/types"
+	mstakingtypes "github.com/initia-labs/initia/v1/x/mstaking/types"
 )
 
 var _ mstakingtypes.VotingPowerKeeper = VotingPowerKeeper{}

@@ -8,7 +8,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/initia-labs/initia/x/mstaking/types"
+	"github.com/initia-labs/initia/v1/x/mstaking/types"
 )
 
 func (k Keeper) SetNextUnbondingId(ctx context.Context, unbondingId uint64) error {

@@ -22,7 +22,7 @@ import (
 	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	"github.com/initia-labs/initia/crypto/ethsecp256k1"
+	"github.com/initia-labs/initia/v1/crypto/ethsecp256k1"
 
 	forwardingtypes "github.com/noble-assets/forwarding/v2/types"
 )

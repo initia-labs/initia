@@ -9,7 +9,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
-	"github.com/initia-labs/initia/x/ibc/perm/types"
+	"github.com/initia-labs/initia/v1/x/ibc/perm/types"
 )
 
 type MsgServer struct {

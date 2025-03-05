@@ -19,8 +19,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank/client/cli"
 	"github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	"github.com/initia-labs/initia/x/bank/keeper"
-	customtypes "github.com/initia-labs/initia/x/bank/types"
+	"github.com/initia-labs/initia/v1/x/bank/keeper"
+	customtypes "github.com/initia-labs/initia/v1/x/bank/types"
 )
 
 const ConsensusVersion = 1

@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"github.com/initia-labs/initia/x/intertx/types"
+	"github.com/initia-labs/initia/v1/x/intertx/types"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"

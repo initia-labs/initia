@@ -9,7 +9,7 @@ import (
 
 	cmtprotocrypto "github.com/cometbft/cometbft/proto/tendermint/crypto"
 
-	"github.com/initia-labs/initia/x/mstaking/types"
+	"github.com/initia-labs/initia/v1/x/mstaking/types"
 )
 
 type CompatibilityKeeper struct {

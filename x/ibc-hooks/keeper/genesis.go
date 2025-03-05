@@ -3,7 +3,7 @@ package keeper
 import (
 	"context"
 
-	"github.com/initia-labs/initia/x/ibc-hooks/types"
+	"github.com/initia-labs/initia/v1/x/ibc-hooks/types"
 )
 
 // InitGenesis initializes the hook module's state from a given genesis state.

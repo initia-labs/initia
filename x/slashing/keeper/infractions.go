@@ -11,7 +11,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/slashing/types"
 
-	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
+	stakingtypes "github.com/initia-labs/initia/v1/x/mstaking/types"
 )
 
 // HandleValidatorSignature handles a validator signature, must be called once per validator per block.

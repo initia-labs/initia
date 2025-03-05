@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/cosmos/cosmos-sdk/x/distribution/types"
-	"github.com/initia-labs/initia/x/distribution/keeper"
+	"github.com/initia-labs/initia/v1/x/distribution/keeper"
 	"github.com/stretchr/testify/require"
 )
 

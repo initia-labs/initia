@@ -16,8 +16,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	movecli "github.com/initia-labs/initia/x/move/client/cli"
-	movetypes "github.com/initia-labs/initia/x/move/types"
+	movecli "github.com/initia-labs/initia/v1/x/move/client/cli"
+	movetypes "github.com/initia-labs/initia/v1/x/move/types"
 
 	"github.com/initia-labs/movevm/api"
 	vmtypes "github.com/initia-labs/movevm/types"

@@ -9,7 +9,7 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/initia-labs/initia/x/evidence/keeper"
+	"github.com/initia-labs/initia/v1/x/evidence/keeper"
 )
 
 // InitGenesis initializes the evidence module's state from a provided genesis

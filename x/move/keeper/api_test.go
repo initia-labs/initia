@@ -11,10 +11,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	govtypesv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 
-	govtypes "github.com/initia-labs/initia/x/gov/types"
-	"github.com/initia-labs/initia/x/move/keeper"
-	"github.com/initia-labs/initia/x/move/types"
-	stakingkeeper "github.com/initia-labs/initia/x/mstaking/keeper"
+	govtypes "github.com/initia-labs/initia/v1/x/gov/types"
+	"github.com/initia-labs/initia/v1/x/move/keeper"
+	"github.com/initia-labs/initia/v1/x/move/types"
+	stakingkeeper "github.com/initia-labs/initia/v1/x/mstaking/keeper"
 
 	vmtypes "github.com/initia-labs/movevm/types"
 

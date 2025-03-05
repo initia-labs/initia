@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 	protov2 "google.golang.org/protobuf/proto"
 
-	lanes "github.com/initia-labs/initia/app/lanes"
+	lanes "github.com/initia-labs/initia/v1/app/lanes"
 )
 
 func Test_FreeLaneMatchHandler(t *testing.T) {

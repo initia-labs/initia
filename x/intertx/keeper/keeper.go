@@ -12,7 +12,7 @@ import (
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/keeper"
-	"github.com/initia-labs/initia/x/intertx/types"
+	"github.com/initia-labs/initia/v1/x/intertx/types"
 )
 
 type Keeper struct {

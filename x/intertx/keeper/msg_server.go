@@ -11,7 +11,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/initia-labs/initia/x/intertx/types"
+	"github.com/initia-labs/initia/v1/x/intertx/types"
 )
 
 var _ types.MsgServer = msgServer{}

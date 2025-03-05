@@ -12,9 +12,9 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	cosmostypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 
-	initiaapp "github.com/initia-labs/initia/app"
-	"github.com/initia-labs/initia/x/genutil"
-	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
+	initiaapp "github.com/initia-labs/initia/v1/app"
+	"github.com/initia-labs/initia/v1/x/genutil"
+	stakingtypes "github.com/initia-labs/initia/v1/x/mstaking/types"
 )
 
 func TestSetGenTxsInAppGenesisState(t *testing.T) {

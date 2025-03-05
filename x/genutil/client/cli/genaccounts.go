@@ -18,7 +18,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 
-	rewardtypes "github.com/initia-labs/initia/x/reward/types"
+	rewardtypes "github.com/initia-labs/initia/v1/x/reward/types"
 )
 
 // AddGenesisAccountCmd returns add-genesis-account cobra Command.

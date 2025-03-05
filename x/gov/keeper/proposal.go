@@ -15,7 +15,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/gov/types"
 	v1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 
-	customtypes "github.com/initia-labs/initia/x/gov/types"
+	customtypes "github.com/initia-labs/initia/v1/x/gov/types"
 )
 
 // SubmitProposal creates a new proposal given an array of messages

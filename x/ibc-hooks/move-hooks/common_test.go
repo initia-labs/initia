@@ -48,15 +48,15 @@ import (
 	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 
-	ibchooks "github.com/initia-labs/initia/x/ibc-hooks"
-	ibchookskeeper "github.com/initia-labs/initia/x/ibc-hooks/keeper"
-	ibchookstypes "github.com/initia-labs/initia/x/ibc-hooks/types"
+	ibchooks "github.com/initia-labs/initia/v1/x/ibc-hooks"
+	ibchookskeeper "github.com/initia-labs/initia/v1/x/ibc-hooks/keeper"
+	ibchookstypes "github.com/initia-labs/initia/v1/x/ibc-hooks/types"
 
-	movehooks "github.com/initia-labs/initia/x/ibc-hooks/move-hooks"
-	"github.com/initia-labs/initia/x/move"
-	"github.com/initia-labs/initia/x/move/config"
-	movekeeper "github.com/initia-labs/initia/x/move/keeper"
-	movetypes "github.com/initia-labs/initia/x/move/types"
+	movehooks "github.com/initia-labs/initia/v1/x/ibc-hooks/move-hooks"
+	"github.com/initia-labs/initia/v1/x/move"
+	"github.com/initia-labs/initia/v1/x/move/config"
+	movekeeper "github.com/initia-labs/initia/v1/x/move/keeper"
+	movetypes "github.com/initia-labs/initia/v1/x/move/types"
 
 	vmprecom "github.com/initia-labs/movevm/precompile"
 	vmtypes "github.com/initia-labs/movevm/types"

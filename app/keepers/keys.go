@@ -26,12 +26,12 @@ import (
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 
 	// local dependencies
-	ibchookstypes "github.com/initia-labs/initia/x/ibc-hooks/types"
-	ibcnfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
-	ibcpermtypes "github.com/initia-labs/initia/x/ibc/perm/types"
-	movetypes "github.com/initia-labs/initia/x/move/types"
-	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
-	rewardtypes "github.com/initia-labs/initia/x/reward/types"
+	ibchookstypes "github.com/initia-labs/initia/v1/x/ibc-hooks/types"
+	ibcnfttransfertypes "github.com/initia-labs/initia/v1/x/ibc/nft-transfer/types"
+	ibcpermtypes "github.com/initia-labs/initia/v1/x/ibc/perm/types"
+	movetypes "github.com/initia-labs/initia/v1/x/move/types"
+	stakingtypes "github.com/initia-labs/initia/v1/x/mstaking/types"
+	rewardtypes "github.com/initia-labs/initia/v1/x/reward/types"
 
 	// OPinit dependencies
 	ophosttypes "github.com/initia-labs/OPinit/x/ophost/types"

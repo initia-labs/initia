@@ -3,7 +3,7 @@ package types_test
 import (
 	"testing"
 
-	"github.com/initia-labs/initia/x/move/types"
+	"github.com/initia-labs/initia/v1/x/move/types"
 	"github.com/stretchr/testify/require"
 )
 

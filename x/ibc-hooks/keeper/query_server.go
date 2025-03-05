@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/cosmos/cosmos-sdk/types/query"
-	"github.com/initia-labs/initia/x/ibc-hooks/types"
+	"github.com/initia-labs/initia/v1/x/ibc-hooks/types"
 )
 
 type queryServer struct {

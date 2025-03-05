@@ -13,7 +13,7 @@ import (
 	abci "github.com/cometbft/cometbft/abci/types"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 
-	"github.com/initia-labs/initia/x/reward/types"
+	"github.com/initia-labs/initia/v1/x/reward/types"
 )
 
 func Test_BeginBlocker(t *testing.T) {

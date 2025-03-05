@@ -5,7 +5,7 @@ package initia.gov.v1;
 import "cosmos/gov/v1/gov.proto";
 import "initia/gov/v1/gov.proto";
 
-option go_package = "github.com/initia-labs/initia/x/gov/types";
+option go_package = "github.com/initia-labs/initia/v1/x/gov/types";
 
 // GenesisState defines the gov module's genesis state.
 message GenesisState {

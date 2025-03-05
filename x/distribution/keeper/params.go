@@ -3,7 +3,7 @@ package keeper
 import (
 	"context"
 
-	customtypes "github.com/initia-labs/initia/x/distribution/types"
+	customtypes "github.com/initia-labs/initia/v1/x/distribution/types"
 )
 
 func (k Keeper) GetRewardWeights(ctx context.Context) (rewardWeights []customtypes.RewardWeight, err error) {

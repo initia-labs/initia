@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/initia-labs/initia/x/mstaking/types"
+	"github.com/initia-labs/initia/v1/x/mstaking/types"
 
 	"cosmossdk.io/collections"
 	collectioncodec "cosmossdk.io/collections/codec"

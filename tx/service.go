@@ -7,7 +7,7 @@ import (
 	gogogrpc "github.com/cosmos/gogoproto/grpc"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 
-	txtypes "github.com/initia-labs/initia/tx/types"
+	txtypes "github.com/initia-labs/initia/v1/tx/types"
 )
 
 type txServer struct {

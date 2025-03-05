@@ -17,12 +17,12 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
 	l2connect "github.com/initia-labs/OPinit/x/opchild/l2connect"
-	"github.com/initia-labs/initia/app/genesis_markets"
-	customdistrtypes "github.com/initia-labs/initia/x/distribution/types"
-	customgovtypes "github.com/initia-labs/initia/x/gov/types"
-	movetypes "github.com/initia-labs/initia/x/move/types"
-	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
-	rewardtypes "github.com/initia-labs/initia/x/reward/types"
+	"github.com/initia-labs/initia/v1/app/genesis_markets"
+	customdistrtypes "github.com/initia-labs/initia/v1/x/distribution/types"
+	customgovtypes "github.com/initia-labs/initia/v1/x/gov/types"
+	movetypes "github.com/initia-labs/initia/v1/x/move/types"
+	stakingtypes "github.com/initia-labs/initia/v1/x/mstaking/types"
+	rewardtypes "github.com/initia-labs/initia/v1/x/reward/types"
 
 	auctiontypes "github.com/skip-mev/block-sdk/v2/x/auction/types"
 	connecttypes "github.com/skip-mev/connect/v2/pkg/types"

@@ -4,12 +4,12 @@ import (
 	"context"
 
 	"cosmossdk.io/collections"
-	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
+	stakingtypes "github.com/initia-labs/initia/v1/x/mstaking/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/distribution/types"
 
-	customtypes "github.com/initia-labs/initia/x/distribution/types"
+	customtypes "github.com/initia-labs/initia/v1/x/distribution/types"
 )
 
 // Wrapper struct

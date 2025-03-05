@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"cosmossdk.io/core/address"
-	"github.com/initia-labs/initia/x/move/keeper"
-	"github.com/initia-labs/initia/x/move/types"
+	"github.com/initia-labs/initia/v1/x/move/keeper"
+	"github.com/initia-labs/initia/v1/x/move/types"
 
 	"github.com/cosmos/cosmos-sdk/telemetry"
 

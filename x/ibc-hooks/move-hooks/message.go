@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	movetypes "github.com/initia-labs/initia/x/move/types"
+	movetypes "github.com/initia-labs/initia/v1/x/move/types"
 )
 
 // A contract that sends an IBC transfer, may need to listen for the ACK from that packet.

@@ -10,9 +10,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	customtypes "github.com/initia-labs/initia/x/distribution/types"
-	staking "github.com/initia-labs/initia/x/mstaking"
-	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
+	customtypes "github.com/initia-labs/initia/v1/x/distribution/types"
+	staking "github.com/initia-labs/initia/v1/x/mstaking"
+	stakingtypes "github.com/initia-labs/initia/v1/x/mstaking/types"
 	"github.com/stretchr/testify/require"
 )
 

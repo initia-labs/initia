@@ -15,7 +15,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 
-	"github.com/initia-labs/initia/x/ibc/nft-transfer/types"
+	"github.com/initia-labs/initia/v1/x/ibc/nft-transfer/types"
 )
 
 var _ types.QueryServer = QueryServerImpl{}

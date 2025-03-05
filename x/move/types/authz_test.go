@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	movetypes "github.com/initia-labs/initia/x/move/types"
+	movetypes "github.com/initia-labs/initia/v1/x/move/types"
 
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec/address"

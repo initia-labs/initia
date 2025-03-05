@@ -14,8 +14,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/initia-labs/initia/x/ibc-hooks/keeper"
-	"github.com/initia-labs/initia/x/ibc-hooks/types"
+	"github.com/initia-labs/initia/v1/x/ibc-hooks/keeper"
+	"github.com/initia-labs/initia/v1/x/ibc-hooks/types"
 )
 
 const ConsensusVersion = 1

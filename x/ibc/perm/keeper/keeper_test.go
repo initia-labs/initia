@@ -22,9 +22,9 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
-	initiaappparams "github.com/initia-labs/initia/app/params"
-	"github.com/initia-labs/initia/x/ibc/perm/keeper"
-	"github.com/initia-labs/initia/x/ibc/perm/types"
+	initiaappparams "github.com/initia-labs/initia/v1/app/params"
+	"github.com/initia-labs/initia/v1/x/ibc/perm/keeper"
+	"github.com/initia-labs/initia/v1/x/ibc/perm/types"
 )
 
 func MakeTestCodec(t testing.TB) codec.Codec {

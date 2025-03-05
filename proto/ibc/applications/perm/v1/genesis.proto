@@ -5,7 +5,7 @@ package ibc.applications.perm.v1;
 import "gogoproto/gogo.proto";
 import "ibc/applications/perm/v1/types.proto";
 
-option go_package = "github.com/initia-labs/initia/x/ibc/perm/types";
+option go_package = "github.com/initia-labs/initia/v1/x/ibc/perm/types";
 
 // GenesisState defines the ibc perm genesis state
 message GenesisState {

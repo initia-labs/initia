@@ -6,8 +6,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	nfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
-	"github.com/initia-labs/initia/x/move/types"
+	nfttransfertypes "github.com/initia-labs/initia/v1/x/ibc/nft-transfer/types"
+	"github.com/initia-labs/initia/v1/x/move/types"
 	vmtypes "github.com/initia-labs/movevm/types"
 )
 

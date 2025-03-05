@@ -7,7 +7,7 @@ import (
 	cosmosbank "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
-	customtypes "github.com/initia-labs/initia/x/bank/types"
+	customtypes "github.com/initia-labs/initia/v1/x/bank/types"
 )
 
 var _ customtypes.MsgServer = customMsgServer{}

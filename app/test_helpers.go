@@ -14,7 +14,7 @@ import (
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	tmtypes "github.com/cometbft/cometbft/types"
 
-	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
+	stakingtypes "github.com/initia-labs/initia/v1/x/mstaking/types"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
@@ -24,7 +24,7 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	moveconfig "github.com/initia-labs/initia/x/move/config"
+	moveconfig "github.com/initia-labs/initia/v1/x/move/config"
 
 	oracleconfig "github.com/skip-mev/connect/v2/oracle/config"
 )

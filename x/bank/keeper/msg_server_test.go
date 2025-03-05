@@ -9,7 +9,7 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/stretchr/testify/require"
 
-	bankkeeper "github.com/initia-labs/initia/x/bank/keeper"
+	bankkeeper "github.com/initia-labs/initia/v1/x/bank/keeper"
 )
 
 var govAcc = authtypes.NewEmptyModuleAccount(govtypes.ModuleName, authtypes.Minter)

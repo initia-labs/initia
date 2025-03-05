@@ -1,7 +1,7 @@
 package app
 
 import (
-	movetypes "github.com/initia-labs/initia/x/move/types"
+	movetypes "github.com/initia-labs/initia/v1/x/move/types"
 )
 
 const (

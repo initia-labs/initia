@@ -15,9 +15,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/initia-labs/initia/x/move/client/cli"
-	"github.com/initia-labs/initia/x/move/keeper"
-	"github.com/initia-labs/initia/x/move/types"
+	"github.com/initia-labs/initia/v1/x/move/client/cli"
+	"github.com/initia-labs/initia/v1/x/move/keeper"
+	"github.com/initia-labs/initia/v1/x/move/types"
 )
 
 const ConsensusVersion = 1

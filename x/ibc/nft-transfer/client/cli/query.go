@@ -9,7 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/version"
 
-	"github.com/initia-labs/initia/x/ibc/nft-transfer/types"
+	"github.com/initia-labs/initia/v1/x/ibc/nft-transfer/types"
 )
 
 // GetCmdQueryClassTrace defines the command to query a a class id trace from a given trace hash or ibc denom.

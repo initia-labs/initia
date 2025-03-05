@@ -8,7 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/initia-labs/initia/crypto/ethsecp256k1"
+	"github.com/initia-labs/initia/v1/crypto/ethsecp256k1"
 )
 
 const (

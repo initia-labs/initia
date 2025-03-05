@@ -6,9 +6,9 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	distrtypes "github.com/initia-labs/initia/x/distribution/types"
-	"github.com/initia-labs/initia/x/move/keeper"
-	"github.com/initia-labs/initia/x/move/types"
+	distrtypes "github.com/initia-labs/initia/v1/x/distribution/types"
+	"github.com/initia-labs/initia/v1/x/move/keeper"
+	"github.com/initia-labs/initia/v1/x/move/types"
 
 	"github.com/stretchr/testify/require"
 )

@@ -16,8 +16,8 @@ import (
 	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 
-	"github.com/initia-labs/initia/x/ibc/nft-transfer/keeper"
-	"github.com/initia-labs/initia/x/ibc/nft-transfer/types"
+	"github.com/initia-labs/initia/v1/x/ibc/nft-transfer/keeper"
+	"github.com/initia-labs/initia/v1/x/ibc/nft-transfer/types"
 )
 
 // IBCModule implements the ICS26 interface for nft-transfer given the nft transfer keeper.

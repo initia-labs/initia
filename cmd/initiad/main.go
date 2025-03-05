@@ -6,7 +6,7 @@ import (
 
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
 
-	initiaapp "github.com/initia-labs/initia/app"
+	initiaapp "github.com/initia-labs/initia/v1/app"
 )
 
 func main() {

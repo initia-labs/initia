@@ -33,10 +33,10 @@ import (
 	v1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	"github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 
-	"github.com/initia-labs/initia/x/gov/keeper"
-	customtypes "github.com/initia-labs/initia/x/gov/types"
+	"github.com/initia-labs/initia/v1/x/gov/keeper"
+	customtypes "github.com/initia-labs/initia/v1/x/gov/types"
 
-	customcli "github.com/initia-labs/initia/x/gov/client/cli"
+	customcli "github.com/initia-labs/initia/v1/x/gov/client/cli"
 )
 
 const ConsensusVersion = 1

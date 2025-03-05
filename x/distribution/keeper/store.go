@@ -7,7 +7,7 @@ import (
 	"cosmossdk.io/collections"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/initia-labs/initia/x/distribution/types"
+	"github.com/initia-labs/initia/v1/x/distribution/types"
 )
 
 // get the delegator withdraw address, defaulting to the delegator address

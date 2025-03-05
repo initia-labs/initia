@@ -5,8 +5,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/crypto/types"
 
-	"github.com/initia-labs/initia/crypto/ethsecp256k1"
-	"github.com/initia-labs/initia/crypto/hd"
+	"github.com/initia-labs/initia/v1/crypto/ethsecp256k1"
+	"github.com/initia-labs/initia/v1/crypto/hd"
 )
 
 // AppName defines the Ledger app used for signing. Evmos uses the Ethereum app

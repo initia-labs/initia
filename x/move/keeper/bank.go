@@ -13,8 +13,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 
-	banktypes "github.com/initia-labs/initia/x/bank/types"
-	"github.com/initia-labs/initia/x/move/types"
+	banktypes "github.com/initia-labs/initia/v1/x/bank/types"
+	"github.com/initia-labs/initia/v1/x/move/types"
 	vmtypes "github.com/initia-labs/movevm/types"
 )
 

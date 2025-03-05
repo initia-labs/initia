@@ -1,7 +1,7 @@
 package keeper_test
 
 import (
-	"github.com/initia-labs/initia/x/ibc/nft-transfer/types"
+	"github.com/initia-labs/initia/v1/x/ibc/nft-transfer/types"
 )
 
 func (suite *KeeperTestSuite) TestMarshalClassTrace() {

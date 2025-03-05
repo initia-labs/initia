@@ -1,8 +1,8 @@
 package lanes
 
 import (
-	distrkeeper "github.com/initia-labs/initia/x/distribution/keeper"
-	mstakingkeeper "github.com/initia-labs/initia/x/mstaking/keeper"
+	distrkeeper "github.com/initia-labs/initia/v1/x/distribution/keeper"
+	mstakingkeeper "github.com/initia-labs/initia/v1/x/mstaking/keeper"
 	auctiontypes "github.com/skip-mev/block-sdk/v2/x/auction/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"

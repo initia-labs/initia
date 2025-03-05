@@ -4,10 +4,10 @@ import (
 	"context"
 	"strings"
 
-	"github.com/initia-labs/initia/x/ibc/nft-transfer/keeper"
-	"github.com/initia-labs/initia/x/ibc/nft-transfer/types"
-	movekeeper "github.com/initia-labs/initia/x/move/keeper"
-	movetypes "github.com/initia-labs/initia/x/move/types"
+	"github.com/initia-labs/initia/v1/x/ibc/nft-transfer/keeper"
+	"github.com/initia-labs/initia/v1/x/ibc/nft-transfer/types"
+	movekeeper "github.com/initia-labs/initia/v1/x/move/keeper"
+	movetypes "github.com/initia-labs/initia/v1/x/move/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"

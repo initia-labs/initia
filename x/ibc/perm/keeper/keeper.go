@@ -14,7 +14,7 @@ import (
 
 	"github.com/cosmos/ibc-go/v8/modules/core/exported"
 
-	"github.com/initia-labs/initia/x/ibc/perm/types"
+	"github.com/initia-labs/initia/v1/x/ibc/perm/types"
 )
 
 type Keeper struct {

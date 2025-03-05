@@ -10,8 +10,8 @@ import (
 
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/proto/tendermint/types"
-	customtypes "github.com/initia-labs/initia/x/distribution/types"
-	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
+	customtypes "github.com/initia-labs/initia/v1/x/distribution/types"
+	stakingtypes "github.com/initia-labs/initia/v1/x/mstaking/types"
 	"github.com/stretchr/testify/require"
 )
 

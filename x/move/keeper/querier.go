@@ -9,7 +9,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/query"
 
-	"github.com/initia-labs/initia/x/move/types"
+	"github.com/initia-labs/initia/v1/x/move/types"
 	vmapi "github.com/initia-labs/movevm/api"
 	vmtypes "github.com/initia-labs/movevm/types"
 )

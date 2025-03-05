@@ -23,9 +23,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/distribution/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
-	"github.com/initia-labs/initia/x/distribution/keeper"
-	customtypes "github.com/initia-labs/initia/x/distribution/types"
-	staking "github.com/initia-labs/initia/x/mstaking/types"
+	"github.com/initia-labs/initia/v1/x/distribution/keeper"
+	customtypes "github.com/initia-labs/initia/v1/x/distribution/types"
+	staking "github.com/initia-labs/initia/v1/x/mstaking/types"
 )
 
 const ConsensusVersion = 1

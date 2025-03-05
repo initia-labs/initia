@@ -11,9 +11,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	v1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 
-	"github.com/initia-labs/initia/x/gov/keeper"
-	customtypes "github.com/initia-labs/initia/x/gov/types"
-	movetypes "github.com/initia-labs/initia/x/move/types"
+	"github.com/initia-labs/initia/v1/x/gov/keeper"
+	customtypes "github.com/initia-labs/initia/v1/x/gov/types"
+	movetypes "github.com/initia-labs/initia/v1/x/move/types"
 
 	vmtypes "github.com/initia-labs/movevm/types"
 )

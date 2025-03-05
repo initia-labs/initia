@@ -3,7 +3,7 @@ package initia.crypto.v1beta1.ethsecp256k1;
 
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/initia-labs/initia/crypto/ethsecp256k1";
+option go_package = "github.com/initia-labs/initia/v1/crypto/ethsecp256k1";
 
 // PubKey defines a type alias for an ecdsa.PublicKey that implements
 // Tendermint's PubKey interface. It represents the 33-byte compressed public

@@ -6,7 +6,7 @@ import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/initia-labs/initia/x/ibc/perm/types";
+option go_package = "github.com/initia-labs/initia/v1/x/ibc/perm/types";
 
 // Msg defines the ibc/perm Msg service
 service Msg {

@@ -6,9 +6,9 @@ import (
 
 	"cosmossdk.io/math"
 
-	initiaapp "github.com/initia-labs/initia/app"
-	"github.com/initia-labs/initia/x/move/ante"
-	"github.com/initia-labs/initia/x/move/types"
+	initiaapp "github.com/initia-labs/initia/v1/app"
+	"github.com/initia-labs/initia/v1/x/move/ante"
+	"github.com/initia-labs/initia/v1/x/move/types"
 
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/cosmos-sdk/testutil/testdata"

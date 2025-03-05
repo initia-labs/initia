@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	movehooks "github.com/initia-labs/initia/x/ibc-hooks/move-hooks"
+	movehooks "github.com/initia-labs/initia/v1/x/ibc-hooks/move-hooks"
 	"github.com/stretchr/testify/require"
 )
 

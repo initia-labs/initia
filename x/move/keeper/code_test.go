@@ -3,7 +3,7 @@ package keeper_test
 import (
 	"testing"
 
-	"github.com/initia-labs/initia/x/move/keeper"
+	"github.com/initia-labs/initia/v1/x/move/keeper"
 	vmtypes "github.com/initia-labs/movevm/types"
 
 	"github.com/stretchr/testify/require"

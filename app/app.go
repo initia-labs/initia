@@ -55,18 +55,18 @@ import (
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/keeper"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 
-	ibctestingtypes "github.com/initia-labs/initia/x/ibc/testing/types"
-	icaauthkeeper "github.com/initia-labs/initia/x/intertx/keeper"
+	ibctestingtypes "github.com/initia-labs/initia/v1/x/ibc/testing/types"
+	icaauthkeeper "github.com/initia-labs/initia/v1/x/intertx/keeper"
 
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 
-	"github.com/initia-labs/initia/app/keepers"
-	"github.com/initia-labs/initia/app/params"
-	cryptocodec "github.com/initia-labs/initia/crypto/codec"
-	initiatx "github.com/initia-labs/initia/tx"
-	moveconfig "github.com/initia-labs/initia/x/move/config"
-	movetypes "github.com/initia-labs/initia/x/move/types"
-	rewardtypes "github.com/initia-labs/initia/x/reward/types"
+	"github.com/initia-labs/initia/v1/app/keepers"
+	"github.com/initia-labs/initia/v1/app/params"
+	cryptocodec "github.com/initia-labs/initia/v1/crypto/codec"
+	initiatx "github.com/initia-labs/initia/v1/tx"
+	moveconfig "github.com/initia-labs/initia/v1/x/move/config"
+	movetypes "github.com/initia-labs/initia/v1/x/move/types"
+	rewardtypes "github.com/initia-labs/initia/v1/x/reward/types"
 
 	// block-sdk dependencies
 
@@ -80,7 +80,7 @@ import (
 	oracleclient "github.com/skip-mev/connect/v2/service/clients/oracle"
 
 	// unnamed import of statik for swagger UI support
-	_ "github.com/initia-labs/initia/client/docs/statik"
+	_ "github.com/initia-labs/initia/v1/client/docs/statik"
 )
 
 var (

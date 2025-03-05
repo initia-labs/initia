@@ -7,8 +7,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/distribution/types"
 
-	customtypes "github.com/initia-labs/initia/x/distribution/types"
-	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
+	customtypes "github.com/initia-labs/initia/v1/x/distribution/types"
+	stakingtypes "github.com/initia-labs/initia/v1/x/mstaking/types"
 )
 
 // register all distribution invariants

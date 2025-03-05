@@ -10,13 +10,13 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 
-	distrkeeper "github.com/initia-labs/initia/x/distribution/keeper"
-	stakingkeeper "github.com/initia-labs/initia/x/mstaking/keeper"
-	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
+	distrkeeper "github.com/initia-labs/initia/v1/x/distribution/keeper"
+	stakingkeeper "github.com/initia-labs/initia/v1/x/mstaking/keeper"
+	stakingtypes "github.com/initia-labs/initia/v1/x/mstaking/types"
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/initia-labs/initia/x/move/types"
+	"github.com/initia-labs/initia/v1/x/move/types"
 	vmtypes "github.com/initia-labs/movevm/types"
 )
 

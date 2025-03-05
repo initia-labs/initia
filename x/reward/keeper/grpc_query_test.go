@@ -6,8 +6,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/initia-labs/initia/x/reward/keeper"
-	"github.com/initia-labs/initia/x/reward/types"
+	"github.com/initia-labs/initia/v1/x/reward/keeper"
+	"github.com/initia-labs/initia/v1/x/reward/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )

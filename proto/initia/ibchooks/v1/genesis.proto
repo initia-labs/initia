@@ -5,7 +5,7 @@ import "amino/amino.proto";
 import "gogoproto/gogo.proto";
 import "initia/ibchooks/v1/types.proto";
 
-option go_package = "github.com/initia-labs/initia/x/ibc-hooks/types";
+option go_package = "github.com/initia-labs/initia/v1/x/ibc-hooks/types";
 
 // GenesisState defines the mint module's genesis state.
 message GenesisState {

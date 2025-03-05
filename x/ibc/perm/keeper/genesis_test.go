@@ -9,7 +9,7 @@ import (
 	dbm "github.com/cosmos/cosmos-db"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/initia-labs/initia/x/ibc/perm/types"
+	"github.com/initia-labs/initia/v1/x/ibc/perm/types"
 )
 
 func Test_InitGenesis(t *testing.T) {

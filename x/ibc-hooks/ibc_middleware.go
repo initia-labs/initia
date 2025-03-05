@@ -1,7 +1,7 @@
 package ibc_hooks
 
 import (
-	"github.com/initia-labs/initia/x/ibc-hooks/keeper"
+	"github.com/initia-labs/initia/v1/x/ibc-hooks/keeper"
 
 	// external libraries
 	sdk "github.com/cosmos/cosmos-sdk/types"

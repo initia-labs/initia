@@ -10,9 +10,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	v1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 
-	customtypes "github.com/initia-labs/initia/x/gov/types"
-	movetypes "github.com/initia-labs/initia/x/move/types"
-	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
+	customtypes "github.com/initia-labs/initia/v1/x/gov/types"
+	movetypes "github.com/initia-labs/initia/v1/x/move/types"
+	stakingtypes "github.com/initia-labs/initia/v1/x/mstaking/types"
 )
 
 // TODO: Break into several smaller functions for clarity

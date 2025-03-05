@@ -14,8 +14,8 @@ import (
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
-	nfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
-	movetypes "github.com/initia-labs/initia/x/move/types"
+	nfttransfertypes "github.com/initia-labs/initia/v1/x/ibc/nft-transfer/types"
+	movetypes "github.com/initia-labs/initia/v1/x/move/types"
 )
 
 const senderPrefix = "ibc-move-hook-intermediary"

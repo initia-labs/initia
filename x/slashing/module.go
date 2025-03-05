@@ -17,8 +17,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/slashing/types"
 
-	"github.com/initia-labs/initia/x/slashing/client/cli"
-	"github.com/initia-labs/initia/x/slashing/keeper"
+	"github.com/initia-labs/initia/v1/x/slashing/client/cli"
+	"github.com/initia-labs/initia/v1/x/slashing/keeper"
 )
 
 // ConsensusVersion defines the current x/slashing module consensus version.

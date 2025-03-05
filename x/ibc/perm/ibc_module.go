@@ -11,7 +11,7 @@ import (
 	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 
-	"github.com/initia-labs/initia/x/ibc/perm/keeper"
+	"github.com/initia-labs/initia/v1/x/ibc/perm/keeper"
 )
 
 var _ porttypes.Middleware = &IBCMiddleware{}

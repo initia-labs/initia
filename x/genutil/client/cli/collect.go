@@ -15,7 +15,7 @@ import (
 	cosmosgenutil "github.com/cosmos/cosmos-sdk/x/genutil"
 	"github.com/cosmos/cosmos-sdk/x/genutil/types"
 
-	"github.com/initia-labs/initia/x/genutil"
+	"github.com/initia-labs/initia/v1/x/genutil"
 )
 
 const flagGenTxDir = "gentx-dir"

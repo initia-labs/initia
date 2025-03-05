@@ -5,7 +5,7 @@ import (
 
 	flag "github.com/spf13/pflag"
 
-	"github.com/initia-labs/initia/x/move/types"
+	"github.com/initia-labs/initia/v1/x/move/types"
 )
 
 const (

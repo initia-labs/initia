@@ -6,7 +6,7 @@ import (
 	"cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
 
-	"github.com/initia-labs/initia/x/distribution/types"
+	"github.com/initia-labs/initia/v1/x/distribution/types"
 )
 
 func TestParams_ValidateBasic(t *testing.T) {

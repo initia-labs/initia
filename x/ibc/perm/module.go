@@ -17,9 +17,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/initia-labs/initia/x/ibc/perm/client/cli"
-	"github.com/initia-labs/initia/x/ibc/perm/keeper"
-	"github.com/initia-labs/initia/x/ibc/perm/types"
+	"github.com/initia-labs/initia/v1/x/ibc/perm/client/cli"
+	"github.com/initia-labs/initia/v1/x/ibc/perm/keeper"
+	"github.com/initia-labs/initia/v1/x/ibc/perm/types"
 )
 
 const ConsensusVersion = 1
