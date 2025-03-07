@@ -62,7 +62,7 @@ func (msg MsgCreateValidator) Validate(valAddrCodec address.Codec) error {
 		return ErrEmptyValidatorPubKey
 	}
 
-	if !msg.Amount.IsValid() {
+	if !msg.Amount.IsValid() || msg.Amount.Empty() {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "invalid delegation amount")
 	}
 
