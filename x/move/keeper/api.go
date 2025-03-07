@@ -92,7 +92,7 @@ func (api GoApi) ShareToAmount(valBz []byte, metadata vmtypes.AccountAddress, sh
 }
 
 // UnbondTimestamp return staking unbond time
-func (api GoApi) UnbondTimestamp() (uint64, error) {
+func (api GoApi) UnbondTimestamp() uint64 {
 	unbondingTime, err := api.StakingKeeper.UnbondingTime(api.ctx)
 	if err != nil {
 		return 0, err
