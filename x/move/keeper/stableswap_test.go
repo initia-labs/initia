@@ -135,8 +135,9 @@ func Test_StableSwap_Whitelist(t *testing.T) {
 		sdk.NewCoins(sdk.NewCoin(baseDenom, baseAmount), sdk.NewCoin(denomCoinB, amountCoinB), sdk.NewCoin(denomCoinC, amountCoinC)),
 	)
 
-	err := stableSwapKeeper.Whitelist(ctx, metadataLP)
+	ok, err := stableSwapKeeper.Whitelist(ctx, metadataLP)
 	require.NoError(t, err)
+	require.True(t, ok)
 }
 
 func Test_StableSwap_Whitelist_Failed_MissingBase(t *testing.T) {
@@ -158,6 +159,7 @@ func Test_StableSwap_Whitelist_Failed_MissingBase(t *testing.T) {
 		sdk.NewCoins(sdk.NewCoin(baseDenom, baseAmount), sdk.NewCoin(denomCoinB, amountCoinB), sdk.NewCoin(denomCoinC, amountCoinC)),
 	)
 
-	err := stableSwapKeeper.Whitelist(ctx, metadataLP)
+	ok, err := stableSwapKeeper.Whitelist(ctx, metadataLP)
 	require.Error(t, err)
+	require.False(t, ok)
 }

@@ -70,34 +70,34 @@ func (k BalancerKeeper) SwapToBase(
 	)
 }
 
-func (k BalancerKeeper) Whitelist(ctx context.Context, metadataLP vmtypes.AccountAddress) error {
+func (k BalancerKeeper) Whitelist(ctx context.Context, metadataLP vmtypes.AccountAddress) (bool, error) {
 	ok, err := k.HasPool(ctx, metadataLP)
 	if err != nil {
-		return err
+		return false, err
 	}
 	if !ok {
-		return nil
+		return false, nil
 	}
 
 	// assert base denom is exist in the dex pair
 
 	denomBase, err := k.BaseDenom(ctx)
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	metadataBase, err := types.MetadataAddressFromDenom(denomBase)
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	metadata, err := k.poolMetadata(ctx, metadataLP)
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	if !slices.Contains(metadata, metadataBase) {
-		return moderrors.Wrapf(
+		return false, moderrors.Wrapf(
 			types.ErrInvalidDexConfig,
 			"To be whitelisted, a stableswap should contain `%s` in its pair", denomBase,
 		)
@@ -109,7 +109,7 @@ func (k BalancerKeeper) Whitelist(ctx context.Context, metadataLP vmtypes.Accoun
 	} else if metadataBase == metadata[1] {
 		metadataQuote = metadata[0]
 	} else {
-		return moderrors.Wrapf(
+		return false, moderrors.Wrapf(
 			types.ErrInvalidDexConfig,
 			"To be whitelisted, a dex should contain `%s` in its pair", denomBase,
 		)
@@ -121,29 +121,29 @@ func (k BalancerKeeper) Whitelist(ctx context.Context, metadataLP vmtypes.Accoun
 
 	weights, err := k.poolWeights(ctx, metadataLP)
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	if weights[0].LT(weights[1]) {
-		return moderrors.Wrapf(types.ErrInvalidDexConfig,
+		return false, moderrors.Wrapf(types.ErrInvalidDexConfig,
 			"base weight `%s` must be bigger than quote weight `%s`", weights[0], weights[1])
 	}
 
 	// check dex pair was registered
 
 	if found, err := k.DexKeeper().hasDexPair(ctx, metadataQuote); err != nil {
-		return err
+		return false, err
 	} else if found {
-		return moderrors.Wrapf(types.ErrInvalidRequest, "coin `%s` was already whitelisted", metadataQuote.String())
+		return false, moderrors.Wrapf(types.ErrInvalidRequest, "coin `%s` was already whitelisted", metadataQuote.String())
 	}
 
 	// store dex pair
 	err = k.DexKeeper().setDexPair(ctx, metadataQuote, metadataLP)
 	if err != nil {
-		return err
+		return false, err
 	}
 
-	return nil
+	return true, nil
 }
 
 func (k BalancerKeeper) Delist(

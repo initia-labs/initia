@@ -46,40 +46,40 @@ func (k StableSwapKeeper) GetPoolMetadata(ctx context.Context, metadataLP vmtype
 }
 
 // Whitelist checks if the stableswap pool is valid to be whitelisted
-func (k StableSwapKeeper) Whitelist(ctx context.Context, metadataLP vmtypes.AccountAddress) error {
+func (k StableSwapKeeper) Whitelist(ctx context.Context, metadataLP vmtypes.AccountAddress) (bool, error) {
 	ok, err := k.HasPool(ctx, metadataLP)
 	if err != nil {
-		return err
+		return false, err
 	}
 	if !ok {
-		return nil
+		return false, nil
 	}
 
 	// assert base denom is exist in the dex pair
 
 	denomBase, err := k.BaseDenom(ctx)
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	metadataBase, err := types.MetadataAddressFromDenom(denomBase)
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	metadata, err := k.GetPoolMetadata(ctx, metadataLP)
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	if !slices.Contains(metadata, metadataBase) {
-		return moderrors.Wrapf(
+		return false, moderrors.Wrapf(
 			types.ErrInvalidDexConfig,
 			"To be whitelisted, a stableswap should contain `%s` in its pair", denomBase,
 		)
 	}
 
-	return nil
+	return true, nil
 }
 
 // Delist removes the stableswap pool from the whitelist

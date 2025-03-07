@@ -114,15 +114,40 @@ func (a ExecuteAuthorization) MsgTypeURL() string {
 	return sdk.MsgTypeURL(&MsgExecute{})
 }
 
+const MaxModuleNameLen = 64
+const MaxFunctionName = 16
+const MaxFunctionNameLen = 64
+
 func (a ExecuteAuthorization) ValidateBasic() error {
 	moduleMap := make(map[string][]string)
 	for _, v := range a.Items {
-		if len(v.ModuleName) == 0 {
-			return errors.Wrapf(sdkerrors.ErrInvalidRequest, "invalid module name: %s", v.ModuleName)
+		if l := len(v.ModuleName); l == 0 {
+			return errors.Wrapf(sdkerrors.ErrInvalidRequest, "empty module name")
+		} else if l > MaxModuleNameLen {
+			return errors.Wrapf(sdkerrors.ErrInvalidRequest, "module name too long: %d > %d", l, MaxModuleNameLen)
 		}
-		if len(v.FunctionNames) == 0 {
-			return errors.Wrap(sdkerrors.ErrInvalidRequest, "invalid module names")
+		if l := len(v.FunctionNames); l == 0 {
+			return errors.Wrap(sdkerrors.ErrInvalidRequest, "empty function names")
+		} else if l > MaxFunctionName {
+			return errors.Wrapf(sdkerrors.ErrInvalidRequest, "function names too long: %d > %d", l, MaxFunctionNameLen)
 		}
+
+		// check max function name length and empty function name
+		// also check duplicate function name
+		functionMap := make(map[string]any)
+		for _, fn := range v.FunctionNames {
+			if l := len(fn); l == 0 {
+				return errors.Wrapf(sdkerrors.ErrInvalidRequest, "empty function name")
+			} else if l > MaxFunctionNameLen {
+				return errors.Wrapf(sdkerrors.ErrInvalidRequest, "function name too long: %d > %d", l, MaxFunctionNameLen)
+			}
+
+			if _, ok := functionMap[fn]; ok {
+				return errors.Wrapf(sdkerrors.ErrInvalidRequest, "duplicate function name: %s", fn)
+			}
+			functionMap[fn] = struct{}{}
+		}
+
 		if module, ok := moduleMap[v.ModuleAddress]; ok {
 			for _, m := range module {
 				if m == v.ModuleName {

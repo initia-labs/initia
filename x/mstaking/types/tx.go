@@ -62,7 +62,7 @@ func (msg MsgCreateValidator) Validate(valAddrCodec address.Codec) error {
 		return ErrEmptyValidatorPubKey
 	}
 
-	if !msg.Amount.IsValid() || !msg.Amount.IsAllPositive() {
+	if !msg.Amount.IsValid() {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "invalid delegation amount")
 	}
 
@@ -144,7 +144,7 @@ func (msg MsgDelegate) Validate(accAddrCodec address.Codec, valAddrCodec address
 		return ErrEmptyValidatorAddr
 	}
 
-	if !msg.Amount.IsValid() || !msg.Amount.IsAllPositive() {
+	if !msg.Amount.IsValid() || msg.Amount.Empty() {
 		return errors.Wrap(
 			sdkerrors.ErrInvalidRequest,
 			"invalid delegation amount",
@@ -188,7 +188,7 @@ func (msg MsgBeginRedelegate) Validate(accAddrCodec address.Codec, valAddrCodec 
 		return ErrEmptyValidatorAddr
 	}
 
-	if !msg.Amount.IsValid() || !msg.Amount.IsAllPositive() {
+	if !msg.Amount.IsValid() || msg.Amount.Empty() {
 		return errors.Wrap(
 			sdkerrors.ErrInvalidRequest,
 			"invalid shares amount",
@@ -223,7 +223,7 @@ func (msg MsgUndelegate) Validate(accAddrCodec address.Codec, valAddrCodec addre
 		return ErrEmptyValidatorAddr
 	}
 
-	if !msg.Amount.IsValid() || !msg.Amount.IsAllPositive() {
+	if !msg.Amount.IsValid() || msg.Amount.Empty() {
 		return errors.Wrap(
 			sdkerrors.ErrInvalidRequest,
 			"invalid shares amount",
@@ -259,7 +259,7 @@ func (msg MsgCancelUnbondingDelegation) Validate(accAddrCodec address.Codec, val
 		return ErrEmptyValidatorAddr
 	}
 
-	if !msg.Amount.IsValid() || !msg.Amount.IsAllPositive() {
+	if !msg.Amount.IsValid() || msg.Amount.Empty() {
 		return errors.Wrap(
 			sdkerrors.ErrInvalidRequest,
 			"invalid amount",

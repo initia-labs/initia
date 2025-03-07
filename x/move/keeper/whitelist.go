@@ -30,11 +30,15 @@ func (k Keeper) Whitelist(ctx context.Context, msg types.MsgWhitelist) error {
 	// dex specific whitelist ops
 	//
 
-	if err := NewBalancerKeeper(&k).Whitelist(ctx, metadataLP); err != nil {
+	if balancer, err := NewBalancerKeeper(&k).Whitelist(ctx, metadataLP); err != nil {
 		return err
-	}
-	if err := NewStableSwapKeeper(&k).Whitelist(ctx, metadataLP); err != nil {
+	} else if stableswap, err := NewStableSwapKeeper(&k).Whitelist(ctx, metadataLP); err != nil {
 		return err
+	} else if !balancer && !stableswap {
+		return errors.Wrap(
+			types.ErrInvalidRequest,
+			"only the coins, which are generated from 0x1::dex or 0x1::stableswap module, can be whitelisted.",
+		)
 	}
 
 	//

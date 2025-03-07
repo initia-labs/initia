@@ -126,6 +126,9 @@ func (k Keeper) Slash(ctx context.Context, consAddr sdk.ConsAddress, infractionH
 	}
 
 	tokensToBurn, _ := sdk.NewDecCoinsFromCoins(validator.Tokens...).MulDec(slashFactor).TruncateDecimal()
+	if tokensToBurn.IsZero() {
+		return sdk.NewCoins(), nil
+	}
 
 	// we need to calculate the *effective* slash fraction for distribution
 	if !validator.Tokens.IsZero() {

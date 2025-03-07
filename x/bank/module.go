@@ -122,7 +122,7 @@ func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.
 	start := time.Now()
 	var genesisState types.GenesisState
 	cdc.MustUnmarshalJSON(data, &genesisState)
-	telemetry.MeasureSince(start, "InitGenesis", "crisis", "unmarshal")
+	telemetry.MeasureSince(start, "InitGenesis", "bank", "unmarshal")
 
 	am.keeper.InitGenesis(ctx, &genesisState)
 }
