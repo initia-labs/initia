@@ -92,16 +92,14 @@ func (api GoApi) ShareToAmount(valBz []byte, metadata vmtypes.AccountAddress, sh
 }
 
 // UnbondTimestamp return staking unbond time
-func (api GoApi) UnbondTimestamp() uint64 {
+func (api GoApi) UnbondTimestamp() (uint64, error) {
 	unbondingTime, err := api.StakingKeeper.UnbondingTime(api.ctx)
-
-	// TODO - panic to error
 	if err != nil {
-		panic(err)
+		return 0, err
 	}
 
 	sdkCtx := sdk.UnwrapSDKContext(api.ctx)
-	return uint64(sdkCtx.BlockTime().Unix()) + uint64(unbondingTime.Seconds())
+	return uint64(sdkCtx.BlockTime().Unix()) + uint64(unbondingTime.Seconds()), nil
 }
 
 func (api GoApi) GetPrice(pairId string) ([]byte, uint64, uint64, error) {
