@@ -26,7 +26,7 @@ const (
 	flagVerifierURL = "verifier-url"
 )
 
-const defaultVerifierURL = "https://api.initia.tech/contracts/verify" // FIXME: set to real url
+const defaultVerifierURL = "https://api.testnet.initia.xyz/contracts/verify"
 
 const (
 	manifestFilename = "Move.toml"
