@@ -360,6 +360,8 @@ github.com/cosmos/gogogateway v1.2.0/go.mod h1:iQpLkGWxYcnCdz5iAdLcRBSw3h7NXeOkZ
 github.com/cosmos/gogoproto v1.4.2/go.mod h1:cLxOsn1ljAHSV527CHOtaIP91kK6cCrZETRBrkzItWU=
 github.com/cosmos/gogoproto v1.7.0 h1:79USr0oyXAbxg3rspGh/m4SWNyoz/GLaAh0QlCe2fro=
 github.com/cosmos/gogoproto v1.7.0/go.mod h1:yWChEv5IUEYURQasfyBW5ffkMHR/90hiHgbNgrtp4j0=
+github.com/cosmos/iavl v1.2.5-0.20250306174232-6cfb3dac2c71 h1:Afp8nOyRYPXh2F6YknQKYOph9fucMuctB7TqJ7vyiQE=
+github.com/cosmos/iavl v1.2.5-0.20250306174232-6cfb3dac2c71/go.mod h1:GiM43q0pB+uG53mLxLDzimxM9l/5N9UuSY3/D0huuVw=
 github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8 v8.2.0 h1:rM+S14DFiqmu6Rc3PuhvWqwywPsnt/CbIslSnBftPFs=
 github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8 v8.2.0/go.mod h1:O5H9Ic3Pe6cmJn1eqlj5N48sLb8WQ1VWmDP4/11g/4E=
 github.com/cosmos/ibc-apps/modules/rate-limiting/v8 v8.0.0 h1:AQO9NIAP3RFqvBCj7IqM/V1LCxmuvcvGUdu0RIEz/c0=
@@ -718,14 +720,12 @@ github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANyt
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
 github.com/influxdata/influxdb1-client v0.0.0-20191209144304-8bf82d3c094d/go.mod h1:qj24IKcXYK6Iy9ceXlo3Tc+vtHo9lIhSX5JddghvEPo=
-github.com/initia-labs/OPinit v0.7.1 h1:u2tzQdTNRjtITrhjFyx4WhCkJZQ/usdgvEvJKV/Ph5Q=
-github.com/initia-labs/OPinit v0.7.1/go.mod h1:LI36A+M0RE6vSX/BvBDSRHP3zerCdsQfqE82CSMwo1o=
-github.com/initia-labs/OPinit/api v0.6.2 h1:nU9Rv5s/6WbV3CfmNnW3MSSmqpk7Avgfd68qMWjYD08=
-github.com/initia-labs/OPinit/api v0.6.2/go.mod h1:gHK6DEWb3/DqQD5LjKirUx9jilAh2UioXanoQdgqVfU=
+github.com/initia-labs/OPinit v1.0.0-beta.1 h1:50bTyBr+xdZ2VxfmwI73kLdijk1JeK7kploeN4LBq/I=
+github.com/initia-labs/OPinit v1.0.0-beta.1/go.mod h1:E3C1kaDWjWd+Pd/c+m0XflL/aPDaZEPcbtH1xzM97ig=
+github.com/initia-labs/OPinit/api v1.0.0-beta.1 h1:aWv4PAW0eVDQy5m2n4BJmdhy6RdpCcRSLJAWGzbwMO8=
+github.com/initia-labs/OPinit/api v1.0.0-beta.1/go.mod h1:Qz11o6zlTtJe495JO7FhEyLhJLPit0rEuLN4pweKL24=
 github.com/initia-labs/cometbft v0.0.0-20250204062928-bd6176505783 h1:prlUc/Ti3nzPZDqnAvLt83AgEb9iPncMqBxvChJnnxM=
 github.com/initia-labs/cometbft v0.0.0-20250204062928-bd6176505783/go.mod h1:5l0SkgeLRXi6bBfQuevXjKqML1jjfJJlvI1Ulp02/o4=
-github.com/initia-labs/iavl v0.0.0-20250223141407-caf697dd4712 h1:csPS5vbcRwdLRObIHuevWpILvROxUVTQxG/YpZ0VlBM=
-github.com/initia-labs/iavl v0.0.0-20250223141407-caf697dd4712/go.mod h1:GiM43q0pB+uG53mLxLDzimxM9l/5N9UuSY3/D0huuVw=
 github.com/initia-labs/movevm v0.7.0 h1:wi7LT12afxTTa2Tqwcndc4LRtS0mzossGrVNiUvs/aw=
 github.com/initia-labs/movevm v0.7.0/go.mod h1:sj/kXD7mUQASqogPTjqltIr4Uid3xxnlcbfiFvvqeXA=
 github.com/jhump/protoreflect v1.15.3 h1:6SFRuqU45u9hIZPJAoZ8c28T3nK64BNdp9w6jFonzls=

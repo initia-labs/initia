@@ -37,7 +37,7 @@ require (
 	github.com/gorilla/mux v1.8.1
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/hashicorp/go-metrics v0.5.3
-	github.com/initia-labs/OPinit v0.7.1
+	github.com/initia-labs/OPinit v1.0.0-beta.1
 	// we also need to update `LIBMOVEVM_VERSION` of Dockerfile#9
 	github.com/initia-labs/movevm v0.7.0
 	github.com/noble-assets/forwarding/v2 v2.0.1
@@ -147,7 +147,7 @@ require (
 	github.com/iancoleman/strcase v0.3.0 // indirect
 	github.com/improbable-eng/grpc-web v0.15.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/initia-labs/OPinit/api v0.6.2 // indirect
+	github.com/initia-labs/OPinit/api v1.0.0-beta.1 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/jmhodges/levigo v1.0.0 // indirect
 	github.com/klauspost/compress v1.17.11 // indirect
@@ -232,14 +232,11 @@ replace (
 )
 
 // indirect custom dependencies
-require github.com/cosmos/iavl v1.2.4 // indirect
+// - https://github.com/cosmos/cosmos-sdk/issues/23740
+require github.com/cosmos/iavl v1.2.5-0.20250306174232-6cfb3dac2c71 // indirect
 
 // initia custom
 // use custom version for
 // - https://github.com/initia-labs/cometbft/commit/cb3ed4ca9be4d6c55df7df2d927e9b92153bc3e2
 // - https://github.com/initia-labs/cometbft/pull/14
 replace github.com/cometbft/cometbft => github.com/initia-labs/cometbft v0.0.0-20250204062928-bd6176505783
-
-// temporal replace to fix statesync problem
-// - https://github.com/cosmos/cosmos-sdk/issues/23740
-replace github.com/cosmos/iavl => github.com/initia-labs/iavl v0.0.0-20250223141407-caf697dd4712
