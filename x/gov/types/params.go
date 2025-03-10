@@ -41,14 +41,14 @@ var (
 
 // NewParams creates a new Params instance with given values.
 func NewParams(
-	minDeposit, expeditedminDeposit sdk.Coins, maxDepositPeriod, votingPeriod, expeditedVotingPeriod time.Duration,
+	minDeposit, expeditedMinDeposit sdk.Coins, maxDepositPeriod, votingPeriod, expeditedVotingPeriod time.Duration,
 	quorum, threshold, expeditedThreshold, vetoThreshold, minInitialDepositRatio, proposalCancelRatio, proposalCancelDest string,
 	burnProposalDeposit, burnVoteQuorum, burnVoteVeto bool, minDepositRatio string,
 	emergencyMinDeposit sdk.Coins, emergencyTallyInterval time.Duration, lowThresholdFunctions []string,
 ) Params {
 	return Params{
 		MinDeposit:                 minDeposit,
-		ExpeditedMinDeposit:        expeditedminDeposit,
+		ExpeditedMinDeposit:        expeditedMinDeposit,
 		MaxDepositPeriod:           maxDepositPeriod,
 		VotingPeriod:               votingPeriod,
 		ExpeditedVotingPeriod:      expeditedVotingPeriod,
