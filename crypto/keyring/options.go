@@ -44,7 +44,10 @@ func OverrideDefaultKeyType(cmd *cobra.Command) *cobra.Command {
 		}
 
 		f.DefValue = string(hd.EthSecp256k1Type)
-		f.Value.Set(string(hd.EthSecp256k1Type))
+		err := f.Value.Set(string(hd.EthSecp256k1Type))
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	return cmd
