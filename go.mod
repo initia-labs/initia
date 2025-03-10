@@ -39,7 +39,7 @@ require (
 	github.com/hashicorp/go-metrics v0.5.3
 	github.com/initia-labs/OPinit v1.0.0-beta.1
 	// we also need to update `LIBMOVEVM_VERSION` of Dockerfile#9
-	github.com/initia-labs/movevm v0.7.0
+	github.com/initia-labs/movevm v1.0.0-beta.0
 	github.com/noble-assets/forwarding/v2 v2.0.1
 	github.com/pelletier/go-toml v1.9.5
 	github.com/pkg/errors v0.9.1
