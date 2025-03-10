@@ -1,16 +1,15 @@
 package keyring
 
 import (
+	"github.com/cosmos/cosmos-sdk/client/flags"
 	cosmoshd "github.com/cosmos/cosmos-sdk/crypto/hd"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/crypto/types"
+	"github.com/spf13/cobra"
 
 	"github.com/initia-labs/initia/crypto/ethsecp256k1"
 	"github.com/initia-labs/initia/crypto/hd"
 )
-
-// AppName defines the Ledger app used for signing. Evmos uses the Ethereum app
-const AppName = "Ethereum"
 
 var (
 	// SupportedAlgorithms defines the list of signing algorithms used on Injective:
@@ -25,15 +24,6 @@ var (
 
 // EthSecp256k1Option defines a function keys options for the ethereum Secp256k1 curve.
 // It supports eth_secp256k1 keys for accounts.
-func Option() keyring.Option {
-	return func(options *keyring.Options) {
-		options.SupportedAlgos = SupportedAlgorithms
-		options.SupportedAlgosLedger = SupportedAlgorithmsLedger
-	}
-}
-
-// EthSecp256k1Option defines a function keys options for the ethereum Secp256k1 curve.
-// It supports eth_secp256k1 keys for accounts.
 func EthSecp256k1Option() keyring.Option {
 	return func(options *keyring.Options) {
 		options.SupportedAlgos = SupportedAlgorithms
@@ -42,4 +32,20 @@ func EthSecp256k1Option() keyring.Option {
 		options.LedgerAppName = "Ethereum"
 		options.LedgerSigSkipDERConv = true
 	}
+}
+
+// OverrideDefaultKeyType overrides the default key type for the given command.
+// It is used to set the default key type to eth_secp256k1 for the given command.
+func OverrideDefaultKeyType(cmd *cobra.Command) *cobra.Command {
+	for _, cmd := range cmd.Commands() {
+		f := cmd.Flag(flags.FlagKeyType)
+		if f == nil {
+			continue
+		}
+
+		f.DefValue = string(hd.EthSecp256k1Type)
+		f.Value.Set(string(hd.EthSecp256k1Type))
+	}
+
+	return cmd
 }

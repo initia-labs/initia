@@ -18,7 +18,7 @@ const (
 	EnvPrefix = "INITIA"
 
 	// CoinType is the Cosmos Chain's coin type as defined in SLIP44 (https://github.com/satoshilabs/slips/blob/master/slip-0044.md)
-	CoinType = 118
+	CoinType = 60
 
 	// BondDenom staking denom for genesis boot
 	BondDenom = movetypes.DefaultBaseDenom

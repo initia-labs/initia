@@ -7,7 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 )
 
-const upgradeName = "0.7.3"
+const upgradeName = "v1.0.0-beta.0"
 
 // RegisterUpgradeHandlers returns upgrade handlers
 func (app *InitiaApp) RegisterUpgradeHandlers(cfg module.Configurator) {
