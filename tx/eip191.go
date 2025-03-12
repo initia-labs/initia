@@ -39,8 +39,13 @@ func (h SignModeEIP191Handler) GetSignBytes(
 		return nil, err
 	}
 
+	return FormatEIP191Message(aminoJSONBz), nil
+}
+
+// FormatEIP191Message formats a message to be signed with EIP-191.
+func FormatEIP191Message(msg []byte) []byte {
 	return append(append(
 		[]byte(EIP191MessagePrefix),
-		[]byte(strconv.Itoa(len(aminoJSONBz)))...,
-	), aminoJSONBz...), nil
+		[]byte(strconv.Itoa(len(msg)))...,
+	), msg...)
 }

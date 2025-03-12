@@ -28,6 +28,7 @@ func EthSecp256k1Option() keyring.Option {
 	return func(options *keyring.Options) {
 		options.SupportedAlgos = SupportedAlgorithms
 		options.SupportedAlgosLedger = SupportedAlgorithmsLedger
+		options.LedgerDerivation = LedgerDerivationFn()
 		options.LedgerCreateKey = func(key []byte) types.PubKey { return &ethsecp256k1.PubKey{Key: key} }
 		options.LedgerAppName = "Ethereum"
 		options.LedgerSigSkipDERConv = true
