@@ -170,5 +170,5 @@ func Test_Dex_GasPrices(t *testing.T) {
 
 	quoteGasPrices, err := dexKeeper.GasPrices(ctx)
 	require.NoError(t, err)
-	require.Equal(t, sdk.NewDecCoins(sdk.NewDecCoinFromDec(denomQuote, baseGasPrice.MulInt64(4))), quoteGasPrices)
+	require.Equal(t, sdk.NewDecCoins(sdk.NewDecCoinFromDec(baseDenom, baseGasPrice), sdk.NewDecCoinFromDec(denomQuote, baseGasPrice.MulInt64(4))), quoteGasPrices)
 }
