@@ -1,7 +1,6 @@
 package keyring
 
 import (
-	"encoding/hex"
 	"fmt"
 	"strings"
 
@@ -124,13 +123,14 @@ func (i *InitiaLedger) SignSECP256K1(hdPath []uint32, signBytes []byte, _ byte) 
 		return nil, errors.Wrap(err, "failed to derive account")
 	}
 
+	fmt.Println("Please check your Ledger device for confirmation")
+	fmt.Println("Signing message:")
+	fmt.Println(string(signBytes))
+
 	sig, err := i.wallet.SignText(account, signBytes)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to sign message")
 	}
-
-	fmt.Println("signature", len(sig))
-	fmt.Println("signature", hex.EncodeToString(sig))
 
 	return sig, nil
 }
