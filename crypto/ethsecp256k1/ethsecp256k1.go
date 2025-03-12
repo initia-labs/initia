@@ -7,12 +7,14 @@ import (
 	"fmt"
 	io "io"
 	"math/big"
+	"strings"
 
 	errorsmod "cosmossdk.io/errors"
 	"github.com/cometbft/cometbft/crypto"
 	"github.com/cosmos/cosmos-sdk/codec"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	errortypes "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/initia-labs/initia/tx"
 	"golang.org/x/crypto/sha3"
 
 	secp256k1 "github.com/decred/dcrd/dcrec/secp256k1/v4"
@@ -133,10 +135,15 @@ func (privKey *PrivKey) UnmarshalAminoJSON(bz []byte) error {
 // Sign creates a recoverable ECDSA signature on the secp256k1 curve over the
 // provided hash of the message. The produced signature is 65 bytes
 // where the last byte contains the recovery ID.
-func (privKey PrivKey) Sign(digestBz []byte) ([]byte, error) {
+func (privKey PrivKey) Sign(msg []byte) ([]byte, error) {
+	// if message does not start with EIP-191 prefix, add it
+	if !strings.HasPrefix(string(msg), tx.EIP191MessagePrefix) {
+		msg = tx.FormatEIP191Message(msg)
+	}
+
 	priv := secp256k1.PrivKeyFromBytes(privKey.Key)
 
-	sig := ecdsa.SignCompact(priv, keccak256(digestBz), false)
+	sig := ecdsa.SignCompact(priv, keccak256(msg), false)
 	recid := sig[0]
 
 	// remove the first byte which is compactSigRecoveryCode
@@ -262,6 +269,11 @@ func (pubKey PubKey) verifySignatureECDSA(msg, sigStr []byte) bool {
 	signature, err := signatureFromBytes(sigStr)
 	if err != nil {
 		return false
+	}
+
+	// if message does not start with EIP-191 prefix, add it
+	if !strings.HasPrefix(string(msg), tx.EIP191MessagePrefix) {
+		msg = tx.FormatEIP191Message(msg)
 	}
 
 	return signature.Verify(keccak256(msg), pub)
