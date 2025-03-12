@@ -172,12 +172,14 @@ func (k DexKeeper) getBaseSpotPrice(
 func (k DexKeeper) GasPrices(
 	ctx context.Context,
 ) (sdk.DecCoins, error) {
-	baseGasPrice, err := k.BaseMinGasPrice(ctx)
+	params, err := k.GetParams(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	gasPrices := sdk.NewDecCoins()
+	baseDenom := params.BaseDenom
+	baseGasPrice := params.BaseMinGasPrice
+	gasPrices := sdk.NewDecCoins(sdk.NewDecCoinFromDec(baseDenom, baseGasPrice))
 	err = k.DexPairs.Walk(ctx, nil, func(key, value []byte) (stop bool, err error) {
 		metadataQuote, err := vmtypes.NewAccountAddressFromBytes(key)
 		if err != nil {
@@ -215,9 +217,15 @@ func (k DexKeeper) GasPrice(
 	ctx context.Context,
 	denomQuote string,
 ) (sdk.DecCoin, error) {
-	baseGasPrice, err := k.BaseMinGasPrice(ctx)
+	params, err := k.GetParams(ctx)
 	if err != nil {
-		return sdk.NewDecCoin(denomQuote, math.ZeroInt()), err
+		return sdk.DecCoin{}, err
+	}
+
+	baseDenom := params.BaseDenom
+	baseGasPrice := params.BaseMinGasPrice
+	if denomQuote == baseDenom {
+		return sdk.NewDecCoinFromDec(denomQuote, baseGasPrice), nil
 	}
 
 	baseSpotPrice, err := k.GetBaseSpotPrice(ctx, denomQuote)
