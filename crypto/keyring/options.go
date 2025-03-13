@@ -9,6 +9,7 @@ import (
 
 	"github.com/initia-labs/initia/crypto/ethsecp256k1"
 	"github.com/initia-labs/initia/crypto/hd"
+	"github.com/initia-labs/initia/crypto/ledger"
 )
 
 var (
@@ -28,7 +29,7 @@ func EthSecp256k1Option() keyring.Option {
 	return func(options *keyring.Options) {
 		options.SupportedAlgos = SupportedAlgorithms
 		options.SupportedAlgosLedger = SupportedAlgorithmsLedger
-		options.LedgerDerivation = LedgerDerivationFn()
+		options.LedgerDerivation = ledger.LedgerDerivationFn()
 		options.LedgerCreateKey = func(key []byte) types.PubKey { return &ethsecp256k1.PubKey{Key: key} }
 		options.LedgerAppName = "Ethereum"
 		options.LedgerSigSkipDERConv = true

@@ -1,7 +1,7 @@
-//go:build ledger && test_ledger_mock
-// +build ledger,test_ledger_mock
+//go:build !cgo || !ledger
+// +build !cgo !ledger
 
-package keyring
+package ledger
 
 import (
 	"github.com/cosmos/cosmos-sdk/crypto/ledger"
