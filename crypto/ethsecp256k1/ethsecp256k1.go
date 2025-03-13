@@ -241,12 +241,23 @@ func (pubKey *PubKey) UnmarshalAminoJSON(bz []byte) error {
 }
 
 // VerifySignature verifies that the ECDSA public key created a given signature over
-// the provided message. It will calculate the Keccak256 hash of the message
-// prior to verification and approve verification if the signature can be verified
-// from either the original message or its EIP-712 representation.
+// the provided message. It will attach the EIP-191 prefix to the message if it is not already present.
 //
 // CONTRACT: The signature should be in [R || S] format.
 func (pubKey PubKey) VerifySignature(msg, sig []byte) bool {
+	// if message does not start with EIP-191 prefix, add it
+	if !strings.HasPrefix(string(msg), tx.EIP191MessagePrefix) {
+		msg = tx.FormatEIP191Message(msg)
+	}
+
+	return pubKey.verifySignatureECDSA(msg, sig)
+}
+
+// VerifySignatureWithoutEIP191 verifies that the ECDSA public key created a given signature over
+// the provided message. It does not attach the EIP-191 prefix to the message.
+//
+// CONTRACT: The signature should be in [R || S] format.
+func (pubKey PubKey) VerifySignatureWithoutEIP191(msg, sig []byte) bool {
 	return pubKey.verifySignatureECDSA(msg, sig)
 }
 
@@ -269,11 +280,6 @@ func (pubKey PubKey) verifySignatureECDSA(msg, sigStr []byte) bool {
 	signature, err := signatureFromBytes(sigStr)
 	if err != nil {
 		return false
-	}
-
-	// if message does not start with EIP-191 prefix, add it
-	if !strings.HasPrefix(string(msg), tx.EIP191MessagePrefix) {
-		msg = tx.FormatEIP191Message(msg)
 	}
 
 	return signature.Verify(keccak256(msg), pub)
