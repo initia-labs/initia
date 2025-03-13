@@ -1,7 +1,7 @@
 //go:build cgo && ledger && !test_ledger_mock
 // +build cgo,ledger,!test_ledger_mock
 
-package keyring
+package ledger
 
 import (
 	"fmt"
@@ -11,9 +11,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/pkg/errors"
 
-	"github.com/ethereum/go-ethereum/accounts"
-	"github.com/ethereum/go-ethereum/accounts/usbwallet"
 	"github.com/ethereum/go-ethereum/crypto"
+
+	"github.com/initia-labs/initia/crypto/ledger/accounts"
+	"github.com/initia-labs/initia/crypto/ledger/usbwallet"
 )
 
 var _ ledger.SECP256K1 = &InitiaLedger{}

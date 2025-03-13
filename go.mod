@@ -53,6 +53,7 @@ require (
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.10.0
 	github.com/syndtr/goleveldb v1.0.1-0.20220721030215-126854af5e6d
+	github.com/zondax/hid v0.9.2
 	golang.org/x/crypto v0.32.0
 	golang.org/x/exp v0.0.0-20240909161429-701f63a606c0
 	golang.org/x/sync v0.10.0
@@ -198,7 +199,6 @@ require (
 	github.com/tendermint/go-amino v0.16.0 // indirect
 	github.com/tidwall/btree v1.7.0 // indirect
 	github.com/ulikunitz/xz v0.5.11 // indirect
-	github.com/zondax/hid v0.9.2 // indirect
 	github.com/zondax/ledger-go v0.14.3 // indirect
 	go.etcd.io/bbolt v1.4.0-alpha.0.0.20240404170359-43604f3112c5 // indirect
 	go.opencensus.io v0.24.0 // indirect
@@ -251,7 +251,4 @@ require github.com/cosmos/iavl v1.2.5-0.20250306174232-6cfb3dac2c71 // indirect
 // use custom version for
 // - https://github.com/initia-labs/cometbft/commit/cb3ed4ca9be4d6c55df7df2d927e9b92153bc3e2
 // - https://github.com/initia-labs/cometbft/pull/14
-replace (
-	github.com/cometbft/cometbft => github.com/initia-labs/cometbft v0.0.0-20250204062928-bd6176505783
-	github.com/ethereum/go-ethereum => github.com/initia-labs/evm v0.0.0-20250312130112-7ccb00ef2e34
-)
+replace github.com/cometbft/cometbft => github.com/initia-labs/cometbft v0.0.0-20250204062928-bd6176505783

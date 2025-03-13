@@ -446,6 +446,8 @@ github.com/envoyproxy/go-control-plane v0.10.2-0.20220325020618-49ff273808a1/go.
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
 github.com/ethereum/c-kzg-4844 v1.0.0 h1:0X1LBXxaEtYD9xsyj9B9ctQEZIpnvVDeoBx8aHEwTNA=
 github.com/ethereum/c-kzg-4844 v1.0.0/go.mod h1:VewdlzQmpT5QSrVhbBuGoCdFJkpaJlO1aQputP83wc0=
+github.com/ethereum/go-ethereum v1.14.11 h1:8nFDCUUE67rPc6AKxFj7JKaOa2W/W1Rse3oS6LvvxEY=
+github.com/ethereum/go-ethereum v1.14.11/go.mod h1:+l/fr42Mma+xBnhefL/+z11/hcmJ2egl+ScIVPjhc7E=
 github.com/ethereum/go-verkle v0.1.1-0.20240829091221-dffa7562dbe9 h1:8NfxH2iXvJ60YRB8ChToFTUzl8awsc3cJ8CbLjGIl/A=
 github.com/ethereum/go-verkle v0.1.1-0.20240829091221-dffa7562dbe9/go.mod h1:M3b90YRnzqKyyzBEWJGqj8Qff4IDeXnzFw0P9bFw3uk=
 github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5KwzbycvMj4=
@@ -751,8 +753,6 @@ github.com/initia-labs/OPinit/api v1.0.0-beta.1 h1:aWv4PAW0eVDQy5m2n4BJmdhy6RdpC
 github.com/initia-labs/OPinit/api v1.0.0-beta.1/go.mod h1:Qz11o6zlTtJe495JO7FhEyLhJLPit0rEuLN4pweKL24=
 github.com/initia-labs/cometbft v0.0.0-20250204062928-bd6176505783 h1:prlUc/Ti3nzPZDqnAvLt83AgEb9iPncMqBxvChJnnxM=
 github.com/initia-labs/cometbft v0.0.0-20250204062928-bd6176505783/go.mod h1:5l0SkgeLRXi6bBfQuevXjKqML1jjfJJlvI1Ulp02/o4=
-github.com/initia-labs/evm v0.0.0-20250312130112-7ccb00ef2e34 h1:pzIERmcywjhM1M/LL+Q5FrtFRGjlve7ZibN/tWknAfQ=
-github.com/initia-labs/evm v0.0.0-20250312130112-7ccb00ef2e34/go.mod h1:ISJy6/FlbRzipBx5BdruvPt/0Okk2auWEsWkAQCSB/4=
 github.com/initia-labs/movevm v1.0.0-beta.0 h1:ay/IOEkwH33vPis8W4WwC9BQ/ZtUtW/ekAlrZKPW5YI=
 github.com/initia-labs/movevm v1.0.0-beta.0/go.mod h1:sj/kXD7mUQASqogPTjqltIr4Uid3xxnlcbfiFvvqeXA=
 github.com/jhump/protoreflect v1.15.3 h1:6SFRuqU45u9hIZPJAoZ8c28T3nK64BNdp9w6jFonzls=
