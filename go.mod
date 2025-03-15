@@ -24,7 +24,7 @@ require (
 	github.com/cometbft/cometbft v0.38.17
 	github.com/cosmos/cosmos-db v1.1.1
 	github.com/cosmos/cosmos-proto v1.0.0-beta.5
-	github.com/cosmos/cosmos-sdk v0.50.12
+	github.com/cosmos/cosmos-sdk v0.50.13
 	github.com/cosmos/go-bip39 v1.0.0
 	github.com/cosmos/gogoproto v1.7.0
 	github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8 v8.2.0
@@ -251,4 +251,7 @@ require github.com/cosmos/iavl v1.2.5-0.20250306174232-6cfb3dac2c71 // indirect
 // use custom version for
 // - https://github.com/initia-labs/cometbft/commit/cb3ed4ca9be4d6c55df7df2d927e9b92153bc3e2
 // - https://github.com/initia-labs/cometbft/pull/14
-replace github.com/cometbft/cometbft => github.com/initia-labs/cometbft v0.0.0-20250204062928-bd6176505783
+replace (
+	github.com/cometbft/cometbft => github.com/initia-labs/cometbft v0.0.0-20250204062928-bd6176505783
+	github.com/skip-mev/connect/v2 => github.com/initia-labs/connect/v2 v2.3.1
+)
