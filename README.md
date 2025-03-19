@@ -13,7 +13,7 @@ The Initia Layer 1 serves as an orchestration layer, facilitating coordination o
 
 Initia's product stack unifies the architecture, offering users a singular chain experience when interacting with thousands of interwoven rollups and reducing entry barriers:
 
-- [InitiaScan](https://scan.initia.tech/initiation-1): A multi-chain explorer with VM-specific tools and information.
+- [InitiaScan](https://scan.initia.xyz/interwoven-1): A multi-chain explorer with VM-specific tools and information.
 - [Initia App](https://app.testnet.initia.xyz): A centralized platform for all things related to Initia.
 - [Initia Usernames](https://usernames.testnet.initia.xyz): A blockchain-wide on-chain identity system.
 - [Initia Wallet](https://chromewebstore.google.com/detail/initia-wallet/ffbceckpkpbcmgiaehlloocglmijnpmp): A dedicated wallet designed for navigating the expansive Initia ecosystem.
@@ -21,7 +21,7 @@ Initia's product stack unifies the architecture, offering users a singular chain
 ## Documentation
 
 - [General Users](https://docs.initia.xyz)
-  - Learn more about Initia on our document's ```About``` section. Learn about what makes Initia unique, such as the Initia architecture, ecosystem, the enshrined liquidity mechanism, and vested interest program.
+  - Learn more about Initia in our document's ```About``` section. Learn about what makes Initia unique, such as the Initia architecture, ecosystem, the enshrined liquidity mechanism, and vested interest program.
 - [Validators](https://docs.initia.xyz/run-initia-node/running-initia-node)
   - For validators who want to provide security to the Initia ecosystem, please visit our ```Running Initia Node``` section of the docs. Here, you will be able to learn step-by-step the ways to boot an Initia node.
 - [Builders](https://docs.initia.xyz/build-on-initia/getting-started)
@@ -31,7 +31,7 @@ Initia's product stack unifies the architecture, offering users a singular chain
 
 Join the Initia community for questions and updates!
 
-- [Twitter](https://twitter.com/initiaFDN)
+- [Twitter](https://x.com/initiaFDN)
 - [Discord](https://discord.gg/initia)
-- [Medium](https://medium.com/@initiafdn)
+- [Medium](https://medium.com/@initialabs)
   

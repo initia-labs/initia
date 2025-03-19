@@ -7,7 +7,7 @@ This module is copied from [osmosis](https://github.com/osmosis-labs/osmosis) an
 The move hook is an IBC middleware which is used to allow ICS-20 token transfers to initiate contract calls.
 This allows cross-chain contract calls, that involve token movement.
 This is useful for a variety of use cases.
-One of primary importance is cross-chain swaps, which is an extremely powerful primitive.
+One of the primary importance is cross-chain swaps, which is an extremely powerful primitive.
 
 The mechanism enabling this is a `memo` field on every ICS20 and ICS721 transfer packet as of [IBC v3.4.0](https://medium.com/the-interchain-foundation/moving-beyond-simple-token-transfers-d42b2b1dc29b).
 Move hooks is an IBC middleware that parses an ICS20 transfer, and if the `memo` field is of a particular form, executes a move contract call. We now detail the `memo` format for `move` contract calls, and the execution guarantees provided.
@@ -149,7 +149,7 @@ If an ICS20 packet is directed towards movehooks, and is formatted incorrectly, 
 
 Pre move hooks:
 
-- Ensure the incoming IBC packet is cryptogaphically valid
+- Ensure the incoming IBC packet is cryptographically valid
 - Ensure the incoming IBC packet is not timed out.
 
 In move hooks, pre packet execution:
@@ -184,7 +184,7 @@ public entry fun ibc_timeout(
 )
 ```
 
-Also when a contract make IBC transfer request, it should provide async callback data through memo field.
+Also when a contract makes IBC transfer request, it should provide async callback data through memo field.
 
 - `memo['move']['async_callback']['id']`:  the async callback id is assigned from the contract. so later it will be passed as argument of `ibc_ack` and `ibc_timeout`.
 - `memo['move']['async_callback']['module_address']`: The address of module which defines the callback function.
