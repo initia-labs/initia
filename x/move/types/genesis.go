@@ -30,6 +30,7 @@ func DefaultGenesisState() *GenesisState {
 	return &GenesisState{
 		Stdlibs:          modules,
 		Params:           DefaultParams(),
+		Eip1559Feeparams: DefaultEIP1559Params(),
 		ExecutionCounter: 0,
 		Modules:          []Module{},
 		Resources:        []Resource{},

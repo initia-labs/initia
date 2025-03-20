@@ -419,6 +419,15 @@ func _createTestInput(
 	require.NoError(t, moveKeeper.SetRawParams(ctx, moveParams.ToRaw()))
 	stakingKeeper.SetSlashingHooks(moveKeeper.Hooks())
 
+	eip1559FeeKeeper := movekeeper.NewEIP1559FeeKeeper(moveKeeper)
+	require.NoError(t, eip1559FeeKeeper.SetParams(ctx, movetypes.EIP1559FeeParams{
+		MinBaseFee:    10,
+		MaxBaseFee:    200,
+		BaseFee:       100,
+		TargetGas:     100000,
+		MaxChangeRate: math.LegacyNewDecWithPrec(1, 1),
+	}))
+
 	// load stdlib module bytes
 	moduleBytes, err := precompile.ReadStdlib()
 	require.NoError(t, err)

@@ -135,3 +135,16 @@ message ExecuteAuthorizationItem {
   // FunctionName is the name of function to execute with wildcard '*' support
   repeated string function_names = 3 [(gogoproto.nullable) = true];
 }
+
+message EIP1559FeeParams {
+  int64 base_fee = 1;
+  int64 min_base_fee = 2;
+  int64 max_base_fee = 3;
+  int64 target_gas = 4;
+  string max_change_rate = 5 [
+    (gogoproto.moretags) = "yaml:\"max_change_rate\"",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}

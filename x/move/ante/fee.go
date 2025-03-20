@@ -44,6 +44,7 @@ func (fc MempoolFeeChecker) CheckTxFeeWithMinGasPrices(ctx sdk.Context, tx sdk.T
 
 		var baseDenom string
 		var err error
+
 		if fc.keeper != nil {
 			baseDenom, err = fc.keeper.BaseDenom(ctx)
 			if err != nil {
@@ -60,7 +61,7 @@ func (fc MempoolFeeChecker) CheckTxFeeWithMinGasPrices(ctx sdk.Context, tx sdk.T
 			for _, coin := range feeTx.GetFee() {
 				basePrice, err := fc.fetchPrice(ctx, baseDenom, coin.Denom)
 				if err != nil {
-					return nil, 1, err
+					return nil, 0, err
 				}
 
 				quoteAmount := coin.Amount
@@ -69,6 +70,21 @@ func (fc MempoolFeeChecker) CheckTxFeeWithMinGasPrices(ctx sdk.Context, tx sdk.T
 			}
 			if totalFeeBaseAmount.GT(math.OneInt()) {
 				priority = totalFeeBaseAmount.Int64()
+			}
+
+			baseFee, err := fc.keeper.GetBaseFee(ctx)
+			if err != nil {
+				return nil, 0, err
+			}
+
+			if !totalFeeBaseAmount.GTE(math.NewInt(baseFee)) {
+				return nil, 0, errors.Wrapf(
+					sdkerrors.ErrInsufficientFee,
+					"insufficient base fee; got: %s (sum %s), base fee required: %d",
+					feeCoins,
+					totalFeeBaseAmount,
+					baseFee,
+				)
 			}
 		}
 
@@ -79,7 +95,6 @@ func (fc MempoolFeeChecker) CheckTxFeeWithMinGasPrices(ctx sdk.Context, tx sdk.T
 				// convert baseDenom min gas prices to quote denom prices
 				// and check the paid fee is enough or not.
 				isSufficient := false
-				sumInBaseUnit := math.ZeroInt()
 
 				if fc.keeper != nil {
 					requiredBaseAmount := requiredFees.AmountOfNoDenomValidation(baseDenom)
@@ -93,7 +108,7 @@ func (fc MempoolFeeChecker) CheckTxFeeWithMinGasPrices(ctx sdk.Context, tx sdk.T
 						sdkerrors.ErrInsufficientFee,
 						"insufficient fees; got: %s (sum %s), required: %s",
 						feeCoins,
-						sumInBaseUnit,
+						totalFeeBaseAmount,
 						requiredFees,
 					)
 				}

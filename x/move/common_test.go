@@ -111,6 +111,13 @@ func executeMsgs(t *testing.T, app *initiaapp.InitiaApp, msgs []sdk.Msg, account
 	return err
 }
 
+func executeMsgsWithGasInfo(t *testing.T, app *initiaapp.InitiaApp, msgs []sdk.Msg, accountNum []uint64, sequenceNum []uint64, priv ...cryptotypes.PrivKey) (sdk.GasInfo, error) {
+	txGen := initiaapp.MakeEncodingConfig().TxConfig
+	header := tmproto.Header{Height: app.LastBlockHeight() + 1}
+	gas, _, err := testutilsims.SignCheckDeliver(t, txGen, app.BaseApp, header, msgs, "", accountNum, sequenceNum, true, true, priv...)
+	return gas, err
+}
+
 func decToVmArgument(t *testing.T, val math.LegacyDec) []byte {
 	// big-endian bytes (bytes are cloned)
 	bz := val.BigInt().Bytes()

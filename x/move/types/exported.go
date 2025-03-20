@@ -11,4 +11,5 @@ type AnteKeeper interface {
 	GetBaseSpotPrice(ctx context.Context, denomQuote string) (math.LegacyDec, error)
 	BaseDenom(ctx context.Context) (string, error)
 	BaseMinGasPrice(ctx context.Context) (math.LegacyDec, error)
+	GetBaseFee(ctx context.Context) (int64, error)
 }

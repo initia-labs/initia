@@ -40,6 +40,7 @@ type Keeper struct {
 	dexKeeper        DexKeeper
 	balancerKeeper   BalancerKeeper
 	stableSwapKeeper StableSwapKeeper
+	eip1559FeeKeeper EIP1559FeeKeeper
 
 	// Msg server router
 	msgRouter  baseapp.MessageRouter
@@ -57,6 +58,7 @@ type Keeper struct {
 	Params           collections.Item[types.RawParams]
 	DexPairs         collections.Map[[]byte, []byte]
 	VMStore          collections.Map[[]byte, []byte]
+	EIP1559FeeParams collections.Item[types.EIP1559FeeParams]
 
 	ac address.Codec
 	vc address.Codec
@@ -129,6 +131,7 @@ func NewKeeper(
 		Params:           collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.RawParams](cdc)),
 		DexPairs:         collections.NewMap(sb, types.DexPairPrefix, "dex_pairs", collections.BytesKey, collections.BytesValue),
 		VMStore:          collections.NewMap(sb, types.VMStorePrefix, "vm_store", collections.BytesKey, collections.BytesValue),
+		EIP1559FeeParams: collections.NewItem(sb, types.EIP1559FeeParamsKey, "eip1559_feeparams", codec.CollValue[types.EIP1559FeeParams](cdc)),
 
 		ac: ac,
 		vc: vc,
@@ -144,6 +147,7 @@ func NewKeeper(
 	k.dexKeeper = NewDexKeeper(k)
 	k.balancerKeeper = NewBalancerKeeper(k)
 	k.stableSwapKeeper = NewStableSwapKeeper(k)
+	k.eip1559FeeKeeper = NewEIP1559FeeKeeper(k)
 	return k
 }
 
@@ -182,6 +186,11 @@ func (k Keeper) BalancerKeeper() BalancerKeeper {
 // StableSwapKeeper returns the stable swap keeper
 func (k Keeper) StableSwapKeeper() StableSwapKeeper {
 	return k.stableSwapKeeper
+}
+
+// EIP1559FeeKeeper returns the eip1559 fee keeper
+func (k Keeper) EIP1559FeeKeeper() EIP1559FeeKeeper {
+	return k.eip1559FeeKeeper
 }
 
 // GetExecutionCounter get execution counter for genesis

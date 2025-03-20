@@ -13,7 +13,6 @@ import (
 	vmtypes "github.com/initia-labs/movevm/types"
 )
 
-var _ types.AnteKeeper = DexKeeper{}
 var _ distrtypes.DexKeeper = DexKeeper{}
 
 // DexKeeper implement dex features

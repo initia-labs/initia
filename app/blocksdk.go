@@ -91,7 +91,7 @@ func setupBlockSDK(
 				SignModeHandler: app.txConfig.SignModeHandler(),
 			},
 			IBCkeeper:     app.IBCKeeper,
-			MoveKeeper:    movekeeper.NewDexKeeper(app.MoveKeeper),
+			MoveKeeper:    movekeeper.NewAnteKeeper(movekeeper.NewDexKeeper(app.MoveKeeper), movekeeper.NewEIP1559FeeKeeper(app.MoveKeeper)),
 			Codec:         app.appCodec,
 			TxEncoder:     app.txConfig.TxEncoder(),
 			AuctionKeeper: *app.AuctionKeeper,

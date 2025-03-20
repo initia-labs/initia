@@ -5892,6 +5892,618 @@ func (x *fastReflection_ExecuteAuthorizationItem) ProtoMethods() *protoiface.Met
 	}
 }
 
+var (
+	md_EIP1559FeeParams                 protoreflect.MessageDescriptor
+	fd_EIP1559FeeParams_base_fee        protoreflect.FieldDescriptor
+	fd_EIP1559FeeParams_min_base_fee    protoreflect.FieldDescriptor
+	fd_EIP1559FeeParams_max_base_fee    protoreflect.FieldDescriptor
+	fd_EIP1559FeeParams_target_gas      protoreflect.FieldDescriptor
+	fd_EIP1559FeeParams_max_change_rate protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_initia_move_v1_types_proto_init()
+	md_EIP1559FeeParams = File_initia_move_v1_types_proto.Messages().ByName("EIP1559FeeParams")
+	fd_EIP1559FeeParams_base_fee = md_EIP1559FeeParams.Fields().ByName("base_fee")
+	fd_EIP1559FeeParams_min_base_fee = md_EIP1559FeeParams.Fields().ByName("min_base_fee")
+	fd_EIP1559FeeParams_max_base_fee = md_EIP1559FeeParams.Fields().ByName("max_base_fee")
+	fd_EIP1559FeeParams_target_gas = md_EIP1559FeeParams.Fields().ByName("target_gas")
+	fd_EIP1559FeeParams_max_change_rate = md_EIP1559FeeParams.Fields().ByName("max_change_rate")
+}
+
+var _ protoreflect.Message = (*fastReflection_EIP1559FeeParams)(nil)
+
+type fastReflection_EIP1559FeeParams EIP1559FeeParams
+
+func (x *EIP1559FeeParams) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_EIP1559FeeParams)(x)
+}
+
+func (x *EIP1559FeeParams) slowProtoReflect() protoreflect.Message {
+	mi := &file_initia_move_v1_types_proto_msgTypes[10]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_EIP1559FeeParams_messageType fastReflection_EIP1559FeeParams_messageType
+var _ protoreflect.MessageType = fastReflection_EIP1559FeeParams_messageType{}
+
+type fastReflection_EIP1559FeeParams_messageType struct{}
+
+func (x fastReflection_EIP1559FeeParams_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_EIP1559FeeParams)(nil)
+}
+func (x fastReflection_EIP1559FeeParams_messageType) New() protoreflect.Message {
+	return new(fastReflection_EIP1559FeeParams)
+}
+func (x fastReflection_EIP1559FeeParams_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_EIP1559FeeParams
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_EIP1559FeeParams) Descriptor() protoreflect.MessageDescriptor {
+	return md_EIP1559FeeParams
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_EIP1559FeeParams) Type() protoreflect.MessageType {
+	return _fastReflection_EIP1559FeeParams_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_EIP1559FeeParams) New() protoreflect.Message {
+	return new(fastReflection_EIP1559FeeParams)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_EIP1559FeeParams) Interface() protoreflect.ProtoMessage {
+	return (*EIP1559FeeParams)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_EIP1559FeeParams) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.BaseFee != int64(0) {
+		value := protoreflect.ValueOfInt64(x.BaseFee)
+		if !f(fd_EIP1559FeeParams_base_fee, value) {
+			return
+		}
+	}
+	if x.MinBaseFee != int64(0) {
+		value := protoreflect.ValueOfInt64(x.MinBaseFee)
+		if !f(fd_EIP1559FeeParams_min_base_fee, value) {
+			return
+		}
+	}
+	if x.MaxBaseFee != int64(0) {
+		value := protoreflect.ValueOfInt64(x.MaxBaseFee)
+		if !f(fd_EIP1559FeeParams_max_base_fee, value) {
+			return
+		}
+	}
+	if x.TargetGas != int64(0) {
+		value := protoreflect.ValueOfInt64(x.TargetGas)
+		if !f(fd_EIP1559FeeParams_target_gas, value) {
+			return
+		}
+	}
+	if x.MaxChangeRate != "" {
+		value := protoreflect.ValueOfString(x.MaxChangeRate)
+		if !f(fd_EIP1559FeeParams_max_change_rate, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_EIP1559FeeParams) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "initia.move.v1.EIP1559FeeParams.base_fee":
+		return x.BaseFee != int64(0)
+	case "initia.move.v1.EIP1559FeeParams.min_base_fee":
+		return x.MinBaseFee != int64(0)
+	case "initia.move.v1.EIP1559FeeParams.max_base_fee":
+		return x.MaxBaseFee != int64(0)
+	case "initia.move.v1.EIP1559FeeParams.target_gas":
+		return x.TargetGas != int64(0)
+	case "initia.move.v1.EIP1559FeeParams.max_change_rate":
+		return x.MaxChangeRate != ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.move.v1.EIP1559FeeParams"))
+		}
+		panic(fmt.Errorf("message initia.move.v1.EIP1559FeeParams does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EIP1559FeeParams) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "initia.move.v1.EIP1559FeeParams.base_fee":
+		x.BaseFee = int64(0)
+	case "initia.move.v1.EIP1559FeeParams.min_base_fee":
+		x.MinBaseFee = int64(0)
+	case "initia.move.v1.EIP1559FeeParams.max_base_fee":
+		x.MaxBaseFee = int64(0)
+	case "initia.move.v1.EIP1559FeeParams.target_gas":
+		x.TargetGas = int64(0)
+	case "initia.move.v1.EIP1559FeeParams.max_change_rate":
+		x.MaxChangeRate = ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.move.v1.EIP1559FeeParams"))
+		}
+		panic(fmt.Errorf("message initia.move.v1.EIP1559FeeParams does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_EIP1559FeeParams) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "initia.move.v1.EIP1559FeeParams.base_fee":
+		value := x.BaseFee
+		return protoreflect.ValueOfInt64(value)
+	case "initia.move.v1.EIP1559FeeParams.min_base_fee":
+		value := x.MinBaseFee
+		return protoreflect.ValueOfInt64(value)
+	case "initia.move.v1.EIP1559FeeParams.max_base_fee":
+		value := x.MaxBaseFee
+		return protoreflect.ValueOfInt64(value)
+	case "initia.move.v1.EIP1559FeeParams.target_gas":
+		value := x.TargetGas
+		return protoreflect.ValueOfInt64(value)
+	case "initia.move.v1.EIP1559FeeParams.max_change_rate":
+		value := x.MaxChangeRate
+		return protoreflect.ValueOfString(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.move.v1.EIP1559FeeParams"))
+		}
+		panic(fmt.Errorf("message initia.move.v1.EIP1559FeeParams does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EIP1559FeeParams) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "initia.move.v1.EIP1559FeeParams.base_fee":
+		x.BaseFee = value.Int()
+	case "initia.move.v1.EIP1559FeeParams.min_base_fee":
+		x.MinBaseFee = value.Int()
+	case "initia.move.v1.EIP1559FeeParams.max_base_fee":
+		x.MaxBaseFee = value.Int()
+	case "initia.move.v1.EIP1559FeeParams.target_gas":
+		x.TargetGas = value.Int()
+	case "initia.move.v1.EIP1559FeeParams.max_change_rate":
+		x.MaxChangeRate = value.Interface().(string)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.move.v1.EIP1559FeeParams"))
+		}
+		panic(fmt.Errorf("message initia.move.v1.EIP1559FeeParams does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EIP1559FeeParams) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "initia.move.v1.EIP1559FeeParams.base_fee":
+		panic(fmt.Errorf("field base_fee of message initia.move.v1.EIP1559FeeParams is not mutable"))
+	case "initia.move.v1.EIP1559FeeParams.min_base_fee":
+		panic(fmt.Errorf("field min_base_fee of message initia.move.v1.EIP1559FeeParams is not mutable"))
+	case "initia.move.v1.EIP1559FeeParams.max_base_fee":
+		panic(fmt.Errorf("field max_base_fee of message initia.move.v1.EIP1559FeeParams is not mutable"))
+	case "initia.move.v1.EIP1559FeeParams.target_gas":
+		panic(fmt.Errorf("field target_gas of message initia.move.v1.EIP1559FeeParams is not mutable"))
+	case "initia.move.v1.EIP1559FeeParams.max_change_rate":
+		panic(fmt.Errorf("field max_change_rate of message initia.move.v1.EIP1559FeeParams is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.move.v1.EIP1559FeeParams"))
+		}
+		panic(fmt.Errorf("message initia.move.v1.EIP1559FeeParams does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_EIP1559FeeParams) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "initia.move.v1.EIP1559FeeParams.base_fee":
+		return protoreflect.ValueOfInt64(int64(0))
+	case "initia.move.v1.EIP1559FeeParams.min_base_fee":
+		return protoreflect.ValueOfInt64(int64(0))
+	case "initia.move.v1.EIP1559FeeParams.max_base_fee":
+		return protoreflect.ValueOfInt64(int64(0))
+	case "initia.move.v1.EIP1559FeeParams.target_gas":
+		return protoreflect.ValueOfInt64(int64(0))
+	case "initia.move.v1.EIP1559FeeParams.max_change_rate":
+		return protoreflect.ValueOfString("")
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.move.v1.EIP1559FeeParams"))
+		}
+		panic(fmt.Errorf("message initia.move.v1.EIP1559FeeParams does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_EIP1559FeeParams) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in initia.move.v1.EIP1559FeeParams", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_EIP1559FeeParams) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_EIP1559FeeParams) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_EIP1559FeeParams) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_EIP1559FeeParams) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*EIP1559FeeParams)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.BaseFee != 0 {
+			n += 1 + runtime.Sov(uint64(x.BaseFee))
+		}
+		if x.MinBaseFee != 0 {
+			n += 1 + runtime.Sov(uint64(x.MinBaseFee))
+		}
+		if x.MaxBaseFee != 0 {
+			n += 1 + runtime.Sov(uint64(x.MaxBaseFee))
+		}
+		if x.TargetGas != 0 {
+			n += 1 + runtime.Sov(uint64(x.TargetGas))
+		}
+		l = len(x.MaxChangeRate)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*EIP1559FeeParams)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.MaxChangeRate) > 0 {
+			i -= len(x.MaxChangeRate)
+			copy(dAtA[i:], x.MaxChangeRate)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.MaxChangeRate)))
+			i--
+			dAtA[i] = 0x2a
+		}
+		if x.TargetGas != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.TargetGas))
+			i--
+			dAtA[i] = 0x20
+		}
+		if x.MaxBaseFee != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.MaxBaseFee))
+			i--
+			dAtA[i] = 0x18
+		}
+		if x.MinBaseFee != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.MinBaseFee))
+			i--
+			dAtA[i] = 0x10
+		}
+		if x.BaseFee != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.BaseFee))
+			i--
+			dAtA[i] = 0x8
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*EIP1559FeeParams)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EIP1559FeeParams: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: EIP1559FeeParams: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field BaseFee", wireType)
+				}
+				x.BaseFee = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.BaseFee |= int64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 2:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field MinBaseFee", wireType)
+				}
+				x.MinBaseFee = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.MinBaseFee |= int64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 3:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field MaxBaseFee", wireType)
+				}
+				x.MaxBaseFee = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.MaxBaseFee |= int64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 4:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TargetGas", wireType)
+				}
+				x.TargetGas = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.TargetGas |= int64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 5:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field MaxChangeRate", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.MaxChangeRate = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
 // Code generated by protoc-gen-go. DO NOT EDIT.
 // versions:
 // 	protoc-gen-go v1.27.0
@@ -6529,6 +7141,73 @@ func (x *ExecuteAuthorizationItem) GetFunctionNames() []string {
 	return nil
 }
 
+type EIP1559FeeParams struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	BaseFee       int64  `protobuf:"varint,1,opt,name=base_fee,json=baseFee,proto3" json:"base_fee,omitempty"`
+	MinBaseFee    int64  `protobuf:"varint,2,opt,name=min_base_fee,json=minBaseFee,proto3" json:"min_base_fee,omitempty"`
+	MaxBaseFee    int64  `protobuf:"varint,3,opt,name=max_base_fee,json=maxBaseFee,proto3" json:"max_base_fee,omitempty"`
+	TargetGas     int64  `protobuf:"varint,4,opt,name=target_gas,json=targetGas,proto3" json:"target_gas,omitempty"`
+	MaxChangeRate string `protobuf:"bytes,5,opt,name=max_change_rate,json=maxChangeRate,proto3" json:"max_change_rate,omitempty"`
+}
+
+func (x *EIP1559FeeParams) Reset() {
+	*x = EIP1559FeeParams{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_initia_move_v1_types_proto_msgTypes[10]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EIP1559FeeParams) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EIP1559FeeParams) ProtoMessage() {}
+
+// Deprecated: Use EIP1559FeeParams.ProtoReflect.Descriptor instead.
+func (*EIP1559FeeParams) Descriptor() ([]byte, []int) {
+	return file_initia_move_v1_types_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *EIP1559FeeParams) GetBaseFee() int64 {
+	if x != nil {
+		return x.BaseFee
+	}
+	return 0
+}
+
+func (x *EIP1559FeeParams) GetMinBaseFee() int64 {
+	if x != nil {
+		return x.MinBaseFee
+	}
+	return 0
+}
+
+func (x *EIP1559FeeParams) GetMaxBaseFee() int64 {
+	if x != nil {
+		return x.MaxBaseFee
+	}
+	return 0
+}
+
+func (x *EIP1559FeeParams) GetTargetGas() int64 {
+	if x != nil {
+		return x.TargetGas
+	}
+	return 0
+}
+
+func (x *EIP1559FeeParams) GetMaxChangeRate() string {
+	if x != nil {
+		return x.MaxChangeRate
+	}
+	return ""
+}
+
 var File_initia_move_v1_types_proto protoreflect.FileDescriptor
 
 var file_initia_move_v1_types_proto_rawDesc = []byte{
@@ -6649,23 +7328,39 @@ var file_initia_move_v1_types_proto_rawDesc = []byte{
 	0x6c, 0x65, 0x4e, 0x61, 0x6d, 0x65, 0x12, 0x2b, 0x0a, 0x0e, 0x66, 0x75, 0x6e, 0x63, 0x74, 0x69,
 	0x6f, 0x6e, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x09, 0x42, 0x04,
 	0xc8, 0xde, 0x1f, 0x01, 0x52, 0x0d, 0x66, 0x75, 0x6e, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x4e, 0x61,
-	0x6d, 0x65, 0x73, 0x2a, 0x3f, 0x0a, 0x0d, 0x55, 0x70, 0x67, 0x72, 0x61, 0x64, 0x65, 0x50, 0x6f,
-	0x6c, 0x69, 0x63, 0x79, 0x12, 0x0f, 0x0a, 0x0b, 0x55, 0x4e, 0x53, 0x50, 0x45, 0x43, 0x49, 0x46,
-	0x49, 0x45, 0x44, 0x10, 0x00, 0x12, 0x0e, 0x0a, 0x0a, 0x43, 0x4f, 0x4d, 0x50, 0x41, 0x54, 0x49,
-	0x42, 0x4c, 0x45, 0x10, 0x01, 0x12, 0x0d, 0x0a, 0x09, 0x49, 0x4d, 0x4d, 0x55, 0x54, 0x41, 0x42,
-	0x4c, 0x45, 0x10, 0x02, 0x42, 0xbb, 0x01, 0xc8, 0xe1, 0x1e, 0x00, 0xa8, 0xe2, 0x1e, 0x01, 0x0a,
-	0x12, 0x63, 0x6f, 0x6d, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x6d, 0x6f, 0x76, 0x65,
-	0x2e, 0x76, 0x31, 0x42, 0x0a, 0x54, 0x79, 0x70, 0x65, 0x73, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50,
-	0x01, 0x5a, 0x37, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x69, 0x6e,
-	0x69, 0x74, 0x69, 0x61, 0x2d, 0x6c, 0x61, 0x62, 0x73, 0x2f, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61,
-	0x2f, 0x61, 0x70, 0x69, 0x2f, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2f, 0x6d, 0x6f, 0x76, 0x65,
-	0x2f, 0x76, 0x31, 0x3b, 0x6d, 0x6f, 0x76, 0x65, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x49, 0x4d, 0x58,
-	0xaa, 0x02, 0x0e, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x4d, 0x6f, 0x76, 0x65, 0x2e, 0x56,
-	0x31, 0xca, 0x02, 0x0e, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x5c, 0x4d, 0x6f, 0x76, 0x65, 0x5c,
-	0x56, 0x31, 0xe2, 0x02, 0x1a, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x5c, 0x4d, 0x6f, 0x76, 0x65,
-	0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea,
-	0x02, 0x10, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x3a, 0x3a, 0x4d, 0x6f, 0x76, 0x65, 0x3a, 0x3a,
-	0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x6d, 0x65, 0x73, 0x22, 0xfc, 0x01, 0x0a, 0x10, 0x45, 0x49, 0x50, 0x31, 0x35, 0x35, 0x39, 0x46,
+	0x65, 0x65, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x12, 0x19, 0x0a, 0x08, 0x62, 0x61, 0x73, 0x65,
+	0x5f, 0x66, 0x65, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x07, 0x62, 0x61, 0x73, 0x65,
+	0x46, 0x65, 0x65, 0x12, 0x20, 0x0a, 0x0c, 0x6d, 0x69, 0x6e, 0x5f, 0x62, 0x61, 0x73, 0x65, 0x5f,
+	0x66, 0x65, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0a, 0x6d, 0x69, 0x6e, 0x42, 0x61,
+	0x73, 0x65, 0x46, 0x65, 0x65, 0x12, 0x20, 0x0a, 0x0c, 0x6d, 0x61, 0x78, 0x5f, 0x62, 0x61, 0x73,
+	0x65, 0x5f, 0x66, 0x65, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0a, 0x6d, 0x61, 0x78,
+	0x42, 0x61, 0x73, 0x65, 0x46, 0x65, 0x65, 0x12, 0x1d, 0x0a, 0x0a, 0x74, 0x61, 0x72, 0x67, 0x65,
+	0x74, 0x5f, 0x67, 0x61, 0x73, 0x18, 0x04, 0x20, 0x01, 0x28, 0x03, 0x52, 0x09, 0x74, 0x61, 0x72,
+	0x67, 0x65, 0x74, 0x47, 0x61, 0x73, 0x12, 0x6a, 0x0a, 0x0f, 0x6d, 0x61, 0x78, 0x5f, 0x63, 0x68,
+	0x61, 0x6e, 0x67, 0x65, 0x5f, 0x72, 0x61, 0x74, 0x65, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x42,
+	0x42, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x1b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73,
+	0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x4c, 0x65, 0x67, 0x61, 0x63,
+	0x79, 0x44, 0x65, 0x63, 0xf2, 0xde, 0x1f, 0x16, 0x79, 0x61, 0x6d, 0x6c, 0x3a, 0x22, 0x6d, 0x61,
+	0x78, 0x5f, 0x63, 0x68, 0x61, 0x6e, 0x67, 0x65, 0x5f, 0x72, 0x61, 0x74, 0x65, 0x22, 0xa8, 0xe7,
+	0xb0, 0x2a, 0x01, 0x52, 0x0d, 0x6d, 0x61, 0x78, 0x43, 0x68, 0x61, 0x6e, 0x67, 0x65, 0x52, 0x61,
+	0x74, 0x65, 0x2a, 0x3f, 0x0a, 0x0d, 0x55, 0x70, 0x67, 0x72, 0x61, 0x64, 0x65, 0x50, 0x6f, 0x6c,
+	0x69, 0x63, 0x79, 0x12, 0x0f, 0x0a, 0x0b, 0x55, 0x4e, 0x53, 0x50, 0x45, 0x43, 0x49, 0x46, 0x49,
+	0x45, 0x44, 0x10, 0x00, 0x12, 0x0e, 0x0a, 0x0a, 0x43, 0x4f, 0x4d, 0x50, 0x41, 0x54, 0x49, 0x42,
+	0x4c, 0x45, 0x10, 0x01, 0x12, 0x0d, 0x0a, 0x09, 0x49, 0x4d, 0x4d, 0x55, 0x54, 0x41, 0x42, 0x4c,
+	0x45, 0x10, 0x02, 0x42, 0xbb, 0x01, 0xc8, 0xe1, 0x1e, 0x00, 0xa8, 0xe2, 0x1e, 0x01, 0x0a, 0x12,
+	0x63, 0x6f, 0x6d, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x6d, 0x6f, 0x76, 0x65, 0x2e,
+	0x76, 0x31, 0x42, 0x0a, 0x54, 0x79, 0x70, 0x65, 0x73, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01,
+	0x5a, 0x37, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x69, 0x6e, 0x69,
+	0x74, 0x69, 0x61, 0x2d, 0x6c, 0x61, 0x62, 0x73, 0x2f, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2f,
+	0x61, 0x70, 0x69, 0x2f, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2f, 0x6d, 0x6f, 0x76, 0x65, 0x2f,
+	0x76, 0x31, 0x3b, 0x6d, 0x6f, 0x76, 0x65, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x49, 0x4d, 0x58, 0xaa,
+	0x02, 0x0e, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x4d, 0x6f, 0x76, 0x65, 0x2e, 0x56, 0x31,
+	0xca, 0x02, 0x0e, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x5c, 0x4d, 0x6f, 0x76, 0x65, 0x5c, 0x56,
+	0x31, 0xe2, 0x02, 0x1a, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x5c, 0x4d, 0x6f, 0x76, 0x65, 0x5c,
+	0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02,
+	0x10, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x3a, 0x3a, 0x4d, 0x6f, 0x76, 0x65, 0x3a, 0x3a, 0x56,
+	0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -6681,7 +7376,7 @@ func file_initia_move_v1_types_proto_rawDescGZIP() []byte {
 }
 
 var file_initia_move_v1_types_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_initia_move_v1_types_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_initia_move_v1_types_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_initia_move_v1_types_proto_goTypes = []interface{}{
 	(UpgradePolicy)(0),               // 0: initia.move.v1.UpgradePolicy
 	(*Params)(nil),                   // 1: initia.move.v1.Params
@@ -6694,6 +7389,7 @@ var file_initia_move_v1_types_proto_goTypes = []interface{}{
 	(*UpgradePolicyProto)(nil),       // 8: initia.move.v1.UpgradePolicyProto
 	(*DexPair)(nil),                  // 9: initia.move.v1.DexPair
 	(*ExecuteAuthorizationItem)(nil), // 10: initia.move.v1.ExecuteAuthorizationItem
+	(*EIP1559FeeParams)(nil),         // 11: initia.move.v1.EIP1559FeeParams
 }
 var file_initia_move_v1_types_proto_depIdxs = []int32{
 	0, // 0: initia.move.v1.Module.upgrade_policy:type_name -> initia.move.v1.UpgradePolicy
@@ -6831,6 +7527,18 @@ func file_initia_move_v1_types_proto_init() {
 				return nil
 			}
 		}
+		file_initia_move_v1_types_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*EIP1559FeeParams); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -6838,7 +7546,7 @@ func file_initia_move_v1_types_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_initia_move_v1_types_proto_rawDesc,
 			NumEnums:      1,
-			NumMessages:   10,
+			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

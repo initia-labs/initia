@@ -217,6 +217,7 @@ func orderEndBlockers() []string {
 		marketmaptypes.ModuleName,
 		forwardingtypes.ModuleName,
 		ratelimittypes.ModuleName,
+		movetypes.ModuleName,
 	}
 }
 

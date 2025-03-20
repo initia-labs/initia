@@ -151,6 +151,12 @@ func (k Keeper) InitGenesis(ctx context.Context, moduleNames []string, genState 
 		}
 	}
 
+	eip1559FeeKeeper := NewEIP1559FeeKeeper(&k)
+	eip1559Feeparams := genState.GetEip1559Feeparams()
+	if err := eip1559FeeKeeper.SetParams(ctx, eip1559Feeparams); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -220,6 +226,12 @@ func (k Keeper) ExportGenesis(ctx context.Context) *types.GenesisState {
 	genState.DexPairs = dexPairs
 
 	genState.ExecutionCounter, err = k.GetExecutionCounter(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	eip1559FeeKeeper := NewEIP1559FeeKeeper(&k)
+	genState.Eip1559Feeparams, err = eip1559FeeKeeper.GetParams(ctx)
 	if err != nil {
 		panic(err)
 	}

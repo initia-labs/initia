@@ -461,3 +461,21 @@ func (ms MsgServer) UpdateParams(context context.Context, req *types.MsgUpdatePa
 
 	return &types.MsgUpdateParamsResponse{}, nil
 }
+
+func (ms MsgServer) UpdateEIP1559FeeParams(context context.Context, req *types.MsgUpdateEIP1559FeeParams) (*types.MsgUpdateEIP1559FeeParamsResponse, error) {
+	defer telemetry.MeasureSince(time.Now(), "move", "msg", "update-eip1559-fee-params")
+	if ms.authority != req.Authority {
+		return nil, errors.Wrapf(govtypes.ErrInvalidSigner, "invalid authority; expected %s, got %s", ms.authority, req.Authority)
+	}
+
+	ctx := sdk.UnwrapSDKContext(context)
+	if err := req.Eip1559Feeparams.Validate(); err != nil {
+		return nil, err
+	}
+
+	if err := ms.Keeper.eip1559FeeKeeper.SetParams(ctx, req.Eip1559Feeparams); err != nil {
+		return nil, err
+	}
+
+	return &types.MsgUpdateEIP1559FeeParamsResponse{}, nil
+}
