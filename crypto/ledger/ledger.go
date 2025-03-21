@@ -62,7 +62,7 @@ func (i *InitiaLedger) connect() (*InitiaLedger, error) {
 		return nil, errors.Wrap(err, "failed to get wallet status")
 	} else if status == "Ethereum app offline" {
 		wallet.Close()
-		return nil, errors.New("Ethereum app is offline")
+		return nil, errors.New(status)
 	}
 
 	return &InitiaLedger{
