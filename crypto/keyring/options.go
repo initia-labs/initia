@@ -9,25 +9,26 @@ import (
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	"github.com/cosmos/cosmos-sdk/crypto/ledger"
 	"github.com/cosmos/cosmos-sdk/crypto/types"
-	ledgercosmosgo "github.com/cosmos/ledger-cosmos-go"
+	cosmosledger "github.com/cosmos/ledger-cosmos-go"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
 	"github.com/initia-labs/initia/crypto/ethsecp256k1"
 	"github.com/initia-labs/initia/crypto/hd"
-	customledger "github.com/initia-labs/initia/crypto/ledger"
+	ethhd "github.com/initia-labs/initia/crypto/hd"
+	ethledger "github.com/initia-labs/initia/crypto/ledger"
 )
 
 var (
 	// SupportedAlgorithms defines the list of signing algorithms used on Injective:
 	//  - eth_secp256k1 (Ethereum)
 	//  - secp256k1 (Cosmos SDK)
-	SupportedAlgorithms = keyring.SigningAlgoList{hd.EthSecp256k1, cosmoshd.Secp256k1}
+	SupportedAlgorithms = keyring.SigningAlgoList{ethhd.EthSecp256k1, cosmoshd.Secp256k1}
 	// SupportedAlgorithmsLedger defines the list of signing algorithms used for the Ledger device:
 	//  - secp256k1 (in order to comply with Cosmos SDK)
 	// The Ledger derivation function is responsible for all signing and address generation.
-	SupportedAlgorithmsLedger = keyring.SigningAlgoList{hd.EthSecp256k1, cosmoshd.Secp256k1}
+	SupportedAlgorithmsLedger = keyring.SigningAlgoList{ethhd.EthSecp256k1, cosmoshd.Secp256k1}
 )
 
 // EthSecp256k1Option defines a function keys options for the ethereum Secp256k1 curve.
@@ -41,12 +42,12 @@ func EthSecp256k1Option() keyring.Option {
 		options.LedgerDerivation = func() (ledger.SECP256K1, error) {
 			ledger.SetAppName("Ethereum")
 			if !isCosmosLedger {
-				if device, err := customledger.FindLedgerEthereumApp(); err == nil {
+				if device, err := ethledger.FindLedgerEthereumApp(); err == nil {
 					fmt.Println("Ethereum ledger found")
 					ledger.SetSkipDERConversion()
 
 					// ethereum ledger should have coin type 60 and key type eth_secp256k1
-					if err := validateFlags(60, string(hd.EthSecp256k1Type)); err != nil {
+					if err := validateFlags(60, string(ethhd.EthSecp256k1Type)); err != nil {
 						fmt.Printf(`
 Failed to validate flags for Ethereum ledger:
 %s
@@ -56,7 +57,7 @@ Please make sure you have the correct coin type and key type set for the Ethereu
 You can use the following command to set the correct flags:
 --coin-type 60 --key-type %s
 
-`, err.Error(), hd.EthSecp256k1Type)
+`, err.Error(), ethhd.EthSecp256k1Type)
 						return nil, err
 					}
 
@@ -68,7 +69,7 @@ You can use the following command to set the correct flags:
 
 			isCosmosLedger = true
 			ledger.SetAppName("Cosmos")
-			if device, err := ledgercosmosgo.FindLedgerCosmosUserApp(); err == nil {
+			if device, err := cosmosledger.FindLedgerCosmosUserApp(); err == nil {
 				fmt.Println("Cosmos ledger found")
 
 				// cosmos ledger should have coin type 118 and key type secp256k1
