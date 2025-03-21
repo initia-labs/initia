@@ -19,12 +19,14 @@ import (
 
 var _ ledger.SECP256K1 = &InitiaLedger{}
 
-func LedgerDerivationFn() func() (ledger.SECP256K1, error) {
-	initiaLedger := new(InitiaLedger)
+var initiaLedger *InitiaLedger
 
-	return func() (ledger.SECP256K1, error) {
-		return initiaLedger.connect()
+func FindLedgerEthereumApp() (ledger.SECP256K1, error) {
+	if initiaLedger == nil {
+		initiaLedger = new(InitiaLedger)
 	}
+
+	return initiaLedger.connect()
 }
 
 type InitiaLedger struct {
@@ -51,6 +53,16 @@ func (i *InitiaLedger) connect() (*InitiaLedger, error) {
 	err = wallet.Open("")
 	if err != nil && !strings.Contains(err.Error(), "already open") {
 		return nil, errors.Wrap(err, "failed to open wallet")
+	}
+
+	// check if ethereum app is offline or not
+	status, err := wallet.Status()
+	if err != nil {
+		wallet.Close()
+		return nil, errors.Wrap(err, "failed to get wallet status")
+	} else if status == "Ethereum app offline" {
+		wallet.Close()
+		return nil, errors.New(status)
 	}
 
 	return &InitiaLedger{
