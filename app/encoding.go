@@ -5,6 +5,7 @@ import (
 	"cosmossdk.io/core/appmodule"
 	"cosmossdk.io/log"
 	dbm "github.com/cosmos/cosmos-db"
+
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	runtimeservices "github.com/cosmos/cosmos-sdk/runtime/services"
 	sdk "github.com/cosmos/cosmos-sdk/types"

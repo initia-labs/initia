@@ -12,10 +12,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/version"
 
+	customtypes "github.com/initia-labs/initia/x/gov/types"
+
 	gcutils "github.com/cosmos/cosmos-sdk/x/gov/client/utils"
 	"github.com/cosmos/cosmos-sdk/x/gov/types"
 	v1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
-	customtypes "github.com/initia-labs/initia/x/gov/types"
 )
 
 // Proposal flags

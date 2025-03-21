@@ -9,6 +9,7 @@ import (
 	"cosmossdk.io/collections"
 	"cosmossdk.io/math"
 	"github.com/cometbft/cometbft/libs/json"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/initia-labs/initia/x/move/types"
