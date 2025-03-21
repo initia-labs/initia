@@ -7,9 +7,7 @@ import (
 )
 
 type AnteKeeper interface {
-	HasDexPair(ctx context.Context, denom string) (bool, error)
 	GetBaseSpotPrice(ctx context.Context, denomQuote string) (math.LegacyDec, error)
 	BaseDenom(ctx context.Context) (string, error)
-	BaseMinGasPrice(ctx context.Context) (math.LegacyDec, error)
-	GetBaseFee(ctx context.Context) (int64, error)
+	BaseGasPrice(ctx context.Context) (math.LegacyDec, error)
 }

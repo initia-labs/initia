@@ -48,10 +48,6 @@ service Msg {
   // UpdateParams defines an operation for updating the x/move module
   // parameters.
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
-
-  // UpdateEIP1559FeeParams defines an operation for updating the x/move module
-  // eip1559 fee params.
-  rpc UpdateEIP1559FeeParams(MsgUpdateEIP1559FeeParams) returns (MsgUpdateEIP1559FeeParamsResponse);
 }
 
 // MsgPublish is the message to store compiled Move module
@@ -355,22 +351,3 @@ message MsgUpdateParams {
 // MsgUpdateParamsResponse defines the response structure for executing a
 // MsgUpdateParams message.
 message MsgUpdateParamsResponse {}
-
-// MsgUpdateEIP1559FeeParams is the Msg/UpdateEIP1559FeeParams request type.
-message MsgUpdateEIP1559FeeParams {
-  option (cosmos.msg.v1.signer) = "authority";
-  option (amino.name) = "move/MsgUpdateEIP1559FeeParams";
-
-  // authority is the address that controls the module
-  // (defaults to x/gov unless overwritten).
-  string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
-  // eip1559_feeparams defines the x/move parameters to update.
-  EIP1559FeeParams eip1559_feeparams = 2 [
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
-}
-
-// MsgUpdateEIP1559FeeParamsResponse defines the response structure for executing a
-// MsgUpdateEIP1559FeeParams message.
-message MsgUpdateEIP1559FeeParamsResponse {}

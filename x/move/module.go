@@ -153,8 +153,3 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 func (am AppModule) BeginBlock(ctx context.Context) error {
 	return BeginBlocker(ctx, am.keeper, am.vc)
 }
-
-// EndBlock returns the end blocker for the move module.
-func (am AppModule) EndBlock(ctx context.Context) error {
-	return EndBlocker(ctx, am.keeper)
-}

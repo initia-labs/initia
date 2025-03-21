@@ -3,7 +3,6 @@ package keeper_test
 import (
 	"testing"
 
-	"cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -234,27 +233,4 @@ func Test_GovScriptMsg(t *testing.T) {
 		Args:      []string{"\"200\""},
 	})
 	require.NoError(t, err)
-}
-
-func Test_UpdateEIP1559FeeParams(t *testing.T) {
-	ctx, input := createDefaultTestInput(t)
-	ms := keeper.NewMsgServerImpl(&input.MoveKeeper)
-
-	msg := &types.MsgUpdateEIP1559FeeParams{
-		Authority: input.MoveKeeper.GetAuthority(),
-		Eip1559Feeparams: types.EIP1559FeeParams{
-			BaseFee:       100,
-			MaxBaseFee:    200,
-			MinBaseFee:    10,
-			MaxChangeRate: math.LegacyNewDecWithPrec(10, 2),
-		},
-	}
-	_, err := ms.UpdateEIP1559FeeParams(ctx, msg)
-	require.NoError(t, err)
-
-	eip1559FeeKeeper := keeper.NewEIP1559FeeKeeper(&input.MoveKeeper)
-
-	params, err := eip1559FeeKeeper.GetParams(ctx)
-	require.NoError(t, err)
-	require.Equal(t, msg.Eip1559Feeparams, params)
 }

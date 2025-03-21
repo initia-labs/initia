@@ -45,8 +45,4 @@ message GenesisState {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
-  EIP1559FeeParams eip1559_feeparams = 10 [
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
 }

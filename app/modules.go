@@ -85,6 +85,9 @@ import (
 	// noble forwarding keeper
 	forwarding "github.com/noble-assets/forwarding/v2"
 	forwardingtypes "github.com/noble-assets/forwarding/v2/types"
+
+	dynamicfee "github.com/initia-labs/initia/x/dynamic-fee"
+	dynamicfeetypes "github.com/initia-labs/initia/x/dynamic-fee/types"
 )
 
 var maccPerms = map[string][]string{
@@ -150,6 +153,7 @@ func appModules(
 		ibchooks.NewAppModule(app.appCodec, *app.IBCHooksKeeper),
 		forwarding.NewAppModule(app.ForwardingKeeper),
 		ratelimit.NewAppModule(app.appCodec, *app.RatelimitKeeper),
+		dynamicfee.NewAppModule(app.appCodec, *app.DynamicFeeKeeper),
 	}
 }
 
@@ -217,7 +221,7 @@ func orderEndBlockers() []string {
 		marketmaptypes.ModuleName,
 		forwardingtypes.ModuleName,
 		ratelimittypes.ModuleName,
-		movetypes.ModuleName,
+		dynamicfeetypes.ModuleName,
 	}
 }
 
@@ -233,7 +237,7 @@ func orderInitBlockers() []string {
 	return []string{
 		capabilitytypes.ModuleName, authtypes.ModuleName, movetypes.ModuleName, banktypes.ModuleName,
 		distrtypes.ModuleName, stakingtypes.ModuleName, slashingtypes.ModuleName, govtypes.ModuleName,
-		rewardtypes.ModuleName, crisistypes.ModuleName, genutiltypes.ModuleName, evidencetypes.ModuleName,
+		dynamicfeetypes.ModuleName, rewardtypes.ModuleName, crisistypes.ModuleName, genutiltypes.ModuleName, evidencetypes.ModuleName,
 		authz.ModuleName, group.ModuleName, upgradetypes.ModuleName, feegrant.ModuleName,
 		consensusparamtypes.ModuleName, ibcexported.ModuleName, ibctransfertypes.ModuleName,
 		ibcnfttransfertypes.ModuleName, icatypes.ModuleName, icaauthtypes.ModuleName, ibcfeetypes.ModuleName,

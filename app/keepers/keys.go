@@ -43,6 +43,8 @@ import (
 
 	// noble forwarding keeper
 	forwardingtypes "github.com/noble-assets/forwarding/v2/types"
+
+	dynamicfeetypes "github.com/initia-labs/initia/x/dynamic-fee/types"
 )
 
 func (appKeepers *AppKeepers) GenerateKeys() {
@@ -59,6 +61,7 @@ func (appKeepers *AppKeepers) GenerateKeys() {
 		movetypes.StoreKey, auctiontypes.StoreKey, ophosttypes.StoreKey,
 		oracletypes.StoreKey, packetforwardtypes.StoreKey, ibchookstypes.StoreKey,
 		forwardingtypes.StoreKey, marketmaptypes.StoreKey, ratelimittypes.StoreKey,
+		dynamicfeetypes.StoreKey,
 	)
 
 	// Define transient store keys

@@ -114,11 +114,6 @@ service Query {
   rpc Denom(QueryDenomRequest) returns (QueryDenomResponse) {
     option (google.api.http).get = "/initia/move/v1/denom";
   }
-
-  // EIP1559FeeParams queries the EIP1559 fee params
-  rpc EIP1559FeeParams(QueryEIP1559FeeParamsRequest) returns (QueryEIP1559FeeParamsResponse) {
-    option (google.api.http).get = "/initia/move/v1/eip1559_feeparams";
-  }
 }
 
 // QueryModuleRequest is the request type for the Query/Module RPC
@@ -422,12 +417,4 @@ message QueryDenomRequest {
 // QueryDenomResponse is the response type for the Query/Denom RPC method.
 message QueryDenomResponse {
   string denom = 1;
-}
-
-// QueryEIP1559FeeParamsRequest is the request type for the Query/EIP1559FeeParams RPC method.
-message QueryEIP1559FeeParamsRequest {}
-
-// QueryEIP1559FeeParamsResponse is the response type for the Query/EIP1559FeeParams RPC method.
-message QueryEIP1559FeeParamsResponse {
-  EIP1559FeeParams eip1559_feeparams = 1 [(gogoproto.nullable) = false];
 }

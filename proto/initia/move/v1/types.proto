@@ -15,15 +15,8 @@ message Params {
   option (gogoproto.goproto_stringer) = false;
 
   string base_denom = 1;
-  string base_min_gas_price = 2 [
-    (gogoproto.moretags) = "yaml:\"base_min_gas_price\"",
-    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
-
   // CSR: Percentage of fees distributed to developers
-  string contract_shared_revenue_ratio = 3 [
+  string contract_shared_revenue_ratio = 2 [
     (gogoproto.moretags) = "yaml:\"contract_shared_revenue_ratio\"",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false,
@@ -31,11 +24,11 @@ message Params {
   ];
 
   // flag whether to enable script execution
-  bool script_enabled = 4;
+  bool script_enabled = 3;
 
   // It is a list of addresses with permission to distribute contracts,
   // and an empty list is interpreted as allowing anyone to distribute.
-  repeated string allowed_publishers = 5 [
+  repeated string allowed_publishers = 4 [
     (gogoproto.moretags) = "yaml:\"allowed_publishers\"",
     (amino.dont_omitempty) = true
   ];
@@ -44,15 +37,9 @@ message Params {
 // RawParams defines the raw params to store.
 message RawParams {
   string base_denom = 1;
-  string base_min_gas_price = 2 [
-    (gogoproto.moretags) = "yaml:\"base_min_gas_price\"",
-    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
 
   // CSR: Percentage of fees distributed to developers
-  string contract_shared_revenue_ratio = 3 [
+  string contract_shared_revenue_ratio = 2 [
     (gogoproto.moretags) = "yaml:\"contract_shared_revenue_ratio\"",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false,
@@ -60,7 +47,7 @@ message RawParams {
   ];
 
   // flag whether to enable script execution
-  bool script_enabled = 4;
+  bool script_enabled = 3;
 }
 
 // Module is data for the uploaded contract move code
@@ -134,17 +121,4 @@ message ExecuteAuthorizationItem {
   string module_name = 2;
   // FunctionName is the name of function to execute with wildcard '*' support
   repeated string function_names = 3 [(gogoproto.nullable) = true];
-}
-
-message EIP1559FeeParams {
-  int64 base_fee = 1;
-  int64 min_base_fee = 2;
-  int64 max_base_fee = 3;
-  int64 target_gas = 4;
-  string max_change_rate = 5 [
-    (gogoproto.moretags) = "yaml:\"max_change_rate\"",
-    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
 }

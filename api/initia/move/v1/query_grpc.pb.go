@@ -19,23 +19,22 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Query_Module_FullMethodName           = "/initia.move.v1.Query/Module"
-	Query_Modules_FullMethodName          = "/initia.move.v1.Query/Modules"
-	Query_Resource_FullMethodName         = "/initia.move.v1.Query/Resource"
-	Query_Resources_FullMethodName        = "/initia.move.v1.Query/Resources"
-	Query_TableInfo_FullMethodName        = "/initia.move.v1.Query/TableInfo"
-	Query_TableEntry_FullMethodName       = "/initia.move.v1.Query/TableEntry"
-	Query_TableEntries_FullMethodName     = "/initia.move.v1.Query/TableEntries"
-	Query_LegacyView_FullMethodName       = "/initia.move.v1.Query/LegacyView"
-	Query_View_FullMethodName             = "/initia.move.v1.Query/View"
-	Query_ViewBatch_FullMethodName        = "/initia.move.v1.Query/ViewBatch"
-	Query_ViewJSON_FullMethodName         = "/initia.move.v1.Query/ViewJSON"
-	Query_ViewJSONBatch_FullMethodName    = "/initia.move.v1.Query/ViewJSONBatch"
-	Query_ScriptABI_FullMethodName        = "/initia.move.v1.Query/ScriptABI"
-	Query_Params_FullMethodName           = "/initia.move.v1.Query/Params"
-	Query_Metadata_FullMethodName         = "/initia.move.v1.Query/Metadata"
-	Query_Denom_FullMethodName            = "/initia.move.v1.Query/Denom"
-	Query_EIP1559FeeParams_FullMethodName = "/initia.move.v1.Query/EIP1559FeeParams"
+	Query_Module_FullMethodName        = "/initia.move.v1.Query/Module"
+	Query_Modules_FullMethodName       = "/initia.move.v1.Query/Modules"
+	Query_Resource_FullMethodName      = "/initia.move.v1.Query/Resource"
+	Query_Resources_FullMethodName     = "/initia.move.v1.Query/Resources"
+	Query_TableInfo_FullMethodName     = "/initia.move.v1.Query/TableInfo"
+	Query_TableEntry_FullMethodName    = "/initia.move.v1.Query/TableEntry"
+	Query_TableEntries_FullMethodName  = "/initia.move.v1.Query/TableEntries"
+	Query_LegacyView_FullMethodName    = "/initia.move.v1.Query/LegacyView"
+	Query_View_FullMethodName          = "/initia.move.v1.Query/View"
+	Query_ViewBatch_FullMethodName     = "/initia.move.v1.Query/ViewBatch"
+	Query_ViewJSON_FullMethodName      = "/initia.move.v1.Query/ViewJSON"
+	Query_ViewJSONBatch_FullMethodName = "/initia.move.v1.Query/ViewJSONBatch"
+	Query_ScriptABI_FullMethodName     = "/initia.move.v1.Query/ScriptABI"
+	Query_Params_FullMethodName        = "/initia.move.v1.Query/Params"
+	Query_Metadata_FullMethodName      = "/initia.move.v1.Query/Metadata"
+	Query_Denom_FullMethodName         = "/initia.move.v1.Query/Denom"
 )
 
 // QueryClient is the client API for Query service.
@@ -78,8 +77,6 @@ type QueryClient interface {
 	Metadata(ctx context.Context, in *QueryMetadataRequest, opts ...grpc.CallOption) (*QueryMetadataResponse, error)
 	// Denom converts denom to metadata
 	Denom(ctx context.Context, in *QueryDenomRequest, opts ...grpc.CallOption) (*QueryDenomResponse, error)
-	// EIP1559FeeParams queries the EIP1559 fee params
-	EIP1559FeeParams(ctx context.Context, in *QueryEIP1559FeeParamsRequest, opts ...grpc.CallOption) (*QueryEIP1559FeeParamsResponse, error)
 }
 
 type queryClient struct {
@@ -235,15 +232,6 @@ func (c *queryClient) Denom(ctx context.Context, in *QueryDenomRequest, opts ...
 	return out, nil
 }
 
-func (c *queryClient) EIP1559FeeParams(ctx context.Context, in *QueryEIP1559FeeParamsRequest, opts ...grpc.CallOption) (*QueryEIP1559FeeParamsResponse, error) {
-	out := new(QueryEIP1559FeeParamsResponse)
-	err := c.cc.Invoke(ctx, Query_EIP1559FeeParams_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // QueryServer is the server API for Query service.
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility
@@ -284,8 +272,6 @@ type QueryServer interface {
 	Metadata(context.Context, *QueryMetadataRequest) (*QueryMetadataResponse, error)
 	// Denom converts denom to metadata
 	Denom(context.Context, *QueryDenomRequest) (*QueryDenomResponse, error)
-	// EIP1559FeeParams queries the EIP1559 fee params
-	EIP1559FeeParams(context.Context, *QueryEIP1559FeeParamsRequest) (*QueryEIP1559FeeParamsResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -340,9 +326,6 @@ func (UnimplementedQueryServer) Metadata(context.Context, *QueryMetadataRequest)
 }
 func (UnimplementedQueryServer) Denom(context.Context, *QueryDenomRequest) (*QueryDenomResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Denom not implemented")
-}
-func (UnimplementedQueryServer) EIP1559FeeParams(context.Context, *QueryEIP1559FeeParamsRequest) (*QueryEIP1559FeeParamsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method EIP1559FeeParams not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 
@@ -645,24 +628,6 @@ func _Query_Denom_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_EIP1559FeeParams_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryEIP1559FeeParamsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(QueryServer).EIP1559FeeParams(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Query_EIP1559FeeParams_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).EIP1559FeeParams(ctx, req.(*QueryEIP1559FeeParamsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // Query_ServiceDesc is the grpc.ServiceDesc for Query service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -733,10 +698,6 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Denom",
 			Handler:    _Query_Denom_Handler,
-		},
-		{
-			MethodName: "EIP1559FeeParams",
-			Handler:    _Query_EIP1559FeeParams_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

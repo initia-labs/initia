@@ -10,8 +10,6 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/telemetry"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	vmtypes "github.com/initia-labs/movevm/types"
 )
 
@@ -101,11 +99,4 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper, vc address.Codec) error 
 	}
 
 	return nil
-}
-
-func EndBlocker(ctx context.Context, k keeper.Keeper) error {
-	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyEndBlocker)
-
-	// update base fee
-	return k.EIP1559FeeKeeper().UpdateBaseFee(sdk.UnwrapSDKContext(ctx))
 }

@@ -1,0 +1,41 @@
+syntax = "proto3";
+package initia.dynamicfee.v1;
+
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/initia-labs/initia/x/dynamic-fee/types";
+option (gogoproto.equal_all) = true;
+option (gogoproto.goproto_getters_all) = false;
+
+message Params {
+  string base_gas_price = 1 [
+    (gogoproto.moretags) = "yaml:\"base_gas_price\"",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+
+  string min_base_gas_price = 2 [
+    (gogoproto.moretags) = "yaml:\"min_base_gas_price\"",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+
+  string max_base_gas_price = 3 [
+    (gogoproto.moretags) = "yaml:\"max_base_gas_price\"",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+
+  string max_change_rate = 4 [
+    (gogoproto.moretags) = "yaml:\"max_change_rate\"",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+
+  int64 target_gas = 5;
+}

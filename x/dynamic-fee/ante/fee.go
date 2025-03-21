@@ -6,8 +6,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-
-	movetypes "github.com/initia-labs/initia/x/move/types"
+	dynamicfeetypes "github.com/initia-labs/initia/x/dynamic-fee/types"
 )
 
 // MempoolFeeChecker will check if the transaction's fee is at least as large
@@ -17,12 +16,12 @@ import (
 // If fee is high enough or not CheckTx, then call next AnteHandler
 // CONTRACT: Tx must implement FeeTx to use MempoolFeeChecker
 type MempoolFeeChecker struct {
-	keeper movetypes.AnteKeeper
+	keeper dynamicfeetypes.AnteKeeper
 }
 
 // NewMempoolFeeChecker create MempoolFeeChecker instance
 func NewMempoolFeeChecker(
-	keeper movetypes.AnteKeeper,
+	keeper dynamicfeetypes.AnteKeeper,
 ) MempoolFeeChecker {
 	return MempoolFeeChecker{
 		keeper,
@@ -51,15 +50,8 @@ func (fc MempoolFeeChecker) CheckTxFeeWithMinGasPrices(ctx sdk.Context, tx sdk.T
 				return nil, 0, err
 			}
 
-			baseMinGasPrice, err := fc.keeper.BaseMinGasPrice(ctx)
-			if err != nil {
-				return nil, 0, err
-			}
-
-			minGasPrices = combinedMinGasPrices(baseDenom, baseMinGasPrice, minGasPrices)
-
 			for _, coin := range feeTx.GetFee() {
-				basePrice, err := fc.fetchPrice(ctx, baseDenom, coin.Denom)
+				basePrice, err := fc.keeper.GetBaseSpotPrice(ctx, coin.Denom)
 				if err != nil {
 					return nil, 0, err
 				}
@@ -72,18 +64,20 @@ func (fc MempoolFeeChecker) CheckTxFeeWithMinGasPrices(ctx sdk.Context, tx sdk.T
 				priority = totalFeeBaseAmount.Int64()
 			}
 
-			baseFee, err := fc.keeper.GetBaseFee(ctx)
+			baseGasPrice, err := fc.keeper.BaseGasPrice(ctx)
 			if err != nil {
 				return nil, 0, err
 			}
 
-			if !totalFeeBaseAmount.GTE(math.NewInt(baseFee)) {
+			gasPriceFromTotalFee := math.LegacyNewDecFromInt(totalFeeBaseAmount).Quo(math.LegacyNewDec(int64(gas)))
+
+			if gasPriceFromTotalFee.LT(baseGasPrice) {
 				return nil, 0, errors.Wrapf(
 					sdkerrors.ErrInsufficientFee,
-					"insufficient base fee; got: %s (sum %s), base fee required: %d",
+					"insufficient gas price; got: %s (sum %s), base gas price required: %s",
 					feeCoins,
-					totalFeeBaseAmount,
-					baseFee,
+					gasPriceFromTotalFee.String(),
+					baseGasPrice.String(),
 				)
 			}
 		}
@@ -117,22 +111,4 @@ func (fc MempoolFeeChecker) CheckTxFeeWithMinGasPrices(ctx sdk.Context, tx sdk.T
 	}
 
 	return feeCoins, priority, nil
-}
-
-func (fc MempoolFeeChecker) fetchPrice(ctx sdk.Context, baseDenom, quoteDenom string) (price math.LegacyDec, err error) {
-	if quoteDenom == baseDenom {
-		return math.LegacyOneDec(), nil
-	}
-
-	if found, err := fc.keeper.HasDexPair(ctx, quoteDenom); err != nil {
-		return math.LegacyZeroDec(), err
-	} else if !found {
-		return math.LegacyZeroDec(), nil
-	}
-
-	if basePrice, err := fc.keeper.GetBaseSpotPrice(ctx, quoteDenom); err != nil {
-		return math.LegacyZeroDec(), err
-	} else {
-		return basePrice, nil
-	}
 }

@@ -466,16 +466,3 @@ func Test_Query_Denom(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, bondDenom, res.Denom)
 }
-
-func Test_Query_EIP1559FeeParams(t *testing.T) {
-	ctx, input := createDefaultTestInput(t)
-
-	querier := keeper.NewQuerier(&input.MoveKeeper)
-	res, err := querier.EIP1559FeeParams(ctx, &types.QueryEIP1559FeeParamsRequest{})
-	require.NoError(t, err)
-
-	eip1559FeeKeeper := keeper.NewEIP1559FeeKeeper(&input.MoveKeeper)
-	params, err := eip1559FeeKeeper.GetParams(ctx)
-	require.NoError(t, err)
-	require.Equal(t, params, res.Eip1559Feeparams)
-}

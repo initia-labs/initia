@@ -456,15 +456,3 @@ func (q Querier) Metadata(ctx context.Context, req *types.QueryMetadataRequest) 
 		Metadata: metadataAddr.String(),
 	}, nil
 }
-
-// EIP1559FeeParams implements types.QueryServer.
-func (q Querier) EIP1559FeeParams(ctx context.Context, req *types.QueryEIP1559FeeParamsRequest) (*types.QueryEIP1559FeeParamsResponse, error) {
-	params, err := q.eip1559FeeKeeper.GetParams(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return &types.QueryEIP1559FeeParamsResponse{
-		Eip1559Feeparams: params,
-	}, nil
-}

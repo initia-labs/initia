@@ -19,20 +19,19 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Msg_Publish_FullMethodName                = "/initia.move.v1.Msg/Publish"
-	Msg_Execute_FullMethodName                = "/initia.move.v1.Msg/Execute"
-	Msg_ExecuteJSON_FullMethodName            = "/initia.move.v1.Msg/ExecuteJSON"
-	Msg_Script_FullMethodName                 = "/initia.move.v1.Msg/Script"
-	Msg_ScriptJSON_FullMethodName             = "/initia.move.v1.Msg/ScriptJSON"
-	Msg_GovPublish_FullMethodName             = "/initia.move.v1.Msg/GovPublish"
-	Msg_GovExecute_FullMethodName             = "/initia.move.v1.Msg/GovExecute"
-	Msg_GovExecuteJSON_FullMethodName         = "/initia.move.v1.Msg/GovExecuteJSON"
-	Msg_GovScript_FullMethodName              = "/initia.move.v1.Msg/GovScript"
-	Msg_GovScriptJSON_FullMethodName          = "/initia.move.v1.Msg/GovScriptJSON"
-	Msg_Whitelist_FullMethodName              = "/initia.move.v1.Msg/Whitelist"
-	Msg_Delist_FullMethodName                 = "/initia.move.v1.Msg/Delist"
-	Msg_UpdateParams_FullMethodName           = "/initia.move.v1.Msg/UpdateParams"
-	Msg_UpdateEIP1559FeeParams_FullMethodName = "/initia.move.v1.Msg/UpdateEIP1559FeeParams"
+	Msg_Publish_FullMethodName        = "/initia.move.v1.Msg/Publish"
+	Msg_Execute_FullMethodName        = "/initia.move.v1.Msg/Execute"
+	Msg_ExecuteJSON_FullMethodName    = "/initia.move.v1.Msg/ExecuteJSON"
+	Msg_Script_FullMethodName         = "/initia.move.v1.Msg/Script"
+	Msg_ScriptJSON_FullMethodName     = "/initia.move.v1.Msg/ScriptJSON"
+	Msg_GovPublish_FullMethodName     = "/initia.move.v1.Msg/GovPublish"
+	Msg_GovExecute_FullMethodName     = "/initia.move.v1.Msg/GovExecute"
+	Msg_GovExecuteJSON_FullMethodName = "/initia.move.v1.Msg/GovExecuteJSON"
+	Msg_GovScript_FullMethodName      = "/initia.move.v1.Msg/GovScript"
+	Msg_GovScriptJSON_FullMethodName  = "/initia.move.v1.Msg/GovScriptJSON"
+	Msg_Whitelist_FullMethodName      = "/initia.move.v1.Msg/Whitelist"
+	Msg_Delist_FullMethodName         = "/initia.move.v1.Msg/Delist"
+	Msg_UpdateParams_FullMethodName   = "/initia.move.v1.Msg/UpdateParams"
 )
 
 // MsgClient is the client API for Msg service.
@@ -73,9 +72,6 @@ type MsgClient interface {
 	// UpdateParams defines an operation for updating the x/move module
 	// parameters.
 	UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error)
-	// UpdateEIP1559FeeParams defines an operation for updating the x/move module
-	// eip1559 fee params.
-	UpdateEIP1559FeeParams(ctx context.Context, in *MsgUpdateEIP1559FeeParams, opts ...grpc.CallOption) (*MsgUpdateEIP1559FeeParamsResponse, error)
 }
 
 type msgClient struct {
@@ -203,15 +199,6 @@ func (c *msgClient) UpdateParams(ctx context.Context, in *MsgUpdateParams, opts 
 	return out, nil
 }
 
-func (c *msgClient) UpdateEIP1559FeeParams(ctx context.Context, in *MsgUpdateEIP1559FeeParams, opts ...grpc.CallOption) (*MsgUpdateEIP1559FeeParamsResponse, error) {
-	out := new(MsgUpdateEIP1559FeeParamsResponse)
-	err := c.cc.Invoke(ctx, Msg_UpdateEIP1559FeeParams_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // MsgServer is the server API for Msg service.
 // All implementations must embed UnimplementedMsgServer
 // for forward compatibility
@@ -250,9 +237,6 @@ type MsgServer interface {
 	// UpdateParams defines an operation for updating the x/move module
 	// parameters.
 	UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error)
-	// UpdateEIP1559FeeParams defines an operation for updating the x/move module
-	// eip1559 fee params.
-	UpdateEIP1559FeeParams(context.Context, *MsgUpdateEIP1559FeeParams) (*MsgUpdateEIP1559FeeParamsResponse, error)
 	mustEmbedUnimplementedMsgServer()
 }
 
@@ -298,9 +282,6 @@ func (UnimplementedMsgServer) Delist(context.Context, *MsgDelist) (*MsgDelistRes
 }
 func (UnimplementedMsgServer) UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateParams not implemented")
-}
-func (UnimplementedMsgServer) UpdateEIP1559FeeParams(context.Context, *MsgUpdateEIP1559FeeParams) (*MsgUpdateEIP1559FeeParamsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateEIP1559FeeParams not implemented")
 }
 func (UnimplementedMsgServer) mustEmbedUnimplementedMsgServer() {}
 
@@ -549,24 +530,6 @@ func _Msg_UpdateParams_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_UpdateEIP1559FeeParams_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgUpdateEIP1559FeeParams)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServer).UpdateEIP1559FeeParams(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Msg_UpdateEIP1559FeeParams_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).UpdateEIP1559FeeParams(ctx, req.(*MsgUpdateEIP1559FeeParams))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // Msg_ServiceDesc is the grpc.ServiceDesc for Msg service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -625,10 +588,6 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateParams",
 			Handler:    _Msg_UpdateParams_Handler,
-		},
-		{
-			MethodName: "UpdateEIP1559FeeParams",
-			Handler:    _Msg_UpdateEIP1559FeeParams_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

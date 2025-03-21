@@ -473,7 +473,7 @@ func (app *InitiaApp) Simulate(txBytes []byte) (sdk.GasInfo, *sdk.Result, error)
 // RegisterTxService implements the Application.RegisterTxService method.
 func (app *InitiaApp) RegisterTxService(clientCtx client.Context) {
 	authtx.RegisterTxService(app.BaseApp.GRPCQueryRouter(), clientCtx, app.Simulate, app.interfaceRegistry)
-	initiatx.RegisterTxQuery(app.GRPCQueryRouter(), app.MoveKeeper.DexKeeper())
+	initiatx.RegisterTxQuery(app.GRPCQueryRouter(), app.DynamicFeeKeeper)
 
 	// Register the Block SDK mempool transaction service.
 	mempool, ok := app.Mempool().(block.Mempool)
