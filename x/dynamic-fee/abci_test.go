@@ -41,8 +41,6 @@ func Test_EndBlocker(t *testing.T) {
 
 	// initialize staking for secondBondDenom
 	ctx = app.BaseApp.NewUncachedContext(false, tmproto.Header{})
-	err = app.MoveKeeper.InitializeStaking(ctx, secondBondDenom)
-	require.NoError(t, err)
 
 	// fund addr2
 	app.BankKeeper.SendCoins(ctx, movetypes.StdAddr, addr2, sdk.NewCoins(secondBondCoin))
@@ -71,4 +69,51 @@ func Test_EndBlocker(t *testing.T) {
 	baseGasPrice, err := app.DynamicFeeKeeper.BaseGasPrice(ctx)
 	require.NoError(t, err)
 	require.True(t, baseGasPrice.GT(lessBaseGasPrice))
+}
+
+func Test_EndBlocker_NoBaseGasPriceChange(t *testing.T) {
+	app := createApp(t)
+
+	_, err := app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1})
+	require.NoError(t, err)
+
+	ctx := app.BaseApp.NewUncachedContext(false, tmproto.Header{})
+	err = app.DynamicFeeKeeper.SetParams(ctx, types.NoBaseGasPriceChangeParams())
+	require.NoError(t, err)
+	_, err = app.Commit()
+	require.NoError(t, err)
+
+	_, err = app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1})
+	require.NoError(t, err)
+
+	// initialize staking for secondBondDenom
+	ctx = app.BaseApp.NewUncachedContext(false, tmproto.Header{})
+
+	// fund addr2
+	app.BankKeeper.SendCoins(ctx, movetypes.StdAddr, addr2, sdk.NewCoins(secondBondCoin))
+
+	_, err = app.Commit()
+	require.NoError(t, err)
+
+	ctx = app.BaseApp.NewUncachedContext(false, tmproto.Header{})
+	baseGasPrice, err := app.DynamicFeeKeeper.BaseGasPrice(ctx)
+	require.NoError(t, err)
+	require.True(t, baseGasPrice.Equal(types.DefaultBaseGasPrice))
+
+	msgs := []sdk.Msg{}
+	for i := 0; i < 100; i++ {
+		msgs = append(msgs, &banktypes.MsgSend{
+			FromAddress: addr2.String(),
+			ToAddress:   addr1.String(),
+			Amount:      sdk.NewCoins(sdk.NewInt64Coin(secondBondDenom, 10)),
+		})
+	}
+
+	_, err = executeMsgsWithGasInfo(t, app, msgs, []uint64{1}, []uint64{0}, priv2)
+	require.NoError(t, err)
+
+	ctx = app.BaseApp.NewUncachedContext(false, tmproto.Header{})
+	baseGasPrice, err = app.DynamicFeeKeeper.BaseGasPrice(ctx)
+	require.NoError(t, err)
+	require.True(t, baseGasPrice.Equal(types.DefaultBaseGasPrice))
 }

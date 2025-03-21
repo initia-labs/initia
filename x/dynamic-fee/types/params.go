@@ -28,6 +28,16 @@ func DefaultParams() Params {
 	}
 }
 
+func NoBaseGasPriceChangeParams() Params {
+	return Params{
+		BaseGasPrice:    DefaultBaseGasPrice,
+		MinBaseGasPrice: DefaultMinBaseGasPrice,
+		MaxBaseGasPrice: DefaultMaxBaseGasPrice,
+		TargetGas:       DefaultTargetGas,
+		MaxChangeRate:   math.LegacyZeroDec(),
+	}
+}
+
 func (p Params) Validate() error {
 	if p.BaseGasPrice.IsNegative() {
 		return fmt.Errorf("base gas price must be non-negative")
