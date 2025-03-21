@@ -150,7 +150,6 @@ func (k Keeper) InitGenesis(ctx context.Context, moduleNames []string, genState 
 			return err
 		}
 	}
-
 	return nil
 }
 

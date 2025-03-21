@@ -12,25 +12,26 @@ import (
 
 	"github.com/initia-labs/initia/app/ante/accnum"
 	"github.com/initia-labs/initia/app/ante/sigverify"
-	moveante "github.com/initia-labs/initia/x/move/ante"
-	movetypes "github.com/initia-labs/initia/x/move/types"
+	dynamicfeeante "github.com/initia-labs/initia/x/dynamic-fee/ante"
 
 	"github.com/skip-mev/block-sdk/v2/block"
 	auctionante "github.com/skip-mev/block-sdk/v2/x/auction/ante"
 	auctionkeeper "github.com/skip-mev/block-sdk/v2/x/auction/keeper"
+
+	dynamicfeetypes "github.com/initia-labs/initia/x/dynamic-fee/types"
 )
 
 // HandlerOptions extends the SDK's AnteHandler options by requiring the IBC
 // channel keeper.
 type HandlerOptions struct {
 	ante.HandlerOptions
-	Codec         codec.BinaryCodec
-	MoveKeeper    movetypes.AnteKeeper
-	IBCkeeper     *ibckeeper.Keeper
-	AuctionKeeper auctionkeeper.Keeper
-	TxEncoder     sdk.TxEncoder
-	MevLane       auctionante.MEVLane
-	FreeLane      block.Lane
+	Codec            codec.BinaryCodec
+	DynamicFeeKeeper dynamicfeetypes.AnteKeeper
+	IBCkeeper        *ibckeeper.Keeper
+	AuctionKeeper    auctionkeeper.Keeper
+	TxEncoder        sdk.TxEncoder
+	MevLane          auctionante.MEVLane
+	FreeLane         block.Lane
 }
 
 // NewAnteHandler returns an AnteHandler that checks and increments sequence
@@ -56,7 +57,7 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 
 	txFeeChecker := options.TxFeeChecker
 	if txFeeChecker == nil {
-		txFeeChecker = moveante.NewMempoolFeeChecker(options.MoveKeeper).CheckTxFeeWithMinGasPrices
+		txFeeChecker = dynamicfeeante.NewMempoolFeeChecker(options.DynamicFeeKeeper).CheckTxFeeWithMinGasPrices
 	}
 
 	freeLaneFeeChecker := func(ctx sdk.Context, tx sdk.Tx) (sdk.Coins, int64, error) {
@@ -78,7 +79,7 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 		accnum.NewAccountNumberDecorator(options.AccountKeeper),
 		ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
 		ante.NewExtensionOptionsDecorator(options.ExtensionOptionChecker),
-		moveante.NewGasPricesDecorator(),
+		dynamicfeeante.NewGasPricesDecorator(),
 		ante.NewValidateBasicDecorator(),
 		ante.NewTxTimeoutHeightDecorator(),
 		ante.NewValidateMemoDecorator(options.AccountKeeper),

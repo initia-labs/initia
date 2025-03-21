@@ -4,8 +4,9 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
-	"github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/stretchr/testify/require"
+
+	"github.com/cosmos/cosmos-sdk/codec/address"
 )
 
 func TestParams(t *testing.T) {
@@ -23,13 +24,8 @@ func TestParams(t *testing.T) {
 	require.Error(t, err)
 
 	p3 := DefaultParams()
-	p3.BaseMinGasPrice = math.LegacyOneDec().Neg()
+	p3.AllowedPublishers = []string{"abc"}
 	err = p3.Validate(ac)
-	require.Error(t, err)
-
-	p4 := DefaultParams()
-	p4.AllowedPublishers = []string{"abc"}
-	err = p4.Validate(ac)
 	require.Error(t, err)
 }
 
@@ -41,7 +37,6 @@ func TestRawParams(t *testing.T) {
 
 	p1.ContractSharedRevenueRatio = math.LegacyOneDec()
 	p1.BaseDenom = "venusinthemorning"
-	p1.BaseMinGasPrice = math.LegacyOneDec()
 	require.NoError(t, p1.Validate(ac))
 
 	rp := p1.ToRaw()

@@ -8,9 +8,10 @@ import (
 	initiaapp "github.com/initia-labs/initia/app"
 	"github.com/stretchr/testify/require"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/initia-labs/initia/x/mstaking/keeper"
 	"github.com/initia-labs/initia/x/mstaking/types"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func Test_UpdateParams(t *testing.T) {

@@ -19,15 +19,6 @@ func (k Keeper) BaseDenom(ctx context.Context) (string, error) {
 	return params.BaseDenom, nil
 }
 
-// BaseMinGasPrice - min gas price in base denom unit
-func (k Keeper) BaseMinGasPrice(ctx context.Context) (math.LegacyDec, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return math.LegacyDec{}, err
-	}
-	return params.BaseMinGasPrice, nil
-}
-
 // AllowedPublishers - allowed publishers
 func (k Keeper) AllowedPublishers(ctx context.Context) ([]vmtypes.AccountAddress, error) {
 	return NewCodeKeeper(&k).GetAllowedPublishers(ctx)

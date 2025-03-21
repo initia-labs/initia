@@ -19,19 +19,20 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Query_Validators_FullMethodName                    = "/initia.mstaking.v1.Query/Validators"
-	Query_Validator_FullMethodName                     = "/initia.mstaking.v1.Query/Validator"
-	Query_ValidatorDelegations_FullMethodName          = "/initia.mstaking.v1.Query/ValidatorDelegations"
-	Query_ValidatorUnbondingDelegations_FullMethodName = "/initia.mstaking.v1.Query/ValidatorUnbondingDelegations"
-	Query_Delegation_FullMethodName                    = "/initia.mstaking.v1.Query/Delegation"
-	Query_UnbondingDelegation_FullMethodName           = "/initia.mstaking.v1.Query/UnbondingDelegation"
-	Query_DelegatorDelegations_FullMethodName          = "/initia.mstaking.v1.Query/DelegatorDelegations"
-	Query_DelegatorUnbondingDelegations_FullMethodName = "/initia.mstaking.v1.Query/DelegatorUnbondingDelegations"
-	Query_Redelegations_FullMethodName                 = "/initia.mstaking.v1.Query/Redelegations"
-	Query_DelegatorValidators_FullMethodName           = "/initia.mstaking.v1.Query/DelegatorValidators"
-	Query_DelegatorValidator_FullMethodName            = "/initia.mstaking.v1.Query/DelegatorValidator"
-	Query_Pool_FullMethodName                          = "/initia.mstaking.v1.Query/Pool"
-	Query_Params_FullMethodName                        = "/initia.mstaking.v1.Query/Params"
+	Query_Validators_FullMethodName                      = "/initia.mstaking.v1.Query/Validators"
+	Query_Validator_FullMethodName                       = "/initia.mstaking.v1.Query/Validator"
+	Query_ValidatorDelegations_FullMethodName            = "/initia.mstaking.v1.Query/ValidatorDelegations"
+	Query_ValidatorUnbondingDelegations_FullMethodName   = "/initia.mstaking.v1.Query/ValidatorUnbondingDelegations"
+	Query_Delegation_FullMethodName                      = "/initia.mstaking.v1.Query/Delegation"
+	Query_UnbondingDelegation_FullMethodName             = "/initia.mstaking.v1.Query/UnbondingDelegation"
+	Query_DelegatorDelegations_FullMethodName            = "/initia.mstaking.v1.Query/DelegatorDelegations"
+	Query_DelegatorUnbondingDelegations_FullMethodName   = "/initia.mstaking.v1.Query/DelegatorUnbondingDelegations"
+	Query_Redelegations_FullMethodName                   = "/initia.mstaking.v1.Query/Redelegations"
+	Query_DelegatorValidators_FullMethodName             = "/initia.mstaking.v1.Query/DelegatorValidators"
+	Query_DelegatorValidator_FullMethodName              = "/initia.mstaking.v1.Query/DelegatorValidator"
+	Query_DelegatorTotalDelegationBalance_FullMethodName = "/initia.mstaking.v1.Query/DelegatorTotalDelegationBalance"
+	Query_Pool_FullMethodName                            = "/initia.mstaking.v1.Query/Pool"
+	Query_Params_FullMethodName                          = "/initia.mstaking.v1.Query/Params"
 )
 
 // QueryClient is the client API for Query service.
@@ -64,6 +65,9 @@ type QueryClient interface {
 	// DelegatorValidator queries validator info for given delegator validator
 	// pair.
 	DelegatorValidator(ctx context.Context, in *QueryDelegatorValidatorRequest, opts ...grpc.CallOption) (*QueryDelegatorValidatorResponse, error)
+	// DelegatorTotalDelegationBalance queries sum of all the delegations' balance of a
+	// delegator.
+	DelegatorTotalDelegationBalance(ctx context.Context, in *QueryDelegatorTotalDelegationBalanceRequest, opts ...grpc.CallOption) (*QueryDelegatorTotalDelegationBalanceResponse, error)
 	// Pool queries the pool info.
 	Pool(ctx context.Context, in *QueryPoolRequest, opts ...grpc.CallOption) (*QueryPoolResponse, error)
 	// Parameters queries the staking parameters.
@@ -177,6 +181,15 @@ func (c *queryClient) DelegatorValidator(ctx context.Context, in *QueryDelegator
 	return out, nil
 }
 
+func (c *queryClient) DelegatorTotalDelegationBalance(ctx context.Context, in *QueryDelegatorTotalDelegationBalanceRequest, opts ...grpc.CallOption) (*QueryDelegatorTotalDelegationBalanceResponse, error) {
+	out := new(QueryDelegatorTotalDelegationBalanceResponse)
+	err := c.cc.Invoke(ctx, Query_DelegatorTotalDelegationBalance_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *queryClient) Pool(ctx context.Context, in *QueryPoolRequest, opts ...grpc.CallOption) (*QueryPoolResponse, error) {
 	out := new(QueryPoolResponse)
 	err := c.cc.Invoke(ctx, Query_Pool_FullMethodName, in, out, opts...)
@@ -225,6 +238,9 @@ type QueryServer interface {
 	// DelegatorValidator queries validator info for given delegator validator
 	// pair.
 	DelegatorValidator(context.Context, *QueryDelegatorValidatorRequest) (*QueryDelegatorValidatorResponse, error)
+	// DelegatorTotalDelegationBalance queries sum of all the delegations' balance of a
+	// delegator.
+	DelegatorTotalDelegationBalance(context.Context, *QueryDelegatorTotalDelegationBalanceRequest) (*QueryDelegatorTotalDelegationBalanceResponse, error)
 	// Pool queries the pool info.
 	Pool(context.Context, *QueryPoolRequest) (*QueryPoolResponse, error)
 	// Parameters queries the staking parameters.
@@ -268,6 +284,9 @@ func (UnimplementedQueryServer) DelegatorValidators(context.Context, *QueryDeleg
 }
 func (UnimplementedQueryServer) DelegatorValidator(context.Context, *QueryDelegatorValidatorRequest) (*QueryDelegatorValidatorResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DelegatorValidator not implemented")
+}
+func (UnimplementedQueryServer) DelegatorTotalDelegationBalance(context.Context, *QueryDelegatorTotalDelegationBalanceRequest) (*QueryDelegatorTotalDelegationBalanceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DelegatorTotalDelegationBalance not implemented")
 }
 func (UnimplementedQueryServer) Pool(context.Context, *QueryPoolRequest) (*QueryPoolResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Pool not implemented")
@@ -486,6 +505,24 @@ func _Query_DelegatorValidator_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_DelegatorTotalDelegationBalance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryDelegatorTotalDelegationBalanceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).DelegatorTotalDelegationBalance(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_DelegatorTotalDelegationBalance_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).DelegatorTotalDelegationBalance(ctx, req.(*QueryDelegatorTotalDelegationBalanceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Query_Pool_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryPoolRequest)
 	if err := dec(in); err != nil {
@@ -572,6 +609,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DelegatorValidator",
 			Handler:    _Query_DelegatorValidator_Handler,
+		},
+		{
+			MethodName: "DelegatorTotalDelegationBalance",
+			Handler:    _Query_DelegatorTotalDelegationBalance_Handler,
 		},
 		{
 			MethodName: "Pool",

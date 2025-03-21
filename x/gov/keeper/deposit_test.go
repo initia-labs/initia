@@ -6,10 +6,11 @@ import (
 
 	"cosmossdk.io/collections"
 	"cosmossdk.io/math"
+	"github.com/stretchr/testify/require"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/gov/types"
 	v1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
-	"github.com/stretchr/testify/require"
 )
 
 func TestSimpleDeposits(t *testing.T) {

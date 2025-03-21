@@ -1,0 +1,16 @@
+syntax = "proto3";
+package initia.dynamicfee.v1;
+
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+import "initia/dynamicfee/v1/types.proto";
+
+option go_package = "github.com/initia-labs/initia/x/dynamic-fee/types";
+
+// GenesisState - genesis state of x/move
+message GenesisState {
+  Params params = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}

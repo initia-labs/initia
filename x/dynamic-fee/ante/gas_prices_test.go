@@ -2,7 +2,7 @@ package ante_test
 
 import (
 	"cosmossdk.io/math"
-	"github.com/initia-labs/initia/x/move/ante"
+	"github.com/initia-labs/initia/x/dynamic-fee/ante"
 
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/cosmos-sdk/testutil/testdata"

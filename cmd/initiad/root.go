@@ -16,6 +16,7 @@ import (
 	confixcmd "cosmossdk.io/tools/confix/cmd"
 
 	dbm "github.com/cosmos/cosmos-db"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/config"
 	"github.com/cosmos/cosmos-sdk/client/debug"

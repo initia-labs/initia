@@ -2,10 +2,11 @@ package move_hooks
 
 import (
 	"cosmossdk.io/core/address"
-	"github.com/cosmos/cosmos-sdk/codec"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
+
+	"github.com/cosmos/cosmos-sdk/codec"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	ibchooks "github.com/initia-labs/initia/x/ibc-hooks"
 	movekeeper "github.com/initia-labs/initia/x/move/keeper"

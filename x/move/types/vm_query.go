@@ -2,8 +2,9 @@ package types
 
 import (
 	"cosmossdk.io/core/address"
-	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/gogoproto/proto"
+
+	"github.com/cosmos/cosmos-sdk/codec"
 
 	govtypes "github.com/initia-labs/initia/x/gov/types"
 )

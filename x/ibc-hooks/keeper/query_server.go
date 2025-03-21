@@ -3,8 +3,9 @@ package keeper
 import (
 	"context"
 
-	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/initia-labs/initia/x/ibc-hooks/types"
+
+	"github.com/cosmos/cosmos-sdk/types/query"
 )
 
 type queryServer struct {
