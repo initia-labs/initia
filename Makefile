@@ -1,13 +1,16 @@
 #!/usr/bin/make -f
 
 BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
-COMMIT := $(shell git log -1 --format='%H')
 LEDGER_ENABLED ?= true
 BINDIR ?= $(GOPATH)/bin
 BUILDDIR ?= $(CURDIR)/build
 DOCKER := $(shell which docker)
 
-# don't override user values
+# don't override user values of COMMIT and VERSION
+ifeq (,$(COMMIT))
+  COMMIT := $(shell git log -1 --format='%H')
+endif
+
 ifeq (,$(VERSION))
   VERSION := $(shell git describe --tags)
   # if VERSION is empty, then populate it with branch's name and raw commit hash
@@ -242,7 +245,7 @@ lint-fix:
 .PHONY: lint lint-fix
 
 format:
-	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/docs/statik/statik.go" -not -path "./tests/mocks/*" -not -name '*.pb.go' | xargs gofmt -w -s
-	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/docs/statik/statik.go" -not -path "./tests/mocks/*" -not -name '*.pb.go' | xargs misspell -w
-	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/docs/statik/statik.go" -not -path "./tests/mocks/*" -not -name '*.pb.go' | xargs goimports -w -local github.com/cosmos/cosmos-sdk
+	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/docs/statik/statik.go" -not -path "./tests/mocks/*" -not -path "./api/*" -not -name '*.pb.go' | xargs gofmt -w -s
+	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/docs/statik/statik.go" -not -path "./tests/mocks/*" -not -path "./api/*" -not -name '*.pb.go' | xargs misspell -w
+	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/docs/statik/statik.go" -not -path "./tests/mocks/*" -not -path "./api/*" -not -name '*.pb.go' | xargs goimports -w -local github.com/cosmos/cosmos-sdk
 .PHONY: format

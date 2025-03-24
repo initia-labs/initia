@@ -4,9 +4,10 @@ import (
 	"testing"
 
 	"cosmossdk.io/collections"
+	"github.com/stretchr/testify/require"
+
 	"github.com/cosmos/cosmos-sdk/types"
 	v1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
-	"github.com/stretchr/testify/require"
 )
 
 func TestSimpleVote(t *testing.T) {

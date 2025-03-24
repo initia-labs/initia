@@ -5,10 +5,11 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/initia-labs/initia/x/move/types"
 	vmtypes "github.com/initia-labs/movevm/types"
 	"github.com/stretchr/testify/require"
+
+	"github.com/cosmos/cosmos-sdk/codec/address"
 )
 
 func Test_ToSDKAddress(t *testing.T) {
