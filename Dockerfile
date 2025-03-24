@@ -9,6 +9,7 @@ ARG COMMIT
 
 # See https://github.com/initia-labs/movevm/releases
 ENV LIBMOVEVM_VERSION=v1.0.0-beta.0
+ENV MIMALLOC_VERSION=2.2.2
 
 # Install necessary packages
 RUN set -eux; apk add --no-cache ca-certificates build-base git cmake
@@ -17,7 +18,7 @@ WORKDIR /code
 COPY . /code/
 
 # Install mimalloc
-RUN git clone --depth 1 https://github.com/microsoft/mimalloc; cd mimalloc; mkdir build; cd build; cmake ..; make -j$(nproc); make install
+RUN git clone -b ${MIMALLOC_VERSION} --depth 1 https://github.com/microsoft/mimalloc; cd mimalloc; mkdir build; cd build; cmake ..; make -j$(nproc); make install
 ENV MIMALLOC_RESERVE_HUGE_OS_PAGES=4
 
 # Determine GOARCH and download the appropriate libraries
