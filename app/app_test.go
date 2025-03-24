@@ -13,6 +13,8 @@ import (
 
 	"cosmossdk.io/log"
 	dbm "github.com/cosmos/cosmos-db"
+	"github.com/cosmos/ibc-go/modules/capability"
+
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/testutil/mock"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -23,10 +25,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/consensus"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	groupmodule "github.com/cosmos/cosmos-sdk/x/group/module"
-	"github.com/cosmos/ibc-go/modules/capability"
 
 	feegrantmodule "cosmossdk.io/x/feegrant/module"
 	"cosmossdk.io/x/upgrade"
+
 	"github.com/cosmos/cosmos-sdk/x/slashing"
 
 	ica "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts"

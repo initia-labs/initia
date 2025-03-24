@@ -17,6 +17,7 @@ import (
 	vmtypes "github.com/initia-labs/movevm/types"
 
 	dbm "github.com/cosmos/cosmos-db"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"

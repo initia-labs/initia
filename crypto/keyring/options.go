@@ -3,13 +3,14 @@ package keyring
 import (
 	"fmt"
 
+	cosmosledger "github.com/cosmos/ledger-cosmos-go"
+
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	cosmoshd "github.com/cosmos/cosmos-sdk/crypto/hd"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	"github.com/cosmos/cosmos-sdk/crypto/ledger"
 	"github.com/cosmos/cosmos-sdk/crypto/types"
-	cosmosledger "github.com/cosmos/ledger-cosmos-go"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"

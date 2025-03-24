@@ -4,8 +4,9 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
-	"github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/stretchr/testify/require"
+
+	"github.com/cosmos/cosmos-sdk/codec/address"
 )
 
 func TestParams(t *testing.T) {

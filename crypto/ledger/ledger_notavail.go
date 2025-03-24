@@ -4,8 +4,9 @@
 package ledger
 
 import (
-	"github.com/cosmos/cosmos-sdk/crypto/ledger"
 	"github.com/pkg/errors"
+
+	"github.com/cosmos/cosmos-sdk/crypto/ledger"
 )
 
 func FindLedgerEthereumApp() (ledger.SECP256K1, error) {
