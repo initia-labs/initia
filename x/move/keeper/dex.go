@@ -5,8 +5,9 @@ import (
 
 	"cosmossdk.io/math"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/pkg/errors"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	distrtypes "github.com/initia-labs/initia/x/distribution/types"
 	"github.com/initia-labs/initia/x/move/types"

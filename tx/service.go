@@ -3,9 +3,10 @@ package tx
 import (
 	"context"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	gogogrpc "github.com/cosmos/gogoproto/grpc"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	txtypes "github.com/initia-labs/initia/tx/types"
 )

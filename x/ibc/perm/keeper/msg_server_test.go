@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	dbm "github.com/cosmos/cosmos-db"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
