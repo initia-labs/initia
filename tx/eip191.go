@@ -23,7 +23,7 @@ func NewSignModeEIP191Handler(options aminojson.SignModeHandlerOptions) *SignMod
 	}
 }
 
-var _ signing.SignModeHandler = SignModeEIP191Handler{}
+var _ signing.SignModeHandler = &SignModeEIP191Handler{}
 
 // Mode implements signing.SignModeHandler.Mode.
 func (SignModeEIP191Handler) Mode() signingv1beta1.SignMode {
