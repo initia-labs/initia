@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"cosmossdk.io/x/evidence/types"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )

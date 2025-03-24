@@ -9,9 +9,8 @@ import (
 	movekeeper "github.com/initia-labs/initia/x/move/keeper"
 	movetypes "github.com/initia-labs/initia/x/move/types"
 
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 )
 
 func (suite *KeeperTestSuite) GetNFTOwner(ctx context.Context, k *keeper.Keeper, moveKeeper *movekeeper.Keeper, nftKeeper *movekeeper.NftKeeper, classId, className, nftId string) sdk.AccAddress {

@@ -4,11 +4,10 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
+	"github.com/cosmos/cosmos-sdk/types"
 	"github.com/initia-labs/initia/x/distribution/keeper"
 	customTypes "github.com/initia-labs/initia/x/distribution/types"
 	"github.com/stretchr/testify/require"
-
-	"github.com/cosmos/cosmos-sdk/types"
 )
 
 func TestDepositValidatorRewardsPool(t *testing.T) {

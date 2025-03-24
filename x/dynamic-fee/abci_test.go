@@ -13,9 +13,8 @@ import (
 
 	"github.com/initia-labs/initia/x/dynamic-fee/types"
 
-	movetypes "github.com/initia-labs/initia/x/move/types"
-
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	movetypes "github.com/initia-labs/initia/x/move/types"
 )
 
 func Test_EndBlocker(t *testing.T) {

@@ -5,9 +5,8 @@ import (
 	"strconv"
 	"time"
 
-	grpc "google.golang.org/grpc"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	grpc "google.golang.org/grpc"
 
 	stakingkeeper "github.com/initia-labs/initia/x/mstaking/keeper"
 

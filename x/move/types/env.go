@@ -6,7 +6,6 @@ import (
 	"encoding/binary"
 
 	"github.com/cometbft/cometbft/crypto/tmhash"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	vmtypes "github.com/initia-labs/movevm/types"

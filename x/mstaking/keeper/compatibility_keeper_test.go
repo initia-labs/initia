@@ -4,10 +4,9 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
+	cosmostypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	stakingkeeper "github.com/initia-labs/initia/x/mstaking/keeper"
 	"github.com/stretchr/testify/require"
-
-	cosmostypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
 func Test_CompatibleValidator(t *testing.T) {

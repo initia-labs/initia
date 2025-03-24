@@ -7,7 +7,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	dbm "github.com/cosmos/cosmos-db"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/initia-labs/initia/x/ibc/perm/types"

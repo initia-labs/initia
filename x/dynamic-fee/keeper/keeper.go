@@ -3,10 +3,9 @@ package keeper
 import (
 	"context"
 
-	"github.com/initia-labs/initia/x/dynamic-fee/types"
-
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/initia-labs/initia/x/dynamic-fee/types"
 
 	"cosmossdk.io/collections"
 	"cosmossdk.io/core/address"

@@ -3,10 +3,9 @@ package keeper_test
 import (
 	"testing"
 
+	"github.com/cosmos/cosmos-sdk/x/distribution/types"
 	"github.com/initia-labs/initia/x/distribution/keeper"
 	"github.com/stretchr/testify/require"
-
-	"github.com/cosmos/cosmos-sdk/x/distribution/types"
 )
 
 func TestQueryParams(t *testing.T) {

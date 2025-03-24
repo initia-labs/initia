@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
+	"cosmossdk.io/core/address"
 	"cosmossdk.io/core/appmodule"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 
@@ -78,7 +79,9 @@ func (b AppModuleBasic) RegisterInterfaces(registry cdctypes.InterfaceRegistry) 
 type AppModule struct {
 	AppModuleBasic
 
-	keeper keeper.Keeper
+	keeper      keeper.Keeper
+	vc          address.Codec
+	moduleNames []string
 }
 
 // IsAppModule implements the appmodule.AppModule interface.
@@ -118,7 +121,7 @@ func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.
 	var genesisState types.GenesisState
 	cdc.MustUnmarshalJSON(data, &genesisState)
 
-	if err := am.keeper.InitGenesis(ctx, genesisState); err != nil {
+	if err := am.keeper.InitGenesis(ctx, am.moduleNames, genesisState); err != nil {
 		panic(err)
 	}
 }

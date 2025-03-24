@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 
 	"cosmossdk.io/core/address"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 

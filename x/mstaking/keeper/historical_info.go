@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"cosmossdk.io/collections"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	cosmostypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )

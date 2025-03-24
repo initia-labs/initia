@@ -6,9 +6,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 
-	customtypes "github.com/initia-labs/initia/x/gov/types"
-
 	v1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
+	customtypes "github.com/initia-labs/initia/x/gov/types"
 
 	"cosmossdk.io/collections"
 	"cosmossdk.io/errors"

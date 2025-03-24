@@ -8,7 +8,6 @@ import (
 	"cosmossdk.io/collections"
 	moderrors "cosmossdk.io/errors"
 	"cosmossdk.io/math"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/initia-labs/initia/x/move/types"

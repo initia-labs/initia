@@ -4,7 +4,6 @@ import (
 	context "context"
 
 	"cosmossdk.io/core/address"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"

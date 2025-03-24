@@ -23,7 +23,6 @@ import (
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 
 	dbm "github.com/cosmos/cosmos-db"
-
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codecaddress "github.com/cosmos/cosmos-sdk/codec/address"

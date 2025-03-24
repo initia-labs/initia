@@ -9,7 +9,6 @@ import (
 	"github.com/initia-labs/initia/x/move/types"
 
 	storetypes "cosmossdk.io/store/types"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )

@@ -10,7 +10,6 @@ import (
 
 	"cosmossdk.io/core/address"
 	"cosmossdk.io/math"
-
 	"github.com/cosmos/cosmos-sdk/codec"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"

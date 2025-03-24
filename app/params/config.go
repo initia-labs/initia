@@ -2,7 +2,6 @@ package params
 
 import (
 	"cosmossdk.io/x/tx/signing/aminojson"
-
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
