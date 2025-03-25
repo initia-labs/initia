@@ -9,7 +9,6 @@ import (
 
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/cosmos-sdk/crypto/types/multisig"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 
 	"github.com/initia-labs/initia/crypto/ethsecp256k1"
@@ -54,11 +53,11 @@ func verifySignature(
 			return err
 		}
 
-		// TODO - remove this once `interwoven-1` has been upgraded to initia@v1.1.0 via software upgrade
-		// interwoven-1 eth pubkey verification has been changed to use EIP-191 prefix at block height 39652
-		if sdkCtx := sdk.UnwrapSDKContext(ctx); sdkCtx.ChainID() == "interwoven-1" && sdkCtx.BlockHeight() < 39652 {
+		// For Ledger support, we need to verify signatures with EIP-191 prefix when using LEGACY_AMINO_JSON.
+		// This is because the Cosmos SDK only allows LEGACY_AMINO_JSON signing mode for Ledger devices.
+		if signMode == signingv1beta1.SignMode_SIGN_MODE_LEGACY_AMINO_JSON {
 			if pubkey, ok := pubKey.(*ethsecp256k1.PubKey); ok {
-				if !pubkey.VerifySignatureWithoutEIP191(signBytes, data.Signature) {
+				if !pubkey.VerifySignatureWithEIP191(signBytes, data.Signature) {
 					return fmt.Errorf("unable to verify single signer signature")
 				}
 

@@ -245,7 +245,7 @@ func (pubKey *PubKey) UnmarshalAminoJSON(bz []byte) error {
 // the provided message. It will attach the EIP-191 prefix to the message if it is not already present.
 //
 // CONTRACT: The signature should be in [R || S] format.
-func (pubKey PubKey) VerifySignature(msg, sig []byte) bool {
+func (pubKey PubKey) VerifySignatureWithEIP191(msg, sig []byte) bool {
 	// if message does not start with EIP-191 prefix, add it
 	if !strings.HasPrefix(string(msg), tx.EIP191MessagePrefix) {
 		msg = tx.FormatEIP191Message(msg)
@@ -258,7 +258,7 @@ func (pubKey PubKey) VerifySignature(msg, sig []byte) bool {
 // the provided message. It does not attach the EIP-191 prefix to the message.
 //
 // CONTRACT: The signature should be in [R || S] format.
-func (pubKey PubKey) VerifySignatureWithoutEIP191(msg, sig []byte) bool {
+func (pubKey PubKey) VerifySignature(msg, sig []byte) bool {
 	return pubKey.verifySignatureECDSA(msg, sig)
 }
 
