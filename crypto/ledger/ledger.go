@@ -4,6 +4,8 @@
 package ledger
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -140,9 +142,23 @@ func (i *InitiaLedger) SignSECP256K1(hdPath []uint32, signBytes []byte, _ byte) 
 		return nil, errors.Wrap(err, "failed to derive account")
 	}
 
-	fmt.Println("Please check your Ledger device for confirmation")
-	fmt.Println("Signing message:")
-	fmt.Println(string(signBytes))
+	// pretty print the sign bytes
+
+	var prettySignBytes bytes.Buffer
+	err = json.Indent(&prettySignBytes, signBytes, "", "  ")
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to indent sign bytes")
+	}
+
+	fmt.Printf(`
+################################################
+Please check your Ledger device for confirmation
+
+Signing message:
+%s
+################################################
+
+`, prettySignBytes.String())
 
 	sig, err := i.wallet.SignText(account, signBytes)
 	if err != nil {
