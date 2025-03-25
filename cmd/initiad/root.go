@@ -90,8 +90,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		WithAccountRetriever(types.AccountRetriever{}).
 		WithHomeDir(initiaapp.DefaultNodeHome).
 		WithViper(initiaapp.EnvPrefix).
-		WithKeyringOptions(cryptokeyring.EthSecp256k1Option()).
-		WithLedgerHasProtobuf(true)
+		WithKeyringOptions(cryptokeyring.EthSecp256k1Option())
 
 	rootCmd := &cobra.Command{
 		Use:   basename,

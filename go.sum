@@ -753,8 +753,8 @@ github.com/initia-labs/cometbft v0.0.0-20250324104207-ff0764c4444f h1:XA4MKOcB/V
 github.com/initia-labs/cometbft v0.0.0-20250324104207-ff0764c4444f/go.mod h1:5l0SkgeLRXi6bBfQuevXjKqML1jjfJJlvI1Ulp02/o4=
 github.com/initia-labs/connect/v2 v2.3.1 h1:Y32LCwUHDBgUzzQHqPBJeWeItYoNu2oYD57JKbZCtjw=
 github.com/initia-labs/connect/v2 v2.3.1/go.mod h1:35hM7xSgI0h3GMUTgspzKY8Ff2yCXNGNwmAdjqo3z8s=
-github.com/initia-labs/cosmos-sdk v0.0.0-20250325091932-1e6511ea77ba h1:95D0Oi1aqgjRUVgq492CHf7SzKKFX+1VyKDq9LRweMs=
-github.com/initia-labs/cosmos-sdk v0.0.0-20250325091932-1e6511ea77ba/go.mod h1:hrWEFMU1eoXqLJeE6VVESpJDQH67FS1nnMrQIjO2daw=
+github.com/initia-labs/cosmos-sdk v0.0.0-20250325094132-2d8e8144a217 h1:MhVePu3T8Q1c9DmmDSVIhJ5OjzsDdjo48oMfRyL0xy4=
+github.com/initia-labs/cosmos-sdk v0.0.0-20250325094132-2d8e8144a217/go.mod h1:hrWEFMU1eoXqLJeE6VVESpJDQH67FS1nnMrQIjO2daw=
 github.com/initia-labs/movevm v1.0.0-beta.0 h1:ay/IOEkwH33vPis8W4WwC9BQ/ZtUtW/ekAlrZKPW5YI=
 github.com/initia-labs/movevm v1.0.0-beta.0/go.mod h1:sj/kXD7mUQASqogPTjqltIr4Uid3xxnlcbfiFvvqeXA=
 github.com/jhump/protoreflect v1.15.3 h1:6SFRuqU45u9hIZPJAoZ8c28T3nK64BNdp9w6jFonzls=
