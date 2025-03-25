@@ -10,8 +10,6 @@ import (
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/cosmos-sdk/crypto/types/multisig"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
-
-	"github.com/initia-labs/initia/crypto/ethsecp256k1"
 )
 
 // internalSignModeToAPI converts a signing.SignMode to a protobuf SignMode.
@@ -51,18 +49,6 @@ func verifySignature(
 		signBytes, err := handler.GetSignBytes(ctx, signMode, signerData, txData)
 		if err != nil {
 			return err
-		}
-
-		// For Ledger support, we need to verify signatures with EIP-191 prefix when using LEGACY_AMINO_JSON.
-		// This is because the Cosmos SDK only allows LEGACY_AMINO_JSON signing mode for Ledger devices.
-		if signMode == signingv1beta1.SignMode_SIGN_MODE_LEGACY_AMINO_JSON {
-			if pubkey, ok := pubKey.(*ethsecp256k1.PubKey); ok {
-				if !pubkey.VerifySignatureWithEIP191(signBytes, data.Signature) {
-					return fmt.Errorf("unable to verify single signer signature")
-				}
-
-				return nil
-			}
 		}
 
 		if !pubKey.VerifySignature(signBytes, data.Signature) {

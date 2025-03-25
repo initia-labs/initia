@@ -3,6 +3,7 @@ package tx
 import (
 	"context"
 	"strconv"
+	"strings"
 
 	signingv1beta1 "cosmossdk.io/api/cosmos/tx/signing/v1beta1"
 	"cosmossdk.io/x/tx/signing"
@@ -48,4 +49,9 @@ func FormatEIP191Message(msg []byte) []byte {
 		[]byte(EIP191MessagePrefix),
 		[]byte(strconv.Itoa(len(msg)))...,
 	), msg...)
+}
+
+// RemoveEIP191Prefix removes the EIP-191 prefix from a message.
+func RemoveEIP191Prefix(msg []byte) []byte {
+	return msg[strings.Index(string(msg), "{"):]
 }

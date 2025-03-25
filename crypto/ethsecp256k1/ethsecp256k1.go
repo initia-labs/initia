@@ -7,11 +7,9 @@ import (
 	"fmt"
 	io "io"
 	"math/big"
-	"strings"
 
 	errorsmod "cosmossdk.io/errors"
 	"github.com/cometbft/cometbft/crypto"
-	"github.com/initia-labs/initia/tx"
 	"golang.org/x/crypto/sha3"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -137,11 +135,6 @@ func (privKey *PrivKey) UnmarshalAminoJSON(bz []byte) error {
 // provided hash of the message. The produced signature is 65 bytes
 // where the last byte contains the recovery ID.
 func (privKey PrivKey) Sign(msg []byte) ([]byte, error) {
-	// if message does not start with EIP-191 prefix, add it
-	if !strings.HasPrefix(string(msg), tx.EIP191MessagePrefix) {
-		msg = tx.FormatEIP191Message(msg)
-	}
-
 	priv := secp256k1.PrivKeyFromBytes(privKey.Key)
 
 	sig := ecdsa.SignCompact(priv, keccak256(msg), false)
@@ -239,19 +232,6 @@ func (pubKey PubKey) MarshalAminoJSON() ([]byte, error) {
 // UnmarshalAminoJSON overrides Amino JSON marshaling.
 func (pubKey *PubKey) UnmarshalAminoJSON(bz []byte) error {
 	return pubKey.UnmarshalAmino(bz)
-}
-
-// VerifySignatureWithEIP191 verifies that the ECDSA public key created a given signature over
-// the provided message. It will attach the EIP-191 prefix to the message if it is not already present.
-//
-// CONTRACT: The signature should be in [R || S] format.
-func (pubKey PubKey) VerifySignatureWithEIP191(msg, sig []byte) bool {
-	// if message does not start with EIP-191 prefix, add it
-	if !strings.HasPrefix(string(msg), tx.EIP191MessagePrefix) {
-		msg = tx.FormatEIP191Message(msg)
-	}
-
-	return pubKey.verifySignatureECDSA(msg, sig)
 }
 
 // VerifySignature verifies that the ECDSA public key created a given signature over
