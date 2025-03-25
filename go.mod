@@ -249,6 +249,7 @@ require github.com/cosmos/iavl v1.2.5-0.20250306174232-6cfb3dac2c71 // indirect
 
 // initia custom
 // use custom version for
+//
 // cometbft
 // - https://github.com/initia-labs/cometbft/commit/cb3ed4ca9be4d6c55df7df2d927e9b92153bc3e2
 // - https://github.com/initia-labs/cometbft/pull/14

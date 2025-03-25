@@ -62,8 +62,9 @@ func SignWithLedger(k *cosmoskeyring.Record, msg []byte, signMode signing.SignMo
 
 	signMsg := msg
 	if isEthPubKey {
-		// remove EIP191 prefix from message;
-		// ledger will sign the message with the EIP191 prefix
+		// Remove EIP191 prefix from message since the Ledger device will
+		// automatically add the prefix before signing. This avoids double-prefixing
+		// which would result in an invalid signature.
 		signMsg = tx.RemoveEIP191Prefix(msg)
 	}
 
