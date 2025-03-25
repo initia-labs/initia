@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 
-	"cosmossdk.io/core/address"
 	"cosmossdk.io/core/appmodule"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 
@@ -80,7 +79,6 @@ type AppModule struct {
 	AppModuleBasic
 
 	keeper      keeper.Keeper
-	vc          address.Codec
 	moduleNames []string
 }
 
