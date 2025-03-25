@@ -9,7 +9,7 @@ ARG COMMIT
 
 # See https://github.com/initia-labs/movevm/releases
 ENV LIBMOVEVM_VERSION=v1.0.0-beta.0
-ENV MIMALLOC_VERSION=2.2.2
+ENV MIMALLOC_VERSION=v2.2.2
 
 # Install necessary packages
 RUN set -eux; apk add --no-cache ca-certificates build-base git cmake
