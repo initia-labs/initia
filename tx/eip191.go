@@ -53,5 +53,10 @@ func FormatEIP191Message(msg []byte) []byte {
 
 // RemoveEIP191Prefix removes the EIP-191 prefix from a message.
 func RemoveEIP191Prefix(msg []byte) []byte {
-	return msg[strings.Index(string(msg), "{"):]
+	idx := strings.Index(string(msg), "{")
+	if idx == -1 {
+		return msg
+	}
+
+	return msg[idx:]
 }
