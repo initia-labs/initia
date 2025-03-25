@@ -241,7 +241,7 @@ func (pubKey *PubKey) UnmarshalAminoJSON(bz []byte) error {
 	return pubKey.UnmarshalAmino(bz)
 }
 
-// VerifySignature verifies that the ECDSA public key created a given signature over
+// VerifySignatureWithEIP191 verifies that the ECDSA public key created a given signature over
 // the provided message. It will attach the EIP-191 prefix to the message if it is not already present.
 //
 // CONTRACT: The signature should be in [R || S] format.
@@ -254,7 +254,7 @@ func (pubKey PubKey) VerifySignatureWithEIP191(msg, sig []byte) bool {
 	return pubKey.verifySignatureECDSA(msg, sig)
 }
 
-// VerifySignatureWithoutEIP191 verifies that the ECDSA public key created a given signature over
+// VerifySignature verifies that the ECDSA public key created a given signature over
 // the provided message. It does not attach the EIP-191 prefix to the message.
 //
 // CONTRACT: The signature should be in [R || S] format.
