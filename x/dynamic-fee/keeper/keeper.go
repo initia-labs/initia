@@ -99,6 +99,9 @@ func (k Keeper) UpdateBaseGasPrice(ctx sdk.Context) error {
 	if err != nil {
 		return err
 	}
+	if params.TargetGas == 0 {
+		return types.ErrTargetGasZero
+	}
 
 	gasUsed := ctx.BlockGasMeter().GasConsumed()
 
