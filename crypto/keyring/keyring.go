@@ -43,11 +43,6 @@ func (ks Keyring) Sign(uid string, msg []byte, signMode signing.SignMode) ([]byt
 	}
 }
 
-var (
-	ErrInvalidSignModeEthereum = errors.New("invalid sign mode, EIP191 for Ethereum Ledger")
-	ErrInvalidSignModeCosmos   = errors.New("invalid sign mode, LEGACY_AMINO_JSON for Cosmos Ledger")
-)
-
 // SignWithLedger signs a binary message with the ledger device referenced by an Info object
 // and returns the signed bytes and the public key. It returns an error if the device could
 // not be queried or it returned an error.

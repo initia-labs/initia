@@ -235,7 +235,7 @@ func (pubKey *PubKey) UnmarshalAminoJSON(bz []byte) error {
 }
 
 // VerifySignature verifies that the ECDSA public key created a given signature over
-// the provided message. It does not attach the EIP-191 prefix to the message.
+// the provided message.
 //
 // CONTRACT: The signature should be in [R || S] format.
 func (pubKey PubKey) VerifySignature(msg, sig []byte) bool {
