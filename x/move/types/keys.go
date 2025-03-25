@@ -62,8 +62,7 @@ var (
 	DexPairPrefix       = []byte{0x12} // prefix for dex pairs
 	VMStorePrefix       = []byte{0x21} // prefix for vm
 
-	ParamsKey           = []byte{0x31} // prefix for parameters for module x/move
-	EIP1559FeeParamsKey = []byte{0x32} // prefix for eip1559 fee params
+	ParamsKey = []byte{0x31} // prefix for parameters for module x/move
 
 	ModuleSeparator     = byte(0)
 	ChecksumSeparator   = byte(1)
