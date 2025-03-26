@@ -282,9 +282,13 @@ func _createTestInput(
 		govtypes.StoreKey, authzkeeper.StoreKey, movetypes.StoreKey,
 		oracletypes.StoreKey, dynamicfeetypes.StoreKey,
 	)
+	transientKeys := storetypes.NewTransientStoreKeys(dynamicfeetypes.TStoreKey)
 	ms := store.NewCommitMultiStore(db, log.NewNopLogger(), metrics.NewNoOpMetrics())
 	for _, v := range keys {
 		ms.MountStoreWithDB(v, storetypes.StoreTypeIAVL, db)
+	}
+	for _, v := range transientKeys {
+		ms.MountStoreWithDB(v, storetypes.StoreTypeTransient, db)
 	}
 	memKeys := storetypes.NewMemoryStoreKeys()
 	for _, v := range memKeys {
@@ -426,6 +430,7 @@ func _createTestInput(
 	dynamicFeeKeeper := dynamicfeekeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[dynamicfeetypes.StoreKey]),
+		runtime.NewTransientStoreService(transientKeys[dynamicfeetypes.TStoreKey]),
 		movekeeper.NewDexKeeper(moveKeeper),
 		moveKeeper,
 		moveKeeper,

@@ -19,8 +19,8 @@ func (k Keeper) GasPrices(
 	if err != nil {
 		return nil, err
 	}
-	baseGasPrice := params.BaseGasPrice
 
+	baseGasPrice := params.BaseGasPrice
 	baseDenom, err := k.baseDenomKeeper.BaseDenom(ctx)
 	if err != nil {
 		return nil, err
@@ -44,6 +44,7 @@ func (k Keeper) GasPrices(
 		gasPrice := baseGasPrice.Quo(baseSpotPrice)
 		gasPrices = gasPrices.Add(sdk.NewDecCoinFromDec(denom, gasPrice))
 	}
+
 	return gasPrices, nil
 }
 
@@ -56,13 +57,23 @@ func (k Keeper) GasPrice(
 	if err != nil {
 		return sdk.DecCoin{}, err
 	}
-	baseGasPrice := params.BaseGasPrice
 
-	baseSpotPrice, err := k.tokenPriceKeeper.GetBaseSpotPrice(ctx, denom)
+	baseGasPrice := params.BaseGasPrice
+	baseDenom, err := k.baseDenomKeeper.BaseDenom(ctx)
 	if err != nil {
 		return sdk.DecCoin{}, err
 	}
-	if baseSpotPrice.IsZero() {
+
+	// if denom is base denom, return base gas price
+	if denom == baseDenom {
+		return sdk.NewDecCoinFromDec(baseDenom, baseGasPrice), nil
+	}
+
+	// if denom is not base denom, get base spot price
+	baseSpotPrice, err := k.tokenPriceKeeper.GetBaseSpotPrice(ctx, denom)
+	if err != nil {
+		return sdk.DecCoin{}, err
+	} else if baseSpotPrice.IsZero() {
 		return sdk.DecCoin{}, fmt.Errorf("baseSpotPrice is zero: %s", denom)
 	}
 

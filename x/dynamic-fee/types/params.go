@@ -8,7 +8,7 @@ import (
 
 var (
 	DefaultBaseGasPrice    = math.LegacyNewDecWithPrec(15, 3) // 0.015
-	DefaultMinBaseGasPrice = math.LegacyNewDecWithPrec(1, 3)  // 0.001
+	DefaultMinBaseGasPrice = math.LegacyNewDecWithPrec(15, 3) // 0.015
 	DefaultMaxBaseGasPrice = math.LegacyNewDec(10)            // 10
 
 	// 200_000_000 * 0.5

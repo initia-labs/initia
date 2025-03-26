@@ -50,6 +50,10 @@ func (k TestAnteKeeper) BaseGasPrice(ctx context.Context) (math.LegacyDec, error
 	return k.baseGasPrice, nil
 }
 
+func (k TestAnteKeeper) AccumulateGas(ctx context.Context, gas uint64) error {
+	return nil
+}
+
 func (suite *AnteTestSuite) TestEnsureMempoolFees() {
 	suite.SetupTest() // setup
 	suite.txBuilder = suite.clientCtx.TxConfig.NewTxBuilder()

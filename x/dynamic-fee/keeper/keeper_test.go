@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
-	storetypes "cosmossdk.io/store/types"
 	"github.com/stretchr/testify/require"
 
 	"github.com/initia-labs/initia/x/dynamic-fee/types"
@@ -25,8 +24,8 @@ func Test_UpdateBaseFee(t *testing.T) {
 	baseGasPrice, err := input.DynamicFeeKeeper.BaseGasPrice(ctx)
 	require.Equal(t, math.LegacyNewDecWithPrec(1, 2), baseGasPrice)
 
-	ctx = ctx.WithBlockGasMeter(storetypes.NewInfiniteGasMeter())
-	ctx.BlockGasMeter().ConsumeGas(100000, "test")
+	// accumulate gas
+	input.DynamicFeeKeeper.AccumulateGas(ctx, 100000)
 
 	// update base fee
 	err = input.DynamicFeeKeeper.UpdateBaseGasPrice(ctx)
@@ -35,8 +34,9 @@ func Test_UpdateBaseFee(t *testing.T) {
 	baseGasPrice, err = input.DynamicFeeKeeper.BaseGasPrice(ctx)
 	require.Equal(t, math.LegacyNewDecWithPrec(1, 2), baseGasPrice)
 
-	ctx = ctx.WithBlockGasMeter(storetypes.NewInfiniteGasMeter())
-	ctx.BlockGasMeter().ConsumeGas(200000, "test")
+	// accumulate gas
+	input.DynamicFeeKeeper.ResetAccumulatedGas(ctx)
+	input.DynamicFeeKeeper.AccumulateGas(ctx, 200000)
 
 	// update base fee
 	err = input.DynamicFeeKeeper.UpdateBaseGasPrice(ctx)
@@ -45,8 +45,8 @@ func Test_UpdateBaseFee(t *testing.T) {
 	baseGasPrice, err = input.DynamicFeeKeeper.BaseGasPrice(ctx)
 	require.Equal(t, math.LegacyNewDecWithPrec(11, 3), baseGasPrice)
 
-	ctx = ctx.WithBlockGasMeter(storetypes.NewInfiniteGasMeter())
-	ctx.BlockGasMeter().ConsumeGas(0, "test")
+	// consume gas
+	input.DynamicFeeKeeper.ResetAccumulatedGas(ctx)
 
 	// update base fee
 	err = input.DynamicFeeKeeper.UpdateBaseGasPrice(ctx)
@@ -54,4 +54,16 @@ func Test_UpdateBaseFee(t *testing.T) {
 
 	baseGasPrice, err = input.DynamicFeeKeeper.BaseGasPrice(ctx)
 	require.Equal(t, math.LegacyNewDecWithPrec(99, 4), baseGasPrice)
+}
+
+func Test_AccumulateGas(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+
+	gasLimit := uint64(100000)
+	err := input.DynamicFeeKeeper.AccumulateGas(ctx, gasLimit)
+	require.NoError(t, err)
+
+	accumulatedGas, err := input.DynamicFeeKeeper.GetAccumulatedGas(ctx)
+	require.NoError(t, err)
+	require.Equal(t, gasLimit, accumulatedGas)
 }

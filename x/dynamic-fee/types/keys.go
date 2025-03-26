@@ -20,5 +20,10 @@ const (
 // Keys for dynamic fee store
 // Items are stored with the following key: values
 var (
-	ParamsKey = []byte{0x11} // prefix for parameters for module x/dynamicfee
+	ParamsKey = []byte{0x11} // key for parameters for module x/dynamicfee
+)
+
+// Transient store keys
+var (
+	AccumulatedGasKey = []byte{0x21} // key for accumulated gas for module x/dynamicfee
 )

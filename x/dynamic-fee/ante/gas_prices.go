@@ -1,22 +1,35 @@
 package ante
 
 import (
+	"context"
+
 	"cosmossdk.io/errors"
 	"cosmossdk.io/math"
+	storetypes "cosmossdk.io/store/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-// GasPricesDecorator ante decorator to set simulation flag to a context
-type GasPricesDecorator struct{}
-
-// NewGasPricesDecorator constructor of the GasPricesDecorator
-func NewGasPricesDecorator() *GasPricesDecorator {
-	return &GasPricesDecorator{}
+// custom block gas meter to accumulate gas limit not consumed
+type BlockGasMeter interface {
+	AccumulateGas(ctx context.Context, gas uint64) error
 }
 
-// AnteHandle that store gas prices to a context to let the move keeper know tx gas prices.
+// GasPricesDecorator ante decorator to set gas prices to a context
+// and accumulate gas used in the block
+type GasPricesDecorator struct {
+	blockGasMeter BlockGasMeter
+}
+
+// NewGasPricesDecorator constructor of the GasPricesDecorator
+func NewGasPricesDecorator(blockGasMeter BlockGasMeter) *GasPricesDecorator {
+	return &GasPricesDecorator{
+		blockGasMeter: blockGasMeter,
+	}
+}
+
+// AnteHandle that store gas prices to a context and accumulate gas used in the block
 func (d GasPricesDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
 	feeTx, ok := tx.(sdk.FeeTx)
 	if !ok {
@@ -31,8 +44,16 @@ func (d GasPricesDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool
 			return ctx, errors.Wrap(sdkerrors.ErrOutOfGas, "Transaction gas cannot be zero.")
 		}
 
-		// CSR: store a tx gas prices
+		// store a tx gas prices
 		ctx = ctx.WithValue(GasPricesContextKey, sdk.NewDecCoinsFromCoins(feeCoins...).QuoDecTruncate(math.LegacyNewDec(int64(gas))))
+	}
+
+	// record the gas amount to the block gas meter
+	// NOTE: use infinite gas meter to avoid gas charge for chain operation
+	if !simulate && !ctx.IsCheckTx() {
+		if err := d.blockGasMeter.AccumulateGas(ctx.WithGasMeter(storetypes.NewInfiniteGasMeter()), gas); err != nil {
+			return ctx, err
+		}
 	}
 
 	if next != nil {

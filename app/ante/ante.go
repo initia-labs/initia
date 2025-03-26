@@ -79,7 +79,7 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 		accnum.NewAccountNumberDecorator(options.AccountKeeper),
 		ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
 		ante.NewExtensionOptionsDecorator(options.ExtensionOptionChecker),
-		dynamicfeeante.NewGasPricesDecorator(),
+		dynamicfeeante.NewGasPricesDecorator(options.DynamicFeeKeeper),
 		ante.NewValidateBasicDecorator(),
 		ante.NewTxTimeoutHeightDecorator(),
 		ante.NewValidateMemoDecorator(options.AccountKeeper),

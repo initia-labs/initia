@@ -325,6 +325,7 @@ func NewAppKeeper(
 	dynamicFeeKeeper := dynamicfeekeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(appKeepers.keys[dynamicfeetypes.StoreKey]),
+		runtime.NewTransientStoreService(appKeepers.tkeys[dynamicfeetypes.TStoreKey]),
 		movekeeper.NewDexKeeper(appKeepers.MoveKeeper),
 		appKeepers.MoveKeeper,
 		appKeepers.MoveKeeper,
