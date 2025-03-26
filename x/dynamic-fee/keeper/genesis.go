@@ -7,7 +7,7 @@ import (
 )
 
 // InitGenesis sets supply information for genesis.
-func (k Keeper) InitGenesis(ctx context.Context, moduleNames []string, genState types.GenesisState) error {
+func (k Keeper) InitGenesis(ctx context.Context, genState types.GenesisState) error {
 	params := genState.GetParams()
 	if err := k.SetParams(ctx, params); err != nil {
 		return err
