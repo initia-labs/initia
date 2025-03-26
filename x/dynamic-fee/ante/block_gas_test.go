@@ -20,7 +20,7 @@ func (t *TestBlockGasMeter) AccumulateGas(ctx context.Context, gas uint64) error
 	return nil
 }
 
-func (suite *AnteTestSuite) TestGasPricesDecorator() {
+func (suite *AnteTestSuite) Test_BlockGasDecorator() {
 	suite.SetupTest() // setup
 	suite.txBuilder = suite.clientCtx.TxConfig.NewTxBuilder()
 
@@ -37,20 +37,25 @@ func (suite *AnteTestSuite) TestGasPricesDecorator() {
 	suite.Require().NoError(err)
 
 	blockGasMeter := &TestBlockGasMeter{}
-	decorator := ante.NewGasPricesDecorator(blockGasMeter)
+	decorator := ante.NewBlockGasDecorator(blockGasMeter)
 
 	// in normal mode
-	ctx, err := decorator.AnteHandle(suite.ctx.WithIsCheckTx(false), tx, false, nil)
+	_, err = decorator.AnteHandle(suite.ctx.WithIsCheckTx(false), tx, false, nil)
 	suite.Require().NoError(err)
-	suite.Require().Equal(sdk.NewDecCoinsFromCoins(feeAmount...).QuoDec(math.LegacyNewDec(int64(gasLimit))), ctx.Value(ante.GasPricesContextKey).(sdk.DecCoins))
 
 	// incremented in normal mode
 	suite.Require().Equal(gasLimit, blockGasMeter.gasUsed)
 
-	// in simulation mode
-	ctx, err = decorator.AnteHandle(suite.ctx, tx, true, nil)
+	// in check tx mode
+	_, err = decorator.AnteHandle(suite.ctx.WithIsCheckTx(true), tx, true, nil)
 	suite.Require().NoError(err)
-	suite.Require().Nil(ctx.Value(ante.GasPricesContextKey))
+
+	// not incremented in check tx mode
+	suite.Require().Equal(gasLimit, blockGasMeter.gasUsed)
+
+	// in simulation mode
+	_, err = decorator.AnteHandle(suite.ctx.WithIsCheckTx(false), tx, true, nil)
+	suite.Require().NoError(err)
 
 	// not incremented in simulation mode
 	suite.Require().Equal(gasLimit, blockGasMeter.gasUsed)

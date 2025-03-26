@@ -13,6 +13,7 @@ import (
 	"github.com/initia-labs/initia/app/ante/accnum"
 	"github.com/initia-labs/initia/app/ante/sigverify"
 	dynamicfeeante "github.com/initia-labs/initia/x/dynamic-fee/ante"
+	moveante "github.com/initia-labs/initia/x/move/ante"
 
 	"github.com/skip-mev/block-sdk/v2/block"
 	auctionante "github.com/skip-mev/block-sdk/v2/x/auction/ante"
@@ -79,7 +80,8 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 		accnum.NewAccountNumberDecorator(options.AccountKeeper),
 		ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
 		ante.NewExtensionOptionsDecorator(options.ExtensionOptionChecker),
-		dynamicfeeante.NewGasPricesDecorator(options.DynamicFeeKeeper),
+		moveante.NewGasPricesDecorator(),
+		dynamicfeeante.NewBlockGasDecorator(options.DynamicFeeKeeper),
 		ante.NewValidateBasicDecorator(),
 		ante.NewTxTimeoutHeightDecorator(),
 		ante.NewValidateMemoDecorator(options.AccountKeeper),
