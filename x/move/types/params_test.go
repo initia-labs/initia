@@ -24,8 +24,13 @@ func TestParams(t *testing.T) {
 	require.Error(t, err)
 
 	p3 := DefaultParams()
-	p3.AllowedPublishers = []string{"abc"}
+	p3.BaseMinGasPrice = math.LegacyOneDec().Neg()
 	err = p3.Validate(ac)
+	require.Error(t, err)
+
+	p4 := DefaultParams()
+	p4.AllowedPublishers = []string{"abc"}
+	err = p4.Validate(ac)
 	require.Error(t, err)
 }
 

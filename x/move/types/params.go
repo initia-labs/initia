@@ -19,6 +19,7 @@ const (
 )
 
 var (
+	DefaultBaseMinGasPrice            = math.LegacyZeroDec()
 	DefaultContractSharedRevenueRatio = math.LegacyZeroDec()
 )
 
@@ -33,6 +34,7 @@ const (
 func DefaultParams() Params {
 	return Params{
 		BaseDenom:                  DefaultBaseDenom,
+		BaseMinGasPrice:            DefaultBaseMinGasPrice,
 		ContractSharedRevenueRatio: DefaultContractSharedRevenueRatio,
 		ScriptEnabled:              DefaultScriptEnabled,
 		AllowedPublishers:          nil,
@@ -53,6 +55,10 @@ func (p Params) Validate(ac address.Codec) error {
 		return errors.Wrap(err, "invalid base_denom")
 	}
 
+	if err := validateBaseMinGasPrice(p.BaseMinGasPrice); err != nil {
+		return errors.Wrap(err, "invalid base_min_gas_price")
+	}
+
 	if err := validateContractSharedRatio(p.ContractSharedRevenueRatio); err != nil {
 		return errors.Wrap(err, "invalid shared_revenue_ratio")
 	}
@@ -68,6 +74,7 @@ func (p Params) Validate(ac address.Codec) error {
 func (p Params) ToRaw() RawParams {
 	return RawParams{
 		BaseDenom:                  p.BaseDenom,
+		BaseMinGasPrice:            p.BaseMinGasPrice,
 		ContractSharedRevenueRatio: p.ContractSharedRevenueRatio,
 		ScriptEnabled:              p.ScriptEnabled,
 	}
@@ -77,6 +84,7 @@ func (p Params) ToRaw() RawParams {
 func (p RawParams) ToParams(allowedPublishers []string) Params {
 	return Params{
 		BaseDenom:                  p.BaseDenom,
+		BaseMinGasPrice:            p.BaseMinGasPrice,
 		ContractSharedRevenueRatio: p.ContractSharedRevenueRatio,
 		AllowedPublishers:          allowedPublishers,
 		ScriptEnabled:              p.ScriptEnabled,
@@ -91,6 +99,19 @@ func validateBaseDenom(i interface{}) error {
 
 	if err := sdk.ValidateDenom(v); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func validateBaseMinGasPrice(i interface{}) error {
+	v, ok := i.(math.LegacyDec)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+
+	if v.IsNegative() {
+		return fmt.Errorf("base_min_gas_price must be non-negative value: %v", v)
 	}
 
 	return nil
