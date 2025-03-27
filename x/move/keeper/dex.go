@@ -5,8 +5,6 @@ import (
 
 	"cosmossdk.io/math"
 
-	"github.com/pkg/errors"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	distrtypes "github.com/initia-labs/initia/x/distribution/types"
@@ -14,7 +12,6 @@ import (
 	vmtypes "github.com/initia-labs/movevm/types"
 )
 
-var _ types.AnteKeeper = DexKeeper{}
 var _ distrtypes.DexKeeper = DexKeeper{}
 
 // DexKeeper implement dex features
@@ -167,77 +164,6 @@ func (k DexKeeper) getBaseSpotPrice(
 ) (math.LegacyDec, error) {
 	// for now, we only support balancer dex
 	return k.BalancerKeeper().GetBaseSpotPrice(ctx, metadataLP)
-}
-
-// GasPrices return gas prices for all dex pairs
-func (k DexKeeper) GasPrices(
-	ctx context.Context,
-) (sdk.DecCoins, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	baseDenom := params.BaseDenom
-	baseGasPrice := params.BaseMinGasPrice
-	gasPrices := sdk.NewDecCoins(sdk.NewDecCoinFromDec(baseDenom, baseGasPrice))
-	err = k.DexPairs.Walk(ctx, nil, func(key, value []byte) (stop bool, err error) {
-		metadataQuote, err := vmtypes.NewAccountAddressFromBytes(key)
-		if err != nil {
-			return true, err
-		}
-		denomQuote, err := types.DenomFromMetadataAddress(ctx, k.MoveBankKeeper(), metadataQuote)
-		if err != nil {
-			return true, err
-		}
-		metadataLP, err := vmtypes.NewAccountAddressFromBytes(value)
-		if err != nil {
-			return true, err
-		}
-		baseSpotPrice, err := k.getBaseSpotPrice(ctx, metadataLP)
-		if err != nil {
-			return true, err
-		}
-		if baseSpotPrice.IsZero() {
-			return true, errors.New("baseSpotPrice is zero")
-		}
-
-		gasPrice := baseGasPrice.Quo(baseSpotPrice)
-		gasPrices = gasPrices.Add(sdk.NewDecCoinFromDec(denomQuote, gasPrice))
-		return false, nil
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return gasPrices, nil
-}
-
-// GasPrice return gas price for the given denom
-func (k DexKeeper) GasPrice(
-	ctx context.Context,
-	denomQuote string,
-) (sdk.DecCoin, error) {
-	params, err := k.GetParams(ctx)
-	if err != nil {
-		return sdk.DecCoin{}, err
-	}
-
-	baseDenom := params.BaseDenom
-	baseGasPrice := params.BaseMinGasPrice
-	if denomQuote == baseDenom {
-		return sdk.NewDecCoinFromDec(denomQuote, baseGasPrice), nil
-	}
-
-	baseSpotPrice, err := k.GetBaseSpotPrice(ctx, denomQuote)
-	if err != nil {
-		return sdk.NewDecCoin(denomQuote, math.ZeroInt()), err
-	}
-	if baseSpotPrice.IsZero() {
-		return sdk.NewDecCoin(denomQuote, math.ZeroInt()), errors.New("baseSpotPrice is zero")
-	}
-
-	return sdk.NewDecCoinFromDec(denomQuote, baseGasPrice.Quo(baseSpotPrice)), nil
 }
 
 func (k DexKeeper) SwapToBase(

@@ -19,7 +19,8 @@ message Params {
     (gogoproto.moretags) = "yaml:\"base_min_gas_price\"",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
+    (amino.dont_omitempty) = true,
+    deprecated = true
   ];
 
   // CSR: Percentage of fees distributed to developers
@@ -48,7 +49,8 @@ message RawParams {
     (gogoproto.moretags) = "yaml:\"base_min_gas_price\"",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
+    (amino.dont_omitempty) = true,
+    deprecated = true
   ];
 
   // CSR: Percentage of fees distributed to developers

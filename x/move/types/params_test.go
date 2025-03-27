@@ -42,7 +42,6 @@ func TestRawParams(t *testing.T) {
 
 	p1.ContractSharedRevenueRatio = math.LegacyOneDec()
 	p1.BaseDenom = "venusinthemorning"
-	p1.BaseMinGasPrice = math.LegacyOneDec()
 	require.NoError(t, p1.Validate(ac))
 
 	rp := p1.ToRaw()

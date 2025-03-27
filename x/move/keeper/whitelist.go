@@ -218,3 +218,20 @@ func (k Keeper) Delist(ctx context.Context, msg types.MsgDelist) error {
 
 	return nil
 }
+
+func (k Keeper) GetWhitelistedTokens(ctx context.Context) ([]string, error) {
+	whitelistedTokens := []string{}
+	err := k.DexPairs.Walk(ctx, nil, func(key, value []byte) (stop bool, err error) {
+		metadataQuote, err := vmtypes.NewAccountAddressFromBytes(key)
+		if err != nil {
+			return true, err
+		}
+		denomQuote, err := types.DenomFromMetadataAddress(ctx, k.MoveBankKeeper(), metadataQuote)
+		if err != nil {
+			return true, err
+		}
+		whitelistedTokens = append(whitelistedTokens, denomQuote)
+		return false, nil
+	})
+	return whitelistedTokens, err
+}

@@ -72,6 +72,8 @@ import (
 	applanes "github.com/initia-labs/initia/app/lanes"
 	bankkeeper "github.com/initia-labs/initia/x/bank/keeper"
 	distrkeeper "github.com/initia-labs/initia/x/distribution/keeper"
+	dynamicfeekeeper "github.com/initia-labs/initia/x/dynamic-fee/keeper"
+	dynamicfeetypes "github.com/initia-labs/initia/x/dynamic-fee/types"
 	evidencekeeper "github.com/initia-labs/initia/x/evidence/keeper"
 	govkeeper "github.com/initia-labs/initia/x/gov/keeper"
 	ibchooks "github.com/initia-labs/initia/x/ibc-hooks"
@@ -127,6 +129,7 @@ type AppKeepers struct {
 	CrisisKeeper          *crisiskeeper.Keeper
 	UpgradeKeeper         *upgradekeeper.Keeper
 	GroupKeeper           *groupkeeper.Keeper
+	DynamicFeeKeeper      *dynamicfeekeeper.Keeper
 	ConsensusParamsKeeper *consensusparamkeeper.Keeper
 	IBCKeeper             *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
 	EvidenceKeeper        *evidencekeeper.Keeper
@@ -318,6 +321,18 @@ func NewAppKeeper(
 		groupConfig,
 	)
 	appKeepers.GroupKeeper = &groupKeeper
+
+	dynamicFeeKeeper := dynamicfeekeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(appKeepers.keys[dynamicfeetypes.StoreKey]),
+		runtime.NewTransientStoreService(appKeepers.tkeys[dynamicfeetypes.TStoreKey]),
+		movekeeper.NewDexKeeper(appKeepers.MoveKeeper),
+		appKeepers.MoveKeeper,
+		appKeepers.MoveKeeper,
+		ac,
+		authorityAddr,
+	)
+	appKeepers.DynamicFeeKeeper = dynamicFeeKeeper
 
 	// Create IBC Keeper
 	appKeepers.IBCKeeper = ibckeeper.NewKeeper(

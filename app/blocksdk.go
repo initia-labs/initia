@@ -11,10 +11,10 @@ import (
 
 	appante "github.com/initia-labs/initia/app/ante"
 	applanes "github.com/initia-labs/initia/app/lanes"
-	movekeeper "github.com/initia-labs/initia/x/move/keeper"
 
 	// block-sdk dependencies
 
+	dynamicfeekeeper "github.com/initia-labs/initia/x/dynamic-fee/keeper"
 	blockabci "github.com/skip-mev/block-sdk/v2/abci"
 	blockchecktx "github.com/skip-mev/block-sdk/v2/abci/checktx"
 	signer_extraction "github.com/skip-mev/block-sdk/v2/adapters/signer_extraction_adapter"
@@ -90,13 +90,13 @@ func setupBlockSDK(
 				FeegrantKeeper:  app.FeeGrantKeeper,
 				SignModeHandler: app.txConfig.SignModeHandler(),
 			},
-			IBCkeeper:     app.IBCKeeper,
-			MoveKeeper:    movekeeper.NewDexKeeper(app.MoveKeeper),
-			Codec:         app.appCodec,
-			TxEncoder:     app.txConfig.TxEncoder(),
-			AuctionKeeper: *app.AuctionKeeper,
-			MevLane:       mevLane,
-			FreeLane:      freeLane,
+			IBCkeeper:        app.IBCKeeper,
+			DynamicFeeKeeper: dynamicfeekeeper.NewAnteKeeper(app.DynamicFeeKeeper),
+			Codec:            app.appCodec,
+			TxEncoder:        app.txConfig.TxEncoder(),
+			AuctionKeeper:    *app.AuctionKeeper,
+			MevLane:          mevLane,
+			FreeLane:         freeLane,
 		},
 	)
 	if err != nil {

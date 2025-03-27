@@ -7,7 +7,7 @@ import (
 	"cosmossdk.io/math"
 
 	initiaapp "github.com/initia-labs/initia/app"
-	"github.com/initia-labs/initia/x/move/ante"
+	"github.com/initia-labs/initia/x/dynamic-fee/ante"
 	"github.com/initia-labs/initia/x/move/types"
 
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
@@ -18,27 +18,17 @@ import (
 var baseDenom = initiaapp.BondDenom
 
 type TestAnteKeeper struct {
-	pools           map[string][]math.Int
-	weights         map[string][]math.LegacyDec
-	baseDenom       string
-	baseMinGasPrice math.LegacyDec
-}
-
-func (k TestAnteKeeper) HasDexPair(_ context.Context, denomQuote string) (bool, error) {
-	_, found := k.pools[denomQuote]
-	if !found {
-		return false, nil
-	}
-
-	_, found = k.weights[denomQuote]
-	if !found {
-		return false, nil
-	}
-
-	return true, nil
+	pools        map[string][]math.Int
+	weights      map[string][]math.LegacyDec
+	baseDenom    string
+	baseGasPrice math.LegacyDec
 }
 
 func (k TestAnteKeeper) GetBaseSpotPrice(_ context.Context, denomQuote string) (quotePrice math.LegacyDec, err error) {
+	if denomQuote == k.baseDenom {
+		return math.LegacyOneDec(), nil
+	}
+
 	balances, found := k.pools[denomQuote]
 	if !found {
 		return math.LegacyZeroDec(), fmt.Errorf("not found")
@@ -56,8 +46,12 @@ func (k TestAnteKeeper) BaseDenom(_ context.Context) (string, error) {
 	return k.baseDenom, nil
 }
 
-func (k TestAnteKeeper) BaseMinGasPrice(ctx context.Context) (math.LegacyDec, error) {
-	return k.baseMinGasPrice, nil
+func (k TestAnteKeeper) BaseGasPrice(ctx context.Context) (math.LegacyDec, error) {
+	return k.baseGasPrice, nil
+}
+
+func (k TestAnteKeeper) AccumulateGas(ctx context.Context, gas uint64) error {
+	return nil
 }
 
 func (suite *AnteTestSuite) TestEnsureMempoolFees() {
@@ -78,10 +72,10 @@ func (suite *AnteTestSuite) TestEnsureMempoolFees() {
 
 	// set price 0.5 base == 1 quote
 	fc := ante.NewMempoolFeeChecker(TestAnteKeeper{
-		pools:           dexPools,
-		weights:         dexWeights,
-		baseDenom:       baseDenom,
-		baseMinGasPrice: math.LegacyZeroDec(),
+		pools:        dexPools,
+		weights:      dexWeights,
+		baseDenom:    baseDenom,
+		baseGasPrice: math.LegacyZeroDec(),
 	})
 
 	// keys and addresses
@@ -140,10 +134,10 @@ func (suite *AnteTestSuite) TestEnsureMempoolFees() {
 
 	// set high base_min_gas_price to test should be failed
 	fc = ante.NewMempoolFeeChecker(TestAnteKeeper{
-		pools:           dexPools,
-		weights:         dexWeights,
-		baseDenom:       baseDenom,
-		baseMinGasPrice: math.LegacyNewDecWithPrec(4, 3),
+		pools:        dexPools,
+		weights:      dexWeights,
+		baseDenom:    baseDenom,
+		baseGasPrice: math.LegacyNewDecWithPrec(4, 3),
 	})
 
 	suite.txBuilder.SetFeeAmount(feeAmount)
