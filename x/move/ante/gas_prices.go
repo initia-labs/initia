@@ -8,7 +8,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-// GasPricesDecorator ante decorator to set simulation flag to a context
+// GasPricesDecorator ante decorator to set gas prices to a context
 type GasPricesDecorator struct{}
 
 // NewGasPricesDecorator constructor of the GasPricesDecorator
@@ -16,7 +16,7 @@ func NewGasPricesDecorator() *GasPricesDecorator {
 	return &GasPricesDecorator{}
 }
 
-// AnteHandle that store gas prices to a context to let the move keeper know tx gas prices.
+// AnteHandle that set gas prices to a context
 func (d GasPricesDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
 	feeTx, ok := tx.(sdk.FeeTx)
 	if !ok {
@@ -31,7 +31,7 @@ func (d GasPricesDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool
 			return ctx, errors.Wrap(sdkerrors.ErrOutOfGas, "Transaction gas cannot be zero.")
 		}
 
-		// CSR: store a tx gas prices
+		// store a tx gas prices
 		ctx = ctx.WithValue(GasPricesContextKey, sdk.NewDecCoinsFromCoins(feeCoins...).QuoDecTruncate(math.LegacyNewDec(int64(gas))))
 	}
 
