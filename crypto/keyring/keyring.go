@@ -16,6 +16,15 @@ import (
 	"github.com/initia-labs/initia/tx"
 )
 
+// unsafeExporter is implemented by key stores that support unsafe export
+// of private keys' material.
+type unsafeExporter interface {
+	// ExportPrivateKeyObject returns a private key in unarmored format.
+	ExportPrivateKeyObject(uid string) (types.PrivKey, error)
+}
+
+var _ unsafeExporter = (*Keyring)(nil)
+
 type Keyring struct {
 	cosmoskeyring.Keyring
 }
@@ -93,4 +102,9 @@ func SignWithLedger(k *cosmoskeyring.Record, msg []byte, signMode signing.SignMo
 	}
 
 	return sig, priv.PubKey(), nil
+}
+
+// ExportPrivateKeyObject implements the unsafeExporter interface.
+func (k *Keyring) ExportPrivateKeyObject(uid string) (types.PrivKey, error) {
+	return k.Keyring.(unsafeExporter).ExportPrivateKeyObject(uid)
 }
