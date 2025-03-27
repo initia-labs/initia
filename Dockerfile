@@ -12,7 +12,7 @@ ENV LIBMOVEVM_VERSION=v1.0.0-beta.0
 ENV MIMALLOC_VERSION=v2.2.2
 
 # Install necessary packages
-RUN set -eux; apk add --no-cache ca-certificates build-base git cmake
+RUN set -eux; apk add --no-cache ca-certificates build-base git cmake linux-headers
 
 WORKDIR /code
 COPY . /code/
