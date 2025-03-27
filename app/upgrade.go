@@ -35,10 +35,20 @@ func (app *InitiaApp) RegisterUpgradeHandlers(cfg module.Configurator) {
 	app.UpgradeKeeper.SetUpgradeHandler(
 		upgradeName,
 		func(ctx context.Context, _ upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
+			moveParams, err := app.MoveKeeper.GetParams(ctx)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to get move params")
+			}
+			moveParams.BaseMinGasPrice = math.LegacyZeroDec()
+			err = app.MoveKeeper.SetParams(ctx, moveParams)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to set move params")
+			}
+
 			params := dynamicfeetypes.DefaultParams()
 			params.MaxChangeRate = math.LegacyZeroDec()
 
-			err := app.DynamicFeeKeeper.SetParams(ctx, params)
+			err = app.DynamicFeeKeeper.SetParams(ctx, params)
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to set dynamic fee params")
 			}
