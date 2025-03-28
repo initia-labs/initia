@@ -6,6 +6,7 @@ import (
 
 	"cosmossdk.io/core/appmodule"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -13,6 +14,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
+	"github.com/initia-labs/initia/x/dynamic-fee/client/cli"
 	"github.com/initia-labs/initia/x/dynamic-fee/keeper"
 	"github.com/initia-labs/initia/x/dynamic-fee/types"
 )
@@ -133,4 +135,9 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 // EndBlock returns the end blocker for the move module.
 func (am AppModule) EndBlock(ctx context.Context) error {
 	return EndBlocker(ctx, am.keeper)
+}
+
+// GetQueryCmd returns no root query command for the move module.
+func (b AppModuleBasic) GetQueryCmd() *cobra.Command {
+	return cli.GetQueryCmd(b.cdc.InterfaceRegistry().SigningContext().AddressCodec())
 }
