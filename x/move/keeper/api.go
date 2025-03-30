@@ -62,7 +62,7 @@ func (api GoApi) AmountToShare(valBz []byte, metadata vmtypes.AccountAddress, am
 		return "0", err
 	}
 
-	denom, err := types.DenomFromMetadataAddress(api.ctx, api.Keeper.MoveBankKeeper(), metadata)
+	denom, err := types.DenomFromMetadataAddress(api.ctx, api.MoveBankKeeper(), metadata)
 	if err != nil {
 		return "0", err
 	}
@@ -78,7 +78,7 @@ func (api GoApi) ShareToAmount(valBz []byte, metadata vmtypes.AccountAddress, sh
 		return 0, err
 	}
 
-	denom, err := types.DenomFromMetadataAddress(api.ctx, api.Keeper.MoveBankKeeper(), metadata)
+	denom, err := types.DenomFromMetadataAddress(api.ctx, api.MoveBankKeeper(), metadata)
 	if err != nil {
 		return 0, err
 	}
@@ -134,7 +134,7 @@ func (api GoApi) Query(req vmtypes.QueryRequest, gasBalance uint64) ([]byte, uin
 	// use normal gas meter to meter gas consumption during query with max gas limit
 	sdkCtx := sdk.UnwrapSDKContext(api.ctx).WithGasMeter(storetypes.NewGasMeter(gasBalance))
 
-	res, err := api.Keeper.HandleVMQuery(sdkCtx, &req)
+	res, err := api.HandleVMQuery(sdkCtx, &req)
 	if err != nil {
 		return nil, sdkCtx.GasMeter().GasConsumed(), err
 	}

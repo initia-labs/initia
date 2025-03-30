@@ -135,13 +135,14 @@ func bcsSerializeArg(argType string, arg string, s serde.Serializer, ac address.
 		return s.GetBytes(), err
 
 	case "bool":
-		if arg == "true" || arg == "True" {
+		switch arg {
+		case "true", "True":
 			err := s.SerializeBool(true)
 			return s.GetBytes(), err
-		} else if arg == "false" || arg == "False" {
+		case "false", "False":
 			err := s.SerializeBool(false)
 			return s.GetBytes(), err
-		} else {
+		default:
 			return nil, errors.New("unsupported bool value")
 		}
 

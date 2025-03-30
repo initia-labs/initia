@@ -86,7 +86,7 @@ func (q CustomQueryServer) Proposals(ctx context.Context, req *customtypes.Query
 				return false, err
 			}
 
-			has, err := q.Keeper.Votes.Has(ctx, collections.Join(p.Id, sdk.AccAddress(voter)))
+			has, err := q.Votes.Has(ctx, collections.Join(p.Id, sdk.AccAddress(voter)))
 			// if no error, vote found, matchVoter = true
 			matchVoter = err == nil && has
 		}
@@ -97,7 +97,7 @@ func (q CustomQueryServer) Proposals(ctx context.Context, req *customtypes.Query
 			if err != nil {
 				return false, err
 			}
-			has, err := q.Keeper.Deposits.Has(ctx, collections.Join(p.Id, sdk.AccAddress(depositor)))
+			has, err := q.Deposits.Has(ctx, collections.Join(p.Id, sdk.AccAddress(depositor)))
 			// if no error, deposit found, matchDepositor = true
 			matchDepositor = err == nil && has
 		}
@@ -139,11 +139,11 @@ func (q CustomQueryServer) TallyResult(ctx context.Context, req *customtypes.Que
 
 	var tallyResult customtypes.TallyResult
 
-	switch {
-	case proposal.Status == v1.StatusDepositPeriod:
+	switch proposal.Status {
+	case v1.StatusDepositPeriod:
 		tallyResult = customtypes.EmptyTallyResult()
 
-	case proposal.Status == v1.StatusPassed || proposal.Status == v1.StatusRejected:
+	case v1.StatusPassed, v1.StatusRejected:
 		tallyResult = proposal.FinalTallyResult
 
 	default:
@@ -153,7 +153,7 @@ func (q CustomQueryServer) TallyResult(ctx context.Context, req *customtypes.Que
 			return nil, err
 		}
 
-		_, _, _, tallyResult, err = q.Keeper.Tally(ctx, params, proposal)
+		_, _, _, tallyResult, err = q.Tally(ctx, params, proposal)
 		if err != nil {
 			return nil, err
 		}
