@@ -55344,6 +55344,58 @@ paths:
           type: string
       tags:
         - Query
+  /initia/dynamicfee/v1/params:
+    get:
+      summary: Params queries the params
+      operationId: DynamicFeeParams
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              params:
+                description: params defines the parameters of the module.
+                type: object
+                properties:
+                  base_gas_price:
+                    type: string
+                  min_base_gas_price:
+                    type: string
+                  max_base_gas_price:
+                    type: string
+                  max_change_rate:
+                    type: string
+                  target_gas:
+                    type: string
+                    format: int64
+            description: >-
+              QueryParamsResponse is the response type for the Query/Params RPC
+              method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      tags:
+        - Query
   /block-sdk/auction/v1/params:
     get:
       summary: Params queries the parameters of the x/auction module.
@@ -90627,6 +90679,39 @@ definitions:
     description: >-
       QueryGasPricesResponse is the response type for the Query/GasPrices RPC
       method.
+  initia.dynamicfee.v1.Params:
+    type: object
+    properties:
+      base_gas_price:
+        type: string
+      min_base_gas_price:
+        type: string
+      max_base_gas_price:
+        type: string
+      max_change_rate:
+        type: string
+      target_gas:
+        type: string
+        format: int64
+  initia.dynamicfee.v1.QueryParamsResponse:
+    type: object
+    properties:
+      params:
+        description: params defines the parameters of the module.
+        type: object
+        properties:
+          base_gas_price:
+            type: string
+          min_base_gas_price:
+            type: string
+          max_base_gas_price:
+            type: string
+          max_change_rate:
+            type: string
+          target_gas:
+            type: string
+            format: int64
+    description: QueryParamsResponse is the response type for the Query/Params RPC method.
   sdk.auction.v1.Params:
     type: object
     properties:
