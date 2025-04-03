@@ -157,19 +157,46 @@ func appModules(
 	}
 }
 
-// ModuleBasics defines the module BasicManager that is in charge of setting up basic,
-// non-dependant module elements, such as codec registration
-// and genesis verification.
-func newBasicManagerFromManager(app *InitiaApp) module.BasicManager {
-	basicManager := module.NewBasicManagerFromManager(
-		app.ModuleManager,
-		map[string]module.AppModuleBasic{
-			genutiltypes.ModuleName: genutil.NewAppModuleBasic(genutil.DefaultMessageValidator),
-			govtypes.ModuleName:     gov.NewAppModuleBasic(app.appCodec),
-		})
-	basicManager.RegisterLegacyAminoCodec(app.legacyAmino)
-	basicManager.RegisterInterfaces(app.interfaceRegistry)
-	return basicManager
+func NewBasicManager() module.BasicManager {
+	return module.NewBasicManager(
+		genutil.AppModuleBasic{},
+		auth.AppModuleBasic{},
+		bank.AppModuleBasic{},
+		capability.AppModuleBasic{},
+		crisis.AppModuleBasic{},
+		feegrantmodule.AppModuleBasic{},
+		gov.AppModuleBasic{},
+		reward.AppModuleBasic{},
+		slashing.AppModuleBasic{},
+		distr.AppModuleBasic{},
+		staking.AppModuleBasic{},
+		upgrade.AppModuleBasic{},
+		evidence.AppModuleBasic{},
+		authzmodule.AppModuleBasic{},
+		groupmodule.AppModuleBasic{},
+		consensus.AppModuleBasic{},
+		move.AppModuleBasic{},
+		auction.AppModuleBasic{},
+		ophost.AppModuleBasic{},
+		// connect modules
+		oracle.AppModuleBasic{},
+		marketmap.AppModuleBasic{},
+		// ibc modules
+		ibc.AppModuleBasic{},
+		ibctransfer.AppModuleBasic{},
+		ibcnfttransfer.AppModuleBasic{},
+		ica.AppModuleBasic{},
+		icaauth.AppModuleBasic{},
+		ibcfee.AppModuleBasic{},
+		ibcperm.AppModuleBasic{},
+		ibctm.AppModuleBasic{},
+		solomachine.AppModuleBasic{},
+		packetforward.AppModuleBasic{},
+		ibchooks.AppModuleBasic{},
+		forwarding.AppModuleBasic{},
+		ratelimit.AppModuleBasic{},
+		dynamicfee.AppModuleBasic{},
+	)
 }
 
 /*

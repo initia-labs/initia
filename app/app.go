@@ -38,7 +38,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/server/api"
 	"github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
-	"github.com/cosmos/cosmos-sdk/std"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/module"
@@ -62,8 +61,6 @@ import (
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 
 	"github.com/initia-labs/initia/app/keepers"
-	"github.com/initia-labs/initia/app/params"
-	cryptocodec "github.com/initia-labs/initia/crypto/codec"
 	initiatx "github.com/initia-labs/initia/tx"
 	moveconfig "github.com/initia-labs/initia/x/move/config"
 	movetypes "github.com/initia-labs/initia/x/move/types"
@@ -150,11 +147,7 @@ func NewInitiaApp(
 	logger.Info("mempool max txs", "max_txs", mempoolMaxTxs)
 	logger.Info("query gas limit", "gas_limit", queryGasLimit)
 
-	encodingConfig := params.MakeEncodingConfig()
-	std.RegisterLegacyAminoCodec(encodingConfig.Amino)
-	std.RegisterInterfaces(encodingConfig.InterfaceRegistry)
-	cryptocodec.RegisterLegacyAminoCodec(encodingConfig.Amino)
-	cryptocodec.RegisterInterfaces(encodingConfig.InterfaceRegistry)
+	encodingConfig := MakeEncodingConfig()
 
 	appCodec := encodingConfig.Codec
 	legacyAmino := encodingConfig.Amino
@@ -225,7 +218,7 @@ func NewInitiaApp(
 	// non-dependant module elements, such as codec registration and genesis verification.
 	// By default it is composed of all the module from the module manager.
 	// Additionally, app module basics can be overwritten by passing them as argument.
-	app.BasicModuleManager = newBasicManagerFromManager(app)
+	app.BasicModuleManager = NewBasicManager()
 
 	// NOTE: upgrade module is required to be prioritized
 	app.ModuleManager.SetOrderPreBlockers(

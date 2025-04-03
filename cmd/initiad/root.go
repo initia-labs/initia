@@ -67,7 +67,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	sdkConfig.Seal()
 
 	encodingConfig := initiaapp.MakeEncodingConfig()
-	basicManager := initiaapp.BasicManager()
+	basicManager := initiaapp.NewBasicManager()
 
 	// Get the executable name and configure the viper instance so that environmental
 	// variables are checked based off that name. The underscore character is used

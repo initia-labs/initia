@@ -8,6 +8,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	runtimeservices "github.com/cosmos/cosmos-sdk/runtime/services"
+	"github.com/cosmos/cosmos-sdk/std"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
@@ -16,7 +17,23 @@ import (
 	moveconfig "github.com/initia-labs/initia/x/move/config"
 
 	oracleconfig "github.com/skip-mev/connect/v2/oracle/config"
+
+	cryptocodec "github.com/initia-labs/initia/crypto/codec"
 )
+
+func MakeEncodingConfig() params.EncodingConfig {
+	encodingConfig := params.MakeEncodingConfig()
+
+	std.RegisterLegacyAminoCodec(encodingConfig.Amino)
+	std.RegisterInterfaces(encodingConfig.InterfaceRegistry)
+	cryptocodec.RegisterLegacyAminoCodec(encodingConfig.Amino)
+	cryptocodec.RegisterInterfaces(encodingConfig.InterfaceRegistry)
+
+	basicManager := NewBasicManager()
+	basicManager.RegisterInterfaces(encodingConfig.InterfaceRegistry)
+	basicManager.RegisterLegacyAminoCodec(encodingConfig.Amino)
+	return encodingConfig
+}
 
 func newTempApp() *InitiaApp {
 	return NewInitiaApp(
@@ -28,18 +45,6 @@ func newTempApp() *InitiaApp {
 		oracleconfig.NewDefaultAppConfig(),
 		EmptyAppOptions{},
 	)
-}
-
-func MakeEncodingConfig() params.EncodingConfig {
-	tempApp := newTempApp()
-	encodingConfig := params.EncodingConfig{
-		InterfaceRegistry: tempApp.InterfaceRegistry(),
-		Codec:             tempApp.AppCodec(),
-		TxConfig:          tempApp.TxConfig(),
-		Amino:             tempApp.LegacyAmino(),
-	}
-
-	return encodingConfig
 }
 
 func AutoCliOpts() autocli.AppOptions {
@@ -61,11 +66,6 @@ func AutoCliOpts() autocli.AppOptions {
 		ValidatorAddressCodec: authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix()),
 		ConsensusAddressCodec: authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix()),
 	}
-}
-
-func BasicManager() module.BasicManager {
-	tempApp := newTempApp()
-	return tempApp.BasicModuleManager
 }
 
 // EmptyAppOptions is a stub implementing AppOptions
