@@ -18,7 +18,7 @@ func NewAnteKeeper(k *Keeper) AnteKeeper {
 }
 
 func (k AnteKeeper) BaseDenom(ctx context.Context) (string, error) {
-	return k.Keeper.baseDenomKeeper.BaseDenom(ctx)
+	return k.baseDenomKeeper.BaseDenom(ctx)
 }
 
 func (k AnteKeeper) GetBaseSpotPrice(ctx context.Context, denom string) (math.LegacyDec, error) {
@@ -28,5 +28,5 @@ func (k AnteKeeper) GetBaseSpotPrice(ctx context.Context, denom string) (math.Le
 	} else if baseDenom == denom {
 		return math.LegacyOneDec(), nil
 	}
-	return k.Keeper.tokenPriceKeeper.GetBaseSpotPrice(ctx, denom)
+	return k.tokenPriceKeeper.GetBaseSpotPrice(ctx, denom)
 }

@@ -90,7 +90,7 @@ func (vk VestingKeeper) getVestingTokenDenom(ctx context.Context, moduleAccAddr 
 		return "", err
 	}
 
-	return types.DenomFromMetadataAddress(ctx, vk.Keeper.MoveBankKeeper(), vmtypes.AccountAddress(vestingTokenMetadata))
+	return types.DenomFromMetadataAddress(ctx, vk.MoveBankKeeper(), vmtypes.AccountAddress(vestingTokenMetadata))
 }
 
 // getVestingTableHandler returns the vesting table handle for the given module and creator

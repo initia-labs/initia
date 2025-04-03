@@ -30,7 +30,7 @@ func (q Querier) Validators(ctx context.Context, req *types.QueryValidatorsReque
 	}
 
 	// validate the provided status, return all the validators if the status is empty
-	if req.Status != "" && !(req.Status == types.Bonded.String() || req.Status == types.Unbonded.String() || req.Status == types.Unbonding.String()) {
+	if req.Status != "" && (req.Status != types.Bonded.String() && req.Status != types.Unbonded.String() && req.Status != types.Unbonding.String()) {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid validator status %s", req.Status)
 	}
 
@@ -39,7 +39,7 @@ func (q Querier) Validators(ctx context.Context, req *types.QueryValidatorsReque
 	var err error
 
 	if req.Status == types.Bonded.String() {
-		validators, pageRes, err = query.CollectionPaginate(ctx, q.Keeper.ValidatorsByConsPowerIndex, req.Pagination, func(key collections.Pair[int64, []byte], _ bool) (types.Validator, error) {
+		validators, pageRes, err = query.CollectionPaginate(ctx, q.ValidatorsByConsPowerIndex, req.Pagination, func(key collections.Pair[int64, []byte], _ bool) (types.Validator, error) {
 			valAddr := key.K2()
 			return q.Keeper.Validators.Get(ctx, valAddr)
 		})
@@ -67,7 +67,7 @@ func (q Querier) Validator(ctx context.Context, req *types.QueryValidatorRequest
 		return nil, status.Error(codes.InvalidArgument, "validator address cannot be empty")
 	}
 
-	valAddr, err := q.Keeper.validatorAddressCodec.StringToBytes(req.ValidatorAddr)
+	valAddr, err := q.validatorAddressCodec.StringToBytes(req.ValidatorAddr)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -90,13 +90,13 @@ func (q Querier) ValidatorDelegations(ctx context.Context, req *types.QueryValid
 		return nil, status.Error(codes.InvalidArgument, "validator address cannot be empty")
 	}
 
-	valAddr, err := q.Keeper.validatorAddressCodec.StringToBytes(req.ValidatorAddr)
+	valAddr, err := q.validatorAddressCodec.StringToBytes(req.ValidatorAddr)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	delegations, pageRes, err := query.CollectionPaginate(
-		ctx, q.Keeper.DelegationsByValIndex, req.Pagination,
+		ctx, q.DelegationsByValIndex, req.Pagination,
 		func(key collections.Pair[[]byte, []byte], _ bool) (types.Delegation, error) {
 			valAddr, delAddr := key.K1(), key.K2()
 			return q.GetDelegation(ctx, delAddr, valAddr)
@@ -127,13 +127,13 @@ func (q Querier) ValidatorUnbondingDelegations(ctx context.Context, req *types.Q
 		return nil, status.Error(codes.InvalidArgument, "validator address cannot be empty")
 	}
 
-	valAddr, err := q.Keeper.validatorAddressCodec.StringToBytes(req.ValidatorAddr)
+	valAddr, err := q.validatorAddressCodec.StringToBytes(req.ValidatorAddr)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	unbondings, pageRes, err := query.CollectionPaginate(
-		ctx, q.Keeper.UnbondingDelegationsByValIndex, req.Pagination,
+		ctx, q.UnbondingDelegationsByValIndex, req.Pagination,
 		func(key collections.Pair[[]byte, []byte], _ bool) (types.UnbondingDelegation, error) {
 			valAddr, delAddr := key.K1(), key.K2()
 			return q.GetUnbondingDelegation(ctx, delAddr, valAddr)
@@ -242,7 +242,7 @@ func (q Querier) DelegatorDelegations(ctx context.Context, req *types.QueryDeleg
 	}
 
 	delegations, pageRes, err := query.CollectionPaginate(
-		ctx, q.Keeper.Delegations, req.Pagination,
+		ctx, q.Delegations, req.Pagination,
 		func(key collections.Pair[[]byte, []byte], delegation types.Delegation) (types.Delegation, error) {
 			return delegation, nil
 		}, query.WithCollectionPaginationPairPrefix[[]byte, []byte](delAddr),
@@ -307,7 +307,7 @@ func (q Querier) DelegatorUnbondingDelegations(ctx context.Context, req *types.Q
 	}
 
 	unbondings, pageRes, err := query.CollectionPaginate(
-		ctx, q.Keeper.UnbondingDelegations, req.Pagination,
+		ctx, q.UnbondingDelegations, req.Pagination,
 		func(key collections.Pair[[]byte, []byte], unbonding types.UnbondingDelegation) (types.UnbondingDelegation, error) {
 			return unbonding, nil
 		}, query.WithCollectionPaginationPairPrefix[[]byte, []byte](delAddr),
@@ -368,7 +368,7 @@ func (q Querier) DelegatorValidators(ctx context.Context, req *types.QueryDelega
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	validators, pageRes, err := query.CollectionPaginate(ctx, q.Keeper.Delegations, req.Pagination, func(key collections.Pair[[]byte, []byte], delegation types.Delegation) (types.Validator, error) {
+	validators, pageRes, err := query.CollectionPaginate(ctx, q.Delegations, req.Pagination, func(key collections.Pair[[]byte, []byte], delegation types.Delegation) (types.Validator, error) {
 		valAddr, err := q.validatorAddressCodec.StringToBytes(delegation.GetValidatorAddr())
 		if err != nil {
 			return types.Validator{}, err

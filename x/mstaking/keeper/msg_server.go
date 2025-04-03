@@ -524,7 +524,7 @@ func (k msgServer) CancelUnbondingDelegation(ctx context.Context, msg *types.Msg
 }
 
 func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
-	if err := msg.Validate(ms.Keeper.authKeeper.AddressCodec()); err != nil {
+	if err := msg.Validate(ms.authKeeper.AddressCodec()); err != nil {
 		return nil, err
 	}
 

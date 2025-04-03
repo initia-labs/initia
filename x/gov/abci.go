@@ -234,7 +234,7 @@ func handleTallyResult(
 	// the deposit at this point since the proposal is converted to regular.
 	// As a result, the deposits are either deleted or refunded in all cases
 	// EXCEPT when an expedited proposal fails.
-	if !(proposal.Expedited && !passed) {
+	if !proposal.Expedited || passed {
 		if burnDeposits {
 			err = k.DeleteAndBurnDeposits(ctx, proposal.Id)
 		} else {
