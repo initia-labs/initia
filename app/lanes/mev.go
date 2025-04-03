@@ -46,34 +46,12 @@ func (rap *RewardsAddressProvider) GetRewardsAddress(ctx sdk.Context) (sdk.AccAd
 	return sdk.AccAddress(valAddr), nil
 }
 
-const (
-	// LaneName defines the name of the mev lane.
-	LaneName = "mev"
-)
-
-// MEVLane defines a MEV (Maximal Extracted Value) auction lane. The MEV auction lane
-// hosts transactions that want to bid for inclusion at the top of the next block.
-// The MEV auction lane stores bid transactions that are sorted by their bid price.
-// The highest valid bid transaction is selected for inclusion in the next block.
-// The bundled transactions of the selected bid transaction are also included in the
-// next block.
-type (
-	MEVLane struct { //nolint
-		*blockbase.BaseLane
-
-		// Factory defines the API/functionality which is responsible for determining
-		// if a transaction is a bid transaction and how to extract relevant
-		// information from the transaction (bid, timeout, bidder, etc.).
-		mevlane.Factory
-	}
-)
-
 // NewMEVLane returns a new TOB lane.
 func NewMEVLane(
 	cfg blockbase.LaneConfig,
 	factory mevlane.Factory,
 	matchHandler blockbase.MatchHandler,
-) *MEVLane {
+) *mevlane.MEVLane {
 	mempool, err := NewMempool(
 		mevlane.TxPriority(factory),
 		cfg.SignerExtractor,
@@ -87,7 +65,7 @@ func NewMEVLane(
 
 	baseLane, err := blockbase.NewBaseLane(
 		cfg,
-		LaneName,
+		mevlane.LaneName,
 		blockbase.WithMatchHandler(matchHandler),
 		blockbase.WithMempool(mempool),
 	)
@@ -103,7 +81,7 @@ func NewMEVLane(
 		blockbase.WithProcessLaneHandler(handler.ProcessLaneHandler()),
 	)
 
-	return &MEVLane{
+	return &mevlane.MEVLane{
 		BaseLane: baseLane,
 		Factory:  factory,
 	}
