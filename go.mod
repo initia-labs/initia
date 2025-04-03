@@ -39,7 +39,7 @@ require (
 	github.com/gorilla/mux v1.8.1
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/hashicorp/go-metrics v0.5.3
-	github.com/hashicorp/golang-lru/v2 v2.0.7
+	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/huandu/skiplist v1.2.0
 	github.com/initia-labs/OPinit v1.0.0-rc.0
 	// we also need to update `LIBMOVEVM_VERSION` of Dockerfile#11

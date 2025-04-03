@@ -16,7 +16,6 @@ import (
 	"context"
 	"fmt"
 
-	lrucache "github.com/hashicorp/golang-lru/v2"
 	"github.com/huandu/skiplist"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -31,10 +30,11 @@ var (
 	_ sdkmempool.Iterator        = (*PriorityNonceIterator[int64])(nil)
 )
 
-const MaxMempoolSenderIndexSize = 1000
+const (
+	skipListBufferCapacity = 1000
+)
 
 type (
-
 	// PriorityNonceMempool is a mempool implementation that stores txs
 	// in a partially ordered set by 2 dimensions: priority, and sender-nonce
 	// (sequence number). Internally it uses one priority ordered skip list and one
@@ -46,10 +46,13 @@ type (
 		priorityIndex  *skiplist.SkipList
 		priorityCounts map[C]int
 		// use lrucache to prevent infinite memory increase
-		senderIndices   *lrucache.Cache[string, *skiplist.SkipList]
+		senderIndices   map[string]*skiplist.SkipList
 		scores          map[txMeta[C]]txMeta[C]
 		cfg             blockbase.PriorityNonceMempoolConfig[C]
 		signerExtractor signer_extraction.Adapter
+
+		// pool of skip lists
+		skipListBuffer []*skiplist.SkipList
 	}
 
 	// PriorityNonceIterator defines an iterator that is used for mempool iteration
@@ -115,31 +118,16 @@ func skiplistComparable[C comparable](txPriority blockbase.TxPriority[C]) skipli
 // NewPriorityMempool returns the SDK's default mempool implementation which
 // returns txs in a partial order by 2 dimensions; priority, and sender-nonce.
 func NewPriorityMempool[C comparable](cfg blockbase.PriorityNonceMempoolConfig[C], extractor signer_extraction.Adapter) *PriorityNonceMempool[C] {
-	priorityIndex := skiplist.New(skiplistComparable(cfg.TxPriority))
-	priorityCounts := make(map[C]int)
-	scores := make(map[txMeta[C]]txMeta[C])
-	senderIndices, err := lrucache.NewWithEvict(MaxMempoolSenderIndexSize, func(key string, l *skiplist.SkipList) {
-		// on eviction, remove all txs from the priority index
-		cursor := l.Front()
-		for cursor != nil {
-			k := cursor.Key().(txMeta[C])
-			priorityIndex.Remove(k)
-			priorityCounts[k.priority]--
-			delete(scores, txMeta[C]{nonce: k.nonce, sender: k.sender})
-			cursor = cursor.Next()
-		}
-	})
-	if err != nil {
-		panic(err)
-	}
-
 	mp := &PriorityNonceMempool[C]{
-		priorityIndex:   priorityIndex,
-		priorityCounts:  priorityCounts,
-		senderIndices:   senderIndices,
-		scores:          scores,
+		priorityIndex:   skiplist.New(skiplistComparable(cfg.TxPriority)),
+		priorityCounts:  make(map[C]int),
+		senderIndices:   map[string]*skiplist.SkipList{},
+		scores:          map[txMeta[C]]txMeta[C]{},
 		cfg:             cfg,
 		signerExtractor: extractor,
+
+		// buffer for skip lists
+		skipListBuffer: make([]*skiplist.SkipList, 0, skipListBufferCapacity),
 	}
 
 	return mp
@@ -154,7 +142,7 @@ func DefaultPriorityMempool(extractor signer_extraction.DefaultAdapter) *Priorit
 // i.e. the next valid transaction for the sender. If no such transaction exists,
 // nil will be returned.
 func (mp *PriorityNonceMempool[C]) NextSenderTx(sender string) sdk.Tx {
-	senderIndex, ok := mp.senderIndices.Get(sender)
+	senderIndex, ok := mp.senderIndices[sender]
 	if !ok {
 		return nil
 	}
@@ -193,14 +181,19 @@ func (mp *PriorityNonceMempool[C]) Insert(ctx context.Context, tx sdk.Tx) error 
 	nonce := signer.Sequence
 	key := txMeta[C]{nonce: nonce, priority: priority, sender: sender}
 
-	senderIndex, ok := mp.senderIndices.Get(sender)
+	senderIndex, ok := mp.senderIndices[sender]
 	if !ok {
-		senderIndex = skiplist.New(skiplist.LessThanFunc(func(a, b any) int {
-			return skiplist.Uint64.Compare(b.(txMeta[C]).nonce, a.(txMeta[C]).nonce)
-		}))
+		if len(mp.skipListBuffer) > 0 {
+			senderIndex = mp.skipListBuffer[0]
+			mp.skipListBuffer = mp.skipListBuffer[1:]
+		} else {
+			senderIndex = skiplist.New(skiplist.LessThanFunc(func(a, b any) int {
+				return skiplist.Uint64.Compare(b.(txMeta[C]).nonce, a.(txMeta[C]).nonce)
+			}))
+		}
 
 		// initialize sender index if not found
-		mp.senderIndices.Add(sender, senderIndex)
+		mp.senderIndices[sender] = senderIndex
 	}
 
 	// Since mp.priorityIndex is scored by priority, then sender, then nonce, a
@@ -275,7 +268,7 @@ func (i *PriorityNonceIterator[C]) Next() sdkmempool.Iterator {
 
 	cursor, ok := i.senderCursors[i.sender]
 	if !ok {
-		senderIndex, ok := i.mempool.senderIndices.Get(i.sender)
+		senderIndex, ok := i.mempool.senderIndices[i.sender]
 		if !ok {
 			return nil
 		}
@@ -417,7 +410,7 @@ func (mp *PriorityNonceMempool[C]) Remove(tx sdk.Tx) error {
 	}
 	tk := txMeta[C]{nonce: nonce, priority: score.priority, sender: sender, weight: score.weight}
 
-	senderTxs, ok := mp.senderIndices.Get(sender)
+	senderTxs, ok := mp.senderIndices[sender]
 	if !ok {
 		return fmt.Errorf("sender %s not found", sender)
 	}
@@ -427,6 +420,15 @@ func (mp *PriorityNonceMempool[C]) Remove(tx sdk.Tx) error {
 
 	delete(mp.scores, scoreKey)
 	mp.priorityCounts[score.priority]--
+
+	if senderTxs.Len() == 0 {
+		delete(mp.senderIndices, sender)
+
+		// return the skip list to the buffer
+		if len(mp.skipListBuffer) < skipListBufferCapacity {
+			mp.skipListBuffer = append(mp.skipListBuffer, senderTxs)
+		}
+	}
 
 	return nil
 }
@@ -466,9 +468,8 @@ func IsEmpty[C comparable](mempool sdkmempool.Mempool) error {
 		}
 	}
 
-	for _, k := range mp.senderIndices.Keys() {
-		l, ok := mp.senderIndices.Peek(k)
-		if ok && l.Len() != 0 {
+	for k, v := range mp.senderIndices {
+		if v.Len() != 0 {
 			return fmt.Errorf("senderIndex not empty for sender %v", k)
 		}
 	}

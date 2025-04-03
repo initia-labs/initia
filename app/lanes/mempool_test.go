@@ -117,7 +117,7 @@ func createTx(t *testing.T, ctx sdk.Context, encodingConfig params.EncodingConfi
 	return txBuilder.GetTx()
 }
 
-func Test_Mempool_SenderIndices_Eviction(t *testing.T) {
+func Test_Mempool_SkipListBuffer(t *testing.T) {
 	ctx := sdk.NewContext(nil, cmtproto.Header{}, false, log.NewNopLogger()).WithConsensusParams(cmtproto.ConsensusParams{
 		Block: &cmtproto.BlockParams{
 			MaxBytes: 22 * 1024 * 1024,
@@ -155,11 +155,11 @@ func Test_Mempool_SenderIndices_Eviction(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	// it must report 2000 txs
-	require.Equal(t, 2000, mempool.CountTx())
+	// it must report 4000 txs
+	require.Equal(t, 4000, mempool.CountTx())
 
 	numTxs := 0
-	txes := make([]sdk.Tx, 2000)
+	txes := make([]sdk.Tx, 4000)
 	for iter := mempool.Select(ctx, nil); iter != nil; iter = iter.Next() {
 		tx := iter.Tx()
 		txes[numTxs] = tx
@@ -171,8 +171,10 @@ func Test_Mempool_SenderIndices_Eviction(t *testing.T) {
 		numTxs++
 	}
 
+	// check if the skip lists are empty
+	require.Equal(t, 0, mempool.SkipListBufferLenForTesting())
+
 	// check if the txes are unique
-	require.Equal(t, 2000, len(txes))
 	for _, tx := range txes {
 		err := mempool.Remove(tx)
 		require.NoError(t, err)
@@ -180,4 +182,7 @@ func Test_Mempool_SenderIndices_Eviction(t *testing.T) {
 
 	// check if the txes are removed
 	require.Equal(t, 0, mempool.CountTx())
+
+	// check if the skip lists are fully filled
+	require.Equal(t, 1000, mempool.SkipListBufferLenForTesting())
 }
