@@ -45,7 +45,7 @@ type (
 	PriorityNonceMempool[C comparable] struct {
 		priorityIndex  *skiplist.SkipList
 		priorityCounts map[C]int
-		// use lrucache to prevent memory leaks
+		// use lrucache to prevent infinite memory increase
 		senderIndices   *lrucache.Cache[string, *skiplist.SkipList]
 		scores          map[txMeta[C]]txMeta[C]
 		cfg             blockbase.PriorityNonceMempoolConfig[C]
@@ -115,16 +115,29 @@ func skiplistComparable[C comparable](txPriority blockbase.TxPriority[C]) skipli
 // NewPriorityMempool returns the SDK's default mempool implementation which
 // returns txs in a partial order by 2 dimensions; priority, and sender-nonce.
 func NewPriorityMempool[C comparable](cfg blockbase.PriorityNonceMempoolConfig[C], extractor signer_extraction.Adapter) *PriorityNonceMempool[C] {
-	senderIndices, err := lrucache.New[string, *skiplist.SkipList](MaxMempoolSenderIndexSize)
+	priorityIndex := skiplist.New(skiplistComparable(cfg.TxPriority))
+	priorityCounts := make(map[C]int)
+	scores := make(map[txMeta[C]]txMeta[C])
+	senderIndices, err := lrucache.NewWithEvict(MaxMempoolSenderIndexSize, func(key string, l *skiplist.SkipList) {
+		// on eviction, remove all txs from the priority index
+		cursor := l.Front()
+		for cursor != nil {
+			k := cursor.Key().(txMeta[C])
+			priorityIndex.Remove(k)
+			priorityCounts[k.priority]--
+			delete(scores, txMeta[C]{nonce: k.nonce, sender: k.sender})
+			cursor = cursor.Next()
+		}
+	})
 	if err != nil {
 		panic(err)
 	}
 
 	mp := &PriorityNonceMempool[C]{
-		priorityIndex:   skiplist.New(skiplistComparable(cfg.TxPriority)),
-		priorityCounts:  make(map[C]int),
+		priorityIndex:   priorityIndex,
+		priorityCounts:  priorityCounts,
 		senderIndices:   senderIndices,
-		scores:          make(map[txMeta[C]]txMeta[C]),
+		scores:          scores,
 		cfg:             cfg,
 		signerExtractor: extractor,
 	}
