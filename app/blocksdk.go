@@ -49,7 +49,7 @@ func setupBlockSDK(
 	}, applanes.RejectMatchHandler())
 
 	factory := mevlane.NewDefaultAuctionFactory(app.txConfig.TxDecoder(), signerExtractor)
-	mevLane := mevlane.NewMEVLane(blockbase.LaneConfig{
+	mevLane := applanes.NewMEVLane(blockbase.LaneConfig{
 		Logger:          app.Logger(),
 		TxEncoder:       app.txConfig.TxEncoder(),
 		TxDecoder:       app.txConfig.TxDecoder(),

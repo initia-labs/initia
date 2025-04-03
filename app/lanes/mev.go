@@ -3,9 +3,12 @@ package lanes
 import (
 	distrkeeper "github.com/initia-labs/initia/x/distribution/keeper"
 	mstakingkeeper "github.com/initia-labs/initia/x/mstaking/keeper"
-	auctiontypes "github.com/skip-mev/block-sdk/v2/x/auction/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	blockbase "github.com/skip-mev/block-sdk/v2/block/base"
+	mevlane "github.com/skip-mev/block-sdk/v2/lanes/mev"
+	auctiontypes "github.com/skip-mev/block-sdk/v2/x/auction/types"
 )
 
 var _ auctiontypes.RewardsAddressProvider = (*RewardsAddressProvider)(nil)
@@ -41,4 +44,45 @@ func (rap *RewardsAddressProvider) GetRewardsAddress(ctx sdk.Context) (sdk.AccAd
 
 	// return validator's operator address
 	return sdk.AccAddress(valAddr), nil
+}
+
+// NewMEVLane returns a new TOB lane.
+func NewMEVLane(
+	cfg blockbase.LaneConfig,
+	factory mevlane.Factory,
+	matchHandler blockbase.MatchHandler,
+) *mevlane.MEVLane {
+	mempool, err := NewMempool(
+		mevlane.TxPriority(factory),
+		cfg.SignerExtractor,
+		cfg.MaxTxs,
+		cfg.MaxBlockSpace,
+		cfg.TxEncoder,
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	baseLane, err := blockbase.NewBaseLane(
+		cfg,
+		mevlane.LaneName,
+		blockbase.WithMatchHandler(matchHandler),
+		blockbase.WithMempool(mempool),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	// Create the mev proposal handler.
+	handler := mevlane.NewProposalHandler(baseLane, factory)
+	baseLane.WithOptions(
+		blockbase.WithMempool(mempool),
+		blockbase.WithPrepareLaneHandler(handler.PrepareLaneHandler()),
+		blockbase.WithProcessLaneHandler(handler.ProcessLaneHandler()),
+	)
+
+	return &mevlane.MEVLane{
+		BaseLane: baseLane,
+		Factory:  factory,
+	}
 }

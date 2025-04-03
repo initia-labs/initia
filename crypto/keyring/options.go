@@ -1,12 +1,13 @@
 package keyring
 
 import (
-	"github.com/cosmos/cosmos-sdk/client/flags"
-	cosmoshd "github.com/cosmos/cosmos-sdk/crypto/hd"
-	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/initia-labs/initia/crypto/hd"
 	ethhd "github.com/initia-labs/initia/crypto/hd"
 	"github.com/spf13/cobra"
+
+	"github.com/cosmos/cosmos-sdk/client/flags"
+	cosmoshd "github.com/cosmos/cosmos-sdk/crypto/hd"
+	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 )
 
 var (

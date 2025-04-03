@@ -4,9 +4,10 @@ import (
 	"cosmossdk.io/errors"
 	"cosmossdk.io/math"
 
+	dynamicfeetypes "github.com/initia-labs/initia/x/dynamic-fee/types"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	dynamicfeetypes "github.com/initia-labs/initia/x/dynamic-fee/types"
 )
 
 // MempoolFeeChecker will check if the transaction's fee is at least as large

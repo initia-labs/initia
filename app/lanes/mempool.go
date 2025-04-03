@@ -62,7 +62,7 @@ func NewMempool[C comparable](
 	}
 
 	return &Mempool[C]{
-		index: blockbase.NewPriorityMempool(
+		index: NewPriorityMempool(
 			blockbase.PriorityNonceMempoolConfig[C]{
 				TxPriority: txPriority,
 				MaxTx:      maxTx,
@@ -188,4 +188,11 @@ func (cm *Mempool[C]) AssertLaneLimits(ctx sdk.Context, tx sdk.Tx) error {
 	}
 
 	return nil
+}
+
+// SkipListBufferLen returns the number of skip lists in the buffer.
+//
+// Only for testing.
+func (cm *Mempool[C]) SkipListBufferLenForTesting() int {
+	return len(cm.index.(*PriorityNonceMempool[C]).skipListBuffer)
 }
