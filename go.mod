@@ -39,9 +39,11 @@ require (
 	github.com/gorilla/mux v1.8.1
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/hashicorp/go-metrics v0.5.3
+	github.com/huandu/skiplist v1.2.0
 	github.com/initia-labs/OPinit v1.0.0-rc.0
 	// we also need to update `LIBMOVEVM_VERSION` of Dockerfile#11
 	github.com/initia-labs/movevm v1.0.0-rc.1
+	github.com/jellydator/ttlcache/v3 v3.3.0
 	github.com/noble-assets/forwarding/v2 v2.0.1
 	github.com/pelletier/go-toml v1.9.5
 	github.com/pkg/errors v0.9.1
@@ -152,7 +154,6 @@ require (
 	github.com/hashicorp/yamux v0.1.1 // indirect
 	github.com/hdevalence/ed25519consensus v0.1.0 // indirect
 	github.com/holiman/uint256 v1.3.1 // indirect
-	github.com/huandu/skiplist v1.2.0 // indirect
 	github.com/iancoleman/orderedmap v0.3.0 // indirect
 	github.com/iancoleman/strcase v0.3.0 // indirect
 	github.com/improbable-eng/grpc-web v0.15.0 // indirect
