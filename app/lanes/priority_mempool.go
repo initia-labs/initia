@@ -31,6 +31,8 @@ var (
 	_ sdkmempool.Iterator        = (*PriorityNonceIterator[int64])(nil)
 )
 
+const MaxMempoolSenderIndexSize = 1000
+
 type (
 
 	// PriorityNonceMempool is a mempool implementation that stores txs
@@ -113,7 +115,7 @@ func skiplistComparable[C comparable](txPriority blockbase.TxPriority[C]) skipli
 // NewPriorityMempool returns the SDK's default mempool implementation which
 // returns txs in a partial order by 2 dimensions; priority, and sender-nonce.
 func NewPriorityMempool[C comparable](cfg blockbase.PriorityNonceMempoolConfig[C], extractor signer_extraction.Adapter) *PriorityNonceMempool[C] {
-	senderIndices, err := lrucache.New[string, *skiplist.SkipList](1000)
+	senderIndices, err := lrucache.New[string, *skiplist.SkipList](MaxMempoolSenderIndexSize)
 	if err != nil {
 		panic(err)
 	}
