@@ -7,6 +7,7 @@ import (
 	"cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
+
 	"github.com/cosmos/cosmos-sdk/types/module"
 
 	dynamicfeetypes "github.com/initia-labs/initia/x/dynamic-fee/types"

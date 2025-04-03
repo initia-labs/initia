@@ -43,7 +43,6 @@ require (
 	github.com/initia-labs/OPinit v1.0.0-rc.0
 	// we also need to update `LIBMOVEVM_VERSION` of Dockerfile#11
 	github.com/initia-labs/movevm v1.0.0-rc.1
-	github.com/jellydator/ttlcache/v3 v3.3.0
 	github.com/noble-assets/forwarding/v2 v2.0.1
 	github.com/pelletier/go-toml v1.9.5
 	github.com/pkg/errors v0.9.1
@@ -65,6 +64,8 @@ require (
 	google.golang.org/protobuf v1.36.4
 	gopkg.in/yaml.v3 v3.0.1
 )
+
+require github.com/hashicorp/golang-lru/v2 v2.0.7
 
 require (
 	cloud.google.com/go v0.115.0 // indirect
@@ -149,7 +150,6 @@ require (
 	github.com/hashicorp/go-safetemp v1.0.0 // indirect
 	github.com/hashicorp/go-version v1.7.0 // indirect
 	github.com/hashicorp/golang-lru v1.0.2 // indirect
-	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hashicorp/yamux v0.1.1 // indirect
 	github.com/hdevalence/ed25519consensus v0.1.0 // indirect
