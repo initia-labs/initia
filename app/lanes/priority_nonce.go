@@ -27,42 +27,11 @@ import (
 )
 
 var (
-	_ MempoolInterface    = (*PriorityNonceMempool[int64])(nil)
-	_ sdkmempool.Iterator = (*PriorityNonceIterator[int64])(nil)
+	_ blockbase.MempoolInterface = (*PriorityNonceMempool[int64])(nil)
+	_ sdkmempool.Iterator        = (*PriorityNonceIterator[int64])(nil)
 )
 
 type (
-	// MempoolInterface defines the interface a mempool should implement.
-	MempoolInterface interface {
-		sdkmempool.Mempool
-
-		// Contains returns true if the transaction is in the mempool.
-		Contains(tx sdk.Tx) bool
-	}
-
-	// PriorityNonceMempoolConfig defines the configuration used to configure the
-	// PriorityNonceMempool.
-	PriorityNonceMempoolConfig[C comparable] struct {
-		// TxPriority defines the transaction priority and comparator.
-		TxPriority blockbase.TxPriority[C]
-
-		// OnRead is a callback to be called when a tx is read from the mempool.
-		OnRead func(tx sdk.Tx)
-
-		// TxReplacement is a callback to be called when duplicated transaction nonce
-		// detected during mempool insert. An application can define a transaction
-		// replacement rule based on tx priority or certain transaction fields.
-		TxReplacement func(op, np C, oTx, nTx sdk.Tx) bool
-
-		// MaxTx sets the maximum number of transactions allowed in the mempool with
-		// the semantics:
-		// - if MaxTx == 0, there is no cap on the number of transactions in the mempool
-		// - if MaxTx > 0, the mempool will cap the number of transactions it stores,
-		//   and will prioritize transactions by their priority and sender-nonce
-		//   (sequence number) when evicting transactions.
-		// - if MaxTx < 0, `Insert` is a no-op.
-		MaxTx int
-	}
 
 	// PriorityNonceMempool is a mempool implementation that stores txs
 	// in a partially ordered set by 2 dimensions: priority, and sender-nonce
@@ -77,7 +46,7 @@ type (
 		// use lrucache to prevent memory leaks
 		senderIndices   *lrucache.Cache[string, *skiplist.SkipList]
 		scores          map[txMeta[C]]txMeta[C]
-		cfg             PriorityNonceMempoolConfig[C]
+		cfg             blockbase.PriorityNonceMempoolConfig[C]
 		signerExtractor signer_extraction.Adapter
 	}
 
@@ -106,12 +75,6 @@ type (
 		senderElement *skiplist.Element
 	}
 )
-
-func DefaultPriorityNonceMempoolConfig() PriorityNonceMempoolConfig[int64] {
-	return PriorityNonceMempoolConfig[int64]{
-		TxPriority: blockbase.NewDefaultTxPriority(),
-	}
-}
 
 // skiplistComparable is a comparator for txKeys that first compares priority,
 // then weight, then sender, then nonce, uniquely identifying a transaction.
@@ -149,7 +112,7 @@ func skiplistComparable[C comparable](txPriority blockbase.TxPriority[C]) skipli
 
 // NewPriorityMempool returns the SDK's default mempool implementation which
 // returns txs in a partial order by 2 dimensions; priority, and sender-nonce.
-func NewPriorityMempool[C comparable](cfg PriorityNonceMempoolConfig[C], extractor signer_extraction.Adapter) *PriorityNonceMempool[C] {
+func NewPriorityMempool[C comparable](cfg blockbase.PriorityNonceMempoolConfig[C], extractor signer_extraction.Adapter) *PriorityNonceMempool[C] {
 	senderIndices, err := lrucache.New[string, *skiplist.SkipList](1000)
 	if err != nil {
 		panic(err)
@@ -169,7 +132,7 @@ func NewPriorityMempool[C comparable](cfg PriorityNonceMempoolConfig[C], extract
 
 // DefaultPriorityMempool returns a priorityNonceMempool with no options.
 func DefaultPriorityMempool(extractor signer_extraction.DefaultAdapter) *PriorityNonceMempool[int64] {
-	return NewPriorityMempool(DefaultPriorityNonceMempoolConfig(), extractor)
+	return NewPriorityMempool(blockbase.DefaultPriorityNonceMempoolConfig(), extractor)
 }
 
 // NextSenderTx returns the next transaction for a given sender by nonce order,

@@ -63,7 +63,7 @@ func NewMempool[C comparable](
 
 	return &Mempool[C]{
 		index: NewPriorityMempool(
-			PriorityNonceMempoolConfig[C]{
+			blockbase.PriorityNonceMempoolConfig[C]{
 				TxPriority: txPriority,
 				MaxTx:      maxTx,
 			},
