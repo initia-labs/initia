@@ -1,6 +1,8 @@
 package app
 
 import (
+	"context"
+
 	"golang.org/x/exp/maps"
 
 	evidencetypes "cosmossdk.io/x/evidence/types"
@@ -8,7 +10,8 @@ import (
 	feegrantmodule "cosmossdk.io/x/feegrant/module"
 	"cosmossdk.io/x/upgrade"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
-
+	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -51,6 +54,7 @@ import (
 
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 
+	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	authzmodule "github.com/initia-labs/initia/x/authz/module"
 	"github.com/initia-labs/initia/x/bank"
 	distr "github.com/initia-labs/initia/x/distribution"
@@ -88,6 +92,49 @@ import (
 
 	dynamicfee "github.com/initia-labs/initia/x/dynamic-fee"
 	dynamicfeetypes "github.com/initia-labs/initia/x/dynamic-fee/types"
+
+	accountkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
+	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
+	bankkeeper "github.com/initia-labs/initia/x/bank/keeper"
+
+	feegrantkeeper "cosmossdk.io/x/feegrant/keeper"
+
+	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
+	consensusparamkeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
+	groupkeeper "github.com/cosmos/cosmos-sdk/x/group/keeper"
+
+	ratelimitkeeper "github.com/cosmos/ibc-apps/modules/rate-limiting/v8/keeper"
+	ibcfeekeeper "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/keeper"
+	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
+
+	ibcnfttransferkeeper "github.com/initia-labs/initia/x/ibc/nft-transfer/keeper"
+	ibcpermkeeper "github.com/initia-labs/initia/x/ibc/perm/keeper"
+	icaauthkeeper "github.com/initia-labs/initia/x/intertx/keeper"
+
+	// this line is used by starport scaffolding # stargate/app/moduleImport
+
+	distrkeeper "github.com/initia-labs/initia/x/distribution/keeper"
+	dynamicfeekeeper "github.com/initia-labs/initia/x/dynamic-fee/keeper"
+	evidencekeeper "github.com/initia-labs/initia/x/evidence/keeper"
+	ibchookskeeper "github.com/initia-labs/initia/x/ibc-hooks/keeper"
+	movekeeper "github.com/initia-labs/initia/x/move/keeper"
+	stakingkeeper "github.com/initia-labs/initia/x/mstaking/keeper"
+	rewardkeeper "github.com/initia-labs/initia/x/reward/keeper"
+	slashingkeeper "github.com/initia-labs/initia/x/slashing/keeper"
+
+	// block-sdk dependencies
+
+	auctionkeeper "github.com/skip-mev/block-sdk/v2/x/auction/keeper"
+
+	// connect oracle dependencies
+
+	oraclekeeper "github.com/skip-mev/connect/v2/x/oracle/keeper"
+
+	ophostkeeper "github.com/initia-labs/OPinit/x/ophost/keeper"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"cosmossdk.io/core/address"
 )
 
 var maccPerms = map[string][]string{
@@ -154,6 +201,49 @@ func appModules(
 		forwarding.NewAppModule(app.ForwardingKeeper),
 		ratelimit.NewAppModule(app.appCodec, *app.RatelimitKeeper),
 		dynamicfee.NewAppModule(app.appCodec, *app.DynamicFeeKeeper),
+	}
+}
+
+// modulesForAutoCli returns a list of modules for auto-cli
+func modulesForAutoCli(appCodec codec.Codec, txConfig client.TxConfig, interfaceRegistry cdctypes.InterfaceRegistry, ac, vc address.Codec) []module.AppModule {
+	return []module.AppModule{
+		genutil.NewAppModule(nil, nil, nil, txConfig),
+		auth.NewAppModule(appCodec, accountkeeper.AccountKeeper{}, nil, nil),
+		bank.NewAppModule(appCodec, bankkeeper.BaseKeeper{}, accountkeeper.AccountKeeper{}),
+		capability.NewAppModule(appCodec, capabilitykeeper.Keeper{}, false),
+		crisis.NewAppModule(nil, false, nil),
+		feegrantmodule.NewAppModule(appCodec, mockAccountKeeper{addressCodec: ac}, nil, feegrantkeeper.Keeper{}, interfaceRegistry),
+		gov.NewAppModule(appCodec, nil, nil, nil),
+		reward.NewAppModule(appCodec, rewardkeeper.Keeper{}),
+		slashing.NewAppModule(appCodec, slashingkeeper.Keeper{}),
+		distr.NewAppModule(appCodec, distrkeeper.Keeper{}),
+		staking.NewAppModule(appCodec, stakingkeeper.Keeper{}),
+		upgrade.NewAppModule(nil, ac),
+		evidence.NewAppModule(evidencekeeper.Keeper{}),
+		authzmodule.NewAppModule(appCodec, authzkeeper.Keeper{}, interfaceRegistry),
+		groupmodule.NewAppModule(appCodec, groupkeeper.Keeper{}, mockAccountKeeper{addressCodec: ac}, nil, interfaceRegistry),
+		consensus.NewAppModule(appCodec, consensusparamkeeper.Keeper{}),
+		move.NewAppModule(appCodec, movekeeper.Keeper{}, vc, maps.Keys(maccPerms)),
+		auction.NewAppModule(appCodec, auctionkeeper.Keeper{}),
+		ophost.NewAppModule(appCodec, ophostkeeper.Keeper{}),
+		// connect modules
+		oracle.NewAppModule(appCodec, oraclekeeper.Keeper{}),
+		marketmap.NewAppModule(appCodec, nil),
+		// ibc modules
+		ibc.NewAppModule(nil),
+		ibctransfer.NewAppModule(ibctransferkeeper.Keeper{}),
+		ibcnfttransfer.NewAppModule(appCodec, ibcnfttransferkeeper.Keeper{}),
+		ica.NewAppModule(nil, nil),
+		icaauth.NewAppModule(appCodec, icaauthkeeper.Keeper{}),
+		ibcfee.NewAppModule(ibcfeekeeper.Keeper{}),
+		ibcperm.NewAppModule(appCodec, ibcpermkeeper.Keeper{}),
+		ibctm.NewAppModule(),
+		solomachine.NewAppModule(),
+		packetforward.NewAppModule(nil, nil),
+		ibchooks.NewAppModule(appCodec, ibchookskeeper.Keeper{}),
+		forwarding.NewAppModule(nil),
+		ratelimit.NewAppModule(appCodec, ratelimitkeeper.Keeper{}),
+		dynamicfee.NewAppModule(appCodec, dynamicfeekeeper.Keeper{}),
 	}
 }
 
@@ -273,3 +363,27 @@ func orderInitBlockers() []string {
 		forwardingtypes.ModuleName, ratelimittypes.ModuleName,
 	}
 }
+
+// mockAccountKeeper is a mock implementation of the account keeper interface
+// it is used to pass the address codec to the modules for auto-cli
+type mockAccountKeeper struct {
+	addressCodec address.Codec
+}
+
+func (ak mockAccountKeeper) AddressCodec() address.Codec { return ak.addressCodec }
+func (ak mockAccountKeeper) NewAccount(ctx context.Context, acc sdk.AccountI) sdk.AccountI {
+	return nil
+}
+func (ak mockAccountKeeper) RemoveAccount(ctx context.Context, acc sdk.AccountI)             {}
+func (ak mockAccountKeeper) IterateAccounts(ctx context.Context, cb func(sdk.AccountI) bool) {}
+func (ak mockAccountKeeper) GetAccount(ctx context.Context, addr sdk.AccAddress) sdk.AccountI {
+	return nil
+}
+func (ak mockAccountKeeper) GetModuleAccount(ctx context.Context, moduleName string) sdk.ModuleAccountI {
+	return nil
+}
+func (ak mockAccountKeeper) GetModuleAddress(moduleName string) sdk.AccAddress { return nil }
+func (ak mockAccountKeeper) NewAccountWithAddress(ctx context.Context, addr sdk.AccAddress) sdk.AccountI {
+	return nil
+}
+func (ak mockAccountKeeper) SetAccount(ctx context.Context, acc sdk.AccountI) {}

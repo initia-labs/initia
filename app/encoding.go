@@ -3,8 +3,6 @@ package app
 import (
 	"cosmossdk.io/client/v2/autocli"
 	"cosmossdk.io/core/appmodule"
-	"cosmossdk.io/log"
-	dbm "github.com/cosmos/cosmos-db"
 
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	runtimeservices "github.com/cosmos/cosmos-sdk/runtime/services"
@@ -13,10 +11,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 
+	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 	"github.com/initia-labs/initia/app/params"
-	moveconfig "github.com/initia-labs/initia/x/move/config"
-
-	oracleconfig "github.com/skip-mev/connect/v2/oracle/config"
 
 	cryptocodec "github.com/initia-labs/initia/crypto/codec"
 )
@@ -35,33 +31,32 @@ func MakeEncodingConfig() params.EncodingConfig {
 	return encodingConfig
 }
 
-func newTempApp() *InitiaApp {
-	return NewInitiaApp(
-		log.NewNopLogger(),
-		dbm.NewMemDB(),
-		nil,
-		true,
-		moveconfig.DefaultMoveConfig(),
-		oracleconfig.NewDefaultAppConfig(),
-		EmptyAppOptions{},
-	)
-}
+func AutoCliOpts(encodingConfig params.EncodingConfig) autocli.AppOptions {
+	appModules := make(map[string]appmodule.AppModule, 0)
+	moduleOptions := make(map[string]interface{}, 0)
 
-func AutoCliOpts() autocli.AppOptions {
-	tempApp := newTempApp()
-	modules := make(map[string]appmodule.AppModule, 0)
-	for _, m := range tempApp.ModuleManager.Modules {
+	modules := modulesForAutoCli(encodingConfig.Codec, encodingConfig.TxConfig, encodingConfig.InterfaceRegistry, authcodec.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix()), authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix()))
+
+	for _, m := range modules {
 		if moduleWithName, ok := m.(module.HasName); ok {
 			moduleName := moduleWithName.Name()
+			if _, ok := m.(interface {
+				AutoCLIOptions() *autocliv1.ModuleOptions
+			}); ok {
+				moduleOptions[moduleName] = m
+			} else {
+				continue
+			}
+
 			if appModule, ok := moduleWithName.(appmodule.AppModule); ok {
-				modules[moduleName] = appModule
+				appModules[moduleName] = appModule
 			}
 		}
 	}
 
 	return autocli.AppOptions{
-		Modules:               modules,
-		ModuleOptions:         runtimeservices.ExtractAutoCLIOptions(tempApp.ModuleManager.Modules),
+		Modules:               appModules,
+		ModuleOptions:         runtimeservices.ExtractAutoCLIOptions(moduleOptions),
 		AddressCodec:          authcodec.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix()),
 		ValidatorAddressCodec: authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix()),
 		ConsensusAddressCodec: authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix()),
