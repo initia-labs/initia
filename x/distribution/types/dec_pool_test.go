@@ -220,8 +220,12 @@ func (s *decpoolTestSuite) TestIsAnyNegativePools() {
 		expected bool
 	}{
 		{types.NewDecPoolsFromPools(types.NewPools(s.pool111, s.pool222, s.pool444)), false},
-		{types.DecPools{types.DecPool{"test", sdk.DecCoins{sdk.DecCoin{"testdenom", math.LegacyNewDecFromInt(math.NewInt(-10))}}}}, true},
-	}
+		{types.DecPools{types.DecPool{"test", sdk.DecCoins{
+                    {
+                        Denom:  "testdenom",
+                        Amount: math.LegacyNewDecFromInt(math.NewInt(-10)),
+                    },
+}}}, true},
 
 	for tcIndex, tc := range cases {
 		res := tc.input.IsAnyNegative()
@@ -295,28 +299,68 @@ func (s *decpoolTestSuite) TestSumPools() {
 }
 
 func (s *decpoolTestSuite) TestTruncatePools() {
-	cases := []struct {
-		input     types.DecPools
-		expected1 types.Pools
-		expected2 types.DecPools
-	}{
-		{
-			types.DecPools{types.DecPool{"test1", sdk.DecCoins{sdk.DecCoin{"testdenom1", math.LegacyNewDecFromIntWithPrec(math.NewInt(10500), 3)}}}},
-			types.Pools{types.Pool{"test1", sdk.Coins{sdk.Coin{"testdenom1", math.NewInt(10)}}}},
-			types.DecPools{types.DecPool{"test1", sdk.DecCoins{sdk.DecCoin{"testdenom1", math.LegacyNewDecFromIntWithPrec(math.NewInt(500), 3)}}}},
-		},
-		{
-			types.DecPools{types.DecPool{"test1", sdk.DecCoins{sdk.DecCoin{"testdenom1", math.LegacyNewDecFromIntWithPrec(math.NewInt(10000), 3)}}}},
-			types.Pools{types.Pool{"test1", sdk.Coins{sdk.Coin{"testdenom1", math.NewInt(10)}}}},
-			types.DecPools{},
-		},
-	}
+        cases := []struct {
+                input     types.DecPools
+                expected1 types.Pools
+                expected2 types.DecPools
+        }{
+                {
+                        types.DecPools{types.DecPool{
+                                Denom: "test1",
+                                Coins: sdk.DecCoins{
+                                        {
+                                                Denom:  "testdenom1",
+                                                Amount: math.LegacyNewDecFromIntWithPrec(math.NewInt(10500), 3),
+                                        },
+                                },
+                        }},
+                        types.Pools{types.Pool{
+                                Denom: "test1",
+                                Coins: sdk.Coins{
+                                        {
+                                                Denom:  "testdenom1",
+                                                Amount: math.NewInt(10),
+                                        },
+                                },
+                        }},
+                        types.DecPools{types.DecPool{
+                                Denom: "test1",
+                                Coins: sdk.DecCoins{
+                                        {
+                                                Denom:  "testdenom1",
+                                                Amount: math.LegacyNewDecFromIntWithPrec(math.NewInt(500), 3),
+                                        },
+                                },
+                        }},
+                },
+                {
+                        types.DecPools{types.DecPool{
+                                Denom: "test1",
+                                Coins: sdk.DecCoins{
+                                        {
+                                                Denom:  "testdenom1",
+                                                Amount: math.LegacyNewDecFromIntWithPrec(math.NewInt(10000), 3),
+                                        },
+                                },
+                        }},
+                        types.Pools{types.Pool{
+                                Denom: "test1",
+                                Coins: sdk.Coins{
+                                        {
+                                                Denom:  "testdenom1",
+                                                Amount: math.NewInt(10),
+                                        },
+                                },
+                        }},
+                        types.DecPools{},
+                },
+        }
 
-	for tcIndex, tc := range cases {
-		res1, res2 := tc.input.TruncateDecimal()
-		s.Require().True(tc.expected1.IsEqual(res1), "truncated pools are incorrect, tc #%d", tcIndex)
-		s.Require().True(tc.expected2.IsEqual(res2), "change pools are incorrect, tc #%d", tcIndex)
-	}
+        for tcIndex, tc := range cases {
+                res1, res2 := tc.input.TruncateDecimal()
+                s.Require().True(tc.expected1.IsEqual(res1), "truncated pools are incorrect, tc #%d", tcIndex)
+                s.Require().True(tc.expected2.IsEqual(res2), "change pools are incorrect, tc #%d", tcIndex)
+        }
 }
 
 func (s *decpoolTestSuite) TestIntersectPools() {
