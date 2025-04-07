@@ -175,6 +175,29 @@ func Test_grpcQueryDelegatorDelegations(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, delegation, d.Delegation)
 	}
+
+	// query delegator delegations with invalid status
+	req = types.QueryDelegatorDelegationsRequest{
+		DelegatorAddr: delAddrStr1,
+		Status:        "invalid",
+	}
+	_, err = querier.DelegatorDelegations(ctx, &req)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "invalid validator status invalid")
+
+	// set a validator status to unbonding
+	validator.Status = types.Unbonding
+	err = input.StakingKeeper.Validators.Set(ctx, valAddr2.Bytes(), validator)
+	require.NoError(t, err)
+
+	// query delegator delegations with valid status
+	req = types.QueryDelegatorDelegationsRequest{
+		DelegatorAddr: delAddrStr1,
+		Status:        types.BondStatusUnbonding,
+	}
+	res, err = querier.DelegatorDelegations(ctx, &req)
+	require.NoError(t, err)
+	require.Len(t, res.DelegationResponses, 1)
 }
 
 func Test_grpcQueryDelegatorTotalDelegationBalance(t *testing.T) {
@@ -203,8 +226,31 @@ func Test_grpcQueryDelegatorTotalDelegationBalance(t *testing.T) {
 	res, err := querier.DelegatorTotalDelegationBalance(ctx, &req)
 	require.NoError(t, err)
 
-	// 1_000_000 (validator creation) + 2_000_000 (extra bond to valAddr2)
+	// 2_000_000 (validator creation) + 1_000_000 (extra bond to valAddr2)
 	require.Equal(t, res.Balance, sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(3_000_000))))
+
+	// invalid status
+	req = types.QueryDelegatorTotalDelegationBalanceRequest{
+		DelegatorAddr: delAddrStr1,
+		Status:        "invalid",
+	}
+	_, err = querier.DelegatorTotalDelegationBalance(ctx, &req)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "invalid validator status invalid")
+
+	// set a validator status to unbonding
+	validator.Status = types.Unbonding
+	err = input.StakingKeeper.Validators.Set(ctx, valAddr2.Bytes(), validator)
+	require.NoError(t, err)
+
+	// query delegator delegations with valid status
+	req = types.QueryDelegatorTotalDelegationBalanceRequest{
+		DelegatorAddr: delAddrStr1,
+		Status:        types.BondStatusUnbonding,
+	}
+	res, err = querier.DelegatorTotalDelegationBalance(ctx, &req)
+	require.NoError(t, err)
+	require.Equal(t, res.Balance, sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(1_000_000))))
 }
 
 func Test_grpcQueryDelegatorUnbondingDelegations(t *testing.T) {
