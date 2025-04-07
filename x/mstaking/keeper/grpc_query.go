@@ -256,7 +256,7 @@ func (q Querier) DelegatorDelegations(ctx context.Context, req *types.QueryDeleg
 
 	delegations, pageRes, err := query.CollectionFilteredPaginate(
 		ctx, q.Keeper.Delegations, req.Pagination,
-		q.Keeper.delegationStatusFilterFunc(ctx, req.Status),
+		delegationStatusFilterFunc(ctx, q.Keeper, req.Status),
 		func(key collections.Pair[[]byte, []byte], delegation types.Delegation) (types.Delegation, error) {
 			return delegation, nil
 		}, query.WithCollectionPaginationPairPrefix[[]byte, []byte](delAddr),
@@ -634,7 +634,7 @@ func redelegationsToRedelegationResponses(ctx context.Context, k *Keeper, redels
 	return resp, nil
 }
 
-func (k *Keeper) delegationStatusFilterFunc(ctx context.Context, status string) func(key collections.Pair[[]byte, []byte], delegation types.Delegation) (bool, error) {
+func delegationStatusFilterFunc(ctx context.Context, k *Keeper, status string) func(key collections.Pair[[]byte, []byte], delegation types.Delegation) (bool, error) {
 	return func(key collections.Pair[[]byte, []byte], delegation types.Delegation) (bool, error) {
 		if status == "" {
 			return true, nil
