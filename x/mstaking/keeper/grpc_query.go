@@ -16,6 +16,10 @@ import (
 	"github.com/initia-labs/initia/x/mstaking/types"
 )
 
+const (
+	contextKeyValidators = iota
+)
+
 // Querier is used as Keeper will have duplicate methods if used directly, and gRPC names take precedence over keeper
 type Querier struct {
 	*Keeper
@@ -245,6 +249,10 @@ func (q Querier) DelegatorDelegations(ctx context.Context, req *types.QueryDeleg
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
+
+	// cache the validators in the context
+	validators := make(map[string]types.Validator)
+	ctx = sdk.UnwrapSDKContext(ctx).WithValue(contextKeyValidators, validators)
 
 	delegations, pageRes, err := query.CollectionFilteredPaginate(
 		ctx, q.Keeper.Delegations, req.Pagination,
@@ -533,13 +541,33 @@ func queryAllRedelegations(ctx context.Context, q Querier, req *types.QueryRedel
 
 // util
 
-func delegationToDelegationResponse(ctx context.Context, k *Keeper, del types.Delegation) (types.DelegationResponse, error) {
-	valAddr, err := k.validatorAddressCodec.StringToBytes(del.GetValidatorAddr())
+// lookupValidator looks up a validator in the context cache first, then from the store
+func lookupValidator(ctx context.Context, k *Keeper, valAddrStr string) (types.Validator, error) {
+	if validators, ok := sdk.UnwrapSDKContext(ctx).Value(contextKeyValidators).(map[string]types.Validator); ok {
+		if val, ok := validators[valAddrStr]; ok {
+			return val, nil
+		}
+	}
+
+	valAddr, err := k.validatorAddressCodec.StringToBytes(valAddrStr)
 	if err != nil {
-		return types.DelegationResponse{}, err
+		return types.Validator{}, err
 	}
 
 	val, err := k.Validators.Get(ctx, valAddr)
+	if err != nil {
+		return types.Validator{}, err
+	}
+
+	if validators, ok := sdk.UnwrapSDKContext(ctx).Value(contextKeyValidators).(map[string]types.Validator); ok {
+		validators[valAddrStr] = val
+	}
+
+	return val, nil
+}
+
+func delegationToDelegationResponse(ctx context.Context, k *Keeper, del types.Delegation) (types.DelegationResponse, error) {
+	val, err := lookupValidator(ctx, k, del.GetValidatorAddr())
 	if err != nil {
 		return types.DelegationResponse{}, err
 	}
@@ -577,19 +605,14 @@ func redelegationsToRedelegationResponses(ctx context.Context, k *Keeper, redels
 	resp := make(types.RedelegationResponses, len(redels))
 
 	for i, redel := range redels {
-		valDstAddr, err := k.validatorAddressCodec.StringToBytes(redel.ValidatorDstAddress)
-		if err != nil {
-			panic(err)
-		}
-
-		val, err := k.Validators.Get(ctx, valDstAddr)
+		valDst, err := lookupValidator(ctx, k, redel.ValidatorDstAddress)
 		if err != nil {
 			return nil, err
 		}
 
 		entryResponses := make([]types.RedelegationEntryResponse, len(redel.Entries))
 		for j, entry := range redel.Entries {
-			balance, _ := val.TokensFromShares(entry.SharesDst).TruncateDecimal()
+			balance, _ := valDst.TokensFromShares(entry.SharesDst).TruncateDecimal()
 			entryResponses[j] = types.NewRedelegationEntryResponse(
 				entry.CreationHeight,
 				entry.CompletionTime,
@@ -616,14 +639,12 @@ func (k *Keeper) delegationStatusFilterFunc(ctx context.Context, status string) 
 		if status == "" {
 			return true, nil
 		}
-		valAddr, err := k.validatorAddressCodec.StringToBytes(delegation.GetValidatorAddr())
+
+		val, err := lookupValidator(ctx, k, delegation.GetValidatorAddr())
 		if err != nil {
 			return false, err
 		}
-		val, err := k.Validators.Get(ctx, valAddr)
-		if err != nil {
-			return false, err
-		}
+
 		return strings.EqualFold(val.GetStatus().String(), status), nil
 	}
 }
@@ -642,12 +663,7 @@ func totalDelegationBalance(ctx context.Context, k *Keeper, del types.Delegation
 }
 
 func delegationBalance(ctx context.Context, k *Keeper, del types.Delegation, status string) (sdk.Coins, error) {
-	valAddr, err := k.validatorAddressCodec.StringToBytes(del.GetValidatorAddr())
-	if err != nil {
-		return nil, err
-	}
-
-	val, err := k.Validators.Get(ctx, valAddr)
+	val, err := lookupValidator(ctx, k, del.GetValidatorAddr())
 	if err != nil {
 		return nil, err
 	}
