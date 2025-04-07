@@ -30,7 +30,7 @@ func (q Querier) Validators(ctx context.Context, req *types.QueryValidatorsReque
 	}
 
 	// validate the provided status, return all the validators if the status is empty
-	if req.Status != "" && !(req.Status == types.Bonded.String() || req.Status == types.Unbonded.String() || req.Status == types.Unbonding.String()) {
+	if !isValidStatus(req.Status) {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid validator status %s", req.Status)
 	}
 
@@ -232,17 +232,23 @@ func (q Querier) DelegatorDelegations(ctx context.Context, req *types.QueryDeleg
 		return nil, status.Errorf(codes.InvalidArgument, "empty request")
 	}
 
+	// validate the provided status, return all the validators if the status is empty
+	if !isValidStatus(req.Status) {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid validator status %s", req.Status)
+	}
+
+	// validate the provided delegator address
 	if req.DelegatorAddr == "" {
 		return nil, status.Error(codes.InvalidArgument, "delegator address cannot be empty")
 	}
-
 	delAddr, err := q.authKeeper.AddressCodec().StringToBytes(req.DelegatorAddr)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	delegations, pageRes, err := query.CollectionPaginate(
+	delegations, pageRes, err := query.CollectionFilteredPaginate(
 		ctx, q.Keeper.Delegations, req.Pagination,
+		q.Keeper.delegationStatusFilterFunc(ctx, req.Status),
 		func(key collections.Pair[[]byte, []byte], delegation types.Delegation) (types.Delegation, error) {
 			return delegation, nil
 		}, query.WithCollectionPaginationPairPrefix[[]byte, []byte](delAddr),
@@ -389,10 +395,15 @@ func (q Querier) DelegatorTotalDelegationBalance(ctx context.Context, req *types
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
 
+	// validate the provided status, return all the validators if the status is empty
+	if !isValidStatus(req.Status) {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid validator status %s", req.Status)
+	}
+
+	// validate the provided delegator address
 	if req.DelegatorAddr == "" {
 		return nil, status.Error(codes.InvalidArgument, "delegator address cannot be empty")
 	}
-
 	delAddr, err := q.authKeeper.AddressCodec().StringToBytes(req.DelegatorAddr)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
@@ -403,17 +414,13 @@ func (q Querier) DelegatorTotalDelegationBalance(ctx context.Context, req *types
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	delegationResps, err := delegationsToDelegationResponses(ctx, q.Keeper, delegations)
+	// filter the delegations based on the provided status
+	totalDelegationBalance, err := totalDelegationBalance(ctx, q.Keeper, delegations, req.Status)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	var allBalances sdk.Coins
-	for _, delegationResp := range delegationResps {
-		allBalances = allBalances.Add(delegationResp.Balance...)
-	}
-
-	return &types.QueryDelegatorTotalDelegationBalanceResponse{Balance: allBalances}, nil
+	return &types.QueryDelegatorTotalDelegationBalanceResponse{Balance: totalDelegationBalance}, nil
 }
 
 // Pool queries the pool info
@@ -602,4 +609,60 @@ func redelegationsToRedelegationResponses(ctx context.Context, k *Keeper, redels
 	}
 
 	return resp, nil
+}
+
+func (k *Keeper) delegationStatusFilterFunc(ctx context.Context, status string) func(key collections.Pair[[]byte, []byte], delegation types.Delegation) (bool, error) {
+	return func(key collections.Pair[[]byte, []byte], delegation types.Delegation) (bool, error) {
+		if status == "" {
+			return true, nil
+		}
+		valAddr, err := k.validatorAddressCodec.StringToBytes(delegation.GetValidatorAddr())
+		if err != nil {
+			return false, err
+		}
+		val, err := k.Validators.Get(ctx, valAddr)
+		if err != nil {
+			return false, err
+		}
+		return strings.EqualFold(val.GetStatus().String(), status), nil
+	}
+}
+
+func totalDelegationBalance(ctx context.Context, k *Keeper, del types.Delegations, status string) (sdk.Coins, error) {
+	balances := make(sdk.Coins, 0, len(del))
+	for _, del := range del {
+		balance, err := delegationBalance(ctx, k, del, status)
+		if err != nil {
+			return nil, err
+		} else if balance != nil {
+			balances = balances.Add(balance...)
+		}
+	}
+	return balances, nil
+}
+
+func delegationBalance(ctx context.Context, k *Keeper, del types.Delegation, status string) (sdk.Coins, error) {
+	valAddr, err := k.validatorAddressCodec.StringToBytes(del.GetValidatorAddr())
+	if err != nil {
+		return nil, err
+	}
+
+	val, err := k.Validators.Get(ctx, valAddr)
+	if err != nil {
+		return nil, err
+	}
+
+	if status != "" && !strings.EqualFold(val.GetStatus().String(), status) {
+		return nil, nil
+	}
+
+	balances, _ := val.TokensFromShares(del.Shares).TruncateDecimal()
+	return balances, nil
+}
+
+func isValidStatus(s string) bool {
+	if s != "" && !(s == types.Bonded.String() || s == types.Unbonded.String() || s == types.Unbonding.String()) {
+		return false
+	}
+	return true
 }
