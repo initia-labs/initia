@@ -329,6 +329,7 @@ func (k msgServer) BeginRedelegate(ctx context.Context, msg *types.MsgBeginRedel
 	sdkCtx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeRedelegate,
+			sdk.NewAttribute(types.AttributeKeyDelegator, msg.DelegatorAddress),
 			sdk.NewAttribute(types.AttributeKeySrcValidator, msg.ValidatorSrcAddress),
 			sdk.NewAttribute(types.AttributeKeyDstValidator, msg.ValidatorDstAddress),
 			sdk.NewAttribute(sdk.AttributeKeyAmount, msg.Amount.String()),

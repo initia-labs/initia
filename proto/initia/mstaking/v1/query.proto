@@ -61,8 +61,8 @@ service Query {
       "{delegator_addr}/unbonding_delegations";
   }
 
-  // Redelegations queries redelegations of given address.
-  rpc Redelegations(QueryRedelegationsRequest) returns (QueryRedelegationsResponse) {
+  // RedelegationsOfDelegator queries redelegations of given delegator address.
+  rpc RedelegationsOfDelegator(QueryRedelegationsRequest) returns (QueryRedelegationsResponse) {
     option (google.api.http).get = "/initia/mstaking/v1/delegators/{delegator_addr}/redelegations";
   }
 
@@ -84,6 +84,11 @@ service Query {
   // delegator.
   rpc DelegatorTotalDelegationBalance(QueryDelegatorTotalDelegationBalanceRequest) returns (QueryDelegatorTotalDelegationBalanceResponse) {
     option (google.api.http).get = "/initia/mstaking/v1/delegators/{delegator_addr}/total_delegation_balance";
+  }
+
+  // Redelegations queries redelegations of given address.
+  rpc Redelegations(QueryRedelegationsRequest) returns (QueryRedelegationsResponse) {
+    option (google.api.http).get = "/initia/mstaking/v1/redelegations";
   }
 
   // Pool queries the pool info.
