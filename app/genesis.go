@@ -41,7 +41,7 @@ type GenesisState map[string]json.RawMessage
 
 // NewDefaultGenesisState generates the default state for the application.
 func NewDefaultGenesisState(cdc codec.Codec, bondDenom string) GenesisState {
-	return GenesisState(BasicManager().DefaultGenesis(cdc)).
+	return GenesisState(NewBasicManager().DefaultGenesis(cdc)).
 		ConfigureBondDenom(cdc, bondDenom).
 		ConfigureICA(cdc).
 		AddMarketData(cdc, cdc.InterfaceRegistry().SigningContext().AddressCodec())
