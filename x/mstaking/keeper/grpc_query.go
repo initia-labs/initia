@@ -327,7 +327,7 @@ func (q Querier) RedelegationsOfDelegator(ctx context.Context, req *types.QueryR
 		Pagination:    req.Pagination,
 	})
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, err
 	}
 
 	return &types.QueryRedelegationsOfDelegatorResponse{
