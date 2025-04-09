@@ -134,6 +134,9 @@ func TestEmergencyProposalPassedEndblocker(t *testing.T) {
 	proposal, err = app.GovKeeper.Proposals.Get(ctx, 1)
 	require.NoError(t, err)
 	require.Equal(t, proposal.Status, v1.StatusPassed)
+
+	// the voting end time should be the emergency next tally time
+	require.True(t, proposal.VotingEndTime.Equal(*proposal.EmergencyNextTallyTime))
 }
 
 func TestTickSingleProposal(t *testing.T) {

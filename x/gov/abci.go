@@ -257,6 +257,9 @@ func handleTallyResult(
 		if err = k.EmergencyProposals.Remove(ctx, proposal.Id); err != nil {
 			return err
 		}
+
+		// update the voting end time to the emergency next tally time
+		proposal.VotingEndTime = proposal.EmergencyNextTallyTime
 	}
 
 	var tagValue, logMsg string
