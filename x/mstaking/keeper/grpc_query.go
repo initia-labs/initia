@@ -323,8 +323,10 @@ func (q Querier) DelegatorUnbondingDelegations(ctx context.Context, req *types.Q
 // RedelegationsOfDelegator queries redelegations of given delegator address
 func (q Querier) RedelegationsOfDelegator(ctx context.Context, req *types.QueryRedelegationsOfDelegatorRequest) (*types.QueryRedelegationsOfDelegatorResponse, error) {
 	res, err := q.Redelegations(ctx, &types.QueryRedelegationsRequest{
-		DelegatorAddr: req.DelegatorAddr,
-		Pagination:    req.Pagination,
+		DelegatorAddr:    req.DelegatorAddr,
+		SrcValidatorAddr: req.SrcValidatorAddr,
+		DstValidatorAddr: req.DstValidatorAddr,
+		Pagination:       req.Pagination,
 	})
 	if err != nil {
 		return nil, err
