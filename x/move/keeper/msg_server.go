@@ -43,7 +43,7 @@ func (ms MsgServer) Publish(context context.Context, req *types.MsgPublish) (*ty
 		modules = append(modules, vmtypes.NewModule(module))
 	}
 
-	err = ms.Keeper.PublishModuleBundle(
+	err = ms.PublishModuleBundle(
 		ctx,
 		sender,
 		vmtypes.NewModuleBundle(modules...),
@@ -80,7 +80,7 @@ func (ms MsgServer) Execute(context context.Context, req *types.MsgExecute) (*ty
 		return nil, err
 	}
 
-	err = ms.Keeper.ExecuteEntryFunction(
+	err = ms.ExecuteEntryFunction(
 		ctx,
 		sender,
 		moduleAddr,
@@ -120,7 +120,7 @@ func (ms MsgServer) ExecuteJSON(context context.Context, req *types.MsgExecuteJS
 		return nil, err
 	}
 
-	err = ms.Keeper.ExecuteEntryFunctionJSON(
+	err = ms.ExecuteEntryFunctionJSON(
 		ctx,
 		sender,
 		moduleAddr,
@@ -161,7 +161,7 @@ func (ms MsgServer) Script(ctx context.Context, req *types.MsgScript) (*types.Ms
 		return nil, err
 	}
 
-	err = ms.Keeper.ExecuteScript(
+	err = ms.ExecuteScript(
 		ctx,
 		sender,
 		req.CodeBytes,
@@ -194,7 +194,7 @@ func (ms MsgServer) ScriptJSON(context context.Context, req *types.MsgScriptJSON
 		return nil, err
 	}
 
-	err = ms.Keeper.ExecuteScriptJSON(
+	err = ms.ExecuteScriptJSON(
 		ctx,
 		sender,
 		req.CodeBytes,
@@ -231,7 +231,7 @@ func (ms MsgServer) GovPublish(context context.Context, req *types.MsgGovPublish
 		modules = append(modules, vmtypes.NewModule(module))
 	}
 
-	err = ms.Keeper.PublishModuleBundle(
+	err = ms.PublishModuleBundle(
 		ctx,
 		sender,
 		vmtypes.NewModuleBundle(modules...),
@@ -272,7 +272,7 @@ func (ms MsgServer) GovExecute(context context.Context, req *types.MsgGovExecute
 		return nil, err
 	}
 
-	err = ms.Keeper.ExecuteEntryFunction(
+	err = ms.ExecuteEntryFunction(
 		ctx,
 		sender,
 		moduleAddr,
@@ -316,7 +316,7 @@ func (ms MsgServer) GovExecuteJSON(context context.Context, req *types.MsgGovExe
 		return nil, err
 	}
 
-	err = ms.Keeper.ExecuteEntryFunctionJSON(
+	err = ms.ExecuteEntryFunctionJSON(
 		ctx,
 		sender,
 		moduleAddr,
@@ -355,7 +355,7 @@ func (ms MsgServer) GovScript(context context.Context, req *types.MsgGovScript) 
 		return nil, err
 	}
 
-	err = ms.Keeper.ExecuteScript(
+	err = ms.ExecuteScript(
 		ctx,
 		sender,
 		req.CodeBytes,
@@ -392,7 +392,7 @@ func (ms MsgServer) GovScriptJSON(context context.Context, req *types.MsgGovScri
 		return nil, err
 	}
 
-	err = ms.Keeper.ExecuteScriptJSON(
+	err = ms.ExecuteScriptJSON(
 		ctx,
 		sender,
 		req.CodeBytes,

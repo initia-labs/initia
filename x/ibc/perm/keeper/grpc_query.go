@@ -35,7 +35,7 @@ func (q QueryServerImpl) ChannelStates(ctx context.Context, req *types.QueryChan
 func (q QueryServerImpl) ChannelState(ctx context.Context, req *types.QueryChannelStateRequest) (*types.QueryChannelStateResponse, error) {
 	ctx = sdk.UnwrapSDKContext(ctx)
 
-	channelState, err := q.Keeper.GetChannelState(ctx, req.PortId, req.ChannelId)
+	channelState, err := q.GetChannelState(ctx, req.PortId, req.ChannelId)
 	if err != nil {
 		return nil, err
 	}

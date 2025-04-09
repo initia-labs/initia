@@ -22,7 +22,7 @@ func NewCompatibilityKeeper(k *Keeper) CompatibilityKeeper {
 }
 
 func (k CompatibilityKeeper) Validator(ctx context.Context, addr sdk.ValAddress) (cosmostypes.ValidatorI, error) {
-	val, err := k.Keeper.GetValidator(ctx, addr)
+	val, err := k.GetValidator(ctx, addr)
 	if err != nil {
 		return nil, err
 	}
@@ -30,7 +30,7 @@ func (k CompatibilityKeeper) Validator(ctx context.Context, addr sdk.ValAddress)
 }
 
 func (k CompatibilityKeeper) ValidatorByConsAddr(ctx context.Context, addr sdk.ConsAddress) (cosmostypes.ValidatorI, error) {
-	val, err := k.Keeper.GetValidatorByConsAddr(ctx, addr)
+	val, err := k.GetValidatorByConsAddr(ctx, addr)
 	if err != nil {
 		return nil, err
 	}

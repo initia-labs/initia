@@ -473,7 +473,7 @@ func (app *InitiaApp) Simulate(txBytes []byte) (sdk.GasInfo, *sdk.Result, error)
 
 // RegisterTxService implements the Application.RegisterTxService method.
 func (app *InitiaApp) RegisterTxService(clientCtx client.Context) {
-	authtx.RegisterTxService(app.BaseApp.GRPCQueryRouter(), clientCtx, app.Simulate, app.interfaceRegistry)
+	authtx.RegisterTxService(app.GRPCQueryRouter(), clientCtx, app.Simulate, app.interfaceRegistry)
 	initiatx.RegisterTxQuery(app.GRPCQueryRouter(), app.DynamicFeeKeeper)
 
 	// Register the Block SDK mempool transaction service.
@@ -488,7 +488,7 @@ func (app *InitiaApp) RegisterTxService(clientCtx client.Context) {
 // RegisterTendermintService implements the Application.RegisterTendermintService method.
 func (app *InitiaApp) RegisterTendermintService(clientCtx client.Context) {
 	cmtservice.RegisterTendermintService(
-		clientCtx, app.BaseApp.GRPCQueryRouter(),
+		clientCtx, app.GRPCQueryRouter(),
 		app.interfaceRegistry, app.Query,
 	)
 }
