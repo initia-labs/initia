@@ -265,14 +265,8 @@ message QueryRedelegationsOfDelegatorRequest {
   // delegator_addr defines the delegator address to query for.
   string delegator_addr = 1;
 
-  // src_validator_addr defines the validator address to redelegate from.
-  string src_validator_addr = 2;
-
-  // dst_validator_addr defines the validator address to redelegate to.
-  string dst_validator_addr = 3;
-
   // pagination defines an optional pagination for the request.
-  cosmos.base.query.v1beta1.PageRequest pagination = 4;
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
 }
 
 // QueryRedelegationsOfDelegatorResponse is response type for the Query/RedelegationsOfDelegator RPC

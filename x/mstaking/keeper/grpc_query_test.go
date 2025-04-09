@@ -456,14 +456,14 @@ func Test_grpcQueryRedelegations(t *testing.T) {
 	redels = res.RedelegationResponses
 	require.Len(t, redels, 2)
 
-	// redelegations should return same results as query with delegator address
+	// query with delegator address
 	res2, err := querier.RedelegationsOfDelegator(ctx, &types.QueryRedelegationsOfDelegatorRequest{
-		DstValidatorAddr: valAddrStr2,
+		DelegatorAddr: delAddrStr,
 	})
 	require.NoError(t, err)
 
 	redels = res2.RedelegationResponses
-	require.Len(t, redels, 2)
+	require.Len(t, redels, 1)
 }
 
 func Test_grpcPool(t *testing.T) {
