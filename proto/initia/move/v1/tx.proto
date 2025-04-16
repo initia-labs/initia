@@ -308,7 +308,9 @@ message MsgWhitelist {
   // RewardWeight is registered to distribution's Params
   string reward_weight = 3 [
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
-    (gogoproto.nullable) = false
+    (gogoproto.nullable) = false,
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (amino.dont_omitempty) = true
   ];
 }
 
