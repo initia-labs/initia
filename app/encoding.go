@@ -23,7 +23,7 @@ func newTempApp() *InitiaApp {
 		log.NewNopLogger(),
 		dbm.NewMemDB(),
 		nil,
-		true,
+		false,
 		moveconfig.DefaultMoveConfig(),
 		oracleconfig.NewDefaultAppConfig(),
 		EmptyAppOptions{},
