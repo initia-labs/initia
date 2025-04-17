@@ -222,6 +222,10 @@ message QueryDelegatorDelegationsRequest {
 
   // pagination defines an optional pagination for the request.
   cosmos.base.query.v1beta1.PageRequest pagination = 2;
+
+  // status enables to query for delegations with validators of a specific bond status (bonded/unbonded/unbonding).
+  // If empty, it queries for all delegations regardless of validator status.
+  string status = 3;
 }
 
 // QueryDelegatorDelegationsResponse is response type for the
@@ -332,6 +336,10 @@ message QueryDelegatorValidatorResponse {
 message QueryDelegatorTotalDelegationBalanceRequest {
   // delegator_addr defines the delegator address to query for.
   string delegator_addr = 1;
+
+  // status enables to query for delegations with validators of a specific bond status (bonded/unbonded/unbonding).
+  // If empty, it queries for all delegations regardless of validator status.
+  string status = 2;
 }
 
 // QueryDelegatorTotalDelegationBalanceResponse is response type for the
