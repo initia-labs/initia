@@ -256,11 +256,12 @@ require github.com/cosmos/iavl v1.2.5-0.20250306174232-6cfb3dac2c71 // indirect
 //
 // cosmos-sdk
 // - https://github.com/initia-labs/cosmos-sdk/commit/2d8e8144a217545d4d4d35d4b82f0dcc711a2501
+// - https://github.com/cosmos/cosmos-sdk/pull/24526
 //
 // connect
 // - https://github.com/initia-labs/connect/pull/1
 replace (
 	github.com/cometbft/cometbft => github.com/initia-labs/cometbft v0.0.0-20250324104207-ff0764c4444f
-	github.com/cosmos/cosmos-sdk => github.com/initia-labs/cosmos-sdk v0.0.0-20250325094132-2d8e8144a217
+	github.com/cosmos/cosmos-sdk => github.com/initia-labs/cosmos-sdk v0.0.0-20250415174140-9fd233bcf847
 	github.com/skip-mev/connect/v2 => github.com/initia-labs/connect/v2 v2.3.1
 )
