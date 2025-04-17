@@ -43489,6 +43489,16 @@ paths:
           in: query
           required: false
           type: boolean
+        - name: status
+          description: >-
+            status enables to query for delegations with validators of a
+            specific bond status (bonded/unbonded/unbonding).
+
+            If empty, it queries for all delegations regardless of validator
+            status.
+          in: query
+          required: false
+          type: string
       tags:
         - Query
   /initia/mstaking/v1/delegators/{delegator_addr}/redelegations:
@@ -44250,6 +44260,16 @@ paths:
           description: delegator_addr defines the delegator address to query for.
           in: path
           required: true
+          type: string
+        - name: status
+          description: >-
+            status enables to query for delegations with validators of a
+            specific bond status (bonded/unbonded/unbonding).
+
+            If empty, it queries for all delegations regardless of validator
+            status.
+          in: query
+          required: false
           type: string
       tags:
         - Query
