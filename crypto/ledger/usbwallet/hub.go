@@ -95,6 +95,12 @@ func NewLedgerHub() (*Hub, error) {
 		0x4011, /* HID + WebUSB Ledger Nano X */
 		0x5011, /* HID + WebUSB Ledger Nano S Plus */
 		0x6011, /* HID + WebUSB Ledger Nano FTS */
+
+		// The USB product IDs will be defined as MMII, encoding a model (MM) and an interface bitfield (II)
+		0x1000, /* Ledger Nano S */
+		0x4000, /* Ledger Nano X */
+		0x5000, /* Ledger Nano S Plus */
+		0x6000, /* Ledger Nano FTS */
 	}, 0xffa0, 0, newLedgerDriver)
 }
 
