@@ -3,6 +3,7 @@ package initia.distribution.v1;
 
 import "amino/amino.proto";
 import "cosmos/base/v1beta1/coin.proto";
+import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 
 option go_package = "github.com/initia-labs/initia/x/distribution/types";
@@ -17,7 +18,9 @@ message Params {
   string community_tax = 1 [
     (gogoproto.moretags) = "yaml:\"community_tax\"",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
-    (gogoproto.nullable) = false
+    (gogoproto.nullable) = false,
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (amino.dont_omitempty) = true
   ];
   bool withdraw_addr_enabled = 2 [(gogoproto.moretags) = "yaml:\"withdraw_addr_enabled\""];
   repeated RewardWeight reward_weights = 3 [
@@ -33,7 +36,9 @@ message RewardWeight {
   string weight = 2 [
     (gogoproto.moretags) = "yaml:\"weight\"",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
-    (gogoproto.nullable) = false
+    (gogoproto.nullable) = false,
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (amino.dont_omitempty) = true
   ];
 }
 

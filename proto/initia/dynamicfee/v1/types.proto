@@ -2,6 +2,7 @@ syntax = "proto3";
 package initia.dynamicfee.v1;
 
 import "amino/amino.proto";
+import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 
 option go_package = "github.com/initia-labs/initia/x/dynamic-fee/types";
@@ -13,6 +14,7 @@ message Params {
     (gogoproto.moretags) = "yaml:\"base_gas_price\"",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false,
+    (cosmos_proto.scalar) = "cosmos.Dec",
     (amino.dont_omitempty) = true
   ];
 
@@ -20,6 +22,7 @@ message Params {
     (gogoproto.moretags) = "yaml:\"min_base_gas_price\"",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false,
+    (cosmos_proto.scalar) = "cosmos.Dec",
     (amino.dont_omitempty) = true
   ];
 
@@ -27,6 +30,7 @@ message Params {
     (gogoproto.moretags) = "yaml:\"max_base_gas_price\"",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false,
+    (cosmos_proto.scalar) = "cosmos.Dec",
     (amino.dont_omitempty) = true
   ];
 
@@ -34,6 +38,7 @@ message Params {
     (gogoproto.moretags) = "yaml:\"max_change_rate\"",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false,
+    (cosmos_proto.scalar) = "cosmos.Dec",
     (amino.dont_omitempty) = true
   ];
 

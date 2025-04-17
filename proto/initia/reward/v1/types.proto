@@ -2,6 +2,7 @@ syntax = "proto3";
 package initia.reward.v1;
 
 import "amino/amino.proto";
+import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 import "google/protobuf/duration.proto";
 
@@ -24,7 +25,9 @@ message Params {
   string release_rate = 3 [
     (gogoproto.moretags) = "yaml:\"release_rate\"",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
-    (gogoproto.nullable) = false
+    (gogoproto.nullable) = false,
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (amino.dont_omitempty) = true
   ];
   // The dilution rate of release rate.
   // if `(block.timestamp - last_dilute_timestamp) < dilution_period`:
@@ -33,7 +36,9 @@ message Params {
   string dilution_rate = 4 [
     (gogoproto.moretags) = "yaml:\"dilution_rate\"",
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
-    (gogoproto.nullable) = false
+    (gogoproto.nullable) = false,
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (amino.dont_omitempty) = true
   ];
   bool release_enabled = 5;
 }
