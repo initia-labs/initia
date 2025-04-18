@@ -41,9 +41,9 @@ require (
 	github.com/hashicorp/go-metrics v0.5.3
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/huandu/skiplist v1.2.0
-	github.com/initia-labs/OPinit v1.0.0-rc.0
+	github.com/initia-labs/OPinit v1.0.0
 	// we also need to update `LIBMOVEVM_VERSION` of Dockerfile#11
-	github.com/initia-labs/movevm v1.0.0-rc.1
+	github.com/initia-labs/movevm v1.0.0
 	github.com/noble-assets/forwarding/v2 v2.0.1
 	github.com/pelletier/go-toml v1.9.5
 	github.com/pkg/errors v0.9.1
@@ -157,7 +157,7 @@ require (
 	github.com/iancoleman/strcase v0.3.0 // indirect
 	github.com/improbable-eng/grpc-web v0.15.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/initia-labs/OPinit/api v1.0.0-beta.1 // indirect
+	github.com/initia-labs/OPinit/api v1.0.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/jmhodges/levigo v1.0.0 // indirect
 	github.com/klauspost/compress v1.17.11 // indirect
@@ -245,7 +245,7 @@ replace (
 
 // indirect custom dependencies
 // - https://github.com/cosmos/cosmos-sdk/issues/23740
-require github.com/cosmos/iavl v1.2.5-0.20250306174232-6cfb3dac2c71 // indirect
+require github.com/cosmos/iavl v1.2.5 // indirect
 
 // initia custom
 // use custom version for
