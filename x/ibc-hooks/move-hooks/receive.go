@@ -37,7 +37,7 @@ func (h MoveHooks) onRecvIcs20Packet(
 	}
 
 	// Validate whether the receiver is correctly specified or not.
-	if err := validateReceiver(msg, data.Receiver); err != nil {
+	if err := validateReceiver(msg, data.Receiver, h.ac); err != nil {
 		return newEmitErrorAcknowledgement(err)
 	}
 
@@ -89,7 +89,7 @@ func (h MoveHooks) onRecvIcs721Packet(
 	}
 
 	// Validate whether the receiver is correctly specified or not.
-	if err := validateReceiver(msg, data.Receiver); err != nil {
+	if err := validateReceiver(msg, data.Receiver, h.ac); err != nil {
 		return newEmitErrorAcknowledgement(err)
 	}
 
