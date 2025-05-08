@@ -43,6 +43,7 @@ func GetQueryCmd(ac address.Codec) *cobra.Command {
 		GetCmdQueryProposals(ac),
 		GetCmdQueryParams(),
 		GetCmdQueryTally(),
+		GetCmdSimulateProposal(),
 	)
 
 	return govQueryCmd
@@ -310,6 +311,87 @@ $ %s query gov tally 1
 				return err
 			}
 
+			return clientCtx.PrintProto(res)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
+}
+
+func GetCmdSimulateProposal() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "simulate-proposal [path/to/proposal.json]",
+		Args:  cobra.ExactArgs(1),
+		Short: "Simulate a proposal",
+		Long: strings.TrimSpace(
+			fmt.Sprintf(`Submit a proposal along with some messages, metadata and deposit.
+They should be defined in a JSON file.
+
+Example:
+$ %s query gov simulate-proposal path/to/proposal.json
+
+Where proposal.json contains:
+
+{
+  // array of proto-JSON-encoded sdk.Msgs
+  "messages": [
+    {
+      "@type": "/cosmos.bank.v1beta1.MsgSend",
+      "from_address": "cosmos1...",
+      "to_address": "cosmos1...",
+      "amount":[{"denom": "stake","amount": "10"}]
+    }
+  ],
+  // metadata can be any of base64 encoded, raw text, stringified json, IPFS link to json
+  // see below for example metadata
+  "metadata": "4pIMOgIGx1vZGU=",
+  "deposit": "10stake",
+  "title": "My proposal",
+  "summary": "A short summary of my proposal",
+  "expedited": false
+}
+
+metadata example:
+{
+	"title": "",
+	"authors": [""],
+	"summary": "",
+	"details": "",
+	"proposal_forum_url": "",
+	"vote_option_context": "",
+}
+`,
+				version.AppName,
+			),
+		),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			msgs, err := parseSubmitProposal(clientCtx.Codec, args[0])
+			if err != nil {
+				return err
+			}
+
+			queryClient := customtypes.NewQueryClient(clientCtx)
+
+			msgSubmitProposal, err := v1.NewMsgSubmitProposal(msgs, nil, "", "", "", "", false)
+			if err != nil {
+				return err
+			}
+			res, err := queryClient.SimulateProposal(
+				cmd.Context(),
+				&customtypes.QuerySimulateProposalRequest{
+					MsgSubmitProposal: msgSubmitProposal,
+				},
+			)
+			if err != nil {
+				return err
+			}
 			return clientCtx.PrintProto(res)
 		},
 	}

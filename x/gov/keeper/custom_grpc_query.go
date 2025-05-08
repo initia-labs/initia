@@ -2,7 +2,9 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/cosmos/cosmos-sdk/baseapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 
@@ -160,4 +162,49 @@ func (q CustomQueryServer) TallyResult(ctx context.Context, req *customtypes.Que
 	}
 
 	return &customtypes.QueryTallyResultResponse{TallyResult: tallyResult}, nil
+}
+
+func (q CustomQueryServer) SimulateProposal(ctx context.Context, req *customtypes.QuerySimulateProposalRequest) (*customtypes.QuerySimulateProposalResponse, error) {
+	results := make([]*sdk.Result, 0, len(req.MsgSubmitProposal.GetMessages()))
+
+	msgs := req.MsgSubmitProposal.GetMessages()
+
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	executeHandler := func(sdkCtx sdk.Context, msgIndex int, msg sdk.Msg, handler baseapp.MsgServiceHandler) (res *sdk.Result, err error) {
+		defer func() {
+			if r := recover(); r != nil {
+				err = fmt.Errorf("panic from msg %d", msgIndex)
+			}
+		}()
+		res, err = handler(sdkCtx, msg)
+		return
+	}
+
+	for msgIndex, anyMsg := range msgs {
+		var msg sdk.Msg
+		err := q.Keeper.cdc.UnpackAny(anyMsg, &msg)
+		if err != nil {
+			return nil, status.Errorf(codes.InvalidArgument, "invalid message %d", msgIndex)
+		}
+
+		handler := q.Keeper.router.Handler(msg)
+		if handler == nil {
+			return nil, status.Errorf(codes.InvalidArgument, "invalid message %d", msgIndex)
+		}
+
+		result, err := executeHandler(sdkCtx, msgIndex, msg, handler)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "failed to execute message %d: %s", msgIndex, err)
+		}
+		results = append(results, result)
+	}
+
+	return &customtypes.QuerySimulateProposalResponse{
+		GasInfo: &sdk.GasInfo{
+			GasWanted: sdkCtx.GasMeter().Limit(),
+			GasUsed:   sdkCtx.GasMeter().GasConsumed(),
+		},
+		Results: results,
+	}, nil
 }

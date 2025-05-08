@@ -8,6 +8,8 @@ import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "initia/gov/v1/gov.proto";
+import "cosmos/base/abci/v1beta1/abci.proto";
+import "cosmos/gov/v1/tx.proto";
 
 option go_package = "github.com/initia-labs/initia/x/gov/types";
 
@@ -36,6 +38,11 @@ service Query {
   // TallyResult queries the tally of a proposal vote.
   rpc TallyResult(QueryTallyResultRequest) returns (QueryTallyResultResponse) {
     option (google.api.http).get = "/initia/gov/v1/proposals/{proposal_id}/tally";
+  }
+
+  // SimulateProposal queries the simulation of a proposal.
+  rpc SimulateProposal(QuerySimulateProposalRequest) returns (QuerySimulateProposalResponse) {
+    option (google.api.http).get = "/initia/gov/v1/simulate_proposal";
   }
 }
 
@@ -117,4 +124,17 @@ message QueryTallyResultResponse {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
+}
+
+// QuerySimulateProposalRequest is the request type for the Query/SimulateProposal RPC method.
+message QuerySimulateProposalRequest {
+  cosmos.gov.v1.MsgSubmitProposal msg_submit_proposal = 1;
+}
+
+// QuerySimulateProposalResponse is the response type for the Query/SimulateProposal RPC method.
+message QuerySimulateProposalResponse {
+  // gas_info is the information about gas used in the simulation.
+  cosmos.base.abci.v1beta1.GasInfo gas_info = 1;
+  // result is the result of the simulation.
+  repeated cosmos.base.abci.v1beta1.Result results = 2;
 }
