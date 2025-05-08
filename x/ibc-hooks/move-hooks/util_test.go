@@ -10,6 +10,8 @@ import (
 	movetypes "github.com/initia-labs/initia/x/move/types"
 	vmtypes "github.com/initia-labs/movevm/types"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 
 	"github.com/stretchr/testify/require"
@@ -45,6 +47,7 @@ func Test_isIcs721Packet(t *testing.T) {
 }
 
 func Test_validateAndParseMemo_without_callback(t *testing.T) {
+	ac := authcodec.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix())
 
 	argBz, err := vmtypes.SerializeUint64(100)
 	require.NoError(t, err)
@@ -74,11 +77,11 @@ func Test_validateAndParseMemo_without_callback(t *testing.T) {
 		},
 		AsyncCallback: nil,
 	}, hookData)
-	require.NoError(t, validateReceiver(hookData.Message, "0x1::dex::swap"))
+	require.NoError(t, validateReceiver(hookData.Message, "0x1::dex::swap", ac))
 
 	// invalid receiver
 	require.NoError(t, err)
-	require.Error(t, validateReceiver(hookData.Message, "0x2::dex::swap"))
+	require.Error(t, validateReceiver(hookData.Message, "0x2::dex::swap", ac))
 
 	isMoveRouted, _, err = validateAndParseMemo("hihi")
 	require.False(t, isMoveRouted)
@@ -86,6 +89,7 @@ func Test_validateAndParseMemo_without_callback(t *testing.T) {
 }
 
 func Test_validateAndParseMemo_with_callback(t *testing.T) {
+	ac := authcodec.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix())
 
 	argBz, err := vmtypes.SerializeUint64(100)
 	require.NoError(t, err)
@@ -124,5 +128,22 @@ func Test_validateAndParseMemo_with_callback(t *testing.T) {
 			ModuleName:    "dex",
 		},
 	}, hookData)
-	require.NoError(t, validateReceiver(hookData.Message, "0x1::dex::swap"))
+	require.NoError(t, validateReceiver(hookData.Message, "0x1::dex::swap", ac))
+}
+
+func Test_validateReceiver(t *testing.T) {
+	ac := authcodec.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix())
+
+	hookData := HookData{
+		Message: &movetypes.MsgExecute{
+			ModuleAddress: "0x1",
+			ModuleName:    "dex",
+			FunctionName:  "swap",
+			TypeArgs:      []string{},
+			Args:          [][]byte{},
+		},
+	}
+
+	require.NoError(t, validateReceiver(hookData.Message, "cosmos14ve5y0rgh6aaa45k0g99ctj4la0hw3prr6h7e57mzqx86eg63r6s9yz06a", ac))
+	require.NoError(t, validateReceiver(hookData.Message, "0x1::dex::swap", ac))
 }
