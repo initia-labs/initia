@@ -126,3 +126,18 @@ func Test_validateAndParseMemo_with_callback(t *testing.T) {
 	}, hookData)
 	require.NoError(t, validateReceiver(hookData.Message, "0x1::dex::swap"))
 }
+
+func Test_validateReceiver(t *testing.T) {
+	hookData := HookData{
+		Message: &movetypes.MsgExecute{
+			ModuleAddress: "0x1",
+			ModuleName:    "dex",
+			FunctionName:  "swap",
+			TypeArgs:      []string{},
+			Args:          [][]byte{},
+		},
+	}
+
+	require.NoError(t, validateReceiver(hookData.Message, "cosmos14ve5y0rgh6aaa45k0g99ctj4la0hw3prr6h7e57mzqx86eg63r6s9yz06a"))
+	require.NoError(t, validateReceiver(hookData.Message, "0x1::dex::swap"))
+}

@@ -1,6 +1,7 @@
 package move_hooks
 
 import (
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -76,10 +77,10 @@ func validateAndParseMemo(memo string) (
 
 func validateReceiver(msg *movetypes.MsgExecute, receiver string) error {
 	functionIdentifier := fmt.Sprintf("%s::%s::%s", msg.ModuleAddress, msg.ModuleName, msg.FunctionName)
-	if receiver != functionIdentifier {
+	hashedFunctionIdentifier := sha256.Sum256([]byte(functionIdentifier))
+	if receiver != functionIdentifier && receiver != sdk.AccAddress(hashedFunctionIdentifier[:]).String() {
 		return errors.Wrap(channeltypes.ErrInvalidPacket, "receiver is not properly set")
 	}
-
 	return nil
 }
 

@@ -92,6 +92,57 @@ func Test_onReceiveIcs20Packet_memo(t *testing.T) {
 	require.Equal(t, "\"1\"", queryRes.Ret)
 }
 
+func Test_onReceiveIcs20Packet_memo_with_hashed_receiver(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+	_, _, addr := keyPubAddr()
+
+	data := transfertypes.FungibleTokenPacketData{
+		Denom:    "foo",
+		Amount:   "10000",
+		Sender:   addr.String(),
+		Receiver: "cosmos1w53w03gsuvwazjx7jkq530q2l4e496m00hcx2rkj43gvl4vx9zrs65nfw5",
+		Memo: `{
+			"move": {
+				"message": {
+					"module_address": "0x1",
+					"module_name": "Counter",
+					"function_name": "increase"
+				}
+			}
+		}`,
+	}
+
+	dataBz, err := json.Marshal(&data)
+	require.NoError(t, err)
+
+	// failed to due to acl
+	ack := input.IBCHooksMiddleware.OnRecvPacket(ctx, channeltypes.Packet{
+		Data: dataBz,
+	}, addr)
+	require.False(t, ack.Success())
+
+	// set acl
+	require.NoError(t, input.IBCHooksKeeper.SetAllowed(ctx, movetypes.ConvertVMAddressToSDKAddress(vmtypes.StdAddress), true))
+
+	// success
+	ack = input.IBCHooksMiddleware.OnRecvPacket(ctx, channeltypes.Packet{
+		Data: dataBz,
+	}, addr)
+	require.True(t, ack.Success())
+
+	// check the contract state
+	queryRes, _, err := input.MoveKeeper.ExecuteViewFunction(
+		ctx,
+		vmtypes.StdAddress,
+		"Counter",
+		"get",
+		[]vmtypes.TypeTag{},
+		[][]byte{},
+	)
+	require.NoError(t, err)
+	require.Equal(t, "\"1\"", queryRes.Ret)
+}
+
 func Test_OnReceivePacket_ICS721(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 	_, _, addr := keyPubAddr()
