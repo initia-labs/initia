@@ -79,12 +79,13 @@ func validateAndParseMemo(memo string) (
 
 func validateReceiver(msg *movetypes.MsgExecute, receiver string, ac coreaddress.Codec) error {
 	functionIdentifier := fmt.Sprintf("%s::%s::%s", msg.ModuleAddress, msg.ModuleName, msg.FunctionName)
+	if receiver == functionIdentifier {
+		return nil
+	}
+
 	hashedFunctionIdentifier := sha256.Sum256([]byte(functionIdentifier))
 	hashedFunctionIdentifierString, err := ac.BytesToString(hashedFunctionIdentifier[:])
-	if err != nil {
-		return errors.Wrap(channeltypes.ErrInvalidPacket, "account codec error")
-	}
-	if receiver != functionIdentifier && receiver != hashedFunctionIdentifierString {
+	if err != nil || receiver != hashedFunctionIdentifierString {
 		return errors.Wrap(channeltypes.ErrInvalidPacket, "receiver is not properly set")
 	}
 	return nil
