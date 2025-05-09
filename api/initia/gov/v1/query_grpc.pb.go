@@ -24,6 +24,7 @@ const (
 	Query_Proposal_FullMethodName           = "/initia.gov.v1.Query/Proposal"
 	Query_Proposals_FullMethodName          = "/initia.gov.v1.Query/Proposals"
 	Query_TallyResult_FullMethodName        = "/initia.gov.v1.Query/TallyResult"
+	Query_SimulateProposal_FullMethodName   = "/initia.gov.v1.Query/SimulateProposal"
 )
 
 // QueryClient is the client API for Query service.
@@ -40,6 +41,8 @@ type QueryClient interface {
 	Proposals(ctx context.Context, in *QueryProposalsRequest, opts ...grpc.CallOption) (*QueryProposalsResponse, error)
 	// TallyResult queries the tally of a proposal vote.
 	TallyResult(ctx context.Context, in *QueryTallyResultRequest, opts ...grpc.CallOption) (*QueryTallyResultResponse, error)
+	// SimulateProposal queries the simulation of a proposal.
+	SimulateProposal(ctx context.Context, in *QuerySimulateProposalRequest, opts ...grpc.CallOption) (*QuerySimulateProposalResponse, error)
 }
 
 type queryClient struct {
@@ -95,6 +98,15 @@ func (c *queryClient) TallyResult(ctx context.Context, in *QueryTallyResultReque
 	return out, nil
 }
 
+func (c *queryClient) SimulateProposal(ctx context.Context, in *QuerySimulateProposalRequest, opts ...grpc.CallOption) (*QuerySimulateProposalResponse, error) {
+	out := new(QuerySimulateProposalResponse)
+	err := c.cc.Invoke(ctx, Query_SimulateProposal_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility
@@ -109,6 +121,8 @@ type QueryServer interface {
 	Proposals(context.Context, *QueryProposalsRequest) (*QueryProposalsResponse, error)
 	// TallyResult queries the tally of a proposal vote.
 	TallyResult(context.Context, *QueryTallyResultRequest) (*QueryTallyResultResponse, error)
+	// SimulateProposal queries the simulation of a proposal.
+	SimulateProposal(context.Context, *QuerySimulateProposalRequest) (*QuerySimulateProposalResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -130,6 +144,9 @@ func (UnimplementedQueryServer) Proposals(context.Context, *QueryProposalsReques
 }
 func (UnimplementedQueryServer) TallyResult(context.Context, *QueryTallyResultRequest) (*QueryTallyResultResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TallyResult not implemented")
+}
+func (UnimplementedQueryServer) SimulateProposal(context.Context, *QuerySimulateProposalRequest) (*QuerySimulateProposalResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SimulateProposal not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 
@@ -234,6 +251,24 @@ func _Query_TallyResult_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_SimulateProposal_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QuerySimulateProposalRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).SimulateProposal(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_SimulateProposal_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).SimulateProposal(ctx, req.(*QuerySimulateProposalRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Query_ServiceDesc is the grpc.ServiceDesc for Query service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -260,6 +295,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "TallyResult",
 			Handler:    _Query_TallyResult_Handler,
+		},
+		{
+			MethodName: "SimulateProposal",
+			Handler:    _Query_SimulateProposal_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

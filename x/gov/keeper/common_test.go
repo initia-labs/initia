@@ -415,7 +415,7 @@ func _createTestInput(
 	// register bank & move
 	msgRouter := baseapp.NewMsgServiceRouter()
 	msgRouter.SetInterfaceRegistry(encodingConfig.InterfaceRegistry)
-	banktypes.RegisterMsgServer(msgRouter, bankkeeper.NewMsgServerImpl(bankKeeper))
+	banktypes.RegisterMsgServer(msgRouter, movebank.NewMsgServerImpl(bankKeeper))
 	movetypes.RegisterMsgServer(msgRouter, movekeeper.NewMsgServerImpl(moveKeeper))
 
 	govConfig := govtypes.DefaultConfig()
