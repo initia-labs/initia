@@ -131,7 +131,9 @@ message QueryTallyResultResponse {
 
 // QuerySimulateProposalRequest is the request type for the Query/SimulateProposal RPC method.
 message QuerySimulateProposalRequest {
-  cosmos.gov.v1.MsgSubmitProposal msg_submit_proposal = 1;
+  cosmos.gov.v1.MsgSubmitProposal msg_submit_proposal = 1 [
+    (gogoproto.nullable) = false
+  ];
 }
 
 // QuerySimulateProposalResponse is the response type for the Query/SimulateProposal RPC method.

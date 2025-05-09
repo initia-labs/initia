@@ -386,7 +386,7 @@ metadata example:
 			res, err := queryClient.SimulateProposal(
 				cmd.Context(),
 				&customtypes.QuerySimulateProposalRequest{
-					MsgSubmitProposal: msgSubmitProposal,
+					MsgSubmitProposal: *msgSubmitProposal,
 				},
 			)
 			if err != nil {
