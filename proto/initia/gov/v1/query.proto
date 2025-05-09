@@ -139,7 +139,11 @@ message QuerySimulateProposalRequest {
 // QuerySimulateProposalResponse is the response type for the Query/SimulateProposal RPC method.
 message QuerySimulateProposalResponse {
   // gas_info is the information about gas used in the simulation.
-  cosmos.base.abci.v1beta1.GasInfo gas_info = 1;
+  cosmos.base.abci.v1beta1.GasInfo gas_info = 1 [
+    (gogoproto.nullable) = false
+  ];
   // result is the result of the simulation.
-  repeated cosmos.base.abci.v1beta1.Result results = 2;
+  repeated cosmos.base.abci.v1beta1.Result results = 2 [
+    (gogoproto.nullable) = false
+  ];
 }

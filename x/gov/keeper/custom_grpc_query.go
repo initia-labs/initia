@@ -165,7 +165,7 @@ func (q CustomQueryServer) TallyResult(ctx context.Context, req *customtypes.Que
 }
 
 func (q CustomQueryServer) SimulateProposal(ctx context.Context, req *customtypes.QuerySimulateProposalRequest) (*customtypes.QuerySimulateProposalResponse, error) {
-	results := make([]*sdk.Result, 0, len(req.MsgSubmitProposal.GetMessages()))
+	results := make([]sdk.Result, 0, len(req.MsgSubmitProposal.GetMessages()))
 
 	msgs := req.MsgSubmitProposal.GetMessages()
 
@@ -197,11 +197,11 @@ func (q CustomQueryServer) SimulateProposal(ctx context.Context, req *customtype
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "failed to execute message %d: %s", msgIndex, err)
 		}
-		results = append(results, result)
+		results = append(results, *result)
 	}
 
 	return &customtypes.QuerySimulateProposalResponse{
-		GasInfo: &sdk.GasInfo{
+		GasInfo: sdk.GasInfo{
 			GasWanted: sdkCtx.GasMeter().Limit(),
 			GasUsed:   sdkCtx.GasMeter().GasConsumed(),
 		},
