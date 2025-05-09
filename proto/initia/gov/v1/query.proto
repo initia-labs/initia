@@ -42,7 +42,10 @@ service Query {
 
   // SimulateProposal queries the simulation of a proposal.
   rpc SimulateProposal(QuerySimulateProposalRequest) returns (QuerySimulateProposalResponse) {
-    option (google.api.http).get = "/initia/gov/v1/simulate_proposal";
+    option (google.api.http) = {
+      post: "/initia/gov/v1/simulate_proposal"
+      body: "*"
+    };
   }
 }
 

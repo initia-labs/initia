@@ -27,10 +27,11 @@ const (
 	Query_UnbondingDelegation_FullMethodName             = "/initia.mstaking.v1.Query/UnbondingDelegation"
 	Query_DelegatorDelegations_FullMethodName            = "/initia.mstaking.v1.Query/DelegatorDelegations"
 	Query_DelegatorUnbondingDelegations_FullMethodName   = "/initia.mstaking.v1.Query/DelegatorUnbondingDelegations"
-	Query_Redelegations_FullMethodName                   = "/initia.mstaking.v1.Query/Redelegations"
+	Query_RedelegationsOfDelegator_FullMethodName        = "/initia.mstaking.v1.Query/RedelegationsOfDelegator"
 	Query_DelegatorValidators_FullMethodName             = "/initia.mstaking.v1.Query/DelegatorValidators"
 	Query_DelegatorValidator_FullMethodName              = "/initia.mstaking.v1.Query/DelegatorValidator"
 	Query_DelegatorTotalDelegationBalance_FullMethodName = "/initia.mstaking.v1.Query/DelegatorTotalDelegationBalance"
+	Query_Redelegations_FullMethodName                   = "/initia.mstaking.v1.Query/Redelegations"
 	Query_Pool_FullMethodName                            = "/initia.mstaking.v1.Query/Pool"
 	Query_Params_FullMethodName                          = "/initia.mstaking.v1.Query/Params"
 )
@@ -57,8 +58,8 @@ type QueryClient interface {
 	// DelegatorUnbondingDelegations queries all unbonding delegations of a given
 	// delegator address.
 	DelegatorUnbondingDelegations(ctx context.Context, in *QueryDelegatorUnbondingDelegationsRequest, opts ...grpc.CallOption) (*QueryDelegatorUnbondingDelegationsResponse, error)
-	// Redelegations queries redelegations of given address.
-	Redelegations(ctx context.Context, in *QueryRedelegationsRequest, opts ...grpc.CallOption) (*QueryRedelegationsResponse, error)
+	// RedelegationsOfDelegator queries redelegations of given delegator address.
+	RedelegationsOfDelegator(ctx context.Context, in *QueryRedelegationsRequest, opts ...grpc.CallOption) (*QueryRedelegationsResponse, error)
 	// DelegatorValidators queries all validators info for given delegator
 	// address.
 	DelegatorValidators(ctx context.Context, in *QueryDelegatorValidatorsRequest, opts ...grpc.CallOption) (*QueryDelegatorValidatorsResponse, error)
@@ -68,6 +69,8 @@ type QueryClient interface {
 	// DelegatorTotalDelegationBalance queries sum of all the delegations' balance of a
 	// delegator.
 	DelegatorTotalDelegationBalance(ctx context.Context, in *QueryDelegatorTotalDelegationBalanceRequest, opts ...grpc.CallOption) (*QueryDelegatorTotalDelegationBalanceResponse, error)
+	// Redelegations queries redelegations of given address.
+	Redelegations(ctx context.Context, in *QueryRedelegationsRequest, opts ...grpc.CallOption) (*QueryRedelegationsResponse, error)
 	// Pool queries the pool info.
 	Pool(ctx context.Context, in *QueryPoolRequest, opts ...grpc.CallOption) (*QueryPoolResponse, error)
 	// Parameters queries the staking parameters.
@@ -154,9 +157,9 @@ func (c *queryClient) DelegatorUnbondingDelegations(ctx context.Context, in *Que
 	return out, nil
 }
 
-func (c *queryClient) Redelegations(ctx context.Context, in *QueryRedelegationsRequest, opts ...grpc.CallOption) (*QueryRedelegationsResponse, error) {
+func (c *queryClient) RedelegationsOfDelegator(ctx context.Context, in *QueryRedelegationsRequest, opts ...grpc.CallOption) (*QueryRedelegationsResponse, error) {
 	out := new(QueryRedelegationsResponse)
-	err := c.cc.Invoke(ctx, Query_Redelegations_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, Query_RedelegationsOfDelegator_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -184,6 +187,15 @@ func (c *queryClient) DelegatorValidator(ctx context.Context, in *QueryDelegator
 func (c *queryClient) DelegatorTotalDelegationBalance(ctx context.Context, in *QueryDelegatorTotalDelegationBalanceRequest, opts ...grpc.CallOption) (*QueryDelegatorTotalDelegationBalanceResponse, error) {
 	out := new(QueryDelegatorTotalDelegationBalanceResponse)
 	err := c.cc.Invoke(ctx, Query_DelegatorTotalDelegationBalance_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) Redelegations(ctx context.Context, in *QueryRedelegationsRequest, opts ...grpc.CallOption) (*QueryRedelegationsResponse, error) {
+	out := new(QueryRedelegationsResponse)
+	err := c.cc.Invoke(ctx, Query_Redelegations_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -230,8 +242,8 @@ type QueryServer interface {
 	// DelegatorUnbondingDelegations queries all unbonding delegations of a given
 	// delegator address.
 	DelegatorUnbondingDelegations(context.Context, *QueryDelegatorUnbondingDelegationsRequest) (*QueryDelegatorUnbondingDelegationsResponse, error)
-	// Redelegations queries redelegations of given address.
-	Redelegations(context.Context, *QueryRedelegationsRequest) (*QueryRedelegationsResponse, error)
+	// RedelegationsOfDelegator queries redelegations of given delegator address.
+	RedelegationsOfDelegator(context.Context, *QueryRedelegationsRequest) (*QueryRedelegationsResponse, error)
 	// DelegatorValidators queries all validators info for given delegator
 	// address.
 	DelegatorValidators(context.Context, *QueryDelegatorValidatorsRequest) (*QueryDelegatorValidatorsResponse, error)
@@ -241,6 +253,8 @@ type QueryServer interface {
 	// DelegatorTotalDelegationBalance queries sum of all the delegations' balance of a
 	// delegator.
 	DelegatorTotalDelegationBalance(context.Context, *QueryDelegatorTotalDelegationBalanceRequest) (*QueryDelegatorTotalDelegationBalanceResponse, error)
+	// Redelegations queries redelegations of given address.
+	Redelegations(context.Context, *QueryRedelegationsRequest) (*QueryRedelegationsResponse, error)
 	// Pool queries the pool info.
 	Pool(context.Context, *QueryPoolRequest) (*QueryPoolResponse, error)
 	// Parameters queries the staking parameters.
@@ -276,8 +290,8 @@ func (UnimplementedQueryServer) DelegatorDelegations(context.Context, *QueryDele
 func (UnimplementedQueryServer) DelegatorUnbondingDelegations(context.Context, *QueryDelegatorUnbondingDelegationsRequest) (*QueryDelegatorUnbondingDelegationsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DelegatorUnbondingDelegations not implemented")
 }
-func (UnimplementedQueryServer) Redelegations(context.Context, *QueryRedelegationsRequest) (*QueryRedelegationsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Redelegations not implemented")
+func (UnimplementedQueryServer) RedelegationsOfDelegator(context.Context, *QueryRedelegationsRequest) (*QueryRedelegationsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RedelegationsOfDelegator not implemented")
 }
 func (UnimplementedQueryServer) DelegatorValidators(context.Context, *QueryDelegatorValidatorsRequest) (*QueryDelegatorValidatorsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DelegatorValidators not implemented")
@@ -287,6 +301,9 @@ func (UnimplementedQueryServer) DelegatorValidator(context.Context, *QueryDelega
 }
 func (UnimplementedQueryServer) DelegatorTotalDelegationBalance(context.Context, *QueryDelegatorTotalDelegationBalanceRequest) (*QueryDelegatorTotalDelegationBalanceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DelegatorTotalDelegationBalance not implemented")
+}
+func (UnimplementedQueryServer) Redelegations(context.Context, *QueryRedelegationsRequest) (*QueryRedelegationsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Redelegations not implemented")
 }
 func (UnimplementedQueryServer) Pool(context.Context, *QueryPoolRequest) (*QueryPoolResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Pool not implemented")
@@ -451,20 +468,20 @@ func _Query_DelegatorUnbondingDelegations_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_Redelegations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Query_RedelegationsOfDelegator_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryRedelegationsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).Redelegations(ctx, in)
+		return srv.(QueryServer).RedelegationsOfDelegator(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Query_Redelegations_FullMethodName,
+		FullMethod: Query_RedelegationsOfDelegator_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).Redelegations(ctx, req.(*QueryRedelegationsRequest))
+		return srv.(QueryServer).RedelegationsOfDelegator(ctx, req.(*QueryRedelegationsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -519,6 +536,24 @@ func _Query_DelegatorTotalDelegationBalance_Handler(srv interface{}, ctx context
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(QueryServer).DelegatorTotalDelegationBalance(ctx, req.(*QueryDelegatorTotalDelegationBalanceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_Redelegations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryRedelegationsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).Redelegations(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_Redelegations_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).Redelegations(ctx, req.(*QueryRedelegationsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -599,8 +634,8 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Query_DelegatorUnbondingDelegations_Handler,
 		},
 		{
-			MethodName: "Redelegations",
-			Handler:    _Query_Redelegations_Handler,
+			MethodName: "RedelegationsOfDelegator",
+			Handler:    _Query_RedelegationsOfDelegator_Handler,
 		},
 		{
 			MethodName: "DelegatorValidators",
@@ -613,6 +648,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DelegatorTotalDelegationBalance",
 			Handler:    _Query_DelegatorTotalDelegationBalance_Handler,
+		},
+		{
+			MethodName: "Redelegations",
+			Handler:    _Query_Redelegations_Handler,
 		},
 		{
 			MethodName: "Pool",
