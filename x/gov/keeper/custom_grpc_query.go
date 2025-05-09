@@ -170,6 +170,7 @@ func (q CustomQueryServer) SimulateProposal(ctx context.Context, req *customtype
 	msgs := req.MsgSubmitProposal.GetMessages()
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	cacheCtx, _ := sdkCtx.CacheContext()
 
 	executeHandler := func(sdkCtx sdk.Context, msgIndex int, msg sdk.Msg, handler baseapp.MsgServiceHandler) (res *sdk.Result, err error) {
 		defer func() {
@@ -193,7 +194,7 @@ func (q CustomQueryServer) SimulateProposal(ctx context.Context, req *customtype
 			return nil, status.Errorf(codes.InvalidArgument, "invalid message %d", msgIndex)
 		}
 
-		result, err := executeHandler(sdkCtx, msgIndex, msg, handler)
+		result, err := executeHandler(cacheCtx, msgIndex, msg, handler)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "failed to execute message %d: %s", msgIndex, err)
 		}
@@ -202,8 +203,8 @@ func (q CustomQueryServer) SimulateProposal(ctx context.Context, req *customtype
 
 	return &customtypes.QuerySimulateProposalResponse{
 		GasInfo: sdk.GasInfo{
-			GasWanted: sdkCtx.GasMeter().Limit(),
-			GasUsed:   sdkCtx.GasMeter().GasConsumed(),
+			GasWanted: cacheCtx.GasMeter().Limit(),
+			GasUsed:   cacheCtx.GasMeter().GasConsumed(),
 		},
 		Results: results,
 	}, nil
