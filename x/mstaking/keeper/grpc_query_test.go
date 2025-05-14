@@ -15,8 +15,17 @@ import (
 func Test_grpcQueryValidators(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
+	// set max validators to 1
+	params, err := input.StakingKeeper.GetParams(ctx)
+	require.NoError(t, err)
+	params.MaxValidators = 2
+	err = input.StakingKeeper.SetParams(ctx, params)
+	require.NoError(t, err)
+
+	// one validator is in unbonding state
 	_ = createValidatorWithBalance(ctx, input, 100_000_000, 2_000_000, 1)
 	_ = createValidatorWithBalance(ctx, input, 100_000_000, 2_000_000, 2)
+	_ = createValidatorWithBalance(ctx, input, 100_000_000, 1_000_000, 3)
 
 	req := types.QueryValidatorsRequest{
 		Status: types.BondStatusBonded,
