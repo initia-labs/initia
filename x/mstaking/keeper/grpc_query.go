@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"encoding/hex"
 	"errors"
 	"strings"
 
@@ -43,9 +44,18 @@ func (q Querier) Validators(ctx context.Context, req *types.QueryValidatorsReque
 	var err error
 
 	if req.Status == types.Bonded.String() {
-		validators, pageRes, err = query.CollectionPaginate(ctx, q.Keeper.ValidatorsByConsPowerIndex, req.Pagination, func(key collections.Pair[int64, []byte], _ bool) (types.Validator, error) {
+		cache := make(map[string]types.Validator)
+		validators, pageRes, err = query.CollectionFilteredPaginate(ctx, q.Keeper.ValidatorsByConsPowerIndex, req.Pagination, func(key collections.Pair[int64, []byte], _ bool) (include bool, err error) {
 			valAddr := key.K2()
-			return q.Keeper.Validators.Get(ctx, valAddr)
+			val, err := q.Keeper.Validators.Get(ctx, valAddr)
+			if err != nil {
+				return false, err
+			}
+
+			cache[hex.EncodeToString(valAddr)] = val
+			return strings.EqualFold(val.GetStatus().String(), req.Status), nil
+		}, func(key collections.Pair[int64, []byte], _ bool) (types.Validator, error) {
+			return cache[hex.EncodeToString(key.K2())], nil
 		})
 	} else {
 		validators, pageRes, err = query.CollectionFilteredPaginate(ctx, q.Keeper.Validators, req.Pagination, func(valAddr []byte, val types.Validator) (include bool, err error) {
