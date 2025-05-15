@@ -37,3 +37,87 @@ func Test_CustomMsgServer_UpdateParams(t *testing.T) {
 	})
 	require.Error(t, err)
 }
+
+func Test_CustomMsgServer_EmergencyProposalSubmitters(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+
+	ms := keeper.NewCustomMsgServerImpl(&input.GovKeeper)
+
+	_, err := ms.AddEmergencyProposalSubmitters(ctx, &types.MsgAddEmergencyProposalSubmitters{
+		Authority: "invalid authority",
+		EmergencySubmitters: []string{
+			addrs[0].String(),
+		},
+	})
+	require.Error(t, err)
+
+	_, err = ms.AddEmergencyProposalSubmitters(ctx, &types.MsgAddEmergencyProposalSubmitters{
+		Authority: authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		EmergencySubmitters: []string{
+			"invalid address",
+		},
+	})
+	require.Error(t, err)
+
+	_, err = ms.AddEmergencyProposalSubmitters(ctx, &types.MsgAddEmergencyProposalSubmitters{
+		Authority: authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		EmergencySubmitters: []string{
+			addrs[0].String(),
+			addrs[1].String(),
+			addrs[2].String(),
+		},
+	})
+	require.NoError(t, err)
+
+	submitters, err := input.GovKeeper.Params.Get(ctx)
+	require.NoError(t, err)
+	require.Equal(t, []string{addrs[0].String(), addrs[1].String(), addrs[2].String()}, submitters.EmergencySubmitters)
+
+	_, err = ms.AddEmergencyProposalSubmitters(ctx, &types.MsgAddEmergencyProposalSubmitters{
+		Authority: authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		EmergencySubmitters: []string{
+			addrs[2].String(),
+			addrs[3].String(),
+			addrs[4].String(),
+		},
+	})
+	require.NoError(t, err)
+
+	submitters, err = input.GovKeeper.Params.Get(ctx)
+	require.NoError(t, err)
+	require.Equal(t, []string{addrs[0].String(), addrs[1].String(), addrs[2].String(), addrs[3].String(), addrs[4].String()}, submitters.EmergencySubmitters)
+
+	_, err = ms.RemoveEmergencyProposalSubmitters(ctx, &types.MsgRemoveEmergencyProposalSubmitters{
+		Authority: "invalid authority",
+		EmergencySubmitters: []string{
+			addrs[2].String(),
+		},
+	})
+	require.Error(t, err)
+
+	_, err = ms.RemoveEmergencyProposalSubmitters(ctx, &types.MsgRemoveEmergencyProposalSubmitters{
+		Authority: authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		EmergencySubmitters: []string{
+			addrs[2].String(),
+		},
+	})
+	require.NoError(t, err)
+
+	submitters, err = input.GovKeeper.Params.Get(ctx)
+	require.NoError(t, err)
+	require.Equal(t, []string{addrs[0].String(), addrs[1].String(), addrs[3].String(), addrs[4].String()}, submitters.EmergencySubmitters)
+
+	_, err = ms.RemoveEmergencyProposalSubmitters(ctx, &types.MsgRemoveEmergencyProposalSubmitters{
+		Authority: authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		EmergencySubmitters: []string{
+			addrs[0].String(),
+			addrs[1].String(),
+			addrs[2].String(),
+		},
+	})
+	require.Error(t, err)
+
+	submitters, err = input.GovKeeper.Params.Get(ctx)
+	require.NoError(t, err)
+	require.Equal(t, []string{addrs[0].String(), addrs[1].String(), addrs[3].String(), addrs[4].String()}, submitters.EmergencySubmitters)
+}

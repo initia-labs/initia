@@ -114,13 +114,16 @@ message Params {
     (amino.dont_omitempty) = true
   ];
 
+  // Whitelist addresses that can submit emergency proposals.
+  repeated string emergency_submitters = 93 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+
   // Low threshold functions for emergency and expedited proposal.
   // These are Move function identifiers and can only be applied
   // for Move execute messages.
-  repeated string low_threshold_functions = 93;
+  repeated string low_threshold_functions = 94;
 
   // Vesting is the vesting contract info for tally.
-  Vesting vesting = 94 [
+  Vesting vesting = 95 [
     (gogoproto.nullable) = true,
     (amino.dont_omitempty) = false
   ];
