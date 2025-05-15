@@ -78,7 +78,7 @@ func (k customMsgServer) RemoveEmergencyProposalSubmitters(ctx context.Context, 
 
 	for _, submitter := range req.EmergencySubmitters {
 		if index := slices.Index(params.EmergencySubmitters, submitter); index != -1 {
-			params.EmergencySubmitters = append(params.EmergencySubmitters[:index], params.EmergencySubmitters[index+1:]...)
+			params.EmergencySubmitters = slices.Delete(params.EmergencySubmitters, index, index+1)
 		} else {
 			return nil, errors.Wrapf(govtypes.ErrInvalidSigner, "submitter not found: %s", submitter)
 		}

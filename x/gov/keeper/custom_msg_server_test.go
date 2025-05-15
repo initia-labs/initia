@@ -120,4 +120,20 @@ func Test_CustomMsgServer_EmergencyProposalSubmitters(t *testing.T) {
 	submitters, err = input.GovKeeper.Params.Get(ctx)
 	require.NoError(t, err)
 	require.Equal(t, []string{addrs[0].String(), addrs[1].String(), addrs[3].String(), addrs[4].String()}, submitters.EmergencySubmitters)
+
+	// remove all submitters
+	_, err = ms.RemoveEmergencyProposalSubmitters(ctx, &types.MsgRemoveEmergencyProposalSubmitters{
+		Authority: authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		EmergencySubmitters: []string{
+			addrs[0].String(),
+			addrs[1].String(),
+			addrs[3].String(),
+			addrs[4].String(),
+		},
+	})
+	require.NoError(t, err)
+
+	submitters, err = input.GovKeeper.Params.Get(ctx)
+	require.NoError(t, err)
+	require.Len(t, submitters.EmergencySubmitters, 0)
 }
