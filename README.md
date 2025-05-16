@@ -1,6 +1,7 @@
 ![image (1)](https://github.com/initia-labs/initia/assets/160459432/3b7812ec-be55-417d-8ca2-dee77a294874)
 
 [![codecov](https://codecov.io/gh/initia-labs/initia/graph/badge.svg?token=CQ8FELH3BU)](https://codecov.io/gh/initia-labs/initia)
+[![Build&Test](https://github.com/initia-labs/initia/actions/workflows/test.yml/badge.svg)](https://github.com/initia-labs/initia/actions)
 [![Go Report Card](https://goreportcard.com/badge/github.com/initia-labs/initia)](https://goreportcard.com/report/github.com/initia-labs/initia)
 
 # Welcome to Initia, a Network for Interwoven Rollups
