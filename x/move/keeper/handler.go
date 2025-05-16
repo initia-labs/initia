@@ -317,10 +317,21 @@ func (k Keeper) handleExecuteResponse(
 	// Emit contract events
 	for _, event := range execRes.Events {
 		typeTag := event.TypeTag
-		ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventTypeMove,
+
+		moveEvent := sdk.NewEvent(types.EventTypeMove,
 			sdk.NewAttribute(types.AttributeKeyTypeTag, typeTag),
-			sdk.NewAttribute(types.AttributeKeyData, event.EventData),
-		))
+		)
+
+		var dataEvent map[string]interface{}
+		err := json.Unmarshal([]byte(event.EventData), &dataEvent)
+		if err != nil {
+			moveEvent = moveEvent.AppendAttributes(sdk.NewAttribute(types.AttributeKeyData, event.EventData))
+		} else {
+			for k, v := range dataEvent {
+				moveEvent = moveEvent.AppendAttributes(sdk.NewAttribute(k, fmt.Sprintf("%v", v)))
+			}
+		}
+		ctx.EventManager().EmitEvent(moveEvent)
 	}
 
 	// Create cosmos accounts

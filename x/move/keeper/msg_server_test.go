@@ -100,10 +100,25 @@ func Test_ExecuteMsg(t *testing.T) {
 	events := ctx.EventManager().Events()
 	event := events[len(events)-1]
 
-	require.Equal(t, sdk.NewEvent(types.EventTypeMove,
-		sdk.NewAttribute(types.AttributeKeyTypeTag, "0x1::BasicCoin::MintEvent"),
-		sdk.NewAttribute(types.AttributeKeyData, `{"account":"0x2","amount":"100","coin_type":"0x1::BasicCoin::Initia"}`),
-	), event)
+	require.Equal(t, types.EventTypeMove, event.Type)
+
+	require.Len(t, event.Attributes, 4)
+
+	attr, ok := event.GetAttribute(types.AttributeKeyTypeTag)
+	require.True(t, ok)
+	require.Equal(t, "0x1::BasicCoin::MintEvent", attr.Value)
+
+	attr, ok = event.GetAttribute("account")
+	require.True(t, ok)
+	require.Equal(t, "0x2", attr.Value)
+
+	attr, ok = event.GetAttribute("amount")
+	require.True(t, ok)
+	require.Equal(t, "100", attr.Value)
+
+	attr, ok = event.GetAttribute("coin_type")
+	require.True(t, ok)
+	require.Equal(t, "0x1::BasicCoin::Initia", attr.Value)
 
 	// cleanup events
 	ctx = ctx.WithEventManager(sdk.NewEventManager())
@@ -122,10 +137,25 @@ func Test_ExecuteMsg(t *testing.T) {
 	events = ctx.EventManager().Events()
 	event = events[len(events)-1]
 
-	require.Equal(t, sdk.NewEvent(types.EventTypeMove,
-		sdk.NewAttribute(types.AttributeKeyTypeTag, "0x1::BasicCoin::MintEvent"),
-		sdk.NewAttribute(types.AttributeKeyData, `{"account":"0x2","amount":"200","coin_type":"0x1::BasicCoin::Initia"}`),
-	), event)
+	require.Equal(t, types.EventTypeMove, event.Type)
+
+	require.Len(t, event.Attributes, 4)
+
+	attr, ok = event.GetAttribute(types.AttributeKeyTypeTag)
+	require.True(t, ok)
+	require.Equal(t, "0x1::BasicCoin::MintEvent", attr.Value)
+
+	attr, ok = event.GetAttribute("account")
+	require.True(t, ok)
+	require.Equal(t, "0x2", attr.Value)
+
+	attr, ok = event.GetAttribute("amount")
+	require.True(t, ok)
+	require.Equal(t, "200", attr.Value)
+
+	attr, ok = event.GetAttribute("coin_type")
+	require.True(t, ok)
+	require.Equal(t, "0x1::BasicCoin::Initia", attr.Value)
 }
 
 func Test_GovExecuteMsg(t *testing.T) {
@@ -149,10 +179,25 @@ func Test_GovExecuteMsg(t *testing.T) {
 	events := ctx.EventManager().Events()
 	event := events[len(events)-1]
 
-	require.Equal(t, sdk.NewEvent(types.EventTypeMove,
-		sdk.NewAttribute(types.AttributeKeyTypeTag, "0x1::BasicCoin::MintEvent"),
-		sdk.NewAttribute(types.AttributeKeyData, `{"account":"0x2","amount":"100","coin_type":"0x1::BasicCoin::Initia"}`),
-	), event)
+	require.Equal(t, types.EventTypeMove, event.Type)
+
+	require.Len(t, event.Attributes, 4)
+
+	attr, ok := event.GetAttribute(types.AttributeKeyTypeTag)
+	require.True(t, ok)
+	require.Equal(t, "0x1::BasicCoin::MintEvent", attr.Value)
+
+	attr, ok = event.GetAttribute("account")
+	require.True(t, ok)
+	require.Equal(t, "0x2", attr.Value)
+
+	attr, ok = event.GetAttribute("amount")
+	require.True(t, ok)
+	require.Equal(t, "100", attr.Value)
+
+	attr, ok = event.GetAttribute("coin_type")
+	require.True(t, ok)
+	require.Equal(t, "0x1::BasicCoin::Initia", attr.Value)
 
 	// cleanup events
 	ctx = ctx.WithEventManager(sdk.NewEventManager())
@@ -172,10 +217,25 @@ func Test_GovExecuteMsg(t *testing.T) {
 	events = ctx.EventManager().Events()
 	event = events[len(events)-1]
 
-	require.Equal(t, sdk.NewEvent(types.EventTypeMove,
-		sdk.NewAttribute(types.AttributeKeyTypeTag, "0x1::BasicCoin::MintEvent"),
-		sdk.NewAttribute(types.AttributeKeyData, `{"account":"0x2","amount":"100","coin_type":"0x1::BasicCoin::Initia"}`),
-	), event)
+	require.Equal(t, types.EventTypeMove, event.Type)
+
+	require.Len(t, event.Attributes, 4)
+
+	attr, ok = event.GetAttribute(types.AttributeKeyTypeTag)
+	require.True(t, ok)
+	require.Equal(t, "0x1::BasicCoin::MintEvent", attr.Value)
+
+	attr, ok = event.GetAttribute("account")
+	require.True(t, ok)
+	require.Equal(t, "0x2", attr.Value)
+
+	attr, ok = event.GetAttribute("amount")
+	require.True(t, ok)
+	require.Equal(t, "100", attr.Value)
+
+	attr, ok = event.GetAttribute("coin_type")
+	require.True(t, ok)
+	require.Equal(t, "0x1::BasicCoin::Initia", attr.Value)
 }
 
 func Test_GovScriptMsg(t *testing.T) {
