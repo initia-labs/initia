@@ -281,6 +281,7 @@ func TestEmergencyAfterActivateVotingPeriod(t *testing.T) {
 	params.MinDepositRatio = minDepositRatio
 	params.MinDeposit = sdk.Coins{sdk.NewCoin(bondDenom, bondDenomMinDeposit)}
 	params.EmergencyMinDeposit = sdk.Coins{sdk.NewCoin(bondDenom, emergencyMinDeposit)}
+	params.EmergencySubmitters = []string{addrs[0].String()}
 
 	err = input.GovKeeper.Params.Set(ctx, params)
 	require.NoError(t, err)
@@ -328,6 +329,7 @@ func TestActivateVotingPeriodAndEmergency(t *testing.T) {
 	params.MinDepositRatio = minDepositRatio
 	params.MinDeposit = sdk.Coins{sdk.NewCoin(bondDenom, bondDenomMinDeposit)}
 	params.EmergencyMinDeposit = sdk.Coins{sdk.NewCoin(bondDenom, emergencyMinDeposit)}
+	params.EmergencySubmitters = []string{addrs[0].String()}
 
 	err = input.GovKeeper.Params.Set(ctx, params)
 	require.NoError(t, err)
@@ -347,6 +349,20 @@ func TestActivateVotingPeriodAndEmergency(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, prop.Status, v1.StatusVotingPeriod)
 	require.True(t, prop.Emergency)
+
+	// submit a new proposal with another proposer
+	proposal2, err := input.GovKeeper.SubmitProposal(ctx, nil, "", "", "", addrs[1], false)
+	require.NoError(t, err)
+	require.Equal(t, proposal2.Id, uint64(2))
+
+	isActivated, err = input.GovKeeper.AddDeposit(ctx, 2, addrs[1], []sdk.Coin{sdk.NewCoin(bondDenom, emergencyMinDeposit)})
+	require.NoError(t, err)
+	require.True(t, isActivated)
+
+	prop, err = input.GovKeeper.Proposals.Get(ctx, 2)
+	require.NoError(t, err)
+	require.Equal(t, prop.Status, v1.StatusVotingPeriod)
+	require.False(t, prop.Emergency)
 }
 
 func TestChargeDeposit(t *testing.T) {

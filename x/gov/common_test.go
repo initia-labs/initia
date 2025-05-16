@@ -95,6 +95,7 @@ func createAppWithSimpleValidators(t *testing.T) *initiaapp.InitiaApp {
 	params.MaxDepositPeriod = depositPeriod
 	params.VotingPeriod = votingPeriod
 	params.EmergencyTallyInterval = emergencyTallyInterval
+	params.EmergencySubmitters = []string{addrs[0].String()}
 	err = app.GovKeeper.Params.Set(ctx, params)
 	require.NoError(t, err)
 	_, err = app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1})
