@@ -41,7 +41,7 @@ require (
 	github.com/hashicorp/go-metrics v0.5.3
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/huandu/skiplist v1.2.0
-	github.com/initia-labs/OPinit v1.0.0
+	github.com/initia-labs/OPinit v1.1.1
 	// we also need to update `LIBMOVEVM_VERSION` of Dockerfile#11
 	github.com/initia-labs/movevm v1.0.0
 	github.com/noble-assets/forwarding/v2 v2.0.1
@@ -157,7 +157,7 @@ require (
 	github.com/iancoleman/strcase v0.3.0 // indirect
 	github.com/improbable-eng/grpc-web v0.15.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/initia-labs/OPinit/api v1.0.0 // indirect
+	github.com/initia-labs/OPinit/api v1.1.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/jmhodges/levigo v1.0.0 // indirect
 	github.com/klauspost/compress v1.17.11 // indirect
