@@ -113,8 +113,9 @@ func (suite *AnteTestSuite) TestEnsureMempoolFees() {
 	suite.ctx = suite.ctx.WithIsCheckTx(false)
 
 	// antehandler should not error since we do not check minGasPrice in DeliverTx
-	_, _, err = fc.CheckTxFeeWithMinGasPrices(suite.ctx, tx)
+	_, priority, err := fc.CheckTxFeeWithMinGasPrices(suite.ctx, tx)
 	suite.Require().Nil(err, "MempoolFeeDecorator returned error in DeliverTx")
+	suite.Require().Equal(int64(1), priority, "priority should be 1")
 
 	// Set IsCheckTx back to true for testing sufficient mempool fee
 	suite.ctx = suite.ctx.WithIsCheckTx(true)
@@ -124,8 +125,9 @@ func (suite *AnteTestSuite) TestEnsureMempoolFees() {
 	lowGasPrice := []sdk.DecCoin{basePrice}
 	suite.ctx = suite.ctx.WithMinGasPrices(lowGasPrice)
 
-	_, _, err = fc.CheckTxFeeWithMinGasPrices(suite.ctx, tx)
+	_, priority, err = fc.CheckTxFeeWithMinGasPrices(suite.ctx, tx)
 	suite.Require().Nil(err, "Decorator should not have errored on fee higher than local gasPrice")
+	suite.Require().Equal(int64(500), priority, "priority should be 500") // 0.0005 * 1e6
 
 	suite.txBuilder.SetFeeAmount(atomFeeAmount)
 	suite.Require().Equal(atomFeeAmount, tx.GetFee())
