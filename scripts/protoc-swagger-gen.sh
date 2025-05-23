@@ -36,7 +36,7 @@ proto_dirs=$(find \
   ./ibc \
   ../third_party/cosmos-sdk/proto/cosmos \
   ../third_party/ibc-go/proto/ibc \
-  ../third_party/opinit/proto \
+  ../third_party/OPinit/proto \
   ../third_party/connect/proto \
   ../third_party/block-sdk/proto \
   -path -prune -o -name '*.proto' -print0 | xargs -0 -n1 dirname | sort | uniq)
