@@ -20,8 +20,11 @@ func RegisterUpgradeHandlers(app upgrades.InitiaApp) {
 	app.GetUpgradeKeeper().SetUpgradeHandler(
 		upgradeName,
 		func(ctx context.Context, _ upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
-			// upgrade 0x1::primary_fungible_store, 0x1::fungible_asset, 0x1::dispatchable_fungible_asset modules
-			// - https://github.com/initia-labs/movevm/pull/207
+			// https://github.com/initia-labs/movevm/pull/207
+			// - 0x1::primary_fungible_store
+			// - 0x1::fungible_asset
+			// - 0x1::dispatchable_fungible_asset
+			// - 0x1::dex
 
 			moduleBytesArray := make([][]byte, len(moduleBytes))
 			var err error
