@@ -45,24 +45,17 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/msgservice"
 	"github.com/cosmos/cosmos-sdk/version"
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
-	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	"github.com/cosmos/cosmos-sdk/x/auth/posthandler"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
-	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
-	icacontrollerkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/keeper"
-	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
-
-	ibctestingtypes "github.com/initia-labs/initia/x/ibc/testing/types"
-	icaauthkeeper "github.com/initia-labs/initia/x/intertx/keeper"
-
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 
 	"github.com/initia-labs/initia/app/keepers"
 	"github.com/initia-labs/initia/app/params"
+	upgrades_v1_1_1 "github.com/initia-labs/initia/app/upgrades/v1_1_1"
 	cryptocodec "github.com/initia-labs/initia/crypto/codec"
 	initiatx "github.com/initia-labs/initia/tx"
 	moveconfig "github.com/initia-labs/initia/x/move/config"
@@ -255,7 +248,7 @@ func NewInitiaApp(
 	// The cosmos upgrade handler attempts to create ${HOME}/.initia/data to check for upgrade info,
 	// but this isn't required during initial encoding config setup.
 	if loadLatest {
-		app.RegisterUpgradeHandlers(app.configurator)
+		upgrades_v1_1_1.RegisterUpgradeHandlers(app)
 	}
 
 	autocliv1.RegisterQueryServer(app.GRPCQueryRouter(), runtimeservices.NewAutoCLIQueryService(app.ModuleManager.Modules))
@@ -532,49 +525,6 @@ func VerifyAddressLen() func(addr []byte) error {
 		}
 		return nil
 	}
-}
-
-//////////////////////////////////////
-// TestingApp functions
-
-// GetBaseApp implements the TestingApp interface.
-func (app *InitiaApp) GetBaseApp() *baseapp.BaseApp {
-	return app.BaseApp
-}
-
-// GetAccountKeeper implements the TestingApp interface.
-func (app *InitiaApp) GetAccountKeeper() *authkeeper.AccountKeeper {
-	return app.AccountKeeper
-}
-
-// GetStakingKeeper implements the TestingApp interface.
-func (app *InitiaApp) GetStakingKeeper() ibctestingtypes.StakingKeeper {
-	return app.StakingKeeper
-}
-
-// GetIBCKeeper implements the TestingApp interface.
-func (app *InitiaApp) GetIBCKeeper() *ibckeeper.Keeper {
-	return app.IBCKeeper
-}
-
-// GetICAControllerKeeper implements the TestingApp interface.
-func (app *InitiaApp) GetICAControllerKeeper() *icacontrollerkeeper.Keeper {
-	return app.ICAControllerKeeper
-}
-
-// GetICAAuthKeeper implements the TestingApp interface.
-func (app *InitiaApp) GetICAAuthKeeper() *icaauthkeeper.Keeper {
-	return app.ICAAuthKeeper
-}
-
-// GetScopedIBCKeeper implements the TestingApp interface.
-func (app *InitiaApp) GetScopedIBCKeeper() capabilitykeeper.ScopedKeeper {
-	return app.ScopedIBCKeeper
-}
-
-// TxConfig implements the TestingApp interface.
-func (app *InitiaApp) TxConfig() client.TxConfig {
-	return app.txConfig
 }
 
 // DefaultGenesis returns a default genesis from the registered AppModuleBasic's.

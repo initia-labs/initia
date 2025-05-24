@@ -578,6 +578,10 @@ func (k TestDexKeeper) SetPrice(denom string, price math.LegacyDec) {
 	k.prices[denom] = price
 }
 
+func (k TestDexKeeper) BaseDenom(ctx context.Context) (string, error) {
+	return k.moveKeeper.BaseDenom(ctx)
+}
+
 func (k TestDexKeeper) SwapToBase(ctx context.Context, addr sdk.AccAddress, quoteCoin sdk.Coin) error {
 	price, ok := k.prices[quoteCoin.Denom]
 	if !ok {

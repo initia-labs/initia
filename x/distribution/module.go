@@ -177,7 +177,7 @@ type ModuleInputs struct {
 	Cdc          codec.Codec
 
 	AccountKeeper types.AccountKeeper
-	BankKeeper    types.BankKeeper
+	BankKeeper    customtypes.BankKeeper
 	StakingKeeper customtypes.StakingKeeper
 	DexKeeper     customtypes.DexKeeper
 }

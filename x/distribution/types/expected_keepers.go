@@ -6,6 +6,7 @@ import (
 	"cosmossdk.io/core/address"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 
 	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
 )
@@ -33,4 +34,10 @@ type StakingKeeper interface {
 // DexKeeper expected dex keeper
 type DexKeeper interface {
 	SwapToBase(ctx context.Context, addr sdk.AccAddress, quoteCoin sdk.Coin) error
+	BaseDenom(ctx context.Context) (string, error)
+}
+
+type BankKeeper interface {
+	distributiontypes.BankKeeper
+	GetBalance(ctx context.Context, addr sdk.AccAddress, denom string) sdk.Coin
 }
