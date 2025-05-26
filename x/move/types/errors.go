@@ -53,4 +53,7 @@ var (
 
 	// ErrVMQueryFailed error raised when the query execution failed
 	ErrVMQueryFailed = errorsmod.Register(ModuleName, 17, "vm query failed")
+
+	// ErrInvalidResponse error raised when the response is invalid
+	ErrInvalidResponse = errorsmod.Register(ModuleName, 18, "invalid response")
 )

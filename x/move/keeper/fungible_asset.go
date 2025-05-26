@@ -16,6 +16,12 @@ import (
 
 var _ types.FungibleAssetKeeper = MoveBankKeeper{}
 
+// Balance returns the metadata address and balance amount of a fungible asset in a fungible store.
+// The metadata address uniquely identifies the fungible asset type, while the balance represents
+// the quantity held in the store.
+// Returns (metadata address, balance amount, error).
+//
+// @devs: This function does not support dispatchable fungible assets.
 func (k MoveBankKeeper) Balance(ctx context.Context, store vmtypes.AccountAddress) (vmtypes.AccountAddress, math.Int, error) {
 	bz, err := k.GetResourceBytes(ctx, store, vmtypes.StructTag{
 		Address:  vmtypes.StdAddress,

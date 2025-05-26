@@ -8,7 +8,7 @@ import (
 
 	"cosmossdk.io/collections"
 	moderrors "cosmossdk.io/errors"
-	"cosmossdk.io/math"
+	sdkmath "cosmossdk.io/math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
@@ -30,167 +30,272 @@ func NewMoveBankKeeper(k *Keeper) MoveBankKeeper {
 	return MoveBankKeeper{k}
 }
 
-// GetBalance return move coin balance
+// GetBalance retrieves the balance of a specific denomination for an account from the primary fungible store.
+// It supports both standard fungible assets and dispatchable fungible assets.
+// Returns the balance amount as sdkmath.Int and any error encountered.
 func (k MoveBankKeeper) GetBalance(
 	ctx context.Context,
 	addr sdk.AccAddress,
 	denom string,
-) (math.Int, error) {
+) (sdkmath.Int, error) {
 	userAddr, err := vmtypes.NewAccountAddressFromBytes(addr[:])
 	if err != nil {
-		return math.ZeroInt(), err
+		return sdkmath.ZeroInt(), err
 	}
 
 	metadata, err := types.MetadataAddressFromDenom(denom)
 	if err != nil {
-		return math.ZeroInt(), err
+		return sdkmath.ZeroInt(), err
 	}
 
-	storeAddr := types.UserDerivedObjectAddress(userAddr, metadata)
-	_, balance, err := k.Balance(ctx, storeAddr)
-	return balance, err
+	// query balance from primary_fungible_store
+	output, _, err := k.ExecuteViewFunctionJSON(
+		ctx,
+		vmtypes.StdAddress,
+		types.MoveModuleNamePrimaryFungibleStore,
+		types.FunctionNamePrimaryFungibleStoreBalance,
+		[]vmtypes.TypeTag{
+			&vmtypes.TypeTag__Struct{
+				Value: vmtypes.StructTag{
+					Address:  vmtypes.StdAddress,
+					Module:   types.MoveModuleNameFungibleAsset,
+					Name:     types.ResourceNameMetadata,
+					TypeArgs: []vmtypes.TypeTag{},
+				},
+			}},
+		[]string{fmt.Sprintf("\"%s\"", userAddr), fmt.Sprintf("\"%s\"", metadata)},
+	)
+	if err != nil {
+		return sdkmath.ZeroInt(), err
+	}
+
+	var amountStr string
+	if err := json.Unmarshal([]byte(output.Ret), &amountStr); err != nil {
+		return sdkmath.ZeroInt(), err
+	}
+
+	amount, ok := sdkmath.NewIntFromString(amountStr)
+	if !ok {
+		return sdkmath.ZeroInt(), moderrors.Wrapf(types.ErrInvalidResponse, "invalid balance amount: %s", amountStr)
+	}
+
+	return amount, nil
 }
 
-func (k MoveBankKeeper) GetUserStoresTableHandle(
-	ctx context.Context,
-	addr sdk.AccAddress,
-) (*vmtypes.AccountAddress, error) {
-	bz, err := k.GetResourceBytes(ctx, vmtypes.StdAddress, vmtypes.StructTag{
-		Address: vmtypes.StdAddress,
-		Module:  types.MoveModuleNamePrimaryFungibleStore,
-		Name:    types.ResourceNameModuleStore,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	tableAddr, err := types.ReadUserStoresTableHandleFromModuleStore(bz)
-	if err != nil {
-		return nil, err
-	}
-
-	userAddr, err := vmtypes.NewAccountAddressFromBytes(addr[:])
-	if err != nil {
-		return nil, err
-	}
-
-	// check user has a store entry
-	if ok, err := k.HasTableEntry(ctx, tableAddr, userAddr[:]); err != nil {
-		return nil, err
-	} else if !ok {
-		return nil, err
-	}
-
-	tableEntry, err := k.GetTableEntryBytes(ctx, tableAddr, userAddr[:])
-	if err != nil {
-		return nil, err
-	}
-
-	tableAddr, err = types.ReadTableHandleFromTable(tableEntry.ValueBytes)
-	if err != nil {
-		return nil, err
-	}
-
-	return &tableAddr, err
-}
-
+// IterateAccountBalances iterates over the balances of a single account and
+// provides the token balance to a callback. If true is returned from the
+// callback, iteration is halted.
 func (k MoveBankKeeper) IterateAccountBalances(
 	ctx context.Context,
 	addr sdk.AccAddress,
 	cb func(sdk.Coin) (bool, error),
 ) error {
-	tableAddr, err := k.GetUserStoresTableHandle(ctx, addr)
+	// check user has stores table
+	tableAddr, tableLength, err := k.GetUserStoresTableHandleWithLength(ctx, addr)
+	if err != nil {
+		return err
+	} else if tableAddr == nil || tableLength.IsZero() {
+		return nil
+	}
+
+	// get user address
+	userAddr, err := vmtypes.NewAccountAddressFromBytes(addr[:])
 	if err != nil {
 		return err
 	}
 
-	// no user stores
-	if tableAddr == nil {
-		return nil
+	const fetchLimit = 100
+	startAfter := "null"
+
+	for {
+		coins, nextKey, err := k.balances(ctx, userAddr, startAfter, fetchLimit, true)
+		if err != nil {
+			return err
+		} else if len(coins) == 0 {
+			break
+		}
+
+		for _, coin := range coins {
+			if coin.Amount.IsZero() {
+				continue
+			}
+
+			if stop, err := cb(coin); err != nil {
+				return err
+			} else if stop {
+				break
+			}
+		}
+
+		// no more coins to fetch
+		if nextKey == nil {
+			break
+		}
+
+		startAfter = *nextKey
 	}
 
-	prefix := types.GetTableEntryPrefix(*tableAddr)
-	return k.VMStore.Walk(ctx, new(collections.Range[[]byte]).Prefix(collections.NewPrefix[[]byte](prefix)), func(_, value []byte) (stop bool, err error) {
-		storeAddr, err := vmtypes.NewAccountAddressFromBytes(value)
-		if err != nil {
-			return true, err
-		}
-
-		metadata, amount, err := k.Balance(ctx, storeAddr)
-		if err != nil {
-			return true, err
-		}
-		if amount.IsZero() {
-			return false, nil
-		}
-
-		denom, err := types.DenomFromMetadataAddress(
-			ctx, k, metadata,
-		)
-		if err != nil {
-			return true, err
-		}
-
-		return cb(sdk.NewCoin(denom, amount))
-	})
+	return nil
 }
 
 func (k MoveBankKeeper) GetPaginatedBalances(ctx context.Context, pageReq *query.PageRequest, addr sdk.AccAddress) (sdk.Coins, *query.PageResponse, error) {
-	tableAddr, err := k.GetUserStoresTableHandle(ctx, addr)
+	// check user has stores table
+	tableAddr, tableLength, err := k.GetUserStoresTableHandleWithLength(ctx, addr)
+	if err != nil {
+		return nil, nil, err
+	} else if tableAddr == nil || tableLength.IsZero() {
+		return sdk.NewCoins(), &query.PageResponse{}, nil
+	}
+
+	// get user address
+	userAddr, err := vmtypes.NewAccountAddressFromBytes(addr[:])
 	if err != nil {
 		return nil, nil, err
 	}
 
-	// no user stores
-	if tableAddr == nil {
-		return sdk.NewCoins(), nil, nil
+	startAfter := "null"
+	if pageReq != nil && len(pageReq.Key) > 0 {
+		startAfter = string(pageReq.Key)
 	}
 
-	var coin sdk.Coin
-	coins, pageRes, err := query.CollectionFilteredPaginate(ctx, k.VMStore, pageReq, func(_, value []byte) (bool, error) {
-		storeAddr, err := vmtypes.NewAccountAddressFromBytes(value)
+	limit := uint64(100)
+	if pageReq != nil && pageReq.Limit > 0 {
+		limit = min(pageReq.Limit, tableLength.Uint64())
+	}
+
+	const fetchLimit = 100
+	coins := make([]sdk.Coin, 0, limit)
+
+	for {
+		coins_, nextKey, err := k.balances(ctx, userAddr, startAfter, fetchLimit, true)
 		if err != nil {
-			return false, err
+			return nil, nil, err
 		}
 
-		metadata, amount, err := k.Balance(ctx, storeAddr)
+		coins = append(coins, coins_...)
+
+		// if the number of coins is less than the limit, break the loop
+		if len(coins) >= int(limit) {
+			break
+		}
+
+		// no more coins to fetch
+		if nextKey == nil {
+			break
+		}
+
+		startAfter = *nextKey
+	}
+
+	// prepare page response
+	pageRes := &query.PageResponse{
+		Total: 0,
+	}
+
+	// truncate coins to the limit
+	coinsLength := uint64(len(coins))
+	if coinsLength > limit {
+		coins = coins[:limit]
+	}
+
+	// check has more coins to fetch
+	if coinsLength >= limit {
+		metadata, err := types.MetadataAddressFromDenom(coins[len(coins)-1].Denom)
 		if err != nil {
-			return false, err
+			return nil, nil, err
+		}
+		startAfter = fmt.Sprintf("\"%s\"", metadata)
+		if coins, _, err := k.balances(ctx, userAddr, startAfter, 1, false); err != nil {
+			return nil, nil, err
+		} else if len(coins) > 0 {
+			pageRes.NextKey = []byte(startAfter)
+		}
+	}
+
+	return sdk.Coins(coins).Sort(), pageRes, nil
+}
+
+// balances fetches unsorted token balances from primary_fungible_store for the given address.
+// It returns the coins and a startAfter value for pagination.
+// The startAfter parameter should be "null" for the first page.
+// The limit parameter controls the maximum number of results returned.
+func (k MoveBankKeeper) balances(ctx context.Context, addr vmtypes.AccountAddress, startAfter string, limit uint64, filterZero bool) (sdk.Coins, *string, error) {
+	output, _, err := k.ExecuteViewFunctionJSON(
+		ctx,
+		vmtypes.StdAddress,
+		types.MoveModuleNamePrimaryFungibleStore,
+		types.FunctionNamePrimaryFungibleStoreBalances,
+		[]vmtypes.TypeTag{},
+		[]string{fmt.Sprintf("\"%s\"", addr), startAfter, fmt.Sprintf("%d", limit)},
+	)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var results [][]string
+	err = json.Unmarshal([]byte(output.Ret), &results)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if len(results) != 2 {
+		return nil, nil, moderrors.Wrapf(types.ErrInvalidResponse, "invalid balance results: %s", output.Ret)
+	}
+
+	metadataArray := results[0]
+	amountArray := results[1]
+
+	resLength := len(metadataArray)
+	if resLength != len(amountArray) {
+		return nil, nil, moderrors.Wrapf(types.ErrInvalidResponse, "invalid balance results: %s", output.Ret)
+	} else if resLength == 0 {
+		return nil, nil, nil
+	}
+
+	coins := make([]sdk.Coin, 0, resLength)
+	for i := range resLength {
+		amount, ok := sdkmath.NewIntFromString(amountArray[i])
+		if !ok {
+			return nil, nil, moderrors.Wrapf(types.ErrInvalidResponse, "invalid balance amount: %s", amountArray[i])
+		}
+
+		if filterZero && amount.IsZero() {
+			continue
+		}
+
+		metadata, err := vmtypes.NewAccountAddress(metadataArray[i])
+		if err != nil {
+			return nil, nil, moderrors.Wrapf(types.ErrInvalidResponse, "invalid balance metadata: %s", metadataArray[i])
 		}
 
 		denom, err := types.DenomFromMetadataAddress(
 			ctx, k, metadata,
 		)
 		if err != nil {
-			return false, err
-		}
-		if !amount.IsPositive() {
-			return false, nil
+			return nil, nil, moderrors.Wrapf(types.ErrInvalidResponse, "invalid balance metadata: %s", metadataArray[i])
 		}
 
-		coin = sdk.NewCoin(denom, amount)
-		return true, nil
-	}, func(_, value []byte) (sdk.Coin, error) {
-		return coin, nil
-	}, func(o *query.CollectionsPaginateOptions[[]byte]) {
-		prefix := types.GetTableEntryPrefix(*tableAddr)
-		o.Prefix = &prefix
-	})
-	if err != nil {
-		return nil, nil, err
+		// add coin to coins
+		coins = append(coins, sdk.NewCoin(denom, amount))
 	}
 
-	return sdk.Coins(coins).Sort(), pageRes, nil
+	// update startAfter to the last metadata address
+	if limit > uint64(resLength) {
+		return coins, nil, nil
+	}
+
+	startAfter = fmt.Sprintf("\"%s\"", metadataArray[resLength-1])
+	return coins, &startAfter, nil
 }
 
 // GetSupply return move coin supply
 func (k MoveBankKeeper) GetSupply(
 	ctx context.Context,
 	denom string,
-) (math.Int, error) {
+) (sdkmath.Int, error) {
 	metadata, err := types.MetadataAddressFromDenom(denom)
 	if err != nil {
-		return math.ZeroInt(), err
+		return sdkmath.ZeroInt(), err
 	}
 
 	return k.GetSupplyWithMetadata(ctx, metadata)
@@ -213,7 +318,7 @@ func (k MoveBankKeeper) HasSupply(
 	})
 }
 
-func (k MoveBankKeeper) GetSupplyWithMetadata(ctx context.Context, metadata vmtypes.AccountAddress) (math.Int, error) {
+func (k MoveBankKeeper) GetSupplyWithMetadata(ctx context.Context, metadata vmtypes.AccountAddress) (sdkmath.Int, error) {
 	bz, err := k.GetResourceBytes(ctx, metadata, vmtypes.StructTag{
 		Address:  vmtypes.StdAddress,
 		Module:   types.MoveModuleNameFungibleAsset,
@@ -221,14 +326,14 @@ func (k MoveBankKeeper) GetSupplyWithMetadata(ctx context.Context, metadata vmty
 		TypeArgs: []vmtypes.TypeTag{},
 	})
 	if err != nil && errors.Is(err, collections.ErrNotFound) {
-		return math.ZeroInt(), nil
+		return sdkmath.ZeroInt(), nil
 	} else if err != nil {
-		return math.ZeroInt(), err
+		return sdkmath.ZeroInt(), err
 	}
 
 	num, err := types.ReadSupplyFromSupply(bz)
 	if err != nil {
-		return math.ZeroInt(), err
+		return sdkmath.ZeroInt(), err
 	}
 
 	return num, nil
@@ -499,7 +604,7 @@ func (k MoveBankKeeper) SendCoin(
 	fromAddr sdk.AccAddress,
 	toAddr sdk.AccAddress,
 	denom string,
-	amount math.Int,
+	amount sdkmath.Int,
 ) error {
 	metadata, err := types.MetadataAddressFromDenom(denom)
 	if err != nil {
@@ -538,7 +643,7 @@ func (k MoveBankKeeper) MultiSend(
 	sender sdk.AccAddress,
 	denom string,
 	recipients []sdk.AccAddress,
-	amounts []math.Int,
+	amounts []sdkmath.Int,
 ) error {
 	if len(recipients) != len(amounts) {
 		return moderrors.Wrapf(types.ErrInvalidRequest, "recipients and amounts length mismatch")
@@ -589,4 +694,52 @@ func (k MoveBankKeeper) MultiSend(
 		[][]byte{metadataArg, recipientsArg, amountsArg},
 		true,
 	)
+}
+
+func (k MoveBankKeeper) GetUserStoresTableHandleWithLength(
+	ctx context.Context,
+	addr sdk.AccAddress,
+) (*vmtypes.AccountAddress, sdkmath.Int, error) {
+	bz, err := k.GetResourceBytes(ctx, vmtypes.StdAddress, vmtypes.StructTag{
+		Address: vmtypes.StdAddress,
+		Module:  types.MoveModuleNamePrimaryFungibleStore,
+		Name:    types.ResourceNameModuleStore,
+	})
+	if err != nil {
+		return nil, sdkmath.ZeroInt(), err
+	}
+
+	tableAddr, err := types.ReadUserStoresTableHandleFromModuleStore(bz)
+	if err != nil {
+		return nil, sdkmath.ZeroInt(), err
+	}
+
+	userAddr, err := vmtypes.NewAccountAddressFromBytes(addr[:])
+	if err != nil {
+		return nil, sdkmath.ZeroInt(), err
+	}
+
+	// check user has a store entry
+	if ok, err := k.HasTableEntry(ctx, tableAddr, userAddr[:]); err != nil {
+		return nil, sdkmath.ZeroInt(), err
+	} else if !ok {
+		return nil, sdkmath.ZeroInt(), err
+	}
+
+	tableEntry, err := k.GetTableEntryBytes(ctx, tableAddr, userAddr[:])
+	if err != nil {
+		return nil, sdkmath.ZeroInt(), err
+	}
+
+	tableAddr, err = types.ReadTableHandleFromTable(tableEntry.ValueBytes)
+	if err != nil {
+		return nil, sdkmath.ZeroInt(), err
+	}
+
+	length, err := types.ReadTableLengthFromTable(tableEntry.ValueBytes)
+	if err != nil {
+		return nil, sdkmath.ZeroInt(), err
+	}
+
+	return &tableAddr, length, nil
 }
