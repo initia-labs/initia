@@ -112,15 +112,9 @@ BALANCE_LOOP:
 		coins, nextKey, err := k.balances(ctx, userAddr, startAfter, fetchLimit, true)
 		if err != nil {
 			return err
-		} else if len(coins) == 0 {
-			break BALANCE_LOOP
 		}
 
 		for _, coin := range coins {
-			if coin.Amount.IsZero() {
-				continue
-			}
-
 			if stop, err := cb(coin); err != nil {
 				return err
 			} else if stop {
