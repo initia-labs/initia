@@ -107,12 +107,13 @@ func (k MoveBankKeeper) IterateAccountBalances(
 	const fetchLimit = 100
 	startAfter := "null"
 
+BALANCE_LOOP:
 	for {
 		coins, nextKey, err := k.balances(ctx, userAddr, startAfter, fetchLimit, true)
 		if err != nil {
 			return err
 		} else if len(coins) == 0 {
-			break
+			break BALANCE_LOOP
 		}
 
 		for _, coin := range coins {
@@ -123,13 +124,13 @@ func (k MoveBankKeeper) IterateAccountBalances(
 			if stop, err := cb(coin); err != nil {
 				return err
 			} else if stop {
-				break
+				break BALANCE_LOOP
 			}
 		}
 
 		// no more coins to fetch
 		if nextKey == nil {
-			break
+			break BALANCE_LOOP
 		}
 
 		startAfter = *nextKey
