@@ -59,6 +59,7 @@ func Test_IterateBalances(t *testing.T) {
 	}
 
 	counter := 0
+	coins := sdk.NewCoins()
 	moveBankKeeper.IterateAccountBalances(ctx, twoAddr, func(amount sdk.Coin) (bool, error) {
 		// extract amount from denom
 		amountStr := strings.Split(amount.Denom, "test")[1]
@@ -67,11 +68,33 @@ func Test_IterateBalances(t *testing.T) {
 		require.Equal(t, sdk.NewCoin(amount.Denom, sdkmath.NewInt(expectedAmount)), amount)
 
 		counter++
+
+		coins = coins.Add(amount)
 		return false, nil
 	})
 
 	// except zero amount coin
 	require.Equal(t, tokenNum-1, counter)
+
+	// transfer coins to other address except last one
+	err = moveBankKeeper.SendCoins(ctx, twoAddr, types.StdAddr, coins[:len(coins)-1])
+	require.NoError(t, err)
+
+	// should count only last one
+	counter = 0
+	moveBankKeeper.IterateAccountBalances(ctx, twoAddr, func(amount sdk.Coin) (bool, error) {
+		// extract amount from denom
+		amountStr := strings.Split(amount.Denom, "test")[1]
+		expectedAmount, err := strconv.ParseInt(amountStr, 10, 64)
+		require.NoError(t, err)
+		require.Equal(t, sdk.NewCoin(amount.Denom, sdkmath.NewInt(expectedAmount)), amount)
+
+		counter++
+
+		return false, nil
+	})
+
+	require.Equal(t, 1, counter)
 }
 
 func Test_GetPaginatedBalances(t *testing.T) {
