@@ -66,7 +66,8 @@ func (k MoveBankKeeper) GetBalance(
 		[]string{fmt.Sprintf("\"%s\"", userAddr), fmt.Sprintf("\"%s\"", metadata)},
 	)
 	if err != nil {
-		return sdkmath.ZeroInt(), err
+		// ignore fetching error due to dispatchable fungible assets
+		return sdkmath.ZeroInt(), nil
 	}
 
 	var amountStr string
@@ -98,39 +99,38 @@ func (k MoveBankKeeper) IterateAccountBalances(
 		return nil
 	}
 
-	// get user address
-	userAddr, err := vmtypes.NewAccountAddressFromBytes(addr[:])
-	if err != nil {
-		return err
-	}
-
-	const fetchLimit = 100
-	startAfter := "null"
-
-BALANCE_LOOP:
-	for {
-		coins, nextKey, err := k.balances(ctx, userAddr, startAfter, fetchLimit, true)
+	prefix := types.GetTableEntryPrefix(*tableAddr)
+	return k.VMStore.Walk(ctx, new(collections.Range[[]byte]).Prefix(collections.NewPrefix(prefix)), func(_, value []byte) (stop bool, err error) {
+		storeAddr, err := vmtypes.NewAccountAddressFromBytes(value)
 		if err != nil {
-			return err
+			return true, err
 		}
 
-		for _, coin := range coins {
-			if stop, err := cb(coin); err != nil {
-				return err
-			} else if stop {
-				break BALANCE_LOOP
-			}
+		// load metadata from fungible store
+		metadata, _, err := k.Balance(ctx, storeAddr)
+		if err != nil {
+			return true, err
 		}
 
-		// no more coins to fetch
-		if nextKey == nil {
-			break BALANCE_LOOP
+		// load denom from metadata
+		denom, err := types.DenomFromMetadataAddress(
+			ctx, k, metadata,
+		)
+		if err != nil {
+			return true, err
 		}
 
-		startAfter = *nextKey
-	}
+		// load balance from primary fungible store
+		amount, err := k.GetBalance(ctx, addr, denom)
+		if err != nil {
+			return true, err
+		}
+		if amount.IsZero() {
+			return false, nil
+		}
 
-	return nil
+		return cb(sdk.NewCoin(denom, amount))
+	})
 }
 
 func (k MoveBankKeeper) GetPaginatedBalances(ctx context.Context, pageReq *query.PageRequest, addr sdk.AccAddress) (sdk.Coins, *query.PageResponse, error) {
@@ -142,17 +142,6 @@ func (k MoveBankKeeper) GetPaginatedBalances(ctx context.Context, pageReq *query
 		return sdk.NewCoins(), &query.PageResponse{}, nil
 	}
 
-	// get user address
-	userAddr, err := vmtypes.NewAccountAddressFromBytes(addr[:])
-	if err != nil {
-		return nil, nil, err
-	}
-
-	startAfter := "null"
-	if pageReq != nil && len(pageReq.Key) > 0 {
-		startAfter = string(pageReq.Key)
-	}
-
 	limit := uint64(100)
 	if pageReq != nil && pageReq.Limit > 0 {
 		limit = min(pageReq.Limit, tableLength.Uint64())
@@ -161,50 +150,46 @@ func (k MoveBankKeeper) GetPaginatedBalances(ctx context.Context, pageReq *query
 	const fetchLimit = 100
 	coins := make([]sdk.Coin, 0, limit)
 
-	for {
-		coins_, nextKey, err := k.balances(ctx, userAddr, startAfter, fetchLimit, true)
+	var coin sdk.Coin
+	coins, pageRes, err := query.CollectionFilteredPaginate(ctx, k.VMStore, pageReq, func(_, value []byte) (bool, error) {
+		storeAddr, err := vmtypes.NewAccountAddressFromBytes(value)
 		if err != nil {
-			return nil, nil, err
+			return false, err
 		}
 
-		coins = append(coins, coins_...)
-
-		// if the number of coins is less than the limit, break the loop
-		if len(coins) >= int(limit) {
-			break
-		}
-
-		// no more coins to fetch
-		if nextKey == nil {
-			break
-		}
-
-		startAfter = *nextKey
-	}
-
-	// prepare page response
-	pageRes := &query.PageResponse{
-		Total: 0,
-	}
-
-	// truncate coins to the limit
-	coinsLength := uint64(len(coins))
-	if coinsLength > limit {
-		coins = coins[:limit]
-	}
-
-	// check has more coins to fetch
-	if coinsLength >= limit {
-		metadata, err := types.MetadataAddressFromDenom(coins[len(coins)-1].Denom)
+		// load metadata from fungible store
+		metadata, _, err := k.Balance(ctx, storeAddr)
 		if err != nil {
-			return nil, nil, err
+			return true, err
 		}
-		startAfter = fmt.Sprintf("\"%s\"", metadata)
-		if coins, _, err := k.balances(ctx, userAddr, startAfter, 1, false); err != nil {
-			return nil, nil, err
-		} else if len(coins) > 0 {
-			pageRes.NextKey = []byte(startAfter)
+
+		// load denom from metadata
+		denom, err := types.DenomFromMetadataAddress(
+			ctx, k, metadata,
+		)
+		if err != nil {
+			return true, err
 		}
+
+		// load balance from primary fungible store
+		amount, err := k.GetBalance(ctx, addr, denom)
+		if err != nil {
+			return true, err
+		}
+		if !amount.IsPositive() {
+			return false, nil
+		}
+
+		coin = sdk.NewCoin(denom, amount)
+		return true, nil
+	}, func(_, value []byte) (sdk.Coin, error) {
+		return coin, nil
+	}, func(o *query.CollectionsPaginateOptions[[]byte]) {
+		prefix := types.GetTableEntryPrefix(*tableAddr)
+		o.Prefix = &prefix
+	})
+	if err != nil {
+		return nil, nil, err
 	}
 
 	return sdk.Coins(coins).Sort(), pageRes, nil
@@ -224,6 +209,7 @@ func (k MoveBankKeeper) balances(ctx context.Context, addr vmtypes.AccountAddres
 		[]string{fmt.Sprintf("\"%s\"", addr), startAfter, fmt.Sprintf("%d", limit)},
 	)
 	if err != nil {
+		// ignore error from execute
 		return nil, nil, err
 	}
 
