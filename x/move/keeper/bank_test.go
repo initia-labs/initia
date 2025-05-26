@@ -4,6 +4,8 @@ import (
 	"encoding/hex"
 	"fmt"
 	"math"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -11,6 +13,7 @@ import (
 	sdkmath "cosmossdk.io/math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/query"
 	cosmosbanktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
 	"github.com/initia-labs/initia/x/move/types"
@@ -47,30 +50,71 @@ func Test_IterateBalances(t *testing.T) {
 	require.NoError(t, err)
 	twoAddr := sdk.AccAddress(bz)
 
-	err = moveBankKeeper.MintCoins(ctx, twoAddr, sdk.NewCoins(sdk.NewInt64Coin(bondDenom, int64(1))))
-	require.NoError(t, err)
+	// create 200 tokens
+	tokenNum := 200
+	for i := range tokenNum {
+		denom := fmt.Sprintf("test%d", i)
+		err = moveBankKeeper.MintCoins(ctx, twoAddr, sdk.NewCoins(sdk.NewInt64Coin(denom, int64(i))))
+		require.NoError(t, err)
+	}
 
-	entered := false
+	counter := 0
 	moveBankKeeper.IterateAccountBalances(ctx, twoAddr, func(amount sdk.Coin) (bool, error) {
-		entered = true
-		require.Equal(t, sdk.NewCoin(bondDenom, sdkmath.NewInt(1)), amount)
+		// extract amount from denom
+		amountStr := strings.Split(amount.Denom, "test")[1]
+		expectedAmount, err := strconv.ParseInt(amountStr, 10, 64)
+		require.NoError(t, err)
+		require.Equal(t, sdk.NewCoin(amount.Denom, sdkmath.NewInt(expectedAmount)), amount)
+
+		counter++
 		return false, nil
 	})
-	require.True(t, entered)
 
-	mintAmount := int64(100)
+	// except zero amount coin
+	require.Equal(t, tokenNum-1, counter)
+}
 
-	err = moveBankKeeper.MintCoins(ctx, twoAddr, sdk.NewCoins(sdk.NewInt64Coin(bondDenom, mintAmount)))
+func Test_GetPaginatedBalances(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+	moveBankKeeper := input.MoveKeeper.MoveBankKeeper()
+
+	bz, err := hex.DecodeString("0000000000000000000000000000000000000002")
 	require.NoError(t, err)
+	twoAddr := sdk.AccAddress(bz)
 
-	// check after mint
-	entered = false
-	moveBankKeeper.IterateAccountBalances(ctx, twoAddr, func(amount sdk.Coin) (bool, error) {
-		entered = true
-		require.Equal(t, sdk.NewCoin(bondDenom, sdkmath.NewInt(mintAmount+1)), amount)
-		return false, nil
-	})
-	require.True(t, entered)
+	// create 200 tokens
+	tokenNum := 200
+	for i := range tokenNum {
+		denom := fmt.Sprintf("test%d", i)
+		err = moveBankKeeper.MintCoins(ctx, twoAddr, sdk.NewCoins(sdk.NewInt64Coin(denom, int64(i))))
+		require.NoError(t, err)
+	}
+
+	counter := int(0)
+	fetchUint := uint64(3)
+	pageReq := &query.PageRequest{
+		Limit: fetchUint,
+	}
+
+	totalCoins := sdk.Coins{}
+	for i := 0; i < tokenNum; i += int(fetchUint) {
+		coins, pageRes, err := moveBankKeeper.GetPaginatedBalances(ctx, pageReq, twoAddr)
+		require.NoError(t, err)
+
+		pageReq.Key = pageRes.NextKey
+		counter += int(coins.Len())
+		totalCoins = totalCoins.Add(coins...)
+	}
+
+	for _, coin := range totalCoins {
+		amountStr := strings.Split(coin.Denom, "test")[1]
+		expectedAmount, err := strconv.ParseInt(amountStr, 10, 64)
+		require.NoError(t, err)
+		require.Equal(t, sdk.NewCoin(coin.Denom, sdkmath.NewInt(expectedAmount)), coin)
+	}
+
+	// except zero amount coin
+	require.Equal(t, tokenNum-1, counter)
 }
 
 func Test_GetSupply(t *testing.T) {

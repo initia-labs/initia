@@ -39,11 +39,18 @@ func (k Keeper) AllocateTokens(ctx context.Context, totalPreviousPower int64, bo
 	// called in BeginBlock, collected fees will be from the previous block
 	// (and distributed to the previous proposer)
 	feeCollector := k.authKeeper.GetModuleAccount(ctx, k.feeCollectorName)
-	feesCollectedInt := k.bankKeeper.GetAllBalances(ctx, feeCollector.GetAddress())
-	feesCollected := sdk.NewDecCoinsFromCoins(feesCollectedInt...)
+
+	// Distribute only fees collected in the base denomination (e.g. INIT).
+	// Other fee denominations have been swapped to base denom in beforeAllocateTokens.
+	baseDenom, err := k.dexKeeper.BaseDenom(ctx)
+	if err != nil {
+		return err
+	}
+	feesCollectedInt := k.bankKeeper.GetBalance(ctx, feeCollector.GetAddress(), baseDenom)
+	feesCollected := sdk.NewDecCoinsFromCoins(feesCollectedInt)
 
 	// transfer collected fees to the distribution module account
-	err := k.bankKeeper.SendCoinsFromModuleToModule(ctx, k.feeCollectorName, types.ModuleName, feesCollectedInt)
+	err = k.bankKeeper.SendCoinsFromModuleToModule(ctx, k.feeCollectorName, types.ModuleName, sdk.NewCoins(feesCollectedInt))
 	if err != nil {
 		return err
 	}

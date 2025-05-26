@@ -46,6 +46,10 @@ const (
 	FunctionNameCoinSudoMultiSend = "sudo_multisend"
 	FunctionNameCoinWhitelist     = "whitelist"
 
+	// function names for primary_fungible_store
+	FunctionNamePrimaryFungibleStoreBalance  = "balance"
+	FunctionNamePrimaryFungibleStoreBalances = "balances"
+
 	// function names for staking
 	FunctionNameStakingInitializeForChain           = "initialize_for_chain"
 	FunctionNameStakingDepositRewardForChain        = "deposit_reward_for_chain"
@@ -245,8 +249,25 @@ func (policy UpgradePolicy) ToVmUpgradePolicy() uint8 {
 	return uint8(policy)
 }
 
+// ReadTableHandleFromTable util function to read table handle from the table raw bytes
 func ReadTableHandleFromTable(bz []byte) (vmtypes.AccountAddress, error) {
 	return vmtypes.NewAccountAddressFromBytes(bz[:AddressBytesLength])
+}
+
+// ReadTableLengthFromTable util function to read table length from the table raw bytes
+func ReadTableLengthFromTable(bz []byte) (math.Int, error) {
+	cursor := int(0)
+
+	// read table handle address
+	cursor += AddressBytesLength
+
+	// read table length u64
+	length, err := DeserializeUint64(bz[cursor : cursor+8])
+	if err != nil {
+		return math.ZeroInt(), err
+	}
+
+	return length, nil
 }
 
 // ReadSymbolFromMetadata util function to read symbol from Metadata
