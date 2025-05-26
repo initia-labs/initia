@@ -125,7 +125,7 @@ func (k MoveBankKeeper) IterateAccountBalances(
 		if err != nil {
 			return true, err
 		}
-		if amount.IsZero() {
+		if !amount.IsPositive() {
 			return false, nil
 		}
 
