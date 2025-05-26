@@ -215,11 +215,11 @@ func (k MoveBankKeeper) GetPaginatedBalances(ctx context.Context, pageReq *query
 	return sdk.Coins(coins).Sort(), pageRes, nil
 }
 
-// balances fetches unsorted token balances from primary_fungible_store for the given address.
-// It returns the coins and a startAfter value for pagination.
-// The startAfter parameter should be "null" for the first page.
-// The limit parameter controls the maximum number of results returned.
-func (k MoveBankKeeper) balances(ctx context.Context, addr vmtypes.AccountAddress, startAfter string, limit uint64, filterZero bool) (sdk.Coins, *string, error) {
+// balances fetches token balances from primary_fungible_store for a given address.
+// Returns unsorted coins and pagination info.
+// Use startAfter="null" for first page, limit controls max results.
+// Note: Sort coins before using sdk.Coins functions.
+func (k MoveBankKeeper) balances(ctx context.Context, addr vmtypes.AccountAddress, startAfter string, limit uint64, filterZero bool) ([]sdk.Coin, *string, error) {
 	output, _, err := k.ExecuteViewFunctionJSON(
 		ctx,
 		vmtypes.StdAddress,
