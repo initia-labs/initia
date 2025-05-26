@@ -142,14 +142,6 @@ func (k MoveBankKeeper) GetPaginatedBalances(ctx context.Context, pageReq *query
 		return sdk.NewCoins(), &query.PageResponse{}, nil
 	}
 
-	limit := uint64(100)
-	if pageReq != nil && pageReq.Limit > 0 {
-		limit = min(pageReq.Limit, tableLength.Uint64())
-	}
-
-	const fetchLimit = 100
-	coins := make([]sdk.Coin, 0, limit)
-
 	var coin sdk.Coin
 	coins, pageRes, err := query.CollectionFilteredPaginate(ctx, k.VMStore, pageReq, func(_, value []byte) (bool, error) {
 		storeAddr, err := vmtypes.NewAccountAddressFromBytes(value)
