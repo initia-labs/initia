@@ -15,18 +15,19 @@ import (
 
 const (
 	// module names
-	MoveModuleNameCoin                 = "coin"
-	MoveModuleNameStaking              = "staking"
-	MoveModuleNameDex                  = "dex"
-	MoveModuleNameNft                  = "nft"
-	MoveModuleNameCode                 = "code"
-	MoveModuleNameFungibleAsset        = "fungible_asset"
-	MoveModuleNamePrimaryFungibleStore = "primary_fungible_store"
-	MoveModuleNameManagedCoin          = "managed_coin"
-	MoveModuleNameObject               = "object"
-	MoveModuleNameInitiaNft            = "initia_nft"
-	MoveModuleNameCollection           = "collection"
-	MoveModuleNameStableSwap           = "stableswap"
+	MoveModuleNameCoin                      = "coin"
+	MoveModuleNameStaking                   = "staking"
+	MoveModuleNameDex                       = "dex"
+	MoveModuleNameNft                       = "nft"
+	MoveModuleNameCode                      = "code"
+	MoveModuleNameFungibleAsset             = "fungible_asset"
+	MoveModuleNameDispatchableFungibleAsset = "dispatchable_fungible_asset"
+	MoveModuleNamePrimaryFungibleStore      = "primary_fungible_store"
+	MoveModuleNameManagedCoin               = "managed_coin"
+	MoveModuleNameObject                    = "object"
+	MoveModuleNameInitiaNft                 = "initia_nft"
+	MoveModuleNameCollection                = "collection"
+	MoveModuleNameStableSwap                = "stableswap"
 
 	// function names for managed_coin
 	FunctionNameManagedCoinInitialize = "initialize"
@@ -49,6 +50,9 @@ const (
 	// function names for primary_fungible_store
 	FunctionNamePrimaryFungibleStoreBalance  = "balance"
 	FunctionNamePrimaryFungibleStoreBalances = "balances"
+
+	// function names for dispatchable_fungible_asset
+	FunctionNameDispatchableFungibleAssetDerivedSupply = "derived_supply"
 
 	// function names for staking
 	FunctionNameStakingInitializeForChain           = "initialize_for_chain"
@@ -88,6 +92,10 @@ const (
 	ResourceNameCollection    = "Collection"
 	ResourceNameInitiaNft     = "InitiaNft"
 	ResourceNameNft           = "Nft"
+
+	// resource names for dispatchable fungible assets
+	ResourceNameDispatchFunctionStore = "DispatchFunctionStore"
+	ResourceNameDispatchSupply        = "DeriveSupply"
 )
 
 // TypeTagFromStructTag return type tag with struct tag

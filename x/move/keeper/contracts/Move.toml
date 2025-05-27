@@ -9,3 +9,4 @@ InitiaStdlib = { local = "../../../../../movevm/precompile/modules/initia_stdlib
 initia_std = "0x1"
 std = "0x1"
 TestAccount = "0x2"
+cafe = "0xcafe"

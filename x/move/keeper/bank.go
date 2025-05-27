@@ -9,6 +9,7 @@ import (
 	"cosmossdk.io/collections"
 	moderrors "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
+	storetypes "cosmossdk.io/store/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
@@ -47,6 +48,27 @@ func (k MoveBankKeeper) GetBalance(
 	if err != nil {
 		return sdkmath.ZeroInt(), err
 	}
+
+	// if it is not a dispatchable fungible asset, return
+	hasDispatchFunctionStore, err := k.HasDispatchFunctionStore(ctx, metadata)
+	if err != nil {
+		return sdkmath.ZeroInt(), err
+	} else if !hasDispatchFunctionStore {
+		storeAddr := types.UserDerivedObjectAddress(userAddr, metadata)
+		_, balance, err := k.Balance(ctx, storeAddr)
+		return balance, err
+	}
+
+	// use limited gas for dispatchable fungible assets balance query
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	gasMeter := sdkCtx.GasMeter()
+
+	const getBalanceMaxGas = storetypes.Gas(100000)
+	sdkCtx = sdkCtx.WithGasMeter(storetypes.NewGasMeter(min(gasMeter.GasRemaining(), getBalanceMaxGas)))
+	defer func() {
+		usedGas := sdkCtx.GasMeter().GasConsumedToLimit()
+		gasMeter.ConsumeGas(usedGas, "GetBalance")
+	}()
 
 	// query balance from primary_fungible_store
 	output, _, err := k.ExecuteViewFunctionJSON(
@@ -218,24 +240,78 @@ func (k MoveBankKeeper) HasSupply(
 }
 
 func (k MoveBankKeeper) GetSupplyWithMetadata(ctx context.Context, metadata vmtypes.AccountAddress) (sdkmath.Int, error) {
-	bz, err := k.GetResourceBytes(ctx, metadata, vmtypes.StructTag{
-		Address:  vmtypes.StdAddress,
-		Module:   types.MoveModuleNameFungibleAsset,
-		Name:     types.ResourceNameSupply,
-		TypeArgs: []vmtypes.TypeTag{},
-	})
-	if err != nil && errors.Is(err, collections.ErrNotFound) {
-		return sdkmath.ZeroInt(), nil
-	} else if err != nil {
-		return sdkmath.ZeroInt(), err
-	}
-
-	num, err := types.ReadSupplyFromSupply(bz)
+	// if it is not a dispatchable fungible asset, return supply from supply store
+	hasDispatchSupplyStore, err := k.HasDispatchSupplyStore(ctx, metadata)
 	if err != nil {
 		return sdkmath.ZeroInt(), err
+	} else if !hasDispatchSupplyStore {
+		bz, err := k.GetResourceBytes(ctx, metadata, vmtypes.StructTag{
+			Address:  vmtypes.StdAddress,
+			Module:   types.MoveModuleNameFungibleAsset,
+			Name:     types.ResourceNameSupply,
+			TypeArgs: []vmtypes.TypeTag{},
+		})
+		if err != nil && errors.Is(err, collections.ErrNotFound) {
+			return sdkmath.ZeroInt(), nil
+		} else if err != nil {
+			return sdkmath.ZeroInt(), err
+		}
+
+		num, err := types.ReadSupplyFromSupply(bz)
+		if err != nil {
+			return sdkmath.ZeroInt(), err
+		}
+
+		return num, nil
 	}
 
-	return num, nil
+	// use limited gas for dispatchable fungible assets supply query
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	gasMeter := sdkCtx.GasMeter()
+
+	const getSupplyMaxGas = storetypes.Gas(100000)
+	sdkCtx = sdkCtx.WithGasMeter(storetypes.NewGasMeter(min(gasMeter.GasRemaining(), getSupplyMaxGas)))
+	defer func() {
+		usedGas := sdkCtx.GasMeter().GasConsumedToLimit()
+		gasMeter.ConsumeGas(usedGas, "GetSupply")
+	}()
+
+	// query balance from primary_fungible_store
+	output, _, err := k.ExecuteViewFunctionJSON(
+		ctx,
+		vmtypes.StdAddress,
+		types.MoveModuleNameDispatchableFungibleAsset,
+		types.FunctionNameDispatchableFungibleAssetDerivedSupply,
+		[]vmtypes.TypeTag{
+			&vmtypes.TypeTag__Struct{
+				Value: vmtypes.StructTag{
+					Address:  vmtypes.StdAddress,
+					Module:   types.MoveModuleNameFungibleAsset,
+					Name:     types.ResourceNameMetadata,
+					TypeArgs: []vmtypes.TypeTag{},
+				},
+			}},
+		[]string{fmt.Sprintf("\"%s\"", metadata)},
+	)
+	if err != nil {
+		// ignore fetching error due to dispatchable fungible assets
+		return sdkmath.ZeroInt(), nil
+	}
+
+	var optionSupplyStr string
+	if err := json.Unmarshal([]byte(output.Ret), &optionSupplyStr); err != nil {
+		return sdkmath.ZeroInt(), err
+	} else if optionSupplyStr == "null" {
+		// return is option, so return zero if it is null
+		return sdkmath.ZeroInt(), nil
+	}
+
+	supply, ok := sdkmath.NewIntFromString(optionSupplyStr)
+	if !ok {
+		return sdkmath.ZeroInt(), moderrors.Wrapf(types.ErrInvalidResponse, "invalid supply: %s", optionSupplyStr)
+	}
+
+	return supply, nil
 }
 
 func (k MoveBankKeeper) GetIssuersTableHandle(ctx context.Context) (*vmtypes.AccountAddress, error) {

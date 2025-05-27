@@ -2,7 +2,6 @@ package v1_1_1
 
 import (
 	"context"
-	"encoding/base64"
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
@@ -26,13 +25,9 @@ func RegisterUpgradeHandlers(app upgrades.InitiaApp) {
 			// - 0x1::dispatchable_fungible_asset
 			// - 0x1::dex
 
-			moduleBytesArray := make([][]byte, len(moduleBytes))
-			var err error
-			for i, c := range moduleBytes {
-				moduleBytesArray[i], err = base64.StdEncoding.DecodeString(c)
-				if err != nil {
-					return nil, err
-				}
+			moduleBytesArray, err := GetModuleBytes()
+			if err != nil {
+				return nil, err
 			}
 
 			var modules []vmtypes.Module
