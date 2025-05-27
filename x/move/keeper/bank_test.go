@@ -376,3 +376,54 @@ func Test_DispatchableToken(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, sdkmath.NewInt(1_000_000).MulRaw(10), balance)
 }
+
+func Test_InvalidDispatchableToken(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+
+	// TODO - remove this after movevm version update
+	////////////////////////////////////////////////////
+	moduleBytes, err := v1_1_1.GetModuleBytes()
+	require.NoError(t, err)
+
+	var modules []vmtypes.Module
+	for _, module := range moduleBytes {
+		modules = append(modules, vmtypes.NewModule(module))
+	}
+
+	err = input.MoveKeeper.PublishModuleBundle(ctx, vmtypes.StdAddress, vmtypes.NewModuleBundle(modules...), types.UpgradePolicy_COMPATIBLE)
+	require.NoError(t, err)
+	////////////////////////////////////////////////////
+	deployer, err := vmtypes.NewAccountAddress("0xcafe")
+	require.NoError(t, err)
+
+	moveBankKeeper := input.MoveKeeper.MoveBankKeeper()
+
+	err = input.MoveKeeper.PublishModuleBundle(ctx, deployer, vmtypes.NewModuleBundle(vmtypes.NewModule(invalidDispatchableTokenModule)), types.UpgradePolicy_COMPATIBLE)
+	require.NoError(t, err)
+
+	// execute initialize
+	err = input.MoveKeeper.ExecuteEntryFunctionJSON(ctx, deployer, deployer, "test_invalid_dispatchable_token", "initialize", []vmtypes.TypeTag{}, []string{})
+	require.NoError(t, err)
+
+	// check supply
+	metadata := types.NamedObjectAddress(deployer, "test_token")
+	supply, err := moveBankKeeper.GetSupplyWithMetadata(ctx, metadata)
+	require.NoError(t, err)
+	require.Equal(t, sdkmath.ZeroInt(), supply)
+
+	// mint token
+	err = input.MoveKeeper.ExecuteEntryFunctionJSON(ctx, deployer, deployer, "test_invalid_dispatchable_token", "mint", []vmtypes.TypeTag{}, []string{fmt.Sprintf("\"%s\"", deployer.String()), `"1000000"`})
+	require.NoError(t, err)
+
+	// get supply
+	supply, err = moveBankKeeper.GetSupplyWithMetadata(ctx, metadata)
+	require.NoError(t, err)
+	require.Equal(t, sdkmath.ZeroInt(), supply)
+
+	// get balance
+	denom, err := types.DenomFromMetadataAddress(ctx, moveBankKeeper, metadata)
+	require.NoError(t, err)
+	balance, err := moveBankKeeper.GetBalance(ctx, deployer[:], denom)
+	require.NoError(t, err)
+	require.Equal(t, sdkmath.ZeroInt(), balance)
+}

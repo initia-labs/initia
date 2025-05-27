@@ -66,13 +66,16 @@ func (k MoveBankKeeper) GetBalance(
 	const getBalanceMaxGas = storetypes.Gas(100000)
 	sdkCtx = sdkCtx.WithGasMeter(storetypes.NewGasMeter(min(gasMeter.GasRemaining(), getBalanceMaxGas)))
 	defer func() {
+		// ignore panic
+		_ = recover()
+
 		usedGas := sdkCtx.GasMeter().GasConsumedToLimit()
 		gasMeter.ConsumeGas(usedGas, "GetBalance")
 	}()
 
 	// query balance from primary_fungible_store
 	output, _, err := k.ExecuteViewFunctionJSON(
-		ctx,
+		sdkCtx,
 		vmtypes.StdAddress,
 		types.MoveModuleNamePrimaryFungibleStore,
 		types.FunctionNamePrimaryFungibleStoreBalance,
@@ -272,13 +275,16 @@ func (k MoveBankKeeper) GetSupplyWithMetadata(ctx context.Context, metadata vmty
 	const getSupplyMaxGas = storetypes.Gas(100000)
 	sdkCtx = sdkCtx.WithGasMeter(storetypes.NewGasMeter(min(gasMeter.GasRemaining(), getSupplyMaxGas)))
 	defer func() {
+		// ignore panic
+		_ = recover()
+
 		usedGas := sdkCtx.GasMeter().GasConsumedToLimit()
 		gasMeter.ConsumeGas(usedGas, "GetSupply")
 	}()
 
 	// query balance from primary_fungible_store
 	output, _, err := k.ExecuteViewFunctionJSON(
-		ctx,
+		sdkCtx,
 		vmtypes.StdAddress,
 		types.MoveModuleNameDispatchableFungibleAsset,
 		types.FunctionNameDispatchableFungibleAssetDerivedSupply,
