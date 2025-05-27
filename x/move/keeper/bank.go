@@ -49,6 +49,18 @@ func (k MoveBankKeeper) GetBalance(
 		return sdkmath.ZeroInt(), err
 	}
 
+	return k.GetBalanceWithMetadata(ctx, userAddr, metadata)
+}
+
+// GetBalanceWithMetadata retrieves the balance of a specific denomination for an account from the primary fungible store.
+// It supports both standard fungible assets and dispatchable fungible assets.
+// Returns the balance amount as sdkmath.Int and any error encountered.
+func (k MoveBankKeeper) GetBalanceWithMetadata(
+	ctx context.Context,
+	userAddr vmtypes.AccountAddress,
+	metadata vmtypes.AccountAddress,
+) (sdkmath.Int, error) {
+
 	// if it is not a dispatchable fungible asset, return
 	hasDispatchFunctionStore, err := k.HasDispatchFunctionStore(ctx, metadata)
 	if err != nil {
@@ -124,6 +136,11 @@ func (k MoveBankKeeper) IterateAccountBalances(
 		return nil
 	}
 
+	userAddr, err := vmtypes.NewAccountAddressFromBytes(addr[:])
+	if err != nil {
+		return err
+	}
+
 	prefix := types.GetTableEntryPrefix(*tableAddr)
 	return k.VMStore.Walk(ctx, new(collections.Range[[]byte]).Prefix(collections.NewPrefix(prefix)), func(_, value []byte) (stop bool, err error) {
 		storeAddr, err := vmtypes.NewAccountAddressFromBytes(value)
@@ -137,21 +154,21 @@ func (k MoveBankKeeper) IterateAccountBalances(
 			return true, err
 		}
 
+		// load balance from primary fungible store
+		amount, err := k.GetBalanceWithMetadata(ctx, userAddr, metadata)
+		if err != nil {
+			return true, err
+		}
+		if !amount.IsPositive() {
+			return false, nil
+		}
+
 		// load denom from metadata
 		denom, err := types.DenomFromMetadataAddress(
 			ctx, k, metadata,
 		)
 		if err != nil {
 			return true, err
-		}
-
-		// load balance from primary fungible store
-		amount, err := k.GetBalance(ctx, addr, denom)
-		if err != nil {
-			return true, err
-		}
-		if !amount.IsPositive() {
-			return false, nil
 		}
 
 		return cb(sdk.NewCoin(denom, amount))
