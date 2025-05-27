@@ -405,7 +405,7 @@ func Test_InvalidDispatchableToken(t *testing.T) {
 	err = input.MoveKeeper.ExecuteEntryFunctionJSON(ctx, deployer, deployer, "test_invalid_dispatchable_token", "initialize", []vmtypes.TypeTag{}, []string{})
 	require.NoError(t, err)
 
-	// check supply
+	// check supply - should return 0 amount
 	metadata := types.NamedObjectAddress(deployer, "test_token")
 	supply, err := moveBankKeeper.GetSupplyWithMetadata(ctx, metadata)
 	require.NoError(t, err)
@@ -415,12 +415,12 @@ func Test_InvalidDispatchableToken(t *testing.T) {
 	err = input.MoveKeeper.ExecuteEntryFunctionJSON(ctx, deployer, deployer, "test_invalid_dispatchable_token", "mint", []vmtypes.TypeTag{}, []string{fmt.Sprintf("\"%s\"", deployer.String()), `"1000000"`})
 	require.NoError(t, err)
 
-	// get supply
+	// get supply - should return 0 amount due to infinite loop
 	supply, err = moveBankKeeper.GetSupplyWithMetadata(ctx, metadata)
 	require.NoError(t, err)
 	require.Equal(t, sdkmath.ZeroInt(), supply)
 
-	// get balance
+	// get balance - should return 0 amount due to infinite loop
 	denom, err := types.DenomFromMetadataAddress(ctx, moveBankKeeper, metadata)
 	require.NoError(t, err)
 	balance, err := moveBankKeeper.GetBalance(ctx, deployer[:], denom)
