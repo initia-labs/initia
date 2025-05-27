@@ -148,3 +148,23 @@ func (k MoveBankKeeper) GetMetadata(
 		DenomUnits: denomUnits,
 	}, nil
 }
+
+// HasDispatchFunctionStore checks if the dispatch function store exists.
+func (k MoveBankKeeper) HasDispatchFunctionStore(ctx context.Context, metadata vmtypes.AccountAddress) (bool, error) {
+	return k.HasResource(ctx, metadata, vmtypes.StructTag{
+		Address:  vmtypes.StdAddress,
+		Module:   types.MoveModuleNameFungibleAsset,
+		Name:     types.ResourceNameDispatchFunctionStore,
+		TypeArgs: []vmtypes.TypeTag{},
+	})
+}
+
+// HasDispatchSupplyStore checks if the dispatch supply store exists.
+func (k MoveBankKeeper) HasDispatchSupplyStore(ctx context.Context, metadata vmtypes.AccountAddress) (bool, error) {
+	return k.HasResource(ctx, metadata, vmtypes.StructTag{
+		Address:  vmtypes.StdAddress,
+		Module:   types.MoveModuleNameFungibleAsset,
+		Name:     types.ResourceNameDispatchSupply,
+		TypeArgs: []vmtypes.TypeTag{},
+	})
+}
