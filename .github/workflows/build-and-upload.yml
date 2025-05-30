@@ -17,3 +17,43 @@ jobs:
 
   build-darwin-arm64:
     uses: ./.github/workflows/build-darwin-arm64.yml
+
+  release:
+    name: Release build artifacts
+    needs:
+      - build-linux-amd64
+      - build-linux-arm64
+      - build-darwin-amd64
+      - build-darwin-arm64
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - name: Download linux amd64 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: initia-linux-amd64
+
+      - name: Download linux arm64 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: initia-linux-arm64
+
+      - name: Download darwin amd64 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: initia-darwin-amd64
+
+      - name: Download darwin arm64 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: initia-darwin-arm64
+
+      - name: List downloaded files
+        run: ls -la *.tar.gz
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            *.tar.gz
