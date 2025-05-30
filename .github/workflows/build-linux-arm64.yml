@@ -52,11 +52,12 @@ jobs:
           docker rm temp
 
           # Packaging of results
-          mkdir -p release-${GOOS}-${ARCH_NAME}
-          mv ./build/initiad ./release-${GOOS}-${ARCH_NAME}/initiad
-          mv ./build/libmovevm.so ./release-${GOOS}-${ARCH_NAME}/libmovevm.${ARCH_NAME}.so
-          mv ./build/libcompiler.so  ./release-${GOOS}-${ARCH_NAME}/libcompiler.${ARCH_NAME}.so
-          tar -czvf initia_${VERSION}_Linux_${ARCH_NAME}.tar.gz -C ./release-${GOOS}-${ARCH_NAME} initiad libmovevm.${ARCH_NAME}.so libcompiler.${ARCH_NAME}.so
+          cd ./build \
+          && mv libmovevm.so libmovevm.${ARCH_NAME}.so \
+          && mv libcompiler.so libcompiler.${ARCH_NAME}.so \
+          && tar -czvf initia_${VERSION}_Linux_${ARCH_NAME}.tar.gz initiad libmovevm.${ARCH_NAME}.so libcompiler.${ARCH_NAME}.so \
+          && mv initia_${VERSION}_Linux_${ARCH_NAME}.tar.gz $GITHUB_WORKSPACE/ \
+          && rm -rf ./initiad ./libmovevm.${ARCH_NAME}.so ./libcompiler.${ARCH_NAME}.so
 
           # Remove builder
           docker buildx rm arm64-builder

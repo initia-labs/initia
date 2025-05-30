@@ -29,20 +29,20 @@ jobs:
       - name: Build for Linux AMD64
         run: |
           make build-linux-with-shared-library \
-          && mkdir -p release-${GOOS}-${ARCH_NAME} \
-          && mv ./build/libmovevm.so ./release-${GOOS}-${ARCH_NAME}/libmovevm.${ARCH_NAME}.so \
-          && mv ./build/libcompiler.so ./release-${GOOS}-${ARCH_NAME}/libcompiler.${ARCH_NAME}.so \
-          && mv ./build/initiad ./release-${GOOS}-${ARCH_NAME}/initiad \
-          && tar -czvf initia_${VERSION}_Linux_${ARCH_NAME}.tar.gz -C release-${GOOS}-${ARCH_NAME} initiad libmovevm.${ARCH_NAME}.so libcompiler.${ARCH_NAME}.so \
-          && make clean
+          && cd ./build \
+          && mv libmovevm.so libmovevm.${ARCH_NAME}.so \
+          && mv libcompiler.so libcompiler.${ARCH_NAME}.so \
+          && tar -czvf initia_${VERSION}_Linux_${ARCH_NAME}.tar.gz initiad libmovevm.${ARCH_NAME}.so libcompiler.${ARCH_NAME}.so \
+          && mv initia_${VERSION}_Linux_${ARCH_NAME}.tar.gz $GITHUB_WORKSPACE/ \
+          && rm -rf ./initiad ./libmovevm.${ARCH_NAME}.so ./libcompiler.${ARCH_NAME}.so
 
       - name: Static Build for Linux AMD64
         run: |
           make build-linux \
-          && mkdir -p release-${GOOS}-${ARCH_NAME}-static \
-          && mv ./build/initiad ./release-${GOOS}-${ARCH_NAME}-static/initiad \
-          && tar -czvf initia_${VERSION}_Linux_${ARCH_NAME}_static.tar.gz -C release-${GOOS}-${ARCH_NAME}-static initiad \
-          && make clean
+          && cd ./build \
+          && tar -czvf initia_${VERSION}_Linux_${ARCH_NAME}_static.tar.gz initiad \
+          && mv initia_${VERSION}_Linux_${ARCH_NAME}_static.tar.gz $GITHUB_WORKSPACE/ \
+          && rm -rf ./initiad
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
