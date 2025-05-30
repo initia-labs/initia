@@ -36,14 +36,14 @@ jobs:
         env:
           DOCKER_BUILDKIT: 1
         run: |
-          # Enable BuildKit and create a new builder
+          # Activate BuildKit and create a new builder
           docker buildx create --use --name arm64-builder --platform linux/arm64
           docker buildx inspect --bootstrap
 
-          # Build the image for ARM64
+          # Building images for ARM64
           docker buildx build --platform linux/arm64 --load --tag initia/initiad-shared:arm64 . -f Dockerfile.arm64
 
-          # Extract the build artifacts using the ARM64 image
+          # Extract build output using ARM64 images
           mkdir -p ./build
           docker create --name temp initia/initiad-shared:arm64
           docker cp temp:/usr/local/bin/initiad ./build/
@@ -51,24 +51,19 @@ jobs:
           docker cp temp:/lib/libcompiler.so ./build/
           docker rm temp
 
-          # Package the artifacts
+          # Packaging of results
           mkdir -p release-${GOOS}-${ARCH_NAME}
           mv ./build/initiad ./release-${GOOS}-${ARCH_NAME}/initiad
           mv ./build/libmovevm.so ./release-${GOOS}-${ARCH_NAME}/libmovevm.${ARCH_NAME}.so
           mv ./build/libcompiler.so  ./release-${GOOS}-${ARCH_NAME}/libcompiler.${ARCH_NAME}.so
           tar -czvf initia_${VERSION}_Linux_${ARCH_NAME}.tar.gz -C ./release-${GOOS}-${ARCH_NAME} initiad libmovevm.${ARCH_NAME}.so libcompiler.${ARCH_NAME}.so
 
-          # Remove the builder
+          # Remove builder
           docker buildx rm arm64-builder
 
-      - name: List files
-        run: ls -l
-
-      - name: Release
-        uses: softprops/action-gh-release@v2
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
         with:
-          files: |
-            ./initia_${{ env.VERSION }}_Linux_${{ env.ARCH_NAME }}.tar.gz
-        env:
-          Version: ${{ env.VERSION }}
-          ARCH_NAME: ${{ env.ARCH_NAME }}
+          name: initia-linux-arm64
+          path: initia_${{ env.VERSION }}_Linux_${{ env.ARCH_NAME }}.tar.gz
+          retention-days: 1
