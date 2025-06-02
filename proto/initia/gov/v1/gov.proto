@@ -124,6 +124,12 @@ message Params {
     (gogoproto.nullable) = true,
     (amino.dont_omitempty) = false
   ];
+
+  // Whitelist addresses that can submit emergency proposals.
+  repeated string emergency_submitters = 95 [
+    (cosmos_proto.scalar) = "cosmos.AddressString",
+    (amino.dont_omitempty) = true
+  ];
 }
 
 // Vesting defines the vesting contract info for MsgVestingVote.

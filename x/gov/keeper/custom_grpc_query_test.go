@@ -12,6 +12,8 @@ import (
 
 	"github.com/initia-labs/initia/x/gov/keeper"
 	"github.com/initia-labs/initia/x/gov/types"
+
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 )
 
 func Test_CustomGrpcQuerier_Params(t *testing.T) {
@@ -204,4 +206,54 @@ func Test_CustomGrpcQuerier_TallyResult(t *testing.T) {
 	res, err := qs.TallyResult(ctx, &types.QueryTallyResultRequest{ProposalId: proposalID})
 	require.NoError(t, err)
 	require.Equal(t, tallyResults, res.TallyResult)
+}
+
+func Test_CustomGrpcQuerier_SimulateProposal(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+
+	qs := keeper.NewCustomQueryServer(&input.GovKeeper)
+
+	input.Faucet.Fund(ctx, addrs[0], sdk.NewCoin(bondDenom, math.NewInt(100_000)))
+	input.Faucet.Fund(ctx, addrs[1], sdk.NewCoin(bondDenom, math.NewInt(100_000)))
+
+	msgs := []sdk.Msg{
+		banktypes.NewMsgSend(addrs[0], addrs[1], sdk.NewCoins(sdk.NewInt64Coin(bondDenom, 100_000))),
+		banktypes.NewMsgSend(addrs[1], addrs[2], sdk.NewCoins(sdk.NewInt64Coin(bondDenom, 100_000))),
+	}
+
+	msgSubmitProposal, err := v1.NewMsgSubmitProposal(msgs, nil, "", "", "", "", false)
+	require.NoError(t, err)
+
+	_, err = qs.SimulateProposal(ctx, &types.QuerySimulateProposalRequest{
+		MsgSubmitProposal: *msgSubmitProposal,
+	})
+	require.NoError(t, err)
+
+	_, _, newAddr := keyPubAddr()
+
+	msgs = []sdk.Msg{
+		banktypes.NewMsgSend(addrs[0], addrs[1], sdk.NewCoins(sdk.NewInt64Coin(bondDenom, 100_000))),
+		banktypes.NewMsgSend(newAddr, addrs[1], sdk.NewCoins(sdk.NewInt64Coin(bondDenom, 100_000))),
+	}
+
+	msgSubmitProposal, err = v1.NewMsgSubmitProposal(msgs, nil, "", "", "", "", false)
+	require.NoError(t, err)
+
+	_, err = qs.SimulateProposal(ctx, &types.QuerySimulateProposalRequest{
+		MsgSubmitProposal: *msgSubmitProposal,
+	})
+	require.Error(t, err)
+
+	msgs = []sdk.Msg{
+		banktypes.NewMsgSend(addrs[0], newAddr, sdk.NewCoins(sdk.NewInt64Coin(bondDenom, 100_000))),
+		banktypes.NewMsgSend(newAddr, addrs[1], sdk.NewCoins(sdk.NewInt64Coin(bondDenom, 100_000))),
+	}
+
+	msgSubmitProposal, err = v1.NewMsgSubmitProposal(msgs, nil, "", "", "", "", false)
+	require.NoError(t, err)
+
+	_, err = qs.SimulateProposal(ctx, &types.QuerySimulateProposalRequest{
+		MsgSubmitProposal: *msgSubmitProposal,
+	})
+	require.NoError(t, err)
 }

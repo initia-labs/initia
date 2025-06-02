@@ -61,9 +61,6 @@ func (fc MempoolFeeChecker) CheckTxFeeWithMinGasPrices(ctx sdk.Context, tx sdk.T
 				baseAmount := basePrice.MulInt(quoteAmount).TruncateInt()
 				totalFeeBaseAmount = totalFeeBaseAmount.Add(baseAmount)
 			}
-			if totalFeeBaseAmount.GT(math.OneInt()) {
-				priority = totalFeeBaseAmount.Int64()
-			}
 
 			baseGasPrice, err := fc.keeper.BaseGasPrice(ctx)
 			if err != nil {
@@ -71,6 +68,9 @@ func (fc MempoolFeeChecker) CheckTxFeeWithMinGasPrices(ctx sdk.Context, tx sdk.T
 			}
 
 			gasPriceFromTotalFee := math.LegacyNewDecFromInt(totalFeeBaseAmount).Quo(math.LegacyNewDec(int64(gas)))
+
+			// priority is max(gasPriceFromTotalFee * 1e6, 1)
+			priority = math.Max(gasPriceFromTotalFee.MulInt64(1000000).TruncateInt64(), 1)
 
 			if gasPriceFromTotalFee.LT(baseGasPrice) {
 				return nil, 0, errors.Wrapf(

@@ -1,6 +1,7 @@
 package move_hooks
 
 import (
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -16,6 +17,8 @@ import (
 
 	nfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 	movetypes "github.com/initia-labs/initia/x/move/types"
+
+	coreaddress "cosmossdk.io/core/address"
 )
 
 const senderPrefix = "ibc-move-hook-intermediary"
@@ -74,12 +77,17 @@ func validateAndParseMemo(memo string) (
 	return
 }
 
-func validateReceiver(msg *movetypes.MsgExecute, receiver string) error {
+func validateReceiver(msg *movetypes.MsgExecute, receiver string, ac coreaddress.Codec) error {
 	functionIdentifier := fmt.Sprintf("%s::%s::%s", msg.ModuleAddress, msg.ModuleName, msg.FunctionName)
-	if receiver != functionIdentifier {
-		return errors.Wrap(channeltypes.ErrInvalidPacket, "receiver is not properly set")
+	if receiver == functionIdentifier {
+		return nil
 	}
 
+	hashedFunctionIdentifier := sha256.Sum256([]byte(functionIdentifier))
+	hashedFunctionIdentifierString, err := ac.BytesToString(hashedFunctionIdentifier[:])
+	if err != nil || receiver != hashedFunctionIdentifierString {
+		return errors.Wrap(channeltypes.ErrInvalidPacket, "receiver is not properly set")
+	}
 	return nil
 }
 

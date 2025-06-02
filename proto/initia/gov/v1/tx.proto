@@ -17,6 +17,12 @@ service Msg {
   // UpdateParams defines a governance operation for updating the x/gov
   // module parameters. The authority is defined in the keeper.
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
+
+  // AddEmergencyProposalSubmitters defines a governance operation for adding emergency proposal submitters.
+  rpc AddEmergencyProposalSubmitters(MsgAddEmergencyProposalSubmitters) returns (MsgAddEmergencyProposalSubmittersResponse);
+
+  // RemoveEmergencyProposalSubmitters defines a governance operation for removing emergency proposal submitters.
+  rpc RemoveEmergencyProposalSubmitters(MsgRemoveEmergencyProposalSubmitters) returns (MsgRemoveEmergencyProposalSubmittersResponse);
 }
 
 // MsgUpdateParams is the Msg/UpdateParams request type.
@@ -39,3 +45,31 @@ message MsgUpdateParams {
 // MsgUpdateParamsResponse defines the response structure for executing a
 // MsgUpdateParams message.
 message MsgUpdateParamsResponse {}
+
+// MsgAddEmergencyProposalSubmitters is the Msg/AddEmergencyProposalSubmitters request type.
+message MsgAddEmergencyProposalSubmitters {
+  option (cosmos.msg.v1.signer) = "authority";
+  option (amino.name) = "gov/MsgAddEmergencyProposalSubmitters";
+
+  string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+
+  repeated string emergency_submitters = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+}
+
+// MsgAddEmergencyProposalSubmittersResponse defines the response structure for executing a
+// MsgAddEmergencyProposalSubmitters message.
+message MsgAddEmergencyProposalSubmittersResponse {}
+
+// MsgRemoveEmergencyProposalSubmitters is the Msg/RemoveEmergencyProposalSubmitters request type.
+message MsgRemoveEmergencyProposalSubmitters {
+  option (cosmos.msg.v1.signer) = "authority";
+  option (amino.name) = "gov/MsgRemoveEmergencyProposalSubmitters";
+
+  string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+
+  repeated string emergency_submitters = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+}
+
+// MsgRemoveEmergencyProposalSubmittersResponse defines the response structure for executing a
+// MsgRemoveEmergencyProposalSubmitters message.
+message MsgRemoveEmergencyProposalSubmittersResponse {}

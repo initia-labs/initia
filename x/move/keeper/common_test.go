@@ -496,6 +496,8 @@ var tableGeneratorModule []byte
 var testAddressModule []byte
 var vestingModule []byte
 var submsgModule []byte
+var dispatchableTokenModule []byte
+var invalidDispatchableTokenModule []byte
 
 func init() {
 	basicCoinModule = ReadMoveFile("BasicCoin")
@@ -505,6 +507,8 @@ func init() {
 	testAddressModule = ReadMoveFile("TestAddress")
 	vestingModule = ReadMoveFile("Vesting")
 	submsgModule = ReadMoveFile("submsg")
+	dispatchableTokenModule = ReadMoveFile("test_dispatchable_token")
+	invalidDispatchableTokenModule = ReadMoveFile("test_invalid_dispatchable_token")
 
 	basicCoinMintScript = ReadScriptFile("main")
 }

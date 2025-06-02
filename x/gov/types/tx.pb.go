@@ -126,15 +126,209 @@ func (m *MsgUpdateParamsResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgUpdateParamsResponse proto.InternalMessageInfo
 
+// MsgAddEmergencyProposalSubmitters is the Msg/AddEmergencyProposalSubmitters request type.
+type MsgAddEmergencyProposalSubmitters struct {
+	Authority           string   `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty"`
+	EmergencySubmitters []string `protobuf:"bytes,2,rep,name=emergency_submitters,json=emergencySubmitters,proto3" json:"emergency_submitters,omitempty"`
+}
+
+func (m *MsgAddEmergencyProposalSubmitters) Reset()         { *m = MsgAddEmergencyProposalSubmitters{} }
+func (m *MsgAddEmergencyProposalSubmitters) String() string { return proto.CompactTextString(m) }
+func (*MsgAddEmergencyProposalSubmitters) ProtoMessage()    {}
+func (*MsgAddEmergencyProposalSubmitters) Descriptor() ([]byte, []int) {
+	return fileDescriptor_baa84aaddaa44003, []int{2}
+}
+func (m *MsgAddEmergencyProposalSubmitters) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgAddEmergencyProposalSubmitters) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgAddEmergencyProposalSubmitters.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgAddEmergencyProposalSubmitters) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgAddEmergencyProposalSubmitters.Merge(m, src)
+}
+func (m *MsgAddEmergencyProposalSubmitters) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgAddEmergencyProposalSubmitters) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgAddEmergencyProposalSubmitters.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgAddEmergencyProposalSubmitters proto.InternalMessageInfo
+
+func (m *MsgAddEmergencyProposalSubmitters) GetAuthority() string {
+	if m != nil {
+		return m.Authority
+	}
+	return ""
+}
+
+func (m *MsgAddEmergencyProposalSubmitters) GetEmergencySubmitters() []string {
+	if m != nil {
+		return m.EmergencySubmitters
+	}
+	return nil
+}
+
+// MsgAddEmergencyProposalSubmittersResponse defines the response structure for executing a
+// MsgAddEmergencyProposalSubmitters message.
+type MsgAddEmergencyProposalSubmittersResponse struct {
+}
+
+func (m *MsgAddEmergencyProposalSubmittersResponse) Reset() {
+	*m = MsgAddEmergencyProposalSubmittersResponse{}
+}
+func (m *MsgAddEmergencyProposalSubmittersResponse) String() string {
+	return proto.CompactTextString(m)
+}
+func (*MsgAddEmergencyProposalSubmittersResponse) ProtoMessage() {}
+func (*MsgAddEmergencyProposalSubmittersResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_baa84aaddaa44003, []int{3}
+}
+func (m *MsgAddEmergencyProposalSubmittersResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgAddEmergencyProposalSubmittersResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgAddEmergencyProposalSubmittersResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgAddEmergencyProposalSubmittersResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgAddEmergencyProposalSubmittersResponse.Merge(m, src)
+}
+func (m *MsgAddEmergencyProposalSubmittersResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgAddEmergencyProposalSubmittersResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgAddEmergencyProposalSubmittersResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgAddEmergencyProposalSubmittersResponse proto.InternalMessageInfo
+
+// MsgRemoveEmergencyProposalSubmitters is the Msg/RemoveEmergencyProposalSubmitters request type.
+type MsgRemoveEmergencyProposalSubmitters struct {
+	Authority           string   `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty"`
+	EmergencySubmitters []string `protobuf:"bytes,2,rep,name=emergency_submitters,json=emergencySubmitters,proto3" json:"emergency_submitters,omitempty"`
+}
+
+func (m *MsgRemoveEmergencyProposalSubmitters) Reset()         { *m = MsgRemoveEmergencyProposalSubmitters{} }
+func (m *MsgRemoveEmergencyProposalSubmitters) String() string { return proto.CompactTextString(m) }
+func (*MsgRemoveEmergencyProposalSubmitters) ProtoMessage()    {}
+func (*MsgRemoveEmergencyProposalSubmitters) Descriptor() ([]byte, []int) {
+	return fileDescriptor_baa84aaddaa44003, []int{4}
+}
+func (m *MsgRemoveEmergencyProposalSubmitters) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgRemoveEmergencyProposalSubmitters) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgRemoveEmergencyProposalSubmitters.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgRemoveEmergencyProposalSubmitters) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgRemoveEmergencyProposalSubmitters.Merge(m, src)
+}
+func (m *MsgRemoveEmergencyProposalSubmitters) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgRemoveEmergencyProposalSubmitters) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgRemoveEmergencyProposalSubmitters.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgRemoveEmergencyProposalSubmitters proto.InternalMessageInfo
+
+func (m *MsgRemoveEmergencyProposalSubmitters) GetAuthority() string {
+	if m != nil {
+		return m.Authority
+	}
+	return ""
+}
+
+func (m *MsgRemoveEmergencyProposalSubmitters) GetEmergencySubmitters() []string {
+	if m != nil {
+		return m.EmergencySubmitters
+	}
+	return nil
+}
+
+// MsgRemoveEmergencyProposalSubmittersResponse defines the response structure for executing a
+// MsgRemoveEmergencyProposalSubmitters message.
+type MsgRemoveEmergencyProposalSubmittersResponse struct {
+}
+
+func (m *MsgRemoveEmergencyProposalSubmittersResponse) Reset() {
+	*m = MsgRemoveEmergencyProposalSubmittersResponse{}
+}
+func (m *MsgRemoveEmergencyProposalSubmittersResponse) String() string {
+	return proto.CompactTextString(m)
+}
+func (*MsgRemoveEmergencyProposalSubmittersResponse) ProtoMessage() {}
+func (*MsgRemoveEmergencyProposalSubmittersResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_baa84aaddaa44003, []int{5}
+}
+func (m *MsgRemoveEmergencyProposalSubmittersResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgRemoveEmergencyProposalSubmittersResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgRemoveEmergencyProposalSubmittersResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgRemoveEmergencyProposalSubmittersResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgRemoveEmergencyProposalSubmittersResponse.Merge(m, src)
+}
+func (m *MsgRemoveEmergencyProposalSubmittersResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgRemoveEmergencyProposalSubmittersResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgRemoveEmergencyProposalSubmittersResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgRemoveEmergencyProposalSubmittersResponse proto.InternalMessageInfo
+
 func init() {
 	proto.RegisterType((*MsgUpdateParams)(nil), "initia.gov.v1.MsgUpdateParams")
 	proto.RegisterType((*MsgUpdateParamsResponse)(nil), "initia.gov.v1.MsgUpdateParamsResponse")
+	proto.RegisterType((*MsgAddEmergencyProposalSubmitters)(nil), "initia.gov.v1.MsgAddEmergencyProposalSubmitters")
+	proto.RegisterType((*MsgAddEmergencyProposalSubmittersResponse)(nil), "initia.gov.v1.MsgAddEmergencyProposalSubmittersResponse")
+	proto.RegisterType((*MsgRemoveEmergencyProposalSubmitters)(nil), "initia.gov.v1.MsgRemoveEmergencyProposalSubmitters")
+	proto.RegisterType((*MsgRemoveEmergencyProposalSubmittersResponse)(nil), "initia.gov.v1.MsgRemoveEmergencyProposalSubmittersResponse")
 }
 
 func init() { proto.RegisterFile("initia/gov/v1/tx.proto", fileDescriptor_baa84aaddaa44003) }
 
 var fileDescriptor_baa84aaddaa44003 = []byte{
-	// 348 bytes of a gzipped FileDescriptorProto
+	// 504 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x12, 0xcb, 0xcc, 0xcb, 0x2c,
 	0xc9, 0x4c, 0xd4, 0x4f, 0xcf, 0x2f, 0xd3, 0x2f, 0x33, 0xd4, 0x2f, 0xa9, 0xd0, 0x2b, 0x28, 0xca,
 	0x2f, 0xc9, 0x17, 0xe2, 0x85, 0x88, 0xeb, 0xa5, 0xe7, 0x97, 0xe9, 0x95, 0x19, 0x4a, 0x09, 0x26,
@@ -149,14 +343,24 @@ var fileDescriptor_baa84aaddaa44003 = []byte{
 	0x02, 0xa3, 0x06, 0xb7, 0x91, 0xa8, 0x1e, 0x8a, 0x0f, 0xf5, 0x20, 0xc6, 0x3b, 0x71, 0x9e, 0xb8,
 	0x27, 0xcf, 0xb0, 0xe2, 0xf9, 0x06, 0x2d, 0xc6, 0x20, 0xa8, 0x7a, 0x2b, 0xb5, 0xa6, 0xe7, 0x1b,
 	0xb4, 0x10, 0x26, 0x75, 0x3d, 0xdf, 0xa0, 0x25, 0x0c, 0x72, 0x2a, 0x9a, 0xcb, 0x94, 0x24, 0xb9,
-	0xc4, 0xd1, 0x84, 0x82, 0x52, 0x8b, 0x0b, 0xf2, 0xf3, 0x8a, 0x53, 0x8d, 0x52, 0xb8, 0x98, 0x7d,
-	0x8b, 0xd3, 0x85, 0xc2, 0xb8, 0x78, 0x50, 0xfc, 0x22, 0x87, 0xe6, 0x06, 0x34, 0xed, 0x52, 0x6a,
-	0xf8, 0xe5, 0x61, 0xc6, 0x4b, 0xb1, 0x36, 0x80, 0x1c, 0xec, 0xe4, 0xbe, 0xe2, 0x91, 0x1c, 0xe3,
-	0x89, 0x47, 0x72, 0x8c, 0x17, 0x1e, 0xc9, 0x31, 0x3e, 0x78, 0x24, 0xc7, 0x38, 0xe1, 0xb1, 0x1c,
-	0xc3, 0x85, 0xc7, 0x72, 0x0c, 0x37, 0x1e, 0xcb, 0x31, 0x44, 0x69, 0xa6, 0x67, 0x96, 0x64, 0x94,
-	0x26, 0xe9, 0x25, 0xe7, 0xe7, 0xea, 0x43, 0x8c, 0xd5, 0xcd, 0x49, 0x4c, 0x2a, 0x86, 0xb2, 0xf5,
-	0x2b, 0xc0, 0xc1, 0x5f, 0x52, 0x59, 0x90, 0x5a, 0x9c, 0xc4, 0x06, 0x0e, 0x7e, 0x63, 0x40, 0x00,
-	0x00, 0x00, 0xff, 0xff, 0xc6, 0xc6, 0x84, 0xe9, 0x1d, 0x02, 0x00, 0x00,
+	0xc4, 0xd1, 0x84, 0x82, 0x52, 0x8b, 0x0b, 0xf2, 0xf3, 0x8a, 0x53, 0x95, 0x1e, 0x31, 0x72, 0x29,
+	0xfa, 0x16, 0xa7, 0x3b, 0xa6, 0xa4, 0xb8, 0xe6, 0xa6, 0x16, 0xa5, 0xa7, 0xe6, 0x25, 0x57, 0x06,
+	0x14, 0xe5, 0x17, 0xe4, 0x17, 0x27, 0xe6, 0x04, 0x97, 0x26, 0xe5, 0x66, 0x96, 0x94, 0xa4, 0x16,
+	0x91, 0xef, 0x35, 0x6f, 0x2e, 0x91, 0x54, 0x98, 0xb1, 0xf1, 0xc5, 0x70, 0xf3, 0x24, 0x98, 0x14,
+	0x98, 0xf1, 0x1a, 0x21, 0x0c, 0xd7, 0x85, 0x70, 0x84, 0x95, 0x05, 0xa6, 0x6f, 0x55, 0xa1, 0xbe,
+	0xc5, 0xef, 0x7c, 0x25, 0x6d, 0x2e, 0x4d, 0x82, 0x8a, 0xe0, 0x21, 0xf2, 0x82, 0x91, 0x4b, 0xc5,
+	0xb7, 0x38, 0x3d, 0x28, 0x35, 0x37, 0xbf, 0x2c, 0x75, 0xd0, 0x07, 0x8a, 0x35, 0x66, 0xa0, 0x68,
+	0x40, 0x03, 0x85, 0xa0, 0x0f, 0x94, 0xf4, 0xb8, 0x74, 0x88, 0x51, 0x07, 0x0b, 0x1a, 0xa3, 0x6e,
+	0x66, 0x2e, 0x66, 0xdf, 0xe2, 0x74, 0xa1, 0x30, 0x2e, 0x1e, 0x94, 0x94, 0x2f, 0x87, 0x96, 0x62,
+	0xd1, 0x12, 0x9b, 0x94, 0x1a, 0x7e, 0x79, 0x98, 0xf9, 0x42, 0x3d, 0x8c, 0x5c, 0x72, 0x04, 0x52,
+	0xa2, 0x01, 0xa6, 0x51, 0xf8, 0x75, 0x48, 0x59, 0x90, 0xaa, 0x03, 0xee, 0x9c, 0xa9, 0x8c, 0x5c,
+	0x8a, 0x84, 0x93, 0x81, 0x31, 0xa6, 0xf9, 0x04, 0x35, 0x49, 0x59, 0x93, 0xa1, 0x09, 0xe6, 0x2e,
+	0x29, 0xd6, 0x06, 0x50, 0x29, 0xe0, 0xe4, 0xbe, 0xe2, 0x91, 0x1c, 0xe3, 0x89, 0x47, 0x72, 0x8c,
+	0x17, 0x1e, 0xc9, 0x31, 0x3e, 0x78, 0x24, 0xc7, 0x38, 0xe1, 0xb1, 0x1c, 0xc3, 0x85, 0xc7, 0x72,
+	0x0c, 0x37, 0x1e, 0xcb, 0x31, 0x44, 0x69, 0xa6, 0x67, 0x96, 0x64, 0x94, 0x26, 0xe9, 0x25, 0xe7,
+	0xe7, 0xea, 0x43, 0xec, 0xd2, 0xcd, 0x49, 0x4c, 0x2a, 0x86, 0xb2, 0xf5, 0x2b, 0xc0, 0x65, 0x5a,
+	0x49, 0x65, 0x41, 0x6a, 0x71, 0x12, 0x1b, 0xb8, 0x4c, 0x33, 0x06, 0x04, 0x00, 0x00, 0xff, 0xff,
+	0xcd, 0xb8, 0x48, 0xcd, 0x72, 0x05, 0x00, 0x00,
 }
 
 func (this *MsgUpdateParams) Equal(that interface{}) bool {
@@ -207,6 +411,112 @@ func (this *MsgUpdateParamsResponse) Equal(that interface{}) bool {
 	}
 	return true
 }
+func (this *MsgAddEmergencyProposalSubmitters) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*MsgAddEmergencyProposalSubmitters)
+	if !ok {
+		that2, ok := that.(MsgAddEmergencyProposalSubmitters)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Authority != that1.Authority {
+		return false
+	}
+	if len(this.EmergencySubmitters) != len(that1.EmergencySubmitters) {
+		return false
+	}
+	for i := range this.EmergencySubmitters {
+		if this.EmergencySubmitters[i] != that1.EmergencySubmitters[i] {
+			return false
+		}
+	}
+	return true
+}
+func (this *MsgAddEmergencyProposalSubmittersResponse) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*MsgAddEmergencyProposalSubmittersResponse)
+	if !ok {
+		that2, ok := that.(MsgAddEmergencyProposalSubmittersResponse)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	return true
+}
+func (this *MsgRemoveEmergencyProposalSubmitters) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*MsgRemoveEmergencyProposalSubmitters)
+	if !ok {
+		that2, ok := that.(MsgRemoveEmergencyProposalSubmitters)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	if this.Authority != that1.Authority {
+		return false
+	}
+	if len(this.EmergencySubmitters) != len(that1.EmergencySubmitters) {
+		return false
+	}
+	for i := range this.EmergencySubmitters {
+		if this.EmergencySubmitters[i] != that1.EmergencySubmitters[i] {
+			return false
+		}
+	}
+	return true
+}
+func (this *MsgRemoveEmergencyProposalSubmittersResponse) Equal(that interface{}) bool {
+	if that == nil {
+		return this == nil
+	}
+
+	that1, ok := that.(*MsgRemoveEmergencyProposalSubmittersResponse)
+	if !ok {
+		that2, ok := that.(MsgRemoveEmergencyProposalSubmittersResponse)
+		if ok {
+			that1 = &that2
+		} else {
+			return false
+		}
+	}
+	if that1 == nil {
+		return this == nil
+	} else if this == nil {
+		return false
+	}
+	return true
+}
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ context.Context
@@ -223,6 +533,10 @@ type MsgClient interface {
 	// UpdateParams defines a governance operation for updating the x/gov
 	// module parameters. The authority is defined in the keeper.
 	UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error)
+	// AddEmergencyProposalSubmitters defines a governance operation for adding emergency proposal submitters.
+	AddEmergencyProposalSubmitters(ctx context.Context, in *MsgAddEmergencyProposalSubmitters, opts ...grpc.CallOption) (*MsgAddEmergencyProposalSubmittersResponse, error)
+	// RemoveEmergencyProposalSubmitters defines a governance operation for removing emergency proposal submitters.
+	RemoveEmergencyProposalSubmitters(ctx context.Context, in *MsgRemoveEmergencyProposalSubmitters, opts ...grpc.CallOption) (*MsgRemoveEmergencyProposalSubmittersResponse, error)
 }
 
 type msgClient struct {
@@ -242,11 +556,33 @@ func (c *msgClient) UpdateParams(ctx context.Context, in *MsgUpdateParams, opts 
 	return out, nil
 }
 
+func (c *msgClient) AddEmergencyProposalSubmitters(ctx context.Context, in *MsgAddEmergencyProposalSubmitters, opts ...grpc.CallOption) (*MsgAddEmergencyProposalSubmittersResponse, error) {
+	out := new(MsgAddEmergencyProposalSubmittersResponse)
+	err := c.cc.Invoke(ctx, "/initia.gov.v1.Msg/AddEmergencyProposalSubmitters", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) RemoveEmergencyProposalSubmitters(ctx context.Context, in *MsgRemoveEmergencyProposalSubmitters, opts ...grpc.CallOption) (*MsgRemoveEmergencyProposalSubmittersResponse, error) {
+	out := new(MsgRemoveEmergencyProposalSubmittersResponse)
+	err := c.cc.Invoke(ctx, "/initia.gov.v1.Msg/RemoveEmergencyProposalSubmitters", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
 	// UpdateParams defines a governance operation for updating the x/gov
 	// module parameters. The authority is defined in the keeper.
 	UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error)
+	// AddEmergencyProposalSubmitters defines a governance operation for adding emergency proposal submitters.
+	AddEmergencyProposalSubmitters(context.Context, *MsgAddEmergencyProposalSubmitters) (*MsgAddEmergencyProposalSubmittersResponse, error)
+	// RemoveEmergencyProposalSubmitters defines a governance operation for removing emergency proposal submitters.
+	RemoveEmergencyProposalSubmitters(context.Context, *MsgRemoveEmergencyProposalSubmitters) (*MsgRemoveEmergencyProposalSubmittersResponse, error)
 }
 
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.
@@ -255,6 +591,12 @@ type UnimplementedMsgServer struct {
 
 func (*UnimplementedMsgServer) UpdateParams(ctx context.Context, req *MsgUpdateParams) (*MsgUpdateParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateParams not implemented")
+}
+func (*UnimplementedMsgServer) AddEmergencyProposalSubmitters(ctx context.Context, req *MsgAddEmergencyProposalSubmitters) (*MsgAddEmergencyProposalSubmittersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddEmergencyProposalSubmitters not implemented")
+}
+func (*UnimplementedMsgServer) RemoveEmergencyProposalSubmitters(ctx context.Context, req *MsgRemoveEmergencyProposalSubmitters) (*MsgRemoveEmergencyProposalSubmittersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveEmergencyProposalSubmitters not implemented")
 }
 
 func RegisterMsgServer(s grpc1.Server, srv MsgServer) {
@@ -279,6 +621,42 @@ func _Msg_UpdateParams_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_AddEmergencyProposalSubmitters_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgAddEmergencyProposalSubmitters)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).AddEmergencyProposalSubmitters(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/initia.gov.v1.Msg/AddEmergencyProposalSubmitters",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).AddEmergencyProposalSubmitters(ctx, req.(*MsgAddEmergencyProposalSubmitters))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_RemoveEmergencyProposalSubmitters_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgRemoveEmergencyProposalSubmitters)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).RemoveEmergencyProposalSubmitters(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/initia.gov.v1.Msg/RemoveEmergencyProposalSubmitters",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).RemoveEmergencyProposalSubmitters(ctx, req.(*MsgRemoveEmergencyProposalSubmitters))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Msg_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "initia.gov.v1.Msg",
 	HandlerType: (*MsgServer)(nil),
@@ -286,6 +664,14 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateParams",
 			Handler:    _Msg_UpdateParams_Handler,
+		},
+		{
+			MethodName: "AddEmergencyProposalSubmitters",
+			Handler:    _Msg_AddEmergencyProposalSubmitters_Handler,
+		},
+		{
+			MethodName: "RemoveEmergencyProposalSubmitters",
+			Handler:    _Msg_RemoveEmergencyProposalSubmitters_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -355,6 +741,130 @@ func (m *MsgUpdateParamsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error)
 	return len(dAtA) - i, nil
 }
 
+func (m *MsgAddEmergencyProposalSubmitters) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgAddEmergencyProposalSubmitters) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgAddEmergencyProposalSubmitters) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.EmergencySubmitters) > 0 {
+		for iNdEx := len(m.EmergencySubmitters) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.EmergencySubmitters[iNdEx])
+			copy(dAtA[i:], m.EmergencySubmitters[iNdEx])
+			i = encodeVarintTx(dAtA, i, uint64(len(m.EmergencySubmitters[iNdEx])))
+			i--
+			dAtA[i] = 0x12
+		}
+	}
+	if len(m.Authority) > 0 {
+		i -= len(m.Authority)
+		copy(dAtA[i:], m.Authority)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Authority)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgAddEmergencyProposalSubmittersResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgAddEmergencyProposalSubmittersResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgAddEmergencyProposalSubmittersResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgRemoveEmergencyProposalSubmitters) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgRemoveEmergencyProposalSubmitters) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgRemoveEmergencyProposalSubmitters) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.EmergencySubmitters) > 0 {
+		for iNdEx := len(m.EmergencySubmitters) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.EmergencySubmitters[iNdEx])
+			copy(dAtA[i:], m.EmergencySubmitters[iNdEx])
+			i = encodeVarintTx(dAtA, i, uint64(len(m.EmergencySubmitters[iNdEx])))
+			i--
+			dAtA[i] = 0x12
+		}
+	}
+	if len(m.Authority) > 0 {
+		i -= len(m.Authority)
+		copy(dAtA[i:], m.Authority)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Authority)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgRemoveEmergencyProposalSubmittersResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgRemoveEmergencyProposalSubmittersResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgRemoveEmergencyProposalSubmittersResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
 	offset -= sovTx(v)
 	base := offset
@@ -382,6 +892,62 @@ func (m *MsgUpdateParams) Size() (n int) {
 }
 
 func (m *MsgUpdateParamsResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *MsgAddEmergencyProposalSubmitters) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Authority)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if len(m.EmergencySubmitters) > 0 {
+		for _, s := range m.EmergencySubmitters {
+			l = len(s)
+			n += 1 + l + sovTx(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *MsgAddEmergencyProposalSubmittersResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *MsgRemoveEmergencyProposalSubmitters) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Authority)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if len(m.EmergencySubmitters) > 0 {
+		for _, s := range m.EmergencySubmitters {
+			l = len(s)
+			n += 1 + l + sovTx(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *MsgRemoveEmergencyProposalSubmittersResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -538,6 +1104,334 @@ func (m *MsgUpdateParamsResponse) Unmarshal(dAtA []byte) error {
 		}
 		if fieldNum <= 0 {
 			return fmt.Errorf("proto: MsgUpdateParamsResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgAddEmergencyProposalSubmitters) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgAddEmergencyProposalSubmitters: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgAddEmergencyProposalSubmitters: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Authority", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Authority = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field EmergencySubmitters", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.EmergencySubmitters = append(m.EmergencySubmitters, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgAddEmergencyProposalSubmittersResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgAddEmergencyProposalSubmittersResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgAddEmergencyProposalSubmittersResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgRemoveEmergencyProposalSubmitters) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgRemoveEmergencyProposalSubmitters: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgRemoveEmergencyProposalSubmitters: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Authority", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Authority = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field EmergencySubmitters", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.EmergencySubmitters = append(m.EmergencySubmitters, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgRemoveEmergencyProposalSubmittersResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgRemoveEmergencyProposalSubmittersResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgRemoveEmergencyProposalSubmittersResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:
