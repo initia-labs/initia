@@ -11,6 +11,7 @@ import (
 
 	initiaapp "github.com/initia-labs/initia/app"
 	"github.com/initia-labs/initia/x/move/ante"
+	movetypes "github.com/initia-labs/initia/x/move/types"
 )
 
 const baseDenom = initiaapp.BondDenom
@@ -45,10 +46,10 @@ func (suite *AnteTestSuite) TestGasPricesDecorator() {
 	// in normal mode
 	ctx, err := decorator.AnteHandle(suite.ctx.WithIsCheckTx(false), tx, false, nil)
 	suite.Require().NoError(err)
-	suite.Require().Equal(sdk.NewDecCoinsFromCoins(feeAmount...).QuoDec(math.LegacyNewDec(int64(gasLimit))), ctx.Value(ante.GasPricesContextKey).(sdk.DecCoins))
+	suite.Require().Equal(sdk.NewDecCoinsFromCoins(feeAmount...).QuoDec(math.LegacyNewDec(int64(gasLimit))), ctx.Value(movetypes.GasPricesContextKey).(sdk.DecCoins))
 
 	// in simulation mode
 	ctx, err = decorator.AnteHandle(suite.ctx, tx, true, nil)
 	suite.Require().NoError(err)
-	suite.Require().Nil(ctx.Value(ante.GasPricesContextKey))
+	suite.Require().Nil(ctx.Value(movetypes.GasPricesContextKey))
 }

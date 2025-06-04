@@ -13,7 +13,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	"github.com/initia-labs/initia/x/move/ante"
 	"github.com/initia-labs/initia/x/move/types"
 	vmtypes "github.com/initia-labs/movevm/types"
 )
@@ -568,7 +567,7 @@ func Test_ContractSharedRevenue(t *testing.T) {
 	require.Equal(t, math.ZeroInt(), input.BankKeeper.GetBalance(ctx, types.ConvertVMAddressToSDKAddress(twoAddr), bondDenom).Amount)
 
 	// set gas prices as `1 bondDenom``
-	ctx = ctx.WithValue(ante.GasPricesContextKey, sdk.NewDecCoinsFromCoins(sdk.NewCoin(bondDenom, math.NewInt(1))))
+	ctx = ctx.WithValue(types.GasPricesContextKey, sdk.NewDecCoinsFromCoins(sdk.NewCoin(bondDenom, math.NewInt(1))))
 
 	// distribute with gas prices context value
 	err = input.MoveKeeper.DistributeContractSharedRevenue(ctx, gasUsages)

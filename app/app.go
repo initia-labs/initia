@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"slices"
 
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
@@ -269,6 +270,9 @@ func NewInitiaApp(
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.setPostHandler()
 	app.SetEndBlocker(app.EndBlocker)
+
+	// register context decorator for message router
+	app.RegisterMessageRouterContextDecorator()
 
 	// setup BlockSDK
 
@@ -549,10 +553,28 @@ func (app *InitiaApp) Close() error {
 	return nil
 }
 
+// StartOracleClient starts the oracle client
 func (app *InitiaApp) StartOracleClient(ctx context.Context) error {
 	if app.oracleClient != nil {
 		return app.oracleClient.Start(ctx)
 	}
 
 	return nil
+}
+
+// RegisterMessageRouterContextDecorator registers a context decorator for the message router
+func (app *InitiaApp) RegisterMessageRouterContextDecorator() {
+	// dispatchable fungible asset is allowed in the context of bank and ibc transfer modules
+	allowedMsgTypes := []string{
+		"/cosmos.bank.v1beta1.MsgSend",
+		"/cosmos.bank.v1beta1.MsgMultiSend",
+		"/ibc.applications.transfer.v1.MsgTransfer",
+	}
+	app.MsgServiceRouter().SetContextDecorator(func(ctx sdk.Context, msg sdk.Msg) sdk.Context {
+		if slices.Contains(allowedMsgTypes, sdk.MsgTypeURL(msg)) {
+			ctx = ctx.WithValue(movetypes.AllowDispatchableContextKey, true)
+		}
+
+		return ctx
+	})
 }

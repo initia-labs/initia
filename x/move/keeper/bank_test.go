@@ -426,4 +426,13 @@ func Test_InvalidDispatchableToken(t *testing.T) {
 	balance, err := moveBankKeeper.GetBalance(ctx, deployer[:], denom)
 	require.NoError(t, err)
 	require.Equal(t, sdkmath.ZeroInt(), balance)
+
+	// send token without allow dispatchable context
+	err = moveBankKeeper.SendCoin(ctx, deployer[:], deployer[:], denom, sdkmath.NewInt(1000000))
+	require.Error(t, err)
+
+	// send token with allow dispatchable context
+	ctx = ctx.WithValue(types.AllowDispatchableContextKey, true)
+	err = moveBankKeeper.SendCoin(ctx, deployer[:], deployer[:], denom, sdkmath.NewInt(1000000))
+	require.NoError(t, err)
 }
