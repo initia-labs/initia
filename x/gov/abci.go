@@ -206,6 +206,16 @@ func EndBlocker(ctx sdk.Context, k *keeper.Keeper) error {
 			if err != nil {
 				return false, err
 			}
+
+			// emit event for the updated emergency proposal
+			ctx.EventManager().EmitEvent(
+				sdk.NewEvent(
+					customtypes.EventTypeEmergencyProposal,
+					sdk.NewAttribute(customtypes.AttributeKeyProposalID, fmt.Sprintf("%d", proposal.Id)),
+					sdk.NewAttribute(customtypes.AttributeKeyNextTallyTime, proposal.EmergencyNextTallyTime.Format(time.RFC3339)),
+				),
+			)
+
 			return false, nil
 		}
 
