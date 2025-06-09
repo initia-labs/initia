@@ -19,8 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Query_GasPrices_FullMethodName = "/initia.tx.v1.Query/GasPrices"
-	Query_GasPrice_FullMethodName  = "/initia.tx.v1.Query/GasPrice"
+	Query_GasPrices_FullMethodName     = "/initia.tx.v1.Query/GasPrices"
+	Query_GasPrice_FullMethodName      = "/initia.tx.v1.Query/GasPrice"
+	Query_GetTxsV2Event_FullMethodName = "/initia.tx.v1.Query/GetTxsV2Event"
 )
 
 // QueryClient is the client API for Query service.
@@ -31,6 +32,8 @@ type QueryClient interface {
 	GasPrices(ctx context.Context, in *QueryGasPricesRequest, opts ...grpc.CallOption) (*QueryGasPricesResponse, error)
 	// GasPrice returns the gas price for the network.
 	GasPrice(ctx context.Context, in *QueryGasPriceRequest, opts ...grpc.CallOption) (*QueryGasPriceResponse, error)
+	// GetTxsEvent fetches txs by event.
+	GetTxsV2Event(ctx context.Context, in *GetTxsEventV2Request, opts ...grpc.CallOption) (*GetTxsEventV2Response, error)
 }
 
 type queryClient struct {
@@ -59,6 +62,15 @@ func (c *queryClient) GasPrice(ctx context.Context, in *QueryGasPriceRequest, op
 	return out, nil
 }
 
+func (c *queryClient) GetTxsV2Event(ctx context.Context, in *GetTxsEventV2Request, opts ...grpc.CallOption) (*GetTxsEventV2Response, error) {
+	out := new(GetTxsEventV2Response)
+	err := c.cc.Invoke(ctx, Query_GetTxsV2Event_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility
@@ -67,6 +79,8 @@ type QueryServer interface {
 	GasPrices(context.Context, *QueryGasPricesRequest) (*QueryGasPricesResponse, error)
 	// GasPrice returns the gas price for the network.
 	GasPrice(context.Context, *QueryGasPriceRequest) (*QueryGasPriceResponse, error)
+	// GetTxsEvent fetches txs by event.
+	GetTxsV2Event(context.Context, *GetTxsEventV2Request) (*GetTxsEventV2Response, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -79,6 +93,9 @@ func (UnimplementedQueryServer) GasPrices(context.Context, *QueryGasPricesReques
 }
 func (UnimplementedQueryServer) GasPrice(context.Context, *QueryGasPriceRequest) (*QueryGasPriceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GasPrice not implemented")
+}
+func (UnimplementedQueryServer) GetTxsV2Event(context.Context, *GetTxsEventV2Request) (*GetTxsEventV2Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTxsV2Event not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 
@@ -129,6 +146,24 @@ func _Query_GasPrice_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_GetTxsV2Event_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetTxsEventV2Request)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetTxsV2Event(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetTxsV2Event_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetTxsV2Event(ctx, req.(*GetTxsEventV2Request))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Query_ServiceDesc is the grpc.ServiceDesc for Query service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -143,6 +178,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GasPrice",
 			Handler:    _Query_GasPrice_Handler,
+		},
+		{
+			MethodName: "GetTxsV2Event",
+			Handler:    _Query_GetTxsV2Event_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -4,6 +4,9 @@ package initia.tx.v1;
 import "cosmos/base/v1beta1/coin.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
+import "cosmos/tx/v1beta1/tx.proto";
+import "cosmos/base/abci/v1beta1/abci.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
 
 option go_package = "github.com/initia-labs/initia/tx/types";
 
@@ -16,6 +19,11 @@ service Query {
   // GasPrice returns the gas price for the network.
   rpc GasPrice(QueryGasPriceRequest) returns (QueryGasPriceResponse) {
     option (google.api.http).get = "/initia/tx/v1/gas_prices/{denom}";
+  }
+
+  // GetTxsEvent fetches txs by event.
+  rpc GetTxsV2Event(GetTxsEventV2Request) returns (GetTxsEventV2Response) {
+    option (google.api.http).get = "/initia/tx/v1/txs/v2";
   }
 }
 
@@ -44,4 +52,45 @@ message QueryGasPriceResponse {
     (gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.DecCoin",
     (gogoproto.nullable) = false
   ];
+}
+
+// GetTxsEventV2Request is the request type for the Service.TxsByEvents
+// RPC method.
+message GetTxsEventV2Request {
+  // events is the list of transaction event type.
+  // Deprecated post v0.47.x: use query instead, which should contain a valid
+  // events query.
+  repeated string events = 1 [deprecated = true];
+
+  // pagination defines a pagination for the request.
+  // Deprecated post v0.46.x: use page and limit instead.
+  cosmos.base.query.v1beta1.PageRequest pagination = 2 [deprecated = true];
+
+  // page is the page number to query, starts at 1. If not provided, will
+  // default to first page.
+  uint64 page = 3;
+
+  // limit is the total number of results to be returned in the result page.
+  // If left empty it will default to a value to be set by each app.
+  uint64 limit = 4;
+
+  // query defines the transaction event query that is proxied to Tendermint's
+  // TxSearch RPC method. The query must be valid.
+  //
+  // Since cosmos-sdk 0.50
+  string query = 5;
+}
+
+// GetTxsEventV2Response is the response type for the Service.TxsByEvents
+// RPC method.
+message GetTxsEventV2Response {
+  // txs is the list of queried transactions.
+  repeated cosmos.tx.v1beta1.Tx txs = 1;
+  // tx_responses is the list of queried TxResponses.
+  repeated cosmos.base.abci.v1beta1.TxResponse tx_responses = 2;
+  // pagination defines a pagination for the response.
+  // Deprecated post v0.46.x: use total instead.
+  cosmos.base.query.v1beta1.PageResponse pagination = 3 [deprecated = true];
+  // total is total number of results available
+  uint64 total = 4;
 }

@@ -16,19 +16,66 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	querytypes "github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/cosmos/cosmos-sdk/version"
+
+	cmtlocal "github.com/cometbft/cometbft/rpc/client/local"
+	"github.com/initia-labs/initia/tx/types"
 )
 
 const (
 	FlagQuery     = "query"
 	FlagType      = "type"
-	FlagOrderBy   = "order_by"
 	FlagIndexerV2 = "v2"
 )
+
+func QueryGasPriceCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "gas-price [denom]",
+		Short: "Query for the gas price",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			client := types.NewQueryClient(clientCtx)
+			res, err := client.GasPrice(context.Background(), &types.QueryGasPriceRequest{Denom: args[0]})
+			if err != nil {
+				return err
+			}
+			return clientCtx.PrintProto(res)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
+func QueryGasPricesCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "gas-prices",
+		Short: "Query for the gas prices",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			client := types.NewQueryClient(clientCtx)
+			res, err := client.GasPrices(context.Background(), &types.QueryGasPricesRequest{})
+			if err != nil {
+				return err
+			}
+			return clientCtx.PrintProto(res)
+		},
+	}
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
 
 // QueryBlocksCmd returns a command to search through blocks by events.
 func QueryBlocksCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "blocks_v2",
+		Use:   "blocks-v2",
 		Short: "Query for paginated blocks that match a set of events with indexer v2",
 		Long: `Search for blocks that match the exact given events where results are paginated.
 The events query is directly passed to CometBFT's RPC BlockSearch method and must
@@ -40,7 +87,7 @@ for. Each module documents its respective events under 'xx_events.md'.
 This method uses a bloom filter to speed up queries in most cases.
 `,
 		Example: fmt.Sprintf(
-			"$ %s query blocks_v2 --query \"message.sender='cosmos1...' AND block.height > 7\" --page 1 --limit 30 --order_by asc",
+			"$ %s query blocks-v2 --query \"message.sender='cosmos1...' AND block.height > 7\" --page 1 --limit 30",
 			version.AppName,
 		),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -52,7 +99,7 @@ This method uses a bloom filter to speed up queries in most cases.
 			page, _ := cmd.Flags().GetInt(flags.FlagPage)
 			limit, _ := cmd.Flags().GetInt(flags.FlagLimit)
 
-			blocks, err := queryBlocksV2(clientCtx, page, limit, query)
+			blocks, err := QueryBlocksV2(clientCtx, page, limit, query)
 			if err != nil {
 				return err
 			}
@@ -73,7 +120,7 @@ This method uses a bloom filter to speed up queries in most cases.
 // QueryTxsByEventsCmd returns a command to search through transactions by events.
 func QueryTxsByEventsCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "txs_v2",
+		Use:   "txs-v2",
 		Short: "Query for paginated transactions that match a set of events with indexer v2",
 		Long: `Search for transactions that match the exact given events where results are paginated.
 The events query is directly passed to Tendermint's RPC TxSearch method and must
@@ -85,7 +132,7 @@ for. Each module documents its respective events under 'xx_events.md'.
 This method uses a bloom filter to speed up queries in most cases.
 `,
 		Example: fmt.Sprintf(
-			"$ %s query txs_v2 --query \"message.sender='cosmos1...' AND message.action='withdraw_delegator_reward' AND tx.height > 7\" --page 1 --limit 30",
+			"$ %s query txs-v2 --query \"message.sender='cosmos1...' AND message.action='withdraw_delegator_reward' AND tx.height > 7\" --page 1 --limit 30",
 			version.AppName,
 		),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -98,7 +145,7 @@ This method uses a bloom filter to speed up queries in most cases.
 			page, _ := cmd.Flags().GetInt(flags.FlagPage)
 			limit, _ := cmd.Flags().GetInt(flags.FlagLimit)
 
-			txs, err := queryTxsByEventsV2(clientCtx, page, limit, query)
+			txs, err := QueryTxsByEventsV2(clientCtx, page, limit, query)
 			if err != nil {
 				return err
 			}
@@ -116,15 +163,15 @@ This method uses a bloom filter to speed up queries in most cases.
 	return cmd
 }
 
-func queryBlocksV2(clientCtx client.Context, page, limit int, query string) (*sdk.SearchBlocksResult, error) {
+func QueryBlocksV2(clientCtx client.Context, page, limit int, query string) (*sdk.SearchBlocksResult, error) {
 	node, err := clientCtx.GetNode()
 	if err != nil {
 		return nil, err
 	}
 
-	rpcClient, ok := node.(*rpchttp.HTTP)
-	if !ok {
-		return nil, fmt.Errorf("node is not a rpc client")
+	rpcClient, err := nodeToCometRPCV2(node)
+	if err != nil {
+		return nil, err
 	}
 
 	resBlocks, err := rpcClient.BlockSearchV2(context.Background(), query, &page, &limit, "")
@@ -155,7 +202,7 @@ func formatBlockResults(resBlocks []*coretypes.ResultBlock) ([]*cmt.Block, error
 	return out, nil
 }
 
-func queryTxsByEventsV2(clientCtx client.Context, page, limit int, query string) (*sdk.SearchTxsResult, error) {
+func QueryTxsByEventsV2(clientCtx client.Context, page, limit int, query string) (*sdk.SearchTxsResult, error) {
 	if len(query) == 0 {
 		return nil, fmt.Errorf("query cannot be empty")
 	}
@@ -175,9 +222,9 @@ func queryTxsByEventsV2(clientCtx client.Context, page, limit int, query string)
 		return nil, err
 	}
 
-	rpcClient, ok := node.(*rpchttp.HTTP)
-	if !ok {
-		return nil, fmt.Errorf("node is not a rpc client")
+	rpcClient, err := nodeToCometRPCV2(node)
+	if err != nil {
+		return nil, err
 	}
 
 	resTxs, err := rpcClient.TxSearchV2(context.Background(), query, false, &page, &limit, "")
@@ -251,4 +298,32 @@ func mkTxResult(txConfig client.TxConfig, resTx *coretypes.ResultTx, resBlock *c
 // deprecating (StdTxConfig support)
 type intoAny interface {
 	AsAny() *codectypes.Any
+}
+
+type CometRPCV2 interface {
+	client.CometRPC
+	TxSearchV2(
+		ctx context.Context,
+		query string,
+		prove bool,
+		page, perPage *int,
+		orderBy string,
+	) (*coretypes.ResultTxSearch, error)
+	BlockSearchV2(
+		ctx context.Context,
+		query string,
+		page, perPage *int,
+		orderBy string,
+	) (*coretypes.ResultBlockSearch, error)
+}
+
+func nodeToCometRPCV2(node client.CometRPC) (CometRPCV2, error) {
+	switch node := node.(type) {
+	case *rpchttp.HTTP:
+		return node, nil
+	case *cmtlocal.Local:
+		return node, nil
+	default:
+		return nil, fmt.Errorf("invalid client")
+	}
 }

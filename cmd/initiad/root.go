@@ -255,6 +255,8 @@ func queryCommand() *cobra.Command {
 		server.QueryBlockResultsCmd(),
 		txcli.QueryBlocksCmd(),
 		txcli.QueryTxsByEventsCmd(),
+		txcli.QueryGasPriceCmd(),
+		txcli.QueryGasPricesCmd(),
 	)
 
 	return cmd
