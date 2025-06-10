@@ -569,6 +569,13 @@ func (app *InitiaApp) RegisterMessageRouterContextDecorator() {
 		"/cosmos.bank.v1beta1.MsgSend",
 		"/cosmos.bank.v1beta1.MsgMultiSend",
 		"/ibc.applications.transfer.v1.MsgTransfer",
+		"/ibc.applications.transfer.v1.MsgRecvPacket",
+		"/ibc.applications.transfer.v1.MsgTimeout",
+		"/ibc.applications.transfer.v1.MsgTimeoutOnClose",
+		"/ibc.applications.transfer.v1.MsgAcknowledgement",
+		"/opinit.ophost.v1.MsgInitiateTokenDeposit",
+		"/opinit.ophost.v1.MsgFinalizeTokenWithdrawal",
+		"/noble.forwarding.v1.MsgClearAccount",
 	}
 	app.MsgServiceRouter().SetContextDecorator(func(ctx sdk.Context, msg sdk.Msg) sdk.Context {
 		if slices.Contains(allowedMsgTypes, sdk.MsgTypeURL(msg)) {
