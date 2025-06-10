@@ -22,9 +22,7 @@ import (
 )
 
 const (
-	FlagQuery     = "query"
-	FlagType      = "type"
-	FlagIndexerV2 = "v2"
+	FlagQuery = "query"
 )
 
 // AddTxQueryCmds adds the tx query commands to the command.
