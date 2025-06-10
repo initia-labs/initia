@@ -51,12 +51,13 @@ func (t *txQueryServer) GasPrice(ctx context.Context, req *txtypes.QueryGasPrice
 	return &txtypes.QueryGasPriceResponse{GasPrice: price}, nil
 }
 
-func (t *txQueryServer) GetTxsV2Event(ctx context.Context, req *txtypes.GetTxsEventV2Request) (*txtypes.GetTxsEventV2Response, error) {
+// TxsByEvents implements QueryServer.
+func (t *txQueryServer) TxsByEvents(ctx context.Context, req *txtypes.TxsByEventsRequest) (*txtypes.TxsByEventsResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "request cannot be nil")
 	}
 
-	result, err := txcli.QueryTxsByEventsV2(t.clientCtx, int(req.Page), int(req.Limit), req.Query)
+	result, err := txcli.TxSearchV2(t.clientCtx, int(req.Page), int(req.Limit), req.Query)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -71,7 +72,7 @@ func (t *txQueryServer) GetTxsV2Event(ctx context.Context, req *txtypes.GetTxsEv
 		txsList[i] = protoTx
 	}
 
-	return &txtypes.GetTxsEventV2Response{
+	return &txtypes.TxsByEventsResponse{
 		Txs:         txsList,
 		TxResponses: result.Txs,
 		Total:       result.TotalCount,

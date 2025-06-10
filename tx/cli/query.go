@@ -27,6 +27,17 @@ const (
 	FlagIndexerV2 = "v2"
 )
 
+// AddTxQueryCmds adds the tx query commands to the command.
+func AddTxQueryCmds(cmd *cobra.Command) {
+	cmd.AddCommand(
+		QueryGasPriceCmd(),
+		QueryGasPricesCmd(),
+		BlockSearchV2Cmd(),
+		TxSearchV2Cmd(),
+	)
+}
+
+// QueryGasPriceCmd returns a command to query for the gas price.
 func QueryGasPriceCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "gas-price [denom]",
@@ -51,6 +62,7 @@ func QueryGasPriceCmd() *cobra.Command {
 	return cmd
 }
 
+// QueryGasPricesCmd returns a command to query for the gas prices.
 func QueryGasPricesCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "gas-prices",
@@ -72,14 +84,18 @@ func QueryGasPricesCmd() *cobra.Command {
 	return cmd
 }
 
-// QueryBlocksCmd returns a command to search through blocks by events.
-func QueryBlocksCmd() *cobra.Command {
+// BlockSearchV2Cmd returns a command to search through blocks by events.
+func BlockSearchV2Cmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "blocks-v2",
-		Short: "Query for paginated blocks that match a set of events with indexer v2",
+		Short: "Search for blocks matching specific events using BlockSearchV2 with pagination",
 		Long: `Search for blocks that match the exact given events where results are paginated.
-The events query is directly passed to CometBFT's RPC BlockSearch method and must
-conform to CometBFT's query syntax.
+The events query is directly passed to CometBFT's RPC BlockSearchV2 method and must
+conform to CometBFT's query syntax. 
+
+BlockSearchV2 uses a bloom filter to efficiently search through blocks.
+For optimal performance, it's recommended to include block height constraints in your query
+(e.g. 'block.height > X AND block.height < Y').
 
 Please refer to each module's documentation for the full set of events to query
 for. Each module documents its respective events under 'xx_events.md'.
@@ -99,7 +115,7 @@ This method uses a bloom filter to speed up queries in most cases.
 			page, _ := cmd.Flags().GetInt(flags.FlagPage)
 			limit, _ := cmd.Flags().GetInt(flags.FlagLimit)
 
-			blocks, err := QueryBlocksV2(clientCtx, page, limit, query)
+			blocks, err := BlockSearchV2(clientCtx, page, limit, query)
 			if err != nil {
 				return err
 			}
@@ -117,14 +133,17 @@ This method uses a bloom filter to speed up queries in most cases.
 	return cmd
 }
 
-// QueryTxsByEventsCmd returns a command to search through transactions by events.
-func QueryTxsByEventsCmd() *cobra.Command {
+// TxSearchV2Cmd returns a command to search through transactions by events.
+func TxSearchV2Cmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "txs-v2",
-		Short: "Query for paginated transactions that match a set of events with indexer v2",
+		Short: "Search for transactions matching specific events using TxSearchV2 with pagination",
 		Long: `Search for transactions that match the exact given events where results are paginated.
-The events query is directly passed to Tendermint's RPC TxSearch method and must
-conform to Tendermint's query syntax.
+The events query is directly passed to CometBFT's RPC TxSearchV2 method and must
+conform to CometBFT's query syntax.
+
+TxSearchV2 uses a bloom filter to efficiently search through transactions. For optimal performance,
+it's recommended to include block height constraints in your query (e.g. 'tx.height > X AND tx.height < Y').
 
 Please refer to each module's documentation for the full set of events to query
 for. Each module documents its respective events under 'xx_events.md'.
@@ -145,7 +164,7 @@ This method uses a bloom filter to speed up queries in most cases.
 			page, _ := cmd.Flags().GetInt(flags.FlagPage)
 			limit, _ := cmd.Flags().GetInt(flags.FlagLimit)
 
-			txs, err := QueryTxsByEventsV2(clientCtx, page, limit, query)
+			txs, err := TxSearchV2(clientCtx, page, limit, query)
 			if err != nil {
 				return err
 			}
@@ -163,7 +182,8 @@ This method uses a bloom filter to speed up queries in most cases.
 	return cmd
 }
 
-func QueryBlocksV2(clientCtx client.Context, page, limit int, query string) (*sdk.SearchBlocksResult, error) {
+// BlockSearchV2 is a proxy to CometBFT's BlockSearchV2 RPC method.
+func BlockSearchV2(clientCtx client.Context, page, limit int, query string) (*sdk.SearchBlocksResult, error) {
 	node, err := clientCtx.GetNode()
 	if err != nil {
 		return nil, err
@@ -202,7 +222,8 @@ func formatBlockResults(resBlocks []*coretypes.ResultBlock) ([]*cmt.Block, error
 	return out, nil
 }
 
-func QueryTxsByEventsV2(clientCtx client.Context, page, limit int, query string) (*sdk.SearchTxsResult, error) {
+// TxSearchV2 is a proxy to CometBFT's TxSearchV2 RPC method.
+func TxSearchV2(clientCtx client.Context, page, limit int, query string) (*sdk.SearchTxsResult, error) {
 	if len(query) == 0 {
 		return nil, fmt.Errorf("query cannot be empty")
 	}
@@ -319,10 +340,8 @@ type CometRPCV2 interface {
 
 func nodeToCometRPCV2(node client.CometRPC) (CometRPCV2, error) {
 	switch node := node.(type) {
-	case *rpchttp.HTTP:
-		return node, nil
-	case *cmtlocal.Local:
-		return node, nil
+	case *rpchttp.HTTP, *cmtlocal.Local:
+		return node.(CometRPCV2), nil
 	default:
 		return nil, fmt.Errorf("invalid client")
 	}

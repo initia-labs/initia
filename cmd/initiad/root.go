@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 
+	cometcmd "github.com/cometbft/cometbft/cmd/cometbft/commands"
 	tmcli "github.com/cometbft/cometbft/libs/cli"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -211,6 +212,8 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig, b
 
 	// add move commands
 	rootCmd.AddCommand(movecmd.MoveCommand(encodingConfig.InterfaceRegistry.SigningContext().AddressCodec(), false))
+
+	rootCmd.AddCommand(cometcmd.ReIndexEventCmd)
 }
 
 func genesisCommand(encodingConfig params.EncodingConfig, basicManager module.BasicManager) *cobra.Command {
@@ -253,11 +256,10 @@ func queryCommand() *cobra.Command {
 		server.QueryBlocksCmd(),
 		authcmd.QueryTxCmd(),
 		server.QueryBlockResultsCmd(),
-		txcli.QueryBlocksCmd(),
-		txcli.QueryTxsByEventsCmd(),
-		txcli.QueryGasPriceCmd(),
-		txcli.QueryGasPricesCmd(),
 	)
+
+	// add tx query commands
+	txcli.AddTxQueryCmds(cmd)
 
 	return cmd
 }

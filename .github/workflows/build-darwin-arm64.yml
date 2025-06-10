@@ -46,8 +46,7 @@ jobs:
 
       - name: Build and Package for Darwin ARM64
         run: |
-          cd ../initia \
-          && make build \
+          make build \
           && cd ./build \
           && cp ~/go/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libmovevm.dylib ./ \
           && cp ~/go/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libcompiler.dylib ./ \
@@ -55,11 +54,9 @@ jobs:
           && mv ./initia_"$VERSION"_Darwin_"$ARCH_NAME".tar.gz $GITHUB_WORKSPACE/ \
           && rm -rf ./libmovevm.dylib ./libcompiler.dylib ./initiad
 
-      - name: Release
-        uses: softprops/action-gh-release@v2
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
         with:
-          files: |
-            initia_${{ env.VERSION }}_Darwin_${{ env.ARCH_NAME }}.tar.gz
-        env:
-          Version: ${{ env.VERSION }}
-          ARCH_NAME: ${{ env.ARCH_NAME }}
+          name: initia-darwin-arm64
+          path: initia_${{ env.VERSION }}_Darwin_${{ env.ARCH_NAME }}.tar.gz
+          retention-days: 1

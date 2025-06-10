@@ -26,40 +26,29 @@ jobs:
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
           echo "ARCH_NAME=x86_64" >> $GITHUB_ENV
 
-      - name: Print environment variables
-        run: |
-          echo "GOARCH=${GOARCH}"
-          echo "GOOS=${GOOS}"
-          echo "VERSION=${VERSION}"
-
       - name: Build for Linux AMD64
         run: |
-          export GOARCH=${GOARCH}
-          export GOOS=${GOOS}
-          make build-linux-with-shared-library
-          mkdir -p release-${GOOS}-${ARCH_NAME}
-          mv ./build/libmovevm.so ./release-${GOOS}-${ARCH_NAME}/libmovevm.${ARCH_NAME}.so
-          mv ./build/libcompiler.so ./release-${GOOS}-${ARCH_NAME}/libcompiler.${ARCH_NAME}.so
-          mv ./build/initiad ./release-${GOOS}-${ARCH_NAME}/initiad
-          tar -czvf initia_${VERSION}_Linux_${ARCH_NAME}.tar.gz -C release-${GOOS}-${ARCH_NAME} initiad libmovevm.${ARCH_NAME}.so libcompiler.${ARCH_NAME}.so
-          make clean
+          make build-linux-with-shared-library \
+          && cd ./build \
+          && mv libmovevm.so libmovevm.${ARCH_NAME}.so \
+          && mv libcompiler.so libcompiler.${ARCH_NAME}.so \
+          && tar -czvf initia_${VERSION}_Linux_${ARCH_NAME}.tar.gz initiad libmovevm.${ARCH_NAME}.so libcompiler.${ARCH_NAME}.so \
+          && mv initia_${VERSION}_Linux_${ARCH_NAME}.tar.gz $GITHUB_WORKSPACE/ \
+          && rm -rf ./initiad ./libmovevm.${ARCH_NAME}.so ./libcompiler.${ARCH_NAME}.so
 
       - name: Static Build for Linux AMD64
         run: |
-          export GOARCH=${GOARCH}
-          export GOOS=${GOOS}
-          make build-linux
-          mkdir -p release-${GOOS}-${ARCH_NAME}-static
-          mv ./build/initiad ./release-${GOOS}-${ARCH_NAME}-static/initiad
-          tar -czvf initia_${VERSION}_Linux_${ARCH_NAME}_static.tar.gz -C release-${GOOS}-${ARCH_NAME}-static initiad
-          make clean
+          make build-linux \
+          && cd ./build \
+          && tar -czvf initia_${VERSION}_Linux_${ARCH_NAME}_static.tar.gz initiad \
+          && mv initia_${VERSION}_Linux_${ARCH_NAME}_static.tar.gz $GITHUB_WORKSPACE/ \
+          && rm -rf ./initiad
 
-      - name: Release
-        uses: softprops/action-gh-release@v2
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
         with:
-          files: |
-            ./initia_${{ env.VERSION }}_Linux_${{ env.ARCH_NAME }}.tar.gz
-            ./initia_${{ env.VERSION }}_Linux_${{ env.ARCH_NAME }}_static.tar.gz
-        env:
-          Version: ${{ env.VERSION }}
-          ARCH_NAME: ${{ env.ARCH_NAME }}
+          name: initia-linux-amd64
+          path: |
+            initia_${{ env.VERSION }}_Linux_${{ env.ARCH_NAME }}.tar.gz
+            initia_${{ env.VERSION }}_Linux_${{ env.ARCH_NAME }}_static.tar.gz
+          retention-days: 1
