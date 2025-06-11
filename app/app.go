@@ -564,15 +564,17 @@ func (app *InitiaApp) StartOracleClient(ctx context.Context) error {
 
 // RegisterMessageRouterContextDecorator registers a context decorator for the message router
 func (app *InitiaApp) RegisterMessageRouterContextDecorator() {
-	// dispatchable fungible asset is allowed in the context of bank and ibc transfer modules
+	// dispatchable fungible asset is allowed in the following contexts
 	allowedMsgTypes := []string{
 		"/cosmos.bank.v1beta1.MsgSend",
 		"/cosmos.bank.v1beta1.MsgMultiSend",
+		"/cosmos.distribution.v1beta1.MsgCommunityPoolSpend",
 		"/ibc.applications.transfer.v1.MsgTransfer",
 		"/ibc.applications.transfer.v1.MsgRecvPacket",
 		"/ibc.applications.transfer.v1.MsgTimeout",
 		"/ibc.applications.transfer.v1.MsgTimeoutOnClose",
 		"/ibc.applications.transfer.v1.MsgAcknowledgement",
+		"/ibc.core.channel.v2.MsgSendPacket", // not supported yet, but will be supported in the future
 		"/opinit.ophost.v1.MsgInitiateTokenDeposit",
 		"/opinit.ophost.v1.MsgFinalizeTokenWithdrawal",
 		"/noble.forwarding.v1.MsgClearAccount",
