@@ -93,7 +93,7 @@ conform to CometBFT's query syntax.
 
 BlockSearchV2 uses a bloom filter to efficiently search through blocks.
 For optimal performance, it's recommended to include block height constraints in your query
-(e.g. 'block.height > X AND block.height < Y').
+(e.g. 'block.height>X AND block.height<Y').
 
 Please refer to each module's documentation for the full set of events to query
 for. Each module documents its respective events under 'xx_events.md'.
@@ -101,7 +101,7 @@ for. Each module documents its respective events under 'xx_events.md'.
 This method uses a bloom filter to speed up queries in most cases.
 `,
 		Example: fmt.Sprintf(
-			"$ %s query blocks-v2 --query \"message.sender='cosmos1...' AND block.height > 7\" --page 1 --limit 30",
+			"$ %s query blocks-v2 --query \"message.sender='cosmos1...' AND block.height>7\" --page 1 --limit 30",
 			version.AppName,
 		),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -141,7 +141,7 @@ The events query is directly passed to CometBFT's RPC TxSearchV2 method and must
 conform to CometBFT's query syntax.
 
 TxSearchV2 uses a bloom filter to efficiently search through transactions. For optimal performance,
-it's recommended to include block height constraints in your query (e.g. 'tx.height > X AND tx.height < Y').
+it's recommended to include block height constraints in your query (e.g. 'tx.height>X AND tx.height<Y').
 
 Please refer to each module's documentation for the full set of events to query
 for. Each module documents its respective events under 'xx_events.md'.
@@ -149,7 +149,7 @@ for. Each module documents its respective events under 'xx_events.md'.
 This method uses a bloom filter to speed up queries in most cases.
 `,
 		Example: fmt.Sprintf(
-			"$ %s query txs-v2 --query \"message.sender='cosmos1...' AND message.action='withdraw_delegator_reward' AND tx.height > 7\" --page 1 --limit 30",
+			"$ %s query txs-v2 --query \"message.sender='cosmos1...' AND message.action='withdraw_delegator_reward' AND tx.height>7\" --page 1 --limit 30",
 			version.AppName,
 		),
 		RunE: func(cmd *cobra.Command, args []string) error {
