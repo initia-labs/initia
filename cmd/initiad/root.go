@@ -47,6 +47,8 @@ import (
 	moveconfig "github.com/initia-labs/initia/x/move/config"
 
 	oracleconfig "github.com/skip-mev/connect/v2/oracle/config"
+
+	txcli "github.com/initia-labs/initia/tx/cli"
 )
 
 // NewRootCmd creates a new root command for initiad. It is called once in the
@@ -255,6 +257,9 @@ func queryCommand() *cobra.Command {
 		authcmd.QueryTxCmd(),
 		server.QueryBlockResultsCmd(),
 	)
+
+	// add tx query commands
+	txcli.AddTxQueryCmds(cmd)
 
 	return cmd
 }
