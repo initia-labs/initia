@@ -10,10 +10,11 @@ import (
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/cosmos-sdk/crypto/types/multisig"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
+	initiatx "github.com/initia-labs/initia/tx"
 )
 
 // internalSignModeToAPI converts a signing.SignMode to a protobuf SignMode.
-func internalSignModeToAPI(mode signing.SignMode) (signingv1beta1.SignMode, error) {
+func InternalSignModeToAPI(mode signing.SignMode) (signingv1beta1.SignMode, error) {
 	switch mode {
 	case signing.SignMode_SIGN_MODE_DIRECT:
 		return signingv1beta1.SignMode_SIGN_MODE_DIRECT, nil
@@ -25,8 +26,10 @@ func internalSignModeToAPI(mode signing.SignMode) (signingv1beta1.SignMode, erro
 		return signingv1beta1.SignMode_SIGN_MODE_DIRECT_AUX, nil
 	case signing.SignMode_SIGN_MODE_EIP_191:
 		return signingv1beta1.SignMode_SIGN_MODE_EIP_191, nil //nolint
+	case initiatx.Signing_SignMode_ACCOUNT_ABSTRACTION:
+		return initiatx.Signingv1beta1_SignMode_ACCOUNT_ABSTRACTION, nil
 	default:
-		return signingv1beta1.SignMode_SIGN_MODE_UNSPECIFIED, fmt.Errorf("unsupported sign mode %s", mode)
+		return signingv1beta1.SignMode_SIGN_MODE_UNSPECIFIED, fmt.Errorf("123123 unsupported sign mode %s", mode)
 	}
 }
 
@@ -42,7 +45,7 @@ func verifySignature(
 ) error {
 	switch data := signatureData.(type) {
 	case *signing.SingleSignatureData:
-		signMode, err := internalSignModeToAPI(data.SignMode)
+		signMode, err := InternalSignModeToAPI(data.SignMode)
 		if err != nil {
 			return err
 		}
@@ -63,7 +66,7 @@ func verifySignature(
 			return fmt.Errorf("expected %T, got %T", (multisig.PubKey)(nil), pubKey)
 		}
 		err := multiPK.VerifyMultisignature(func(mode signing.SignMode) ([]byte, error) {
-			signMode, err := internalSignModeToAPI(mode)
+			signMode, err := InternalSignModeToAPI(mode)
 			if err != nil {
 				return nil, err
 			}

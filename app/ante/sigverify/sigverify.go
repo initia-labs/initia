@@ -1,8 +1,12 @@
 package sigverify
 
 import (
-	"encoding/hex"
+	"bytes"
+	"context"
+	"encoding/json"
 	"fmt"
+
+	"golang.org/x/crypto/sha3"
 
 	"google.golang.org/protobuf/types/known/anypb"
 
@@ -25,19 +29,15 @@ import (
 	"github.com/initia-labs/initia/crypto/ethsecp256k1"
 
 	forwardingtypes "github.com/noble-assets/forwarding/v2/types"
+
+	initiatx "github.com/initia-labs/initia/tx"
+	movetypes "github.com/initia-labs/initia/x/move/types"
 )
 
-var (
-	// simulation signature values used to estimate gas consumption
-	key                = make([]byte, secp256k1.PubKeySize)
-	simSecp256k1Pubkey = &secp256k1.PubKey{Key: key}
-)
+var ZeroPubKey = secp256k1.GenPrivKeyFromSecret(bytes.Repeat([]byte{0x00}, 32)).PubKey()
 
-func init() {
-	// This decodes a valid hex string into a sepc256k1Pubkey for use in transaction simulation
-	bz, _ := hex.DecodeString("035AD6810A47F073553FF30D2FCC7E0D3B1C0B74B61A1AAA2582344037151E143A")
-	copy(key, bz)
-	simSecp256k1Pubkey.Key = key
+type MoveKeeper interface {
+	VerifyAccountAbstractionSignature(ctx context.Context, sender string, signature []byte) (string, error)
 }
 
 // SigVerificationDecorator verifies all signatures for a tx and return an error if any are invalid. Note,
@@ -48,12 +48,14 @@ func init() {
 type SigVerificationDecorator struct {
 	ak              authante.AccountKeeper
 	signModeHandler *txsigning.HandlerMap
+	moveKeeper      MoveKeeper
 }
 
-func NewSigVerificationDecorator(ak authante.AccountKeeper, signModeHandler *txsigning.HandlerMap) SigVerificationDecorator {
+func NewSigVerificationDecorator(ak authante.AccountKeeper, signModeHandler *txsigning.HandlerMap, moveKeeper MoveKeeper) SigVerificationDecorator {
 	return SigVerificationDecorator{
 		ak:              ak,
 		signModeHandler: signModeHandler,
+		moveKeeper:      moveKeeper,
 	}
 }
 
@@ -127,23 +129,62 @@ func (svd SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simul
 				return ctx, fmt.Errorf("expected tx to implement V2AdaptableTx, got %T", tx)
 			}
 			txData := adaptableTx.GetSigningTxData()
-			err = verifySignature(ctx, pubKey, signerData, sig.Data, svd.signModeHandler, txData)
-			if err != nil {
-				var errMsg string
-				if authante.OnlyLegacyAminoSigners(sig.Data) {
-					// If all signers are using SIGN_MODE_LEGACY_AMINO, we rely on VerifySignature to check account sequence number,
-					// and therefore communicate sequence number as a potential cause of error.
-					errMsg = fmt.Sprintf("signature verification failed; please verify account number (%d), sequence (%d) and chain-id (%s)", accNum, acc.GetSequence(), chainID)
-				} else {
-					errMsg = fmt.Sprintf("signature verification failed; please verify account number (%d) and chain-id (%s): (%s)", accNum, chainID, err.Error())
-				}
-				return ctx, errorsmod.Wrap(sdkerrors.ErrUnauthorized, errMsg)
 
+			if data, ok := sig.Data.(*signing.SingleSignatureData); ok && data.SignMode == initiatx.Signing_SignMode_ACCOUNT_ABSTRACTION {
+				abstractionData := &movetypes.AbstractionData{}
+				err = json.Unmarshal(data.Signature, abstractionData)
+				if err != nil {
+					return ctx, err
+				}
+
+				signBytes, err := svd.signModeHandler.GetSignBytes(ctx, initiatx.Signingv1beta1_SignMode_ACCOUNT_ABSTRACTION, signerData, txData)
+				if err != nil {
+					return ctx, err
+				}
+
+				digest := sha3.Sum256(signBytes)
+				digestBytes := digest[:]
+
+				var expectedDigest []byte
+				if abstractionData.AuthData.V1 != nil {
+					expectedDigest = abstractionData.AuthData.V1.SigningMessageDigest
+				} else if abstractionData.AuthData.DerivableV1 != nil {
+					expectedDigest = abstractionData.AuthData.DerivableV1.SigningMessageDigest
+				} else {
+					return ctx, fmt.Errorf("expected V1 or DerivableV1 auth data")
+				}
+
+				if !bytes.Equal(digestBytes, expectedDigest) {
+					return ctx, fmt.Errorf("signing message digest mismatch: expected %x, got %x", expectedDigest, digestBytes)
+				}
+
+				// TODO: replace the original signer of the message with the returned signer
+				_, err = svd.moveKeeper.VerifyAccountAbstractionSignature(ctx, signerData.Address, data.Signature)
+				if err != nil {
+					return ctx, fmt.Errorf("failed to verify account abstraction signature: %w", err)
+				}
+			} else {
+				err = verifySignature(ctx, pubKey, signerData, sig.Data, svd.signModeHandler, txData)
+				if err != nil {
+					var errMsg string
+					if authante.OnlyLegacyAminoSigners(sig.Data) {
+						// If all signers are using SIGN_MODE_LEGACY_AMINO, we rely on VerifySignature to check account sequence number,
+						// and therefore communicate sequence number as a potential cause of error.
+						errMsg = fmt.Sprintf("signature verification failed; please verify account number (%d), sequence (%d) and chain-id (%s)", accNum, acc.GetSequence(), chainID)
+					} else {
+						errMsg = fmt.Sprintf("signature verification failed; please verify account number (%d) and chain-id (%s): (%s)", accNum, chainID, err.Error())
+					}
+					return ctx, errorsmod.Wrap(sdkerrors.ErrUnauthorized, errMsg)
+				}
 			}
 		}
 	}
 
-	return next(ctx, tx, simulate)
+	if next != nil {
+		return next(ctx, tx, simulate)
+	}
+
+	return ctx, nil
 }
 
 // DefaultSigVerificationGasConsumer is the default implementation of SignatureVerificationGasConsumer. It consumes gas

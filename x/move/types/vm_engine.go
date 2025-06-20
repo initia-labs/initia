@@ -38,4 +38,12 @@ type VMEngine interface {
 		senders []vmtypes.AccountAddress,
 		payload vmtypes.Script,
 	) (vmtypes.ExecutionResult, error)
+	ExecuteAuthenticate(
+		gasBalance *uint64,
+		kvStore api.KVStore,
+		goApi api.GoAPI,
+		env vmtypes.Env,
+		sender vmtypes.AccountAddress,
+		signature []byte,
+	) (string, error)
 }

@@ -15,7 +15,7 @@ type config struct {
 	client.TxConfig
 }
 
-func NewClientTxConfig(protoCodec codec.ProtoCodecMarshaler) client.TxConfig {
+func CreateTxConfig(protoCodec codec.ProtoCodecMarshaler) client.TxConfig {
 	signingOptions, err := authtx.NewDefaultSigningOptions()
 	if err != nil {
 		panic(err)
@@ -26,6 +26,10 @@ func NewClientTxConfig(protoCodec codec.ProtoCodecMarshaler) client.TxConfig {
 			protoCodec,
 			authtx.DefaultSignModes,
 			tx.NewSignModeEIP191Handler(aminojson.SignModeHandlerOptions{
+				FileResolver: signingOptions.FileResolver,
+				TypeResolver: signingOptions.TypeResolver,
+			}),
+			tx.NewSignModeAccountAbstractionHandler(aminojson.SignModeHandlerOptions{
 				FileResolver: signingOptions.FileResolver,
 				TypeResolver: signingOptions.TypeResolver,
 			}),
