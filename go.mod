@@ -245,7 +245,7 @@ replace (
 
 // indirect custom dependencies
 // - https://github.com/cosmos/cosmos-sdk/issues/23740
-require github.com/cosmos/iavl v1.2.5 // indirect
+require github.com/cosmos/iavl v1.2.6 // indirect
 
 // initia custom
 // use custom version for
