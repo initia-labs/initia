@@ -47,7 +47,7 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 )
 
-var public_key_authenticator = ReadMoveFile("public_key_authenticator")
+var publicKeyAuthenticator = ReadMoveFile("public_key_authenticator")
 
 func ReadMoveFile(filename string) []byte {
 	path := "../../../x/move/keeper/binaries/" + filename + ".mv"
@@ -261,7 +261,7 @@ func (suite *AnteTestSuite) TestAccountAbstractionAuthentication() {
 	suite.Require().NoError(err)
 
 	err = suite.app.MoveKeeper.PublishModuleBundle(suite.ctx, cafeAddr, vmtypes.NewModuleBundle([]vmtypes.Module{
-		{Code: public_key_authenticator},
+		{Code: publicKeyAuthenticator},
 	}...), movetypes.UpgradePolicy_COMPATIBLE)
 	suite.Require().NoError(err)
 
