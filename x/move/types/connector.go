@@ -15,18 +15,19 @@ import (
 
 const (
 	// module names
-	MoveModuleNameCoin                 = "coin"
-	MoveModuleNameStaking              = "staking"
-	MoveModuleNameDex                  = "dex"
-	MoveModuleNameNft                  = "nft"
-	MoveModuleNameCode                 = "code"
-	MoveModuleNameFungibleAsset        = "fungible_asset"
-	MoveModuleNamePrimaryFungibleStore = "primary_fungible_store"
-	MoveModuleNameManagedCoin          = "managed_coin"
-	MoveModuleNameObject               = "object"
-	MoveModuleNameInitiaNft            = "initia_nft"
-	MoveModuleNameCollection           = "collection"
-	MoveModuleNameStableSwap           = "stableswap"
+	MoveModuleNameCoin                      = "coin"
+	MoveModuleNameStaking                   = "staking"
+	MoveModuleNameDex                       = "dex"
+	MoveModuleNameNft                       = "nft"
+	MoveModuleNameCode                      = "code"
+	MoveModuleNameFungibleAsset             = "fungible_asset"
+	MoveModuleNameDispatchableFungibleAsset = "dispatchable_fungible_asset"
+	MoveModuleNamePrimaryFungibleStore      = "primary_fungible_store"
+	MoveModuleNameManagedCoin               = "managed_coin"
+	MoveModuleNameObject                    = "object"
+	MoveModuleNameInitiaNft                 = "initia_nft"
+	MoveModuleNameCollection                = "collection"
+	MoveModuleNameStableSwap                = "stableswap"
 
 	// function names for managed_coin
 	FunctionNameManagedCoinInitialize = "initialize"
@@ -45,6 +46,13 @@ const (
 	FunctionNameCoinSudoTransfer  = "sudo_transfer"
 	FunctionNameCoinSudoMultiSend = "sudo_multisend"
 	FunctionNameCoinWhitelist     = "whitelist"
+
+	// function names for primary_fungible_store
+	FunctionNamePrimaryFungibleStoreBalance  = "balance"
+	FunctionNamePrimaryFungibleStoreBalances = "balances"
+
+	// function names for dispatchable_fungible_asset
+	FunctionNameDispatchableFungibleAssetDerivedSupply = "derived_supply"
 
 	// function names for staking
 	FunctionNameStakingInitializeForChain           = "initialize_for_chain"
@@ -84,6 +92,10 @@ const (
 	ResourceNameCollection    = "Collection"
 	ResourceNameInitiaNft     = "InitiaNft"
 	ResourceNameNft           = "Nft"
+
+	// resource names for dispatchable fungible assets
+	ResourceNameDispatchFunctionStore = "DispatchFunctionStore"
+	ResourceNameDispatchSupply        = "DeriveSupply"
 )
 
 // TypeTagFromStructTag return type tag with struct tag
@@ -245,8 +257,25 @@ func (policy UpgradePolicy) ToVmUpgradePolicy() uint8 {
 	return uint8(policy)
 }
 
+// ReadTableHandleFromTable util function to read table handle from the table raw bytes
 func ReadTableHandleFromTable(bz []byte) (vmtypes.AccountAddress, error) {
 	return vmtypes.NewAccountAddressFromBytes(bz[:AddressBytesLength])
+}
+
+// ReadTableLengthFromTable util function to read table length from the table raw bytes
+func ReadTableLengthFromTable(bz []byte) (math.Int, error) {
+	cursor := int(0)
+
+	// read table handle address
+	cursor += AddressBytesLength
+
+	// read table length u64
+	length, err := DeserializeUint64(bz[cursor : cursor+8])
+	if err != nil {
+		return math.ZeroInt(), err
+	}
+
+	return length, nil
 }
 
 // ReadSymbolFromMetadata util function to read symbol from Metadata

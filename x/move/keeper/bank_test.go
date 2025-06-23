@@ -4,6 +4,8 @@ import (
 	"encoding/hex"
 	"fmt"
 	"math"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -11,8 +13,10 @@ import (
 	sdkmath "cosmossdk.io/math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/query"
 	cosmosbanktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
+	"github.com/initia-labs/initia/app/upgrades/v1_1_1"
 	"github.com/initia-labs/initia/x/move/types"
 	vmtypes "github.com/initia-labs/movevm/types"
 )
@@ -47,30 +51,94 @@ func Test_IterateBalances(t *testing.T) {
 	require.NoError(t, err)
 	twoAddr := sdk.AccAddress(bz)
 
-	err = moveBankKeeper.MintCoins(ctx, twoAddr, sdk.NewCoins(sdk.NewInt64Coin(bondDenom, int64(1))))
-	require.NoError(t, err)
+	// create 200 tokens
+	tokenNum := 200
+	for i := range tokenNum {
+		denom := fmt.Sprintf("test%d", i)
+		err = moveBankKeeper.MintCoins(ctx, twoAddr, sdk.NewCoins(sdk.NewInt64Coin(denom, int64(i))))
+		require.NoError(t, err)
+	}
 
-	entered := false
+	counter := 0
+	coins := sdk.NewCoins()
 	moveBankKeeper.IterateAccountBalances(ctx, twoAddr, func(amount sdk.Coin) (bool, error) {
-		entered = true
-		require.Equal(t, sdk.NewCoin(bondDenom, sdkmath.NewInt(1)), amount)
+		// extract amount from denom
+		amountStr := strings.Split(amount.Denom, "test")[1]
+		expectedAmount, err := strconv.ParseInt(amountStr, 10, 64)
+		require.NoError(t, err)
+		require.Equal(t, sdk.NewCoin(amount.Denom, sdkmath.NewInt(expectedAmount)), amount)
+
+		counter++
+
+		coins = coins.Add(amount)
 		return false, nil
 	})
-	require.True(t, entered)
 
-	mintAmount := int64(100)
+	// except zero amount coin
+	require.Equal(t, tokenNum-1, counter)
 
-	err = moveBankKeeper.MintCoins(ctx, twoAddr, sdk.NewCoins(sdk.NewInt64Coin(bondDenom, mintAmount)))
+	// transfer coins to other address except last one
+	err = moveBankKeeper.SendCoins(ctx, twoAddr, types.StdAddr, coins[:len(coins)-1])
 	require.NoError(t, err)
 
-	// check after mint
-	entered = false
+	// should count only last one
+	counter = 0
 	moveBankKeeper.IterateAccountBalances(ctx, twoAddr, func(amount sdk.Coin) (bool, error) {
-		entered = true
-		require.Equal(t, sdk.NewCoin(bondDenom, sdkmath.NewInt(mintAmount+1)), amount)
+		// extract amount from denom
+		amountStr := strings.Split(amount.Denom, "test")[1]
+		expectedAmount, err := strconv.ParseInt(amountStr, 10, 64)
+		require.NoError(t, err)
+		require.Equal(t, sdk.NewCoin(amount.Denom, sdkmath.NewInt(expectedAmount)), amount)
+
+		counter++
+
 		return false, nil
 	})
-	require.True(t, entered)
+
+	require.Equal(t, 1, counter)
+}
+
+func Test_GetPaginatedBalances(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+	moveBankKeeper := input.MoveKeeper.MoveBankKeeper()
+
+	bz, err := hex.DecodeString("0000000000000000000000000000000000000002")
+	require.NoError(t, err)
+	twoAddr := sdk.AccAddress(bz)
+
+	// create 200 tokens
+	tokenNum := 200
+	for i := range tokenNum {
+		denom := fmt.Sprintf("test%d", i)
+		err = moveBankKeeper.MintCoins(ctx, twoAddr, sdk.NewCoins(sdk.NewInt64Coin(denom, int64(i))))
+		require.NoError(t, err)
+	}
+
+	counter := int(0)
+	fetchUint := uint64(3)
+	pageReq := &query.PageRequest{
+		Limit: fetchUint,
+	}
+
+	totalCoins := sdk.Coins{}
+	for i := 0; i < tokenNum; i += int(fetchUint) {
+		coins, pageRes, err := moveBankKeeper.GetPaginatedBalances(ctx, pageReq, twoAddr)
+		require.NoError(t, err)
+
+		pageReq.Key = pageRes.NextKey
+		counter += int(coins.Len())
+		totalCoins = totalCoins.Add(coins...)
+	}
+
+	for _, coin := range totalCoins {
+		amountStr := strings.Split(coin.Denom, "test")[1]
+		expectedAmount, err := strconv.ParseInt(amountStr, 10, 64)
+		require.NoError(t, err)
+		require.Equal(t, sdk.NewCoin(coin.Denom, sdkmath.NewInt(expectedAmount)), coin)
+	}
+
+	// except zero amount coin
+	require.Equal(t, tokenNum-1, counter)
 }
 
 func Test_GetSupply(t *testing.T) {
@@ -256,4 +324,106 @@ func Test_MultiSend(t *testing.T) {
 	require.Equal(t, uint64(300_000), input.BankKeeper.GetBalance(ctx, threeAddr, bondDenom).Amount.Uint64())
 	require.Equal(t, uint64(400_000), input.BankKeeper.GetBalance(ctx, fourAddr, bondDenom).Amount.Uint64())
 	require.Equal(t, uint64(300_000), input.BankKeeper.GetBalance(ctx, fiveAddr, bondDenom).Amount.Uint64())
+}
+
+func Test_DispatchableToken(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+
+	// TODO - remove this after movevm version update
+	////////////////////////////////////////////////////
+	moduleBytes, err := v1_1_1.GetModuleBytes()
+	require.NoError(t, err)
+
+	var modules []vmtypes.Module
+	for _, module := range moduleBytes {
+		modules = append(modules, vmtypes.NewModule(module))
+	}
+
+	err = input.MoveKeeper.PublishModuleBundle(ctx, vmtypes.StdAddress, vmtypes.NewModuleBundle(modules...), types.UpgradePolicy_COMPATIBLE)
+	require.NoError(t, err)
+	////////////////////////////////////////////////////
+	deployer, err := vmtypes.NewAccountAddress("0xcafe")
+	require.NoError(t, err)
+
+	moveBankKeeper := input.MoveKeeper.MoveBankKeeper()
+
+	err = input.MoveKeeper.PublishModuleBundle(ctx, deployer, vmtypes.NewModuleBundle(vmtypes.NewModule(dispatchableTokenModule)), types.UpgradePolicy_COMPATIBLE)
+	require.NoError(t, err)
+
+	// execute initialize
+	err = input.MoveKeeper.ExecuteEntryFunctionJSON(ctx, deployer, deployer, "test_dispatchable_token", "initialize", []vmtypes.TypeTag{}, []string{})
+	require.NoError(t, err)
+
+	// check supply
+	metadata := types.NamedObjectAddress(deployer, "test_token")
+	supply, err := moveBankKeeper.GetSupplyWithMetadata(ctx, metadata)
+	require.NoError(t, err)
+	require.Equal(t, sdkmath.NewInt(0), supply)
+
+	// mint token
+	err = input.MoveKeeper.ExecuteEntryFunctionJSON(ctx, deployer, deployer, "test_dispatchable_token", "mint", []vmtypes.TypeTag{}, []string{fmt.Sprintf("\"%s\"", deployer.String()), `"1000000"`})
+	require.NoError(t, err)
+
+	// get supply
+	supply, err = moveBankKeeper.GetSupplyWithMetadata(ctx, metadata)
+	require.NoError(t, err)
+	require.Equal(t, sdkmath.NewInt(1_000_000).MulRaw(10), supply)
+
+	// get balance
+	denom, err := types.DenomFromMetadataAddress(ctx, moveBankKeeper, metadata)
+	require.NoError(t, err)
+	balance, err := moveBankKeeper.GetBalance(ctx, deployer[:], denom)
+	require.NoError(t, err)
+	require.Equal(t, sdkmath.NewInt(1_000_000).MulRaw(10), balance)
+}
+
+func Test_InvalidDispatchableToken(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+
+	// TODO - remove this after movevm version update
+	////////////////////////////////////////////////////
+	moduleBytes, err := v1_1_1.GetModuleBytes()
+	require.NoError(t, err)
+
+	var modules []vmtypes.Module
+	for _, module := range moduleBytes {
+		modules = append(modules, vmtypes.NewModule(module))
+	}
+
+	err = input.MoveKeeper.PublishModuleBundle(ctx, vmtypes.StdAddress, vmtypes.NewModuleBundle(modules...), types.UpgradePolicy_COMPATIBLE)
+	require.NoError(t, err)
+	////////////////////////////////////////////////////
+	deployer, err := vmtypes.NewAccountAddress("0xcafe")
+	require.NoError(t, err)
+
+	moveBankKeeper := input.MoveKeeper.MoveBankKeeper()
+
+	err = input.MoveKeeper.PublishModuleBundle(ctx, deployer, vmtypes.NewModuleBundle(vmtypes.NewModule(invalidDispatchableTokenModule)), types.UpgradePolicy_COMPATIBLE)
+	require.NoError(t, err)
+
+	// execute initialize
+	err = input.MoveKeeper.ExecuteEntryFunctionJSON(ctx, deployer, deployer, "test_invalid_dispatchable_token", "initialize", []vmtypes.TypeTag{}, []string{})
+	require.NoError(t, err)
+
+	// check supply - should return 0 amount
+	metadata := types.NamedObjectAddress(deployer, "test_token")
+	supply, err := moveBankKeeper.GetSupplyWithMetadata(ctx, metadata)
+	require.NoError(t, err)
+	require.Equal(t, sdkmath.ZeroInt(), supply)
+
+	// mint token
+	err = input.MoveKeeper.ExecuteEntryFunctionJSON(ctx, deployer, deployer, "test_invalid_dispatchable_token", "mint", []vmtypes.TypeTag{}, []string{fmt.Sprintf("\"%s\"", deployer.String()), `"1000000"`})
+	require.NoError(t, err)
+
+	// get supply - should return 0 amount due to infinite loop
+	supply, err = moveBankKeeper.GetSupplyWithMetadata(ctx, metadata)
+	require.NoError(t, err)
+	require.Equal(t, sdkmath.ZeroInt(), supply)
+
+	// get balance - should return 0 amount due to infinite loop
+	denom, err := types.DenomFromMetadataAddress(ctx, moveBankKeeper, metadata)
+	require.NoError(t, err)
+	balance, err := moveBankKeeper.GetBalance(ctx, deployer[:], denom)
+	require.NoError(t, err)
+	require.Equal(t, sdkmath.ZeroInt(), balance)
 }

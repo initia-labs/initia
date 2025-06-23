@@ -23,7 +23,7 @@ type Keeper struct {
 	cdc          codec.Codec
 
 	authKeeper    types.AccountKeeper
-	bankKeeper    types.BankKeeper
+	bankKeeper    customtypes.BankKeeper
 	stakingKeeper customtypes.StakingKeeper
 	dexKeeper     customtypes.DexKeeper
 
@@ -49,7 +49,7 @@ type Keeper struct {
 // NewKeeper creates a new distribution Keeper instance
 func NewKeeper(
 	cdc codec.Codec, storeService store.KVStoreService,
-	ak types.AccountKeeper, bk types.BankKeeper, sk customtypes.StakingKeeper,
+	ak types.AccountKeeper, bk customtypes.BankKeeper, sk customtypes.StakingKeeper,
 	dk customtypes.DexKeeper, feeCollectorName string, authority string,
 ) *Keeper {
 

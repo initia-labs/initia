@@ -8,7 +8,8 @@ import (
 
 	"cosmossdk.io/collections"
 	moderrors "cosmossdk.io/errors"
-	"cosmossdk.io/math"
+	sdkmath "cosmossdk.io/math"
+	storetypes "cosmossdk.io/store/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
@@ -30,100 +31,139 @@ func NewMoveBankKeeper(k *Keeper) MoveBankKeeper {
 	return MoveBankKeeper{k}
 }
 
-// GetBalance return move coin balance
+// GetBalance retrieves the balance of a specific denomination for an account from the primary fungible store.
+// It supports both standard fungible assets and dispatchable fungible assets.
+// Returns the balance amount as sdkmath.Int and any error encountered.
 func (k MoveBankKeeper) GetBalance(
 	ctx context.Context,
 	addr sdk.AccAddress,
 	denom string,
-) (math.Int, error) {
+) (sdkmath.Int, error) {
 	userAddr, err := vmtypes.NewAccountAddressFromBytes(addr[:])
 	if err != nil {
-		return math.ZeroInt(), err
+		return sdkmath.ZeroInt(), err
 	}
 
 	metadata, err := types.MetadataAddressFromDenom(denom)
 	if err != nil {
-		return math.ZeroInt(), err
+		return sdkmath.ZeroInt(), err
 	}
 
-	storeAddr := types.UserDerivedObjectAddress(userAddr, metadata)
-	_, balance, err := k.Balance(ctx, storeAddr)
-	return balance, err
+	return k.GetBalanceWithMetadata(ctx, userAddr, metadata)
 }
 
-func (k MoveBankKeeper) GetUserStoresTableHandle(
+// GetBalanceWithMetadata retrieves the balance of a specific denomination for an account from the primary fungible store.
+// It supports both standard fungible assets and dispatchable fungible assets.
+// Returns the balance amount as sdkmath.Int and any error encountered.
+func (k MoveBankKeeper) GetBalanceWithMetadata(
 	ctx context.Context,
-	addr sdk.AccAddress,
-) (*vmtypes.AccountAddress, error) {
-	bz, err := k.GetResourceBytes(ctx, vmtypes.StdAddress, vmtypes.StructTag{
-		Address: vmtypes.StdAddress,
-		Module:  types.MoveModuleNamePrimaryFungibleStore,
-		Name:    types.ResourceNameModuleStore,
-	})
+	userAddr vmtypes.AccountAddress,
+	metadata vmtypes.AccountAddress,
+) (sdkmath.Int, error) {
+
+	// if it is not a dispatchable fungible asset, return
+	hasDispatchFunctionStore, err := k.HasDispatchFunctionStore(ctx, metadata)
 	if err != nil {
-		return nil, err
+		return sdkmath.ZeroInt(), err
+	} else if !hasDispatchFunctionStore {
+		storeAddr := types.UserDerivedObjectAddress(userAddr, metadata)
+		_, balance, err := k.Balance(ctx, storeAddr)
+		return balance, err
 	}
 
-	tableAddr, err := types.ReadUserStoresTableHandleFromModuleStore(bz)
+	// use limited gas for dispatchable fungible assets balance query
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	gasMeter := sdkCtx.GasMeter()
+
+	const getBalanceMaxGas = storetypes.Gas(100000)
+	sdkCtx = sdkCtx.WithGasMeter(storetypes.NewGasMeter(min(gasMeter.GasRemaining(), getBalanceMaxGas)))
+	defer func() {
+		// ignore panic
+		_ = recover()
+
+		usedGas := sdkCtx.GasMeter().GasConsumedToLimit()
+		gasMeter.ConsumeGas(usedGas, "GetBalance")
+	}()
+
+	// query balance from primary_fungible_store
+	output, _, err := k.ExecuteViewFunctionJSON(
+		sdkCtx,
+		vmtypes.StdAddress,
+		types.MoveModuleNamePrimaryFungibleStore,
+		types.FunctionNamePrimaryFungibleStoreBalance,
+		[]vmtypes.TypeTag{
+			&vmtypes.TypeTag__Struct{
+				Value: vmtypes.StructTag{
+					Address:  vmtypes.StdAddress,
+					Module:   types.MoveModuleNameFungibleAsset,
+					Name:     types.ResourceNameMetadata,
+					TypeArgs: []vmtypes.TypeTag{},
+				},
+			}},
+		[]string{fmt.Sprintf("\"%s\"", userAddr), fmt.Sprintf("\"%s\"", metadata)},
+	)
 	if err != nil {
-		return nil, err
+		// ignore fetching error due to dispatchable fungible assets
+		return sdkmath.ZeroInt(), nil
 	}
 
-	userAddr, err := vmtypes.NewAccountAddressFromBytes(addr[:])
-	if err != nil {
-		return nil, err
+	var amountStr string
+	if err := json.Unmarshal([]byte(output.Ret), &amountStr); err != nil {
+		return sdkmath.ZeroInt(), err
 	}
 
-	// check user has a store entry
-	if ok, err := k.HasTableEntry(ctx, tableAddr, userAddr[:]); err != nil {
-		return nil, err
-	} else if !ok {
-		return nil, err
+	amount, ok := sdkmath.NewIntFromString(amountStr)
+	if !ok {
+		return sdkmath.ZeroInt(), moderrors.Wrapf(types.ErrInvalidResponse, "invalid balance amount: %s", amountStr)
 	}
 
-	tableEntry, err := k.GetTableEntryBytes(ctx, tableAddr, userAddr[:])
-	if err != nil {
-		return nil, err
-	}
-
-	tableAddr, err = types.ReadTableHandleFromTable(tableEntry.ValueBytes)
-	if err != nil {
-		return nil, err
-	}
-
-	return &tableAddr, err
+	return amount, nil
 }
 
+// IterateAccountBalances iterates over the balances of a single account and
+// provides the token balance to a callback. If true is returned from the
+// callback, iteration is halted.
 func (k MoveBankKeeper) IterateAccountBalances(
 	ctx context.Context,
 	addr sdk.AccAddress,
 	cb func(sdk.Coin) (bool, error),
 ) error {
-	tableAddr, err := k.GetUserStoresTableHandle(ctx, addr)
+	// check user has stores table
+	tableAddr, tableLength, err := k.GetUserStoresTableHandleWithLength(ctx, addr)
+	if err != nil {
+		return err
+	} else if tableAddr == nil || tableLength.IsZero() {
+		return nil
+	}
+
+	userAddr, err := vmtypes.NewAccountAddressFromBytes(addr[:])
 	if err != nil {
 		return err
 	}
 
-	// no user stores
-	if tableAddr == nil {
-		return nil
-	}
-
 	prefix := types.GetTableEntryPrefix(*tableAddr)
-	return k.VMStore.Walk(ctx, new(collections.Range[[]byte]).Prefix(collections.NewPrefix[[]byte](prefix)), func(_, value []byte) (stop bool, err error) {
+	return k.VMStore.Walk(ctx, new(collections.Range[[]byte]).Prefix(collections.NewPrefix(prefix)), func(_, value []byte) (stop bool, err error) {
 		storeAddr, err := vmtypes.NewAccountAddressFromBytes(value)
 		if err != nil {
 			return true, err
 		}
 
-		metadata, amount, err := k.Balance(ctx, storeAddr)
+		// load metadata from fungible store
+		metadata, _, err := k.Balance(ctx, storeAddr)
 		if err != nil {
 			return true, err
 		}
-		if amount.IsZero() {
+
+		// load balance from primary fungible store
+		amount, err := k.GetBalanceWithMetadata(ctx, userAddr, metadata)
+		if err != nil {
+			return true, err
+		}
+		if !amount.IsPositive() {
 			return false, nil
 		}
 
+		// load denom from metadata
 		denom, err := types.DenomFromMetadataAddress(
 			ctx, k, metadata,
 		)
@@ -136,14 +176,12 @@ func (k MoveBankKeeper) IterateAccountBalances(
 }
 
 func (k MoveBankKeeper) GetPaginatedBalances(ctx context.Context, pageReq *query.PageRequest, addr sdk.AccAddress) (sdk.Coins, *query.PageResponse, error) {
-	tableAddr, err := k.GetUserStoresTableHandle(ctx, addr)
+	// check user has stores table
+	tableAddr, tableLength, err := k.GetUserStoresTableHandleWithLength(ctx, addr)
 	if err != nil {
 		return nil, nil, err
-	}
-
-	// no user stores
-	if tableAddr == nil {
-		return sdk.NewCoins(), nil, nil
+	} else if tableAddr == nil || tableLength.IsZero() {
+		return sdk.NewCoins(), &query.PageResponse{}, nil
 	}
 
 	var coin sdk.Coin
@@ -153,16 +191,24 @@ func (k MoveBankKeeper) GetPaginatedBalances(ctx context.Context, pageReq *query
 			return false, err
 		}
 
-		metadata, amount, err := k.Balance(ctx, storeAddr)
+		// load metadata from fungible store
+		metadata, _, err := k.Balance(ctx, storeAddr)
 		if err != nil {
-			return false, err
+			return true, err
 		}
 
+		// load denom from metadata
 		denom, err := types.DenomFromMetadataAddress(
 			ctx, k, metadata,
 		)
 		if err != nil {
-			return false, err
+			return true, err
+		}
+
+		// load balance from primary fungible store
+		amount, err := k.GetBalance(ctx, addr, denom)
+		if err != nil {
+			return true, err
 		}
 		if !amount.IsPositive() {
 			return false, nil
@@ -187,10 +233,10 @@ func (k MoveBankKeeper) GetPaginatedBalances(ctx context.Context, pageReq *query
 func (k MoveBankKeeper) GetSupply(
 	ctx context.Context,
 	denom string,
-) (math.Int, error) {
+) (sdkmath.Int, error) {
 	metadata, err := types.MetadataAddressFromDenom(denom)
 	if err != nil {
-		return math.ZeroInt(), err
+		return sdkmath.ZeroInt(), err
 	}
 
 	return k.GetSupplyWithMetadata(ctx, metadata)
@@ -213,25 +259,82 @@ func (k MoveBankKeeper) HasSupply(
 	})
 }
 
-func (k MoveBankKeeper) GetSupplyWithMetadata(ctx context.Context, metadata vmtypes.AccountAddress) (math.Int, error) {
-	bz, err := k.GetResourceBytes(ctx, metadata, vmtypes.StructTag{
-		Address:  vmtypes.StdAddress,
-		Module:   types.MoveModuleNameFungibleAsset,
-		Name:     types.ResourceNameSupply,
-		TypeArgs: []vmtypes.TypeTag{},
-	})
-	if err != nil && errors.Is(err, collections.ErrNotFound) {
-		return math.ZeroInt(), nil
-	} else if err != nil {
-		return math.ZeroInt(), err
-	}
-
-	num, err := types.ReadSupplyFromSupply(bz)
+func (k MoveBankKeeper) GetSupplyWithMetadata(ctx context.Context, metadata vmtypes.AccountAddress) (sdkmath.Int, error) {
+	// if it is not a dispatchable fungible asset, return supply from supply store
+	hasDispatchSupplyStore, err := k.HasDispatchSupplyStore(ctx, metadata)
 	if err != nil {
-		return math.ZeroInt(), err
+		return sdkmath.ZeroInt(), err
+	} else if !hasDispatchSupplyStore {
+		bz, err := k.GetResourceBytes(ctx, metadata, vmtypes.StructTag{
+			Address:  vmtypes.StdAddress,
+			Module:   types.MoveModuleNameFungibleAsset,
+			Name:     types.ResourceNameSupply,
+			TypeArgs: []vmtypes.TypeTag{},
+		})
+		if err != nil && errors.Is(err, collections.ErrNotFound) {
+			return sdkmath.ZeroInt(), nil
+		} else if err != nil {
+			return sdkmath.ZeroInt(), err
+		}
+
+		num, err := types.ReadSupplyFromSupply(bz)
+		if err != nil {
+			return sdkmath.ZeroInt(), err
+		}
+
+		return num, nil
 	}
 
-	return num, nil
+	// use limited gas for dispatchable fungible assets supply query
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	gasMeter := sdkCtx.GasMeter()
+
+	const getSupplyMaxGas = storetypes.Gas(100000)
+	sdkCtx = sdkCtx.WithGasMeter(storetypes.NewGasMeter(min(gasMeter.GasRemaining(), getSupplyMaxGas)))
+	defer func() {
+		// ignore panic
+		_ = recover()
+
+		usedGas := sdkCtx.GasMeter().GasConsumedToLimit()
+		gasMeter.ConsumeGas(usedGas, "GetSupply")
+	}()
+
+	// query balance from primary_fungible_store
+	output, _, err := k.ExecuteViewFunctionJSON(
+		sdkCtx,
+		vmtypes.StdAddress,
+		types.MoveModuleNameDispatchableFungibleAsset,
+		types.FunctionNameDispatchableFungibleAssetDerivedSupply,
+		[]vmtypes.TypeTag{
+			&vmtypes.TypeTag__Struct{
+				Value: vmtypes.StructTag{
+					Address:  vmtypes.StdAddress,
+					Module:   types.MoveModuleNameFungibleAsset,
+					Name:     types.ResourceNameMetadata,
+					TypeArgs: []vmtypes.TypeTag{},
+				},
+			}},
+		[]string{fmt.Sprintf("\"%s\"", metadata)},
+	)
+	if err != nil {
+		// ignore fetching error due to dispatchable fungible assets
+		return sdkmath.ZeroInt(), nil
+	}
+
+	var optionSupplyStr string
+	if err := json.Unmarshal([]byte(output.Ret), &optionSupplyStr); err != nil {
+		return sdkmath.ZeroInt(), err
+	} else if optionSupplyStr == "null" {
+		// return is option, so return zero if it is null
+		return sdkmath.ZeroInt(), nil
+	}
+
+	supply, ok := sdkmath.NewIntFromString(optionSupplyStr)
+	if !ok {
+		return sdkmath.ZeroInt(), moderrors.Wrapf(types.ErrInvalidResponse, "invalid supply: %s", optionSupplyStr)
+	}
+
+	return supply, nil
 }
 
 func (k MoveBankKeeper) GetIssuersTableHandle(ctx context.Context) (*vmtypes.AccountAddress, error) {
@@ -499,7 +602,7 @@ func (k MoveBankKeeper) SendCoin(
 	fromAddr sdk.AccAddress,
 	toAddr sdk.AccAddress,
 	denom string,
-	amount math.Int,
+	amount sdkmath.Int,
 ) error {
 	metadata, err := types.MetadataAddressFromDenom(denom)
 	if err != nil {
@@ -538,7 +641,7 @@ func (k MoveBankKeeper) MultiSend(
 	sender sdk.AccAddress,
 	denom string,
 	recipients []sdk.AccAddress,
-	amounts []math.Int,
+	amounts []sdkmath.Int,
 ) error {
 	if len(recipients) != len(amounts) {
 		return moderrors.Wrapf(types.ErrInvalidRequest, "recipients and amounts length mismatch")
@@ -589,4 +692,52 @@ func (k MoveBankKeeper) MultiSend(
 		[][]byte{metadataArg, recipientsArg, amountsArg},
 		true,
 	)
+}
+
+func (k MoveBankKeeper) GetUserStoresTableHandleWithLength(
+	ctx context.Context,
+	addr sdk.AccAddress,
+) (*vmtypes.AccountAddress, sdkmath.Int, error) {
+	bz, err := k.GetResourceBytes(ctx, vmtypes.StdAddress, vmtypes.StructTag{
+		Address: vmtypes.StdAddress,
+		Module:  types.MoveModuleNamePrimaryFungibleStore,
+		Name:    types.ResourceNameModuleStore,
+	})
+	if err != nil {
+		return nil, sdkmath.ZeroInt(), err
+	}
+
+	tableAddr, err := types.ReadUserStoresTableHandleFromModuleStore(bz)
+	if err != nil {
+		return nil, sdkmath.ZeroInt(), err
+	}
+
+	userAddr, err := vmtypes.NewAccountAddressFromBytes(addr[:])
+	if err != nil {
+		return nil, sdkmath.ZeroInt(), err
+	}
+
+	// check user has a store entry
+	if ok, err := k.HasTableEntry(ctx, tableAddr, userAddr[:]); err != nil {
+		return nil, sdkmath.ZeroInt(), err
+	} else if !ok {
+		return nil, sdkmath.ZeroInt(), err
+	}
+
+	tableEntry, err := k.GetTableEntryBytes(ctx, tableAddr, userAddr[:])
+	if err != nil {
+		return nil, sdkmath.ZeroInt(), err
+	}
+
+	tableAddr, err = types.ReadTableHandleFromTable(tableEntry.ValueBytes)
+	if err != nil {
+		return nil, sdkmath.ZeroInt(), err
+	}
+
+	length, err := types.ReadTableLengthFromTable(tableEntry.ValueBytes)
+	if err != nil {
+		return nil, sdkmath.ZeroInt(), err
+	}
+
+	return &tableAddr, length, nil
 }

@@ -16,6 +16,12 @@ import (
 
 var _ types.FungibleAssetKeeper = MoveBankKeeper{}
 
+// Balance returns the metadata address and balance amount of a fungible asset in a fungible store.
+// The metadata address uniquely identifies the fungible asset type, while the balance represents
+// the quantity held in the store.
+// Returns (metadata address, balance amount, error).
+//
+// @devs: This function does not support dispatchable fungible assets.
 func (k MoveBankKeeper) Balance(ctx context.Context, store vmtypes.AccountAddress) (vmtypes.AccountAddress, math.Int, error) {
 	bz, err := k.GetResourceBytes(ctx, store, vmtypes.StructTag{
 		Address:  vmtypes.StdAddress,
@@ -141,4 +147,24 @@ func (k MoveBankKeeper) GetMetadata(
 		Display:    display,
 		DenomUnits: denomUnits,
 	}, nil
+}
+
+// HasDispatchFunctionStore checks if the dispatch function store exists.
+func (k MoveBankKeeper) HasDispatchFunctionStore(ctx context.Context, metadata vmtypes.AccountAddress) (bool, error) {
+	return k.HasResource(ctx, metadata, vmtypes.StructTag{
+		Address:  vmtypes.StdAddress,
+		Module:   types.MoveModuleNameFungibleAsset,
+		Name:     types.ResourceNameDispatchFunctionStore,
+		TypeArgs: []vmtypes.TypeTag{},
+	})
+}
+
+// HasDispatchSupplyStore checks if the dispatch supply store exists.
+func (k MoveBankKeeper) HasDispatchSupplyStore(ctx context.Context, metadata vmtypes.AccountAddress) (bool, error) {
+	return k.HasResource(ctx, metadata, vmtypes.StructTag{
+		Address:  vmtypes.StdAddress,
+		Module:   types.MoveModuleNameFungibleAsset,
+		Name:     types.ResourceNameDispatchSupply,
+		TypeArgs: []vmtypes.TypeTag{},
+	})
 }
