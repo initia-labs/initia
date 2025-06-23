@@ -137,6 +137,13 @@ func (svd SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simul
 					return ctx, err
 				}
 
+				// Validate AbstractionData
+				if abstractionData.FunctionInfo.ModuleAddress == "" ||
+					abstractionData.FunctionInfo.ModuleName == "" ||
+					abstractionData.FunctionInfo.FunctionName == "" {
+					return ctx, fmt.Errorf("invalid abstraction data: missing function info")
+				}
+
 				signBytes, err := svd.signModeHandler.GetSignBytes(ctx, initiatx.Signingv1beta1_SignMode_ACCOUNT_ABSTRACTION, signerData, txData)
 				if err != nil {
 					return ctx, err
