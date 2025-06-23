@@ -132,32 +132,6 @@ func (suite *AnteTestSuite) TestEthereumDerivableAccountAbstraction() {
 	suite.SetupTest() // setup
 	suite.txBuilder = suite.clientCtx.TxConfig.NewTxBuilder()
 
-	err := suite.app.MoveKeeper.ExecuteEntryFunctionJSON(
-		suite.ctx,
-		vmtypes.StdAddress,
-		vmtypes.StdAddress,
-		"account_abstraction",
-		"initialize",
-		[]vmtypes.TypeTag{},
-		[]string{},
-	)
-	suite.Require().NoError(err)
-
-	err = suite.app.MoveKeeper.ExecuteEntryFunctionJSON(
-		suite.ctx,
-		vmtypes.StdAddress,
-		vmtypes.StdAddress,
-		"account_abstraction",
-		"register_derivable_authentication_function",
-		[]vmtypes.TypeTag{},
-		[]string{
-			"\"0x1\"",
-			"\"ethereum_derivable_account\"",
-			"\"authenticate\"",
-		},
-	)
-	suite.Require().NoError(err)
-
 	// keys and addresses
 
 	signerPriv := ethsecp256k1.GenerateKey()
@@ -328,18 +302,16 @@ func DAAEthereumSign(
 		return signing.SignatureV2{}, err
 	}
 
-	abstractionData := &movetypes.AbstractionData{
-		FunctionInfo: movetypes.FunctionInfo{
-			ModuleAddress: "0x1",
+	abstractionData := &vmtypes.AbstractionData{
+		FunctionInfo: vmtypes.FunctionInfo{
+			ModuleAddress: vmtypes.StdAddress,
 			ModuleName:    "ethereum_derivable_account",
 			FunctionName:  "authenticate",
 		},
-		AuthData: movetypes.AbstractionAuthData{
-			DerivableV1: &movetypes.DerivableV1AuthData{
-				SigningMessageDigest: digestBytes,
-				AbstractSignature:    abstractSignature,
-				AbstractPublicKey:    abstractPublicKey,
-			},
+		AuthData: &vmtypes.AbstractionAuthData__DerivableV1{
+			SigningMessageDigest: digestBytes,
+			AbstractSignature:    abstractSignature,
+			AbstractPublicKey:    abstractPublicKey,
 		},
 	}
 

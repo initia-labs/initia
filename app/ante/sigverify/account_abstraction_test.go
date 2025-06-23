@@ -219,17 +219,20 @@ func AASignWithEd25519PrivKey(
 	authenticator = append(authenticator, bcsEncodedPubBz...)
 	authenticator = append(authenticator, bcsEncodedSignatureBz...)
 
-	abstractionData := &movetypes.AbstractionData{
-		FunctionInfo: movetypes.FunctionInfo{
-			ModuleAddress: "0xcafe",
+	moduleAddress, err := vmtypes.NewAccountAddress("0xcafe")
+	if err != nil {
+		return signing.SignatureV2{}, err
+	}
+
+	abstractionData := &vmtypes.AbstractionData{
+		FunctionInfo: vmtypes.FunctionInfo{
+			ModuleAddress: moduleAddress,
 			ModuleName:    "public_key_authenticator",
 			FunctionName:  "authenticate",
 		},
-		AuthData: movetypes.AbstractionAuthData{
-			V1: &movetypes.V1AuthData{
-				SigningMessageDigest: digestBytes,
-				Authenticator:        authenticator,
-			},
+		AuthData: &vmtypes.AbstractionAuthData__V1{
+			SigningMessageDigest: digestBytes,
+			Authenticator:        authenticator,
 		},
 	}
 

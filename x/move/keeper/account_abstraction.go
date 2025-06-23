@@ -6,11 +6,14 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/initia-labs/initia/x/move/types"
+	vmtypes "github.com/initia-labs/movevm/types"
 
 	storetypes "cosmossdk.io/store/types"
 )
 
-func (k Keeper) VerifyAccountAbstractionSignature(ctx context.Context, sender string, signature []byte) (res string, err error) {
+// VerifyAccountAbstractionSignature verifies the signature of an account abstraction transaction.
+// It returns the signer which is returned by the authenticate function; for now, it is the same as the sender.
+func (k Keeper) VerifyAccountAbstractionSignature(ctx context.Context, sender string, abstractionData vmtypes.AbstractionData) (res string, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("recovered from panic: %v", r)
@@ -42,6 +45,6 @@ func (k Keeper) VerifyAccountAbstractionSignature(ctx context.Context, sender st
 		NewApi(k, sdkCtx),
 		types.NewEnv(sdkCtx, ac, ec),
 		signer,
-		signature,
+		abstractionData,
 	)
 }

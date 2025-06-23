@@ -44,6 +44,6 @@ type VMEngine interface {
 		goApi api.GoAPI,
 		env vmtypes.Env,
 		sender vmtypes.AccountAddress,
-		signature []byte,
+		abstractionData vmtypes.AbstractionData,
 	) (string, error)
 }

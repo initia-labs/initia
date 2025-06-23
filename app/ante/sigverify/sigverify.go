@@ -31,13 +31,13 @@ import (
 	forwardingtypes "github.com/noble-assets/forwarding/v2/types"
 
 	initiatx "github.com/initia-labs/initia/tx"
-	movetypes "github.com/initia-labs/initia/x/move/types"
+	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 var ZeroPubKey = secp256k1.GenPrivKeyFromSecret(bytes.Repeat([]byte{0x00}, 32)).PubKey()
 
 type MoveKeeper interface {
-	VerifyAccountAbstractionSignature(ctx context.Context, sender string, signature []byte) (string, error)
+	VerifyAccountAbstractionSignature(ctx context.Context, sender string, abstractionData vmtypes.AbstractionData) (string, error)
 }
 
 // SigVerificationDecorator verifies all signatures for a tx and return an error if any are invalid. Note,
@@ -131,17 +131,13 @@ func (svd SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simul
 			txData := adaptableTx.GetSigningTxData()
 
 			if data, ok := sig.Data.(*signing.SingleSignatureData); ok && data.SignMode == initiatx.Signing_SignMode_ACCOUNT_ABSTRACTION {
-				abstractionData := &movetypes.AbstractionData{}
-				err = json.Unmarshal(data.Signature, abstractionData)
+				abstractionData := vmtypes.AbstractionData{}
+				err = json.Unmarshal(data.Signature, &abstractionData)
 				if err != nil {
 					return ctx, err
 				}
-
-				// Validate AbstractionData
-				if abstractionData.FunctionInfo.ModuleAddress == "" ||
-					abstractionData.FunctionInfo.ModuleName == "" ||
-					abstractionData.FunctionInfo.FunctionName == "" {
-					return ctx, fmt.Errorf("invalid abstraction data: missing function info")
+				if err := abstractionData.Validate(); err != nil {
+					return ctx, err
 				}
 
 				signBytes, err := svd.signModeHandler.GetSignBytes(ctx, initiatx.Signingv1beta1_SignMode_ACCOUNT_ABSTRACTION, signerData, txData)
@@ -151,23 +147,12 @@ func (svd SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simul
 
 				digest := sha3.Sum256(signBytes)
 				digestBytes := digest[:]
-
-				var expectedDigest []byte
-				if abstractionData.AuthData.V1 != nil {
-					expectedDigest = abstractionData.AuthData.V1.SigningMessageDigest
-				} else if abstractionData.AuthData.DerivableV1 != nil {
-					expectedDigest = abstractionData.AuthData.DerivableV1.SigningMessageDigest
-				} else {
-					return ctx, fmt.Errorf("expected V1 or DerivableV1 auth data")
-				}
-
+				expectedDigest := abstractionData.SigningMessageDigest()
 				if !bytes.Equal(digestBytes, expectedDigest) {
 					return ctx, fmt.Errorf("signing message digest mismatch: expected %x, got %x", expectedDigest, digestBytes)
 				}
 
-				// TODO: replace the original signer of the message with the returned signer
-				cacheCtx, _ := ctx.CacheContext()
-				_, err = svd.moveKeeper.VerifyAccountAbstractionSignature(cacheCtx, signerData.Address, data.Signature)
+				_, err = svd.moveKeeper.VerifyAccountAbstractionSignature(ctx, signerData.Address, abstractionData)
 				if err != nil {
 					return ctx, fmt.Errorf("failed to verify account abstraction signature: %w", err)
 				}
