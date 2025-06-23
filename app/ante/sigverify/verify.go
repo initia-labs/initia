@@ -29,7 +29,7 @@ func InternalSignModeToAPI(mode signing.SignMode) (signingv1beta1.SignMode, erro
 	case initiatx.Signing_SignMode_ACCOUNT_ABSTRACTION:
 		return initiatx.Signingv1beta1_SignMode_ACCOUNT_ABSTRACTION, nil
 	default:
-		return signingv1beta1.SignMode_SIGN_MODE_UNSPECIFIED, fmt.Errorf("123123 unsupported sign mode %s", mode)
+		return signingv1beta1.SignMode_SIGN_MODE_UNSPECIFIED, fmt.Errorf("unsupported sign mode %s", mode)
 	}
 }
 
