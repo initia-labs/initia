@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/initia-labs/initia/x/move/types"
@@ -9,7 +10,13 @@ import (
 	storetypes "cosmossdk.io/store/types"
 )
 
-func (k Keeper) VerifyAccountAbstractionSignature(ctx context.Context, sender string, signature []byte) (string, error) {
+func (k Keeper) VerifyAccountAbstractionSignature(ctx context.Context, sender string, signature []byte) (res string, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("recovered from panic: %v", r)
+		}
+	}()
+
 	signer, err := types.AccAddressFromString(k.ac, sender)
 	if err != nil {
 		return "", err

@@ -165,19 +165,9 @@ func (svd SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simul
 					return ctx, fmt.Errorf("signing message digest mismatch: expected %x, got %x", expectedDigest, digestBytes)
 				}
 
-				safeExecution := func() error {
-					defer func() {
-						if r := recover(); r != nil {
-							err = fmt.Errorf("recovered from panic: %v", r)
-						}
-					}()
-					cacheCtx, _ := ctx.CacheContext()
-					_, err = svd.moveKeeper.VerifyAccountAbstractionSignature(cacheCtx, signerData.Address, data.Signature)
-					return err
-				}
-
 				// TODO: replace the original signer of the message with the returned signer
-				err = safeExecution()
+				cacheCtx, _ := ctx.CacheContext()
+				_, err = svd.moveKeeper.VerifyAccountAbstractionSignature(cacheCtx, signerData.Address, data.Signature)
 				if err != nil {
 					return ctx, fmt.Errorf("failed to verify account abstraction signature: %w", err)
 				}
