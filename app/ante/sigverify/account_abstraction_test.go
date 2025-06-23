@@ -99,6 +99,7 @@ func (suite *AnteTestSuite) SetupTest() {
 	tempDir := suite.T().TempDir()
 	suite.app, suite.ctx = suite.createTestApp(tempDir)
 	suite.ctx = suite.ctx.WithBlockHeight(1)
+	suite.ctx = suite.ctx.WithChainID("interwoven-1")
 
 	// Set up TxConfig.
 	encodingConfig := initiaapp.MakeEncodingConfig()
