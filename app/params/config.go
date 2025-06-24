@@ -29,10 +29,7 @@ func CreateTxConfig(protoCodec codec.ProtoCodecMarshaler) client.TxConfig {
 				FileResolver: signingOptions.FileResolver,
 				TypeResolver: signingOptions.TypeResolver,
 			}),
-			tx.NewSignModeAccountAbstractionHandler(aminojson.SignModeHandlerOptions{
-				FileResolver: signingOptions.FileResolver,
-				TypeResolver: signingOptions.TypeResolver,
-			}),
+			tx.NewSignModeAccountAbstractionHandler(),
 		),
 	}
 }

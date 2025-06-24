@@ -17,12 +17,12 @@ The abstract public key is a custom data structure that represents the authentic
 
    ```go
    func constructMessage(
-    ethereumAddress string,
-    domain string,
-    digestHex string,
-    issuedAt string,
-    scheme string,
-    chainId string,
+       ethereumAddress string,
+       domain string,
+       digestHex string,
+       issuedAt string,
+       scheme string,
+       chainId string,
    ) ([]byte, error) {
        message := fmt.Sprintf(`
    <domain> wants you to sign in with your Ethereum account:
@@ -118,10 +118,10 @@ The abstract public key is a custom data structure that represents the authentic
 
    ```go
    func constructMessage(
-    base58PubKey string,
-    domain string,
-    digestHex string,
-    chainId string,
+       base58PubKey string,
+       domain string,
+       digestHex string,
+       chainId string,
    ) ([]byte, error) {
        message := fmt.Sprintf(`
    <domain> wants you to sign in with your Solana account:
@@ -157,27 +157,25 @@ The abstract public key is a custom data structure that represents the authentic
 
    ```go
    func createAbstractSignature(
-    scheme string,
-    issuedAt string,
-    signature []byte,
+       signature []byte,
    ) ([]byte, error) {
-     var res []byte
+       var res []byte
     
-     // bcs encoding
-     encodedType, err := vmtypes.SerializeUint8(0x00)
-     if err != nil {
-       return nil, err
-     }
+       // bcs encoding
+       encodedType, err := vmtypes.SerializeUint8(0x00)
+       if err != nil {
+         return nil, err
+       }
    
-     // bcs encoding
-     encodedSignature, err := vmtypes.SerializeBytes(signature)
-     if err != nil {
-       return nil, err
-     }
+       // bcs encoding
+       encodedSignature, err := vmtypes.SerializeBytes(signature)
+       if err != nil {
+         return nil, err
+       }
    
-     res = append(res, encodedType...)
-     res = append(res, encodedSignature...)
-     return res, nil
+       res = append(res, encodedType...)
+       res = append(res, encodedSignature...)
+       return res, nil
    }
    ```
 
@@ -204,7 +202,7 @@ For Derivable Account Abstraction, the signature structure is:
 
 **Field Descriptions:**
 
-- `signing_message_digest`: SHA3-256 hash of the Amino signBytes
+- `signing_message_digest`: SHA3-256 hash of the signBytes with direct sign mode
 - `abstract_signature`: abstract signature
 - `abstract_public_key`: abstract public key
 
@@ -213,8 +211,8 @@ Encode the JSON string to base64 and place it into the `signature` field.
 ### initia.js example
 
 ```ts
-function createSignatureAmino(tx: SignDoc): SignatureV2 {
-  const authData = createAuthData(tx.toAminoJSON());
+function createSignature(signDoc: SignDoc): SignatureV2 {
+  const authData = createAuthData(Buffer.from(signDoc.toBytes()));
   return new SignatureV2(
     this.publicKey,
     new SignatureV2.Descriptor(
@@ -223,11 +221,14 @@ function createSignatureAmino(tx: SignDoc): SignatureV2 {
         Buffer.from(authData, 'utf-8').toString('base64')
       )
     ),
-    tx.sequence
+    signDoc.sequence
   );
 }
 
-function createAuthData(signBodyAmino: string): string {
+function createAuthData(signBody: Buffer): string {
+  const message = constructMessage(...)
+  const signature = pk.sign(message)
+  const abstractSignature = constructAbstractSignature(signature)
   return JSON.stringify({
     function_info: {
       module_address: "0xcafe",
@@ -235,9 +236,9 @@ function createAuthData(signBodyAmino: string): string {
       function_name: "authenticate"
     },
     auth_data: {
-      derivable: {
-        signing_message_digest: sha3_256(signBodyAmino).toString('base64'),
-        abstract_signature: signature.toBuffer().toString('base64')
+      derivable_v1: {
+        signing_message_digest: sha3_256(signBody).toString('base64'),
+        abstract_signature: abstractSignature.toBuffer().toString('base64')
         abstract_public_key: pubkey.toBuffer().toString('base64')
       }
     }

@@ -70,7 +70,7 @@ enum AbstractionAuthData has copy, drop {
 }
 ```
 
-* `signing_message_digest`: SHA3-256 hash of the Amino signBytes
+* `signing_message_digest`: SHA3-256 hash of the signBytes with direct sign mode
 * `authenticator`: Custom encoded authentication data
 
 Encode the JSON string to base64 and place it into the `signature` field.
@@ -78,8 +78,8 @@ Encode the JSON string to base64 and place it into the `signature` field.
 ### initia.js example
 
 ```ts
-function createSignatureAmino(tx: SignDoc): SignatureV2 {
-  const authData = createAuthData(tx.toAminoJSON());
+function createSignature(signDoc: SignDoc): SignatureV2 {
+  const authData = createAuthData(Buffer.from(signDoc.toBytes()));
   return new SignatureV2(
     this.publicKey,
     new SignatureV2.Descriptor(
@@ -88,11 +88,11 @@ function createSignatureAmino(tx: SignDoc): SignatureV2 {
         Buffer.from(authData, 'utf-8').toString('base64')
       )
     ),
-    tx.sequence
+    signDoc.sequence
   );
 }
 
-function createAuthData(signBodyAmino: string): string {
+function createAuthData(signBody: Buffer): string {
   return JSON.stringify({
     function_info: {
       module_address: "0xcafe",
@@ -101,7 +101,7 @@ function createAuthData(signBodyAmino: string): string {
     },
     auth_data: {
       v1: {
-        signing_message_digest: sha3_256(signBodyAmino).toString('base64'),
+        signing_message_digest: sha3_256(signBody).toString('base64'),
         authenticator: Buffer.from("hello world", "utf-8").toString('base64')
       }
     }

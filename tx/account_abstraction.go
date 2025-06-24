@@ -5,7 +5,7 @@ import (
 
 	signingv1beta1 "cosmossdk.io/api/cosmos/tx/signing/v1beta1"
 	"cosmossdk.io/x/tx/signing"
-	"cosmossdk.io/x/tx/signing/aminojson"
+	"cosmossdk.io/x/tx/signing/direct"
 	txsigning "github.com/cosmos/cosmos-sdk/types/tx/signing"
 )
 
@@ -14,12 +14,12 @@ const Signing_SignMode_ACCOUNT_ABSTRACTION = txsigning.SignMode(SignModeAccountA
 const Signingv1beta1_SignMode_ACCOUNT_ABSTRACTION = signingv1beta1.SignMode(SignModeAccountAbstraction)
 
 type SignModeAccountAbstractionHandler struct {
-	*aminojson.SignModeHandler
+	*direct.SignModeHandler
 }
 
-func NewSignModeAccountAbstractionHandler(options aminojson.SignModeHandlerOptions) *SignModeAccountAbstractionHandler {
+func NewSignModeAccountAbstractionHandler() *SignModeAccountAbstractionHandler {
 	return &SignModeAccountAbstractionHandler{
-		SignModeHandler: aminojson.NewSignModeHandler(options),
+		SignModeHandler: &direct.SignModeHandler{},
 	}
 }
 
