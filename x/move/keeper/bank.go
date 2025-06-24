@@ -317,8 +317,6 @@ func (k MoveBankKeeper) GetSupplyWithMetadata(ctx context.Context, metadata vmty
 		[]string{fmt.Sprintf("\"%s\"", metadata)},
 	)
 	if err != nil {
-		fmt.Println("SIBONG", err)
-
 		// ignore fetching error due to dispatchable fungible assets
 		return sdkmath.ZeroInt(), nil
 	}

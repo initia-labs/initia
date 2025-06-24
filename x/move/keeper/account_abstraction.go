@@ -2,7 +2,7 @@ package keeper
 
 import (
 	"context"
-	"fmt"
+	"errors"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/initia-labs/initia/x/move/types"
@@ -16,7 +16,14 @@ import (
 func (k Keeper) VerifyAccountAbstractionSignature(ctx context.Context, sender string, abstractionData vmtypes.AbstractionData) (res string, err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("recovered from panic: %v", r)
+			switch r.(type) {
+			case storetypes.ErrorOutOfGas:
+				// propagate out of gas error
+				panic(r)
+			default:
+				k.Logger(ctx).Error("panic in VerifyAccountAbstractionSignature", "error", r)
+				err = errors.New("panic in VerifyAccountAbstractionSignature occurred")
+			}
 		}
 	}()
 

@@ -4,6 +4,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/legacy"
 
+	"github.com/initia-labs/initia/crypto/derivable"
 	"github.com/initia-labs/initia/crypto/ethsecp256k1"
 )
 
@@ -14,6 +15,8 @@ func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 		ethsecp256k1.PubKeyName, nil)
 	cdc.RegisterConcrete(&ethsecp256k1.PrivKey{},
 		ethsecp256k1.PrivKeyName, nil)
+	cdc.RegisterConcrete(&derivable.PubKey{},
+		derivable.PubKeyName, nil)
 
 	// NOTE: update SDK's amino codec to include the ethsecp256k1 keys.
 	// DO NOT REMOVE unless deprecated on the SDK.

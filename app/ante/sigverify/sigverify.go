@@ -1,12 +1,8 @@
 package sigverify
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
-
-	"golang.org/x/crypto/sha3"
 
 	"google.golang.org/protobuf/types/known/anypb"
 
@@ -30,11 +26,8 @@ import (
 
 	forwardingtypes "github.com/noble-assets/forwarding/v2/types"
 
-	initiatx "github.com/initia-labs/initia/tx"
 	vmtypes "github.com/initia-labs/movevm/types"
 )
-
-var ZeroPubKey = secp256k1.GenPrivKeyFromSecret(bytes.Repeat([]byte{0x00}, 32)).PubKey()
 
 type MoveKeeper interface {
 	VerifyAccountAbstractionSignature(ctx context.Context, sender string, abstractionData vmtypes.AbstractionData) (string, error)
@@ -129,46 +122,17 @@ func (svd SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simul
 				return ctx, fmt.Errorf("expected tx to implement V2AdaptableTx, got %T", tx)
 			}
 			txData := adaptableTx.GetSigningTxData()
-
-			if data, ok := sig.Data.(*signing.SingleSignatureData); ok && data.SignMode == initiatx.Signing_SignMode_ACCOUNT_ABSTRACTION {
-				abstractionData := vmtypes.AbstractionData{}
-				err = json.Unmarshal(data.Signature, &abstractionData)
-				if err != nil {
-					return ctx, err
+			err = verifySignature(ctx, svd.moveKeeper, pubKey, signerData, sig.Data, svd.signModeHandler, txData)
+			if err != nil {
+				var errMsg string
+				if authante.OnlyLegacyAminoSigners(sig.Data) {
+					// If all signers are using SIGN_MODE_LEGACY_AMINO, we rely on VerifySignature to check account sequence number,
+					// and therefore communicate sequence number as a potential cause of error.
+					errMsg = fmt.Sprintf("signature verification failed; please verify account number (%d), sequence (%d) and chain-id (%s)", accNum, acc.GetSequence(), chainID)
+				} else {
+					errMsg = fmt.Sprintf("signature verification failed; please verify account number (%d) and chain-id (%s): (%s)", accNum, chainID, err.Error())
 				}
-				if err := abstractionData.Validate(); err != nil {
-					return ctx, err
-				}
-
-				signBytes, err := svd.signModeHandler.GetSignBytes(ctx, initiatx.Signingv1beta1_SignMode_ACCOUNT_ABSTRACTION, signerData, txData)
-				if err != nil {
-					return ctx, err
-				}
-
-				digest := sha3.Sum256(signBytes)
-				digestBytes := digest[:]
-				expectedDigest := abstractionData.SigningMessageDigest()
-				if !bytes.Equal(digestBytes, expectedDigest) {
-					return ctx, fmt.Errorf("signing message digest mismatch: expected %x, got %x", expectedDigest, digestBytes)
-				}
-
-				_, err = svd.moveKeeper.VerifyAccountAbstractionSignature(ctx, signerData.Address, abstractionData)
-				if err != nil {
-					return ctx, fmt.Errorf("failed to verify account abstraction signature: %w", err)
-				}
-			} else {
-				err = verifySignature(ctx, pubKey, signerData, sig.Data, svd.signModeHandler, txData)
-				if err != nil {
-					var errMsg string
-					if authante.OnlyLegacyAminoSigners(sig.Data) {
-						// If all signers are using SIGN_MODE_LEGACY_AMINO, we rely on VerifySignature to check account sequence number,
-						// and therefore communicate sequence number as a potential cause of error.
-						errMsg = fmt.Sprintf("signature verification failed; please verify account number (%d), sequence (%d) and chain-id (%s)", accNum, acc.GetSequence(), chainID)
-					} else {
-						errMsg = fmt.Sprintf("signature verification failed; please verify account number (%d) and chain-id (%s): (%s)", accNum, chainID, err.Error())
-					}
-					return ctx, errorsmod.Wrap(sdkerrors.ErrUnauthorized, errMsg)
-				}
+				return ctx, errorsmod.Wrap(sdkerrors.ErrUnauthorized, errMsg)
 			}
 		}
 	}

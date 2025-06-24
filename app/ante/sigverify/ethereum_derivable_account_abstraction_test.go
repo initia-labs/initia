@@ -28,6 +28,7 @@ import (
 	movetypes "github.com/initia-labs/initia/x/move/types"
 	vmtypes "github.com/initia-labs/movevm/types"
 
+	"github.com/initia-labs/initia/crypto/derivable"
 	ethsecp256k1 "github.com/initia-labs/initia/crypto/ethsecp256k1"
 
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -60,23 +61,23 @@ func createAbstractSignature(
 ) ([]byte, error) {
 	var res []byte
 	/*
-				enum SIWEAbstractSignature has drop {
-		        /// Deprecated, use MessageV2 instead
-		        MessageV1 {
-		            /// The date and time when the signature was issued
-		            issued_at: String,
-		            /// The signature of the message
-		            signature: vector<u8>
-		        },
-		        MessageV2 {
-		            /// The scheme in the URI of the message, e.g. the scheme of the website that requested the signature (http, https, etc.)
-		            scheme: String,
-		            /// The date and time when the signature was issued
-		            issued_at: String,
-		            /// The signature of the message
-		            signature: vector<u8>
-		        }
-		    }
+		enum SIWEAbstractSignature has drop {
+			/// Deprecated, use MessageV2 instead
+			MessageV1 {
+				/// The date and time when the signature was issued
+				issued_at: String,
+				/// The signature of the message
+				signature: vector<u8>
+			},
+			MessageV2 {
+				/// The scheme in the URI of the message, e.g. the scheme of the website that requested the signature (http, https, etc.)
+				scheme: String,
+				/// The date and time when the signature was issued
+				issued_at: String,
+				/// The signature of the message
+				signature: vector<u8>
+			}
+		}
 	*/
 
 	encodedType, err := vmtypes.SerializeUint8(0x01)
@@ -114,7 +115,7 @@ func constructMessage(
 	scheme string,
 	chainId string,
 ) ([]byte, error) {
-	message := fmt.Sprintf("%s wants you to sign in with your Ethereum account:\n%s\n\nPlease confirm you explicitly initiated this request from %s. You are approving to execute transaction on Initia blockchain.\n\nURI: %s://%s\nVersion: 1\nChain ID: %s\nNonce: %s\nIssued At: %s", domain, ethereumAddress, domain, scheme, domain, chainId, digestUtf8, issuedAt)
+	message := fmt.Sprintf("%s wants you to sign in with your Ethereum account:\n%s\n\nPlease confirm you explicitly initiated this request from %s. You are approving to execute transaction on Initia blockchain (%s).\n\nURI: %s://%s\nVersion: 1\nChain ID: %s\nNonce: %s\nIssued At: %s", domain, ethereumAddress, domain, chainId, scheme, domain, chainId, digestUtf8, issuedAt)
 	msgLen := len(message)
 
 	prefix := []byte("\x19Ethereum Signed Message:\n")
@@ -172,7 +173,9 @@ func (suite *AnteTestSuite) TestEthereumDerivableAccountAbstraction() {
 	suite.txBuilder.SetGasLimit(gasLimit)
 
 	acc := suite.app.AccountKeeper.GetAccount(suite.ctx, daaAccAddress)
-	err = acc.SetPubKey(sigverify.ZeroPubKey)
+	pubkey := derivable.NewPubKey("0x1", "ethereum_derivable_account", "authenticate", abstractPublicKey)
+	suite.Require().Equal(pubkey.Address().Bytes(), daaAddress.Bytes())
+	err = acc.SetPubKey(pubkey)
 	suite.Require().NoError(err)
 	suite.app.AccountKeeper.SetAccount(suite.ctx, acc)
 
@@ -198,7 +201,7 @@ func (suite *AnteTestSuite) CreateEthereumDerivableAccountAbstractionTransferTx(
 	// First round: we gather all the signer infos. We use the "set empty
 	// signature" hack to do that.
 	sigV2 := signing.SignatureV2{
-		PubKey: sigverify.ZeroPubKey,
+		PubKey: derivable.NewPubKey("0x1", "ethereum_derivable_account", "authenticate", abstractPublicKey),
 		Data: &signing.SingleSignatureData{
 			SignMode:  initiatx.Signing_SignMode_ACCOUNT_ABSTRACTION,
 			Signature: nil,
@@ -216,7 +219,7 @@ func (suite *AnteTestSuite) CreateEthereumDerivableAccountAbstractionTransferTx(
 		ChainID:       chainID,
 		AccountNumber: accNum,
 		Sequence:      accSeq,
-		PubKey:        sigverify.ZeroPubKey,
+		PubKey:        derivable.NewPubKey("0x1", "ethereum_derivable_account", "authenticate", abstractPublicKey),
 	}
 	sigV2, err = DAAEthereumSign(
 		context.TODO(), initiatx.Signing_SignMode_ACCOUNT_ABSTRACTION, signerData,

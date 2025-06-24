@@ -1,8 +1,12 @@
 package sigverify
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+
+	"golang.org/x/crypto/sha3"
 
 	signingv1beta1 "cosmossdk.io/api/cosmos/tx/signing/v1beta1"
 	txsigning "cosmossdk.io/x/tx/signing"
@@ -10,7 +14,9 @@ import (
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/cosmos-sdk/crypto/types/multisig"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
+
 	initiatx "github.com/initia-labs/initia/tx"
+	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 // internalSignModeToAPI converts a signing.SignMode to a protobuf SignMode.
@@ -37,6 +43,7 @@ func InternalSignModeToAPI(mode signing.SignMode) (signingv1beta1.SignMode, erro
 // modes. It differs from verifySignature in that it uses the new txsigning.TxData interface in x/tx.
 func verifySignature(
 	ctx context.Context,
+	moveKeeper MoveKeeper,
 	pubKey cryptotypes.PubKey,
 	signerData txsigning.SignerData,
 	signatureData signing.SignatureData,
@@ -54,6 +61,34 @@ func verifySignature(
 			return err
 		}
 
+		// conduct account abstraction signature verification
+		if data.SignMode == initiatx.Signing_SignMode_ACCOUNT_ABSTRACTION {
+			abstractionData := vmtypes.AbstractionData{}
+			err = json.Unmarshal(data.Signature, &abstractionData)
+			if err != nil {
+				return err
+			}
+
+			if err := abstractionData.Validate(); err != nil {
+				return err
+			}
+
+			digest := sha3.Sum256(signBytes)
+			digestBytes := digest[:]
+			expectedDigest := abstractionData.SigningMessageDigest()
+			if !bytes.Equal(digestBytes, expectedDigest) {
+				return fmt.Errorf("signing message digest mismatch: expected %x, got %x", expectedDigest, digestBytes)
+			}
+
+			_, err = moveKeeper.VerifyAccountAbstractionSignature(ctx, signerData.Address, abstractionData)
+			if err != nil {
+				return fmt.Errorf("failed to verify account abstraction signature: %w", err)
+			}
+
+			return nil
+		}
+
+		// conduct normal signature verification
 		if !pubKey.VerifySignature(signBytes, data.Signature) {
 			return fmt.Errorf("unable to verify single signer signature")
 		}
