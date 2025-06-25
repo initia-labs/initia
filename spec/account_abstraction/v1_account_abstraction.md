@@ -1,5 +1,7 @@
 # Account Abstraction V1
 
+Account Abstraction (AA) on Initia enables custom transaction authentication logic through Move modules, allowing accounts to define their own rules beyond native cryptographic schemes.
+
 ## Prerequisites
 
 Before using account abstraction, you need to:

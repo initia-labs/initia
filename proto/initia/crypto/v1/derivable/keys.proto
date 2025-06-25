@@ -16,6 +16,6 @@ message PubKey {
   string module_name = 2;
   string function_name = 3;
 
-  // normally |base58_public_key|domain|
+  // normally |pubkey|domain|
   bytes abstract_public_key = 4;
 }

@@ -30,7 +30,7 @@ type PubKey struct {
 	ModuleAddress string `protobuf:"bytes,1,opt,name=module_address,json=moduleAddress,proto3" json:"module_address,omitempty"`
 	ModuleName    string `protobuf:"bytes,2,opt,name=module_name,json=moduleName,proto3" json:"module_name,omitempty"`
 	FunctionName  string `protobuf:"bytes,3,opt,name=function_name,json=functionName,proto3" json:"function_name,omitempty"`
-	// normally |base58_public_key|domain|
+	// normally |pubkey|domain|
 	AbstractPublicKey []byte `protobuf:"bytes,4,opt,name=abstract_public_key,json=abstractPublicKey,proto3" json:"abstract_public_key,omitempty"`
 }
 
