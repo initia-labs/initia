@@ -75,13 +75,17 @@ enum AbstractionAuthData has copy, drop {
 
 Encode the JSON string to base64 and place it into the `signature` field.
 
+### Public Key
+
+When building a transaction body, use the normal public key of the account that has enabled account abstraction. You do not need to use any special public key format.
+
 ### initia.js example
 
 ```ts
 function createSignature(signDoc: SignDoc): SignatureV2 {
   const authData = createAuthData(Buffer.from(signDoc.toBytes()));
   return new SignatureV2(
-    this.publicKey,
+    this.publicKey, // normal account PubKey
     new SignatureV2.Descriptor(
       new SignatureV2.Descriptor.Single(
         SignMode.SIGN_MODE_ACCOUNT_ABSTRACTION,

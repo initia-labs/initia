@@ -208,13 +208,22 @@ For Derivable Account Abstraction, the signature structure is:
 
 Encode the JSON string to base64 and place it into the `signature` field.
 
+### Public Key
+
+To use derivable account abstraction, you must use the `/initia.crypto.v1.derivable.PubKey` type defined in [proto/initia/crypto/v1/derivable/keys.proto](../../proto/initia/crypto/v1/derivable/keys.proto). This public key type contains:
+
+- `module_address`: The address where the authentication module is deployed
+- `module_name`: The name of the module containing the authentication function  
+- `function_name`: The name of the authentication function
+- `abstract_public_key`: The abstract public key bytes, typically containing the base58-encoded public key and domain
+
 ### initia.js example
 
 ```ts
 function createSignature(signDoc: SignDoc): SignatureV2 {
   const authData = createAuthData(Buffer.from(signDoc.toBytes()));
   return new SignatureV2(
-    this.publicKey,
+    this.publicKey, // derivable PubKey
     new SignatureV2.Descriptor(
       new SignatureV2.Descriptor.Single(
         SignMode.SIGN_MODE_ACCOUNT_ABSTRACTION,
