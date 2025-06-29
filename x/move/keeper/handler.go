@@ -639,12 +639,11 @@ func emitContractEvents(ctx sdk.Context, events []vmtypes.JsonEvent) {
 
 		attributes := []sdk.Attribute{
 			sdk.NewAttribute(types.AttributeKeyTypeTag, typeTag),
+			sdk.NewAttribute(types.AttributeKeyData, event.EventData),
 		}
 
 		var dataEvent map[string]any
-		if err := json.Unmarshal([]byte(event.EventData), &dataEvent); err != nil {
-			attributes = append(attributes, sdk.NewAttribute(types.AttributeKeyData, event.EventData))
-		} else {
+		if err := json.Unmarshal([]byte(event.EventData), &dataEvent); err == nil {
 			for k, v := range dataEvent {
 				var strVal string
 				switch val := v.(type) {
