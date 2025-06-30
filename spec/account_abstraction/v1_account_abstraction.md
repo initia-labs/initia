@@ -32,6 +32,8 @@ entry fun add_authentication_function(
 
 ## Authentication Function Interface
 
+The `authenticate` function must be pure and cannot modify any state. It can only verify the authentication data and return the signer. Any state changes will be dropped during execution.
+
 The registered function must match this interface:
 
 ```move
