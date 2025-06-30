@@ -9,7 +9,7 @@ import (
 	txsigning "github.com/cosmos/cosmos-sdk/types/tx/signing"
 )
 
-const SignModeAccountAbstraction int32 = 900
+const SignModeAccountAbstraction int32 = 0xAA // 170
 const Signing_SignMode_ACCOUNT_ABSTRACTION = txsigning.SignMode(SignModeAccountAbstraction)
 const Signingv1beta1_SignMode_ACCOUNT_ABSTRACTION = signingv1beta1.SignMode(SignModeAccountAbstraction)
 

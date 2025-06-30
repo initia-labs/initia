@@ -75,9 +75,9 @@ func verifySignature(
 
 			digest := sha3.Sum256(signBytes)
 			digestBytes := digest[:]
-			expectedDigest := abstractionData.SigningMessageDigest()
-			if !bytes.Equal(digestBytes, expectedDigest) {
-				return fmt.Errorf("signing message digest mismatch: expected %x, got %x", expectedDigest, digestBytes)
+			digestInSignature := abstractionData.SigningMessageDigest()
+			if !bytes.Equal(digestBytes, digestInSignature) {
+				return fmt.Errorf("signing message digest mismatch: expected %x (calculated from sign bytes), got %x (from signature)", digestBytes, digestInSignature)
 			}
 
 			_, err = moveKeeper.VerifyAccountAbstractionSignature(ctx, signerData.Address, abstractionData)

@@ -90,7 +90,7 @@ function createSignature(signDoc: SignDoc): SignatureV2 {
     this.publicKey, // normal account PubKey
     new SignatureV2.Descriptor(
       new SignatureV2.Descriptor.Single(
-        SignMode.SIGN_MODE_ACCOUNT_ABSTRACTION,
+        SignMode.SIGN_MODE_ACCOUNT_ABSTRACTION, // 0xAA = 170
         Buffer.from(authData, 'utf-8').toString('base64')
       )
     ),
