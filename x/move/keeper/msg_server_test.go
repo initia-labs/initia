@@ -102,7 +102,7 @@ func Test_ExecuteMsg(t *testing.T) {
 
 	require.Equal(t, types.EventTypeMove, event.Type)
 
-	require.Len(t, event.Attributes, 4)
+	require.Len(t, event.Attributes, 5)
 
 	attr, ok := event.GetAttribute(types.AttributeKeyTypeTag)
 	require.True(t, ok)
@@ -139,7 +139,7 @@ func Test_ExecuteMsg(t *testing.T) {
 
 	require.Equal(t, types.EventTypeMove, event.Type)
 
-	require.Len(t, event.Attributes, 4)
+	require.Len(t, event.Attributes, 5)
 
 	attr, ok = event.GetAttribute(types.AttributeKeyTypeTag)
 	require.True(t, ok)
@@ -181,7 +181,7 @@ func Test_GovExecuteMsg(t *testing.T) {
 
 	require.Equal(t, types.EventTypeMove, event.Type)
 
-	require.Len(t, event.Attributes, 4)
+	require.Len(t, event.Attributes, 5)
 
 	attr, ok := event.GetAttribute(types.AttributeKeyTypeTag)
 	require.True(t, ok)
@@ -219,7 +219,7 @@ func Test_GovExecuteMsg(t *testing.T) {
 
 	require.Equal(t, types.EventTypeMove, event.Type)
 
-	require.Len(t, event.Attributes, 4)
+	require.Len(t, event.Attributes, 5)
 
 	attr, ok = event.GetAttribute(types.AttributeKeyTypeTag)
 	require.True(t, ok)
