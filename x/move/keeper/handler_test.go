@@ -89,7 +89,7 @@ func TestExecuteEntryFunction(t *testing.T) {
 
 	require.Equal(t, types.EventTypeMove, event.Type)
 
-	require.Len(t, event.Attributes, 4)
+	require.Len(t, event.Attributes, 5)
 
 	attr, ok := event.GetAttribute(types.AttributeKeyTypeTag)
 	require.True(t, ok)
@@ -123,7 +123,7 @@ func TestExecuteEntryFunction(t *testing.T) {
 
 	require.Equal(t, types.EventTypeMove, event.Type)
 
-	require.Len(t, event.Attributes, 4)
+	require.Len(t, event.Attributes, 5)
 
 	attr, ok = event.GetAttribute(types.AttributeKeyTypeTag)
 	require.True(t, ok)
@@ -652,6 +652,7 @@ func TestSubmsgCallback(t *testing.T) {
 
 	require.Equal(t, sdk.NewEvent("move",
 		sdk.NewAttribute("type_tag", "0x2::submsg::ResultEvent"),
+		sdk.NewAttribute("data", "{\"id\":\"123\",\"success\":false}"),
 		sdk.NewAttribute("id", "123"),
 		sdk.NewAttribute("success", "false"),
 	), event)
@@ -674,7 +675,7 @@ func TestSubmsgCallback(t *testing.T) {
 
 	require.Equal(t, "move", event.Type)
 
-	require.Len(t, event.Attributes, 3)
+	require.Len(t, event.Attributes, 4)
 
 	attr, ok := event.GetAttribute("type_tag")
 	require.True(t, ok)
@@ -711,7 +712,7 @@ func TestSubmsgCallback(t *testing.T) {
 
 	require.Equal(t, "move", event.Type)
 
-	require.Len(t, event.Attributes, 4)
+	require.Len(t, event.Attributes, 5)
 
 	attr, ok = event.GetAttribute("type_tag")
 	require.True(t, ok)
@@ -762,7 +763,7 @@ func TestSubmsgCallback(t *testing.T) {
 
 	require.Equal(t, "move", event.Type)
 
-	require.Len(t, event.Attributes, 4)
+	require.Len(t, event.Attributes, 5)
 
 	attr, ok = event.GetAttribute("type_tag")
 	require.True(t, ok)
