@@ -6,7 +6,7 @@ then
     exit
 fi
 
-initiad move build
+initiad move build --language-version=2.1
 rm -rf ../binaries
 mkdir ../binaries
 

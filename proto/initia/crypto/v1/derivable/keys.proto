@@ -1,0 +1,21 @@
+syntax = "proto3";
+package initia.crypto.v1.derivable;
+
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/initia-labs/initia/crypto/derivable";
+
+// PubKey defines a type alias for derived public key that implements
+// Tendermint's PubKey interface.
+message PubKey {
+  option (gogoproto.goproto_stringer) = false;
+  option (amino.name) = "initia/PubKeyDerivable";
+
+  string module_address = 1;
+  string module_name = 2;
+  string function_name = 3;
+
+  // normally |pubkey|domain|
+  bytes abstract_public_key = 4;
+}

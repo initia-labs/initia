@@ -1,6 +1,7 @@
 syntax = "proto3";
 package initia.crypto.v1beta1.ethsecp256k1;
 
+import "amino/amino.proto";
 import "gogoproto/gogo.proto";
 
 option go_package = "github.com/initia-labs/initia/crypto/ethsecp256k1";
@@ -10,6 +11,7 @@ option go_package = "github.com/initia-labs/initia/crypto/ethsecp256k1";
 // key format.
 message PubKey {
   option (gogoproto.goproto_stringer) = false;
+  option (amino.name) = "initia/PubKeyEthSecp256k1";
 
   bytes key = 1;
 }
@@ -17,5 +19,7 @@ message PubKey {
 // PrivKey defines a type alias for an ecdsa.PrivateKey that implements
 // Tendermint's PrivateKey interface.
 message PrivKey {
+  option (amino.name) = "initia/PrivKeyEthSecp256k1";
+
   bytes key = 1;
 }

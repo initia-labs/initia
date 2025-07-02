@@ -16,7 +16,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/query"
 	cosmosbanktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	"github.com/initia-labs/initia/app/upgrades/v1_1_1"
 	"github.com/initia-labs/initia/x/move/types"
 	vmtypes "github.com/initia-labs/movevm/types"
 )
@@ -329,19 +328,6 @@ func Test_MultiSend(t *testing.T) {
 func Test_DispatchableToken(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
-	// TODO - remove this after movevm version update
-	////////////////////////////////////////////////////
-	moduleBytes, err := v1_1_1.GetModuleBytes()
-	require.NoError(t, err)
-
-	var modules []vmtypes.Module
-	for _, module := range moduleBytes {
-		modules = append(modules, vmtypes.NewModule(module))
-	}
-
-	err = input.MoveKeeper.PublishModuleBundle(ctx, vmtypes.StdAddress, vmtypes.NewModuleBundle(modules...), types.UpgradePolicy_COMPATIBLE)
-	require.NoError(t, err)
-	////////////////////////////////////////////////////
 	deployer, err := vmtypes.NewAccountAddress("0xcafe")
 	require.NoError(t, err)
 
@@ -380,19 +366,6 @@ func Test_DispatchableToken(t *testing.T) {
 func Test_InvalidDispatchableToken(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
-	// TODO - remove this after movevm version update
-	////////////////////////////////////////////////////
-	moduleBytes, err := v1_1_1.GetModuleBytes()
-	require.NoError(t, err)
-
-	var modules []vmtypes.Module
-	for _, module := range moduleBytes {
-		modules = append(modules, vmtypes.NewModule(module))
-	}
-
-	err = input.MoveKeeper.PublishModuleBundle(ctx, vmtypes.StdAddress, vmtypes.NewModuleBundle(modules...), types.UpgradePolicy_COMPATIBLE)
-	require.NoError(t, err)
-	////////////////////////////////////////////////////
 	deployer, err := vmtypes.NewAccountAddress("0xcafe")
 	require.NoError(t, err)
 

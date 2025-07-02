@@ -90,6 +90,7 @@ func setupBlockSDK(
 				FeegrantKeeper:  app.FeeGrantKeeper,
 				SignModeHandler: app.txConfig.SignModeHandler(),
 			},
+			MoveKeeper:       app.MoveKeeper,
 			IBCkeeper:        app.IBCKeeper,
 			DynamicFeeKeeper: dynamicfeekeeper.NewAnteKeeper(app.DynamicFeeKeeper),
 			Codec:            app.appCodec,

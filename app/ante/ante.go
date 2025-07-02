@@ -26,6 +26,7 @@ import (
 // channel keeper.
 type HandlerOptions struct {
 	ante.HandlerOptions
+	MoveKeeper       sigverify.MoveKeeper
 	Codec            codec.BinaryCodec
 	DynamicFeeKeeper dynamicfeetypes.AnteKeeper
 	IBCkeeper        *ibckeeper.Keeper
@@ -45,6 +46,10 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 
 	if options.BankKeeper == nil {
 		return nil, errors.Wrap(sdkerrors.ErrLogic, "bank keeper is required for ante builder")
+	}
+
+	if options.MoveKeeper == nil {
+		return nil, errors.Wrap(sdkerrors.ErrLogic, "move keeper is required for ante builder")
 	}
 
 	if options.SignModeHandler == nil {
@@ -91,7 +96,7 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 		ante.NewSetPubKeyDecorator(options.AccountKeeper),
 		ante.NewValidateSigCountDecorator(options.AccountKeeper),
 		ante.NewSigGasConsumeDecorator(options.AccountKeeper, sigGasConsumer),
-		sigverify.NewSigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
+		sigverify.NewSigVerificationDecorator(options.AccountKeeper, options.SignModeHandler, options.MoveKeeper),
 		ante.NewIncrementSequenceDecorator(options.AccountKeeper),
 		ibcante.NewRedundantRelayDecorator(options.IBCkeeper),
 		auctionante.NewAuctionDecorator(options.AuctionKeeper, options.TxEncoder, options.MevLane),

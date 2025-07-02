@@ -27,6 +27,7 @@ func NewEnv(ctx context.Context, nextAccountNumber uint64, executionCounter uint
 	copy(sessionID[:], tmhash.Sum(append(txBytes, counterBz[:]...)))
 
 	return vmtypes.Env{
+		ChainId:           sdkCtx.ChainID(),
 		BlockHeight:       uint64(sdkCtx.BlockHeader().Height),
 		BlockTimestamp:    uint64(sdkCtx.BlockHeader().Time.Unix()),
 		NextAccountNumber: nextAccountNumber,
