@@ -22,13 +22,12 @@ import (
 
 // Flag names and valuesi
 const (
-	FlagExpiration = "expiration"
-	FlagType       = "type"
-	FlagItems      = "items"
-	FlagModules    = "modules"
-	move           = "move"
-	publish        = "publish"
-	execute        = "execute"
+	FlagType    = "type"
+	FlagItems   = "items"
+	FlagModules = "modules"
+	move        = "move"
+	publish     = "publish"
+	execute     = "execute"
 )
 
 // GetTxCmd returns the transaction commands for this module
@@ -163,7 +162,7 @@ Where authzItems.json contains:
 }
 
 func getExpireTime(cmd *cobra.Command) (*time.Time, error) {
-	exp, err := cmd.Flags().GetInt64(FlagExpiration)
+	exp, err := cmd.Flags().GetInt64(authzcli.FlagExpiration)
 	if err != nil {
 		return nil, err
 	}
