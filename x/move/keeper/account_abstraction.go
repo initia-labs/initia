@@ -46,7 +46,7 @@ func (k Keeper) VerifyAccountAbstractionSignature(ctx context.Context, sender st
 	sdkCtx = sdkCtx.WithGasMeter(storetypes.NewInfiniteGasMeter())
 
 	gasBalance := gasForRuntime
-	return k.initiaMoveVM.ExecuteAuthenticate(
+	res, err = k.initiaMoveVM.ExecuteAuthenticate(
 		&gasBalance,
 		types.NewVMStore(sdkCtx, k.VMStore),
 		NewApi(k, sdkCtx),
@@ -54,4 +54,11 @@ func (k Keeper) VerifyAccountAbstractionSignature(ctx context.Context, sender st
 		signer,
 		abstractionData,
 	)
+	// consume gas first and check error
+	gasUsed := gasForRuntime - gasBalance
+	gasMeter.ConsumeGas(gasUsed, "move authentication runtime")
+	if err != nil {
+		return "", err
+	}
+	return res, nil
 }
