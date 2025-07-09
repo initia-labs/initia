@@ -11,9 +11,11 @@ import (
 	storetypes "cosmossdk.io/store/types"
 )
 
+const MaxGasForVerification = 1_000_000
+
 // VerifyAccountAbstractionSignature verifies the signature of an account abstraction transaction.
 // It returns the signer which is returned by the authenticate function; for now, it is the same as the sender.
-func (k Keeper) VerifyAccountAbstractionSignature(ctx context.Context, sender string, abstractionData vmtypes.AbstractionData) (res string, err error) {
+func (k Keeper) VerifyAccountAbstractionSignature(ctx context.Context, sender string, abstractionData vmtypes.AbstractionData) (returnedSigner *vmtypes.AccountAddress, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			switch r.(type) {
@@ -29,24 +31,24 @@ func (k Keeper) VerifyAccountAbstractionSignature(ctx context.Context, sender st
 
 	signer, err := types.AccAddressFromString(k.ac, sender)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	ac := types.NextAccountNumber(ctx, k.authKeeper)
 	ec, err := k.ExecutionCounter.Next(ctx)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	gasMeter := sdkCtx.GasMeter()
-	gasForRuntime := k.computeGasForRuntime(ctx, gasMeter)
+	gasForRuntime := min(MaxGasForVerification, k.computeGasForRuntime(ctx, gasMeter))
 
 	// delegate gas metering to move vm
 	sdkCtx = sdkCtx.WithGasMeter(storetypes.NewInfiniteGasMeter())
 
 	gasBalance := gasForRuntime
-	res, err = k.initiaMoveVM.ExecuteAuthenticate(
+	returnedSigner, err = k.initiaMoveVM.ExecuteAuthenticate(
 		&gasBalance,
 		types.NewVMStore(sdkCtx, k.VMStore),
 		NewApi(k, sdkCtx),
@@ -54,11 +56,13 @@ func (k Keeper) VerifyAccountAbstractionSignature(ctx context.Context, sender st
 		signer,
 		abstractionData,
 	)
+
 	// consume gas first and check error
 	gasUsed := gasForRuntime - gasBalance
-	gasMeter.ConsumeGas(gasUsed, "move authentication runtime")
+	gasMeter.ConsumeGas(gasUsed, "verify account abstraction signature")
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return res, nil
+
+	return returnedSigner, nil
 }

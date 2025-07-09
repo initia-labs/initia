@@ -30,7 +30,7 @@ import (
 )
 
 type MoveKeeper interface {
-	VerifyAccountAbstractionSignature(ctx context.Context, sender string, abstractionData vmtypes.AbstractionData) (string, error)
+	VerifyAccountAbstractionSignature(ctx context.Context, sender string, abstractionData vmtypes.AbstractionData) (*vmtypes.AccountAddress, error)
 }
 
 // SigVerificationDecorator verifies all signatures for a tx and return an error if any are invalid. Note,

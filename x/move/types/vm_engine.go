@@ -45,5 +45,5 @@ type VMEngine interface {
 		env vmtypes.Env,
 		sender vmtypes.AccountAddress,
 		abstractionData vmtypes.AbstractionData,
-	) (string, error)
+	) (*vmtypes.AccountAddress, error)
 }
