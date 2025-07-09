@@ -86,10 +86,25 @@ func TestExecuteEntryFunction(t *testing.T) {
 	events := ctx.EventManager().Events()
 	event := events[len(events)-1]
 
-	require.Equal(t, sdk.NewEvent(types.EventTypeMove,
-		sdk.NewAttribute(types.AttributeKeyTypeTag, "0x1::BasicCoin::MintEvent"),
-		sdk.NewAttribute(types.AttributeKeyData, `{"account":"0x2","amount":"100","coin_type":"0x1::BasicCoin::Initia"}`),
-	), event)
+	require.Equal(t, types.EventTypeMove, event.Type)
+
+	require.Len(t, event.Attributes, 5)
+
+	attr, ok := event.GetAttribute(types.AttributeKeyTypeTag)
+	require.True(t, ok)
+	require.Equal(t, "0x1::BasicCoin::MintEvent", attr.Value)
+
+	attr, ok = event.GetAttribute("account")
+	require.True(t, ok)
+	require.Equal(t, "0x2", attr.Value)
+
+	attr, ok = event.GetAttribute("amount")
+	require.True(t, ok)
+	require.Equal(t, "100", attr.Value)
+
+	attr, ok = event.GetAttribute("coin_type")
+	require.True(t, ok)
+	require.Equal(t, "0x1::BasicCoin::Initia", attr.Value)
 
 	// cleanup events
 	ctx = ctx.WithEventManager(sdk.NewEventManager())
@@ -105,10 +120,25 @@ func TestExecuteEntryFunction(t *testing.T) {
 	events = ctx.EventManager().Events()
 	event = events[len(events)-1]
 
-	require.Equal(t, sdk.NewEvent(types.EventTypeMove,
-		sdk.NewAttribute(types.AttributeKeyTypeTag, "0x1::BasicCoin::MintEvent"),
-		sdk.NewAttribute(types.AttributeKeyData, `{"account":"0x2","amount":"200","coin_type":"0x1::BasicCoin::Initia"}`),
-	), event)
+	require.Equal(t, types.EventTypeMove, event.Type)
+
+	require.Len(t, event.Attributes, 5)
+
+	attr, ok = event.GetAttribute(types.AttributeKeyTypeTag)
+	require.True(t, ok)
+	require.Equal(t, "0x1::BasicCoin::MintEvent", attr.Value)
+
+	attr, ok = event.GetAttribute("account")
+	require.True(t, ok)
+	require.Equal(t, "0x2", attr.Value)
+
+	attr, ok = event.GetAttribute("amount")
+	require.True(t, ok)
+	require.Equal(t, "200", attr.Value)
+
+	attr, ok = event.GetAttribute("coin_type")
+	require.True(t, ok)
+	require.Equal(t, "0x1::BasicCoin::Initia", attr.Value)
 }
 
 func TestExecuteScript(t *testing.T) {
@@ -622,6 +652,8 @@ func TestSubmsgCallback(t *testing.T) {
 	require.Equal(t, sdk.NewEvent("move",
 		sdk.NewAttribute("type_tag", "0x2::submsg::ResultEvent"),
 		sdk.NewAttribute("data", "{\"id\":\"123\",\"success\":false}"),
+		sdk.NewAttribute("id", "123"),
+		sdk.NewAttribute("success", "false"),
 	), event)
 
 	// 1. callback without signer
@@ -640,10 +672,21 @@ func TestSubmsgCallback(t *testing.T) {
 	events = ctx.EventManager().Events()
 	event = events[len(events)-1]
 
-	require.Equal(t, sdk.NewEvent("move",
-		sdk.NewAttribute("type_tag", "0x2::submsg::ResultEvent"),
-		sdk.NewAttribute("data", "{\"id\":\"123\",\"success\":false}"),
-	), event)
+	require.Equal(t, "move", event.Type)
+
+	require.Len(t, event.Attributes, 4)
+
+	attr, ok := event.GetAttribute("type_tag")
+	require.True(t, ok)
+	require.Equal(t, "0x2::submsg::ResultEvent", attr.Value)
+
+	attr, ok = event.GetAttribute("id")
+	require.True(t, ok)
+	require.Equal(t, "123", attr.Value)
+
+	attr, ok = event.GetAttribute("success")
+	require.True(t, ok)
+	require.Equal(t, "false", attr.Value)
 
 	// events should not be committed
 	for _, e := range events {
@@ -666,11 +709,25 @@ func TestSubmsgCallback(t *testing.T) {
 	events = ctx.EventManager().Events()
 	event = events[len(events)-1]
 
-	require.Equal(t, sdk.NewEvent("move",
-		sdk.NewAttribute("type_tag", "0x2::submsg::ResultEventWithSigner"),
-		sdk.NewAttribute("data", fmt.Sprintf("{\"account\":\"%s\",\"id\":\"234\",\"success\":false}", senderAddr)),
-	), event)
+	require.Equal(t, "move", event.Type)
 
+	require.Len(t, event.Attributes, 5)
+
+	attr, ok = event.GetAttribute("type_tag")
+	require.True(t, ok)
+	require.Equal(t, "0x2::submsg::ResultEventWithSigner", attr.Value)
+
+	attr, ok = event.GetAttribute("account")
+	require.True(t, ok)
+	require.Equal(t, senderAddr.String(), attr.Value)
+
+	attr, ok = event.GetAttribute("id")
+	require.True(t, ok)
+	require.Equal(t, "234", attr.Value)
+
+	attr, ok = event.GetAttribute("success")
+	require.True(t, ok)
+	require.Equal(t, "false", attr.Value)
 	// events should not be committed
 	for _, e := range events {
 		require.NotEqual(t, e.Type, "move_execute_with_json")
@@ -703,11 +760,25 @@ func TestSubmsgCallback(t *testing.T) {
 	events = ctx.EventManager().Events()
 	event = events[len(events)-1]
 
-	require.Equal(t, sdk.NewEvent("move",
-		sdk.NewAttribute("type_tag", "0x2::submsg::ResultEventWithSigner"),
-		sdk.NewAttribute("data", fmt.Sprintf("{\"account\":\"%s\",\"id\":\"345\",\"success\":true}", senderAddr)),
-	), event)
+	require.Equal(t, "move", event.Type)
 
+	require.Len(t, event.Attributes, 5)
+
+	attr, ok = event.GetAttribute("type_tag")
+	require.True(t, ok)
+	require.Equal(t, "0x2::submsg::ResultEventWithSigner", attr.Value)
+
+	attr, ok = event.GetAttribute("account")
+	require.True(t, ok)
+	require.Equal(t, senderAddr.String(), attr.Value)
+
+	attr, ok = event.GetAttribute("id")
+	require.True(t, ok)
+	require.Equal(t, "345", attr.Value)
+
+	attr, ok = event.GetAttribute("success")
+	require.True(t, ok)
+	require.Equal(t, "true", attr.Value)
 	// events should be committed
 	var found bool
 	for _, e := range events {

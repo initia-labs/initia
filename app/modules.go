@@ -130,7 +130,7 @@ func appModules(
 		staking.NewAppModule(app.appCodec, *app.StakingKeeper),
 		upgrade.NewAppModule(app.UpgradeKeeper, app.ac),
 		evidence.NewAppModule(*app.EvidenceKeeper),
-		authzmodule.NewAppModule(app.appCodec, *app.AuthzKeeper, app.interfaceRegistry),
+		authzmodule.NewAppModule(app.appCodec, *app.AuthzKeeper, *app.AccountKeeper, *app.BankKeeper, app.interfaceRegistry),
 		groupmodule.NewAppModule(app.appCodec, *app.GroupKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		consensus.NewAppModule(app.appCodec, *app.ConsensusParamsKeeper),
 		move.NewAppModule(app.appCodec, *app.MoveKeeper, app.vc, maps.Keys(maccPerms)),

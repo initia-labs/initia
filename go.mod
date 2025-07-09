@@ -245,7 +245,7 @@ replace (
 
 // indirect custom dependencies
 // - https://github.com/cosmos/cosmos-sdk/issues/23740
-require github.com/cosmos/iavl v1.2.5 // indirect
+require github.com/cosmos/iavl v1.2.6 // indirect
 
 // initia custom
 // use custom version for
@@ -261,7 +261,7 @@ require github.com/cosmos/iavl v1.2.5 // indirect
 // connect
 // - https://github.com/initia-labs/connect/pull/1
 replace (
-	github.com/cometbft/cometbft => github.com/initia-labs/cometbft v0.0.0-20250324104207-ff0764c4444f
+	github.com/cometbft/cometbft => github.com/initia-labs/cometbft v0.0.0-20250611034257-a68d9d17ca83
 	github.com/cosmos/cosmos-sdk => github.com/initia-labs/cosmos-sdk v0.0.0-20250609080732-be6c5d492f50
 	github.com/skip-mev/connect/v2 => github.com/initia-labs/connect/v2 v2.3.1
 )

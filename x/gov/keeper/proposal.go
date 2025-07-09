@@ -326,6 +326,7 @@ func (k Keeper) ActivateEmergencyProposal(ctx context.Context, proposal customty
 		sdk.NewEvent(
 			customtypes.EventTypeEmergencyProposal,
 			sdk.NewAttribute(customtypes.AttributeKeyProposalID, strconv.FormatUint(proposal.Id, 10)),
+			sdk.NewAttribute(customtypes.AttributeKeyNextTallyTime, proposal.EmergencyNextTallyTime.Format(time.RFC3339)),
 		),
 	)
 	return nil

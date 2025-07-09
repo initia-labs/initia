@@ -1,7 +1,9 @@
 syntax = "proto3";
 package initia.tx.v1;
 
+import "cosmos/base/abci/v1beta1/abci.proto";
 import "cosmos/base/v1beta1/coin.proto";
+import "cosmos/tx/v1beta1/tx.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 
@@ -16,6 +18,12 @@ service Query {
   // GasPrice returns the gas price for the network.
   rpc GasPrice(QueryGasPriceRequest) returns (QueryGasPriceResponse) {
     option (google.api.http).get = "/initia/tx/v1/gas_prices/{denom}";
+  }
+
+  // TxsByEvents fetches transactions by event criteria. This method proxies to CometBFT's TxSearchV2 RPC endpoint
+  // to efficiently search and retrieve transactions matching specified event conditions.
+  rpc TxsByEvents(TxsByEventsRequest) returns (TxsByEventsResponse) {
+    option (google.api.http).get = "/initia/tx/v1/txs";
   }
 }
 
@@ -44,4 +52,31 @@ message QueryGasPriceResponse {
     (gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.DecCoin",
     (gogoproto.nullable) = false
   ];
+}
+
+// TxsByEventsRequest is the request type for the Service.TxsByEvents
+// RPC method.
+message TxsByEventsRequest {
+  // page is the page number to query, starts at 1. If not provided, will
+  // default to first page.
+  uint64 page = 1;
+
+  // limit is the total number of results to be returned in the result page.
+  // If left empty it will default to a value to be set by each app.
+  uint64 limit = 2;
+
+  // query defines the transaction event query that is proxied to CometBFT's
+  // TxsByEvents RPC method. The query must be valid.
+  string query = 3;
+}
+
+// TxsByEventsResponse is the response type for the Service.TxsByEvents
+// RPC method.
+message TxsByEventsResponse {
+  // txs is the list of queried transactions.
+  repeated cosmos.tx.v1beta1.Tx txs = 1;
+  // tx_responses is the list of queried TxResponses.
+  repeated cosmos.base.abci.v1beta1.TxResponse tx_responses = 2;
+  // total is total number of results available
+  uint64 total = 3;
 }
