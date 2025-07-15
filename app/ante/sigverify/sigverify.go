@@ -87,6 +87,10 @@ func (svd SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simul
 			return ctx, errorsmod.Wrap(sdkerrors.ErrInvalidPubKey, "pubkey on account is not set")
 		}
 
+		if sig.PubKey != pubKey {
+			return ctx, errorsmod.Wrapf(sdkerrors.ErrUnauthorized, "invalid pubkey; expected: %s, got %s", pubKey, sig.PubKey)
+		}
+
 		// Check account sequence number.
 		if sig.Sequence != acc.GetSequence() {
 			return ctx, errorsmod.Wrapf(
