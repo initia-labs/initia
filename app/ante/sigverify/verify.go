@@ -15,6 +15,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/crypto/types/multisig"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 
+	"github.com/initia-labs/initia/crypto/derivable"
 	initiatx "github.com/initia-labs/initia/tx"
 	vmtypes "github.com/initia-labs/movevm/types"
 )
@@ -71,6 +72,13 @@ func verifySignature(
 
 			if err := abstractionData.Validate(); err != nil {
 				return err
+			}
+
+			// check if the given pubkey is derivable to prevent address collision
+			if _, ok := abstractionData.AuthData.(*vmtypes.AbstractionAuthData__DerivableV1); ok {
+				if _, ok := pubKey.(*derivable.PubKey); !ok {
+					return fmt.Errorf("non-derivable pubkey account is not allowed to use derivable authentication")
+				}
 			}
 
 			digest := sha3.Sum256(signBytes)
