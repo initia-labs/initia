@@ -4,6 +4,7 @@ import (
 	"context"
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
+
 	"github.com/cosmos/cosmos-sdk/types/module"
 
 	"github.com/initia-labs/initia/app/upgrades"

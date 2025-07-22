@@ -263,6 +263,6 @@ require github.com/cosmos/iavl v1.2.5 // indirect
 replace (
 	github.com/cometbft/cometbft => github.com/initia-labs/cometbft v0.0.0-20250523081605-76cd6e197cc7
 	github.com/cosmos/cosmos-sdk => github.com/initia-labs/cosmos-sdk v0.0.0-20250415174140-9fd233bcf847
-	github.com/initia-labs/movevm => ../movevm
+	github.com/initia-labs/movevm => github.com/initia-labs/movevm v0.0.0-20250722033640-13f1be87a87d
 	github.com/skip-mev/connect/v2 => github.com/initia-labs/connect/v2 v2.3.1
 )

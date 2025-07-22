@@ -6,6 +6,7 @@ import (
 	signingv1beta1 "cosmossdk.io/api/cosmos/tx/signing/v1beta1"
 	"cosmossdk.io/x/tx/signing"
 	"cosmossdk.io/x/tx/signing/direct"
+
 	txsigning "github.com/cosmos/cosmos-sdk/types/tx/signing"
 )
 
