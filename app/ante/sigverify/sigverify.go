@@ -1,7 +1,7 @@
 package sigverify
 
 import (
-	"encoding/hex"
+	"context"
 	"fmt"
 
 	"google.golang.org/protobuf/types/known/anypb"
@@ -25,19 +25,12 @@ import (
 	"github.com/initia-labs/initia/crypto/ethsecp256k1"
 
 	forwardingtypes "github.com/noble-assets/forwarding/v2/types"
+
+	vmtypes "github.com/initia-labs/movevm/types"
 )
 
-var (
-	// simulation signature values used to estimate gas consumption
-	key                = make([]byte, secp256k1.PubKeySize)
-	simSecp256k1Pubkey = &secp256k1.PubKey{Key: key}
-)
-
-func init() {
-	// This decodes a valid hex string into a sepc256k1Pubkey for use in transaction simulation
-	bz, _ := hex.DecodeString("035AD6810A47F073553FF30D2FCC7E0D3B1C0B74B61A1AAA2582344037151E143A")
-	copy(key, bz)
-	simSecp256k1Pubkey.Key = key
+type MoveKeeper interface {
+	VerifyAccountAbstractionSignature(ctx context.Context, sender string, abstractionData vmtypes.AbstractionData) (*vmtypes.AccountAddress, error)
 }
 
 // SigVerificationDecorator verifies all signatures for a tx and return an error if any are invalid. Note,
@@ -48,12 +41,14 @@ func init() {
 type SigVerificationDecorator struct {
 	ak              authante.AccountKeeper
 	signModeHandler *txsigning.HandlerMap
+	moveKeeper      MoveKeeper
 }
 
-func NewSigVerificationDecorator(ak authante.AccountKeeper, signModeHandler *txsigning.HandlerMap) SigVerificationDecorator {
+func NewSigVerificationDecorator(ak authante.AccountKeeper, signModeHandler *txsigning.HandlerMap, moveKeeper MoveKeeper) SigVerificationDecorator {
 	return SigVerificationDecorator{
 		ak:              ak,
 		signModeHandler: signModeHandler,
+		moveKeeper:      moveKeeper,
 	}
 }
 
@@ -127,7 +122,7 @@ func (svd SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simul
 				return ctx, fmt.Errorf("expected tx to implement V2AdaptableTx, got %T", tx)
 			}
 			txData := adaptableTx.GetSigningTxData()
-			err = verifySignature(ctx, pubKey, signerData, sig.Data, svd.signModeHandler, txData)
+			err = verifySignature(ctx, svd.moveKeeper, pubKey, signerData, sig.Data, svd.signModeHandler, txData)
 			if err != nil {
 				var errMsg string
 				if authante.OnlyLegacyAminoSigners(sig.Data) {
@@ -138,12 +133,15 @@ func (svd SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simul
 					errMsg = fmt.Sprintf("signature verification failed; please verify account number (%d) and chain-id (%s): (%s)", accNum, chainID, err.Error())
 				}
 				return ctx, errorsmod.Wrap(sdkerrors.ErrUnauthorized, errMsg)
-
 			}
 		}
 	}
 
-	return next(ctx, tx, simulate)
+	if next != nil {
+		return next(ctx, tx, simulate)
+	}
+
+	return ctx, nil
 }
 
 // DefaultSigVerificationGasConsumer is the default implementation of SignatureVerificationGasConsumer. It consumes gas

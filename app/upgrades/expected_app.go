@@ -2,6 +2,7 @@ package upgrades
 
 import (
 	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
+
 	"github.com/cosmos/cosmos-sdk/types/module"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 
