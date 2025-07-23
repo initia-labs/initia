@@ -2,6 +2,7 @@ package app
 
 import (
 	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
+
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	sdk "github.com/cosmos/cosmos-sdk/types"

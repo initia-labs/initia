@@ -391,7 +391,8 @@ func (k Keeper) dispatchMessage(parentCtx sdk.Context, message vmtypes.CosmosMes
 				// propagate out of gas error
 				panic(r)
 			default:
-				err = fmt.Errorf("panic: %v", r)
+				k.Logger(parentCtx).Error("panic in dispatchMessage", "error", r)
+				err = errors.New("panic in dispatchMessage occurred")
 			}
 		}
 

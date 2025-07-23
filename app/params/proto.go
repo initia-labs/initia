@@ -3,16 +3,12 @@ package params
 import (
 	"cosmossdk.io/x/tx/signing"
 
-	"cosmossdk.io/x/tx/signing/aminojson"
 	"github.com/cosmos/gogoproto/proto"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	codecaddress "github.com/cosmos/cosmos-sdk/codec/address"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
-
-	"github.com/initia-labs/initia/tx"
 )
 
 // MakeEncodingConfig creates an EncodingConfig for an amino based test configuration.
@@ -30,19 +26,7 @@ func MakeEncodingConfig() EncodingConfig {
 
 	appCodec := codec.NewProtoCodec(interfaceRegistry)
 	legacyAmino := codec.NewLegacyAmino()
-	signingOptions, err := authtx.NewDefaultSigningOptions()
-	if err != nil {
-		panic(err)
-	}
-
-	txConfig := authtx.NewTxConfig(
-		appCodec,
-		authtx.DefaultSignModes,
-		tx.NewSignModeEIP191Handler(aminojson.SignModeHandlerOptions{
-			FileResolver: signingOptions.FileResolver,
-			TypeResolver: signingOptions.TypeResolver,
-		}),
-	)
+	txConfig := CreateTxConfig(appCodec)
 
 	return EncodingConfig{
 		InterfaceRegistry: interfaceRegistry,

@@ -57,7 +57,8 @@ func dispatchableTokenDenom(t *testing.T) string {
 
 func dispatchableTokenCoin(t *testing.T) sdk.Coin {
 	denom := dispatchableTokenDenom(t)
-	return sdk.NewCoin(denom, math.NewInt(1000000))
+	// Note: test token get balance will return 10x more than the actual balance
+	return sdk.NewCoin(denom, math.NewInt(10000000))
 }
 
 func checkBalance(t *testing.T, app *initiaapp.InitiaApp, addr sdk.AccAddress, balances sdk.Coins) {
@@ -221,6 +222,7 @@ func createDispatchableToken(t *testing.T, ctx sdk.Context, app *initiaapp.Initi
 	for _, receiver := range receivers {
 		receiverAddr, err := vmtypes.NewAccountAddressFromBytes(receiver.Bytes())
 		require.NoError(t, err)
+		// Note: test token get balance will return 10x more than the actual balance
 		err = app.MoveKeeper.ExecuteEntryFunctionJSON(ctx, deployer, deployer, "test_dispatchable_token", "mint", []vmtypes.TypeTag{}, []string{fmt.Sprintf("\"%s\"", receiverAddr.String()), `"1000000"`})
 		require.NoError(t, err)
 	}
