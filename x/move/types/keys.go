@@ -132,3 +132,11 @@ func GetTableEntryPrefix(tableAddr vmtypes.AccountAddress) []byte {
 func GetTableEntryKey(tableAddr vmtypes.AccountAddress, key []byte) []byte {
 	return append(append(tableAddr.Bytes(), TableEntrySeparator), key...)
 }
+
+// private type creates an interface key for Context that cannot be accessed by any other package
+type contextKey int
+
+const (
+	GasPricesContextKey contextKey = iota
+	AllowDispatchableContextKey
+)

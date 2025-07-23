@@ -6,6 +6,8 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
+	movetypes "github.com/initia-labs/initia/x/move/types"
 )
 
 // GasPricesDecorator ante decorator to set gas prices to a context
@@ -32,7 +34,7 @@ func (d GasPricesDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool
 		}
 
 		// store a tx gas prices
-		ctx = ctx.WithValue(GasPricesContextKey, sdk.NewDecCoinsFromCoins(feeCoins...).QuoDecTruncate(math.LegacyNewDec(int64(gas))))
+		ctx = ctx.WithValue(movetypes.GasPricesContextKey, sdk.NewDecCoinsFromCoins(feeCoins...).QuoDecTruncate(math.LegacyNewDec(int64(gas))))
 	}
 
 	if next != nil {

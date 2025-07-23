@@ -18,7 +18,6 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	"github.com/cosmos/gogoproto/proto"
-	"github.com/initia-labs/initia/x/move/ante"
 	"github.com/initia-labs/initia/x/move/types"
 	vmtypes "github.com/initia-labs/movevm/types"
 )
@@ -471,7 +470,7 @@ func (k Keeper) dispatchMessage(parentCtx sdk.Context, message vmtypes.CosmosMes
 func (k Keeper) DistributeContractSharedRevenue(ctx context.Context, gasUsages []vmtypes.GasUsage) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
-	value := ctx.Value(ante.GasPricesContextKey)
+	value := ctx.Value(types.GasPricesContextKey)
 	if value == nil {
 		return nil
 	}

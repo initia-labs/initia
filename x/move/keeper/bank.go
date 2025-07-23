@@ -609,6 +609,10 @@ func (k MoveBankKeeper) SendCoin(
 		return err
 	}
 
+	if err := k.assertDispatchableFungibleAssetAllowed(ctx, metadata); err != nil {
+		return err
+	}
+
 	fromVmAddr, err := vmtypes.NewAccountAddressFromBytes(fromAddr)
 	if err != nil {
 		return err
@@ -658,6 +662,11 @@ func (k MoveBankKeeper) MultiSend(
 	if err != nil {
 		return err
 	}
+
+	if err := k.assertDispatchableFungibleAssetAllowed(ctx, metadata); err != nil {
+		return err
+	}
+
 	metadataArg, err := json.Marshal(metadata.String())
 	if err != nil {
 		return err
@@ -740,4 +749,29 @@ func (k MoveBankKeeper) GetUserStoresTableHandleWithLength(
 	}
 
 	return &tableAddr, length, nil
+}
+
+// assertDispatchableFungibleAssetAllowed checks if a dispatchable fungible asset is allowed to be used in the current context.
+//
+// Dispatchable fungible assets have custom logic that can be executed during transfers and other operations.
+// For safety, we maintain a whitelist of contexts where these assets are permitted to prevent potential security issues
+// or unexpected behavior. This function enforces that whitelist by checking if the current context allows dispatchable assets.
+//
+// If the asset is not dispatchable (has no dispatch function store), it is always allowed.
+// Otherwise, the context must explicitly allow dispatchable assets via the AllowDispatchableContextKey.
+func (k MoveBankKeeper) assertDispatchableFungibleAssetAllowed(ctx context.Context, metadata vmtypes.AccountAddress) error {
+	hasDispatchFunctionStore, err := k.HasDispatchFunctionStore(ctx, metadata)
+	if err != nil {
+		return err
+	} else if !hasDispatchFunctionStore {
+		return nil
+	}
+
+	// check context value of allow dispatchable
+	value := ctx.Value(types.AllowDispatchableContextKey)
+	if value == nil || !value.(bool) {
+		return moderrors.Wrapf(types.ErrInvalidRequest, "dispatchable fungible asset is not allowed in this context")
+	}
+
+	return nil
 }
