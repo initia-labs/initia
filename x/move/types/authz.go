@@ -2,6 +2,7 @@ package types
 
 import (
 	context "context"
+	"slices"
 
 	"github.com/IGLOU-EU/go-wildcard"
 
@@ -149,10 +150,8 @@ func (a ExecuteAuthorization) ValidateBasic() error {
 		}
 
 		if module, ok := moduleMap[v.ModuleAddress]; ok {
-			for _, m := range module {
-				if m == v.ModuleName {
-					return errors.Wrapf(sdkerrors.ErrInvalidRequest, "duplicate module name: %s", v.ModuleName)
-				}
+			if slices.Contains(module, v.ModuleName) {
+				return errors.Wrapf(sdkerrors.ErrInvalidRequest, "duplicate module name: %s", v.ModuleName)
 			}
 			moduleMap[v.ModuleAddress] = append(module, v.ModuleName)
 		} else {

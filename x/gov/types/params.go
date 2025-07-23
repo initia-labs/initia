@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"slices"
 	"time"
 
 	"cosmossdk.io/core/address"
@@ -243,11 +244,5 @@ func (p Params) ToV1() v1.Params {
 }
 
 func (p Params) IsLowThresholdFunction(fid string) bool {
-	for _, fid_ := range p.LowThresholdFunctions {
-		if fid == fid_ {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(p.LowThresholdFunctions, fid)
 }
