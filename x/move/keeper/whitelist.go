@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"slices"
 
 	"cosmossdk.io/errors"
 
@@ -77,10 +78,8 @@ func (k Keeper) Whitelist(ctx context.Context, msg types.MsgWhitelist) error {
 		return err
 	}
 
-	for _, denom := range bondDenoms {
-		if denom == denomLP {
-			return errors.Wrapf(types.ErrInvalidRequest, "coin `%s` was already registered as staking denom", metadataLP.String())
-		}
+	if slices.Contains(bondDenoms, denomLP) {
+		return errors.Wrapf(types.ErrInvalidRequest, "coin `%s` was already registered as staking denom", metadataLP.String())
 	}
 
 	// check reward weights was registered
