@@ -99,7 +99,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             BASE_IMAGE=${{ env.BASE_IMAGE }}
-            VERSION=${{ github.ref }}
+            VERSION=${{ github.ref_name }}
             COMMIT=${{ github.sha }}
         env:
           BASE_IMAGE: ${{ env.BASE_IMAGE }}
