@@ -240,7 +240,7 @@ func TestTickSingleProposal(t *testing.T) {
 					break
 				}
 
-				depositMsg := createDepositMsg(t, addrs[1], proposal.Id, sdk.Coins{tc.deposit})
+				depositMsg := createDepositMsg(t, addrs[0], proposal.Id, sdk.Coins{tc.deposit})
 				_, err = govMsgSvr.Deposit(ctx, depositMsg)
 				require.NoError(t, err)
 
