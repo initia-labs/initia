@@ -3,8 +3,8 @@ package keeper_test
 import (
 	"crypto/rand"
 
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
-	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
+	host "github.com/cosmos/ibc-go/v10/modules/core/24-host"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 

@@ -32,29 +32,24 @@ import (
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 
-	packetforward "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward"
-	packetforwardkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/keeper"
-	packetforwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types"
-	ratelimit "github.com/cosmos/ibc-apps/modules/rate-limiting/v8"
-	ratelimitkeeper "github.com/cosmos/ibc-apps/modules/rate-limiting/v8/keeper"
-	ratelimittypes "github.com/cosmos/ibc-apps/modules/rate-limiting/v8/types"
-	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
-	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
-	icacontroller "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller"
-	icacontrollerkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/keeper"
-	icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
-	icahost "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/host"
-	icahostkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/host/keeper"
-	icahosttypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/host/types"
-	ibcfee "github.com/cosmos/ibc-go/v8/modules/apps/29-fee"
-	ibcfeekeeper "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/keeper"
-	ibcfeetypes "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/types"
-	ibctransfer "github.com/cosmos/ibc-go/v8/modules/apps/transfer"
-	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
-	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
-	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
-	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
+	packetforward "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/packetforward"
+	packetforwardkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/packetforward/keeper"
+	packetforwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/packetforward/types"
+	ratelimit "github.com/cosmos/ibc-apps/modules/rate-limiting/v10"
+	ratelimitkeeper "github.com/cosmos/ibc-apps/modules/rate-limiting/v10/keeper"
+	ratelimittypes "github.com/cosmos/ibc-apps/modules/rate-limiting/v10/types"
+	icacontroller "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/controller"
+	icacontrollerkeeper "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/controller/keeper"
+	icacontrollertypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/controller/types"
+	icahost "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/host"
+	icahostkeeper "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/host/keeper"
+	icahosttypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/host/types"
+	ibctransfer "github.com/cosmos/ibc-go/v10/modules/apps/transfer"
+	ibctransferkeeper "github.com/cosmos/ibc-go/v10/modules/apps/transfer/keeper"
+	ibctransfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	porttypes "github.com/cosmos/ibc-go/v10/modules/core/05-port/types"
+	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
+	ibckeeper "github.com/cosmos/ibc-go/v10/modules/core/keeper"
 
 	ibcnfttransfer "github.com/initia-labs/initia/x/ibc/nft-transfer"
 	ibcnfttransferkeeper "github.com/initia-labs/initia/x/ibc/nft-transfer/keeper"
@@ -62,13 +57,9 @@ import (
 	ibcperm "github.com/initia-labs/initia/x/ibc/perm"
 	ibcpermkeeper "github.com/initia-labs/initia/x/ibc/perm/keeper"
 	ibcpermtypes "github.com/initia-labs/initia/x/ibc/perm/types"
-	icaauth "github.com/initia-labs/initia/x/intertx"
-	icaauthkeeper "github.com/initia-labs/initia/x/intertx/keeper"
-	icaauthtypes "github.com/initia-labs/initia/x/intertx/types"
 
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 
-	appheaderinfo "github.com/initia-labs/initia/app/header_info"
 	applanes "github.com/initia-labs/initia/app/lanes"
 	bankkeeper "github.com/initia-labs/initia/x/bank/keeper"
 	distrkeeper "github.com/initia-labs/initia/x/distribution/keeper"
@@ -105,8 +96,9 @@ import (
 	ophosttypes "github.com/initia-labs/OPinit/x/ophost/types"
 	ophosttypeshook "github.com/initia-labs/OPinit/x/ophost/types/hook"
 
-	// noble forwarding keeper
-	forwarding "github.com/noble-assets/forwarding/v2"
+	ibctm "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
+	appheaderinfo "github.com/initia-labs/initia/app/header_info"
+	"github.com/noble-assets/forwarding/v2"
 	forwardingkeeper "github.com/noble-assets/forwarding/v2/keeper"
 	forwardingtypes "github.com/noble-assets/forwarding/v2/types"
 )
@@ -120,7 +112,6 @@ type AppKeepers struct {
 	// keepers
 	AccountKeeper         *authkeeper.AccountKeeper
 	BankKeeper            *bankkeeper.BaseKeeper
-	CapabilityKeeper      *capabilitykeeper.Keeper
 	StakingKeeper         *stakingkeeper.Keeper
 	SlashingKeeper        *slashingkeeper.Keeper
 	RewardKeeper          *rewardkeeper.Keeper
@@ -139,8 +130,6 @@ type AppKeepers struct {
 	FeeGrantKeeper        *feegrantkeeper.Keeper
 	ICAHostKeeper         *icahostkeeper.Keeper
 	ICAControllerKeeper   *icacontrollerkeeper.Keeper
-	ICAAuthKeeper         *icaauthkeeper.Keeper
-	IBCFeeKeeper          *ibcfeekeeper.Keeper
 	IBCPermKeeper         *ibcpermkeeper.Keeper
 	PacketForwardKeeper   *packetforwardkeeper.Keeper
 	MoveKeeper            *movekeeper.Keeper
@@ -149,16 +138,8 @@ type AppKeepers struct {
 	OPHostKeeper          *ophostkeeper.Keeper
 	OracleKeeper          *oraclekeeper.Keeper // x/oracle keeper used for the connect oracle
 	MarketMapKeeper       *marketmapkeeper.Keeper
-	ForwardingKeeper      *forwardingkeeper.Keeper
 	RatelimitKeeper       *ratelimitkeeper.Keeper
-
-	// make scoped keepers public for test purposes
-	ScopedIBCKeeper           capabilitykeeper.ScopedKeeper
-	ScopedTransferKeeper      capabilitykeeper.ScopedKeeper
-	ScopedNftTransferKeeper   capabilitykeeper.ScopedKeeper
-	ScopedICAHostKeeper       capabilitykeeper.ScopedKeeper
-	ScopedICAControllerKeeper capabilitykeeper.ScopedKeeper
-	ScopedICAAuthKeeper       capabilitykeeper.ScopedKeeper
+	ForwardingKeeper      *forwardingkeeper.Keeper
 }
 
 func NewAppKeeper(
@@ -197,21 +178,6 @@ func NewAppKeeper(
 	consensusParamsKeeper := consensusparamkeeper.NewKeeper(appCodec, runtime.NewKVStoreService(appKeepers.keys[consensusparamtypes.StoreKey]), authorityAddr, runtime.EventService{})
 	appKeepers.ConsensusParamsKeeper = &consensusParamsKeeper
 	bApp.SetParamStore(appKeepers.ConsensusParamsKeeper.ParamsStore)
-
-	// add capability keeper and ScopeToModule for ibc module
-	appKeepers.CapabilityKeeper = capabilitykeeper.NewKeeper(appCodec, appKeepers.keys[capabilitytypes.StoreKey], appKeepers.memKeys[capabilitytypes.MemStoreKey])
-
-	// grant capabilities for the ibc and ibc-transfer modules
-	appKeepers.ScopedIBCKeeper = appKeepers.CapabilityKeeper.ScopeToModule(ibcexported.ModuleName)
-	appKeepers.ScopedTransferKeeper = appKeepers.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
-	appKeepers.ScopedNftTransferKeeper = appKeepers.CapabilityKeeper.ScopeToModule(ibcnfttransfertypes.ModuleName)
-	appKeepers.ScopedICAHostKeeper = appKeepers.CapabilityKeeper.ScopeToModule(icahosttypes.SubModuleName)
-	appKeepers.ScopedICAControllerKeeper = appKeepers.CapabilityKeeper.ScopeToModule(icacontrollertypes.SubModuleName)
-	appKeepers.ScopedICAAuthKeeper = appKeepers.CapabilityKeeper.ScopeToModule(icaauthtypes.ModuleName)
-
-	// Applications that wish to enforce statically created ScopedKeepers should call `Seal` after creating
-	// their scoped modules in `NewApp` with `ScopeToModule`
-	appKeepers.CapabilityKeeper.Seal()
 
 	// add keepers
 	appKeepers.MoveKeeper = &movekeeper.Keeper{}
@@ -337,24 +303,16 @@ func NewAppKeeper(
 	// Create IBC Keeper
 	appKeepers.IBCKeeper = ibckeeper.NewKeeper(
 		appCodec,
-		appKeepers.keys[ibcexported.StoreKey],
+		runtime.NewKVStoreService(appKeepers.keys[ibcexported.StoreKey]),
 		nil, // we don't need migration
-		appKeepers.StakingKeeper,
 		appKeepers.UpgradeKeeper,
-		appKeepers.ScopedIBCKeeper,
 		authorityAddr,
 	)
 
-	ibcFeeKeeper := ibcfeekeeper.NewKeeper(
-		appCodec,
-		appKeepers.keys[ibcfeetypes.StoreKey],
-		appKeepers.IBCKeeper.ChannelKeeper,
-		appKeepers.IBCKeeper.ChannelKeeper,
-		appKeepers.IBCKeeper.PortKeeper,
-		appKeepers.AccountKeeper,
-		appKeepers.BankKeeper,
-	)
-	appKeepers.IBCFeeKeeper = &ibcFeeKeeper
+	clientKeeper := appKeepers.IBCKeeper.ClientKeeper
+	storeProvider := clientKeeper.GetStoreProvider()
+	tmLightClientModule := ibctm.NewLightClientModule(appCodec, storeProvider)
+	clientKeeper.AddRoute(ibctm.ModuleName, &tmLightClientModule)
 
 	appKeepers.IBCPermKeeper = ibcpermkeeper.NewKeeper(
 		appCodec,
@@ -407,8 +365,8 @@ func NewAppKeeper(
 	////////////////////////////
 	// Transfer configuration //
 	////////////////////////////
-	// Send   : transfer -> packet forward -> rate limit -> fee  -> channel
-	// Receive: channel  -> perm           -> fee        -> move -> rate limit -> packet forward  -> forwarding -> transfer
+	// Send   : transfer -> packet forward -> rate limit -> channel
+	// Receive: channel  -> perm           -> move       -> rate limit -> packet forward -> forwarding -> transfer
 
 	var transferStack porttypes.IBCModule
 	{
@@ -418,24 +376,22 @@ func NewAppKeeper(
 		// create Transfer Keepers
 		transferKeeper := ibctransferkeeper.NewKeeper(
 			appCodec,
-			appKeepers.keys[ibctransfertypes.StoreKey],
+			runtime.NewKVStoreService(appKeepers.keys[ibctransfertypes.StoreKey]),
 			nil, // we don't need migration
 			// ics4wrapper: transfer -> packet forward
 			packetForwardKeeper,
 			appKeepers.IBCKeeper.ChannelKeeper,
-			appKeepers.IBCKeeper.PortKeeper,
+			bApp.MsgServiceRouter(),
 			appKeepers.AccountKeeper,
 			appKeepers.BankKeeper,
-			appKeepers.ScopedTransferKeeper,
 			authorityAddr,
 		)
 		appKeepers.TransferKeeper = &transferKeeper
-		transferStack = ibctransfer.NewIBCModule(*appKeepers.TransferKeeper)
+		transferModule := ibctransfer.NewIBCModule(*appKeepers.TransferKeeper)
 
-		// forwarding middleware
-		transferStack = forwarding.NewMiddleware(
+		forwardingMiddleware := forwarding.NewMiddleware(
 			// receive: forwarding -> transfer
-			transferStack,
+			transferModule,
 			appKeepers.AccountKeeper,
 			appKeepers.ForwardingKeeper,
 		)
@@ -443,7 +399,7 @@ func NewAppKeeper(
 		// create packet forward middleware
 		*packetForwardKeeper = *packetforwardkeeper.NewKeeper(
 			appCodec,
-			appKeepers.keys[packetforwardtypes.StoreKey],
+			runtime.NewKVStoreService(appKeepers.keys[packetforwardtypes.StoreKey]),
 			appKeepers.TransferKeeper,
 			appKeepers.IBCKeeper.ChannelKeeper,
 			appKeepers.BankKeeper,
@@ -452,9 +408,9 @@ func NewAppKeeper(
 			authorityAddr,
 		)
 		appKeepers.PacketForwardKeeper = packetForwardKeeper
-		transferStack = packetforward.NewIBCMiddleware(
+		packetForwardMiddleware := packetforward.NewIBCMiddleware(
 			// receive: packet forward -> forwarding -> transfer
-			transferStack,
+			forwardingMiddleware,
 			appKeepers.PacketForwardKeeper,
 			0,
 			packetforwardkeeper.DefaultForwardTransferPacketTimeoutTimestamp,
@@ -468,22 +424,23 @@ func NewAppKeeper(
 			authorityAddr,
 			appKeepers.BankKeeper,
 			appKeepers.IBCKeeper.ChannelKeeper,
-			// ics4wrapper: transfer -> packet forward -> rate limit -> fee
-			appKeepers.IBCFeeKeeper,
+			appKeepers.IBCKeeper.ClientKeeper,
+			// ics4wrapper: transfer -> packet forward -> rate limit
+			appKeepers.IBCKeeper.ChannelKeeper,
 		)
 		appKeepers.RatelimitKeeper = rateLimitKeeper
 
 		// rate limit middleware
-		transferStack = ratelimit.NewIBCMiddleware(
+		rateLimitMiddleware := ratelimit.NewIBCMiddleware(
 			*appKeepers.RatelimitKeeper,
 			// receive: rate limit -> packet forward -> forwarding -> transfer
-			transferStack,
+			packetForwardMiddleware,
 		)
 
 		// create move middleware for transfer
-		transferStack = ibchooks.NewIBCMiddleware(
+		moveHookMiddleware := ibchooks.NewIBCMiddleware(
 			// receive: move -> rate limit -> packet forward -> forwarding -> transfer
-			transferStack,
+			rateLimitMiddleware,
 			ibchooks.NewICS4Middleware(
 				nil, /* ics4wrapper: not used */
 				ibcmovehooks.NewMoveHooks(appCodec, ac, appKeepers.MoveKeeper),
@@ -491,17 +448,10 @@ func NewAppKeeper(
 			appKeepers.IBCHooksKeeper,
 		)
 
-		// create ibcfee middleware for transfer
-		transferStack = ibcfee.NewIBCMiddleware(
-			// receive: fee -> move -> rate limit -> packet forward -> forwarding -> transfer
-			transferStack,
-			*appKeepers.IBCFeeKeeper,
-		)
-
 		// create perm middleware for transfer
 		transferStack = ibcperm.NewIBCMiddleware(
-			// receive: perm -> fee -> move -> rate limit -> packet forward -> forwarding -> transfer
-			transferStack,
+			// receive: perm -> move -> rate limit -> packet forward -> forwarding -> transfer
+			moveHookMiddleware,
 			// ics4wrapper: not used
 			nil,
 			*appKeepers.IBCPermKeeper,
@@ -518,13 +468,10 @@ func NewAppKeeper(
 		appKeepers.NftTransferKeeper = ibcnfttransferkeeper.NewKeeper(
 			appCodec,
 			runtime.NewKVStoreService(appKeepers.keys[ibcnfttransfertypes.StoreKey]),
-			// ics4wrapper: nft transfer -> fee -> channel
-			appKeepers.IBCFeeKeeper,
 			appKeepers.IBCKeeper.ChannelKeeper,
-			appKeepers.IBCKeeper.PortKeeper,
+			appKeepers.IBCKeeper.ChannelKeeper,
 			appKeepers.AccountKeeper,
 			movekeeper.NewNftKeeper(appKeepers.MoveKeeper),
-			appKeepers.ScopedNftTransferKeeper,
 			authorityAddr,
 		)
 		nftTransferIBCModule := ibcnfttransfer.NewIBCModule(*appKeepers.NftTransferKeeper)
@@ -533,20 +480,13 @@ func NewAppKeeper(
 		hookMiddleware := ibchooks.NewIBCMiddleware(
 			// receive: move -> nft-transfer
 			nftTransferIBCModule,
-			ibchooks.NewICS4Middleware(
-				nil, /* ics4wrapper: not used */
-				ibcmovehooks.NewMoveHooks(appCodec, ac, appKeepers.MoveKeeper),
-			),
+			nil,
 			appKeepers.IBCHooksKeeper,
 		)
 
 		nftTransferStack = ibcperm.NewIBCMiddleware(
-			// receive: perm -> fee -> nft transfer
-			ibcfee.NewIBCMiddleware(
-				// receive: channel -> fee -> move -> nft transfer
-				hookMiddleware,
-				*appKeepers.IBCFeeKeeper,
-			),
+			// receive: perm -> move -> nft transfer
+			hookMiddleware,
 			// ics4wrapper: not used
 			nil,
 			*appKeepers.IBCPermKeeper,
@@ -561,54 +501,39 @@ func NewAppKeeper(
 	var icaControllerStack porttypes.IBCModule
 	{
 		icaHostKeeper := icahostkeeper.NewKeeper(
-			appCodec, appKeepers.keys[icahosttypes.StoreKey],
+			appCodec, runtime.NewKVStoreService(appKeepers.keys[icahosttypes.StoreKey]),
 			nil, // we don't need migration
-			appKeepers.IBCFeeKeeper,
 			appKeepers.IBCKeeper.ChannelKeeper,
-			appKeepers.IBCKeeper.PortKeeper,
+			appKeepers.IBCKeeper.ChannelKeeper,
 			appKeepers.AccountKeeper,
-			appKeepers.ScopedICAHostKeeper,
 			bApp.MsgServiceRouter(),
+			bApp.GRPCQueryRouter(),
 			authorityAddr,
 		)
-		icaHostKeeper.WithQueryRouter(bApp.GRPCQueryRouter())
-		// icaHostKeeper.WithICS4Wrapper()
 		appKeepers.ICAHostKeeper = &icaHostKeeper
 
 		icaControllerKeeper := icacontrollerkeeper.NewKeeper(
-			appCodec, appKeepers.keys[icacontrollertypes.StoreKey],
+			appCodec, runtime.NewKVStoreService(appKeepers.keys[icacontrollertypes.StoreKey]),
 			nil, // we don't need migration
-			appKeepers.IBCFeeKeeper,
 			appKeepers.IBCKeeper.ChannelKeeper,
-			appKeepers.IBCKeeper.PortKeeper,
-			appKeepers.ScopedICAControllerKeeper,
+			appKeepers.IBCKeeper.ChannelKeeper,
 			bApp.MsgServiceRouter(),
 			authorityAddr,
 		)
-		// icaControllerKeeper.WithICS4Wrapper()
 		appKeepers.ICAControllerKeeper = &icaControllerKeeper
 
-		icaAuthKeeper := icaauthkeeper.NewKeeper(
-			appCodec,
-			*appKeepers.ICAControllerKeeper,
-			appKeepers.ScopedICAAuthKeeper,
-			ac,
-		)
-		appKeepers.ICAAuthKeeper = &icaAuthKeeper
-
-		icaAuthIBCModule := icaauth.NewIBCModule(*appKeepers.ICAAuthKeeper)
 		icaHostIBCModule := icahost.NewIBCModule(*appKeepers.ICAHostKeeper)
 		icaHostStack = ibcperm.NewIBCMiddleware(
-			// receive: perm -> fee -> ica host
-			ibcfee.NewIBCMiddleware(icaHostIBCModule, *appKeepers.IBCFeeKeeper),
+			// receive: perm -> ica host
+			icaHostIBCModule,
 			// ics4wrapper: not used
 			nil,
 			*appKeepers.IBCPermKeeper,
 		)
-		icaControllerIBCModule := icacontroller.NewIBCMiddleware(icaAuthIBCModule, *appKeepers.ICAControllerKeeper)
+		icaControllerIBCModule := icacontroller.NewIBCMiddleware(*appKeepers.ICAControllerKeeper)
 		icaControllerStack = ibcperm.NewIBCMiddleware(
-			// receive: perm -> fee -> ica controller
-			ibcfee.NewIBCMiddleware(icaControllerIBCModule, *appKeepers.IBCFeeKeeper),
+			// receive: perm -> ica controller
+			icaControllerIBCModule,
 			// ics4wrapper: not used
 			nil,
 			*appKeepers.IBCPermKeeper,
@@ -624,7 +549,6 @@ func NewAppKeeper(
 	ibcRouter.AddRoute(ibctransfertypes.ModuleName, transferStack).
 		AddRoute(icahosttypes.SubModuleName, icaHostStack).
 		AddRoute(icacontrollertypes.SubModuleName, icaControllerStack).
-		AddRoute(icaauthtypes.ModuleName, icaControllerStack).
 		AddRoute(ibcnfttransfertypes.ModuleName, nftTransferStack)
 	appKeepers.IBCKeeper.SetRouter(ibcRouter)
 

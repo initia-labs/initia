@@ -16,7 +16,6 @@ import (
 	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
 	dbm "github.com/cosmos/cosmos-db"
-	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -30,12 +29,11 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	icacontrollerkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/keeper"
-	"github.com/cosmos/ibc-go/v8/modules/core/keeper"
+	icacontrollerkeeper "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/controller/keeper"
+	"github.com/cosmos/ibc-go/v10/modules/core/keeper"
 
 	initiaapp "github.com/initia-labs/initia/app"
 	ibctestingtypes "github.com/initia-labs/initia/x/ibc/testing/types"
-	icaauthkeeper "github.com/initia-labs/initia/x/intertx/keeper"
 	moveconfig "github.com/initia-labs/initia/x/move/config"
 	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
 
@@ -60,9 +58,7 @@ type TestingApp interface {
 	GetAccountKeeper() *authkeeper.AccountKeeper
 	GetStakingKeeper() ibctestingtypes.StakingKeeper
 	GetIBCKeeper() *keeper.Keeper
-	GetScopedIBCKeeper() capabilitykeeper.ScopedKeeper
 	GetICAControllerKeeper() *icacontrollerkeeper.Keeper
-	GetICAAuthKeeper() *icaauthkeeper.Keeper
 	TxConfig() client.TxConfig
 
 	// Implemented by SimApp

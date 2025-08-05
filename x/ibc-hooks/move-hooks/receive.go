@@ -3,9 +3,9 @@ package move_hooks
 import (
 	"fmt"
 
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
-	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
+	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -18,13 +18,14 @@ import (
 func (h MoveHooks) onRecvIcs20Packet(
 	ctx sdk.Context,
 	im ibchooks.IBCMiddleware,
+	channelVersion string,
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 	data transfertypes.FungibleTokenPacketData,
 ) ibcexported.Acknowledgement {
 	isMoveRouted, hookData, err := validateAndParseMemo(data.GetMemo())
 	if !isMoveRouted || (err == nil && hookData.Message == nil) {
-		return im.App.OnRecvPacket(ctx, packet, relayer)
+		return im.App.OnRecvPacket(ctx, channelVersion, packet, relayer)
 	} else if err != nil {
 		return newEmitErrorAcknowledgement(err)
 	}
@@ -53,7 +54,7 @@ func (h MoveHooks) onRecvIcs20Packet(
 	data.Receiver = intermediateSender
 	packet.Data = data.GetBytes()
 
-	ack := im.App.OnRecvPacket(ctx, packet, relayer)
+	ack := im.App.OnRecvPacket(ctx, channelVersion, packet, relayer)
 	if !ack.Success() {
 		return ack
 	}
@@ -70,13 +71,14 @@ func (h MoveHooks) onRecvIcs20Packet(
 func (h MoveHooks) onRecvIcs721Packet(
 	ctx sdk.Context,
 	im ibchooks.IBCMiddleware,
+	channelVersion string,
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 	data nfttransfertypes.NonFungibleTokenPacketData,
 ) ibcexported.Acknowledgement {
 	isMoveRouted, hookData, err := validateAndParseMemo(data.GetMemo())
 	if !isMoveRouted || (err == nil && hookData.Message == nil) {
-		return im.App.OnRecvPacket(ctx, packet, relayer)
+		return im.App.OnRecvPacket(ctx, channelVersion, packet, relayer)
 	} else if err != nil {
 		return newEmitErrorAcknowledgement(err)
 	}
@@ -105,7 +107,7 @@ func (h MoveHooks) onRecvIcs721Packet(
 	data.Receiver = intermediateSender
 	packet.Data = data.GetBytes()
 
-	ack := im.App.OnRecvPacket(ctx, packet, relayer)
+	ack := im.App.OnRecvPacket(ctx, channelVersion, packet, relayer)
 	if !ack.Success() {
 		return ack
 	}

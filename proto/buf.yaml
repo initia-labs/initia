@@ -7,7 +7,7 @@ deps:
   - buf.build/cosmos/gogo-proto:5e5b9fdd01804356895f8f79a6f1ddc1
   - buf.build/googleapis/googleapis:cc916c31859748a68fd229a3c8d7a2e8
   - buf.build/cosmos/ics23:b1abd8678aab07165efd453c96796a179eb3131f
-  - buf.build/cosmos/ibc:cc1d31ac98a0477580379346dab8e87b
+  - buf.build/cosmos/ibc:857539074f9c4dda961f9db5dcf8e462
 breaking:
   use:
     - FILE

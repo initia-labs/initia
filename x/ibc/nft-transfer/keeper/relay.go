@@ -11,10 +11,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
-	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
-	coretypes "github.com/cosmos/ibc-go/v8/modules/core/types"
+	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
+	coremetrics "github.com/cosmos/ibc-go/v10/modules/core/metrics"
 
 	"github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 )
@@ -108,8 +107,8 @@ func (k Keeper) sendNftTransfer(
 		return 0, errors.Wrapf(channeltypes.ErrChannelNotFound, "port ID (%s) channel ID (%s)", sourcePort, sourceChannel)
 	}
 
-	destinationPort := sourceChannelEnd.GetCounterparty().GetPortID()
-	destinationChannel := sourceChannelEnd.GetCounterparty().GetChannelID()
+	destinationPort := sourceChannelEnd.Counterparty.PortId
+	destinationChannel := sourceChannelEnd.Counterparty.ChannelId
 
 	// get the next sequence
 	sequence, found := k.channelKeeper.GetNextSequenceSend(ctx, sourcePort, sourceChannel)
@@ -121,14 +120,10 @@ func (k Keeper) sendNftTransfer(
 	}
 	// begin createOutgoingPacket logic
 	// See spec for this logic: https://github.com/cosmos/ibc/tree/main/spec/app/ics-721-nft-transfer#packet-relay
-	channelCap, ok := k.scopedKeeper.GetCapability(ctx, host.ChannelCapabilityPath(sourcePort, sourceChannel))
-	if !ok {
-		return 0, errors.Wrap(channeltypes.ErrChannelCapabilityNotFound, "module does not own channel capability")
-	}
 
 	labels := []metrics.Label{
-		telemetry.NewLabel(coretypes.LabelDestinationPort, destinationPort),
-		telemetry.NewLabel(coretypes.LabelDestinationChannel, destinationChannel),
+		telemetry.NewLabel(coremetrics.LabelDestinationPort, destinationPort),
+		telemetry.NewLabel(coremetrics.LabelDestinationChannel, destinationChannel),
 	}
 
 	// get class info
@@ -191,7 +186,7 @@ func (k Keeper) sendNftTransfer(
 	// chain inside the packet data. The receiving chain will perform class id
 	// prefixing as necessary.
 	if types.SenderChainIsSource(sourcePort, sourceChannel, fullClassIdPath) {
-		labels = append(labels, telemetry.NewLabel(coretypes.LabelSource, "true"))
+		labels = append(labels, telemetry.NewLabel(coremetrics.LabelSource, "true"))
 
 		// create the escrow address for the tokens
 		escrowAddress := types.GetEscrowAddress(sourcePort, sourceChannel)
@@ -204,7 +199,7 @@ func (k Keeper) sendNftTransfer(
 		}
 
 	} else {
-		labels = append(labels, telemetry.NewLabel(coretypes.LabelSource, "false"))
+		labels = append(labels, telemetry.NewLabel(coremetrics.LabelSource, "false"))
 
 		if err := k.nftKeeper.Burns(
 			ctx, sender, classId, tokenIds,
@@ -218,7 +213,7 @@ func (k Keeper) sendNftTransfer(
 		tokenIds, tokenUris, tokenData, sender.String(), receiver, memo,
 	)
 	if _, err := k.ics4Wrapper.SendPacket(
-		ctx, channelCap, sourcePort, sourceChannel,
+		ctx, sourcePort, sourceChannel,
 		timeoutHeight, timeoutTimestamp, packetData.GetBytes(),
 	); err != nil {
 		return 0, err
@@ -275,8 +270,8 @@ func (k Keeper) OnRecvPacket(ctx sdk.Context, packet channeltypes.Packet, data t
 	}
 
 	labels := []metrics.Label{
-		telemetry.NewLabel(coretypes.LabelSourcePort, packet.GetSourcePort()),
-		telemetry.NewLabel(coretypes.LabelSourceChannel, packet.GetSourceChannel()),
+		telemetry.NewLabel(coremetrics.LabelSourcePort, packet.GetSourcePort()),
+		telemetry.NewLabel(coremetrics.LabelSourceChannel, packet.GetSourceChannel()),
 	}
 
 	// This is the prefix that would have been prefixed to the class id
@@ -330,7 +325,7 @@ func (k Keeper) OnRecvPacket(ctx sdk.Context, packet channeltypes.Packet, data t
 				[]string{"ibc", types.ModuleName, "receive"},
 				1,
 				append(
-					labels, telemetry.NewLabel(coretypes.LabelSource, "true"),
+					labels, telemetry.NewLabel(coremetrics.LabelSource, "true"),
 				),
 			)
 		}()
@@ -417,7 +412,7 @@ func (k Keeper) OnRecvPacket(ctx sdk.Context, packet channeltypes.Packet, data t
 			[]string{"ibc", types.ModuleName, "receive"},
 			1,
 			append(
-				labels, telemetry.NewLabel(coretypes.LabelSource, "false"),
+				labels, telemetry.NewLabel(coremetrics.LabelSource, "false"),
 			),
 		)
 	}()

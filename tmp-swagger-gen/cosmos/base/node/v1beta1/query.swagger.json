@@ -1,0 +1,141 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "cosmos/base/node/v1beta1/query.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/cosmos/base/node/v1beta1/config": {
+      "get": {
+        "summary": "Config queries for the operator configuration.",
+        "operationId": "Config",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.base.node.v1beta1.ConfigResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "tags": [
+          "Service"
+        ]
+      }
+    },
+    "/cosmos/base/node/v1beta1/status": {
+      "get": {
+        "summary": "Status queries for the node status.",
+        "operationId": "Status",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.base.node.v1beta1.StatusResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "tags": [
+          "Service"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "cosmos.base.node.v1beta1.ConfigResponse": {
+      "type": "object",
+      "properties": {
+        "minimum_gas_price": {
+          "type": "string"
+        },
+        "pruning_keep_recent": {
+          "type": "string"
+        },
+        "pruning_interval": {
+          "type": "string"
+        },
+        "halt_height": {
+          "type": "string",
+          "format": "uint64"
+        }
+      },
+      "description": "ConfigResponse defines the response structure for the Config gRPC query."
+    },
+    "cosmos.base.node.v1beta1.StatusResponse": {
+      "type": "object",
+      "properties": {
+        "earliest_store_height": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "height": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "app_hash": {
+          "type": "string",
+          "format": "byte"
+        },
+        "validator_hash": {
+          "type": "string",
+          "format": "byte"
+        }
+      },
+      "description": "StateResponse defines the response structure for the status of a node."
+    },
+    "google.protobuf.Any": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grpc.gateway.runtime.Error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/google.protobuf.Any"
+          }
+        }
+      }
+    }
+  }
+}

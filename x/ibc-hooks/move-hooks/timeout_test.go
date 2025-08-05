@@ -6,8 +6,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 	nfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 
 	movetypes "github.com/initia-labs/initia/x/move/types"
@@ -30,7 +30,7 @@ func Test_OnTimeoutPacket(t *testing.T) {
 	dataBz, err := json.Marshal(&data)
 	require.NoError(t, err)
 
-	err = input.IBCHooksMiddleware.OnTimeoutPacket(ctx, channeltypes.Packet{
+	err = input.IBCHooksMiddleware.OnTimeoutPacket(ctx, transfertypes.V1, channeltypes.Packet{
 		Data: dataBz,
 	}, addr)
 	require.NoError(t, err)
@@ -60,7 +60,7 @@ func Test_onTimeoutPacket_memo(t *testing.T) {
 	require.NoError(t, err)
 
 	// hook should not be called to due to acl
-	err = input.IBCHooksMiddleware.OnTimeoutPacket(ctx, channeltypes.Packet{
+	err = input.IBCHooksMiddleware.OnTimeoutPacket(ctx, transfertypes.V1, channeltypes.Packet{
 		Data: dataBz,
 	}, addr)
 	require.NoError(t, err)
@@ -81,7 +81,7 @@ func Test_onTimeoutPacket_memo(t *testing.T) {
 	require.NoError(t, input.IBCHooksKeeper.SetAllowed(ctx, movetypes.ConvertVMAddressToSDKAddress(vmtypes.StdAddress), true))
 
 	// success
-	err = input.IBCHooksMiddleware.OnTimeoutPacket(ctx, channeltypes.Packet{
+	err = input.IBCHooksMiddleware.OnTimeoutPacket(ctx, transfertypes.V1, channeltypes.Packet{
 		Data: dataBz,
 	}, addr)
 	require.NoError(t, err)
@@ -119,7 +119,7 @@ func Test_OnTimeoutPacket_ICS721(t *testing.T) {
 	dataBz, err := json.Marshal(&data)
 	require.NoError(t, err)
 
-	err = input.IBCHooksMiddleware.OnTimeoutPacket(ctx, channeltypes.Packet{
+	err = input.IBCHooksMiddleware.OnTimeoutPacket(ctx, nfttransfertypes.V1, channeltypes.Packet{
 		Data: dataBz,
 	}, addr)
 	require.NoError(t, err)
@@ -153,7 +153,7 @@ func Test_onTimeoutPacket_memo_ICS721(t *testing.T) {
 	require.NoError(t, err)
 
 	// hook should not be called to due to acl
-	err = input.IBCHooksMiddleware.OnTimeoutPacket(ctx, channeltypes.Packet{
+	err = input.IBCHooksMiddleware.OnTimeoutPacket(ctx, nfttransfertypes.V1, channeltypes.Packet{
 		Data: dataBz,
 	}, addr)
 	require.NoError(t, err)
@@ -174,7 +174,7 @@ func Test_onTimeoutPacket_memo_ICS721(t *testing.T) {
 	require.NoError(t, input.IBCHooksKeeper.SetAllowed(ctx, movetypes.ConvertVMAddressToSDKAddress(vmtypes.StdAddress), true))
 
 	// success
-	err = input.IBCHooksMiddleware.OnTimeoutPacket(ctx, channeltypes.Packet{
+	err = input.IBCHooksMiddleware.OnTimeoutPacket(ctx, nfttransfertypes.V1, channeltypes.Packet{
 		Data: dataBz,
 	}, addr)
 	require.NoError(t, err)

@@ -3,19 +3,18 @@ package nfttransfer
 import (
 	"fmt"
 	"math"
+	"slices"
 	"strings"
 
 	"cosmossdk.io/errors"
-
-	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
+	errorsmod "cosmossdk.io/errors"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
-	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
-	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
-	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
+	porttypes "github.com/cosmos/ibc-go/v10/modules/core/05-port/types"
+	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
 
 	"github.com/initia-labs/initia/x/ibc/nft-transfer/keeper"
 	"github.com/initia-labs/initia/x/ibc/nft-transfer/types"
@@ -50,10 +49,10 @@ func ValidateNftTransferChannelParams(
 		return err
 	}
 	if channelSequence > uint64(math.MaxUint32) {
-		return errors.Wrapf(types.ErrMaxNftTransferChannels, "channel sequence %d is greater than max allowed nft transfer channels %d", channelSequence, uint64(math.MaxUint32))
+		return errorsmod.Wrapf(types.ErrMaxNftTransferChannels, "channel sequence %d is greater than max allowed nft transfer channels %d", channelSequence, uint64(math.MaxUint32))
 	}
 	if order != channeltypes.UNORDERED {
-		return errors.Wrapf(channeltypes.ErrInvalidChannelOrdering, "expected %s channel, got %s ", channeltypes.UNORDERED, order)
+		return errorsmod.Wrapf(channeltypes.ErrInvalidChannelOrdering, "expected %s channel, got %s ", channeltypes.UNORDERED, order)
 	}
 
 	// Require portID is the portID nft-transfer module is bound to
@@ -62,7 +61,7 @@ func ValidateNftTransferChannelParams(
 		return err
 	}
 	if boundPort != portID {
-		return errors.Wrapf(porttypes.ErrInvalidPort, "invalid port: %s, expected %s", portID, boundPort)
+		return errorsmod.Wrapf(porttypes.ErrInvalidPort, "invalid port: %s, expected %s", portID, boundPort)
 	}
 
 	return nil
@@ -75,7 +74,6 @@ func (im IBCModule) OnChanOpenInit(
 	connectionHops []string,
 	portID string,
 	channelID string,
-	chanCap *capabilitytypes.Capability,
 	counterparty channeltypes.Counterparty,
 	version string,
 ) (string, error) {
@@ -84,16 +82,11 @@ func (im IBCModule) OnChanOpenInit(
 	}
 
 	if strings.TrimSpace(version) == "" {
-		version = types.Version
+		version = types.V1
 	}
 
-	if version != types.Version {
-		return "", errors.Wrapf(types.ErrInvalidVersion, "got %s, expected %s", version, types.Version)
-	}
-
-	// Claim channel capability passed back by IBC module
-	if err := im.keeper.ClaimCapability(ctx, chanCap, host.ChannelCapabilityPath(portID, channelID)); err != nil {
-		return "", err
+	if !slices.Contains(types.SupportedVersions, version) {
+		return "", errorsmod.Wrapf(types.ErrInvalidVersion, "expected one of %s, got %s", types.SupportedVersions, version)
 	}
 
 	return version, nil
@@ -106,7 +99,6 @@ func (im IBCModule) OnChanOpenTry(
 	connectionHops []string,
 	portID,
 	channelID string,
-	chanCap *capabilitytypes.Capability,
 	counterparty channeltypes.Counterparty,
 	counterpartyVersion string,
 ) (string, error) {
@@ -114,16 +106,11 @@ func (im IBCModule) OnChanOpenTry(
 		return "", err
 	}
 
-	if counterpartyVersion != types.Version {
-		return "", errors.Wrapf(types.ErrInvalidVersion, "invalid counterparty version: got: %s, expected %s", counterpartyVersion, types.Version)
+	if !slices.Contains(types.SupportedVersions, counterpartyVersion) {
+		im.keeper.Logger(ctx).Debug("invalid counterparty version, proposing latest app version", "counterpartyVersion", counterpartyVersion, "version", types.V1)
+		return types.V1, nil
 	}
-
-	// OpenTry must claim the channelCapability that IBC passes into the callback
-	if err := im.keeper.ClaimCapability(ctx, chanCap, host.ChannelCapabilityPath(portID, channelID)); err != nil {
-		return "", err
-	}
-
-	return types.Version, nil
+	return counterpartyVersion, nil
 }
 
 // OnChanOpenAck implements the IBCModule interface
@@ -134,8 +121,8 @@ func (im IBCModule) OnChanOpenAck(
 	_ string,
 	counterpartyVersion string,
 ) error {
-	if counterpartyVersion != types.Version {
-		return errors.Wrapf(types.ErrInvalidVersion, "invalid counterparty version: %s, expected %s", counterpartyVersion, types.Version)
+	if !slices.Contains(types.SupportedVersions, counterpartyVersion) {
+		return errorsmod.Wrapf(types.ErrInvalidVersion, "invalid counterparty version: expected one of %s, got %s", types.SupportedVersions, counterpartyVersion)
 	}
 	return nil
 }
@@ -173,16 +160,16 @@ func (im IBCModule) OnChanCloseConfirm(
 // logic returns without error.
 func (im IBCModule) OnRecvPacket(
 	ctx sdk.Context,
+	channelVersion string,
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) ibcexported.Acknowledgement {
-
 	var ackErr error
 	ack := channeltypes.NewResultAcknowledgement([]byte{byte(1)})
 
-	data, err := types.DecodePacketData(packet.GetData())
+	data, err := types.DecodePacketData(packet.GetData(), channelVersion)
 	if err != nil {
-		ackErr = errors.Wrapf(sdkerrors.ErrInvalidType, "cannot unmarshal ICS-721 nft-transfer packet data")
+		ackErr = errorsmod.Wrapf(sdkerrors.ErrInvalidType, "cannot unmarshal ICS-721 nft-transfer packet data")
 		ack = channeltypes.NewErrorAcknowledgement(ackErr)
 	}
 
@@ -224,17 +211,18 @@ func (im IBCModule) OnRecvPacket(
 // OnAcknowledgementPacket implements the IBCModule interface
 func (im IBCModule) OnAcknowledgementPacket(
 	ctx sdk.Context,
+	channelVersion string,
 	packet channeltypes.Packet,
 	acknowledgement []byte,
 	relayer sdk.AccAddress,
 ) error {
 	var ack channeltypes.Acknowledgement
 	if err := im.keeper.Codec().UnmarshalJSON(acknowledgement, &ack); err != nil {
-		return errors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-721 nft-transfer packet acknowledgement: %v", err)
+		return errorsmod.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-721 nft-transfer packet acknowledgement: %v", err)
 	}
-	var data types.NonFungibleTokenPacketData
-	if err := im.keeper.Codec().UnmarshalJSON(packet.GetData(), &data); err != nil {
-		return errors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-721 nft-transfer packet data: %s", err.Error())
+	data, err := types.DecodePacketData(packet.GetData(), channelVersion)
+	if err != nil {
+		return errorsmod.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-721 nft-transfer packet data: %s", err.Error())
 	}
 
 	if err := im.keeper.OnAcknowledgementPacket(ctx, packet, data, ack); err != nil {
@@ -277,12 +265,13 @@ func (im IBCModule) OnAcknowledgementPacket(
 // OnTimeoutPacket implements the IBCModule interface
 func (im IBCModule) OnTimeoutPacket(
 	ctx sdk.Context,
+	channelVersion string,
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) error {
-	var data types.NonFungibleTokenPacketData
-	if err := im.keeper.Codec().UnmarshalJSON(packet.GetData(), &data); err != nil {
-		return errors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-721 nft-transfer packet data: %s", err.Error())
+	data, err := types.DecodePacketData(packet.GetData(), channelVersion)
+	if err != nil {
+		return errorsmod.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-721 nft-transfer packet data: %s", err.Error())
 	}
 	// refund tokens
 	if err := im.keeper.OnTimeoutPacket(ctx, packet, data); err != nil {

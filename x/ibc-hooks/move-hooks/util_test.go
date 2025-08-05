@@ -10,7 +10,7 @@ import (
 	movetypes "github.com/initia-labs/initia/x/move/types"
 	vmtypes "github.com/initia-labs/movevm/types"
 
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
@@ -23,7 +23,7 @@ func Test_isIcs20Packet(t *testing.T) {
 	bz, err := json.Marshal(transferMsg)
 	require.NoError(t, err)
 
-	ok, _transferMsg := isIcs20Packet(bz)
+	ok, _transferMsg := isIcs20Packet(bz, transfertypes.V1)
 	require.True(t, ok)
 	require.Equal(t, transferMsg, _transferMsg)
 
@@ -31,19 +31,19 @@ func Test_isIcs20Packet(t *testing.T) {
 	bz, err = json.Marshal(nftTransferMsg)
 	require.NoError(t, err)
 
-	ok, _ = isIcs20Packet(bz)
+	ok, _ = isIcs20Packet(bz, transfertypes.V1)
 	require.False(t, ok)
 }
 
 func Test_isIcs721Packet(t *testing.T) {
 	nftTransferMsg := nfttransfertypes.NewNonFungibleTokenPacketData("class_id", "uri", "data", []string{"1", "2", "3"}, []string{"uri1", "uri2", "uri3"}, []string{"data1", "data2", "data3"}, "sender", "receiver", "memo")
-	ok, _nftTransferMsg := isIcs721Packet(nftTransferMsg.GetBytes())
+	ok, _nftTransferMsg := isIcs721Packet(nftTransferMsg.GetBytes(), nfttransfertypes.V1)
 	require.True(t, ok)
 	require.Equal(t, nftTransferMsg, _nftTransferMsg)
 
 	// invalid
 	transferMsg := transfertypes.NewFungibleTokenPacketData("denom", "1000000", "0x1", "0x2", "memo")
-	ok, _ = isIcs721Packet(transferMsg.GetBytes())
+	ok, _ = isIcs721Packet(transferMsg.GetBytes(), nfttransfertypes.V1)
 	require.False(t, ok)
 }
 

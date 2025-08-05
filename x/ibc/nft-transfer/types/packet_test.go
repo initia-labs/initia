@@ -66,7 +66,7 @@ func Test_decodePacketData(t *testing.T) {
 		"memo": "memo"
 	}`
 
-	camelRes, err := DecodePacketData([]byte(camelJsonStr))
+	camelRes, err := DecodePacketData([]byte(camelJsonStr), V1)
 	require.NoError(t, err)
 	require.Equal(t, data, camelRes)
 }
@@ -85,7 +85,12 @@ func Test_GetBytes(t *testing.T) {
 	}
 
 	// case normal
-	_data, err := DecodePacketData(data.GetBytes())
+	_data, err := DecodePacketData(data.GetBytes(), V1)
 	require.NoError(t, err)
 	require.Equal(t, data, _data)
+
+	// case invalid version
+	_, err = DecodePacketData(data.GetBytes(), "invalid_version")
+	require.Error(t, err)
+	require.Equal(t, ErrInvalidVersion, err)
 }

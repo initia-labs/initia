@@ -12,8 +12,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/address"
 
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 
 	nfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 	movetypes "github.com/initia-labs/initia/x/move/types"
@@ -31,7 +31,11 @@ func deriveIntermediateSender(channel, originalSender string) string {
 	return senderAddr.String()
 }
 
-func isIcs20Packet(packetData []byte) (isIcs20 bool, ics20data transfertypes.FungibleTokenPacketData) {
+func isIcs20Packet(packetData []byte, channelVersion string) (isIcs20 bool, ics20data transfertypes.FungibleTokenPacketData) {
+	if channelVersion != transfertypes.V1 {
+		return false, ics20data
+	}
+
 	var data transfertypes.FungibleTokenPacketData
 	decoder := json.NewDecoder(strings.NewReader(string(packetData)))
 	decoder.DisallowUnknownFields()
@@ -41,8 +45,12 @@ func isIcs20Packet(packetData []byte) (isIcs20 bool, ics20data transfertypes.Fun
 	return true, data
 }
 
-func isIcs721Packet(packetData []byte) (isIcs721 bool, ics721data nfttransfertypes.NonFungibleTokenPacketData) {
-	if data, err := nfttransfertypes.DecodePacketData(packetData); err != nil {
+func isIcs721Packet(packetData []byte, channelVersion string) (isIcs721 bool, ics721data nfttransfertypes.NonFungibleTokenPacketData) {
+	if channelVersion != nfttransfertypes.V1 {
+		return false, ics721data
+	}
+
+	if data, err := nfttransfertypes.DecodePacketData(packetData, channelVersion); err != nil {
 		return false, data
 	} else {
 		return true, data

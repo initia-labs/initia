@@ -1,6 +1,7 @@
 package ibctesting
 
 import (
+	"encoding/hex"
 	"fmt"
 	"slices"
 	"strconv"
@@ -9,9 +10,9 @@ import (
 
 	abci "github.com/cometbft/cometbft/abci/types"
 
-	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
-	connectiontypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
+	connectiontypes "github.com/cosmos/ibc-go/v10/modules/core/03-connection/types"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 )
 
 type EventsMap map[string]map[string]string
@@ -70,8 +71,12 @@ func ParsePacketFromEvents(events []abci.Event) (channeltypes.Packet, error) {
 			packet := channeltypes.Packet{}
 			for _, attr := range ev.Attributes {
 				switch attr.Key {
-				case channeltypes.AttributeKeyData: //nolint:staticcheck // DEPRECATED
-					packet.Data = []byte(attr.Value)
+				case channeltypes.AttributeKeyDataHex:
+					data, err := hex.DecodeString(attr.Value)
+					if err != nil {
+						return channeltypes.Packet{}, err
+					}
+					packet.Data = data
 
 				case channeltypes.AttributeKeySequence:
 					seq, err := strconv.ParseUint(attr.Value, 10, 64)
@@ -126,8 +131,12 @@ func ParseAckFromEvents(events []abci.Event) ([]byte, error) {
 	for _, ev := range events {
 		if ev.Type == channeltypes.EventTypeWriteAck {
 			for _, attr := range ev.Attributes {
-				if attr.Key == channeltypes.AttributeKeyAck { //nolint:staticcheck // DEPRECATED
-					return []byte(attr.Value), nil
+				if attr.Key == channeltypes.AttributeKeyAckHex {
+					ack, err := hex.DecodeString(attr.Value)
+					if err != nil {
+						return nil, err
+					}
+					return ack, nil
 				}
 			}
 		}

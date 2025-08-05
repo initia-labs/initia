@@ -1,0 +1,1542 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "initia/mstaking/v1/query.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/initia/mstaking/v1/delegations/{delegator_addr}": {
+      "get": {
+        "summary": "DelegatorDelegations queries all delegations of a given delegator address.",
+        "operationId": "DelegatorDelegations",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/initia.mstaking.v1.QueryDelegatorDelegationsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "delegator_addr",
+            "description": "delegator_addr defines the delegator address to query for.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "pagination.key",
+            "description": "key is a value returned in PageResponse.next_key to begin\nquerying the next page most efficiently. Only one of offset or key\nshould be set.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "byte"
+          },
+          {
+            "name": "pagination.offset",
+            "description": "offset is a numeric offset that can be used when key is unavailable.\nIt is less efficient than using key. Only one of offset or key should\nbe set.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.limit",
+            "description": "limit is the total number of results to be returned in the result page.\nIf left empty it will default to a value to be set by each app.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.count_total",
+            "description": "count_total is set to true  to indicate that the result set should include\na count of the total number of items available for pagination in UIs.\ncount_total is only respected when offset is used. It is ignored when key\nis set.",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "pagination.reverse",
+            "description": "reverse is set to true if results are to be returned in the descending order.\n\nSince: cosmos-sdk 0.43",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "status",
+            "description": "status enables to query for delegations with validators of a specific bond status (bonded/unbonded/unbonding).\nIf empty, it queries for all delegations regardless of validator status.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/initia/mstaking/v1/delegators/{delegator_addr}/redelegations": {
+      "get": {
+        "summary": "RedelegationsOfDelegator queries redelegations of given delegator address.",
+        "operationId": "RedelegationsOfDelegator",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/initia.mstaking.v1.QueryRedelegationsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "delegator_addr",
+            "description": "delegator_addr defines the delegator address to query for.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "src_validator_addr",
+            "description": "src_validator_addr defines the validator address to redelegate from.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "dst_validator_addr",
+            "description": "dst_validator_addr defines the validator address to redelegate to.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pagination.key",
+            "description": "key is a value returned in PageResponse.next_key to begin\nquerying the next page most efficiently. Only one of offset or key\nshould be set.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "byte"
+          },
+          {
+            "name": "pagination.offset",
+            "description": "offset is a numeric offset that can be used when key is unavailable.\nIt is less efficient than using key. Only one of offset or key should\nbe set.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.limit",
+            "description": "limit is the total number of results to be returned in the result page.\nIf left empty it will default to a value to be set by each app.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.count_total",
+            "description": "count_total is set to true  to indicate that the result set should include\na count of the total number of items available for pagination in UIs.\ncount_total is only respected when offset is used. It is ignored when key\nis set.",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "pagination.reverse",
+            "description": "reverse is set to true if results are to be returned in the descending order.\n\nSince: cosmos-sdk 0.43",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/initia/mstaking/v1/delegators/{delegator_addr}/total_delegation_balance": {
+      "get": {
+        "summary": "DelegatorTotalDelegationBalance queries sum of all the delegations' balance of a\ndelegator.",
+        "operationId": "DelegatorTotalDelegationBalance",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/initia.mstaking.v1.QueryDelegatorTotalDelegationBalanceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "delegator_addr",
+            "description": "delegator_addr defines the delegator address to query for.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "description": "status enables to query for delegations with validators of a specific bond status (bonded/unbonded/unbonding).\nIf empty, it queries for all delegations regardless of validator status.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/initia/mstaking/v1/delegators/{delegator_addr}/unbonding_delegations": {
+      "get": {
+        "summary": "DelegatorUnbondingDelegations queries all unbonding delegations of a given\ndelegator address.",
+        "operationId": "DelegatorUnbondingDelegations",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/initia.mstaking.v1.QueryDelegatorUnbondingDelegationsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "delegator_addr",
+            "description": "delegator_addr defines the delegator address to query for.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "pagination.key",
+            "description": "key is a value returned in PageResponse.next_key to begin\nquerying the next page most efficiently. Only one of offset or key\nshould be set.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "byte"
+          },
+          {
+            "name": "pagination.offset",
+            "description": "offset is a numeric offset that can be used when key is unavailable.\nIt is less efficient than using key. Only one of offset or key should\nbe set.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.limit",
+            "description": "limit is the total number of results to be returned in the result page.\nIf left empty it will default to a value to be set by each app.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.count_total",
+            "description": "count_total is set to true  to indicate that the result set should include\na count of the total number of items available for pagination in UIs.\ncount_total is only respected when offset is used. It is ignored when key\nis set.",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "pagination.reverse",
+            "description": "reverse is set to true if results are to be returned in the descending order.\n\nSince: cosmos-sdk 0.43",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/initia/mstaking/v1/delegators/{delegator_addr}/validators": {
+      "get": {
+        "summary": "DelegatorValidators queries all validators info for given delegator\naddress.",
+        "operationId": "DelegatorValidators",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/initia.mstaking.v1.QueryDelegatorValidatorsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "delegator_addr",
+            "description": "delegator_addr defines the delegator address to query for.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "pagination.key",
+            "description": "key is a value returned in PageResponse.next_key to begin\nquerying the next page most efficiently. Only one of offset or key\nshould be set.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "byte"
+          },
+          {
+            "name": "pagination.offset",
+            "description": "offset is a numeric offset that can be used when key is unavailable.\nIt is less efficient than using key. Only one of offset or key should\nbe set.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.limit",
+            "description": "limit is the total number of results to be returned in the result page.\nIf left empty it will default to a value to be set by each app.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.count_total",
+            "description": "count_total is set to true  to indicate that the result set should include\na count of the total number of items available for pagination in UIs.\ncount_total is only respected when offset is used. It is ignored when key\nis set.",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "pagination.reverse",
+            "description": "reverse is set to true if results are to be returned in the descending order.\n\nSince: cosmos-sdk 0.43",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/initia/mstaking/v1/delegators/{delegator_addr}/validators/{validator_addr}": {
+      "get": {
+        "summary": "DelegatorValidator queries validator info for given delegator validator\npair.",
+        "operationId": "DelegatorValidator",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/initia.mstaking.v1.QueryDelegatorValidatorResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "delegator_addr",
+            "description": "delegator_addr defines the delegator address to query for.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "validator_addr",
+            "description": "validator_addr defines the validator address to query for.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/initia/mstaking/v1/params": {
+      "get": {
+        "summary": "Parameters queries the staking parameters.",
+        "operationId": "Params",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/initia.mstaking.v1.QueryParamsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/initia/mstaking/v1/pool": {
+      "get": {
+        "summary": "Pool queries the pool info.",
+        "operationId": "Pool",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/initia.mstaking.v1.QueryPoolResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/initia/mstaking/v1/redelegations": {
+      "get": {
+        "summary": "Redelegations queries redelegations of given address.",
+        "operationId": "Redelegations",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/initia.mstaking.v1.QueryRedelegationsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "delegator_addr",
+            "description": "delegator_addr defines the delegator address to query for.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "src_validator_addr",
+            "description": "src_validator_addr defines the validator address to redelegate from.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "dst_validator_addr",
+            "description": "dst_validator_addr defines the validator address to redelegate to.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pagination.key",
+            "description": "key is a value returned in PageResponse.next_key to begin\nquerying the next page most efficiently. Only one of offset or key\nshould be set.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "byte"
+          },
+          {
+            "name": "pagination.offset",
+            "description": "offset is a numeric offset that can be used when key is unavailable.\nIt is less efficient than using key. Only one of offset or key should\nbe set.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.limit",
+            "description": "limit is the total number of results to be returned in the result page.\nIf left empty it will default to a value to be set by each app.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.count_total",
+            "description": "count_total is set to true  to indicate that the result set should include\na count of the total number of items available for pagination in UIs.\ncount_total is only respected when offset is used. It is ignored when key\nis set.",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "pagination.reverse",
+            "description": "reverse is set to true if results are to be returned in the descending order.\n\nSince: cosmos-sdk 0.43",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/initia/mstaking/v1/validators": {
+      "get": {
+        "summary": "Validators queries all validators that match the given status.",
+        "operationId": "Validators",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/initia.mstaking.v1.QueryValidatorsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "status",
+            "description": "status enables to query for validators matching a given status.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pagination.key",
+            "description": "key is a value returned in PageResponse.next_key to begin\nquerying the next page most efficiently. Only one of offset or key\nshould be set.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "byte"
+          },
+          {
+            "name": "pagination.offset",
+            "description": "offset is a numeric offset that can be used when key is unavailable.\nIt is less efficient than using key. Only one of offset or key should\nbe set.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.limit",
+            "description": "limit is the total number of results to be returned in the result page.\nIf left empty it will default to a value to be set by each app.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.count_total",
+            "description": "count_total is set to true  to indicate that the result set should include\na count of the total number of items available for pagination in UIs.\ncount_total is only respected when offset is used. It is ignored when key\nis set.",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "pagination.reverse",
+            "description": "reverse is set to true if results are to be returned in the descending order.\n\nSince: cosmos-sdk 0.43",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/initia/mstaking/v1/validators/{validator_addr}": {
+      "get": {
+        "summary": "Validator queries validator info for given validator address.",
+        "operationId": "Validator",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/initia.mstaking.v1.QueryValidatorResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "validator_addr",
+            "description": "validator_addr defines the validator address to query for.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/initia/mstaking/v1/validators/{validator_addr}/delegations": {
+      "get": {
+        "summary": "ValidatorDelegations queries delegate info for given validator.",
+        "operationId": "ValidatorDelegations",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/initia.mstaking.v1.QueryValidatorDelegationsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "validator_addr",
+            "description": "validator_addr defines the validator address to query for.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "pagination.key",
+            "description": "key is a value returned in PageResponse.next_key to begin\nquerying the next page most efficiently. Only one of offset or key\nshould be set.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "byte"
+          },
+          {
+            "name": "pagination.offset",
+            "description": "offset is a numeric offset that can be used when key is unavailable.\nIt is less efficient than using key. Only one of offset or key should\nbe set.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.limit",
+            "description": "limit is the total number of results to be returned in the result page.\nIf left empty it will default to a value to be set by each app.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.count_total",
+            "description": "count_total is set to true  to indicate that the result set should include\na count of the total number of items available for pagination in UIs.\ncount_total is only respected when offset is used. It is ignored when key\nis set.",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "pagination.reverse",
+            "description": "reverse is set to true if results are to be returned in the descending order.\n\nSince: cosmos-sdk 0.43",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/initia/mstaking/v1/validators/{validator_addr}/delegations/{delegator_addr}": {
+      "get": {
+        "summary": "Delegation queries delegate info for given validator delegator pair.",
+        "operationId": "Delegation",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/initia.mstaking.v1.QueryDelegationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "validator_addr",
+            "description": "validator_addr defines the validator address to query for.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "delegator_addr",
+            "description": "delegator_addr defines the delegator address to query for.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/initia/mstaking/v1/validators/{validator_addr}/delegations/{delegator_addr}/unbonding_delegation": {
+      "get": {
+        "summary": "UnbondingDelegation queries unbonding info for given validator delegator\npair.",
+        "operationId": "UnbondingDelegation",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/initia.mstaking.v1.QueryUnbondingDelegationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "validator_addr",
+            "description": "validator_addr defines the validator address to query for.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "delegator_addr",
+            "description": "delegator_addr defines the delegator address to query for.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/initia/mstaking/v1/validators/{validator_addr}/unbonding_delegations": {
+      "get": {
+        "summary": "ValidatorUnbondingDelegations queries unbonding delegations of a validator.",
+        "operationId": "ValidatorUnbondingDelegations",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/initia.mstaking.v1.QueryValidatorUnbondingDelegationsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "validator_addr",
+            "description": "validator_addr defines the validator address to query for.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "pagination.key",
+            "description": "key is a value returned in PageResponse.next_key to begin\nquerying the next page most efficiently. Only one of offset or key\nshould be set.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "byte"
+          },
+          {
+            "name": "pagination.offset",
+            "description": "offset is a numeric offset that can be used when key is unavailable.\nIt is less efficient than using key. Only one of offset or key should\nbe set.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.limit",
+            "description": "limit is the total number of results to be returned in the result page.\nIf left empty it will default to a value to be set by each app.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.count_total",
+            "description": "count_total is set to true  to indicate that the result set should include\na count of the total number of items available for pagination in UIs.\ncount_total is only respected when offset is used. It is ignored when key\nis set.",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "pagination.reverse",
+            "description": "reverse is set to true if results are to be returned in the descending order.\n\nSince: cosmos-sdk 0.43",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "cosmos.base.query.v1beta1.PageRequest": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "format": "byte",
+          "description": "key is a value returned in PageResponse.next_key to begin\nquerying the next page most efficiently. Only one of offset or key\nshould be set."
+        },
+        "offset": {
+          "type": "string",
+          "format": "uint64",
+          "description": "offset is a numeric offset that can be used when key is unavailable.\nIt is less efficient than using key. Only one of offset or key should\nbe set."
+        },
+        "limit": {
+          "type": "string",
+          "format": "uint64",
+          "description": "limit is the total number of results to be returned in the result page.\nIf left empty it will default to a value to be set by each app."
+        },
+        "count_total": {
+          "type": "boolean",
+          "description": "count_total is set to true  to indicate that the result set should include\na count of the total number of items available for pagination in UIs.\ncount_total is only respected when offset is used. It is ignored when key\nis set."
+        },
+        "reverse": {
+          "type": "boolean",
+          "description": "reverse is set to true if results are to be returned in the descending order.\n\nSince: cosmos-sdk 0.43"
+        }
+      },
+      "description": "message SomeRequest {\n         Foo some_parameter = 1;\n         PageRequest pagination = 2;\n }",
+      "title": "PageRequest is to be embedded in gRPC request messages for efficient\npagination. Ex:"
+    },
+    "cosmos.base.query.v1beta1.PageResponse": {
+      "type": "object",
+      "properties": {
+        "next_key": {
+          "type": "string",
+          "format": "byte",
+          "description": "next_key is the key to be passed to PageRequest.key to\nquery the next page most efficiently. It will be empty if\nthere are no more results."
+        },
+        "total": {
+          "type": "string",
+          "format": "uint64",
+          "title": "total is total number of results available if PageRequest.count_total\nwas set, its value is undefined otherwise"
+        }
+      },
+      "description": "PageResponse is to be embedded in gRPC response messages where the\ncorresponding request message has used PageRequest.\n\n message SomeResponse {\n         repeated Bar results = 1;\n         PageResponse page = 2;\n }"
+    },
+    "cosmos.base.v1beta1.Coin": {
+      "type": "object",
+      "properties": {
+        "denom": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string"
+        }
+      },
+      "description": "Coin defines a token with a denomination and an amount.\n\nNOTE: The amount field is an Int which implements the custom method\nsignatures required by gogoproto."
+    },
+    "cosmos.base.v1beta1.DecCoin": {
+      "type": "object",
+      "properties": {
+        "denom": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string"
+        }
+      },
+      "description": "DecCoin defines a token with a denomination and a decimal amount.\n\nNOTE: The amount field is an Dec which implements the custom method\nsignatures required by gogoproto."
+    },
+    "google.protobuf.Any": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string",
+          "description": "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. This string must contain at least\none \"/\" character. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed.\n* An HTTP GET on the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce an error.\n* Applications are allowed to cache lookup results based on the\n  URL, or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary compatibility needs to be preserved\n  on changes to types. (Use versioned type names to manage\n  breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics."
+        },
+        "value": {
+          "type": "string",
+          "format": "byte",
+          "description": "Must be a valid serialized protocol buffer of the above specified type."
+        }
+      },
+      "description": "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(\u0026foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n    // or ...\n    if (any.isSameTypeAs(Foo.getDefaultInstance())) {\n      foo = any.unpack(Foo.getDefaultInstance());\n    }\n\nExample 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\nExample 4: Pack and unpack a message in Go\n\n     foo := \u0026pb.Foo{...}\n     any, err := anypb.New(foo)\n     if err != nil {\n       ...\n     }\n     ...\n     foo := \u0026pb.Foo{}\n     if err := any.UnmarshalTo(foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\nJSON\n\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": \u003cstring\u003e,\n      \"lastName\": \u003cstring\u003e\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
+    },
+    "grpc.gateway.runtime.Error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/google.protobuf.Any"
+          }
+        }
+      }
+    },
+    "initia.mstaking.v1.BondStatus": {
+      "type": "string",
+      "enum": [
+        "BOND_STATUS_UNSPECIFIED",
+        "BOND_STATUS_UNBONDED",
+        "BOND_STATUS_UNBONDING",
+        "BOND_STATUS_BONDED"
+      ],
+      "default": "BOND_STATUS_UNSPECIFIED",
+      "description": "BondStatus is the status of a validator.\n\n - BOND_STATUS_UNSPECIFIED: UNSPECIFIED defines an invalid validator status.\n - BOND_STATUS_UNBONDED: UNBONDED defines a validator that is not bonded.\n - BOND_STATUS_UNBONDING: UNBONDING defines a validator that is unbonding.\n - BOND_STATUS_BONDED: BONDED defines a validator that is bonded."
+    },
+    "initia.mstaking.v1.Commission": {
+      "type": "object",
+      "properties": {
+        "commission_rates": {
+          "$ref": "#/definitions/initia.mstaking.v1.CommissionRates",
+          "description": "commission_rates defines the initial commission rates to be used for creating a validator."
+        },
+        "update_time": {
+          "type": "string",
+          "format": "date-time",
+          "description": "update_time is the last time the commission rate was changed."
+        }
+      },
+      "description": "Commission defines commission parameters for a given validator."
+    },
+    "initia.mstaking.v1.CommissionRates": {
+      "type": "object",
+      "properties": {
+        "rate": {
+          "type": "string",
+          "description": "rate is the commission rate charged to delegators, as a fraction."
+        },
+        "max_rate": {
+          "type": "string",
+          "description": "max_rate defines the maximum commission rate which validator can ever charge, as a fraction."
+        },
+        "max_change_rate": {
+          "type": "string",
+          "description": "max_change_rate defines the maximum daily increase of the validator commission, as a fraction."
+        }
+      },
+      "description": "CommissionRates defines the initial commission rates to be used for creating\na validator."
+    },
+    "initia.mstaking.v1.Delegation": {
+      "type": "object",
+      "properties": {
+        "delegator_address": {
+          "type": "string",
+          "description": "delegator_address is the bech32-encoded address of the delegator."
+        },
+        "validator_address": {
+          "type": "string",
+          "description": "validator_address is the bech32-encoded address of the validator."
+        },
+        "shares": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+          },
+          "description": "shares define the delegation shares received."
+        }
+      },
+      "description": "Delegation represents the bond with tokens held by an account. It is\nowned by one delegator, and is associated with the voting power of one\nvalidator."
+    },
+    "initia.mstaking.v1.DelegationResponse": {
+      "type": "object",
+      "properties": {
+        "delegation": {
+          "$ref": "#/definitions/initia.mstaking.v1.Delegation"
+        },
+        "balance": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          }
+        }
+      },
+      "description": "DelegationResponse is equivalent to Delegation except that it contains a\nbalance in addition to shares which is more suitable for client responses."
+    },
+    "initia.mstaking.v1.Description": {
+      "type": "object",
+      "properties": {
+        "moniker": {
+          "type": "string",
+          "description": "moniker defines a human-readable name for the validator."
+        },
+        "identity": {
+          "type": "string",
+          "description": "identity defines an optional identity signature (ex. UPort or Keybase)."
+        },
+        "website": {
+          "type": "string",
+          "description": "website defines an optional website link."
+        },
+        "security_contact": {
+          "type": "string",
+          "description": "security_contact defines an optional email for security contact."
+        },
+        "details": {
+          "type": "string",
+          "description": "details define other optional details."
+        }
+      },
+      "description": "Description defines a validator description."
+    },
+    "initia.mstaking.v1.Params": {
+      "type": "object",
+      "properties": {
+        "unbonding_time": {
+          "type": "string",
+          "description": "unbonding_time is the time duration of unbonding."
+        },
+        "max_validators": {
+          "type": "integer",
+          "format": "int64",
+          "description": "max_validators is the maximum number of validators."
+        },
+        "max_entries": {
+          "type": "integer",
+          "format": "int64",
+          "description": "max_entries is the max entries for either unbonding delegation or redelegation (per pair/trio)."
+        },
+        "historical_entries": {
+          "type": "integer",
+          "format": "int64",
+          "description": "historical_entries is the number of historical entries to persist."
+        },
+        "bond_denoms": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "bond_denoms defines the bondable coin denomination."
+        },
+        "min_voting_power": {
+          "type": "string",
+          "format": "uint64",
+          "title": "minimum voting power is the chain-wide minimum voting power to get into power update whitelist"
+        },
+        "min_commission_rate": {
+          "type": "string",
+          "title": "min_commission_rate is the chain-wide minimum commission rate that a validator can charge their delegators"
+        }
+      },
+      "description": "Params defines the parameters for the staking module."
+    },
+    "initia.mstaking.v1.Pool": {
+      "type": "object",
+      "properties": {
+        "not_bonded_tokens": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          }
+        },
+        "bonded_tokens": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          }
+        },
+        "voting_power_weights": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+          }
+        }
+      },
+      "description": "Pool is used for tracking bonded and not-bonded token supply of the bond\ndenomination."
+    },
+    "initia.mstaking.v1.QueryDelegationResponse": {
+      "type": "object",
+      "properties": {
+        "delegation_response": {
+          "$ref": "#/definitions/initia.mstaking.v1.DelegationResponse",
+          "description": "delegation_responses defines the delegation info of a delegation."
+        }
+      },
+      "description": "QueryDelegationResponse is response type for the Query/Delegation RPC method."
+    },
+    "initia.mstaking.v1.QueryDelegatorDelegationsResponse": {
+      "type": "object",
+      "properties": {
+        "delegation_responses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/initia.mstaking.v1.DelegationResponse"
+          },
+          "description": "delegation_responses defines all the delegations' info of a delegator."
+        },
+        "pagination": {
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+          "description": "pagination defines the pagination in the response."
+        }
+      },
+      "description": "QueryDelegatorDelegationsResponse is response type for the\nQuery/DelegatorDelegations RPC method."
+    },
+    "initia.mstaking.v1.QueryDelegatorTotalDelegationBalanceResponse": {
+      "type": "object",
+      "properties": {
+        "balance": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          },
+          "description": "balance defines the sum of all the delegations' balance of a delegator."
+        }
+      },
+      "description": "QueryDelegatorTotalDelegationBalanceResponse is response type for the\nQuery/DelegatorTotalDelegationBalance RPC method."
+    },
+    "initia.mstaking.v1.QueryDelegatorUnbondingDelegationsResponse": {
+      "type": "object",
+      "properties": {
+        "unbonding_responses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/initia.mstaking.v1.UnbondingDelegation"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+          "description": "pagination defines the pagination in the response."
+        }
+      },
+      "description": "QueryUnbondingDelegatorDelegationsResponse is response type for the\nQuery/UnbondingDelegatorDelegations RPC method."
+    },
+    "initia.mstaking.v1.QueryDelegatorValidatorResponse": {
+      "type": "object",
+      "properties": {
+        "validator": {
+          "$ref": "#/definitions/initia.mstaking.v1.Validator",
+          "description": "validator defines the validator info."
+        }
+      },
+      "description": "QueryDelegatorValidatorResponse response type for the\nQuery/DelegatorValidator RPC method."
+    },
+    "initia.mstaking.v1.QueryDelegatorValidatorsResponse": {
+      "type": "object",
+      "properties": {
+        "validators": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/initia.mstaking.v1.Validator"
+          },
+          "description": "validators defines the validators' info of a delegator."
+        },
+        "pagination": {
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+          "description": "pagination defines the pagination in the response."
+        }
+      },
+      "description": "QueryDelegatorValidatorsResponse is response type for the\nQuery/DelegatorValidators RPC method."
+    },
+    "initia.mstaking.v1.QueryParamsResponse": {
+      "type": "object",
+      "properties": {
+        "params": {
+          "$ref": "#/definitions/initia.mstaking.v1.Params",
+          "description": "params holds all the parameters of this module."
+        }
+      },
+      "description": "QueryParamsResponse is response type for the Query/Params RPC method."
+    },
+    "initia.mstaking.v1.QueryPoolResponse": {
+      "type": "object",
+      "properties": {
+        "pool": {
+          "$ref": "#/definitions/initia.mstaking.v1.Pool",
+          "description": "pool defines the pool info."
+        }
+      },
+      "description": "QueryPoolResponse is response type for the Query/Pool RPC method."
+    },
+    "initia.mstaking.v1.QueryRedelegationsResponse": {
+      "type": "object",
+      "properties": {
+        "redelegation_responses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/initia.mstaking.v1.RedelegationResponse"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+          "description": "pagination defines the pagination in the response."
+        }
+      },
+      "description": "QueryRedelegationsResponse is response type for the Query/Redelegations RPC\nmethod."
+    },
+    "initia.mstaking.v1.QueryUnbondingDelegationResponse": {
+      "type": "object",
+      "properties": {
+        "unbond": {
+          "$ref": "#/definitions/initia.mstaking.v1.UnbondingDelegation",
+          "description": "unbond defines the unbonding information of a delegation."
+        }
+      },
+      "description": "QueryDelegationResponse is response type for the Query/UnbondingDelegation\nRPC method."
+    },
+    "initia.mstaking.v1.QueryValidatorDelegationsResponse": {
+      "type": "object",
+      "properties": {
+        "delegation_responses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/initia.mstaking.v1.DelegationResponse"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+          "description": "pagination defines the pagination in the response."
+        }
+      },
+      "title": "QueryValidatorDelegationsResponse is response type for the\nQuery/ValidatorDelegations RPC method"
+    },
+    "initia.mstaking.v1.QueryValidatorResponse": {
+      "type": "object",
+      "properties": {
+        "validator": {
+          "$ref": "#/definitions/initia.mstaking.v1.Validator",
+          "description": "validator defines the validator info."
+        }
+      },
+      "title": "QueryValidatorResponse is response type for the Query/Validator RPC method"
+    },
+    "initia.mstaking.v1.QueryValidatorUnbondingDelegationsResponse": {
+      "type": "object",
+      "properties": {
+        "unbonding_responses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/initia.mstaking.v1.UnbondingDelegation"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+          "description": "pagination defines the pagination in the response."
+        }
+      },
+      "description": "QueryValidatorUnbondingDelegationsResponse is response type for the\nQuery/ValidatorUnbondingDelegations RPC method."
+    },
+    "initia.mstaking.v1.QueryValidatorsResponse": {
+      "type": "object",
+      "properties": {
+        "validators": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/initia.mstaking.v1.Validator"
+          },
+          "description": "validators contains all the queried validators."
+        },
+        "pagination": {
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+          "description": "pagination defines the pagination in the response."
+        }
+      },
+      "title": "QueryValidatorsResponse is response type for the Query/Validators RPC method"
+    },
+    "initia.mstaking.v1.Redelegation": {
+      "type": "object",
+      "properties": {
+        "delegator_address": {
+          "type": "string",
+          "description": "delegator_address is the bech32-encoded address of the delegator."
+        },
+        "validator_src_address": {
+          "type": "string",
+          "description": "validator_src_address is the validator redelegation source operator address."
+        },
+        "validator_dst_address": {
+          "type": "string",
+          "description": "validator_dst_address is the validator redelegation destination operator address."
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/initia.mstaking.v1.RedelegationEntry"
+          },
+          "description": "entries are the redelegation entries."
+        }
+      },
+      "description": "Redelegation contains the list of a particular delegator's redelegating bonds\nfrom a particular source validator to a particular destination validator."
+    },
+    "initia.mstaking.v1.RedelegationEntry": {
+      "type": "object",
+      "properties": {
+        "creation_height": {
+          "type": "string",
+          "format": "int64",
+          "description": "creation_height  defines the height which the redelegation took place."
+        },
+        "completion_time": {
+          "type": "string",
+          "format": "date-time",
+          "description": "completion_time defines the unix time for redelegation completion."
+        },
+        "initial_balance": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          },
+          "description": "initial_balance defines the initial balance when redelegation started."
+        },
+        "shares_dst": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+          },
+          "description": "shares_dst is the amount of destination-validator shares created by redelegation."
+        },
+        "unbonding_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Incrementing id that uniquely identifies this entry"
+        },
+        "unbonding_on_hold_ref_count": {
+          "type": "string",
+          "format": "int64",
+          "title": "Strictly positive if this entry's unbonding has been stopped by external modules"
+        }
+      },
+      "description": "RedelegationEntry defines a redelegation object with relevant metadata."
+    },
+    "initia.mstaking.v1.RedelegationEntryResponse": {
+      "type": "object",
+      "properties": {
+        "redelegation_entry": {
+          "$ref": "#/definitions/initia.mstaking.v1.RedelegationEntry"
+        },
+        "balance": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          }
+        }
+      },
+      "description": "RedelegationEntryResponse is equivalent to a RedelegationEntry except that it\ncontains a balance in addition to shares which is more suitable for client\nresponses."
+    },
+    "initia.mstaking.v1.RedelegationResponse": {
+      "type": "object",
+      "properties": {
+        "redelegation": {
+          "$ref": "#/definitions/initia.mstaking.v1.Redelegation"
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/initia.mstaking.v1.RedelegationEntryResponse"
+          }
+        }
+      },
+      "description": "RedelegationResponse is equivalent to a Redelegation except that its entries\ncontain a balance in addition to shares which is more suitable for client\nresponses."
+    },
+    "initia.mstaking.v1.UnbondingDelegation": {
+      "type": "object",
+      "properties": {
+        "delegator_address": {
+          "type": "string",
+          "description": "delegator_address is the bech32-encoded address of the delegator."
+        },
+        "validator_address": {
+          "type": "string",
+          "description": "validator_address is the bech32-encoded address of the validator."
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/initia.mstaking.v1.UnbondingDelegationEntry"
+          },
+          "description": "entries are the unbonding delegation entries."
+        }
+      },
+      "description": "UnbondingDelegation stores all of a single delegator's unbonding bonds\nfor a single validator in an time-ordered list."
+    },
+    "initia.mstaking.v1.UnbondingDelegationEntry": {
+      "type": "object",
+      "properties": {
+        "creation_height": {
+          "type": "string",
+          "format": "int64",
+          "description": "creation_height is the height which the unbonding took place."
+        },
+        "completion_time": {
+          "type": "string",
+          "format": "date-time",
+          "description": "completion_time is the unix time for unbonding completion."
+        },
+        "initial_balance": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          },
+          "description": "initial_balance defines the tokens initially scheduled to receive at completion."
+        },
+        "balance": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          },
+          "description": "balance defines the tokens to receive at completion."
+        },
+        "unbonding_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Incrementing id that uniquely identifies this entry"
+        },
+        "unbonding_on_hold_ref_count": {
+          "type": "string",
+          "format": "int64",
+          "title": "Strictly positive if this entry's unbonding has been stopped by external modules"
+        }
+      },
+      "description": "UnbondingDelegationEntry defines an unbonding object with relevant metadata."
+    },
+    "initia.mstaking.v1.Validator": {
+      "type": "object",
+      "properties": {
+        "operator_address": {
+          "type": "string",
+          "description": "operator_address defines the address of the validator's operator; bech encoded in JSON."
+        },
+        "consensus_pubkey": {
+          "$ref": "#/definitions/google.protobuf.Any",
+          "description": "consensus_pubkey is the consensus public key of the validator, as a Protobuf Any."
+        },
+        "jailed": {
+          "type": "boolean",
+          "description": "jailed defined whether the validator has been jailed from bonded status or not."
+        },
+        "status": {
+          "$ref": "#/definitions/initia.mstaking.v1.BondStatus",
+          "description": "status is the validator status (bonded/unbonding/unbonded)."
+        },
+        "tokens": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          },
+          "description": "tokens define the delegated tokens (incl. self-delegation)."
+        },
+        "delegator_shares": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+          },
+          "description": "delegator_shares defines total shares issued to a validator's delegators."
+        },
+        "description": {
+          "$ref": "#/definitions/initia.mstaking.v1.Description",
+          "description": "description defines the description terms for the validator."
+        },
+        "unbonding_height": {
+          "type": "string",
+          "format": "int64",
+          "description": "unbonding_height defines, if unbonding, the height at which this validator has begun unbonding."
+        },
+        "unbonding_time": {
+          "type": "string",
+          "format": "date-time",
+          "description": "unbonding_time defines, if unbonding, the min time for the validator to complete unbonding."
+        },
+        "commission": {
+          "$ref": "#/definitions/initia.mstaking.v1.Commission",
+          "description": "commission defines the commission parameters."
+        },
+        "voting_powers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          },
+          "title": "voting_powers defines the voting powers for each bond denoms"
+        },
+        "voting_power": {
+          "type": "string",
+          "title": "voting_power defines the sum of voting powers"
+        },
+        "unbonding_on_hold_ref_count": {
+          "type": "string",
+          "format": "int64",
+          "title": "strictly positive if this validator's unbonding has been stopped by external modules"
+        },
+        "unbonding_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "unbonding id, uniquely identifying an unbonding of this validator"
+        }
+      },
+      "description": "Validator defines a validator, together with the total amount of the\nValidator's bond shares and their exchange rate to coins. Slashing results in\na decrease in the exchange rate, allowing correct calculation of future\nundelegations without iterating over delegators. When coins are delegated to\nthis validator, the validator is credited with a delegation whose number of\nbond shares is based on the amount of coins delegated divided by the current\nexchange rate. Voting power can be calculated as total bonded shares\nmultiplied by exchange rate."
+    }
+  }
+}

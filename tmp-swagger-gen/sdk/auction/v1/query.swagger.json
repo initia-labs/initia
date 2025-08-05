@@ -1,0 +1,131 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "sdk/auction/v1/query.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/block-sdk/auction/v1/params": {
+      "get": {
+        "summary": "Params queries the parameters of the x/auction module.",
+        "operationId": "Params",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/sdk.auction.v1.QueryParamsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "tags": [
+          "Query"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "cosmos.base.v1beta1.Coin": {
+      "type": "object",
+      "properties": {
+        "denom": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string"
+        }
+      },
+      "description": "Coin defines a token with a denomination and an amount.\n\nNOTE: The amount field is an Int which implements the custom method\nsignatures required by gogoproto."
+    },
+    "google.protobuf.Any": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grpc.gateway.runtime.Error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/google.protobuf.Any"
+          }
+        }
+      }
+    },
+    "sdk.auction.v1.Params": {
+      "type": "object",
+      "properties": {
+        "max_bundle_size": {
+          "type": "integer",
+          "format": "int64",
+          "description": "max_bundle_size is the maximum number of transactions that can be bundled\nin a single bundle."
+        },
+        "escrow_account_address": {
+          "type": "string",
+          "format": "byte",
+          "description": "escrow_account_address is the address of the account that will receive a\nportion of the bid proceeds."
+        },
+        "reserve_fee": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "description": "reserve_fee specifies the bid floor for the auction."
+        },
+        "min_bid_increment": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.Coin",
+          "description": "min_bid_increment specifies the minimum amount that the next bid must be\ngreater than the previous bid."
+        },
+        "front_running_protection": {
+          "type": "boolean",
+          "description": "front_running_protection specifies whether front running and sandwich\nattack protection is enabled."
+        },
+        "proposer_fee": {
+          "type": "string",
+          "description": "proposer_fee defines the portion of the winning bid that goes to the block\nproposer that proposed the block."
+        }
+      },
+      "description": "Params defines the parameters of the x/auction module."
+    },
+    "sdk.auction.v1.QueryParamsResponse": {
+      "type": "object",
+      "properties": {
+        "params": {
+          "$ref": "#/definitions/sdk.auction.v1.Params",
+          "description": "Params defines the parameters of the module."
+        },
+        "escrow_address_string": {
+          "type": "string",
+          "description": "EscrowAddressString is the string representation of the escrow address stored\nin params."
+        }
+      },
+      "description": "QueryParamsResponse is the response type for the Query/Params RPC method."
+    }
+  }
+}

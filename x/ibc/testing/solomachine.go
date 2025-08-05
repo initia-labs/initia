@@ -17,15 +17,15 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
-	connectiontypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
-	commitmenttypes "github.com/cosmos/ibc-go/v8/modules/core/23-commitment/types"
-	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
-	"github.com/cosmos/ibc-go/v8/modules/core/exported"
-	solomachine "github.com/cosmos/ibc-go/v8/modules/light-clients/06-solomachine"
-	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
+	connectiontypes "github.com/cosmos/ibc-go/v10/modules/core/03-connection/types"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
+	commitmenttypes "github.com/cosmos/ibc-go/v10/modules/core/23-commitment/types"
+	commitmenttypesv2 "github.com/cosmos/ibc-go/v10/modules/core/23-commitment/types/v2"
+	host "github.com/cosmos/ibc-go/v10/modules/core/24-host"
+	"github.com/cosmos/ibc-go/v10/modules/core/exported"
+	solomachine "github.com/cosmos/ibc-go/v10/modules/light-clients/06-solomachine"
 )
 
 var (
@@ -202,7 +202,7 @@ func (solo *Solomachine) CreateHeader(newDiversifier string) *solomachine.Header
 // CreateMisbehaviour constructs testing misbehaviour for the solo machine client
 // by signing over two different data bytes at the same sequence.
 func (solo *Solomachine) CreateMisbehaviour() *solomachine.Misbehaviour {
-	merklePath := commitmenttypes.NewMerklePath(host.FullClientStatePath("counterparty"))
+	merklePath := commitmenttypes.NewMerklePath(host.FullClientStateKey("counterparty"))
 	path, err := solo.cdc.Marshal(&merklePath)
 	require.NoError(solo.t, err)
 
@@ -231,7 +231,7 @@ func (solo *Solomachine) CreateMisbehaviour() *solomachine.Misbehaviour {
 	// misbehaviour signaturess can have different timestamps
 	solo.Time++
 
-	merklePath = commitmenttypes.NewMerklePath(host.FullConsensusStatePath("counterparty", clienttypes.NewHeight(0, 1)))
+	merklePath = commitmenttypes.NewMerklePath(host.FullConsensusStateKey("counterparty", clienttypes.NewHeight(0, 1)))
 	path, err = solo.cdc.Marshal(&merklePath)
 	require.NoError(solo.t, err)
 
@@ -288,17 +288,9 @@ func (solo *Solomachine) ConnOpenInit(chain *TestChain, clientID string) string 
 func (solo *Solomachine) ConnOpenAck(chain *TestChain, clientID, connectionID string) {
 	proofTry := solo.GenerateConnOpenTryProof(clientID, connectionID)
 
-	clientState := ibctm.NewClientState(chain.ChainID, DefaultTrustLevel, TrustingPeriod, UnbondingPeriod, MaxClockDrift, chain.LastHeader.GetHeight().(clienttypes.Height), commitmenttypes.GetSDKSpecs(), UpgradePath)
-	proofClient := solo.GenerateClientStateProof(clientState)
-
-	consensusState := chain.LastHeader.ConsensusState()
-	consensusHeight := chain.LastHeader.GetHeight()
-	proofConsensus := solo.GenerateConsensusStateProof(consensusState, consensusHeight)
-
 	msgConnOpenAck := connectiontypes.NewMsgConnectionOpenAck(
-		connectionID, connectionIDSolomachine, clientState,
-		proofTry, proofClient, proofConsensus,
-		clienttypes.ZeroHeight(), clientState.GetLatestHeight().(clienttypes.Height),
+		connectionID, connectionIDSolomachine,
+		proofTry, clienttypes.ZeroHeight(),
 		ConnectionVersion,
 		chain.SenderAccount.GetAddress().String(),
 	)
@@ -312,7 +304,7 @@ func (solo *Solomachine) ConnOpenAck(chain *TestChain, clientID, connectionID st
 func (solo *Solomachine) ChanOpenInit(chain *TestChain, connectionID string) string {
 	msgChanOpenInit := channeltypes.NewMsgChannelOpenInit(
 		transfertypes.PortID,
-		transfertypes.Version,
+		transfertypes.V1,
 		channeltypes.UNORDERED,
 		[]string{connectionID},
 		transfertypes.PortID,
@@ -332,12 +324,12 @@ func (solo *Solomachine) ChanOpenInit(chain *TestChain, connectionID string) str
 // ChanOpenAck performs the channel open ack handshake step on the tendermint chain for the associated
 // solo machine client.
 func (solo *Solomachine) ChanOpenAck(chain *TestChain, channelID string) {
-	proofTry := solo.GenerateChanOpenTryProof(transfertypes.PortID, transfertypes.Version, channelID)
+	proofTry := solo.GenerateChanOpenTryProof(transfertypes.PortID, transfertypes.V1, channelID)
 	msgChanOpenAck := channeltypes.NewMsgChannelOpenAck(
 		transfertypes.PortID,
 		channelID,
 		channelIDSolomachine,
-		transfertypes.Version,
+		transfertypes.V1,
 		proofTry,
 		clienttypes.ZeroHeight(),
 		chain.SenderAccount.GetAddress().String(),
@@ -351,7 +343,7 @@ func (solo *Solomachine) ChanOpenAck(chain *TestChain, channelID string) {
 // ChanCloseConfirm performs the channel close confirm handshake step on the tendermint chain for the associated
 // solo machine client.
 func (solo *Solomachine) ChanCloseConfirm(chain *TestChain, portID, channelID string) {
-	proofInit := solo.GenerateChanClosedProof(portID, transfertypes.Version, channelID)
+	proofInit := solo.GenerateChanClosedProof(portID, transfertypes.V1, channelID)
 	msgChanCloseConfirm := channeltypes.NewMsgChannelCloseConfirm(
 		portID,
 		channelID,
@@ -440,7 +432,7 @@ func (solo *Solomachine) TimeoutPacket(chain *TestChain, packet channeltypes.Pac
 
 // TimeoutPacket creates a channel closed and unreceived packet proof and broadcasts a MsgTimeoutOnClose.
 func (solo *Solomachine) TimeoutPacketOnClose(chain *TestChain, packet channeltypes.Packet, channelID string) {
-	proofClosed := solo.GenerateChanClosedProof(transfertypes.PortID, transfertypes.Version, channelID)
+	proofClosed := solo.GenerateChanClosedProof(transfertypes.PortID, transfertypes.V1, channelID)
 	proofUnreceived := solo.GenerateReceiptAbsenceProof(packet)
 	msgTimeout := channeltypes.NewMsgTimeoutOnClose(
 		packet,
@@ -611,7 +603,7 @@ func (solo *Solomachine) GenerateChanClosedProof(portID, version, counterpartyCh
 
 // GenerateCommitmentProof generates a commitment proof for the provided packet.
 func (solo *Solomachine) GenerateCommitmentProof(packet channeltypes.Packet) []byte {
-	commitment := channeltypes.CommitPacket(solo.cdc, packet)
+	commitment := channeltypes.CommitPacket(packet)
 
 	path := host.PacketCommitmentKey(packet.GetSourcePort(), packet.GetSourceChannel(), packet.GetSequence())
 	signBytes := &solomachine.SignBytes{
@@ -655,24 +647,24 @@ func (solo *Solomachine) GenerateReceiptAbsenceProof(packet channeltypes.Packet)
 }
 
 // GetClientStatePath returns the commitment path for the client state.
-func (solo *Solomachine) GetClientStatePath(counterpartyClientIdentifier string) commitmenttypes.MerklePath {
-	path, err := commitmenttypes.ApplyPrefix(prefix, commitmenttypes.NewMerklePath(host.FullClientStatePath(counterpartyClientIdentifier)))
+func (solo *Solomachine) GetClientStatePath(counterpartyClientIdentifier string) commitmenttypesv2.MerklePath {
+	path, err := commitmenttypes.ApplyPrefix(prefix, commitmenttypes.NewMerklePath(host.FullClientStateKey(counterpartyClientIdentifier)))
 	require.NoError(solo.t, err)
 
 	return path
 }
 
 // GetConsensusStatePath returns the commitment path for the consensus state.
-func (solo *Solomachine) GetConsensusStatePath(counterpartyClientIdentifier string, consensusHeight exported.Height) commitmenttypes.MerklePath {
-	path, err := commitmenttypes.ApplyPrefix(prefix, commitmenttypes.NewMerklePath(host.FullConsensusStatePath(counterpartyClientIdentifier, consensusHeight)))
+func (solo *Solomachine) GetConsensusStatePath(counterpartyClientIdentifier string, consensusHeight exported.Height) commitmenttypesv2.MerklePath {
+	path, err := commitmenttypes.ApplyPrefix(prefix, commitmenttypes.NewMerklePath(host.FullConsensusStateKey(counterpartyClientIdentifier, consensusHeight)))
 	require.NoError(solo.t, err)
 
 	return path
 }
 
 // GetConnectionStatePath returns the commitment path for the connection state.
-func (solo *Solomachine) GetConnectionStatePath(connID string) commitmenttypes.MerklePath {
-	connectionPath := commitmenttypes.NewMerklePath(host.ConnectionPath(connID))
+func (solo *Solomachine) GetConnectionStatePath(connID string) commitmenttypesv2.MerklePath {
+	connectionPath := commitmenttypes.NewMerklePath(host.ConnectionKey(connID))
 	path, err := commitmenttypes.ApplyPrefix(prefix, connectionPath)
 	require.NoError(solo.t, err)
 
@@ -680,8 +672,8 @@ func (solo *Solomachine) GetConnectionStatePath(connID string) commitmenttypes.M
 }
 
 // GetChannelStatePath returns the commitment path for that channel state.
-func (solo *Solomachine) GetChannelStatePath(portID, channelID string) commitmenttypes.MerklePath {
-	channelPath := commitmenttypes.NewMerklePath(host.ChannelPath(portID, channelID))
+func (solo *Solomachine) GetChannelStatePath(portID, channelID string) commitmenttypesv2.MerklePath {
+	channelPath := commitmenttypes.NewMerklePath(host.ChannelKey(portID, channelID))
 	path, err := commitmenttypes.ApplyPrefix(prefix, channelPath)
 	require.NoError(solo.t, err)
 
@@ -689,8 +681,8 @@ func (solo *Solomachine) GetChannelStatePath(portID, channelID string) commitmen
 }
 
 // GetPacketCommitmentPath returns the commitment path for a packet commitment.
-func (solo *Solomachine) GetPacketCommitmentPath(portID, channelID string, sequence uint64) commitmenttypes.MerklePath {
-	commitmentPath := commitmenttypes.NewMerklePath(host.PacketCommitmentPath(portID, channelID, sequence))
+func (solo *Solomachine) GetPacketCommitmentPath(portID, channelID string, sequence uint64) commitmenttypesv2.MerklePath {
+	commitmentPath := commitmenttypes.NewMerklePath(host.PacketCommitmentKey(portID, channelID, sequence))
 	path, err := commitmenttypes.ApplyPrefix(prefix, commitmentPath)
 	require.NoError(solo.t, err)
 
@@ -698,8 +690,8 @@ func (solo *Solomachine) GetPacketCommitmentPath(portID, channelID string, seque
 }
 
 // GetPacketAcknowledgementPath returns the commitment path for a packet acknowledgement.
-func (solo *Solomachine) GetPacketAcknowledgementPath(portID, channelID string, sequence uint64) commitmenttypes.MerklePath {
-	ackPath := commitmenttypes.NewMerklePath(host.PacketAcknowledgementPath(portID, channelID, sequence))
+func (solo *Solomachine) GetPacketAcknowledgementPath(portID, channelID string, sequence uint64) commitmenttypesv2.MerklePath {
+	ackPath := commitmenttypes.NewMerklePath(host.PacketAcknowledgementKey(portID, channelID, sequence))
 	path, err := commitmenttypes.ApplyPrefix(prefix, ackPath)
 	require.NoError(solo.t, err)
 
@@ -708,8 +700,8 @@ func (solo *Solomachine) GetPacketAcknowledgementPath(portID, channelID string, 
 
 // GetPacketReceiptPath returns the commitment path for a packet receipt
 // and an absent receipts.
-func (solo *Solomachine) GetPacketReceiptPath(portID, channelID string, sequence uint64) commitmenttypes.MerklePath {
-	receiptPath := commitmenttypes.NewMerklePath(host.PacketReceiptPath(portID, channelID, sequence))
+func (solo *Solomachine) GetPacketReceiptPath(portID, channelID string, sequence uint64) commitmenttypesv2.MerklePath {
+	receiptPath := commitmenttypes.NewMerklePath(host.PacketReceiptKey(portID, channelID, sequence))
 	path, err := commitmenttypes.ApplyPrefix(prefix, receiptPath)
 	require.NoError(solo.t, err)
 
@@ -717,8 +709,8 @@ func (solo *Solomachine) GetPacketReceiptPath(portID, channelID string, sequence
 }
 
 // GetNextSequenceRecvPath returns the commitment path for the next sequence recv counter.
-func (solo *Solomachine) GetNextSequenceRecvPath(portID, channelID string) commitmenttypes.MerklePath {
-	nextSequenceRecvPath := commitmenttypes.NewMerklePath(host.NextSequenceRecvPath(portID, channelID))
+func (solo *Solomachine) GetNextSequenceRecvPath(portID, channelID string) commitmenttypesv2.MerklePath {
+	nextSequenceRecvPath := commitmenttypes.NewMerklePath(host.NextSequenceRecvKey(portID, channelID))
 	path, err := commitmenttypes.ApplyPrefix(prefix, nextSequenceRecvPath)
 	require.NoError(solo.t, err)
 

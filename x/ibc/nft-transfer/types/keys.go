@@ -13,7 +13,7 @@ const (
 
 	// Version defines the current version the IBC nft-transfer
 	// module supports
-	Version = "ics721-1"
+	V1 = "ics721-1"
 
 	// PortID is the default port id that nft-transfer module binds to
 	PortID = "nft-transfer"
@@ -42,6 +42,8 @@ var (
 	TokenDataPrefix = []byte{0x04}
 
 	ParamsKey = []byte{0x11}
+
+	SupportedVersions = []string{V1}
 )
 
 // GetEscrowAddress returns the escrow address for the specified channel.
@@ -53,7 +55,7 @@ func GetEscrowAddress(portID, channelID string) sdk.AccAddress {
 	contents := fmt.Sprintf("%s/%s", portID, channelID)
 
 	// ADR 028 AddressHash construction
-	preImage := []byte(Version)
+	preImage := []byte(V1)
 	preImage = append(preImage, 0)
 	preImage = append(preImage, contents...)
 	hash := sha256.Sum256(preImage)

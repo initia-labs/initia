@@ -6,8 +6,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 	nfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 
 	movetypes "github.com/initia-labs/initia/x/move/types"
@@ -34,7 +34,7 @@ func Test_OnReceivePacketWithoutMemo(t *testing.T) {
 	dataBz, err := json.Marshal(&data)
 	require.NoError(t, err)
 
-	ack := input.IBCHooksMiddleware.OnRecvPacket(ctx, channeltypes.Packet{
+	ack := input.IBCHooksMiddleware.OnRecvPacket(ctx, transfertypes.V1, channeltypes.Packet{
 		Data: dataBz,
 	}, addr)
 
@@ -65,7 +65,7 @@ func Test_onReceiveIcs20Packet_memo(t *testing.T) {
 	require.NoError(t, err)
 
 	// failed to due to acl
-	ack := input.IBCHooksMiddleware.OnRecvPacket(ctx, channeltypes.Packet{
+	ack := input.IBCHooksMiddleware.OnRecvPacket(ctx, transfertypes.V1, channeltypes.Packet{
 		Data: dataBz,
 	}, addr)
 	require.False(t, ack.Success())
@@ -74,7 +74,7 @@ func Test_onReceiveIcs20Packet_memo(t *testing.T) {
 	require.NoError(t, input.IBCHooksKeeper.SetAllowed(ctx, movetypes.ConvertVMAddressToSDKAddress(vmtypes.StdAddress), true))
 
 	// success
-	ack = input.IBCHooksMiddleware.OnRecvPacket(ctx, channeltypes.Packet{
+	ack = input.IBCHooksMiddleware.OnRecvPacket(ctx, transfertypes.V1, channeltypes.Packet{
 		Data: dataBz,
 	}, addr)
 	require.True(t, ack.Success())
@@ -116,7 +116,7 @@ func Test_onReceiveIcs20Packet_memo_with_hashed_receiver(t *testing.T) {
 	require.NoError(t, err)
 
 	// failed to due to acl
-	ack := input.IBCHooksMiddleware.OnRecvPacket(ctx, channeltypes.Packet{
+	ack := input.IBCHooksMiddleware.OnRecvPacket(ctx, transfertypes.V1, channeltypes.Packet{
 		Data: dataBz,
 	}, addr)
 	require.False(t, ack.Success())
@@ -125,7 +125,7 @@ func Test_onReceiveIcs20Packet_memo_with_hashed_receiver(t *testing.T) {
 	require.NoError(t, input.IBCHooksKeeper.SetAllowed(ctx, movetypes.ConvertVMAddressToSDKAddress(vmtypes.StdAddress), true))
 
 	// success
-	ack = input.IBCHooksMiddleware.OnRecvPacket(ctx, channeltypes.Packet{
+	ack = input.IBCHooksMiddleware.OnRecvPacket(ctx, transfertypes.V1, channeltypes.Packet{
 		Data: dataBz,
 	}, addr)
 	require.True(t, ack.Success())
@@ -163,7 +163,7 @@ func Test_OnReceivePacket_ICS721(t *testing.T) {
 	dataBz, err := json.Marshal(&data)
 	require.NoError(t, err)
 
-	ack := input.IBCHooksMiddleware.OnRecvPacket(ctx, channeltypes.Packet{
+	ack := input.IBCHooksMiddleware.OnRecvPacket(ctx, nfttransfertypes.V1, channeltypes.Packet{
 		Data: dataBz,
 	}, addr)
 
@@ -198,7 +198,7 @@ func Test_onReceivePacket_memo_ICS721(t *testing.T) {
 	require.NoError(t, err)
 
 	// failed to due to acl
-	ack := input.IBCHooksMiddleware.OnRecvPacket(ctx, channeltypes.Packet{
+	ack := input.IBCHooksMiddleware.OnRecvPacket(ctx, nfttransfertypes.V1, channeltypes.Packet{
 		Data: dataBz,
 	}, addr)
 	require.False(t, ack.Success())
@@ -207,7 +207,7 @@ func Test_onReceivePacket_memo_ICS721(t *testing.T) {
 	require.NoError(t, input.IBCHooksKeeper.SetAllowed(ctx, movetypes.ConvertVMAddressToSDKAddress(vmtypes.StdAddress), true))
 
 	// success
-	ack = input.IBCHooksMiddleware.OnRecvPacket(ctx, channeltypes.Packet{
+	ack = input.IBCHooksMiddleware.OnRecvPacket(ctx, nfttransfertypes.V1, channeltypes.Packet{
 		Data: dataBz,
 	}, addr)
 	require.True(t, ack.Success())

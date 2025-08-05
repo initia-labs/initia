@@ -7,14 +7,11 @@ import (
 	"cosmossdk.io/collections"
 	"cosmossdk.io/core/store"
 	"cosmossdk.io/log"
-	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
-	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
-	"github.com/cosmos/ibc-go/v8/modules/core/exported"
+	"github.com/cosmos/ibc-go/v10/modules/core/exported"
 
 	"github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 )
@@ -24,10 +21,8 @@ type Keeper struct {
 
 	ics4Wrapper   types.ICS4Wrapper
 	channelKeeper types.ChannelKeeper
-	portKeeper    types.PortKeeper
 	authKeeper    types.AccountKeeper
 	nftKeeper     types.NftKeeper
-	scopedKeeper  capabilitykeeper.ScopedKeeper
 
 	authority string
 
@@ -42,9 +37,9 @@ type Keeper struct {
 // NewKeeper creates a new IBC nft-transfer Keeper instance
 func NewKeeper(
 	cdc codec.Codec, storeService store.KVStoreService, ics4Wrapper types.ICS4Wrapper,
-	channelKeeper types.ChannelKeeper, portKeeper types.PortKeeper,
+	channelKeeper types.ChannelKeeper,
 	authKeeper types.AccountKeeper, nftKeeper types.NftKeeper,
-	scopedKeeper capabilitykeeper.ScopedKeeper, authority string,
+	authority string,
 ) *Keeper {
 
 	if _, err := authKeeper.AddressCodec().StringToBytes(authority); err != nil {
@@ -56,10 +51,8 @@ func NewKeeper(
 		cdc:           cdc,
 		ics4Wrapper:   ics4Wrapper,
 		channelKeeper: channelKeeper,
-		portKeeper:    portKeeper,
 		authKeeper:    authKeeper,
 		nftKeeper:     nftKeeper,
-		scopedKeeper:  scopedKeeper,
 		authority:     authority,
 
 		PortID:      collections.NewItem(sb, types.PortKey, "port_id", collections.StringValue),
@@ -86,34 +79,6 @@ func (k Keeper) Logger(ctx context.Context) log.Logger {
 
 func (k Keeper) Codec() codec.Codec {
 	return k.cdc
-}
-
-// IsBound checks if the nft-transfer module is already bound to the desired port
-func (k Keeper) IsBound(ctx context.Context, portID string) bool {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	_, ok := k.scopedKeeper.GetCapability(sdkCtx, host.PortPath(portID))
-	return ok
-}
-
-// BindPort defines a wrapper function for the ort Keeper's function in
-// order to expose it to module's InitGenesis function
-func (k Keeper) BindPort(ctx context.Context, portID string) error {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	cap := k.portKeeper.BindPort(sdkCtx, portID)
-	return k.ClaimCapability(ctx, cap, host.PortPath(portID))
-}
-
-// AuthenticateCapability wraps the scopedKeeper's AuthenticateCapability function
-func (k Keeper) AuthenticateCapability(ctx context.Context, cap *capabilitytypes.Capability, name string) bool {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	return k.scopedKeeper.AuthenticateCapability(sdkCtx, cap, name)
-}
-
-// ClaimCapability allows the nft-transfer module that can claim a capability that IBC module
-// passes to it
-func (k Keeper) ClaimCapability(ctx context.Context, cap *capabilitytypes.Capability, name string) error {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	return k.scopedKeeper.ClaimCapability(sdkCtx, cap, name)
 }
 
 // GetAllClassTraces returns the trace information for all the denominations.

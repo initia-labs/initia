@@ -116,7 +116,11 @@ func requireShape(contents []string) bool {
 }
 
 // decode packet data to NonFungibleTokenPacketData
-func DecodePacketData(packetData []byte) (NonFungibleTokenPacketData, error) {
+func DecodePacketData(packetData []byte, channelVersion string) (NonFungibleTokenPacketData, error) {
+	if channelVersion != V1 {
+		return NonFungibleTokenPacketData{}, errors.Wrapf(ErrInvalidVersion, "invalid channel version: expected %s, got %s", V1, channelVersion)
+	}
+
 	var data NonFungibleTokenPacketData
 	if err := unmarshalProtoJSON(packetData, &data); err != nil {
 		return NonFungibleTokenPacketData{}, sdkerrors.ErrInvalidRequest.Wrap(err.Error())

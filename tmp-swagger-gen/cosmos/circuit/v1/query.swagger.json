@@ -1,0 +1,290 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "cosmos/circuit/v1/query.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/cosmos/circuit/v1/accounts": {
+      "get": {
+        "summary": "Account returns account permissions.",
+        "operationId": "Accounts",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.circuit.v1.AccountsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pagination.key",
+            "description": "key is a value returned in PageResponse.next_key to begin\nquerying the next page most efficiently. Only one of offset or key\nshould be set.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "byte"
+          },
+          {
+            "name": "pagination.offset",
+            "description": "offset is a numeric offset that can be used when key is unavailable.\nIt is less efficient than using key. Only one of offset or key should\nbe set.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.limit",
+            "description": "limit is the total number of results to be returned in the result page.\nIf left empty it will default to a value to be set by each app.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "pagination.count_total",
+            "description": "count_total is set to true  to indicate that the result set should include\na count of the total number of items available for pagination in UIs.\ncount_total is only respected when offset is used. It is ignored when key\nis set.",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "pagination.reverse",
+            "description": "reverse is set to true if results are to be returned in the descending order.",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/cosmos/circuit/v1/accounts/{address}": {
+      "get": {
+        "summary": "Account returns account permissions.",
+        "operationId": "Account",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.circuit.v1.AccountResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "address",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/cosmos/circuit/v1/disable_list": {
+      "get": {
+        "summary": "DisabledList returns a list of disabled message urls",
+        "operationId": "DisabledList",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/cosmos.circuit.v1.DisabledListResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "tags": [
+          "Query"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "cosmos.base.query.v1beta1.PageRequest": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "format": "byte",
+          "description": "key is a value returned in PageResponse.next_key to begin\nquerying the next page most efficiently. Only one of offset or key\nshould be set."
+        },
+        "offset": {
+          "type": "string",
+          "format": "uint64",
+          "description": "offset is a numeric offset that can be used when key is unavailable.\nIt is less efficient than using key. Only one of offset or key should\nbe set."
+        },
+        "limit": {
+          "type": "string",
+          "format": "uint64",
+          "description": "limit is the total number of results to be returned in the result page.\nIf left empty it will default to a value to be set by each app."
+        },
+        "count_total": {
+          "type": "boolean",
+          "description": "count_total is set to true  to indicate that the result set should include\na count of the total number of items available for pagination in UIs.\ncount_total is only respected when offset is used. It is ignored when key\nis set."
+        },
+        "reverse": {
+          "type": "boolean",
+          "description": "reverse is set to true if results are to be returned in the descending order."
+        }
+      },
+      "description": "message SomeRequest {\n         Foo some_parameter = 1;\n         PageRequest pagination = 2;\n }",
+      "title": "PageRequest is to be embedded in gRPC request messages for efficient\npagination. Ex:"
+    },
+    "cosmos.base.query.v1beta1.PageResponse": {
+      "type": "object",
+      "properties": {
+        "next_key": {
+          "type": "string",
+          "format": "byte",
+          "description": "next_key is the key to be passed to PageRequest.key to\nquery the next page most efficiently. It will be empty if\nthere are no more results."
+        },
+        "total": {
+          "type": "string",
+          "format": "uint64",
+          "title": "total is total number of results available if PageRequest.count_total\nwas set, its value is undefined otherwise"
+        }
+      },
+      "description": "PageResponse is to be embedded in gRPC response messages where the\ncorresponding request message has used PageRequest.\n\n message SomeResponse {\n         repeated Bar results = 1;\n         PageResponse page = 2;\n }"
+    },
+    "cosmos.circuit.v1.AccountResponse": {
+      "type": "object",
+      "properties": {
+        "permission": {
+          "$ref": "#/definitions/cosmos.circuit.v1.Permissions"
+        }
+      },
+      "description": "AccountResponse is the response type for the Query/Account RPC method."
+    },
+    "cosmos.circuit.v1.AccountsResponse": {
+      "type": "object",
+      "properties": {
+        "accounts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.circuit.v1.GenesisAccountPermissions"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/cosmos.base.query.v1beta1.PageResponse",
+          "description": "pagination defines the pagination in the response."
+        }
+      },
+      "description": "AccountsResponse is the response type for the Query/Accounts RPC method."
+    },
+    "cosmos.circuit.v1.DisabledListResponse": {
+      "type": "object",
+      "properties": {
+        "disabled_list": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "DisabledListResponse is the response type for the Query/DisabledList RPC method."
+    },
+    "cosmos.circuit.v1.GenesisAccountPermissions": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "permissions": {
+          "$ref": "#/definitions/cosmos.circuit.v1.Permissions"
+        }
+      },
+      "title": "GenesisAccountPermissions is the account permissions for the circuit breaker in genesis"
+    },
+    "cosmos.circuit.v1.Permissions": {
+      "type": "object",
+      "properties": {
+        "level": {
+          "$ref": "#/definitions/cosmos.circuit.v1.Permissions.Level",
+          "description": "level is the level of permissions granted to this account."
+        },
+        "limit_type_urls": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "limit_type_urls is used with LEVEL_SOME_MSGS to limit the lists of Msg type\nURLs that the account can trip. It is an error to use limit_type_urls with\na level other than LEVEL_SOME_MSGS."
+        }
+      },
+      "description": "Permissions are the permissions that an account has to trip\nor reset the circuit breaker."
+    },
+    "cosmos.circuit.v1.Permissions.Level": {
+      "type": "string",
+      "enum": [
+        "LEVEL_NONE_UNSPECIFIED",
+        "LEVEL_SOME_MSGS",
+        "LEVEL_ALL_MSGS",
+        "LEVEL_SUPER_ADMIN"
+      ],
+      "default": "LEVEL_NONE_UNSPECIFIED",
+      "description": "Level is the permission level.\n\n - LEVEL_NONE_UNSPECIFIED: LEVEL_NONE_UNSPECIFIED indicates that the account will have no circuit\nbreaker permissions.\n - LEVEL_SOME_MSGS: LEVEL_SOME_MSGS indicates that the account will have permission to\ntrip or reset the circuit breaker for some Msg type URLs. If this level\nis chosen, a non-empty list of Msg type URLs must be provided in\nlimit_type_urls.\n - LEVEL_ALL_MSGS: LEVEL_ALL_MSGS indicates that the account can trip or reset the circuit\nbreaker for Msg's of all type URLs.\n - LEVEL_SUPER_ADMIN: LEVEL_SUPER_ADMIN indicates that the account can take all circuit breaker\nactions and can grant permissions to other accounts."
+    },
+    "google.protobuf.Any": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grpc.gateway.runtime.Error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/google.protobuf.Any"
+          }
+        }
+      }
+    }
+  }
+}

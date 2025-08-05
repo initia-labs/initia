@@ -1,0 +1,580 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "initia/tx/v1/query.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/initia/tx/v1/gas_prices": {
+      "get": {
+        "summary": "GasPrices returns the gas prices for the network.",
+        "operationId": "GasPrices",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/initia.tx.v1.QueryGasPricesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/initia/tx/v1/gas_prices/{denom}": {
+      "get": {
+        "summary": "GasPrice returns the gas price for the network.",
+        "operationId": "GasPrice",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/initia.tx.v1.QueryGasPriceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "denom",
+            "description": "denom defines the denomination of the gas price to query.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    },
+    "/initia/tx/v1/txs": {
+      "get": {
+        "summary": "TxsByEvents fetches transactions by event criteria. This method proxies to CometBFT's TxSearchV2 RPC endpoint\nto efficiently search and retrieve transactions matching specified event conditions.",
+        "operationId": "TxsByEvents",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/initia.tx.v1.TxsByEventsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/grpc.gateway.runtime.Error"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "page",
+            "description": "page is the page number to query, starts at 1. If not provided, will\ndefault to first page.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "limit",
+            "description": "limit is the total number of results to be returned in the result page.\nIf left empty it will default to a value to be set by each app.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "query",
+            "description": "query defines the transaction event query that is proxied to CometBFT's\nTxsByEvents RPC method. The query must be valid.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Query"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "cosmos.base.abci.v1beta1.ABCIMessageLog": {
+      "type": "object",
+      "properties": {
+        "msg_index": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "log": {
+          "type": "string"
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.abci.v1beta1.StringEvent"
+          },
+          "description": "Events contains a slice of Event objects that were emitted during some\nexecution."
+        }
+      },
+      "description": "ABCIMessageLog defines a structure containing an indexed tx ABCI message log."
+    },
+    "cosmos.base.abci.v1beta1.Attribute": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "description": "Attribute defines an attribute wrapper where the key and value are\nstrings instead of raw bytes."
+    },
+    "cosmos.base.abci.v1beta1.StringEvent": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "attributes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.abci.v1beta1.Attribute"
+          }
+        }
+      },
+      "description": "StringEvent defines en Event object wrapper where all the attributes\ncontain key/value pairs that are strings instead of raw bytes."
+    },
+    "cosmos.base.abci.v1beta1.TxResponse": {
+      "type": "object",
+      "properties": {
+        "height": {
+          "type": "string",
+          "format": "int64",
+          "title": "The block height"
+        },
+        "txhash": {
+          "type": "string",
+          "description": "The transaction hash."
+        },
+        "codespace": {
+          "type": "string",
+          "title": "Namespace for the Code"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Response code."
+        },
+        "data": {
+          "type": "string",
+          "description": "Result bytes, if any."
+        },
+        "raw_log": {
+          "type": "string",
+          "description": "The output of the application's logger (raw string). May be\nnon-deterministic."
+        },
+        "logs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.abci.v1beta1.ABCIMessageLog"
+          },
+          "description": "The output of the application's logger (typed). May be non-deterministic."
+        },
+        "info": {
+          "type": "string",
+          "description": "Additional information. May be non-deterministic."
+        },
+        "gas_wanted": {
+          "type": "string",
+          "format": "int64",
+          "description": "Amount of gas requested for transaction."
+        },
+        "gas_used": {
+          "type": "string",
+          "format": "int64",
+          "description": "Amount of gas consumed by transaction."
+        },
+        "tx": {
+          "$ref": "#/definitions/google.protobuf.Any",
+          "description": "The request transaction bytes."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Time of the previous block. For heights \u003e 1, it's the weighted median of\nthe timestamps of the valid votes in the block.LastCommit. For height == 1,\nit's genesis time."
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/tendermint.abci.Event"
+          },
+          "description": "Events defines all the events emitted by processing a transaction. Note,\nthese events include those emitted by processing all the messages and those\nemitted from the ante. Whereas Logs contains the events, with\nadditional metadata, emitted only by processing the messages.\n\nSince: cosmos-sdk 0.42.11, 0.44.5, 0.45"
+        }
+      },
+      "description": "TxResponse defines a structure containing relevant tx data and metadata. The\ntags are stringified and the log is JSON decoded."
+    },
+    "cosmos.base.v1beta1.Coin": {
+      "type": "object",
+      "properties": {
+        "denom": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string"
+        }
+      },
+      "description": "Coin defines a token with a denomination and an amount.\n\nNOTE: The amount field is an Int which implements the custom method\nsignatures required by gogoproto."
+    },
+    "cosmos.base.v1beta1.DecCoin": {
+      "type": "object",
+      "properties": {
+        "denom": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string"
+        }
+      },
+      "description": "DecCoin defines a token with a denomination and a decimal amount.\n\nNOTE: The amount field is an Dec which implements the custom method\nsignatures required by gogoproto."
+    },
+    "cosmos.crypto.multisig.v1beta1.CompactBitArray": {
+      "type": "object",
+      "properties": {
+        "extra_bits_stored": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "elems": {
+          "type": "string",
+          "format": "byte"
+        }
+      },
+      "description": "CompactBitArray is an implementation of a space efficient bit array.\nThis is used to ensure that the encoded data takes up a minimal amount of\nspace after proto encoding.\nThis is not thread safe, and is not intended for concurrent usage."
+    },
+    "cosmos.tx.signing.v1beta1.SignMode": {
+      "type": "string",
+      "enum": [
+        "SIGN_MODE_UNSPECIFIED",
+        "SIGN_MODE_DIRECT",
+        "SIGN_MODE_TEXTUAL",
+        "SIGN_MODE_DIRECT_AUX",
+        "SIGN_MODE_LEGACY_AMINO_JSON",
+        "SIGN_MODE_EIP_191"
+      ],
+      "default": "SIGN_MODE_UNSPECIFIED",
+      "description": "SignMode represents a signing mode with its own security guarantees.\n\nThis enum should be considered a registry of all known sign modes\nin the Cosmos ecosystem. Apps are not expected to support all known\nsign modes. Apps that would like to support custom  sign modes are\nencouraged to open a small PR against this file to add a new case\nto this SignMode enum describing their sign mode so that different\napps have a consistent version of this enum.\n\n - SIGN_MODE_UNSPECIFIED: SIGN_MODE_UNSPECIFIED specifies an unknown signing mode and will be\nrejected.\n - SIGN_MODE_DIRECT: SIGN_MODE_DIRECT specifies a signing mode which uses SignDoc and is\nverified with raw bytes from Tx.\n - SIGN_MODE_TEXTUAL: SIGN_MODE_TEXTUAL is a future signing mode that will verify some\nhuman-readable textual representation on top of the binary representation\nfrom SIGN_MODE_DIRECT.\n\nSince: cosmos-sdk 0.50\n - SIGN_MODE_DIRECT_AUX: SIGN_MODE_DIRECT_AUX specifies a signing mode which uses\nSignDocDirectAux. As opposed to SIGN_MODE_DIRECT, this sign mode does not\nrequire signers signing over other signers' `signer_info`.\n\nSince: cosmos-sdk 0.46\n - SIGN_MODE_LEGACY_AMINO_JSON: SIGN_MODE_LEGACY_AMINO_JSON is a backwards compatibility mode which uses\nAmino JSON and will be removed in the future.\n - SIGN_MODE_EIP_191: SIGN_MODE_EIP_191 specifies the sign mode for EIP 191 signing on the Cosmos\nSDK. Ref: https://eips.ethereum.org/EIPS/eip-191\n\nCurrently, SIGN_MODE_EIP_191 is registered as a SignMode enum variant,\nbut is not implemented on the SDK by default. To enable EIP-191, you need\nto pass a custom `TxConfig` that has an implementation of\n`SignModeHandler` for EIP-191. The SDK may decide to fully support\nEIP-191 in the future.\n\nSince: cosmos-sdk 0.45.2"
+    },
+    "cosmos.tx.v1beta1.AuthInfo": {
+      "type": "object",
+      "properties": {
+        "signer_infos": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.tx.v1beta1.SignerInfo"
+          },
+          "description": "signer_infos defines the signing modes for the required signers. The number\nand order of elements must match the required signers from TxBody's\nmessages. The first element is the primary signer and the one which pays\nthe fee."
+        },
+        "fee": {
+          "$ref": "#/definitions/cosmos.tx.v1beta1.Fee",
+          "description": "Fee is the fee and gas limit for the transaction. The first signer is the\nprimary signer and the one which pays the fee. The fee can be calculated\nbased on the cost of evaluating the body and doing signature verification\nof the signers. This can be estimated via simulation."
+        },
+        "tip": {
+          "$ref": "#/definitions/cosmos.tx.v1beta1.Tip",
+          "description": "Tip is the optional tip used for transactions fees paid in another denom.\n\nThis field is ignored if the chain didn't enable tips, i.e. didn't add the\n`TipDecorator` in its posthandler.\n\nSince: cosmos-sdk 0.46"
+        }
+      },
+      "description": "AuthInfo describes the fee and signer modes that are used to sign a\ntransaction."
+    },
+    "cosmos.tx.v1beta1.Fee": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          },
+          "title": "amount is the amount of coins to be paid as a fee"
+        },
+        "gas_limit": {
+          "type": "string",
+          "format": "uint64",
+          "title": "gas_limit is the maximum gas that can be used in transaction processing\nbefore an out of gas error occurs"
+        },
+        "payer": {
+          "type": "string",
+          "description": "if unset, the first signer is responsible for paying the fees. If set, the specified account must pay the fees.\nthe payer must be a tx signer (and thus have signed this field in AuthInfo).\nsetting this field does *not* change the ordering of required signers for the transaction."
+        },
+        "granter": {
+          "type": "string",
+          "title": "if set, the fee payer (either the first signer or the value of the payer field) requests that a fee grant be used\nto pay fees instead of the fee payer's own balance. If an appropriate fee grant does not exist or the chain does\nnot support fee grants, this will fail"
+        }
+      },
+      "description": "Fee includes the amount of coins paid in fees and the maximum\ngas to be used by the transaction. The ratio yields an effective \"gasprice\",\nwhich must be above some miminum to be accepted into the mempool."
+    },
+    "cosmos.tx.v1beta1.ModeInfo": {
+      "type": "object",
+      "properties": {
+        "single": {
+          "$ref": "#/definitions/cosmos.tx.v1beta1.ModeInfo.Single",
+          "title": "single represents a single signer"
+        },
+        "multi": {
+          "$ref": "#/definitions/cosmos.tx.v1beta1.ModeInfo.Multi",
+          "title": "multi represents a nested multisig signer"
+        }
+      },
+      "description": "ModeInfo describes the signing mode of a single or nested multisig signer."
+    },
+    "cosmos.tx.v1beta1.ModeInfo.Multi": {
+      "type": "object",
+      "properties": {
+        "bitarray": {
+          "$ref": "#/definitions/cosmos.crypto.multisig.v1beta1.CompactBitArray",
+          "title": "bitarray specifies which keys within the multisig are signing"
+        },
+        "mode_infos": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.tx.v1beta1.ModeInfo"
+          },
+          "title": "mode_infos is the corresponding modes of the signers of the multisig\nwhich could include nested multisig public keys"
+        }
+      },
+      "title": "Multi is the mode info for a multisig public key"
+    },
+    "cosmos.tx.v1beta1.ModeInfo.Single": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "$ref": "#/definitions/cosmos.tx.signing.v1beta1.SignMode",
+          "title": "mode is the signing mode of the single signer"
+        }
+      },
+      "title": "Single is the mode info for a single signer. It is structured as a message\nto allow for additional fields such as locale for SIGN_MODE_TEXTUAL in the\nfuture"
+    },
+    "cosmos.tx.v1beta1.SignerInfo": {
+      "type": "object",
+      "properties": {
+        "public_key": {
+          "$ref": "#/definitions/google.protobuf.Any",
+          "description": "public_key is the public key of the signer. It is optional for accounts\nthat already exist in state. If unset, the verifier can use the required \\\nsigner address for this position and lookup the public key."
+        },
+        "mode_info": {
+          "$ref": "#/definitions/cosmos.tx.v1beta1.ModeInfo",
+          "title": "mode_info describes the signing mode of the signer and is a nested\nstructure to support nested multisig pubkey's"
+        },
+        "sequence": {
+          "type": "string",
+          "format": "uint64",
+          "description": "sequence is the sequence of the account, which describes the\nnumber of committed transactions signed by a given address. It is used to\nprevent replay attacks."
+        }
+      },
+      "description": "SignerInfo describes the public key and signing mode of a single top-level\nsigner."
+    },
+    "cosmos.tx.v1beta1.Tip": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.Coin"
+          },
+          "title": "amount is the amount of the tip"
+        },
+        "tipper": {
+          "type": "string",
+          "title": "tipper is the address of the account paying for the tip"
+        }
+      },
+      "description": "Tip is the tip used for meta-transactions.\n\nSince: cosmos-sdk 0.46"
+    },
+    "cosmos.tx.v1beta1.Tx": {
+      "type": "object",
+      "properties": {
+        "body": {
+          "$ref": "#/definitions/cosmos.tx.v1beta1.TxBody",
+          "title": "body is the processable content of the transaction"
+        },
+        "auth_info": {
+          "$ref": "#/definitions/cosmos.tx.v1beta1.AuthInfo",
+          "title": "auth_info is the authorization related content of the transaction,\nspecifically signers, signer modes and fee"
+        },
+        "signatures": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "byte"
+          },
+          "description": "signatures is a list of signatures that matches the length and order of\nAuthInfo's signer_infos to allow connecting signature meta information like\npublic key and signing mode by position."
+        }
+      },
+      "description": "Tx is the standard type used for broadcasting transactions."
+    },
+    "cosmos.tx.v1beta1.TxBody": {
+      "type": "object",
+      "properties": {
+        "messages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/google.protobuf.Any"
+          },
+          "description": "messages is a list of messages to be executed. The required signers of\nthose messages define the number and order of elements in AuthInfo's\nsigner_infos and Tx's signatures. Each required signer address is added to\nthe list only the first time it occurs.\nBy convention, the first required signer (usually from the first message)\nis referred to as the primary signer and pays the fee for the whole\ntransaction."
+        },
+        "memo": {
+          "type": "string",
+          "description": "memo is any arbitrary note/comment to be added to the transaction.\nWARNING: in clients, any publicly exposed text should not be called memo,\nbut should be called `note` instead (see https://github.com/cosmos/cosmos-sdk/issues/9122)."
+        },
+        "timeout_height": {
+          "type": "string",
+          "format": "uint64",
+          "title": "timeout is the block height after which this transaction will not\nbe processed by the chain"
+        },
+        "extension_options": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/google.protobuf.Any"
+          },
+          "title": "extension_options are arbitrary options that can be added by chains\nwhen the default options are not sufficient. If any of these are present\nand can't be handled, the transaction will be rejected"
+        },
+        "non_critical_extension_options": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/google.protobuf.Any"
+          },
+          "title": "extension_options are arbitrary options that can be added by chains\nwhen the default options are not sufficient. If any of these are present\nand can't be handled, they will be ignored"
+        }
+      },
+      "description": "TxBody is the body of a transaction that all signers sign over."
+    },
+    "google.protobuf.Any": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string",
+          "description": "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. This string must contain at least\none \"/\" character. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed.\n* An HTTP GET on the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce an error.\n* Applications are allowed to cache lookup results based on the\n  URL, or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary compatibility needs to be preserved\n  on changes to types. (Use versioned type names to manage\n  breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics."
+        },
+        "value": {
+          "type": "string",
+          "format": "byte",
+          "description": "Must be a valid serialized protocol buffer of the above specified type."
+        }
+      },
+      "description": "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(\u0026foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n    // or ...\n    if (any.isSameTypeAs(Foo.getDefaultInstance())) {\n      foo = any.unpack(Foo.getDefaultInstance());\n    }\n\nExample 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\nExample 4: Pack and unpack a message in Go\n\n     foo := \u0026pb.Foo{...}\n     any, err := anypb.New(foo)\n     if err != nil {\n       ...\n     }\n     ...\n     foo := \u0026pb.Foo{}\n     if err := any.UnmarshalTo(foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\nJSON\n\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": \u003cstring\u003e,\n      \"lastName\": \u003cstring\u003e\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
+    },
+    "grpc.gateway.runtime.Error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/google.protobuf.Any"
+          }
+        }
+      }
+    },
+    "initia.tx.v1.QueryGasPriceResponse": {
+      "type": "object",
+      "properties": {
+        "gas_price": {
+          "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+        }
+      },
+      "description": "QueryGasPriceResponse is the response type for the Query/GasPrice RPC method."
+    },
+    "initia.tx.v1.QueryGasPricesResponse": {
+      "type": "object",
+      "properties": {
+        "gas_prices": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.v1beta1.DecCoin"
+          }
+        }
+      },
+      "description": "QueryGasPricesResponse is the response type for the Query/GasPrices RPC method."
+    },
+    "initia.tx.v1.TxsByEventsResponse": {
+      "type": "object",
+      "properties": {
+        "txs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.tx.v1beta1.Tx"
+          },
+          "description": "txs is the list of queried transactions."
+        },
+        "tx_responses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cosmos.base.abci.v1beta1.TxResponse"
+          },
+          "description": "tx_responses is the list of queried TxResponses."
+        },
+        "total": {
+          "type": "string",
+          "format": "uint64",
+          "title": "total is total number of results available"
+        }
+      },
+      "description": "TxsByEventsResponse is the response type for the Service.TxsByEvents\nRPC method."
+    },
+    "tendermint.abci.Event": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "attributes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/tendermint.abci.EventAttribute"
+          }
+        }
+      },
+      "description": "Event allows application developers to attach additional information to\nResponseFinalizeBlock and ResponseCheckTx.\nLater, transactions may be queried using these events."
+    },
+    "tendermint.abci.EventAttribute": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        },
+        "index": {
+          "type": "boolean"
+        }
+      },
+      "description": "EventAttribute is a single key-value pair, associated with an event."
+    }
+  }
+}

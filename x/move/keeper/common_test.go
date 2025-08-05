@@ -13,8 +13,7 @@ import (
 
 	"github.com/cosmos/gogoproto/proto"
 
-	ibcfeetypes "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/types"
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
 	"github.com/stretchr/testify/require"
 
 	"cosmossdk.io/log"
@@ -49,8 +48,7 @@ import (
 	govtypesv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 
-	ibcfee "github.com/cosmos/ibc-go/v8/modules/apps/29-fee"
-	ibctransfer "github.com/cosmos/ibc-go/v8/modules/apps/transfer"
+	ibctransfer "github.com/cosmos/ibc-go/v10/modules/apps/transfer"
 	ibcnfttransfer "github.com/initia-labs/initia/x/ibc/nft-transfer"
 
 	initiaapp "github.com/initia-labs/initia/app"
@@ -96,7 +94,6 @@ var ModuleBasics = module.NewBasicManager(
 	oracle.AppModuleBasic{},
 	ibctransfer.AppModuleBasic{},
 	ibcnfttransfer.AppModuleBasic{},
-	ibcfee.AppModuleBasic{},
 )
 
 // Bond denom should be set for staking test
@@ -643,21 +640,6 @@ func (router TestMsgRouter) HandlerByTypeURL(typeURL string) baseapp.MsgServiceH
 				sdk.NewAttribute("timeout_height", msg.TimeoutHeight.String()),
 				sdk.NewAttribute("timeout_timestamp", fmt.Sprint(msg.TimeoutTimestamp)),
 				sdk.NewAttribute("memo", msg.Memo),
-			))
-
-			return sdk.WrapServiceResult(ctx, &stakingtypes.MsgDelegateResponse{}, nil)
-		}
-	case sdk.MsgTypeURL(&ibcfeetypes.MsgPayPacketFee{}):
-		return func(ctx sdk.Context, _msg sdk.Msg) (*sdk.Result, error) {
-			msg := _msg.(*ibcfeetypes.MsgPayPacketFee)
-			ctx.EventManager().EmitEvent(sdk.NewEvent("pay_fee",
-				sdk.NewAttribute("signer", msg.Signer),
-				sdk.NewAttribute("source_port", msg.SourcePortId),
-				sdk.NewAttribute("source_channel", msg.SourceChannelId),
-				sdk.NewAttribute("recv_fee", msg.Fee.RecvFee.String()),
-				sdk.NewAttribute("ack_fee", msg.Fee.AckFee.String()),
-				sdk.NewAttribute("timeout_fee", msg.Fee.TimeoutFee.String()),
-				sdk.NewAttribute("relayers", strings.Join(msg.Relayers, ",")),
 			))
 
 			return sdk.WrapServiceResult(ctx, &stakingtypes.MsgDelegateResponse{}, nil)

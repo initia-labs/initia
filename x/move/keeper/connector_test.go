@@ -3,7 +3,7 @@ package keeper_test
 import (
 	"testing"
 
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
 	"github.com/stretchr/testify/require"
 
 	"github.com/initia-labs/initia/x/move/types"
@@ -14,9 +14,9 @@ func TestInitializeIBCCoin(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 	moveBankKeeper := input.MoveKeeper.MoveBankKeeper()
 
-	denomTrace := transfertypes.DenomTrace{
-		Path:      "",
-		BaseDenom: "ufoo",
+	denomTrace := transfertypes.Denom{
+		Trace: []transfertypes.Hop{},
+		Base:  "ufoo",
 	}
 	denom := denomTrace.IBCDenom()
 
