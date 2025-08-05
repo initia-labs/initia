@@ -216,7 +216,7 @@ func (p Params) Validate(ac address.Codec) error {
 	}
 
 	if minEmergencyDeposit := sdk.Coins(p.EmergencyMinDeposit); !minEmergencyDeposit.IsAllGTE(p.ExpeditedMinDeposit) {
-		return fmt.Errorf("emergency minimum deposit must be greater than or equal to minimum deposit")
+		return fmt.Errorf("emergency minimum deposit must be greater than or equal to expedited minimum deposit")
 	}
 
 	return nil

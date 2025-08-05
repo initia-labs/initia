@@ -18,11 +18,14 @@ service Msg {
   // module parameters. The authority is defined in the keeper.
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
 
-  // AddEmergencyProposalSubmitters defines a governance operation for adding emergency proposal submitters.
-  rpc AddEmergencyProposalSubmitters(MsgAddEmergencyProposalSubmitters) returns (MsgAddEmergencyProposalSubmittersResponse);
+  // AddEmergencySubmitters defines a governance operation for adding emergency proposal submitters.
+  rpc AddEmergencySubmitters(MsgAddEmergencySubmitters) returns (MsgAddEmergencySubmittersResponse);
 
-  // RemoveEmergencyProposalSubmitters defines a governance operation for removing emergency proposal submitters.
-  rpc RemoveEmergencyProposalSubmitters(MsgRemoveEmergencyProposalSubmitters) returns (MsgRemoveEmergencyProposalSubmittersResponse);
+  // RemoveEmergencySubmitters defines a governance operation for removing emergency proposal submitters.
+  rpc RemoveEmergencySubmitters(MsgRemoveEmergencySubmitters) returns (MsgRemoveEmergencySubmittersResponse);
+
+  // ActivateEmergencyProposal defines a governance operation for activating an emergency proposal.
+  rpc ActivateEmergencyProposal(MsgActivateEmergencyProposal) returns (MsgActivateEmergencyProposalResponse);
 }
 
 // MsgUpdateParams is the Msg/UpdateParams request type.
@@ -46,30 +49,43 @@ message MsgUpdateParams {
 // MsgUpdateParams message.
 message MsgUpdateParamsResponse {}
 
-// MsgAddEmergencyProposalSubmitters is the Msg/AddEmergencyProposalSubmitters request type.
-message MsgAddEmergencyProposalSubmitters {
+// MsgAddEmergencySubmitters is the Msg/AddEmergencySubmitters request type.
+message MsgAddEmergencySubmitters {
   option (cosmos.msg.v1.signer) = "authority";
-  option (amino.name) = "gov/MsgAddEmergencyProposalSubmitters";
+  option (amino.name) = "gov/MsgAddEmergencySubmitters";
 
   string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 
   repeated string emergency_submitters = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
-// MsgAddEmergencyProposalSubmittersResponse defines the response structure for executing a
-// MsgAddEmergencyProposalSubmitters message.
-message MsgAddEmergencyProposalSubmittersResponse {}
+// MsgAddEmergencySubmittersResponse defines the response structure for executing a
+// MsgAddEmergencySubmitters message.
+message MsgAddEmergencySubmittersResponse {}
 
-// MsgRemoveEmergencyProposalSubmitters is the Msg/RemoveEmergencyProposalSubmitters request type.
-message MsgRemoveEmergencyProposalSubmitters {
+// MsgRemoveEmergencySubmitters is the Msg/RemoveEmergencySubmitters request type.
+message MsgRemoveEmergencySubmitters {
   option (cosmos.msg.v1.signer) = "authority";
-  option (amino.name) = "gov/MsgRemoveEmergencyProposalSubmitters";
+  option (amino.name) = "gov/MsgRemoveEmergencySubmitters";
 
   string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 
   repeated string emergency_submitters = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
-// MsgRemoveEmergencyProposalSubmittersResponse defines the response structure for executing a
-// MsgRemoveEmergencyProposalSubmitters message.
-message MsgRemoveEmergencyProposalSubmittersResponse {}
+// MsgRemoveEmergencySubmittersResponse defines the response structure for executing a
+// MsgRemoveEmergencySubmitters message.
+message MsgRemoveEmergencySubmittersResponse {}
+
+// MsgActivateEmergencyProposal is the Msg/ActivateEmergencyProposal request type.
+message MsgActivateEmergencyProposal {
+  option (cosmos.msg.v1.signer) = "sender";
+  option (amino.name) = "gov/MsgActivateEmergencyProposal";
+
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  uint64 proposal_id = 2;
+}
+
+// MsgActivateEmergencyProposalResponse defines the response structure for executing a
+// MsgActivateEmergencyProposal message.
+message MsgActivateEmergencyProposalResponse {}
