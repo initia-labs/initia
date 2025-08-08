@@ -6,8 +6,9 @@ import (
 	"cosmossdk.io/core/address"
 	"cosmossdk.io/math"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	vmtypes "github.com/initia-labs/movevm/types"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // VotingPowerKeeper expected move keeper (noalias)
