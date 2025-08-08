@@ -113,8 +113,8 @@ The following parameters control emergency proposals:
 
 Emergency proposal submitters can be managed through governance with:
 
-- **`MsgAddEmergencyProposalSubmitters`**: Add new authorized submitters
-- **`MsgRemoveEmergencyProposalSubmitters`**: Remove existing submitters
+- **`MsgAddEmergencySubmitters`**: Add new authorized submitters
+- **`MsgRemoveEmergencySubmitters`**: Remove existing submitters
 
 This ensures the list of emergency submitters can be updated as needed through proper governance channels.
 

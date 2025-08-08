@@ -19,9 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Msg_UpdateParams_FullMethodName                      = "/initia.gov.v1.Msg/UpdateParams"
-	Msg_AddEmergencyProposalSubmitters_FullMethodName    = "/initia.gov.v1.Msg/AddEmergencyProposalSubmitters"
-	Msg_RemoveEmergencyProposalSubmitters_FullMethodName = "/initia.gov.v1.Msg/RemoveEmergencyProposalSubmitters"
+	Msg_UpdateParams_FullMethodName              = "/initia.gov.v1.Msg/UpdateParams"
+	Msg_AddEmergencySubmitters_FullMethodName    = "/initia.gov.v1.Msg/AddEmergencySubmitters"
+	Msg_RemoveEmergencySubmitters_FullMethodName = "/initia.gov.v1.Msg/RemoveEmergencySubmitters"
+	Msg_ActivateEmergencyProposal_FullMethodName = "/initia.gov.v1.Msg/ActivateEmergencyProposal"
 )
 
 // MsgClient is the client API for Msg service.
@@ -31,10 +32,12 @@ type MsgClient interface {
 	// UpdateParams defines a governance operation for updating the x/gov
 	// module parameters. The authority is defined in the keeper.
 	UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error)
-	// AddEmergencyProposalSubmitters defines a governance operation for adding emergency proposal submitters.
-	AddEmergencyProposalSubmitters(ctx context.Context, in *MsgAddEmergencyProposalSubmitters, opts ...grpc.CallOption) (*MsgAddEmergencyProposalSubmittersResponse, error)
-	// RemoveEmergencyProposalSubmitters defines a governance operation for removing emergency proposal submitters.
-	RemoveEmergencyProposalSubmitters(ctx context.Context, in *MsgRemoveEmergencyProposalSubmitters, opts ...grpc.CallOption) (*MsgRemoveEmergencyProposalSubmittersResponse, error)
+	// AddEmergencySubmitters defines a governance operation for adding emergency proposal submitters.
+	AddEmergencySubmitters(ctx context.Context, in *MsgAddEmergencySubmitters, opts ...grpc.CallOption) (*MsgAddEmergencySubmittersResponse, error)
+	// RemoveEmergencySubmitters defines a governance operation for removing emergency proposal submitters.
+	RemoveEmergencySubmitters(ctx context.Context, in *MsgRemoveEmergencySubmitters, opts ...grpc.CallOption) (*MsgRemoveEmergencySubmittersResponse, error)
+	// ActivateEmergencyProposal defines a governance operation for activating an emergency proposal.
+	ActivateEmergencyProposal(ctx context.Context, in *MsgActivateEmergencyProposal, opts ...grpc.CallOption) (*MsgActivateEmergencyProposalResponse, error)
 }
 
 type msgClient struct {
@@ -54,18 +57,27 @@ func (c *msgClient) UpdateParams(ctx context.Context, in *MsgUpdateParams, opts 
 	return out, nil
 }
 
-func (c *msgClient) AddEmergencyProposalSubmitters(ctx context.Context, in *MsgAddEmergencyProposalSubmitters, opts ...grpc.CallOption) (*MsgAddEmergencyProposalSubmittersResponse, error) {
-	out := new(MsgAddEmergencyProposalSubmittersResponse)
-	err := c.cc.Invoke(ctx, Msg_AddEmergencyProposalSubmitters_FullMethodName, in, out, opts...)
+func (c *msgClient) AddEmergencySubmitters(ctx context.Context, in *MsgAddEmergencySubmitters, opts ...grpc.CallOption) (*MsgAddEmergencySubmittersResponse, error) {
+	out := new(MsgAddEmergencySubmittersResponse)
+	err := c.cc.Invoke(ctx, Msg_AddEmergencySubmitters_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *msgClient) RemoveEmergencyProposalSubmitters(ctx context.Context, in *MsgRemoveEmergencyProposalSubmitters, opts ...grpc.CallOption) (*MsgRemoveEmergencyProposalSubmittersResponse, error) {
-	out := new(MsgRemoveEmergencyProposalSubmittersResponse)
-	err := c.cc.Invoke(ctx, Msg_RemoveEmergencyProposalSubmitters_FullMethodName, in, out, opts...)
+func (c *msgClient) RemoveEmergencySubmitters(ctx context.Context, in *MsgRemoveEmergencySubmitters, opts ...grpc.CallOption) (*MsgRemoveEmergencySubmittersResponse, error) {
+	out := new(MsgRemoveEmergencySubmittersResponse)
+	err := c.cc.Invoke(ctx, Msg_RemoveEmergencySubmitters_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) ActivateEmergencyProposal(ctx context.Context, in *MsgActivateEmergencyProposal, opts ...grpc.CallOption) (*MsgActivateEmergencyProposalResponse, error) {
+	out := new(MsgActivateEmergencyProposalResponse)
+	err := c.cc.Invoke(ctx, Msg_ActivateEmergencyProposal_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -79,10 +91,12 @@ type MsgServer interface {
 	// UpdateParams defines a governance operation for updating the x/gov
 	// module parameters. The authority is defined in the keeper.
 	UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error)
-	// AddEmergencyProposalSubmitters defines a governance operation for adding emergency proposal submitters.
-	AddEmergencyProposalSubmitters(context.Context, *MsgAddEmergencyProposalSubmitters) (*MsgAddEmergencyProposalSubmittersResponse, error)
-	// RemoveEmergencyProposalSubmitters defines a governance operation for removing emergency proposal submitters.
-	RemoveEmergencyProposalSubmitters(context.Context, *MsgRemoveEmergencyProposalSubmitters) (*MsgRemoveEmergencyProposalSubmittersResponse, error)
+	// AddEmergencySubmitters defines a governance operation for adding emergency proposal submitters.
+	AddEmergencySubmitters(context.Context, *MsgAddEmergencySubmitters) (*MsgAddEmergencySubmittersResponse, error)
+	// RemoveEmergencySubmitters defines a governance operation for removing emergency proposal submitters.
+	RemoveEmergencySubmitters(context.Context, *MsgRemoveEmergencySubmitters) (*MsgRemoveEmergencySubmittersResponse, error)
+	// ActivateEmergencyProposal defines a governance operation for activating an emergency proposal.
+	ActivateEmergencyProposal(context.Context, *MsgActivateEmergencyProposal) (*MsgActivateEmergencyProposalResponse, error)
 	mustEmbedUnimplementedMsgServer()
 }
 
@@ -93,11 +107,14 @@ type UnimplementedMsgServer struct {
 func (UnimplementedMsgServer) UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateParams not implemented")
 }
-func (UnimplementedMsgServer) AddEmergencyProposalSubmitters(context.Context, *MsgAddEmergencyProposalSubmitters) (*MsgAddEmergencyProposalSubmittersResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddEmergencyProposalSubmitters not implemented")
+func (UnimplementedMsgServer) AddEmergencySubmitters(context.Context, *MsgAddEmergencySubmitters) (*MsgAddEmergencySubmittersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddEmergencySubmitters not implemented")
 }
-func (UnimplementedMsgServer) RemoveEmergencyProposalSubmitters(context.Context, *MsgRemoveEmergencyProposalSubmitters) (*MsgRemoveEmergencyProposalSubmittersResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RemoveEmergencyProposalSubmitters not implemented")
+func (UnimplementedMsgServer) RemoveEmergencySubmitters(context.Context, *MsgRemoveEmergencySubmitters) (*MsgRemoveEmergencySubmittersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveEmergencySubmitters not implemented")
+}
+func (UnimplementedMsgServer) ActivateEmergencyProposal(context.Context, *MsgActivateEmergencyProposal) (*MsgActivateEmergencyProposalResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ActivateEmergencyProposal not implemented")
 }
 func (UnimplementedMsgServer) mustEmbedUnimplementedMsgServer() {}
 
@@ -130,38 +147,56 @@ func _Msg_UpdateParams_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_AddEmergencyProposalSubmitters_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgAddEmergencyProposalSubmitters)
+func _Msg_AddEmergencySubmitters_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgAddEmergencySubmitters)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).AddEmergencyProposalSubmitters(ctx, in)
+		return srv.(MsgServer).AddEmergencySubmitters(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Msg_AddEmergencyProposalSubmitters_FullMethodName,
+		FullMethod: Msg_AddEmergencySubmitters_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).AddEmergencyProposalSubmitters(ctx, req.(*MsgAddEmergencyProposalSubmitters))
+		return srv.(MsgServer).AddEmergencySubmitters(ctx, req.(*MsgAddEmergencySubmitters))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_RemoveEmergencyProposalSubmitters_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgRemoveEmergencyProposalSubmitters)
+func _Msg_RemoveEmergencySubmitters_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgRemoveEmergencySubmitters)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).RemoveEmergencyProposalSubmitters(ctx, in)
+		return srv.(MsgServer).RemoveEmergencySubmitters(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Msg_RemoveEmergencyProposalSubmitters_FullMethodName,
+		FullMethod: Msg_RemoveEmergencySubmitters_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).RemoveEmergencyProposalSubmitters(ctx, req.(*MsgRemoveEmergencyProposalSubmitters))
+		return srv.(MsgServer).RemoveEmergencySubmitters(ctx, req.(*MsgRemoveEmergencySubmitters))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_ActivateEmergencyProposal_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgActivateEmergencyProposal)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).ActivateEmergencyProposal(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_ActivateEmergencyProposal_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).ActivateEmergencyProposal(ctx, req.(*MsgActivateEmergencyProposal))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -178,12 +213,16 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Msg_UpdateParams_Handler,
 		},
 		{
-			MethodName: "AddEmergencyProposalSubmitters",
-			Handler:    _Msg_AddEmergencyProposalSubmitters_Handler,
+			MethodName: "AddEmergencySubmitters",
+			Handler:    _Msg_AddEmergencySubmitters_Handler,
 		},
 		{
-			MethodName: "RemoveEmergencyProposalSubmitters",
-			Handler:    _Msg_RemoveEmergencyProposalSubmitters_Handler,
+			MethodName: "RemoveEmergencySubmitters",
+			Handler:    _Msg_RemoveEmergencySubmitters_Handler,
+		},
+		{
+			MethodName: "ActivateEmergencyProposal",
+			Handler:    _Msg_ActivateEmergencyProposal_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
