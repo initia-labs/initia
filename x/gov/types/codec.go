@@ -13,6 +13,9 @@ import (
 // for Amino JSON serialization.
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	legacy.RegisterAminoMsg(cdc, &MsgUpdateParams{}, "gov/MsgUpdateParams")
+	legacy.RegisterAminoMsg(cdc, &MsgAddEmergencySubmitters{}, "gov/MsgAddEmergencySubmitters")
+	legacy.RegisterAminoMsg(cdc, &MsgRemoveEmergencySubmitters{}, "gov/MsgRemoveEmergencySubmitters")
+	legacy.RegisterAminoMsg(cdc, &MsgActivateEmergencyProposal{}, "gov/MsgActivateEmergencyProposal")
 	cdc.RegisterConcrete(Params{}, "gov/Params", nil)
 }
 
@@ -20,6 +23,9 @@ func RegisterInterfaces(registry types.InterfaceRegistry) {
 	registry.RegisterImplementations(
 		(*sdk.Msg)(nil),
 		&MsgUpdateParams{},
+		&MsgAddEmergencySubmitters{},
+		&MsgRemoveEmergencySubmitters{},
+		&MsgActivateEmergencyProposal{},
 	)
 
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)

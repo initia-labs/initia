@@ -407,7 +407,7 @@ type QueryClient interface {
 	GasPrices(ctx context.Context, in *QueryGasPricesRequest, opts ...grpc.CallOption) (*QueryGasPricesResponse, error)
 	// GasPrice returns the gas price for the network.
 	GasPrice(ctx context.Context, in *QueryGasPriceRequest, opts ...grpc.CallOption) (*QueryGasPriceResponse, error)
-	// TxsByEvents fetches transactions by event criteria. This method proxies to CometBFT's TxsByEvents RPC endpoint
+	// TxsByEvents fetches transactions by event criteria. This method proxies to CometBFT's TxSearchV2 RPC endpoint
 	// to efficiently search and retrieve transactions matching specified event conditions.
 	TxsByEvents(ctx context.Context, in *TxsByEventsRequest, opts ...grpc.CallOption) (*TxsByEventsResponse, error)
 }
@@ -453,7 +453,7 @@ type QueryServer interface {
 	GasPrices(context.Context, *QueryGasPricesRequest) (*QueryGasPricesResponse, error)
 	// GasPrice returns the gas price for the network.
 	GasPrice(context.Context, *QueryGasPriceRequest) (*QueryGasPriceResponse, error)
-	// TxsByEvents fetches transactions by event criteria. This method proxies to CometBFT's TxsByEvents RPC endpoint
+	// TxsByEvents fetches transactions by event criteria. This method proxies to CometBFT's TxSearchV2 RPC endpoint
 	// to efficiently search and retrieve transactions matching specified event conditions.
 	TxsByEvents(context.Context, *TxsByEventsRequest) (*TxsByEventsResponse, error)
 }

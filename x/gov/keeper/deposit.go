@@ -152,11 +152,16 @@ func (k Keeper) AddDeposit(ctx context.Context, proposalID uint64, depositorAddr
 		}
 	}
 
-	// It needs in case that a previous deposit only activates voting period and second deposit activates emergency proposal. activatedVotingPeriod is false at that time
-	// and the proposer of the proposal should be in the emergency submitters list.
-	if proposal.Status == v1.StatusVotingPeriod &&
+	depositorStrAddr, err := k.authKeeper.AddressCodec().BytesToString(depositorAddr)
+	if err != nil {
+		return false, err
+	}
+
+	// Convert this proposal to an emergency proposal when the total deposit meets the emergency minimum
+	// deposit threshold and the depositor is an authorized emergency submitter
+	if !proposal.Emergency && proposal.Status == v1.StatusVotingPeriod &&
 		sdk.NewCoins(proposal.TotalDeposit...).IsAllGTE(params.EmergencyMinDeposit) &&
-		slices.Contains(params.EmergencySubmitters, proposal.Proposer) {
+		slices.Contains(params.EmergencySubmitters, depositorStrAddr) {
 		err = k.ActivateEmergencyProposal(ctx, proposal)
 		if err != nil {
 			return false, err
@@ -179,11 +184,6 @@ func (k Keeper) AddDeposit(ctx context.Context, proposalID uint64, depositorAddr
 
 	// called when deposit has been added to a proposal, however the proposal may not be active
 	err = k.Hooks().AfterProposalDeposit(ctx, proposalID, depositorAddr)
-	if err != nil {
-		return false, err
-	}
-
-	depositorStrAddr, err := k.authKeeper.AddressCodec().BytesToString(depositorAddr)
 	if err != nil {
 		return false, err
 	}

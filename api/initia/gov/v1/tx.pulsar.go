@@ -871,74 +871,74 @@ func (x *fastReflection_MsgUpdateParamsResponse) ProtoMethods() *protoiface.Meth
 	}
 }
 
-var _ protoreflect.List = (*_MsgAddEmergencyProposalSubmitters_2_list)(nil)
+var _ protoreflect.List = (*_MsgAddEmergencySubmitters_2_list)(nil)
 
-type _MsgAddEmergencyProposalSubmitters_2_list struct {
+type _MsgAddEmergencySubmitters_2_list struct {
 	list *[]string
 }
 
-func (x *_MsgAddEmergencyProposalSubmitters_2_list) Len() int {
+func (x *_MsgAddEmergencySubmitters_2_list) Len() int {
 	if x.list == nil {
 		return 0
 	}
 	return len(*x.list)
 }
 
-func (x *_MsgAddEmergencyProposalSubmitters_2_list) Get(i int) protoreflect.Value {
+func (x *_MsgAddEmergencySubmitters_2_list) Get(i int) protoreflect.Value {
 	return protoreflect.ValueOfString((*x.list)[i])
 }
 
-func (x *_MsgAddEmergencyProposalSubmitters_2_list) Set(i int, value protoreflect.Value) {
+func (x *_MsgAddEmergencySubmitters_2_list) Set(i int, value protoreflect.Value) {
 	valueUnwrapped := value.String()
 	concreteValue := valueUnwrapped
 	(*x.list)[i] = concreteValue
 }
 
-func (x *_MsgAddEmergencyProposalSubmitters_2_list) Append(value protoreflect.Value) {
+func (x *_MsgAddEmergencySubmitters_2_list) Append(value protoreflect.Value) {
 	valueUnwrapped := value.String()
 	concreteValue := valueUnwrapped
 	*x.list = append(*x.list, concreteValue)
 }
 
-func (x *_MsgAddEmergencyProposalSubmitters_2_list) AppendMutable() protoreflect.Value {
-	panic(fmt.Errorf("AppendMutable can not be called on message MsgAddEmergencyProposalSubmitters at list field EmergencySubmitters as it is not of Message kind"))
+func (x *_MsgAddEmergencySubmitters_2_list) AppendMutable() protoreflect.Value {
+	panic(fmt.Errorf("AppendMutable can not be called on message MsgAddEmergencySubmitters at list field EmergencySubmitters as it is not of Message kind"))
 }
 
-func (x *_MsgAddEmergencyProposalSubmitters_2_list) Truncate(n int) {
+func (x *_MsgAddEmergencySubmitters_2_list) Truncate(n int) {
 	*x.list = (*x.list)[:n]
 }
 
-func (x *_MsgAddEmergencyProposalSubmitters_2_list) NewElement() protoreflect.Value {
+func (x *_MsgAddEmergencySubmitters_2_list) NewElement() protoreflect.Value {
 	v := ""
 	return protoreflect.ValueOfString(v)
 }
 
-func (x *_MsgAddEmergencyProposalSubmitters_2_list) IsValid() bool {
+func (x *_MsgAddEmergencySubmitters_2_list) IsValid() bool {
 	return x.list != nil
 }
 
 var (
-	md_MsgAddEmergencyProposalSubmitters                      protoreflect.MessageDescriptor
-	fd_MsgAddEmergencyProposalSubmitters_authority            protoreflect.FieldDescriptor
-	fd_MsgAddEmergencyProposalSubmitters_emergency_submitters protoreflect.FieldDescriptor
+	md_MsgAddEmergencySubmitters                      protoreflect.MessageDescriptor
+	fd_MsgAddEmergencySubmitters_authority            protoreflect.FieldDescriptor
+	fd_MsgAddEmergencySubmitters_emergency_submitters protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_initia_gov_v1_tx_proto_init()
-	md_MsgAddEmergencyProposalSubmitters = File_initia_gov_v1_tx_proto.Messages().ByName("MsgAddEmergencyProposalSubmitters")
-	fd_MsgAddEmergencyProposalSubmitters_authority = md_MsgAddEmergencyProposalSubmitters.Fields().ByName("authority")
-	fd_MsgAddEmergencyProposalSubmitters_emergency_submitters = md_MsgAddEmergencyProposalSubmitters.Fields().ByName("emergency_submitters")
+	md_MsgAddEmergencySubmitters = File_initia_gov_v1_tx_proto.Messages().ByName("MsgAddEmergencySubmitters")
+	fd_MsgAddEmergencySubmitters_authority = md_MsgAddEmergencySubmitters.Fields().ByName("authority")
+	fd_MsgAddEmergencySubmitters_emergency_submitters = md_MsgAddEmergencySubmitters.Fields().ByName("emergency_submitters")
 }
 
-var _ protoreflect.Message = (*fastReflection_MsgAddEmergencyProposalSubmitters)(nil)
+var _ protoreflect.Message = (*fastReflection_MsgAddEmergencySubmitters)(nil)
 
-type fastReflection_MsgAddEmergencyProposalSubmitters MsgAddEmergencyProposalSubmitters
+type fastReflection_MsgAddEmergencySubmitters MsgAddEmergencySubmitters
 
-func (x *MsgAddEmergencyProposalSubmitters) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_MsgAddEmergencyProposalSubmitters)(x)
+func (x *MsgAddEmergencySubmitters) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_MsgAddEmergencySubmitters)(x)
 }
 
-func (x *MsgAddEmergencyProposalSubmitters) slowProtoReflect() protoreflect.Message {
+func (x *MsgAddEmergencySubmitters) slowProtoReflect() protoreflect.Message {
 	mi := &file_initia_gov_v1_tx_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -950,43 +950,43 @@ func (x *MsgAddEmergencyProposalSubmitters) slowProtoReflect() protoreflect.Mess
 	return mi.MessageOf(x)
 }
 
-var _fastReflection_MsgAddEmergencyProposalSubmitters_messageType fastReflection_MsgAddEmergencyProposalSubmitters_messageType
-var _ protoreflect.MessageType = fastReflection_MsgAddEmergencyProposalSubmitters_messageType{}
+var _fastReflection_MsgAddEmergencySubmitters_messageType fastReflection_MsgAddEmergencySubmitters_messageType
+var _ protoreflect.MessageType = fastReflection_MsgAddEmergencySubmitters_messageType{}
 
-type fastReflection_MsgAddEmergencyProposalSubmitters_messageType struct{}
+type fastReflection_MsgAddEmergencySubmitters_messageType struct{}
 
-func (x fastReflection_MsgAddEmergencyProposalSubmitters_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_MsgAddEmergencyProposalSubmitters)(nil)
+func (x fastReflection_MsgAddEmergencySubmitters_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_MsgAddEmergencySubmitters)(nil)
 }
-func (x fastReflection_MsgAddEmergencyProposalSubmitters_messageType) New() protoreflect.Message {
-	return new(fastReflection_MsgAddEmergencyProposalSubmitters)
+func (x fastReflection_MsgAddEmergencySubmitters_messageType) New() protoreflect.Message {
+	return new(fastReflection_MsgAddEmergencySubmitters)
 }
-func (x fastReflection_MsgAddEmergencyProposalSubmitters_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_MsgAddEmergencyProposalSubmitters
+func (x fastReflection_MsgAddEmergencySubmitters_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_MsgAddEmergencySubmitters
 }
 
 // Descriptor returns message descriptor, which contains only the protobuf
 // type information for the message.
-func (x *fastReflection_MsgAddEmergencyProposalSubmitters) Descriptor() protoreflect.MessageDescriptor {
-	return md_MsgAddEmergencyProposalSubmitters
+func (x *fastReflection_MsgAddEmergencySubmitters) Descriptor() protoreflect.MessageDescriptor {
+	return md_MsgAddEmergencySubmitters
 }
 
 // Type returns the message type, which encapsulates both Go and protobuf
 // type information. If the Go type information is not needed,
 // it is recommended that the message descriptor be used instead.
-func (x *fastReflection_MsgAddEmergencyProposalSubmitters) Type() protoreflect.MessageType {
-	return _fastReflection_MsgAddEmergencyProposalSubmitters_messageType
+func (x *fastReflection_MsgAddEmergencySubmitters) Type() protoreflect.MessageType {
+	return _fastReflection_MsgAddEmergencySubmitters_messageType
 }
 
 // New returns a newly allocated and mutable empty message.
-func (x *fastReflection_MsgAddEmergencyProposalSubmitters) New() protoreflect.Message {
-	return new(fastReflection_MsgAddEmergencyProposalSubmitters)
+func (x *fastReflection_MsgAddEmergencySubmitters) New() protoreflect.Message {
+	return new(fastReflection_MsgAddEmergencySubmitters)
 }
 
 // Interface unwraps the message reflection interface and
 // returns the underlying ProtoMessage interface.
-func (x *fastReflection_MsgAddEmergencyProposalSubmitters) Interface() protoreflect.ProtoMessage {
-	return (*MsgAddEmergencyProposalSubmitters)(x)
+func (x *fastReflection_MsgAddEmergencySubmitters) Interface() protoreflect.ProtoMessage {
+	return (*MsgAddEmergencySubmitters)(x)
 }
 
 // Range iterates over every populated field in an undefined order,
@@ -994,16 +994,16 @@ func (x *fastReflection_MsgAddEmergencyProposalSubmitters) Interface() protorefl
 // Range returns immediately if f returns false.
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
-func (x *fastReflection_MsgAddEmergencyProposalSubmitters) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+func (x *fastReflection_MsgAddEmergencySubmitters) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
 	if x.Authority != "" {
 		value := protoreflect.ValueOfString(x.Authority)
-		if !f(fd_MsgAddEmergencyProposalSubmitters_authority, value) {
+		if !f(fd_MsgAddEmergencySubmitters_authority, value) {
 			return
 		}
 	}
 	if len(x.EmergencySubmitters) != 0 {
-		value := protoreflect.ValueOfList(&_MsgAddEmergencyProposalSubmitters_2_list{list: &x.EmergencySubmitters})
-		if !f(fd_MsgAddEmergencyProposalSubmitters_emergency_submitters, value) {
+		value := protoreflect.ValueOfList(&_MsgAddEmergencySubmitters_2_list{list: &x.EmergencySubmitters})
+		if !f(fd_MsgAddEmergencySubmitters_emergency_submitters, value) {
 			return
 		}
 	}
@@ -1020,17 +1020,17 @@ func (x *fastReflection_MsgAddEmergencyProposalSubmitters) Range(f func(protoref
 // In other cases (aside from the nullable cases above),
 // a proto3 scalar field is populated if it contains a non-zero value, and
 // a repeated field is populated if it is non-empty.
-func (x *fastReflection_MsgAddEmergencyProposalSubmitters) Has(fd protoreflect.FieldDescriptor) bool {
+func (x *fastReflection_MsgAddEmergencySubmitters) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "initia.gov.v1.MsgAddEmergencyProposalSubmitters.authority":
+	case "initia.gov.v1.MsgAddEmergencySubmitters.authority":
 		return x.Authority != ""
-	case "initia.gov.v1.MsgAddEmergencyProposalSubmitters.emergency_submitters":
+	case "initia.gov.v1.MsgAddEmergencySubmitters.emergency_submitters":
 		return len(x.EmergencySubmitters) != 0
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgAddEmergencyProposalSubmitters"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgAddEmergencySubmitters"))
 		}
-		panic(fmt.Errorf("message initia.gov.v1.MsgAddEmergencyProposalSubmitters does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message initia.gov.v1.MsgAddEmergencySubmitters does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1040,17 +1040,17 @@ func (x *fastReflection_MsgAddEmergencyProposalSubmitters) Has(fd protoreflect.F
 // associated with the given field number.
 //
 // Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgAddEmergencyProposalSubmitters) Clear(fd protoreflect.FieldDescriptor) {
+func (x *fastReflection_MsgAddEmergencySubmitters) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "initia.gov.v1.MsgAddEmergencyProposalSubmitters.authority":
+	case "initia.gov.v1.MsgAddEmergencySubmitters.authority":
 		x.Authority = ""
-	case "initia.gov.v1.MsgAddEmergencyProposalSubmitters.emergency_submitters":
+	case "initia.gov.v1.MsgAddEmergencySubmitters.emergency_submitters":
 		x.EmergencySubmitters = nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgAddEmergencyProposalSubmitters"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgAddEmergencySubmitters"))
 		}
-		panic(fmt.Errorf("message initia.gov.v1.MsgAddEmergencyProposalSubmitters does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message initia.gov.v1.MsgAddEmergencySubmitters does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1060,22 +1060,22 @@ func (x *fastReflection_MsgAddEmergencyProposalSubmitters) Clear(fd protoreflect
 // the default value of a bytes scalar is guaranteed to be a copy.
 // For unpopulated composite types, it returns an empty, read-only view
 // of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_MsgAddEmergencyProposalSubmitters) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_MsgAddEmergencySubmitters) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "initia.gov.v1.MsgAddEmergencyProposalSubmitters.authority":
+	case "initia.gov.v1.MsgAddEmergencySubmitters.authority":
 		value := x.Authority
 		return protoreflect.ValueOfString(value)
-	case "initia.gov.v1.MsgAddEmergencyProposalSubmitters.emergency_submitters":
+	case "initia.gov.v1.MsgAddEmergencySubmitters.emergency_submitters":
 		if len(x.EmergencySubmitters) == 0 {
-			return protoreflect.ValueOfList(&_MsgAddEmergencyProposalSubmitters_2_list{})
+			return protoreflect.ValueOfList(&_MsgAddEmergencySubmitters_2_list{})
 		}
-		listValue := &_MsgAddEmergencyProposalSubmitters_2_list{list: &x.EmergencySubmitters}
+		listValue := &_MsgAddEmergencySubmitters_2_list{list: &x.EmergencySubmitters}
 		return protoreflect.ValueOfList(listValue)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgAddEmergencyProposalSubmitters"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgAddEmergencySubmitters"))
 		}
-		panic(fmt.Errorf("message initia.gov.v1.MsgAddEmergencyProposalSubmitters does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message initia.gov.v1.MsgAddEmergencySubmitters does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -1089,19 +1089,19 @@ func (x *fastReflection_MsgAddEmergencyProposalSubmitters) Get(descriptor protor
 // empty, read-only value, then it panics.
 //
 // Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgAddEmergencyProposalSubmitters) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+func (x *fastReflection_MsgAddEmergencySubmitters) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "initia.gov.v1.MsgAddEmergencyProposalSubmitters.authority":
+	case "initia.gov.v1.MsgAddEmergencySubmitters.authority":
 		x.Authority = value.Interface().(string)
-	case "initia.gov.v1.MsgAddEmergencyProposalSubmitters.emergency_submitters":
+	case "initia.gov.v1.MsgAddEmergencySubmitters.emergency_submitters":
 		lv := value.List()
-		clv := lv.(*_MsgAddEmergencyProposalSubmitters_2_list)
+		clv := lv.(*_MsgAddEmergencySubmitters_2_list)
 		x.EmergencySubmitters = *clv.list
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgAddEmergencyProposalSubmitters"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgAddEmergencySubmitters"))
 		}
-		panic(fmt.Errorf("message initia.gov.v1.MsgAddEmergencyProposalSubmitters does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message initia.gov.v1.MsgAddEmergencySubmitters does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1115,49 +1115,49 @@ func (x *fastReflection_MsgAddEmergencyProposalSubmitters) Set(fd protoreflect.F
 // It panics if the field does not contain a composite type.
 //
 // Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgAddEmergencyProposalSubmitters) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_MsgAddEmergencySubmitters) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "initia.gov.v1.MsgAddEmergencyProposalSubmitters.emergency_submitters":
+	case "initia.gov.v1.MsgAddEmergencySubmitters.emergency_submitters":
 		if x.EmergencySubmitters == nil {
 			x.EmergencySubmitters = []string{}
 		}
-		value := &_MsgAddEmergencyProposalSubmitters_2_list{list: &x.EmergencySubmitters}
+		value := &_MsgAddEmergencySubmitters_2_list{list: &x.EmergencySubmitters}
 		return protoreflect.ValueOfList(value)
-	case "initia.gov.v1.MsgAddEmergencyProposalSubmitters.authority":
-		panic(fmt.Errorf("field authority of message initia.gov.v1.MsgAddEmergencyProposalSubmitters is not mutable"))
+	case "initia.gov.v1.MsgAddEmergencySubmitters.authority":
+		panic(fmt.Errorf("field authority of message initia.gov.v1.MsgAddEmergencySubmitters is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgAddEmergencyProposalSubmitters"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgAddEmergencySubmitters"))
 		}
-		panic(fmt.Errorf("message initia.gov.v1.MsgAddEmergencyProposalSubmitters does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message initia.gov.v1.MsgAddEmergencySubmitters does not contain field %s", fd.FullName()))
 	}
 }
 
 // NewField returns a new value that is assignable to the field
 // for the given descriptor. For scalars, this returns the default value.
 // For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_MsgAddEmergencyProposalSubmitters) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_MsgAddEmergencySubmitters) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "initia.gov.v1.MsgAddEmergencyProposalSubmitters.authority":
+	case "initia.gov.v1.MsgAddEmergencySubmitters.authority":
 		return protoreflect.ValueOfString("")
-	case "initia.gov.v1.MsgAddEmergencyProposalSubmitters.emergency_submitters":
+	case "initia.gov.v1.MsgAddEmergencySubmitters.emergency_submitters":
 		list := []string{}
-		return protoreflect.ValueOfList(&_MsgAddEmergencyProposalSubmitters_2_list{list: &list})
+		return protoreflect.ValueOfList(&_MsgAddEmergencySubmitters_2_list{list: &list})
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgAddEmergencyProposalSubmitters"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgAddEmergencySubmitters"))
 		}
-		panic(fmt.Errorf("message initia.gov.v1.MsgAddEmergencyProposalSubmitters does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message initia.gov.v1.MsgAddEmergencySubmitters does not contain field %s", fd.FullName()))
 	}
 }
 
 // WhichOneof reports which field within the oneof is populated,
 // returning nil if none are populated.
 // It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_MsgAddEmergencyProposalSubmitters) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+func (x *fastReflection_MsgAddEmergencySubmitters) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in initia.gov.v1.MsgAddEmergencyProposalSubmitters", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in initia.gov.v1.MsgAddEmergencySubmitters", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -1165,7 +1165,7 @@ func (x *fastReflection_MsgAddEmergencyProposalSubmitters) WhichOneof(d protoref
 // GetUnknown retrieves the entire list of unknown fields.
 // The caller may only mutate the contents of the RawFields
 // if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_MsgAddEmergencyProposalSubmitters) GetUnknown() protoreflect.RawFields {
+func (x *fastReflection_MsgAddEmergencySubmitters) GetUnknown() protoreflect.RawFields {
 	return x.unknownFields
 }
 
@@ -1176,7 +1176,7 @@ func (x *fastReflection_MsgAddEmergencyProposalSubmitters) GetUnknown() protoref
 // An empty RawFields may be passed to clear the fields.
 //
 // SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgAddEmergencyProposalSubmitters) SetUnknown(fields protoreflect.RawFields) {
+func (x *fastReflection_MsgAddEmergencySubmitters) SetUnknown(fields protoreflect.RawFields) {
 	x.unknownFields = fields
 }
 
@@ -1188,7 +1188,7 @@ func (x *fastReflection_MsgAddEmergencyProposalSubmitters) SetUnknown(fields pro
 // message type, but the details are implementation dependent.
 // Validity is not part of the protobuf data model, and may not
 // be preserved in marshaling or other operations.
-func (x *fastReflection_MsgAddEmergencyProposalSubmitters) IsValid() bool {
+func (x *fastReflection_MsgAddEmergencySubmitters) IsValid() bool {
 	return x != nil
 }
 
@@ -1198,9 +1198,9 @@ func (x *fastReflection_MsgAddEmergencyProposalSubmitters) IsValid() bool {
 // The returned methods type is identical to
 // "google.golang.org/protobuf/runtime/protoiface".Methods.
 // Consult the protoiface package documentation for details.
-func (x *fastReflection_MsgAddEmergencyProposalSubmitters) ProtoMethods() *protoiface.Methods {
+func (x *fastReflection_MsgAddEmergencySubmitters) ProtoMethods() *protoiface.Methods {
 	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*MsgAddEmergencyProposalSubmitters)
+		x := input.Message.Interface().(*MsgAddEmergencySubmitters)
 		if x == nil {
 			return protoiface.SizeOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -1232,7 +1232,7 @@ func (x *fastReflection_MsgAddEmergencyProposalSubmitters) ProtoMethods() *proto
 	}
 
 	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*MsgAddEmergencyProposalSubmitters)
+		x := input.Message.Interface().(*MsgAddEmergencySubmitters)
 		if x == nil {
 			return protoiface.MarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -1278,7 +1278,7 @@ func (x *fastReflection_MsgAddEmergencyProposalSubmitters) ProtoMethods() *proto
 		}, nil
 	}
 	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*MsgAddEmergencyProposalSubmitters)
+		x := input.Message.Interface().(*MsgAddEmergencySubmitters)
 		if x == nil {
 			return protoiface.UnmarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -1310,10 +1310,10 @@ func (x *fastReflection_MsgAddEmergencyProposalSubmitters) ProtoMethods() *proto
 			fieldNum := int32(wire >> 3)
 			wireType := int(wire & 0x7)
 			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgAddEmergencyProposalSubmitters: wiretype end group for non-group")
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgAddEmergencySubmitters: wiretype end group for non-group")
 			}
 			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgAddEmergencyProposalSubmitters: illegal tag %d (wire type %d)", fieldNum, wire)
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgAddEmergencySubmitters: illegal tag %d (wire type %d)", fieldNum, wire)
 			}
 			switch fieldNum {
 			case 1:
@@ -1416,23 +1416,23 @@ func (x *fastReflection_MsgAddEmergencyProposalSubmitters) ProtoMethods() *proto
 }
 
 var (
-	md_MsgAddEmergencyProposalSubmittersResponse protoreflect.MessageDescriptor
+	md_MsgAddEmergencySubmittersResponse protoreflect.MessageDescriptor
 )
 
 func init() {
 	file_initia_gov_v1_tx_proto_init()
-	md_MsgAddEmergencyProposalSubmittersResponse = File_initia_gov_v1_tx_proto.Messages().ByName("MsgAddEmergencyProposalSubmittersResponse")
+	md_MsgAddEmergencySubmittersResponse = File_initia_gov_v1_tx_proto.Messages().ByName("MsgAddEmergencySubmittersResponse")
 }
 
-var _ protoreflect.Message = (*fastReflection_MsgAddEmergencyProposalSubmittersResponse)(nil)
+var _ protoreflect.Message = (*fastReflection_MsgAddEmergencySubmittersResponse)(nil)
 
-type fastReflection_MsgAddEmergencyProposalSubmittersResponse MsgAddEmergencyProposalSubmittersResponse
+type fastReflection_MsgAddEmergencySubmittersResponse MsgAddEmergencySubmittersResponse
 
-func (x *MsgAddEmergencyProposalSubmittersResponse) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_MsgAddEmergencyProposalSubmittersResponse)(x)
+func (x *MsgAddEmergencySubmittersResponse) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_MsgAddEmergencySubmittersResponse)(x)
 }
 
-func (x *MsgAddEmergencyProposalSubmittersResponse) slowProtoReflect() protoreflect.Message {
+func (x *MsgAddEmergencySubmittersResponse) slowProtoReflect() protoreflect.Message {
 	mi := &file_initia_gov_v1_tx_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -1444,43 +1444,43 @@ func (x *MsgAddEmergencyProposalSubmittersResponse) slowProtoReflect() protorefl
 	return mi.MessageOf(x)
 }
 
-var _fastReflection_MsgAddEmergencyProposalSubmittersResponse_messageType fastReflection_MsgAddEmergencyProposalSubmittersResponse_messageType
-var _ protoreflect.MessageType = fastReflection_MsgAddEmergencyProposalSubmittersResponse_messageType{}
+var _fastReflection_MsgAddEmergencySubmittersResponse_messageType fastReflection_MsgAddEmergencySubmittersResponse_messageType
+var _ protoreflect.MessageType = fastReflection_MsgAddEmergencySubmittersResponse_messageType{}
 
-type fastReflection_MsgAddEmergencyProposalSubmittersResponse_messageType struct{}
+type fastReflection_MsgAddEmergencySubmittersResponse_messageType struct{}
 
-func (x fastReflection_MsgAddEmergencyProposalSubmittersResponse_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_MsgAddEmergencyProposalSubmittersResponse)(nil)
+func (x fastReflection_MsgAddEmergencySubmittersResponse_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_MsgAddEmergencySubmittersResponse)(nil)
 }
-func (x fastReflection_MsgAddEmergencyProposalSubmittersResponse_messageType) New() protoreflect.Message {
-	return new(fastReflection_MsgAddEmergencyProposalSubmittersResponse)
+func (x fastReflection_MsgAddEmergencySubmittersResponse_messageType) New() protoreflect.Message {
+	return new(fastReflection_MsgAddEmergencySubmittersResponse)
 }
-func (x fastReflection_MsgAddEmergencyProposalSubmittersResponse_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_MsgAddEmergencyProposalSubmittersResponse
+func (x fastReflection_MsgAddEmergencySubmittersResponse_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_MsgAddEmergencySubmittersResponse
 }
 
 // Descriptor returns message descriptor, which contains only the protobuf
 // type information for the message.
-func (x *fastReflection_MsgAddEmergencyProposalSubmittersResponse) Descriptor() protoreflect.MessageDescriptor {
-	return md_MsgAddEmergencyProposalSubmittersResponse
+func (x *fastReflection_MsgAddEmergencySubmittersResponse) Descriptor() protoreflect.MessageDescriptor {
+	return md_MsgAddEmergencySubmittersResponse
 }
 
 // Type returns the message type, which encapsulates both Go and protobuf
 // type information. If the Go type information is not needed,
 // it is recommended that the message descriptor be used instead.
-func (x *fastReflection_MsgAddEmergencyProposalSubmittersResponse) Type() protoreflect.MessageType {
-	return _fastReflection_MsgAddEmergencyProposalSubmittersResponse_messageType
+func (x *fastReflection_MsgAddEmergencySubmittersResponse) Type() protoreflect.MessageType {
+	return _fastReflection_MsgAddEmergencySubmittersResponse_messageType
 }
 
 // New returns a newly allocated and mutable empty message.
-func (x *fastReflection_MsgAddEmergencyProposalSubmittersResponse) New() protoreflect.Message {
-	return new(fastReflection_MsgAddEmergencyProposalSubmittersResponse)
+func (x *fastReflection_MsgAddEmergencySubmittersResponse) New() protoreflect.Message {
+	return new(fastReflection_MsgAddEmergencySubmittersResponse)
 }
 
 // Interface unwraps the message reflection interface and
 // returns the underlying ProtoMessage interface.
-func (x *fastReflection_MsgAddEmergencyProposalSubmittersResponse) Interface() protoreflect.ProtoMessage {
-	return (*MsgAddEmergencyProposalSubmittersResponse)(x)
+func (x *fastReflection_MsgAddEmergencySubmittersResponse) Interface() protoreflect.ProtoMessage {
+	return (*MsgAddEmergencySubmittersResponse)(x)
 }
 
 // Range iterates over every populated field in an undefined order,
@@ -1488,7 +1488,7 @@ func (x *fastReflection_MsgAddEmergencyProposalSubmittersResponse) Interface() p
 // Range returns immediately if f returns false.
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
-func (x *fastReflection_MsgAddEmergencyProposalSubmittersResponse) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+func (x *fastReflection_MsgAddEmergencySubmittersResponse) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
 }
 
 // Has reports whether a field is populated.
@@ -1502,13 +1502,13 @@ func (x *fastReflection_MsgAddEmergencyProposalSubmittersResponse) Range(f func(
 // In other cases (aside from the nullable cases above),
 // a proto3 scalar field is populated if it contains a non-zero value, and
 // a repeated field is populated if it is non-empty.
-func (x *fastReflection_MsgAddEmergencyProposalSubmittersResponse) Has(fd protoreflect.FieldDescriptor) bool {
+func (x *fastReflection_MsgAddEmergencySubmittersResponse) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgAddEmergencyProposalSubmittersResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgAddEmergencySubmittersResponse"))
 		}
-		panic(fmt.Errorf("message initia.gov.v1.MsgAddEmergencyProposalSubmittersResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message initia.gov.v1.MsgAddEmergencySubmittersResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1518,13 +1518,13 @@ func (x *fastReflection_MsgAddEmergencyProposalSubmittersResponse) Has(fd protor
 // associated with the given field number.
 //
 // Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgAddEmergencyProposalSubmittersResponse) Clear(fd protoreflect.FieldDescriptor) {
+func (x *fastReflection_MsgAddEmergencySubmittersResponse) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgAddEmergencyProposalSubmittersResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgAddEmergencySubmittersResponse"))
 		}
-		panic(fmt.Errorf("message initia.gov.v1.MsgAddEmergencyProposalSubmittersResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message initia.gov.v1.MsgAddEmergencySubmittersResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1534,13 +1534,13 @@ func (x *fastReflection_MsgAddEmergencyProposalSubmittersResponse) Clear(fd prot
 // the default value of a bytes scalar is guaranteed to be a copy.
 // For unpopulated composite types, it returns an empty, read-only view
 // of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_MsgAddEmergencyProposalSubmittersResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_MsgAddEmergencySubmittersResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgAddEmergencyProposalSubmittersResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgAddEmergencySubmittersResponse"))
 		}
-		panic(fmt.Errorf("message initia.gov.v1.MsgAddEmergencyProposalSubmittersResponse does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message initia.gov.v1.MsgAddEmergencySubmittersResponse does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -1554,13 +1554,13 @@ func (x *fastReflection_MsgAddEmergencyProposalSubmittersResponse) Get(descripto
 // empty, read-only value, then it panics.
 //
 // Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgAddEmergencyProposalSubmittersResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+func (x *fastReflection_MsgAddEmergencySubmittersResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgAddEmergencyProposalSubmittersResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgAddEmergencySubmittersResponse"))
 		}
-		panic(fmt.Errorf("message initia.gov.v1.MsgAddEmergencyProposalSubmittersResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message initia.gov.v1.MsgAddEmergencySubmittersResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1574,36 +1574,36 @@ func (x *fastReflection_MsgAddEmergencyProposalSubmittersResponse) Set(fd protor
 // It panics if the field does not contain a composite type.
 //
 // Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgAddEmergencyProposalSubmittersResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_MsgAddEmergencySubmittersResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgAddEmergencyProposalSubmittersResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgAddEmergencySubmittersResponse"))
 		}
-		panic(fmt.Errorf("message initia.gov.v1.MsgAddEmergencyProposalSubmittersResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message initia.gov.v1.MsgAddEmergencySubmittersResponse does not contain field %s", fd.FullName()))
 	}
 }
 
 // NewField returns a new value that is assignable to the field
 // for the given descriptor. For scalars, this returns the default value.
 // For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_MsgAddEmergencyProposalSubmittersResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_MsgAddEmergencySubmittersResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgAddEmergencyProposalSubmittersResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgAddEmergencySubmittersResponse"))
 		}
-		panic(fmt.Errorf("message initia.gov.v1.MsgAddEmergencyProposalSubmittersResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message initia.gov.v1.MsgAddEmergencySubmittersResponse does not contain field %s", fd.FullName()))
 	}
 }
 
 // WhichOneof reports which field within the oneof is populated,
 // returning nil if none are populated.
 // It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_MsgAddEmergencyProposalSubmittersResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+func (x *fastReflection_MsgAddEmergencySubmittersResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in initia.gov.v1.MsgAddEmergencyProposalSubmittersResponse", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in initia.gov.v1.MsgAddEmergencySubmittersResponse", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -1611,7 +1611,7 @@ func (x *fastReflection_MsgAddEmergencyProposalSubmittersResponse) WhichOneof(d 
 // GetUnknown retrieves the entire list of unknown fields.
 // The caller may only mutate the contents of the RawFields
 // if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_MsgAddEmergencyProposalSubmittersResponse) GetUnknown() protoreflect.RawFields {
+func (x *fastReflection_MsgAddEmergencySubmittersResponse) GetUnknown() protoreflect.RawFields {
 	return x.unknownFields
 }
 
@@ -1622,7 +1622,7 @@ func (x *fastReflection_MsgAddEmergencyProposalSubmittersResponse) GetUnknown() 
 // An empty RawFields may be passed to clear the fields.
 //
 // SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgAddEmergencyProposalSubmittersResponse) SetUnknown(fields protoreflect.RawFields) {
+func (x *fastReflection_MsgAddEmergencySubmittersResponse) SetUnknown(fields protoreflect.RawFields) {
 	x.unknownFields = fields
 }
 
@@ -1634,7 +1634,7 @@ func (x *fastReflection_MsgAddEmergencyProposalSubmittersResponse) SetUnknown(fi
 // message type, but the details are implementation dependent.
 // Validity is not part of the protobuf data model, and may not
 // be preserved in marshaling or other operations.
-func (x *fastReflection_MsgAddEmergencyProposalSubmittersResponse) IsValid() bool {
+func (x *fastReflection_MsgAddEmergencySubmittersResponse) IsValid() bool {
 	return x != nil
 }
 
@@ -1644,9 +1644,9 @@ func (x *fastReflection_MsgAddEmergencyProposalSubmittersResponse) IsValid() boo
 // The returned methods type is identical to
 // "google.golang.org/protobuf/runtime/protoiface".Methods.
 // Consult the protoiface package documentation for details.
-func (x *fastReflection_MsgAddEmergencyProposalSubmittersResponse) ProtoMethods() *protoiface.Methods {
+func (x *fastReflection_MsgAddEmergencySubmittersResponse) ProtoMethods() *protoiface.Methods {
 	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*MsgAddEmergencyProposalSubmittersResponse)
+		x := input.Message.Interface().(*MsgAddEmergencySubmittersResponse)
 		if x == nil {
 			return protoiface.SizeOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -1668,7 +1668,7 @@ func (x *fastReflection_MsgAddEmergencyProposalSubmittersResponse) ProtoMethods(
 	}
 
 	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*MsgAddEmergencyProposalSubmittersResponse)
+		x := input.Message.Interface().(*MsgAddEmergencySubmittersResponse)
 		if x == nil {
 			return protoiface.MarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -1698,7 +1698,7 @@ func (x *fastReflection_MsgAddEmergencyProposalSubmittersResponse) ProtoMethods(
 		}, nil
 	}
 	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*MsgAddEmergencyProposalSubmittersResponse)
+		x := input.Message.Interface().(*MsgAddEmergencySubmittersResponse)
 		if x == nil {
 			return protoiface.UnmarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -1730,10 +1730,10 @@ func (x *fastReflection_MsgAddEmergencyProposalSubmittersResponse) ProtoMethods(
 			fieldNum := int32(wire >> 3)
 			wireType := int(wire & 0x7)
 			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgAddEmergencyProposalSubmittersResponse: wiretype end group for non-group")
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgAddEmergencySubmittersResponse: wiretype end group for non-group")
 			}
 			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgAddEmergencyProposalSubmittersResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgAddEmergencySubmittersResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 			}
 			switch fieldNum {
 			default:
@@ -1771,74 +1771,74 @@ func (x *fastReflection_MsgAddEmergencyProposalSubmittersResponse) ProtoMethods(
 	}
 }
 
-var _ protoreflect.List = (*_MsgRemoveEmergencyProposalSubmitters_2_list)(nil)
+var _ protoreflect.List = (*_MsgRemoveEmergencySubmitters_2_list)(nil)
 
-type _MsgRemoveEmergencyProposalSubmitters_2_list struct {
+type _MsgRemoveEmergencySubmitters_2_list struct {
 	list *[]string
 }
 
-func (x *_MsgRemoveEmergencyProposalSubmitters_2_list) Len() int {
+func (x *_MsgRemoveEmergencySubmitters_2_list) Len() int {
 	if x.list == nil {
 		return 0
 	}
 	return len(*x.list)
 }
 
-func (x *_MsgRemoveEmergencyProposalSubmitters_2_list) Get(i int) protoreflect.Value {
+func (x *_MsgRemoveEmergencySubmitters_2_list) Get(i int) protoreflect.Value {
 	return protoreflect.ValueOfString((*x.list)[i])
 }
 
-func (x *_MsgRemoveEmergencyProposalSubmitters_2_list) Set(i int, value protoreflect.Value) {
+func (x *_MsgRemoveEmergencySubmitters_2_list) Set(i int, value protoreflect.Value) {
 	valueUnwrapped := value.String()
 	concreteValue := valueUnwrapped
 	(*x.list)[i] = concreteValue
 }
 
-func (x *_MsgRemoveEmergencyProposalSubmitters_2_list) Append(value protoreflect.Value) {
+func (x *_MsgRemoveEmergencySubmitters_2_list) Append(value protoreflect.Value) {
 	valueUnwrapped := value.String()
 	concreteValue := valueUnwrapped
 	*x.list = append(*x.list, concreteValue)
 }
 
-func (x *_MsgRemoveEmergencyProposalSubmitters_2_list) AppendMutable() protoreflect.Value {
-	panic(fmt.Errorf("AppendMutable can not be called on message MsgRemoveEmergencyProposalSubmitters at list field EmergencySubmitters as it is not of Message kind"))
+func (x *_MsgRemoveEmergencySubmitters_2_list) AppendMutable() protoreflect.Value {
+	panic(fmt.Errorf("AppendMutable can not be called on message MsgRemoveEmergencySubmitters at list field EmergencySubmitters as it is not of Message kind"))
 }
 
-func (x *_MsgRemoveEmergencyProposalSubmitters_2_list) Truncate(n int) {
+func (x *_MsgRemoveEmergencySubmitters_2_list) Truncate(n int) {
 	*x.list = (*x.list)[:n]
 }
 
-func (x *_MsgRemoveEmergencyProposalSubmitters_2_list) NewElement() protoreflect.Value {
+func (x *_MsgRemoveEmergencySubmitters_2_list) NewElement() protoreflect.Value {
 	v := ""
 	return protoreflect.ValueOfString(v)
 }
 
-func (x *_MsgRemoveEmergencyProposalSubmitters_2_list) IsValid() bool {
+func (x *_MsgRemoveEmergencySubmitters_2_list) IsValid() bool {
 	return x.list != nil
 }
 
 var (
-	md_MsgRemoveEmergencyProposalSubmitters                      protoreflect.MessageDescriptor
-	fd_MsgRemoveEmergencyProposalSubmitters_authority            protoreflect.FieldDescriptor
-	fd_MsgRemoveEmergencyProposalSubmitters_emergency_submitters protoreflect.FieldDescriptor
+	md_MsgRemoveEmergencySubmitters                      protoreflect.MessageDescriptor
+	fd_MsgRemoveEmergencySubmitters_authority            protoreflect.FieldDescriptor
+	fd_MsgRemoveEmergencySubmitters_emergency_submitters protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_initia_gov_v1_tx_proto_init()
-	md_MsgRemoveEmergencyProposalSubmitters = File_initia_gov_v1_tx_proto.Messages().ByName("MsgRemoveEmergencyProposalSubmitters")
-	fd_MsgRemoveEmergencyProposalSubmitters_authority = md_MsgRemoveEmergencyProposalSubmitters.Fields().ByName("authority")
-	fd_MsgRemoveEmergencyProposalSubmitters_emergency_submitters = md_MsgRemoveEmergencyProposalSubmitters.Fields().ByName("emergency_submitters")
+	md_MsgRemoveEmergencySubmitters = File_initia_gov_v1_tx_proto.Messages().ByName("MsgRemoveEmergencySubmitters")
+	fd_MsgRemoveEmergencySubmitters_authority = md_MsgRemoveEmergencySubmitters.Fields().ByName("authority")
+	fd_MsgRemoveEmergencySubmitters_emergency_submitters = md_MsgRemoveEmergencySubmitters.Fields().ByName("emergency_submitters")
 }
 
-var _ protoreflect.Message = (*fastReflection_MsgRemoveEmergencyProposalSubmitters)(nil)
+var _ protoreflect.Message = (*fastReflection_MsgRemoveEmergencySubmitters)(nil)
 
-type fastReflection_MsgRemoveEmergencyProposalSubmitters MsgRemoveEmergencyProposalSubmitters
+type fastReflection_MsgRemoveEmergencySubmitters MsgRemoveEmergencySubmitters
 
-func (x *MsgRemoveEmergencyProposalSubmitters) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_MsgRemoveEmergencyProposalSubmitters)(x)
+func (x *MsgRemoveEmergencySubmitters) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_MsgRemoveEmergencySubmitters)(x)
 }
 
-func (x *MsgRemoveEmergencyProposalSubmitters) slowProtoReflect() protoreflect.Message {
+func (x *MsgRemoveEmergencySubmitters) slowProtoReflect() protoreflect.Message {
 	mi := &file_initia_gov_v1_tx_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -1850,43 +1850,43 @@ func (x *MsgRemoveEmergencyProposalSubmitters) slowProtoReflect() protoreflect.M
 	return mi.MessageOf(x)
 }
 
-var _fastReflection_MsgRemoveEmergencyProposalSubmitters_messageType fastReflection_MsgRemoveEmergencyProposalSubmitters_messageType
-var _ protoreflect.MessageType = fastReflection_MsgRemoveEmergencyProposalSubmitters_messageType{}
+var _fastReflection_MsgRemoveEmergencySubmitters_messageType fastReflection_MsgRemoveEmergencySubmitters_messageType
+var _ protoreflect.MessageType = fastReflection_MsgRemoveEmergencySubmitters_messageType{}
 
-type fastReflection_MsgRemoveEmergencyProposalSubmitters_messageType struct{}
+type fastReflection_MsgRemoveEmergencySubmitters_messageType struct{}
 
-func (x fastReflection_MsgRemoveEmergencyProposalSubmitters_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_MsgRemoveEmergencyProposalSubmitters)(nil)
+func (x fastReflection_MsgRemoveEmergencySubmitters_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_MsgRemoveEmergencySubmitters)(nil)
 }
-func (x fastReflection_MsgRemoveEmergencyProposalSubmitters_messageType) New() protoreflect.Message {
-	return new(fastReflection_MsgRemoveEmergencyProposalSubmitters)
+func (x fastReflection_MsgRemoveEmergencySubmitters_messageType) New() protoreflect.Message {
+	return new(fastReflection_MsgRemoveEmergencySubmitters)
 }
-func (x fastReflection_MsgRemoveEmergencyProposalSubmitters_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_MsgRemoveEmergencyProposalSubmitters
+func (x fastReflection_MsgRemoveEmergencySubmitters_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_MsgRemoveEmergencySubmitters
 }
 
 // Descriptor returns message descriptor, which contains only the protobuf
 // type information for the message.
-func (x *fastReflection_MsgRemoveEmergencyProposalSubmitters) Descriptor() protoreflect.MessageDescriptor {
-	return md_MsgRemoveEmergencyProposalSubmitters
+func (x *fastReflection_MsgRemoveEmergencySubmitters) Descriptor() protoreflect.MessageDescriptor {
+	return md_MsgRemoveEmergencySubmitters
 }
 
 // Type returns the message type, which encapsulates both Go and protobuf
 // type information. If the Go type information is not needed,
 // it is recommended that the message descriptor be used instead.
-func (x *fastReflection_MsgRemoveEmergencyProposalSubmitters) Type() protoreflect.MessageType {
-	return _fastReflection_MsgRemoveEmergencyProposalSubmitters_messageType
+func (x *fastReflection_MsgRemoveEmergencySubmitters) Type() protoreflect.MessageType {
+	return _fastReflection_MsgRemoveEmergencySubmitters_messageType
 }
 
 // New returns a newly allocated and mutable empty message.
-func (x *fastReflection_MsgRemoveEmergencyProposalSubmitters) New() protoreflect.Message {
-	return new(fastReflection_MsgRemoveEmergencyProposalSubmitters)
+func (x *fastReflection_MsgRemoveEmergencySubmitters) New() protoreflect.Message {
+	return new(fastReflection_MsgRemoveEmergencySubmitters)
 }
 
 // Interface unwraps the message reflection interface and
 // returns the underlying ProtoMessage interface.
-func (x *fastReflection_MsgRemoveEmergencyProposalSubmitters) Interface() protoreflect.ProtoMessage {
-	return (*MsgRemoveEmergencyProposalSubmitters)(x)
+func (x *fastReflection_MsgRemoveEmergencySubmitters) Interface() protoreflect.ProtoMessage {
+	return (*MsgRemoveEmergencySubmitters)(x)
 }
 
 // Range iterates over every populated field in an undefined order,
@@ -1894,16 +1894,16 @@ func (x *fastReflection_MsgRemoveEmergencyProposalSubmitters) Interface() protor
 // Range returns immediately if f returns false.
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
-func (x *fastReflection_MsgRemoveEmergencyProposalSubmitters) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+func (x *fastReflection_MsgRemoveEmergencySubmitters) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
 	if x.Authority != "" {
 		value := protoreflect.ValueOfString(x.Authority)
-		if !f(fd_MsgRemoveEmergencyProposalSubmitters_authority, value) {
+		if !f(fd_MsgRemoveEmergencySubmitters_authority, value) {
 			return
 		}
 	}
 	if len(x.EmergencySubmitters) != 0 {
-		value := protoreflect.ValueOfList(&_MsgRemoveEmergencyProposalSubmitters_2_list{list: &x.EmergencySubmitters})
-		if !f(fd_MsgRemoveEmergencyProposalSubmitters_emergency_submitters, value) {
+		value := protoreflect.ValueOfList(&_MsgRemoveEmergencySubmitters_2_list{list: &x.EmergencySubmitters})
+		if !f(fd_MsgRemoveEmergencySubmitters_emergency_submitters, value) {
 			return
 		}
 	}
@@ -1920,17 +1920,17 @@ func (x *fastReflection_MsgRemoveEmergencyProposalSubmitters) Range(f func(proto
 // In other cases (aside from the nullable cases above),
 // a proto3 scalar field is populated if it contains a non-zero value, and
 // a repeated field is populated if it is non-empty.
-func (x *fastReflection_MsgRemoveEmergencyProposalSubmitters) Has(fd protoreflect.FieldDescriptor) bool {
+func (x *fastReflection_MsgRemoveEmergencySubmitters) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "initia.gov.v1.MsgRemoveEmergencyProposalSubmitters.authority":
+	case "initia.gov.v1.MsgRemoveEmergencySubmitters.authority":
 		return x.Authority != ""
-	case "initia.gov.v1.MsgRemoveEmergencyProposalSubmitters.emergency_submitters":
+	case "initia.gov.v1.MsgRemoveEmergencySubmitters.emergency_submitters":
 		return len(x.EmergencySubmitters) != 0
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgRemoveEmergencyProposalSubmitters"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgRemoveEmergencySubmitters"))
 		}
-		panic(fmt.Errorf("message initia.gov.v1.MsgRemoveEmergencyProposalSubmitters does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message initia.gov.v1.MsgRemoveEmergencySubmitters does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1940,17 +1940,17 @@ func (x *fastReflection_MsgRemoveEmergencyProposalSubmitters) Has(fd protoreflec
 // associated with the given field number.
 //
 // Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgRemoveEmergencyProposalSubmitters) Clear(fd protoreflect.FieldDescriptor) {
+func (x *fastReflection_MsgRemoveEmergencySubmitters) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "initia.gov.v1.MsgRemoveEmergencyProposalSubmitters.authority":
+	case "initia.gov.v1.MsgRemoveEmergencySubmitters.authority":
 		x.Authority = ""
-	case "initia.gov.v1.MsgRemoveEmergencyProposalSubmitters.emergency_submitters":
+	case "initia.gov.v1.MsgRemoveEmergencySubmitters.emergency_submitters":
 		x.EmergencySubmitters = nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgRemoveEmergencyProposalSubmitters"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgRemoveEmergencySubmitters"))
 		}
-		panic(fmt.Errorf("message initia.gov.v1.MsgRemoveEmergencyProposalSubmitters does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message initia.gov.v1.MsgRemoveEmergencySubmitters does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -1960,22 +1960,22 @@ func (x *fastReflection_MsgRemoveEmergencyProposalSubmitters) Clear(fd protorefl
 // the default value of a bytes scalar is guaranteed to be a copy.
 // For unpopulated composite types, it returns an empty, read-only view
 // of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_MsgRemoveEmergencyProposalSubmitters) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_MsgRemoveEmergencySubmitters) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "initia.gov.v1.MsgRemoveEmergencyProposalSubmitters.authority":
+	case "initia.gov.v1.MsgRemoveEmergencySubmitters.authority":
 		value := x.Authority
 		return protoreflect.ValueOfString(value)
-	case "initia.gov.v1.MsgRemoveEmergencyProposalSubmitters.emergency_submitters":
+	case "initia.gov.v1.MsgRemoveEmergencySubmitters.emergency_submitters":
 		if len(x.EmergencySubmitters) == 0 {
-			return protoreflect.ValueOfList(&_MsgRemoveEmergencyProposalSubmitters_2_list{})
+			return protoreflect.ValueOfList(&_MsgRemoveEmergencySubmitters_2_list{})
 		}
-		listValue := &_MsgRemoveEmergencyProposalSubmitters_2_list{list: &x.EmergencySubmitters}
+		listValue := &_MsgRemoveEmergencySubmitters_2_list{list: &x.EmergencySubmitters}
 		return protoreflect.ValueOfList(listValue)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgRemoveEmergencyProposalSubmitters"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgRemoveEmergencySubmitters"))
 		}
-		panic(fmt.Errorf("message initia.gov.v1.MsgRemoveEmergencyProposalSubmitters does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message initia.gov.v1.MsgRemoveEmergencySubmitters does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -1989,19 +1989,19 @@ func (x *fastReflection_MsgRemoveEmergencyProposalSubmitters) Get(descriptor pro
 // empty, read-only value, then it panics.
 //
 // Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgRemoveEmergencyProposalSubmitters) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+func (x *fastReflection_MsgRemoveEmergencySubmitters) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "initia.gov.v1.MsgRemoveEmergencyProposalSubmitters.authority":
+	case "initia.gov.v1.MsgRemoveEmergencySubmitters.authority":
 		x.Authority = value.Interface().(string)
-	case "initia.gov.v1.MsgRemoveEmergencyProposalSubmitters.emergency_submitters":
+	case "initia.gov.v1.MsgRemoveEmergencySubmitters.emergency_submitters":
 		lv := value.List()
-		clv := lv.(*_MsgRemoveEmergencyProposalSubmitters_2_list)
+		clv := lv.(*_MsgRemoveEmergencySubmitters_2_list)
 		x.EmergencySubmitters = *clv.list
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgRemoveEmergencyProposalSubmitters"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgRemoveEmergencySubmitters"))
 		}
-		panic(fmt.Errorf("message initia.gov.v1.MsgRemoveEmergencyProposalSubmitters does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message initia.gov.v1.MsgRemoveEmergencySubmitters does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2015,49 +2015,49 @@ func (x *fastReflection_MsgRemoveEmergencyProposalSubmitters) Set(fd protoreflec
 // It panics if the field does not contain a composite type.
 //
 // Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgRemoveEmergencyProposalSubmitters) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_MsgRemoveEmergencySubmitters) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "initia.gov.v1.MsgRemoveEmergencyProposalSubmitters.emergency_submitters":
+	case "initia.gov.v1.MsgRemoveEmergencySubmitters.emergency_submitters":
 		if x.EmergencySubmitters == nil {
 			x.EmergencySubmitters = []string{}
 		}
-		value := &_MsgRemoveEmergencyProposalSubmitters_2_list{list: &x.EmergencySubmitters}
+		value := &_MsgRemoveEmergencySubmitters_2_list{list: &x.EmergencySubmitters}
 		return protoreflect.ValueOfList(value)
-	case "initia.gov.v1.MsgRemoveEmergencyProposalSubmitters.authority":
-		panic(fmt.Errorf("field authority of message initia.gov.v1.MsgRemoveEmergencyProposalSubmitters is not mutable"))
+	case "initia.gov.v1.MsgRemoveEmergencySubmitters.authority":
+		panic(fmt.Errorf("field authority of message initia.gov.v1.MsgRemoveEmergencySubmitters is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgRemoveEmergencyProposalSubmitters"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgRemoveEmergencySubmitters"))
 		}
-		panic(fmt.Errorf("message initia.gov.v1.MsgRemoveEmergencyProposalSubmitters does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message initia.gov.v1.MsgRemoveEmergencySubmitters does not contain field %s", fd.FullName()))
 	}
 }
 
 // NewField returns a new value that is assignable to the field
 // for the given descriptor. For scalars, this returns the default value.
 // For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_MsgRemoveEmergencyProposalSubmitters) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_MsgRemoveEmergencySubmitters) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "initia.gov.v1.MsgRemoveEmergencyProposalSubmitters.authority":
+	case "initia.gov.v1.MsgRemoveEmergencySubmitters.authority":
 		return protoreflect.ValueOfString("")
-	case "initia.gov.v1.MsgRemoveEmergencyProposalSubmitters.emergency_submitters":
+	case "initia.gov.v1.MsgRemoveEmergencySubmitters.emergency_submitters":
 		list := []string{}
-		return protoreflect.ValueOfList(&_MsgRemoveEmergencyProposalSubmitters_2_list{list: &list})
+		return protoreflect.ValueOfList(&_MsgRemoveEmergencySubmitters_2_list{list: &list})
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgRemoveEmergencyProposalSubmitters"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgRemoveEmergencySubmitters"))
 		}
-		panic(fmt.Errorf("message initia.gov.v1.MsgRemoveEmergencyProposalSubmitters does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message initia.gov.v1.MsgRemoveEmergencySubmitters does not contain field %s", fd.FullName()))
 	}
 }
 
 // WhichOneof reports which field within the oneof is populated,
 // returning nil if none are populated.
 // It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_MsgRemoveEmergencyProposalSubmitters) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+func (x *fastReflection_MsgRemoveEmergencySubmitters) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in initia.gov.v1.MsgRemoveEmergencyProposalSubmitters", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in initia.gov.v1.MsgRemoveEmergencySubmitters", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -2065,7 +2065,7 @@ func (x *fastReflection_MsgRemoveEmergencyProposalSubmitters) WhichOneof(d proto
 // GetUnknown retrieves the entire list of unknown fields.
 // The caller may only mutate the contents of the RawFields
 // if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_MsgRemoveEmergencyProposalSubmitters) GetUnknown() protoreflect.RawFields {
+func (x *fastReflection_MsgRemoveEmergencySubmitters) GetUnknown() protoreflect.RawFields {
 	return x.unknownFields
 }
 
@@ -2076,7 +2076,7 @@ func (x *fastReflection_MsgRemoveEmergencyProposalSubmitters) GetUnknown() proto
 // An empty RawFields may be passed to clear the fields.
 //
 // SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgRemoveEmergencyProposalSubmitters) SetUnknown(fields protoreflect.RawFields) {
+func (x *fastReflection_MsgRemoveEmergencySubmitters) SetUnknown(fields protoreflect.RawFields) {
 	x.unknownFields = fields
 }
 
@@ -2088,7 +2088,7 @@ func (x *fastReflection_MsgRemoveEmergencyProposalSubmitters) SetUnknown(fields 
 // message type, but the details are implementation dependent.
 // Validity is not part of the protobuf data model, and may not
 // be preserved in marshaling or other operations.
-func (x *fastReflection_MsgRemoveEmergencyProposalSubmitters) IsValid() bool {
+func (x *fastReflection_MsgRemoveEmergencySubmitters) IsValid() bool {
 	return x != nil
 }
 
@@ -2098,9 +2098,9 @@ func (x *fastReflection_MsgRemoveEmergencyProposalSubmitters) IsValid() bool {
 // The returned methods type is identical to
 // "google.golang.org/protobuf/runtime/protoiface".Methods.
 // Consult the protoiface package documentation for details.
-func (x *fastReflection_MsgRemoveEmergencyProposalSubmitters) ProtoMethods() *protoiface.Methods {
+func (x *fastReflection_MsgRemoveEmergencySubmitters) ProtoMethods() *protoiface.Methods {
 	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*MsgRemoveEmergencyProposalSubmitters)
+		x := input.Message.Interface().(*MsgRemoveEmergencySubmitters)
 		if x == nil {
 			return protoiface.SizeOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -2132,7 +2132,7 @@ func (x *fastReflection_MsgRemoveEmergencyProposalSubmitters) ProtoMethods() *pr
 	}
 
 	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*MsgRemoveEmergencyProposalSubmitters)
+		x := input.Message.Interface().(*MsgRemoveEmergencySubmitters)
 		if x == nil {
 			return protoiface.MarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -2178,7 +2178,7 @@ func (x *fastReflection_MsgRemoveEmergencyProposalSubmitters) ProtoMethods() *pr
 		}, nil
 	}
 	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*MsgRemoveEmergencyProposalSubmitters)
+		x := input.Message.Interface().(*MsgRemoveEmergencySubmitters)
 		if x == nil {
 			return protoiface.UnmarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -2210,10 +2210,10 @@ func (x *fastReflection_MsgRemoveEmergencyProposalSubmitters) ProtoMethods() *pr
 			fieldNum := int32(wire >> 3)
 			wireType := int(wire & 0x7)
 			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgRemoveEmergencyProposalSubmitters: wiretype end group for non-group")
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgRemoveEmergencySubmitters: wiretype end group for non-group")
 			}
 			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgRemoveEmergencyProposalSubmitters: illegal tag %d (wire type %d)", fieldNum, wire)
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgRemoveEmergencySubmitters: illegal tag %d (wire type %d)", fieldNum, wire)
 			}
 			switch fieldNum {
 			case 1:
@@ -2316,23 +2316,23 @@ func (x *fastReflection_MsgRemoveEmergencyProposalSubmitters) ProtoMethods() *pr
 }
 
 var (
-	md_MsgRemoveEmergencyProposalSubmittersResponse protoreflect.MessageDescriptor
+	md_MsgRemoveEmergencySubmittersResponse protoreflect.MessageDescriptor
 )
 
 func init() {
 	file_initia_gov_v1_tx_proto_init()
-	md_MsgRemoveEmergencyProposalSubmittersResponse = File_initia_gov_v1_tx_proto.Messages().ByName("MsgRemoveEmergencyProposalSubmittersResponse")
+	md_MsgRemoveEmergencySubmittersResponse = File_initia_gov_v1_tx_proto.Messages().ByName("MsgRemoveEmergencySubmittersResponse")
 }
 
-var _ protoreflect.Message = (*fastReflection_MsgRemoveEmergencyProposalSubmittersResponse)(nil)
+var _ protoreflect.Message = (*fastReflection_MsgRemoveEmergencySubmittersResponse)(nil)
 
-type fastReflection_MsgRemoveEmergencyProposalSubmittersResponse MsgRemoveEmergencyProposalSubmittersResponse
+type fastReflection_MsgRemoveEmergencySubmittersResponse MsgRemoveEmergencySubmittersResponse
 
-func (x *MsgRemoveEmergencyProposalSubmittersResponse) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_MsgRemoveEmergencyProposalSubmittersResponse)(x)
+func (x *MsgRemoveEmergencySubmittersResponse) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_MsgRemoveEmergencySubmittersResponse)(x)
 }
 
-func (x *MsgRemoveEmergencyProposalSubmittersResponse) slowProtoReflect() protoreflect.Message {
+func (x *MsgRemoveEmergencySubmittersResponse) slowProtoReflect() protoreflect.Message {
 	mi := &file_initia_gov_v1_tx_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -2344,43 +2344,43 @@ func (x *MsgRemoveEmergencyProposalSubmittersResponse) slowProtoReflect() protor
 	return mi.MessageOf(x)
 }
 
-var _fastReflection_MsgRemoveEmergencyProposalSubmittersResponse_messageType fastReflection_MsgRemoveEmergencyProposalSubmittersResponse_messageType
-var _ protoreflect.MessageType = fastReflection_MsgRemoveEmergencyProposalSubmittersResponse_messageType{}
+var _fastReflection_MsgRemoveEmergencySubmittersResponse_messageType fastReflection_MsgRemoveEmergencySubmittersResponse_messageType
+var _ protoreflect.MessageType = fastReflection_MsgRemoveEmergencySubmittersResponse_messageType{}
 
-type fastReflection_MsgRemoveEmergencyProposalSubmittersResponse_messageType struct{}
+type fastReflection_MsgRemoveEmergencySubmittersResponse_messageType struct{}
 
-func (x fastReflection_MsgRemoveEmergencyProposalSubmittersResponse_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_MsgRemoveEmergencyProposalSubmittersResponse)(nil)
+func (x fastReflection_MsgRemoveEmergencySubmittersResponse_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_MsgRemoveEmergencySubmittersResponse)(nil)
 }
-func (x fastReflection_MsgRemoveEmergencyProposalSubmittersResponse_messageType) New() protoreflect.Message {
-	return new(fastReflection_MsgRemoveEmergencyProposalSubmittersResponse)
+func (x fastReflection_MsgRemoveEmergencySubmittersResponse_messageType) New() protoreflect.Message {
+	return new(fastReflection_MsgRemoveEmergencySubmittersResponse)
 }
-func (x fastReflection_MsgRemoveEmergencyProposalSubmittersResponse_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_MsgRemoveEmergencyProposalSubmittersResponse
+func (x fastReflection_MsgRemoveEmergencySubmittersResponse_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_MsgRemoveEmergencySubmittersResponse
 }
 
 // Descriptor returns message descriptor, which contains only the protobuf
 // type information for the message.
-func (x *fastReflection_MsgRemoveEmergencyProposalSubmittersResponse) Descriptor() protoreflect.MessageDescriptor {
-	return md_MsgRemoveEmergencyProposalSubmittersResponse
+func (x *fastReflection_MsgRemoveEmergencySubmittersResponse) Descriptor() protoreflect.MessageDescriptor {
+	return md_MsgRemoveEmergencySubmittersResponse
 }
 
 // Type returns the message type, which encapsulates both Go and protobuf
 // type information. If the Go type information is not needed,
 // it is recommended that the message descriptor be used instead.
-func (x *fastReflection_MsgRemoveEmergencyProposalSubmittersResponse) Type() protoreflect.MessageType {
-	return _fastReflection_MsgRemoveEmergencyProposalSubmittersResponse_messageType
+func (x *fastReflection_MsgRemoveEmergencySubmittersResponse) Type() protoreflect.MessageType {
+	return _fastReflection_MsgRemoveEmergencySubmittersResponse_messageType
 }
 
 // New returns a newly allocated and mutable empty message.
-func (x *fastReflection_MsgRemoveEmergencyProposalSubmittersResponse) New() protoreflect.Message {
-	return new(fastReflection_MsgRemoveEmergencyProposalSubmittersResponse)
+func (x *fastReflection_MsgRemoveEmergencySubmittersResponse) New() protoreflect.Message {
+	return new(fastReflection_MsgRemoveEmergencySubmittersResponse)
 }
 
 // Interface unwraps the message reflection interface and
 // returns the underlying ProtoMessage interface.
-func (x *fastReflection_MsgRemoveEmergencyProposalSubmittersResponse) Interface() protoreflect.ProtoMessage {
-	return (*MsgRemoveEmergencyProposalSubmittersResponse)(x)
+func (x *fastReflection_MsgRemoveEmergencySubmittersResponse) Interface() protoreflect.ProtoMessage {
+	return (*MsgRemoveEmergencySubmittersResponse)(x)
 }
 
 // Range iterates over every populated field in an undefined order,
@@ -2388,7 +2388,7 @@ func (x *fastReflection_MsgRemoveEmergencyProposalSubmittersResponse) Interface(
 // Range returns immediately if f returns false.
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
-func (x *fastReflection_MsgRemoveEmergencyProposalSubmittersResponse) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+func (x *fastReflection_MsgRemoveEmergencySubmittersResponse) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
 }
 
 // Has reports whether a field is populated.
@@ -2402,13 +2402,13 @@ func (x *fastReflection_MsgRemoveEmergencyProposalSubmittersResponse) Range(f fu
 // In other cases (aside from the nullable cases above),
 // a proto3 scalar field is populated if it contains a non-zero value, and
 // a repeated field is populated if it is non-empty.
-func (x *fastReflection_MsgRemoveEmergencyProposalSubmittersResponse) Has(fd protoreflect.FieldDescriptor) bool {
+func (x *fastReflection_MsgRemoveEmergencySubmittersResponse) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgRemoveEmergencyProposalSubmittersResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgRemoveEmergencySubmittersResponse"))
 		}
-		panic(fmt.Errorf("message initia.gov.v1.MsgRemoveEmergencyProposalSubmittersResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message initia.gov.v1.MsgRemoveEmergencySubmittersResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2418,13 +2418,13 @@ func (x *fastReflection_MsgRemoveEmergencyProposalSubmittersResponse) Has(fd pro
 // associated with the given field number.
 //
 // Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgRemoveEmergencyProposalSubmittersResponse) Clear(fd protoreflect.FieldDescriptor) {
+func (x *fastReflection_MsgRemoveEmergencySubmittersResponse) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgRemoveEmergencyProposalSubmittersResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgRemoveEmergencySubmittersResponse"))
 		}
-		panic(fmt.Errorf("message initia.gov.v1.MsgRemoveEmergencyProposalSubmittersResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message initia.gov.v1.MsgRemoveEmergencySubmittersResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2434,13 +2434,13 @@ func (x *fastReflection_MsgRemoveEmergencyProposalSubmittersResponse) Clear(fd p
 // the default value of a bytes scalar is guaranteed to be a copy.
 // For unpopulated composite types, it returns an empty, read-only view
 // of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_MsgRemoveEmergencyProposalSubmittersResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_MsgRemoveEmergencySubmittersResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgRemoveEmergencyProposalSubmittersResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgRemoveEmergencySubmittersResponse"))
 		}
-		panic(fmt.Errorf("message initia.gov.v1.MsgRemoveEmergencyProposalSubmittersResponse does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message initia.gov.v1.MsgRemoveEmergencySubmittersResponse does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -2454,13 +2454,13 @@ func (x *fastReflection_MsgRemoveEmergencyProposalSubmittersResponse) Get(descri
 // empty, read-only value, then it panics.
 //
 // Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgRemoveEmergencyProposalSubmittersResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+func (x *fastReflection_MsgRemoveEmergencySubmittersResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgRemoveEmergencyProposalSubmittersResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgRemoveEmergencySubmittersResponse"))
 		}
-		panic(fmt.Errorf("message initia.gov.v1.MsgRemoveEmergencyProposalSubmittersResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message initia.gov.v1.MsgRemoveEmergencySubmittersResponse does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2474,36 +2474,36 @@ func (x *fastReflection_MsgRemoveEmergencyProposalSubmittersResponse) Set(fd pro
 // It panics if the field does not contain a composite type.
 //
 // Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgRemoveEmergencyProposalSubmittersResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_MsgRemoveEmergencySubmittersResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgRemoveEmergencyProposalSubmittersResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgRemoveEmergencySubmittersResponse"))
 		}
-		panic(fmt.Errorf("message initia.gov.v1.MsgRemoveEmergencyProposalSubmittersResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message initia.gov.v1.MsgRemoveEmergencySubmittersResponse does not contain field %s", fd.FullName()))
 	}
 }
 
 // NewField returns a new value that is assignable to the field
 // for the given descriptor. For scalars, this returns the default value.
 // For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_MsgRemoveEmergencyProposalSubmittersResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_MsgRemoveEmergencySubmittersResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgRemoveEmergencyProposalSubmittersResponse"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgRemoveEmergencySubmittersResponse"))
 		}
-		panic(fmt.Errorf("message initia.gov.v1.MsgRemoveEmergencyProposalSubmittersResponse does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message initia.gov.v1.MsgRemoveEmergencySubmittersResponse does not contain field %s", fd.FullName()))
 	}
 }
 
 // WhichOneof reports which field within the oneof is populated,
 // returning nil if none are populated.
 // It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_MsgRemoveEmergencyProposalSubmittersResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+func (x *fastReflection_MsgRemoveEmergencySubmittersResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in initia.gov.v1.MsgRemoveEmergencyProposalSubmittersResponse", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in initia.gov.v1.MsgRemoveEmergencySubmittersResponse", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -2511,7 +2511,7 @@ func (x *fastReflection_MsgRemoveEmergencyProposalSubmittersResponse) WhichOneof
 // GetUnknown retrieves the entire list of unknown fields.
 // The caller may only mutate the contents of the RawFields
 // if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_MsgRemoveEmergencyProposalSubmittersResponse) GetUnknown() protoreflect.RawFields {
+func (x *fastReflection_MsgRemoveEmergencySubmittersResponse) GetUnknown() protoreflect.RawFields {
 	return x.unknownFields
 }
 
@@ -2522,7 +2522,7 @@ func (x *fastReflection_MsgRemoveEmergencyProposalSubmittersResponse) GetUnknown
 // An empty RawFields may be passed to clear the fields.
 //
 // SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_MsgRemoveEmergencyProposalSubmittersResponse) SetUnknown(fields protoreflect.RawFields) {
+func (x *fastReflection_MsgRemoveEmergencySubmittersResponse) SetUnknown(fields protoreflect.RawFields) {
 	x.unknownFields = fields
 }
 
@@ -2534,7 +2534,7 @@ func (x *fastReflection_MsgRemoveEmergencyProposalSubmittersResponse) SetUnknown
 // message type, but the details are implementation dependent.
 // Validity is not part of the protobuf data model, and may not
 // be preserved in marshaling or other operations.
-func (x *fastReflection_MsgRemoveEmergencyProposalSubmittersResponse) IsValid() bool {
+func (x *fastReflection_MsgRemoveEmergencySubmittersResponse) IsValid() bool {
 	return x != nil
 }
 
@@ -2544,9 +2544,9 @@ func (x *fastReflection_MsgRemoveEmergencyProposalSubmittersResponse) IsValid() 
 // The returned methods type is identical to
 // "google.golang.org/protobuf/runtime/protoiface".Methods.
 // Consult the protoiface package documentation for details.
-func (x *fastReflection_MsgRemoveEmergencyProposalSubmittersResponse) ProtoMethods() *protoiface.Methods {
+func (x *fastReflection_MsgRemoveEmergencySubmittersResponse) ProtoMethods() *protoiface.Methods {
 	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*MsgRemoveEmergencyProposalSubmittersResponse)
+		x := input.Message.Interface().(*MsgRemoveEmergencySubmittersResponse)
 		if x == nil {
 			return protoiface.SizeOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -2568,7 +2568,7 @@ func (x *fastReflection_MsgRemoveEmergencyProposalSubmittersResponse) ProtoMetho
 	}
 
 	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*MsgRemoveEmergencyProposalSubmittersResponse)
+		x := input.Message.Interface().(*MsgRemoveEmergencySubmittersResponse)
 		if x == nil {
 			return protoiface.MarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -2598,7 +2598,7 @@ func (x *fastReflection_MsgRemoveEmergencyProposalSubmittersResponse) ProtoMetho
 		}, nil
 	}
 	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*MsgRemoveEmergencyProposalSubmittersResponse)
+		x := input.Message.Interface().(*MsgRemoveEmergencySubmittersResponse)
 		if x == nil {
 			return protoiface.UnmarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -2630,10 +2630,834 @@ func (x *fastReflection_MsgRemoveEmergencyProposalSubmittersResponse) ProtoMetho
 			fieldNum := int32(wire >> 3)
 			wireType := int(wire & 0x7)
 			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgRemoveEmergencyProposalSubmittersResponse: wiretype end group for non-group")
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgRemoveEmergencySubmittersResponse: wiretype end group for non-group")
 			}
 			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgRemoveEmergencyProposalSubmittersResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgRemoveEmergencySubmittersResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var (
+	md_MsgActivateEmergencyProposal             protoreflect.MessageDescriptor
+	fd_MsgActivateEmergencyProposal_sender      protoreflect.FieldDescriptor
+	fd_MsgActivateEmergencyProposal_proposal_id protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_initia_gov_v1_tx_proto_init()
+	md_MsgActivateEmergencyProposal = File_initia_gov_v1_tx_proto.Messages().ByName("MsgActivateEmergencyProposal")
+	fd_MsgActivateEmergencyProposal_sender = md_MsgActivateEmergencyProposal.Fields().ByName("sender")
+	fd_MsgActivateEmergencyProposal_proposal_id = md_MsgActivateEmergencyProposal.Fields().ByName("proposal_id")
+}
+
+var _ protoreflect.Message = (*fastReflection_MsgActivateEmergencyProposal)(nil)
+
+type fastReflection_MsgActivateEmergencyProposal MsgActivateEmergencyProposal
+
+func (x *MsgActivateEmergencyProposal) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_MsgActivateEmergencyProposal)(x)
+}
+
+func (x *MsgActivateEmergencyProposal) slowProtoReflect() protoreflect.Message {
+	mi := &file_initia_gov_v1_tx_proto_msgTypes[6]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_MsgActivateEmergencyProposal_messageType fastReflection_MsgActivateEmergencyProposal_messageType
+var _ protoreflect.MessageType = fastReflection_MsgActivateEmergencyProposal_messageType{}
+
+type fastReflection_MsgActivateEmergencyProposal_messageType struct{}
+
+func (x fastReflection_MsgActivateEmergencyProposal_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_MsgActivateEmergencyProposal)(nil)
+}
+func (x fastReflection_MsgActivateEmergencyProposal_messageType) New() protoreflect.Message {
+	return new(fastReflection_MsgActivateEmergencyProposal)
+}
+func (x fastReflection_MsgActivateEmergencyProposal_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_MsgActivateEmergencyProposal
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_MsgActivateEmergencyProposal) Descriptor() protoreflect.MessageDescriptor {
+	return md_MsgActivateEmergencyProposal
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_MsgActivateEmergencyProposal) Type() protoreflect.MessageType {
+	return _fastReflection_MsgActivateEmergencyProposal_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_MsgActivateEmergencyProposal) New() protoreflect.Message {
+	return new(fastReflection_MsgActivateEmergencyProposal)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_MsgActivateEmergencyProposal) Interface() protoreflect.ProtoMessage {
+	return (*MsgActivateEmergencyProposal)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_MsgActivateEmergencyProposal) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.Sender != "" {
+		value := protoreflect.ValueOfString(x.Sender)
+		if !f(fd_MsgActivateEmergencyProposal_sender, value) {
+			return
+		}
+	}
+	if x.ProposalId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.ProposalId)
+		if !f(fd_MsgActivateEmergencyProposal_proposal_id, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_MsgActivateEmergencyProposal) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "initia.gov.v1.MsgActivateEmergencyProposal.sender":
+		return x.Sender != ""
+	case "initia.gov.v1.MsgActivateEmergencyProposal.proposal_id":
+		return x.ProposalId != uint64(0)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgActivateEmergencyProposal"))
+		}
+		panic(fmt.Errorf("message initia.gov.v1.MsgActivateEmergencyProposal does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_MsgActivateEmergencyProposal) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "initia.gov.v1.MsgActivateEmergencyProposal.sender":
+		x.Sender = ""
+	case "initia.gov.v1.MsgActivateEmergencyProposal.proposal_id":
+		x.ProposalId = uint64(0)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgActivateEmergencyProposal"))
+		}
+		panic(fmt.Errorf("message initia.gov.v1.MsgActivateEmergencyProposal does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_MsgActivateEmergencyProposal) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "initia.gov.v1.MsgActivateEmergencyProposal.sender":
+		value := x.Sender
+		return protoreflect.ValueOfString(value)
+	case "initia.gov.v1.MsgActivateEmergencyProposal.proposal_id":
+		value := x.ProposalId
+		return protoreflect.ValueOfUint64(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgActivateEmergencyProposal"))
+		}
+		panic(fmt.Errorf("message initia.gov.v1.MsgActivateEmergencyProposal does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_MsgActivateEmergencyProposal) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "initia.gov.v1.MsgActivateEmergencyProposal.sender":
+		x.Sender = value.Interface().(string)
+	case "initia.gov.v1.MsgActivateEmergencyProposal.proposal_id":
+		x.ProposalId = value.Uint()
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgActivateEmergencyProposal"))
+		}
+		panic(fmt.Errorf("message initia.gov.v1.MsgActivateEmergencyProposal does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_MsgActivateEmergencyProposal) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "initia.gov.v1.MsgActivateEmergencyProposal.sender":
+		panic(fmt.Errorf("field sender of message initia.gov.v1.MsgActivateEmergencyProposal is not mutable"))
+	case "initia.gov.v1.MsgActivateEmergencyProposal.proposal_id":
+		panic(fmt.Errorf("field proposal_id of message initia.gov.v1.MsgActivateEmergencyProposal is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgActivateEmergencyProposal"))
+		}
+		panic(fmt.Errorf("message initia.gov.v1.MsgActivateEmergencyProposal does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_MsgActivateEmergencyProposal) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "initia.gov.v1.MsgActivateEmergencyProposal.sender":
+		return protoreflect.ValueOfString("")
+	case "initia.gov.v1.MsgActivateEmergencyProposal.proposal_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgActivateEmergencyProposal"))
+		}
+		panic(fmt.Errorf("message initia.gov.v1.MsgActivateEmergencyProposal does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_MsgActivateEmergencyProposal) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in initia.gov.v1.MsgActivateEmergencyProposal", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_MsgActivateEmergencyProposal) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_MsgActivateEmergencyProposal) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_MsgActivateEmergencyProposal) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_MsgActivateEmergencyProposal) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*MsgActivateEmergencyProposal)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		l = len(x.Sender)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.ProposalId != 0 {
+			n += 1 + runtime.Sov(uint64(x.ProposalId))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*MsgActivateEmergencyProposal)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if x.ProposalId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.ProposalId))
+			i--
+			dAtA[i] = 0x10
+		}
+		if len(x.Sender) > 0 {
+			i -= len(x.Sender)
+			copy(dAtA[i:], x.Sender)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Sender)))
+			i--
+			dAtA[i] = 0xa
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*MsgActivateEmergencyProposal)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgActivateEmergencyProposal: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgActivateEmergencyProposal: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Sender", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Sender = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 2:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field ProposalId", wireType)
+				}
+				x.ProposalId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.ProposalId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var (
+	md_MsgActivateEmergencyProposalResponse protoreflect.MessageDescriptor
+)
+
+func init() {
+	file_initia_gov_v1_tx_proto_init()
+	md_MsgActivateEmergencyProposalResponse = File_initia_gov_v1_tx_proto.Messages().ByName("MsgActivateEmergencyProposalResponse")
+}
+
+var _ protoreflect.Message = (*fastReflection_MsgActivateEmergencyProposalResponse)(nil)
+
+type fastReflection_MsgActivateEmergencyProposalResponse MsgActivateEmergencyProposalResponse
+
+func (x *MsgActivateEmergencyProposalResponse) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_MsgActivateEmergencyProposalResponse)(x)
+}
+
+func (x *MsgActivateEmergencyProposalResponse) slowProtoReflect() protoreflect.Message {
+	mi := &file_initia_gov_v1_tx_proto_msgTypes[7]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_MsgActivateEmergencyProposalResponse_messageType fastReflection_MsgActivateEmergencyProposalResponse_messageType
+var _ protoreflect.MessageType = fastReflection_MsgActivateEmergencyProposalResponse_messageType{}
+
+type fastReflection_MsgActivateEmergencyProposalResponse_messageType struct{}
+
+func (x fastReflection_MsgActivateEmergencyProposalResponse_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_MsgActivateEmergencyProposalResponse)(nil)
+}
+func (x fastReflection_MsgActivateEmergencyProposalResponse_messageType) New() protoreflect.Message {
+	return new(fastReflection_MsgActivateEmergencyProposalResponse)
+}
+func (x fastReflection_MsgActivateEmergencyProposalResponse_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_MsgActivateEmergencyProposalResponse
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_MsgActivateEmergencyProposalResponse) Descriptor() protoreflect.MessageDescriptor {
+	return md_MsgActivateEmergencyProposalResponse
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_MsgActivateEmergencyProposalResponse) Type() protoreflect.MessageType {
+	return _fastReflection_MsgActivateEmergencyProposalResponse_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_MsgActivateEmergencyProposalResponse) New() protoreflect.Message {
+	return new(fastReflection_MsgActivateEmergencyProposalResponse)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_MsgActivateEmergencyProposalResponse) Interface() protoreflect.ProtoMessage {
+	return (*MsgActivateEmergencyProposalResponse)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_MsgActivateEmergencyProposalResponse) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_MsgActivateEmergencyProposalResponse) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgActivateEmergencyProposalResponse"))
+		}
+		panic(fmt.Errorf("message initia.gov.v1.MsgActivateEmergencyProposalResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_MsgActivateEmergencyProposalResponse) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgActivateEmergencyProposalResponse"))
+		}
+		panic(fmt.Errorf("message initia.gov.v1.MsgActivateEmergencyProposalResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_MsgActivateEmergencyProposalResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgActivateEmergencyProposalResponse"))
+		}
+		panic(fmt.Errorf("message initia.gov.v1.MsgActivateEmergencyProposalResponse does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_MsgActivateEmergencyProposalResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgActivateEmergencyProposalResponse"))
+		}
+		panic(fmt.Errorf("message initia.gov.v1.MsgActivateEmergencyProposalResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_MsgActivateEmergencyProposalResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgActivateEmergencyProposalResponse"))
+		}
+		panic(fmt.Errorf("message initia.gov.v1.MsgActivateEmergencyProposalResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_MsgActivateEmergencyProposalResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.gov.v1.MsgActivateEmergencyProposalResponse"))
+		}
+		panic(fmt.Errorf("message initia.gov.v1.MsgActivateEmergencyProposalResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_MsgActivateEmergencyProposalResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in initia.gov.v1.MsgActivateEmergencyProposalResponse", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_MsgActivateEmergencyProposalResponse) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_MsgActivateEmergencyProposalResponse) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_MsgActivateEmergencyProposalResponse) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_MsgActivateEmergencyProposalResponse) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*MsgActivateEmergencyProposalResponse)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*MsgActivateEmergencyProposalResponse)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*MsgActivateEmergencyProposalResponse)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgActivateEmergencyProposalResponse: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: MsgActivateEmergencyProposalResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 			}
 			switch fieldNum {
 			default:
@@ -2760,8 +3584,8 @@ func (*MsgUpdateParamsResponse) Descriptor() ([]byte, []int) {
 	return file_initia_gov_v1_tx_proto_rawDescGZIP(), []int{1}
 }
 
-// MsgAddEmergencyProposalSubmitters is the Msg/AddEmergencyProposalSubmitters request type.
-type MsgAddEmergencyProposalSubmitters struct {
+// MsgAddEmergencySubmitters is the Msg/AddEmergencySubmitters request type.
+type MsgAddEmergencySubmitters struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -2770,8 +3594,8 @@ type MsgAddEmergencyProposalSubmitters struct {
 	EmergencySubmitters []string `protobuf:"bytes,2,rep,name=emergency_submitters,json=emergencySubmitters,proto3" json:"emergency_submitters,omitempty"`
 }
 
-func (x *MsgAddEmergencyProposalSubmitters) Reset() {
-	*x = MsgAddEmergencyProposalSubmitters{}
+func (x *MsgAddEmergencySubmitters) Reset() {
+	*x = MsgAddEmergencySubmitters{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_initia_gov_v1_tx_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -2779,41 +3603,41 @@ func (x *MsgAddEmergencyProposalSubmitters) Reset() {
 	}
 }
 
-func (x *MsgAddEmergencyProposalSubmitters) String() string {
+func (x *MsgAddEmergencySubmitters) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*MsgAddEmergencyProposalSubmitters) ProtoMessage() {}
+func (*MsgAddEmergencySubmitters) ProtoMessage() {}
 
-// Deprecated: Use MsgAddEmergencyProposalSubmitters.ProtoReflect.Descriptor instead.
-func (*MsgAddEmergencyProposalSubmitters) Descriptor() ([]byte, []int) {
+// Deprecated: Use MsgAddEmergencySubmitters.ProtoReflect.Descriptor instead.
+func (*MsgAddEmergencySubmitters) Descriptor() ([]byte, []int) {
 	return file_initia_gov_v1_tx_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *MsgAddEmergencyProposalSubmitters) GetAuthority() string {
+func (x *MsgAddEmergencySubmitters) GetAuthority() string {
 	if x != nil {
 		return x.Authority
 	}
 	return ""
 }
 
-func (x *MsgAddEmergencyProposalSubmitters) GetEmergencySubmitters() []string {
+func (x *MsgAddEmergencySubmitters) GetEmergencySubmitters() []string {
 	if x != nil {
 		return x.EmergencySubmitters
 	}
 	return nil
 }
 
-// MsgAddEmergencyProposalSubmittersResponse defines the response structure for executing a
-// MsgAddEmergencyProposalSubmitters message.
-type MsgAddEmergencyProposalSubmittersResponse struct {
+// MsgAddEmergencySubmittersResponse defines the response structure for executing a
+// MsgAddEmergencySubmitters message.
+type MsgAddEmergencySubmittersResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 }
 
-func (x *MsgAddEmergencyProposalSubmittersResponse) Reset() {
-	*x = MsgAddEmergencyProposalSubmittersResponse{}
+func (x *MsgAddEmergencySubmittersResponse) Reset() {
+	*x = MsgAddEmergencySubmittersResponse{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_initia_gov_v1_tx_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -2821,19 +3645,19 @@ func (x *MsgAddEmergencyProposalSubmittersResponse) Reset() {
 	}
 }
 
-func (x *MsgAddEmergencyProposalSubmittersResponse) String() string {
+func (x *MsgAddEmergencySubmittersResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*MsgAddEmergencyProposalSubmittersResponse) ProtoMessage() {}
+func (*MsgAddEmergencySubmittersResponse) ProtoMessage() {}
 
-// Deprecated: Use MsgAddEmergencyProposalSubmittersResponse.ProtoReflect.Descriptor instead.
-func (*MsgAddEmergencyProposalSubmittersResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use MsgAddEmergencySubmittersResponse.ProtoReflect.Descriptor instead.
+func (*MsgAddEmergencySubmittersResponse) Descriptor() ([]byte, []int) {
 	return file_initia_gov_v1_tx_proto_rawDescGZIP(), []int{3}
 }
 
-// MsgRemoveEmergencyProposalSubmitters is the Msg/RemoveEmergencyProposalSubmitters request type.
-type MsgRemoveEmergencyProposalSubmitters struct {
+// MsgRemoveEmergencySubmitters is the Msg/RemoveEmergencySubmitters request type.
+type MsgRemoveEmergencySubmitters struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -2842,8 +3666,8 @@ type MsgRemoveEmergencyProposalSubmitters struct {
 	EmergencySubmitters []string `protobuf:"bytes,2,rep,name=emergency_submitters,json=emergencySubmitters,proto3" json:"emergency_submitters,omitempty"`
 }
 
-func (x *MsgRemoveEmergencyProposalSubmitters) Reset() {
-	*x = MsgRemoveEmergencyProposalSubmitters{}
+func (x *MsgRemoveEmergencySubmitters) Reset() {
+	*x = MsgRemoveEmergencySubmitters{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_initia_gov_v1_tx_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -2851,41 +3675,41 @@ func (x *MsgRemoveEmergencyProposalSubmitters) Reset() {
 	}
 }
 
-func (x *MsgRemoveEmergencyProposalSubmitters) String() string {
+func (x *MsgRemoveEmergencySubmitters) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*MsgRemoveEmergencyProposalSubmitters) ProtoMessage() {}
+func (*MsgRemoveEmergencySubmitters) ProtoMessage() {}
 
-// Deprecated: Use MsgRemoveEmergencyProposalSubmitters.ProtoReflect.Descriptor instead.
-func (*MsgRemoveEmergencyProposalSubmitters) Descriptor() ([]byte, []int) {
+// Deprecated: Use MsgRemoveEmergencySubmitters.ProtoReflect.Descriptor instead.
+func (*MsgRemoveEmergencySubmitters) Descriptor() ([]byte, []int) {
 	return file_initia_gov_v1_tx_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *MsgRemoveEmergencyProposalSubmitters) GetAuthority() string {
+func (x *MsgRemoveEmergencySubmitters) GetAuthority() string {
 	if x != nil {
 		return x.Authority
 	}
 	return ""
 }
 
-func (x *MsgRemoveEmergencyProposalSubmitters) GetEmergencySubmitters() []string {
+func (x *MsgRemoveEmergencySubmitters) GetEmergencySubmitters() []string {
 	if x != nil {
 		return x.EmergencySubmitters
 	}
 	return nil
 }
 
-// MsgRemoveEmergencyProposalSubmittersResponse defines the response structure for executing a
-// MsgRemoveEmergencyProposalSubmitters message.
-type MsgRemoveEmergencyProposalSubmittersResponse struct {
+// MsgRemoveEmergencySubmittersResponse defines the response structure for executing a
+// MsgRemoveEmergencySubmitters message.
+type MsgRemoveEmergencySubmittersResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 }
 
-func (x *MsgRemoveEmergencyProposalSubmittersResponse) Reset() {
-	*x = MsgRemoveEmergencyProposalSubmittersResponse{}
+func (x *MsgRemoveEmergencySubmittersResponse) Reset() {
+	*x = MsgRemoveEmergencySubmittersResponse{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_initia_gov_v1_tx_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -2893,15 +3717,87 @@ func (x *MsgRemoveEmergencyProposalSubmittersResponse) Reset() {
 	}
 }
 
-func (x *MsgRemoveEmergencyProposalSubmittersResponse) String() string {
+func (x *MsgRemoveEmergencySubmittersResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*MsgRemoveEmergencyProposalSubmittersResponse) ProtoMessage() {}
+func (*MsgRemoveEmergencySubmittersResponse) ProtoMessage() {}
 
-// Deprecated: Use MsgRemoveEmergencyProposalSubmittersResponse.ProtoReflect.Descriptor instead.
-func (*MsgRemoveEmergencyProposalSubmittersResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use MsgRemoveEmergencySubmittersResponse.ProtoReflect.Descriptor instead.
+func (*MsgRemoveEmergencySubmittersResponse) Descriptor() ([]byte, []int) {
 	return file_initia_gov_v1_tx_proto_rawDescGZIP(), []int{5}
+}
+
+// MsgActivateEmergencyProposal is the Msg/ActivateEmergencyProposal request type.
+type MsgActivateEmergencyProposal struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Sender     string `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
+	ProposalId uint64 `protobuf:"varint,2,opt,name=proposal_id,json=proposalId,proto3" json:"proposal_id,omitempty"`
+}
+
+func (x *MsgActivateEmergencyProposal) Reset() {
+	*x = MsgActivateEmergencyProposal{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_initia_gov_v1_tx_proto_msgTypes[6]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *MsgActivateEmergencyProposal) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MsgActivateEmergencyProposal) ProtoMessage() {}
+
+// Deprecated: Use MsgActivateEmergencyProposal.ProtoReflect.Descriptor instead.
+func (*MsgActivateEmergencyProposal) Descriptor() ([]byte, []int) {
+	return file_initia_gov_v1_tx_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *MsgActivateEmergencyProposal) GetSender() string {
+	if x != nil {
+		return x.Sender
+	}
+	return ""
+}
+
+func (x *MsgActivateEmergencyProposal) GetProposalId() uint64 {
+	if x != nil {
+		return x.ProposalId
+	}
+	return 0
+}
+
+// MsgActivateEmergencyProposalResponse defines the response structure for executing a
+// MsgActivateEmergencyProposal message.
+type MsgActivateEmergencyProposalResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *MsgActivateEmergencyProposalResponse) Reset() {
+	*x = MsgActivateEmergencyProposalResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_initia_gov_v1_tx_proto_msgTypes[7]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *MsgActivateEmergencyProposalResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MsgActivateEmergencyProposalResponse) ProtoMessage() {}
+
+// Deprecated: Use MsgActivateEmergencyProposalResponse.ProtoReflect.Descriptor instead.
+func (*MsgActivateEmergencyProposalResponse) Descriptor() ([]byte, []int) {
+	return file_initia_gov_v1_tx_proto_rawDescGZIP(), []int{7}
 }
 
 var File_initia_gov_v1_tx_proto protoreflect.FileDescriptor
@@ -2929,26 +3825,24 @@ var file_initia_gov_v1_tx_proto_rawDesc = []byte{
 	0x69, 0x74, 0x79, 0x8a, 0xe7, 0xb0, 0x2a, 0x13, 0x67, 0x6f, 0x76, 0x2f, 0x4d, 0x73, 0x67, 0x55,
 	0x70, 0x64, 0x61, 0x74, 0x65, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x22, 0x19, 0x0a, 0x17, 0x4d,
 	0x73, 0x67, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x52, 0x65,
-	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0xe2, 0x01, 0x0a, 0x21, 0x4d, 0x73, 0x67, 0x41, 0x64,
-	0x64, 0x45, 0x6d, 0x65, 0x72, 0x67, 0x65, 0x6e, 0x63, 0x79, 0x50, 0x72, 0x6f, 0x70, 0x6f, 0x73,
-	0x61, 0x6c, 0x53, 0x75, 0x62, 0x6d, 0x69, 0x74, 0x74, 0x65, 0x72, 0x73, 0x12, 0x36, 0x0a, 0x09,
-	0x61, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x69, 0x74, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x42,
-	0x18, 0xd2, 0xb4, 0x2d, 0x14, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x41, 0x64, 0x64, 0x72,
-	0x65, 0x73, 0x73, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x52, 0x09, 0x61, 0x75, 0x74, 0x68, 0x6f,
-	0x72, 0x69, 0x74, 0x79, 0x12, 0x4b, 0x0a, 0x14, 0x65, 0x6d, 0x65, 0x72, 0x67, 0x65, 0x6e, 0x63,
-	0x79, 0x5f, 0x73, 0x75, 0x62, 0x6d, 0x69, 0x74, 0x74, 0x65, 0x72, 0x73, 0x18, 0x02, 0x20, 0x03,
-	0x28, 0x09, 0x42, 0x18, 0xd2, 0xb4, 0x2d, 0x14, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x41,
-	0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x52, 0x13, 0x65, 0x6d,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0xd2, 0x01, 0x0a, 0x19, 0x4d, 0x73, 0x67, 0x41, 0x64,
+	0x64, 0x45, 0x6d, 0x65, 0x72, 0x67, 0x65, 0x6e, 0x63, 0x79, 0x53, 0x75, 0x62, 0x6d, 0x69, 0x74,
+	0x74, 0x65, 0x72, 0x73, 0x12, 0x36, 0x0a, 0x09, 0x61, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x69, 0x74,
+	0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x42, 0x18, 0xd2, 0xb4, 0x2d, 0x14, 0x63, 0x6f, 0x73,
+	0x6d, 0x6f, 0x73, 0x2e, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x53, 0x74, 0x72, 0x69, 0x6e,
+	0x67, 0x52, 0x09, 0x61, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x69, 0x74, 0x79, 0x12, 0x4b, 0x0a, 0x14,
+	0x65, 0x6d, 0x65, 0x72, 0x67, 0x65, 0x6e, 0x63, 0x79, 0x5f, 0x73, 0x75, 0x62, 0x6d, 0x69, 0x74,
+	0x74, 0x65, 0x72, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x09, 0x42, 0x18, 0xd2, 0xb4, 0x2d, 0x14,
+	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x53, 0x74,
+	0x72, 0x69, 0x6e, 0x67, 0x52, 0x13, 0x65, 0x6d, 0x65, 0x72, 0x67, 0x65, 0x6e, 0x63, 0x79, 0x53,
+	0x75, 0x62, 0x6d, 0x69, 0x74, 0x74, 0x65, 0x72, 0x73, 0x3a, 0x30, 0x82, 0xe7, 0xb0, 0x2a, 0x09,
+	0x61, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x69, 0x74, 0x79, 0x8a, 0xe7, 0xb0, 0x2a, 0x1d, 0x67, 0x6f,
+	0x76, 0x2f, 0x4d, 0x73, 0x67, 0x41, 0x64, 0x64, 0x45, 0x6d, 0x65, 0x72, 0x67, 0x65, 0x6e, 0x63,
+	0x79, 0x53, 0x75, 0x62, 0x6d, 0x69, 0x74, 0x74, 0x65, 0x72, 0x73, 0x22, 0x23, 0x0a, 0x21, 0x4d,
+	0x73, 0x67, 0x41, 0x64, 0x64, 0x45, 0x6d, 0x65, 0x72, 0x67, 0x65, 0x6e, 0x63, 0x79, 0x53, 0x75,
+	0x62, 0x6d, 0x69, 0x74, 0x74, 0x65, 0x72, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
+	0x22, 0xd8, 0x01, 0x0a, 0x1c, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x45, 0x6d,
 	0x65, 0x72, 0x67, 0x65, 0x6e, 0x63, 0x79, 0x53, 0x75, 0x62, 0x6d, 0x69, 0x74, 0x74, 0x65, 0x72,
-	0x73, 0x3a, 0x38, 0x82, 0xe7, 0xb0, 0x2a, 0x09, 0x61, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x69, 0x74,
-	0x79, 0x8a, 0xe7, 0xb0, 0x2a, 0x25, 0x67, 0x6f, 0x76, 0x2f, 0x4d, 0x73, 0x67, 0x41, 0x64, 0x64,
-	0x45, 0x6d, 0x65, 0x72, 0x67, 0x65, 0x6e, 0x63, 0x79, 0x50, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61,
-	0x6c, 0x53, 0x75, 0x62, 0x6d, 0x69, 0x74, 0x74, 0x65, 0x72, 0x73, 0x22, 0x2b, 0x0a, 0x29, 0x4d,
-	0x73, 0x67, 0x41, 0x64, 0x64, 0x45, 0x6d, 0x65, 0x72, 0x67, 0x65, 0x6e, 0x63, 0x79, 0x50, 0x72,
-	0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x53, 0x75, 0x62, 0x6d, 0x69, 0x74, 0x74, 0x65, 0x72, 0x73,
-	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0xe8, 0x01, 0x0a, 0x24, 0x4d, 0x73, 0x67,
-	0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x45, 0x6d, 0x65, 0x72, 0x67, 0x65, 0x6e, 0x63, 0x79, 0x50,
-	0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x53, 0x75, 0x62, 0x6d, 0x69, 0x74, 0x74, 0x65, 0x72,
 	0x73, 0x12, 0x36, 0x0a, 0x09, 0x61, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x69, 0x74, 0x79, 0x18, 0x01,
 	0x20, 0x01, 0x28, 0x09, 0x42, 0x18, 0xd2, 0xb4, 0x2d, 0x14, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73,
 	0x2e, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x52, 0x09,
@@ -2957,50 +3851,67 @@ var file_initia_gov_v1_tx_proto_rawDesc = []byte{
 	0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x09, 0x42, 0x18, 0xd2, 0xb4, 0x2d, 0x14, 0x63, 0x6f, 0x73,
 	0x6d, 0x6f, 0x73, 0x2e, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x53, 0x74, 0x72, 0x69, 0x6e,
 	0x67, 0x52, 0x13, 0x65, 0x6d, 0x65, 0x72, 0x67, 0x65, 0x6e, 0x63, 0x79, 0x53, 0x75, 0x62, 0x6d,
-	0x69, 0x74, 0x74, 0x65, 0x72, 0x73, 0x3a, 0x3b, 0x82, 0xe7, 0xb0, 0x2a, 0x09, 0x61, 0x75, 0x74,
-	0x68, 0x6f, 0x72, 0x69, 0x74, 0x79, 0x8a, 0xe7, 0xb0, 0x2a, 0x28, 0x67, 0x6f, 0x76, 0x2f, 0x4d,
+	0x69, 0x74, 0x74, 0x65, 0x72, 0x73, 0x3a, 0x33, 0x82, 0xe7, 0xb0, 0x2a, 0x09, 0x61, 0x75, 0x74,
+	0x68, 0x6f, 0x72, 0x69, 0x74, 0x79, 0x8a, 0xe7, 0xb0, 0x2a, 0x20, 0x67, 0x6f, 0x76, 0x2f, 0x4d,
 	0x73, 0x67, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x45, 0x6d, 0x65, 0x72, 0x67, 0x65, 0x6e, 0x63,
-	0x79, 0x50, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x53, 0x75, 0x62, 0x6d, 0x69, 0x74, 0x74,
-	0x65, 0x72, 0x73, 0x22, 0x2e, 0x0a, 0x2c, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65,
-	0x45, 0x6d, 0x65, 0x72, 0x67, 0x65, 0x6e, 0x63, 0x79, 0x50, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61,
-	0x6c, 0x53, 0x75, 0x62, 0x6d, 0x69, 0x74, 0x74, 0x65, 0x72, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f,
-	0x6e, 0x73, 0x65, 0x32, 0x8b, 0x03, 0x0a, 0x03, 0x4d, 0x73, 0x67, 0x12, 0x56, 0x0a, 0x0c, 0x55,
-	0x70, 0x64, 0x61, 0x74, 0x65, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x12, 0x1e, 0x2e, 0x69, 0x6e,
-	0x69, 0x74, 0x69, 0x61, 0x2e, 0x67, 0x6f, 0x76, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x55,
-	0x70, 0x64, 0x61, 0x74, 0x65, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x1a, 0x26, 0x2e, 0x69, 0x6e,
-	0x69, 0x74, 0x69, 0x61, 0x2e, 0x67, 0x6f, 0x76, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x55,
-	0x70, 0x64, 0x61, 0x74, 0x65, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f,
-	0x6e, 0x73, 0x65, 0x12, 0x8c, 0x01, 0x0a, 0x1e, 0x41, 0x64, 0x64, 0x45, 0x6d, 0x65, 0x72, 0x67,
-	0x65, 0x6e, 0x63, 0x79, 0x50, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x53, 0x75, 0x62, 0x6d,
-	0x69, 0x74, 0x74, 0x65, 0x72, 0x73, 0x12, 0x30, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e,
-	0x67, 0x6f, 0x76, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x41, 0x64, 0x64, 0x45, 0x6d, 0x65,
-	0x72, 0x67, 0x65, 0x6e, 0x63, 0x79, 0x50, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x53, 0x75,
-	0x62, 0x6d, 0x69, 0x74, 0x74, 0x65, 0x72, 0x73, 0x1a, 0x38, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69,
-	0x61, 0x2e, 0x67, 0x6f, 0x76, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x41, 0x64, 0x64, 0x45,
+	0x79, 0x53, 0x75, 0x62, 0x6d, 0x69, 0x74, 0x74, 0x65, 0x72, 0x73, 0x22, 0x26, 0x0a, 0x24, 0x4d,
+	0x73, 0x67, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x45, 0x6d, 0x65, 0x72, 0x67, 0x65, 0x6e, 0x63,
+	0x79, 0x53, 0x75, 0x62, 0x6d, 0x69, 0x74, 0x74, 0x65, 0x72, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f,
+	0x6e, 0x73, 0x65, 0x22, 0xa3, 0x01, 0x0a, 0x1c, 0x4d, 0x73, 0x67, 0x41, 0x63, 0x74, 0x69, 0x76,
+	0x61, 0x74, 0x65, 0x45, 0x6d, 0x65, 0x72, 0x67, 0x65, 0x6e, 0x63, 0x79, 0x50, 0x72, 0x6f, 0x70,
+	0x6f, 0x73, 0x61, 0x6c, 0x12, 0x30, 0x0a, 0x06, 0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x09, 0x42, 0x18, 0xd2, 0xb4, 0x2d, 0x14, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73,
+	0x2e, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x52, 0x06,
+	0x73, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x12, 0x1f, 0x0a, 0x0b, 0x70, 0x72, 0x6f, 0x70, 0x6f, 0x73,
+	0x61, 0x6c, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0a, 0x70, 0x72, 0x6f,
+	0x70, 0x6f, 0x73, 0x61, 0x6c, 0x49, 0x64, 0x3a, 0x30, 0x82, 0xe7, 0xb0, 0x2a, 0x06, 0x73, 0x65,
+	0x6e, 0x64, 0x65, 0x72, 0x8a, 0xe7, 0xb0, 0x2a, 0x20, 0x67, 0x6f, 0x76, 0x2f, 0x4d, 0x73, 0x67,
+	0x41, 0x63, 0x74, 0x69, 0x76, 0x61, 0x74, 0x65, 0x45, 0x6d, 0x65, 0x72, 0x67, 0x65, 0x6e, 0x63,
+	0x79, 0x50, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x22, 0x26, 0x0a, 0x24, 0x4d, 0x73, 0x67,
+	0x41, 0x63, 0x74, 0x69, 0x76, 0x61, 0x74, 0x65, 0x45, 0x6d, 0x65, 0x72, 0x67, 0x65, 0x6e, 0x63,
+	0x79, 0x50, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x32, 0xd8, 0x03, 0x0a, 0x03, 0x4d, 0x73, 0x67, 0x12, 0x56, 0x0a, 0x0c, 0x55, 0x70, 0x64,
+	0x61, 0x74, 0x65, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x12, 0x1e, 0x2e, 0x69, 0x6e, 0x69, 0x74,
+	0x69, 0x61, 0x2e, 0x67, 0x6f, 0x76, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x55, 0x70, 0x64,
+	0x61, 0x74, 0x65, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x1a, 0x26, 0x2e, 0x69, 0x6e, 0x69, 0x74,
+	0x69, 0x61, 0x2e, 0x67, 0x6f, 0x76, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x55, 0x70, 0x64,
+	0x61, 0x74, 0x65, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x12, 0x74, 0x0a, 0x16, 0x41, 0x64, 0x64, 0x45, 0x6d, 0x65, 0x72, 0x67, 0x65, 0x6e, 0x63,
+	0x79, 0x53, 0x75, 0x62, 0x6d, 0x69, 0x74, 0x74, 0x65, 0x72, 0x73, 0x12, 0x28, 0x2e, 0x69, 0x6e,
+	0x69, 0x74, 0x69, 0x61, 0x2e, 0x67, 0x6f, 0x76, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x41,
+	0x64, 0x64, 0x45, 0x6d, 0x65, 0x72, 0x67, 0x65, 0x6e, 0x63, 0x79, 0x53, 0x75, 0x62, 0x6d, 0x69,
+	0x74, 0x74, 0x65, 0x72, 0x73, 0x1a, 0x30, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x67,
+	0x6f, 0x76, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x41, 0x64, 0x64, 0x45, 0x6d, 0x65, 0x72,
+	0x67, 0x65, 0x6e, 0x63, 0x79, 0x53, 0x75, 0x62, 0x6d, 0x69, 0x74, 0x74, 0x65, 0x72, 0x73, 0x52,
+	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x7d, 0x0a, 0x19, 0x52, 0x65, 0x6d, 0x6f, 0x76,
+	0x65, 0x45, 0x6d, 0x65, 0x72, 0x67, 0x65, 0x6e, 0x63, 0x79, 0x53, 0x75, 0x62, 0x6d, 0x69, 0x74,
+	0x74, 0x65, 0x72, 0x73, 0x12, 0x2b, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x67, 0x6f,
+	0x76, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x45, 0x6d,
+	0x65, 0x72, 0x67, 0x65, 0x6e, 0x63, 0x79, 0x53, 0x75, 0x62, 0x6d, 0x69, 0x74, 0x74, 0x65, 0x72,
+	0x73, 0x1a, 0x33, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x67, 0x6f, 0x76, 0x2e, 0x76,
+	0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x45, 0x6d, 0x65, 0x72, 0x67,
+	0x65, 0x6e, 0x63, 0x79, 0x53, 0x75, 0x62, 0x6d, 0x69, 0x74, 0x74, 0x65, 0x72, 0x73, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x7d, 0x0a, 0x19, 0x41, 0x63, 0x74, 0x69, 0x76, 0x61,
+	0x74, 0x65, 0x45, 0x6d, 0x65, 0x72, 0x67, 0x65, 0x6e, 0x63, 0x79, 0x50, 0x72, 0x6f, 0x70, 0x6f,
+	0x73, 0x61, 0x6c, 0x12, 0x2b, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x67, 0x6f, 0x76,
+	0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x41, 0x63, 0x74, 0x69, 0x76, 0x61, 0x74, 0x65, 0x45,
 	0x6d, 0x65, 0x72, 0x67, 0x65, 0x6e, 0x63, 0x79, 0x50, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c,
-	0x53, 0x75, 0x62, 0x6d, 0x69, 0x74, 0x74, 0x65, 0x72, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
-	0x73, 0x65, 0x12, 0x95, 0x01, 0x0a, 0x21, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x45, 0x6d, 0x65,
-	0x72, 0x67, 0x65, 0x6e, 0x63, 0x79, 0x50, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x53, 0x75,
-	0x62, 0x6d, 0x69, 0x74, 0x74, 0x65, 0x72, 0x73, 0x12, 0x33, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69,
-	0x61, 0x2e, 0x67, 0x6f, 0x76, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x6d, 0x6f,
-	0x76, 0x65, 0x45, 0x6d, 0x65, 0x72, 0x67, 0x65, 0x6e, 0x63, 0x79, 0x50, 0x72, 0x6f, 0x70, 0x6f,
-	0x73, 0x61, 0x6c, 0x53, 0x75, 0x62, 0x6d, 0x69, 0x74, 0x74, 0x65, 0x72, 0x73, 0x1a, 0x3b, 0x2e,
-	0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x67, 0x6f, 0x76, 0x2e, 0x76, 0x31, 0x2e, 0x4d, 0x73,
-	0x67, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x45, 0x6d, 0x65, 0x72, 0x67, 0x65, 0x6e, 0x63, 0x79,
-	0x50, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x53, 0x75, 0x62, 0x6d, 0x69, 0x74, 0x74, 0x65,
-	0x72, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x1a, 0x05, 0x80, 0xe7, 0xb0, 0x2a,
-	0x01, 0x42, 0xad, 0x01, 0xa8, 0xe2, 0x1e, 0x01, 0x0a, 0x11, 0x63, 0x6f, 0x6d, 0x2e, 0x69, 0x6e,
-	0x69, 0x74, 0x69, 0x61, 0x2e, 0x67, 0x6f, 0x76, 0x2e, 0x76, 0x31, 0x42, 0x07, 0x54, 0x78, 0x50,
-	0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x35, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63,
-	0x6f, 0x6d, 0x2f, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2d, 0x6c, 0x61, 0x62, 0x73, 0x2f, 0x69,
-	0x6e, 0x69, 0x74, 0x69, 0x61, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61,
-	0x2f, 0x67, 0x6f, 0x76, 0x2f, 0x76, 0x31, 0x3b, 0x67, 0x6f, 0x76, 0x76, 0x31, 0xa2, 0x02, 0x03,
-	0x49, 0x47, 0x58, 0xaa, 0x02, 0x0d, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x47, 0x6f, 0x76,
-	0x2e, 0x56, 0x31, 0xca, 0x02, 0x0d, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x5c, 0x47, 0x6f, 0x76,
-	0x5c, 0x56, 0x31, 0xe2, 0x02, 0x19, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x5c, 0x47, 0x6f, 0x76,
-	0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea,
-	0x02, 0x0f, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x3a, 0x3a, 0x47, 0x6f, 0x76, 0x3a, 0x3a, 0x56,
-	0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x1a, 0x33, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x67, 0x6f, 0x76, 0x2e, 0x76, 0x31,
+	0x2e, 0x4d, 0x73, 0x67, 0x41, 0x63, 0x74, 0x69, 0x76, 0x61, 0x74, 0x65, 0x45, 0x6d, 0x65, 0x72,
+	0x67, 0x65, 0x6e, 0x63, 0x79, 0x50, 0x72, 0x6f, 0x70, 0x6f, 0x73, 0x61, 0x6c, 0x52, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x1a, 0x05, 0x80, 0xe7, 0xb0, 0x2a, 0x01, 0x42, 0xad, 0x01, 0xa8,
+	0xe2, 0x1e, 0x01, 0x0a, 0x11, 0x63, 0x6f, 0x6d, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e,
+	0x67, 0x6f, 0x76, 0x2e, 0x76, 0x31, 0x42, 0x07, 0x54, 0x78, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50,
+	0x01, 0x5a, 0x35, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x69, 0x6e,
+	0x69, 0x74, 0x69, 0x61, 0x2d, 0x6c, 0x61, 0x62, 0x73, 0x2f, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61,
+	0x2f, 0x61, 0x70, 0x69, 0x2f, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2f, 0x67, 0x6f, 0x76, 0x2f,
+	0x76, 0x31, 0x3b, 0x67, 0x6f, 0x76, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x49, 0x47, 0x58, 0xaa, 0x02,
+	0x0d, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x47, 0x6f, 0x76, 0x2e, 0x56, 0x31, 0xca, 0x02,
+	0x0d, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x5c, 0x47, 0x6f, 0x76, 0x5c, 0x56, 0x31, 0xe2, 0x02,
+	0x19, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x5c, 0x47, 0x6f, 0x76, 0x5c, 0x56, 0x31, 0x5c, 0x47,
+	0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x0f, 0x49, 0x6e, 0x69,
+	0x74, 0x69, 0x61, 0x3a, 0x3a, 0x47, 0x6f, 0x76, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -3015,26 +3926,30 @@ func file_initia_gov_v1_tx_proto_rawDescGZIP() []byte {
 	return file_initia_gov_v1_tx_proto_rawDescData
 }
 
-var file_initia_gov_v1_tx_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_initia_gov_v1_tx_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_initia_gov_v1_tx_proto_goTypes = []interface{}{
-	(*MsgUpdateParams)(nil),                              // 0: initia.gov.v1.MsgUpdateParams
-	(*MsgUpdateParamsResponse)(nil),                      // 1: initia.gov.v1.MsgUpdateParamsResponse
-	(*MsgAddEmergencyProposalSubmitters)(nil),            // 2: initia.gov.v1.MsgAddEmergencyProposalSubmitters
-	(*MsgAddEmergencyProposalSubmittersResponse)(nil),    // 3: initia.gov.v1.MsgAddEmergencyProposalSubmittersResponse
-	(*MsgRemoveEmergencyProposalSubmitters)(nil),         // 4: initia.gov.v1.MsgRemoveEmergencyProposalSubmitters
-	(*MsgRemoveEmergencyProposalSubmittersResponse)(nil), // 5: initia.gov.v1.MsgRemoveEmergencyProposalSubmittersResponse
-	(*Params)(nil), // 6: initia.gov.v1.Params
+	(*MsgUpdateParams)(nil),                      // 0: initia.gov.v1.MsgUpdateParams
+	(*MsgUpdateParamsResponse)(nil),              // 1: initia.gov.v1.MsgUpdateParamsResponse
+	(*MsgAddEmergencySubmitters)(nil),            // 2: initia.gov.v1.MsgAddEmergencySubmitters
+	(*MsgAddEmergencySubmittersResponse)(nil),    // 3: initia.gov.v1.MsgAddEmergencySubmittersResponse
+	(*MsgRemoveEmergencySubmitters)(nil),         // 4: initia.gov.v1.MsgRemoveEmergencySubmitters
+	(*MsgRemoveEmergencySubmittersResponse)(nil), // 5: initia.gov.v1.MsgRemoveEmergencySubmittersResponse
+	(*MsgActivateEmergencyProposal)(nil),         // 6: initia.gov.v1.MsgActivateEmergencyProposal
+	(*MsgActivateEmergencyProposalResponse)(nil), // 7: initia.gov.v1.MsgActivateEmergencyProposalResponse
+	(*Params)(nil), // 8: initia.gov.v1.Params
 }
 var file_initia_gov_v1_tx_proto_depIdxs = []int32{
-	6, // 0: initia.gov.v1.MsgUpdateParams.params:type_name -> initia.gov.v1.Params
+	8, // 0: initia.gov.v1.MsgUpdateParams.params:type_name -> initia.gov.v1.Params
 	0, // 1: initia.gov.v1.Msg.UpdateParams:input_type -> initia.gov.v1.MsgUpdateParams
-	2, // 2: initia.gov.v1.Msg.AddEmergencyProposalSubmitters:input_type -> initia.gov.v1.MsgAddEmergencyProposalSubmitters
-	4, // 3: initia.gov.v1.Msg.RemoveEmergencyProposalSubmitters:input_type -> initia.gov.v1.MsgRemoveEmergencyProposalSubmitters
-	1, // 4: initia.gov.v1.Msg.UpdateParams:output_type -> initia.gov.v1.MsgUpdateParamsResponse
-	3, // 5: initia.gov.v1.Msg.AddEmergencyProposalSubmitters:output_type -> initia.gov.v1.MsgAddEmergencyProposalSubmittersResponse
-	5, // 6: initia.gov.v1.Msg.RemoveEmergencyProposalSubmitters:output_type -> initia.gov.v1.MsgRemoveEmergencyProposalSubmittersResponse
-	4, // [4:7] is the sub-list for method output_type
-	1, // [1:4] is the sub-list for method input_type
+	2, // 2: initia.gov.v1.Msg.AddEmergencySubmitters:input_type -> initia.gov.v1.MsgAddEmergencySubmitters
+	4, // 3: initia.gov.v1.Msg.RemoveEmergencySubmitters:input_type -> initia.gov.v1.MsgRemoveEmergencySubmitters
+	6, // 4: initia.gov.v1.Msg.ActivateEmergencyProposal:input_type -> initia.gov.v1.MsgActivateEmergencyProposal
+	1, // 5: initia.gov.v1.Msg.UpdateParams:output_type -> initia.gov.v1.MsgUpdateParamsResponse
+	3, // 6: initia.gov.v1.Msg.AddEmergencySubmitters:output_type -> initia.gov.v1.MsgAddEmergencySubmittersResponse
+	5, // 7: initia.gov.v1.Msg.RemoveEmergencySubmitters:output_type -> initia.gov.v1.MsgRemoveEmergencySubmittersResponse
+	7, // 8: initia.gov.v1.Msg.ActivateEmergencyProposal:output_type -> initia.gov.v1.MsgActivateEmergencyProposalResponse
+	5, // [5:9] is the sub-list for method output_type
+	1, // [1:5] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
 	1, // [1:1] is the sub-list for extension extendee
 	0, // [0:1] is the sub-list for field type_name
@@ -3072,7 +3987,7 @@ func file_initia_gov_v1_tx_proto_init() {
 			}
 		}
 		file_initia_gov_v1_tx_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MsgAddEmergencyProposalSubmitters); i {
+			switch v := v.(*MsgAddEmergencySubmitters); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3084,7 +3999,7 @@ func file_initia_gov_v1_tx_proto_init() {
 			}
 		}
 		file_initia_gov_v1_tx_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MsgAddEmergencyProposalSubmittersResponse); i {
+			switch v := v.(*MsgAddEmergencySubmittersResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3096,7 +4011,7 @@ func file_initia_gov_v1_tx_proto_init() {
 			}
 		}
 		file_initia_gov_v1_tx_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MsgRemoveEmergencyProposalSubmitters); i {
+			switch v := v.(*MsgRemoveEmergencySubmitters); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3108,7 +4023,31 @@ func file_initia_gov_v1_tx_proto_init() {
 			}
 		}
 		file_initia_gov_v1_tx_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MsgRemoveEmergencyProposalSubmittersResponse); i {
+			switch v := v.(*MsgRemoveEmergencySubmittersResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_initia_gov_v1_tx_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*MsgActivateEmergencyProposal); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_initia_gov_v1_tx_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*MsgActivateEmergencyProposalResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3126,7 +4065,7 @@ func file_initia_gov_v1_tx_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_initia_gov_v1_tx_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
