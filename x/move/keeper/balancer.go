@@ -192,6 +192,13 @@ func (k BalancerKeeper) getPoolInfo(ctx context.Context, metadataLP vmtypes.Acco
 	return
 }
 
+func (k BalancerKeeper) PoolMetadata(
+	ctx context.Context,
+	metadataLP vmtypes.AccountAddress,
+) ([]vmtypes.AccountAddress, error) {
+	return k.poolMetadata(ctx, metadataLP)
+}
+
 func (k BalancerKeeper) poolMetadata(ctx context.Context, metadataLP vmtypes.AccountAddress) ([]vmtypes.AccountAddress, error) {
 	bz, err := k.GetResourceBytes(ctx, metadataLP, vmtypes.StructTag{
 		Address:  vmtypes.StdAddress,
@@ -290,6 +297,36 @@ func (k BalancerKeeper) poolWeights(
 	}
 
 	return []math.LegacyDec{weightA, weightB}, nil
+}
+
+func (k BalancerKeeper) PoolFeeRate(
+	ctx context.Context,
+	metadataLP vmtypes.AccountAddress,
+) (math.LegacyDec, error) {
+	return k.poolFeeRate(ctx, metadataLP)
+}
+
+func (k BalancerKeeper) poolFeeRate(
+	ctx context.Context,
+	metadataLP vmtypes.AccountAddress,
+) (math.LegacyDec, error) {
+	bz, err := k.GetResourceBytes(ctx, metadataLP, vmtypes.StructTag{
+		Address:  vmtypes.StdAddress,
+		Module:   types.MoveModuleNameDex,
+		Name:     types.ResourceNameConfig,
+		TypeArgs: []vmtypes.TypeTag{},
+	})
+	if err != nil && errors.Is(err, collections.ErrNotFound) {
+		return math.LegacyZeroDec(), nil
+	} else if err != nil {
+		return math.LegacyZeroDec(), err
+	}
+
+	feeRate, err := types.ReadFeeRateFromDexConfig(bz)
+	if err != nil {
+		return math.LegacyZeroDec(), err
+	}
+	return feeRate, nil
 }
 
 func (k BalancerKeeper) isReverse(

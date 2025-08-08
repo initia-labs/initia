@@ -3,6 +3,7 @@ package keeper_test
 import (
 	"encoding/hex"
 	"fmt"
+	"slices"
 	"strings"
 	"testing"
 
@@ -13,6 +14,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
+	abcitypes "github.com/cometbft/cometbft/abci/types"
 	"github.com/initia-labs/initia/x/move/types"
 	vmtypes "github.com/initia-labs/movevm/types"
 )
@@ -649,12 +651,19 @@ func TestSubmsgCallback(t *testing.T) {
 	events := ctx.EventManager().Events()
 	event := events[len(events)-1]
 
-	require.Equal(t, sdk.NewEvent("move",
-		sdk.NewAttribute("type_tag", "0x2::submsg::ResultEvent"),
-		sdk.NewAttribute("data", "{\"id\":\"123\",\"success\":false}"),
-		sdk.NewAttribute("id", "123"),
-		sdk.NewAttribute("success", "false"),
-	), event)
+	require.Equal(t, "move", event.Type)
+	require.True(t, slices.ContainsFunc(event.Attributes, func(attr abcitypes.EventAttribute) bool {
+		return attr.Key == "type_tag" && attr.Value == "0x2::submsg::ResultEvent"
+	}))
+	require.True(t, slices.ContainsFunc(event.Attributes, func(attr abcitypes.EventAttribute) bool {
+		return attr.Key == "data" && attr.Value == "{\"id\":\"123\",\"success\":false}"
+	}))
+	require.True(t, slices.ContainsFunc(event.Attributes, func(attr abcitypes.EventAttribute) bool {
+		return attr.Key == "id" && attr.Value == "123"
+	}))
+	require.True(t, slices.ContainsFunc(event.Attributes, func(attr abcitypes.EventAttribute) bool {
+		return attr.Key == "success" && attr.Value == "false"
+	}))
 
 	// 1. callback without signer
 	err = input.MoveKeeper.ExecuteEntryFunctionJSON(ctx, senderAddr, vmtypes.TestAddress,

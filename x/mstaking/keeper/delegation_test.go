@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"fmt"
 	"slices"
 	"testing"
 	"time"
@@ -35,6 +36,7 @@ func createDexPool(
 	t *testing.T, ctx sdk.Context, input TestKeepers,
 	baseCoin sdk.Coin, quoteCoin sdk.Coin,
 	weightBase math.LegacyDec, weightQuote math.LegacyDec,
+	registerDexPair bool,
 ) (metadataLP vmtypes.AccountAddress) {
 	metadataBase, err := movetypes.MetadataAddressFromDenom(baseCoin.Denom)
 	require.NoError(t, err)
@@ -45,13 +47,13 @@ func createDexPool(
 	// fund test account for dex creation
 	input.Faucet.Fund(ctx, movetypes.TestAddr, baseCoin, quoteCoin)
 
-	denomLP := "ulp"
+	denomLP := "ulp" + baseCoin.Denom + quoteCoin.Denom
 
 	//
 	// prepare arguments
 	//
 
-	name, err := vmtypes.SerializeString("LP Coin")
+	name, err := vmtypes.SerializeString("LP Coin" + baseCoin.Denom + quoteCoin.Denom)
 	require.NoError(t, err)
 
 	symbol, err := vmtypes.SerializeString(denomLP)
@@ -90,10 +92,12 @@ func createDexPool(
 	require.NoError(t, err)
 
 	metadataLP = movetypes.NamedObjectAddress(vmtypes.TestAddress, denomLP)
-	movekeeper.NewDexKeeper(&input.MoveKeeper).SetDexPair(ctx, movetypes.DexPair{
-		MetadataQuote: metadataQuote.String(),
-		MetadataLP:    metadataLP.String(),
-	})
+	if registerDexPair {
+		movekeeper.NewDexKeeper(&input.MoveKeeper).SetDexPair(ctx, movetypes.DexPair{
+			MetadataQuote: metadataQuote.String(),
+			MetadataLP:    metadataLP.String(),
+		})
+	}
 
 	return metadataLP
 }
@@ -490,7 +494,7 @@ func Test_Delegate(t *testing.T) {
 
 	// create dex to register second bond denom
 	baseDenom := bondDenom
-	metadataLP := createDexPool(t, ctx, input, sdk.NewInt64Coin(baseDenom, 1_000_000_000), sdk.NewInt64Coin("uusdc", 2_500_000_000), math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1))
+	metadataLP := createDexPool(t, ctx, input, sdk.NewInt64Coin(baseDenom, 1_000_000_000), sdk.NewInt64Coin("uusdc", 2_500_000_000), math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1), true)
 
 	secondBondDenom, err := movetypes.DenomFromMetadataAddress(ctx, input.MoveKeeper.MoveBankKeeper(), metadataLP)
 	require.NoError(t, err)
@@ -534,7 +538,7 @@ func Test_Unbond(t *testing.T) {
 
 	// create dex to register second bond denom
 	baseDenom := bondDenom
-	metadataLP := createDexPool(t, ctx, input, sdk.NewInt64Coin(baseDenom, 1_000_000_000), sdk.NewInt64Coin("uusdc", 2_500_000_000), math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1))
+	metadataLP := createDexPool(t, ctx, input, sdk.NewInt64Coin(baseDenom, 1_000_000_000), sdk.NewInt64Coin("uusdc", 2_500_000_000), math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1), true)
 
 	secondBondDenom, err := movetypes.DenomFromMetadataAddress(ctx, input.MoveKeeper.MoveBankKeeper(), metadataLP)
 	require.NoError(t, err)
@@ -572,7 +576,7 @@ func Test_UnbondAfterSlash(t *testing.T) {
 
 	// create dex to register second bond denom
 	baseDenom := bondDenom
-	metadataLP := createDexPool(t, ctx, input, sdk.NewInt64Coin(baseDenom, 1_000_000_000), sdk.NewInt64Coin("uusdc", 2_500_000_000), math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1))
+	metadataLP := createDexPool(t, ctx, input, sdk.NewInt64Coin(baseDenom, 1_000_000_000), sdk.NewInt64Coin("uusdc", 2_500_000_000), math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1), true)
 
 	secondBondDenom, err := movetypes.DenomFromMetadataAddress(ctx, input.MoveKeeper.MoveBankKeeper(), metadataLP)
 	require.NoError(t, err)
@@ -629,7 +633,7 @@ func Test_Undelegate(t *testing.T) {
 
 	// create dex to register second bond denom
 	baseDenom := bondDenom
-	metadataLP := createDexPool(t, ctx, input, sdk.NewInt64Coin(baseDenom, 1_000_000_000), sdk.NewInt64Coin("uusdc", 2_500_000_000), math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1))
+	metadataLP := createDexPool(t, ctx, input, sdk.NewInt64Coin(baseDenom, 1_000_000_000), sdk.NewInt64Coin("uusdc", 2_500_000_000), math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1), true)
 
 	secondBondDenom, err := movetypes.DenomFromMetadataAddress(ctx, input.MoveKeeper.MoveBankKeeper(), metadataLP)
 	require.NoError(t, err)
@@ -673,7 +677,7 @@ func Test_BeginRedelegation(t *testing.T) {
 
 	// create dex to register second bond denom
 	baseDenom := bondDenom
-	metadataLP := createDexPool(t, ctx, input, sdk.NewInt64Coin(baseDenom, 1_000_000_000), sdk.NewInt64Coin("uusdc", 2_500_000_000), math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1))
+	metadataLP := createDexPool(t, ctx, input, sdk.NewInt64Coin(baseDenom, 1_000_000_000), sdk.NewInt64Coin("uusdc", 2_500_000_000), math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1), true)
 
 	secondBondDenom, err := movetypes.DenomFromMetadataAddress(ctx, input.MoveKeeper.MoveBankKeeper(), metadataLP)
 	require.NoError(t, err)
@@ -718,7 +722,7 @@ func Test_ValidateUnbondAmount(t *testing.T) {
 
 	// create dex to register second bond denom
 	baseDenom := bondDenom
-	metadataLP := createDexPool(t, ctx, input, sdk.NewInt64Coin(baseDenom, 1_000_000_000), sdk.NewInt64Coin("uusdc", 2_500_000_000), math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1))
+	metadataLP := createDexPool(t, ctx, input, sdk.NewInt64Coin(baseDenom, 1_000_000_000), sdk.NewInt64Coin("uusdc", 2_500_000_000), math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1), true)
 
 	secondBondDenom, err := movetypes.DenomFromMetadataAddress(ctx, input.MoveKeeper.MoveBankKeeper(), metadataLP)
 	require.NoError(t, err)
@@ -750,4 +754,144 @@ func Test_ValidateUnbondAmount(t *testing.T) {
 
 	_, err = input.StakingKeeper.ValidateUnbondAmount(ctx, delAddr, valAddr, bondCoins.Add(sdk.NewCoin(bondDenom, math.OneInt())))
 	require.Error(t, err)
+}
+
+func Test_MigrateDelegation(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+
+	swapModule := ReadMoveFile("swap")
+	err := input.MoveKeeper.PublishModuleBundle(ctx, movetypes.ConvertSDKAddressToVMAddress(movetypes.TestAddr), vmtypes.NewModuleBundle(vmtypes.Module{Code: swapModule}), movetypes.UpgradePolicy_COMPATIBLE)
+	require.NoError(t, err)
+
+	baseDenom := bondDenom
+	metadataLPOld := createDexPool(t, ctx, input, sdk.NewInt64Coin(baseDenom, 1_000_000_000), sdk.NewInt64Coin("uusdc", 2_500_000_000), math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1), false)
+	metadataLPNew := createDexPool(t, ctx, input, sdk.NewInt64Coin(baseDenom, 100_000_000), sdk.NewInt64Coin("uusdc2", 250_000_000), math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1), false)
+
+	lpDenomOld, err := movetypes.DenomFromMetadataAddress(ctx, input.MoveKeeper.MoveBankKeeper(), metadataLPOld)
+	require.NoError(t, err)
+	lpDenomNew, err := movetypes.DenomFromMetadataAddress(ctx, input.MoveKeeper.MoveBankKeeper(), metadataLPNew)
+	require.NoError(t, err)
+
+	metadataUusdc, err := movetypes.MetadataAddressFromDenom("uusdc")
+	require.NoError(t, err)
+
+	metadataUusdc2, err := movetypes.MetadataAddressFromDenom("uusdc2")
+	require.NoError(t, err)
+
+	err = input.MoveKeeper.ExecuteEntryFunctionJSON(
+		ctx,
+		movetypes.ConvertSDKAddressToVMAddress(movetypes.TestAddr),
+		movetypes.ConvertSDKAddressToVMAddress(movetypes.TestAddr),
+		"swap",
+		"initialize",
+		[]vmtypes.TypeTag{},
+		[]string{
+			fmt.Sprintf("\"%s\"", metadataUusdc.String()),
+			fmt.Sprintf("\"%s\"", metadataUusdc2.String()),
+		},
+	)
+	require.NoError(t, err)
+
+	fundedAccount := input.Faucet.NewFundedAccount(ctx, sdk.NewInt64Coin("uusdc2", 500_000_000))
+	err = input.MoveKeeper.ExecuteEntryFunctionJSON(
+		ctx,
+		movetypes.ConvertSDKAddressToVMAddress(fundedAccount),
+		movetypes.ConvertSDKAddressToVMAddress(movetypes.TestAddr),
+		"swap",
+		"provide_liquidity",
+		[]vmtypes.TypeTag{},
+		[]string{
+			fmt.Sprintf("\"%s\"", metadataUusdc2.String()),
+			"\"500000000\"",
+		},
+	)
+	require.NoError(t, err)
+
+	// update params
+	params, err := input.StakingKeeper.GetParams(ctx)
+	require.NoError(t, err)
+	params.BondDenoms = append(params.BondDenoms, lpDenomOld)
+	valAddr := createValidatorWithBalance(ctx, input, 100_000_000, 1_000_000, 1)
+	valAddrStr, err := input.StakingKeeper.ValidatorAddressCodec().BytesToString(valAddr)
+	require.NoError(t, err)
+
+	validator, err := input.StakingKeeper.Validators.Get(ctx, valAddr)
+	require.NoError(t, err)
+
+	delAddr := input.Faucet.NewFundedAccount(ctx, sdk.NewInt64Coin(baseDenom, 1_000_000_000), sdk.NewInt64Coin("uusdc", 2_500_000_000))
+
+	err = input.MoveKeeper.ExecuteEntryFunctionJSON(
+		ctx,
+		movetypes.ConvertSDKAddressToVMAddress(delAddr),
+		movetypes.ConvertSDKAddressToVMAddress(movetypes.StdAddr),
+		"dex",
+		"provide_liquidity_script",
+		[]vmtypes.TypeTag{},
+		[]string{
+			fmt.Sprintf("\"%s\"", metadataLPOld.String()),
+			"\"1000000\"",
+			"\"2500000\"",
+			"null",
+		},
+	)
+	require.NoError(t, err)
+
+	lpDenomOldBalance := input.BankKeeper.GetBalance(ctx, delAddr, lpDenomOld)
+
+	err = input.MoveKeeper.Whitelist(ctx, movetypes.MsgWhitelist{
+		MetadataLP:   metadataLPOld.String(),
+		RewardWeight: math.LegacyNewDecWithPrec(1, 1),
+	})
+	require.NoError(t, err)
+
+	shares, err := input.StakingKeeper.Delegate(ctx, delAddr, sdk.NewCoins(lpDenomOldBalance), types.Unbonded, validator, true)
+	require.NoError(t, err)
+
+	delegation, err := input.StakingKeeper.GetDelegation(ctx, delAddr, valAddr)
+	require.NoError(t, err)
+
+	delAddrStr, err := input.AccountKeeper.AddressCodec().BytesToString(delAddr)
+	require.NoError(t, err)
+
+	require.Equal(t, types.Delegation{
+		DelegatorAddress: delAddrStr,
+		ValidatorAddress: valAddrStr,
+		Shares:           shares,
+	}, delegation)
+
+	metadataLPOldFeeRateBefore, err := input.MoveKeeper.BalancerKeeper().PoolFeeRate(ctx, metadataLPOld)
+	require.NoError(t, err)
+	metadataLPNewFeeRateBefore, err := input.MoveKeeper.BalancerKeeper().PoolFeeRate(ctx, metadataLPNew)
+	require.NoError(t, err)
+
+	// no migration registered
+	_, err = input.StakingKeeper.MigrateDelegation(ctx, delAddr, valAddr, lpDenomOld, "uusdc")
+	require.Error(t, err)
+
+	err = input.StakingKeeper.RegisterMigration(ctx, lpDenomOld, lpDenomNew, "uusdc", "uusdc2", "0x2::swap")
+	require.NoError(t, err)
+
+	// lpDenomNew is not in bond denoms
+	_, err = input.StakingKeeper.MigrateDelegation(ctx, delAddr, valAddr, lpDenomOld, "uusdc")
+	require.Error(t, err)
+
+	err = input.MoveKeeper.Whitelist(ctx, movetypes.MsgWhitelist{
+		MetadataLP:   metadataLPNew.String(),
+		RewardWeight: math.LegacyNewDecWithPrec(1, 1),
+	})
+	require.NoError(t, err)
+
+	err = input.StakingKeeper.RegisterMigration(ctx, lpDenomOld, lpDenomNew, "uusdc", "uusdc2", "0x2::swap")
+	require.NoError(t, err)
+
+	_, err = input.StakingKeeper.MigrateDelegation(ctx, delAddr, valAddr, lpDenomOld, "uusdc")
+	require.NoError(t, err)
+
+	metadataLPOldFeeRateAfter, err := input.MoveKeeper.BalancerKeeper().PoolFeeRate(ctx, metadataLPOld)
+	require.NoError(t, err)
+	metadataLPNewFeeRateAfter, err := input.MoveKeeper.BalancerKeeper().PoolFeeRate(ctx, metadataLPNew)
+	require.NoError(t, err)
+
+	require.Equal(t, metadataLPOldFeeRateBefore, metadataLPOldFeeRateAfter)
+	require.Equal(t, metadataLPNewFeeRateBefore, metadataLPNewFeeRateAfter)
 }
