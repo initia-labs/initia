@@ -53,7 +53,7 @@ func Test_ReadPool(t *testing.T) {
 	require.Equal(t, math.MaxInt(baseAmount, quoteAmount), totalShare)
 }
 
-func Test_ReadWeights(t *testing.T) {
+func Test_ReadWeightsAndFeeRate(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 	dexKeeper := keeper.NewDexKeeper(&input.MoveKeeper)
 
@@ -83,6 +83,10 @@ func Test_ReadWeights(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, math.LegacyNewDecWithPrec(8, 1), weights[0])
 	require.Equal(t, math.LegacyNewDecWithPrec(2, 1), weights[1])
+
+	feeRate, err := input.MoveKeeper.BalancerKeeper().PoolFeeRate(ctx, metadataLP)
+	require.NoError(t, err)
+	require.Equal(t, math.LegacyNewDecWithPrec(3, 3), feeRate)
 }
 
 func Test_GetBaseSpotPrice(t *testing.T) {

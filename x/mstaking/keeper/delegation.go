@@ -3,17 +3,23 @@ package keeper
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 	"time"
 
 	"cosmossdk.io/collections"
 	errorsmod "cosmossdk.io/errors"
+	"cosmossdk.io/math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	"github.com/initia-labs/initia/x/mstaking/types"
+
+	movetypes "github.com/initia-labs/initia/x/move/types"
+	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 // return a specific delegation
@@ -1106,4 +1112,234 @@ func (k Keeper) ValidateUnbondAmount(
 	shares = shares.Intersect(delShares)
 
 	return shares, nil
+}
+
+func (k Keeper) MigrateDelegation(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress, lpDenomIn string, denomSwapIn string) (sdk.DecCoins, error) {
+	lpMetadataIn, err := movetypes.MetadataAddressFromDenom(lpDenomIn)
+	if err != nil {
+		return nil, err
+	}
+	metadataSwapIn, err := movetypes.MetadataAddressFromDenom(denomSwapIn)
+	if err != nil {
+		return nil, err
+	}
+
+	// get the swap contract address and module name
+	registeredMigration, err := k.RegisteredMigrations.Get(ctx, lpMetadataIn[:])
+	if err != nil {
+		return nil, err
+	}
+
+	lpMetadataOut := vmtypes.AccountAddress(registeredMigration.K1())
+	lpDenomOut, err := movetypes.DenomFromMetadataAddress(ctx, k.fungibleAssetKeeper, lpMetadataOut)
+	if err != nil {
+		return nil, err
+	}
+	swapContractModuleAddress := registeredMigration.K2()
+	swapContractModuleName := registeredMigration.K3()
+
+	bondDenoms, err := k.BondDenoms(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if !slices.Contains(bondDenoms, lpDenomOut) {
+		return nil, errorsmod.Wrapf(
+			sdkerrors.ErrInvalidRequest, "invalid coin denomination: got %s, expected one of %s", lpDenomOut, bondDenoms,
+		)
+	}
+
+	delegation, err := k.GetDelegation(ctx, delAddr, valAddr)
+	if err != nil {
+		return nil, err
+	}
+
+	validator, err := k.Validators.Get(ctx, valAddr)
+	if err != nil {
+		return nil, err
+	}
+
+	// unbond from a validator
+	returnCoins, err := k.Unbond(ctx, delAddr, valAddr, sdk.NewDecCoins(sdk.NewDecCoinFromDec(lpDenomIn, delegation.Shares.AmountOf(lpDenomIn))))
+	if err != nil {
+		return nil, err
+	}
+
+	if validator.IsBonded() {
+		err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.BondedPoolName, delAddr, returnCoins)
+	} else {
+		err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.NotBondedPoolName, delAddr, returnCoins)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	metadatas, err := k.balancerKeeper.PoolMetadata(ctx, lpMetadataIn)
+	if err != nil {
+		return nil, err
+	}
+	fixedMetadata := metadatas[1]
+	if metadatas[1].Equals(metadataSwapIn) {
+		fixedMetadata = metadatas[0]
+	}
+	fixedDenom, err := movetypes.DenomFromMetadataAddress(ctx, k.fungibleAssetKeeper, fixedMetadata)
+	if err != nil {
+		return nil, err
+	}
+
+	balancesBefore := k.bankKeeper.GetAllBalances(ctx, delAddr)
+	lpInBalanceBefore := balancesBefore.AmountOf(lpDenomIn)
+	fixedDenomBalanceBefore := balancesBefore.AmountOf(fixedDenom)
+	denomSwapInBalanceBeforeWithdrawalBeforeSwap := balancesBefore.AmountOf(denomSwapIn)
+
+	// withdraw liquidity from the dex pool
+
+	if err := k.moveKeeper.ExecuteEntryFunctionJSON(
+		ctx,
+		movetypes.ConvertSDKAddressToVMAddress(delAddr),
+		movetypes.ConvertSDKAddressToVMAddress(movetypes.StdAddr),
+		"dex",
+		"withdraw_liquidity_script",
+		[]vmtypes.TypeTag{},
+		[]string{
+			fmt.Sprintf("\"%s\"", lpMetadataIn.String()),
+			fmt.Sprintf("\"%s\"", lpInBalanceBefore.String()),
+			"null",
+			"null",
+		},
+	); err != nil {
+		return nil, err
+	}
+
+	viewOutput, _, err := k.moveKeeper.ExecuteViewFunctionJSON(
+		ctx,
+		vmtypes.AccountAddress(swapContractModuleAddress),
+		swapContractModuleName,
+		"denom_out",
+		[]vmtypes.TypeTag{},
+		[]string{fmt.Sprintf("\"%s\"", denomSwapIn)},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	var denomSwapOut string
+	if err := json.Unmarshal([]byte(viewOutput.Ret), &denomSwapOut); err != nil {
+		return nil, err
+	}
+	metadataSwapOut, err := movetypes.MetadataAddressFromDenom(denomSwapOut)
+	if err != nil {
+		return nil, err
+	}
+
+	balancesAfter := k.bankKeeper.GetAllBalances(ctx, delAddr)
+	lpInBalanceAfter := balancesAfter.AmountOf(lpDenomIn)
+	fixedDenomBalanceAfter := balancesAfter.AmountOf(fixedDenom)
+	denomSwapInBalanceAfterWithdrawalBeforeSwap := balancesAfter.AmountOf(denomSwapIn)
+	denomSwapOutBalanceBefore := balancesAfter.AmountOf(denomSwapOut)
+
+	if !lpInBalanceAfter.Equal(math.ZeroInt()) {
+		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "lp in balance is not zero")
+	}
+
+	swapAmount := denomSwapInBalanceAfterWithdrawalBeforeSwap.Sub(denomSwapInBalanceBeforeWithdrawalBeforeSwap)
+
+	// swap the denom in to the denom out whih is registered in the swap contract
+
+	err = k.moveKeeper.ExecuteEntryFunctionJSON(
+		ctx,
+		movetypes.ConvertSDKAddressToVMAddress(delAddr),
+		vmtypes.AccountAddress(swapContractModuleAddress),
+		swapContractModuleName,
+		"swap",
+		[]vmtypes.TypeTag{},
+		[]string{
+			fmt.Sprintf("\"%s\"", metadataSwapIn.String()),
+			fmt.Sprintf("\"%s\"", metadataSwapOut.String()),
+			fmt.Sprintf("\"%s\"", swapAmount.String()),
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	balancesAfterSwap := k.bankKeeper.GetAllBalances(ctx, delAddr)
+	denomSwapInBalanceAfterWithdrawalAfterSwap := balancesAfterSwap.AmountOf(denomSwapIn)
+	denomSwapOutBalanceAfter := balancesAfterSwap.AmountOf(denomSwapOut)
+
+	if !denomSwapInBalanceAfterWithdrawalBeforeSwap.Sub(denomSwapInBalanceAfterWithdrawalAfterSwap).Equal(denomSwapOutBalanceAfter.Sub(denomSwapOutBalanceBefore)) {
+		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "denom out balance is not equal")
+	}
+
+	feeRateBefore, err := k.balancerKeeper.PoolFeeRate(ctx, lpMetadataOut)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := k.moveKeeper.ExecuteEntryFunctionJSON(
+		ctx,
+		movetypes.ConvertSDKAddressToVMAddress(movetypes.StdAddr),
+		movetypes.ConvertSDKAddressToVMAddress(movetypes.StdAddr),
+		"dex",
+		"update_swap_fee_rate",
+		[]vmtypes.TypeTag{},
+		[]string{
+			fmt.Sprintf("\"%s\"", lpMetadataOut.String()),
+			"\"0\"",
+		},
+	); err != nil {
+		return nil, err
+	}
+
+	// provide liquidity to the dex pool
+
+	coinAAmount := fixedDenomBalanceAfter.Sub(fixedDenomBalanceBefore)
+	coinBAmount := denomSwapOutBalanceAfter.Sub(denomSwapOutBalanceBefore)
+
+	poolMetadata, err := k.balancerKeeper.PoolMetadata(ctx, lpMetadataOut)
+	if err != nil {
+		return nil, err
+	}
+
+	if poolMetadata[0].Equals(metadataSwapOut) && poolMetadata[1].Equals(fixedMetadata) {
+		coinAAmount, coinBAmount = coinBAmount, coinAAmount
+	} else if !poolMetadata[0].Equals(fixedMetadata) || !poolMetadata[1].Equals(metadataSwapOut) {
+		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "pool metadata is not equal")
+	}
+
+	err = k.moveKeeper.ExecuteEntryFunctionJSON(
+		ctx,
+		movetypes.ConvertSDKAddressToVMAddress(delAddr),
+		movetypes.ConvertSDKAddressToVMAddress(movetypes.StdAddr),
+		"dex",
+		"provide_liquidity_script",
+		[]vmtypes.TypeTag{},
+		[]string{
+			fmt.Sprintf("\"%s\"", lpMetadataOut.String()),
+			fmt.Sprintf("\"%s\"", coinAAmount.String()),
+			fmt.Sprintf("\"%s\"", coinBAmount.String()),
+			"null",
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := k.moveKeeper.ExecuteEntryFunctionJSON(
+		ctx,
+		movetypes.ConvertSDKAddressToVMAddress(movetypes.StdAddr),
+		movetypes.ConvertSDKAddressToVMAddress(movetypes.StdAddr),
+		"dex",
+		"update_swap_fee_rate",
+		[]vmtypes.TypeTag{},
+		[]string{
+			fmt.Sprintf("\"%s\"", lpMetadataOut.String()),
+			fmt.Sprintf("\"%s\"", feeRateBefore.String()),
+		},
+	); err != nil {
+		return nil, err
+	}
+
+	lpDenomOutBalance := k.bankKeeper.GetBalance(ctx, delAddr, lpDenomOut)
+
+	return k.Delegate(ctx, delAddr, sdk.NewCoins(lpDenomOutBalance), types.Unbonded, validator, true)
 }

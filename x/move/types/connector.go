@@ -412,6 +412,40 @@ func ReadWeightsFromDexConfig(timestamp math.Int, bz []byte) (math.LegacyDec, ma
 	)
 }
 
+// ReadFeeRateFromDexConfig util function to read pool fee rate from the DexConfig
+func ReadFeeRateFromDexConfig(bz []byte) (math.LegacyDec, error) {
+	cursor := int(0)
+
+	// read extend_ref + version
+	cursor += AddressBytesLength + 8
+
+	// before weights
+	weightLen, len := readULEB128(bz[cursor:])
+	cursor += len + weightLen
+
+	weightLen, len = readULEB128(bz[cursor:])
+	cursor += len + weightLen
+
+	cursor += 8
+
+	// after weights
+	weightLen, len = readULEB128(bz[cursor:])
+	cursor += len + weightLen
+
+	weightLen, len = readULEB128(bz[cursor:])
+	cursor += len + weightLen
+
+	cursor += 8
+
+	feeRateLen, len := readULEB128(bz[cursor:])
+	cursor += len
+	feeRate, err := DeserializeBigDecimal(bz[cursor : cursor+feeRateLen])
+	if err != nil {
+		return math.LegacyZeroDec(), err
+	}
+	return feeRate, nil
+}
+
 // ReadStoresFromPool util function to read pool stores from the Pool
 func ReadStoresFromPool(bz []byte) (vmtypes.AccountAddress, vmtypes.AccountAddress, error) {
 	cursor := int(0)

@@ -7,6 +7,7 @@ import (
 	"cosmossdk.io/math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 // VotingPowerKeeper expected move keeper (noalias)
@@ -42,10 +43,48 @@ type BankKeeper interface {
 	GetSupply(ctx context.Context, denom string) sdk.Coin
 
 	SendCoinsFromModuleToModule(ctx context.Context, senderPool, recipientPool string, amt sdk.Coins) error
+	SendCoinsFromModuleToAccount(ctx context.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
 	UndelegateCoinsFromModuleToAccount(ctx context.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
 	DelegateCoinsFromAccountToModule(ctx context.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error
 
 	BurnCoins(ctx context.Context, name string, amt sdk.Coins) error
+}
+
+type MoveKeeper interface {
+	ExecuteEntryFunctionJSON(
+		ctx context.Context,
+		sender vmtypes.AccountAddress,
+		moduleAddr vmtypes.AccountAddress,
+		moduleName string,
+		functionName string,
+		typeArgs []vmtypes.TypeTag,
+		jsonArgs []string,
+	) error
+
+	ExecuteViewFunctionJSON(
+		ctx context.Context,
+		moduleAddr vmtypes.AccountAddress,
+		moduleName string,
+		functionName string,
+		typeArgs []vmtypes.TypeTag,
+		jsonArgs []string,
+	) (vmtypes.ViewOutput, uint64, error)
+}
+
+type FungibleAssetKeeper interface {
+	Issuer(context.Context, vmtypes.AccountAddress) (vmtypes.AccountAddress, error)
+	Symbol(context.Context, vmtypes.AccountAddress) (string, error)
+}
+
+type BalancerKeeper interface {
+	PoolMetadata(
+		ctx context.Context,
+		metadataLP vmtypes.AccountAddress,
+	) ([]vmtypes.AccountAddress, error)
+	PoolFeeRate(
+		ctx context.Context,
+		metadataLP vmtypes.AccountAddress,
+	) (math.LegacyDec, error)
 }
 
 // ValidatorSet expected properties for the set of all validators (noalias)

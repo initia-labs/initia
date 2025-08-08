@@ -20,6 +20,8 @@ var (
 	_ sdk.Msg                            = &MsgBeginRedelegate{}
 	_ sdk.Msg                            = &MsgCancelUnbondingDelegation{}
 	_ sdk.Msg                            = &MsgUpdateParams{}
+	_ sdk.Msg                            = &MsgRegisterMigration{}
+	_ sdk.Msg                            = &MsgMigrateDelegation{}
 )
 
 // NewMsgCreateValidator creates a new MsgCreateValidator instance.
@@ -271,6 +273,64 @@ func (msg MsgCancelUnbondingDelegation) Validate(accAddrCodec address.Codec, val
 			sdkerrors.ErrInvalidRequest,
 			"invalid height",
 		)
+	}
+
+	return nil
+}
+
+/* MsgRegisterMigration */
+
+func (msg MsgRegisterMigration) Validate(accAddrCodec address.Codec, valAddrCodec address.Codec) error {
+	if addr, err := accAddrCodec.StringToBytes(msg.Authority); err != nil {
+		return err
+	} else if len(addr) == 0 {
+		return errors.Wrap(err, "invalid authority address")
+	}
+
+	if msg.LpDenomIn == "" {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "lp denom in is empty")
+	}
+
+	if msg.LpDenomOut == "" {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "lp denom out is empty")
+	}
+
+	if msg.DenomIn == "" {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "denom in is empty")
+	}
+
+	if msg.DenomOut == "" {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "denom out is empty")
+	}
+
+	if msg.SwapContractAddress == "" {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "swap contract address is empty")
+	}
+
+	return nil
+}
+
+/* MsgMigrateDelegation */
+
+func (msg MsgMigrateDelegation) Validate(accAddrCodec address.Codec, valAddrCodec address.Codec) error {
+	if addr, err := accAddrCodec.StringToBytes(msg.DelegatorAddress); err != nil {
+		return err
+	} else if len(addr) == 0 {
+		return ErrEmptyDelegatorAddr
+	}
+
+	if addr, err := valAddrCodec.StringToBytes(msg.ValidatorAddress); err != nil {
+		return err
+	} else if len(addr) == 0 {
+		return ErrEmptyValidatorAddr
+	}
+
+	if msg.LpDenomIn == "" {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "lp denom in is empty")
+	}
+
+	if msg.DenomIn == "" {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "denom in is empty")
 	}
 
 	return nil

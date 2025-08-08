@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/initia-labs/initia/x/mstaking/types"
@@ -16,6 +17,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	cosmostypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+
+	movetypes "github.com/initia-labs/initia/x/move/types"
+	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 // Implements ValidatorSet interface
@@ -29,11 +33,14 @@ type Keeper struct {
 	cdc          codec.BinaryCodec
 	storeService corestoretypes.KVStoreService
 
-	authKeeper        types.AccountKeeper
-	bankKeeper        types.BankKeeper
-	VotingPowerKeeper types.VotingPowerKeeper
-	hooks             types.StakingHooks
-	slashingHooks     types.SlashingHooks
+	authKeeper          types.AccountKeeper
+	bankKeeper          types.BankKeeper
+	moveKeeper          types.MoveKeeper
+	fungibleAssetKeeper types.FungibleAssetKeeper
+	balancerKeeper      types.BalancerKeeper
+	VotingPowerKeeper   types.VotingPowerKeeper
+	hooks               types.StakingHooks
+	slashingHooks       types.SlashingHooks
 
 	authority string
 
@@ -66,6 +73,8 @@ type Keeper struct {
 
 	HistoricalInfos collections.Map[int64, cosmostypes.HistoricalInfo]
 
+	RegisteredMigrations collections.Map[[]byte, collections.Triple[[]byte, []byte, string]] // LpInMetadata, [LpOutMetadata, swapContractModuleAddress, swapContractModuleName]
+
 	Params collections.Item[types.Params]
 }
 
@@ -75,6 +84,9 @@ func NewKeeper(
 	storeService corestoretypes.KVStoreService,
 	ak types.AccountKeeper,
 	bk types.BankKeeper,
+	mk types.MoveKeeper,
+	fak types.FungibleAssetKeeper,
+	balk types.BalancerKeeper,
 	vk types.VotingPowerKeeper,
 	authority string,
 	validatorAddressCodec addresscodec.Codec,
@@ -97,13 +109,16 @@ func NewKeeper(
 	sb := collections.NewSchemaBuilder(storeService)
 
 	k := &Keeper{
-		cdc:               cdc,
-		storeService:      storeService,
-		authKeeper:        ak,
-		bankKeeper:        bk,
-		VotingPowerKeeper: vk,
-		hooks:             nil,
-		slashingHooks:     nil,
+		cdc:                 cdc,
+		storeService:        storeService,
+		authKeeper:          ak,
+		bankKeeper:          bk,
+		moveKeeper:          mk,
+		fungibleAssetKeeper: fak,
+		balancerKeeper:      balk,
+		VotingPowerKeeper:   vk,
+		hooks:               nil,
+		slashingHooks:       nil,
 
 		authority: authority,
 
@@ -133,6 +148,8 @@ func NewKeeper(
 		ValidatorQueue:    collections.NewMap(sb, types.ValidatorQueuePrefix, "validator_queue", sdk.TimeKey, codec.CollValue[types.ValAddresses](cdc)),
 
 		HistoricalInfos: collections.NewMap(sb, types.HistoricalInfosPrefix, "historical_infos", collections.Int64Key, codec.CollValue[cosmostypes.HistoricalInfo](cdc)),
+
+		RegisteredMigrations: collections.NewMap(sb, types.RegisteredMigrationsPrefix, "registered_migrations", collections.BytesKey, collectioncodec.KeyToValueCodec(collections.TripleKeyCodec(collections.BytesKey, collections.BytesKey, collections.StringKey))),
 
 		Params: collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
 	}
@@ -207,4 +224,49 @@ func (k Keeper) ValidatorAddressCodec() addresscodec.Codec {
 // ConsensusAddressCodec returns the app consensus address codec.
 func (k Keeper) ConsensusAddressCodec() addresscodec.Codec {
 	return k.consensusAddressCodec
+}
+
+func (k Keeper) RegisterMigration(ctx context.Context, lpDenomIn string, lpDenomOut string, denomIn string, denomOut string, swapContractStr string) error {
+	lpMetadataIn, err := movetypes.MetadataAddressFromDenom(lpDenomIn)
+	if err != nil {
+		return err
+	}
+
+	lpMetadataOut, err := movetypes.MetadataAddressFromDenom(lpDenomOut)
+	if err != nil {
+		return err
+	}
+
+	swapContract := strings.Split(swapContractStr, "::")
+	if len(swapContract) != 2 {
+		return fmt.Errorf("invalid swap contract address: %s, expected format: <module_addr>::<module_name>", swapContractStr)
+	}
+
+	swapContractModuleAddress, err := movetypes.AccAddressFromString(k.authKeeper.AddressCodec(), swapContract[0])
+	if err != nil {
+		return err
+	}
+
+	output, _, err := k.moveKeeper.ExecuteViewFunctionJSON(
+		ctx,
+		vmtypes.AccountAddress(swapContractModuleAddress),
+		swapContract[1],
+		"denom_out",
+		[]vmtypes.TypeTag{},
+		[]string{fmt.Sprintf("\"%s\"", denomIn)},
+	)
+	if err != nil {
+		return err
+	}
+
+	wrappedDenomOut := fmt.Sprintf("\"%s\"", denomOut)
+	if output.Ret != wrappedDenomOut {
+		return fmt.Errorf("invalid denom out: got %s, expected %s", output.Ret, wrappedDenomOut)
+	}
+
+	err = k.RegisteredMigrations.Set(ctx, lpMetadataIn[:], collections.Join3(lpMetadataOut[:], swapContractModuleAddress[:], swapContract[1]))
+	if err != nil {
+		return err
+	}
+	return nil
 }
