@@ -1341,5 +1341,10 @@ func (k Keeper) MigrateDelegation(ctx context.Context, delAddr sdk.AccAddress, v
 
 	lpDenomOutBalance := k.bankKeeper.GetBalance(ctx, delAddr, lpDenomOut)
 
+	validator, err = k.Validators.Get(ctx, valAddr)
+	if err != nil {
+		return nil, err
+	}
+
 	return k.Delegate(ctx, delAddr, sdk.NewCoins(lpDenomOutBalance), types.Unbonded, validator, true)
 }
