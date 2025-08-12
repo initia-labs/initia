@@ -141,3 +141,4 @@ type GetAppVersionBeforeHooks interface {
 type GetAppVersionAfterHooks interface {
 	GetAppVersionAfterHook(ctx sdk.Context, portID, channelID string, result string, success bool)
 }
+

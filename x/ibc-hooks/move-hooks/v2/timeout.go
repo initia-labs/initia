@@ -1,32 +1,37 @@
-package move_hooks
+package v2
 
 import (
-	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	ibchooks "github.com/initia-labs/initia/x/ibc-hooks"
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	channeltypesv2 "github.com/cosmos/ibc-go/v10/modules/core/04-channel/v2/types"
+
+	ibchooksv2 "github.com/initia-labs/initia/x/ibc-hooks/v2"
+	movehooks "github.com/initia-labs/initia/x/ibc-hooks/move-hooks"
 	"github.com/initia-labs/initia/x/ibc-hooks/types"
 	nfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 	movetypes "github.com/initia-labs/initia/x/move/types"
 	vmtypes "github.com/initia-labs/movevm/types"
 )
 
-func (h MoveHooks) onAckIcs20Packet(
+// onTimeoutIcs20Packet handles ICS20 packet timeout with move hooks
+func (h MoveHooks) onTimeoutIcs20Packet(
 	ctx sdk.Context,
-	im ibchooks.IBCMiddleware,
-	channelVersion string,
-	packet channeltypes.Packet,
-	acknowledgement []byte,
+	im ibchooksv2.IBCMiddleware,
+	sourceChannel string,
+	destinationChannel string,
+	sequence uint64,
+	payload channeltypesv2.Payload,
 	relayer sdk.AccAddress,
-	data transfertypes.InternalTransferRepresentation,
+	internalData transfertypes.InternalTransferRepresentation,
 ) error {
-	if err := im.App.OnAcknowledgementPacket(ctx, channelVersion, packet, acknowledgement, relayer); err != nil {
+	// First, let the next middleware process the timeout
+	if err := im.App.OnTimeoutPacket(ctx, sourceChannel, destinationChannel, sequence, payload, relayer); err != nil {
 		return err
 	}
 
-	isMoveRouted, hookData, err := ValidateAndParseMemo(data.Memo)
+	// Check if the packet has move hook in memo
+	isMoveRouted, hookData, err := movehooks.ValidateAndParseMemo(internalData.Memo)
 	if !isMoveRouted || hookData.AsyncCallback == nil {
 		return nil
 	} else if err != nil {
@@ -36,23 +41,21 @@ func (h MoveHooks) onAckIcs20Packet(
 			sdk.NewAttribute(types.AttributeKeyReason, "failed to parse memo"),
 			sdk.NewAttribute(types.AttributeKeyError, err.Error()),
 		))
-
 		return nil
 	}
 
-	// create a new cache context to ignore errors during
+	// Create a new cache context to ignore errors during
 	// the execution of the callback
 	cacheCtx, write := ctx.CacheContext()
 
 	callback := hookData.AsyncCallback
-	if allowed, err := CheckACL(cacheCtx, h.ac, im.HooksKeeper, callback.ModuleAddress); err != nil {
+	if allowed, err := movehooks.CheckACL(ctx, h.ac, h.hooksKeeper, callback.ModuleAddress); err != nil {
 		h.moveKeeper.Logger(cacheCtx).Error("failed to check ACL", "error", err)
 		ctx.EventManager().EmitEvent(sdk.NewEvent(
 			types.EventTypeHookFailed,
 			sdk.NewAttribute(types.AttributeKeyReason, "failed to check ACL"),
 			sdk.NewAttribute(types.AttributeKeyError, err.Error()),
 		))
-
 		return nil
 	} else if !allowed {
 		h.moveKeeper.Logger(cacheCtx).Error("failed to check ACL", "not allowed")
@@ -61,24 +64,20 @@ func (h MoveHooks) onAckIcs20Packet(
 			sdk.NewAttribute(types.AttributeKeyReason, "failed to check ACL"),
 			sdk.NewAttribute(types.AttributeKeyError, "not allowed"),
 		))
-
 		return nil
 	}
+
 	callbackIdBz, err := vmtypes.SerializeUint64(callback.Id)
 	if err != nil {
 		return nil
 	}
-	successBz, err := vmtypes.SerializeBool(!IsAckError(h.codec, acknowledgement))
-	if err != nil {
-		return nil
-	}
-	_, err = ExecMsg(cacheCtx, &movetypes.MsgExecute{
-		Sender:        data.Sender,
+	_, err = movehooks.ExecMsg(cacheCtx, &movetypes.MsgExecute{
+		Sender:        internalData.Sender,
 		ModuleAddress: callback.ModuleAddress,
 		ModuleName:    callback.ModuleName,
-		FunctionName:  FunctionNameAck,
+		FunctionName:  movehooks.FunctionNameTimeout,
 		TypeArgs:      []string{},
-		Args:          [][]byte{callbackIdBz, successBz},
+		Args:          [][]byte{callbackIdBz},
 	}, h.moveKeeper, h.ac)
 	if err != nil {
 		h.moveKeeper.Logger(cacheCtx).Error("failed to execute callback", "error", err)
@@ -87,7 +86,6 @@ func (h MoveHooks) onAckIcs20Packet(
 			sdk.NewAttribute(types.AttributeKeyReason, "failed to execute callback"),
 			sdk.NewAttribute(types.AttributeKeyError, err.Error()),
 		))
-
 		return nil
 	}
 
@@ -97,20 +95,24 @@ func (h MoveHooks) onAckIcs20Packet(
 	return nil
 }
 
-func (h MoveHooks) onAckIcs721Packet(
+// onTimeoutIcs721Packet handles ICS721 (NFT) packet timeout with move hooks
+func (h MoveHooks) onTimeoutIcs721Packet(
 	ctx sdk.Context,
-	im ibchooks.IBCMiddleware,
-	channelVersion string,
-	packet channeltypes.Packet,
-	acknowledgement []byte,
+	im ibchooksv2.IBCMiddleware,
+	sourceChannel string,
+	destinationChannel string,
+	sequence uint64,
+	payload channeltypesv2.Payload,
 	relayer sdk.AccAddress,
 	data nfttransfertypes.NonFungibleTokenPacketData,
 ) error {
-	if err := im.App.OnAcknowledgementPacket(ctx, channelVersion, packet, acknowledgement, relayer); err != nil {
+	// First, let the next middleware process the timeout
+	if err := im.App.OnTimeoutPacket(ctx, sourceChannel, destinationChannel, sequence, payload, relayer); err != nil {
 		return err
 	}
 
-	isMoveRouted, hookData, err := ValidateAndParseMemo(data.Memo)
+	// Check if the packet has move hook in memo
+	isMoveRouted, hookData, err := movehooks.ValidateAndParseMemo(data.Memo)
 	if !isMoveRouted || hookData.AsyncCallback == nil {
 		return nil
 	} else if err != nil {
@@ -118,54 +120,49 @@ func (h MoveHooks) onAckIcs721Packet(
 		return nil
 	}
 
-	// create a new cache context to ignore errors during
+	// Create a new cache context to ignore errors during
 	// the execution of the callback
 	cacheCtx, write := ctx.CacheContext()
 
 	callback := hookData.AsyncCallback
-	if allowed, err := CheckACL(cacheCtx, h.ac, im.HooksKeeper, callback.ModuleAddress); err != nil {
+	if allowed, err := movehooks.CheckACL(cacheCtx, h.ac, h.hooksKeeper, callback.ModuleAddress); err != nil {
 		h.moveKeeper.Logger(cacheCtx).Error("failed to check ACL", "error", err)
-		ctx.EventManager().EmitEvent(sdk.NewEvent(
+		cacheCtx.EventManager().EmitEvent(sdk.NewEvent(
 			types.EventTypeHookFailed,
 			sdk.NewAttribute(types.AttributeKeyReason, "failed to check ACL"),
 			sdk.NewAttribute(types.AttributeKeyError, err.Error()),
 		))
-
 		return nil
 	} else if !allowed {
 		h.moveKeeper.Logger(cacheCtx).Error("failed to check ACL", "not allowed")
-		ctx.EventManager().EmitEvent(sdk.NewEvent(
+		cacheCtx.EventManager().EmitEvent(sdk.NewEvent(
 			types.EventTypeHookFailed,
 			sdk.NewAttribute(types.AttributeKeyReason, "failed to check ACL"),
 			sdk.NewAttribute(types.AttributeKeyError, "not allowed"),
 		))
-
 		return nil
 	}
+
 	callbackIdBz, err := vmtypes.SerializeUint64(callback.Id)
 	if err != nil {
 		return nil
 	}
-	successBz, err := vmtypes.SerializeBool(!IsAckError(h.codec, acknowledgement))
-	if err != nil {
-		return nil
-	}
-	_, err = ExecMsg(cacheCtx, &movetypes.MsgExecute{
+
+	_, err = movehooks.ExecMsg(cacheCtx, &movetypes.MsgExecute{
 		Sender:        data.Sender,
 		ModuleAddress: callback.ModuleAddress,
 		ModuleName:    callback.ModuleName,
-		FunctionName:  FunctionNameAck,
+		FunctionName:  movehooks.FunctionNameTimeout,
 		TypeArgs:      []string{},
-		Args:          [][]byte{callbackIdBz, successBz},
+		Args:          [][]byte{callbackIdBz},
 	}, h.moveKeeper, h.ac)
 	if err != nil {
 		h.moveKeeper.Logger(cacheCtx).Error("failed to execute callback", "error", err)
-		ctx.EventManager().EmitEvent(sdk.NewEvent(
+		cacheCtx.EventManager().EmitEvent(sdk.NewEvent(
 			types.EventTypeHookFailed,
 			sdk.NewAttribute(types.AttributeKeyReason, "failed to execute callback"),
 			sdk.NewAttribute(types.AttributeKeyError, err.Error()),
 		))
-
 		return nil
 	}
 

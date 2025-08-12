@@ -19,13 +19,13 @@ func (h MoveHooks) onTimeoutIcs20Packet(
 	channelVersion string,
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
-	data transfertypes.FungibleTokenPacketData,
+	data transfertypes.InternalTransferRepresentation,
 ) error {
 	if err := im.App.OnTimeoutPacket(ctx, channelVersion, packet, relayer); err != nil {
 		return err
 	}
 
-	isMoveRouted, hookData, err := validateAndParseMemo(data.GetMemo())
+	isMoveRouted, hookData, err := ValidateAndParseMemo(data.Memo)
 	if !isMoveRouted || hookData.AsyncCallback == nil {
 		return nil
 	} else if err != nil {
@@ -44,7 +44,7 @@ func (h MoveHooks) onTimeoutIcs20Packet(
 	cacheCtx, write := ctx.CacheContext()
 
 	callback := hookData.AsyncCallback
-	if allowed, err := h.checkACL(im, cacheCtx, callback.ModuleAddress); err != nil {
+	if allowed, err := CheckACL(cacheCtx, h.ac, im.HooksKeeper, callback.ModuleAddress); err != nil {
 		h.moveKeeper.Logger(cacheCtx).Error("failed to check ACL", "error", err)
 		ctx.EventManager().EmitEvent(sdk.NewEvent(
 			types.EventTypeHookFailed,
@@ -67,14 +67,14 @@ func (h MoveHooks) onTimeoutIcs20Packet(
 	if err != nil {
 		return nil
 	}
-	_, err = h.execMsg(cacheCtx, &movetypes.MsgExecute{
+	_, err = ExecMsg(cacheCtx, &movetypes.MsgExecute{
 		Sender:        data.Sender,
 		ModuleAddress: callback.ModuleAddress,
 		ModuleName:    callback.ModuleName,
-		FunctionName:  functionNameTimeout,
+		FunctionName:  FunctionNameTimeout,
 		TypeArgs:      []string{},
 		Args:          [][]byte{callbackIdBz},
-	})
+	}, h.moveKeeper, h.ac)
 	if err != nil {
 		h.moveKeeper.Logger(cacheCtx).Error("failed to execute callback", "error", err)
 		ctx.EventManager().EmitEvent(sdk.NewEvent(
@@ -104,7 +104,7 @@ func (h MoveHooks) onTimeoutIcs721Packet(
 		return err
 	}
 
-	isMoveRouted, hookData, err := validateAndParseMemo(data.GetMemo())
+	isMoveRouted, hookData, err := ValidateAndParseMemo(data.Memo)
 	if !isMoveRouted || hookData.AsyncCallback == nil {
 		return nil
 	} else if err != nil {
@@ -117,7 +117,7 @@ func (h MoveHooks) onTimeoutIcs721Packet(
 	cacheCtx, write := ctx.CacheContext()
 
 	callback := hookData.AsyncCallback
-	if allowed, err := h.checkACL(im, cacheCtx, callback.ModuleAddress); err != nil {
+	if allowed, err := CheckACL(cacheCtx, h.ac, im.HooksKeeper, callback.ModuleAddress); err != nil {
 		h.moveKeeper.Logger(cacheCtx).Error("failed to check ACL", "error", err)
 		ctx.EventManager().EmitEvent(sdk.NewEvent(
 			types.EventTypeHookFailed,
@@ -140,14 +140,14 @@ func (h MoveHooks) onTimeoutIcs721Packet(
 	if err != nil {
 		return nil
 	}
-	_, err = h.execMsg(cacheCtx, &movetypes.MsgExecute{
+	_, err = ExecMsg(cacheCtx, &movetypes.MsgExecute{
 		Sender:        data.Sender,
 		ModuleAddress: callback.ModuleAddress,
 		ModuleName:    callback.ModuleName,
-		FunctionName:  functionNameTimeout,
+		FunctionName:  FunctionNameTimeout,
 		TypeArgs:      []string{},
 		Args:          [][]byte{callbackIdBz},
-	})
+	}, h.moveKeeper, h.ac)
 	if err != nil {
 		h.moveKeeper.Logger(cacheCtx).Error("failed to execute callback", "error", err)
 		ctx.EventManager().EmitEvent(sdk.NewEvent(

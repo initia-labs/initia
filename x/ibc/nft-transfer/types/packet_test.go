@@ -92,5 +92,5 @@ func Test_GetBytes(t *testing.T) {
 	// case invalid version
 	_, err = DecodePacketData(data.GetBytes(), "invalid_version")
 	require.Error(t, err)
-	require.Equal(t, ErrInvalidVersion, err)
+	require.ErrorIs(t, err, ErrInvalidVersion)
 }

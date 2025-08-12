@@ -4,7 +4,6 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	"cosmossdk.io/errors"
 
@@ -19,55 +18,58 @@ import (
 	movetypes "github.com/initia-labs/initia/x/move/types"
 
 	coreaddress "cosmossdk.io/core/address"
+
+	ibchookskeeper "github.com/initia-labs/initia/x/ibc-hooks/keeper"
+	movekeeper "github.com/initia-labs/initia/x/move/keeper"
 )
 
-const senderPrefix = "ibc-move-hook-intermediary"
-
-// deriveIntermediateSender compute intermediate sender address
+// DeriveIntermediateSender compute intermediate sender address
 // Bech32(Hash(Hash("ibc-hook-intermediary") + channelID/sender))
-func deriveIntermediateSender(channel, originalSender string) string {
+func DeriveIntermediateSender(channel, originalSender string) string {
 	senderStr := fmt.Sprintf("%s/%s", channel, originalSender)
-	senderAddr := sdk.AccAddress(address.Hash(senderPrefix, []byte(senderStr)))
+	senderAddr := sdk.AccAddress(address.Hash(SenderPrefix, []byte(senderStr)))
 	return senderAddr.String()
 }
 
-func isIcs20Packet(packetData []byte, channelVersion string) (isIcs20 bool, ics20data transfertypes.FungibleTokenPacketData) {
-	if channelVersion != transfertypes.V1 {
+// IsIcs20Packet checks if the packet is ICS20 for v1
+func IsIcs20Packet(packetData []byte, ics20Version, encoding string) (isIcs20 bool, ics20data transfertypes.InternalTransferRepresentation) {
+	if ics20Version != transfertypes.V1 {
 		return false, ics20data
 	}
 
-	var data transfertypes.FungibleTokenPacketData
-	decoder := json.NewDecoder(strings.NewReader(string(packetData)))
-	decoder.DisallowUnknownFields()
-	if err := decoder.Decode(&data); err != nil {
-		return false, data
+	ics20data, err := transfertypes.UnmarshalPacketData(packetData, ics20Version, encoding)
+	if err != nil {
+		return false, ics20data
 	}
-	return true, data
+
+	return true, ics20data
 }
 
-func isIcs721Packet(packetData []byte, channelVersion string) (isIcs721 bool, ics721data nfttransfertypes.NonFungibleTokenPacketData) {
-	if channelVersion != nfttransfertypes.V1 {
+// IsIcs721Packet checks if the packet is ICS721 for v1
+func IsIcs721Packet(packetData []byte, ics721Version, encoding string) (isIcs721 bool, ics721data nfttransfertypes.NonFungibleTokenPacketData) {
+	if ics721Version != nfttransfertypes.V1 {
 		return false, ics721data
 	}
 
-	if data, err := nfttransfertypes.DecodePacketData(packetData, channelVersion); err != nil {
-		return false, data
-	} else {
-		return true, data
+	ics721data, err := nfttransfertypes.UnmarshalPacketData(packetData, ics721Version, encoding)
+	if err != nil {
+		return false, ics721data
 	}
+
+	return true, ics721data
 }
 
-func validateAndParseMemo(memo string) (
+func ValidateAndParseMemo(memo string) (
 	isMoveRouted bool,
 	hookData HookData,
 	err error,
 ) {
-	isMoveRouted, metadata := jsonStringHasKey(memo, moveHookMemoKey)
+	isMoveRouted, metadata := jsonStringHasKey(memo, MoveHookMemoKey)
 	if !isMoveRouted {
 		return
 	}
 
-	moveHookRaw := metadata[moveHookMemoKey]
+	moveHookRaw := metadata[MoveHookMemoKey]
 
 	// parse move raw bytes to execute message
 	bz, err := json.Marshal(moveHookRaw)
@@ -85,7 +87,7 @@ func validateAndParseMemo(memo string) (
 	return
 }
 
-func validateReceiver(msg *movetypes.MsgExecute, receiver string, ac coreaddress.Codec) error {
+func ValidateReceiver(msg *movetypes.MsgExecute, receiver string, ac coreaddress.Codec) error {
 	functionIdentifier := fmt.Sprintf("%s::%s::%s", msg.ModuleAddress, msg.ModuleName, msg.FunctionName)
 	if receiver == functionIdentifier {
 		return nil
@@ -125,22 +127,34 @@ func jsonStringHasKey(memo, key string) (found bool, jsonObject map[string]inter
 	return true, jsonObject
 }
 
-// newEmitErrorAcknowledgement creates a new error acknowledgement after having emitted an event with the
-// details of the error.
-func newEmitErrorAcknowledgement(err error) channeltypes.Acknowledgement {
-	return channeltypes.Acknowledgement{
-		Response: &channeltypes.Acknowledgement_Error{
-			Error: fmt.Sprintf("ibc move hook error: %s", err.Error()),
-		},
-	}
-}
-
-// isAckError checks an IBC acknowledgement to see if it's an error.
-func isAckError(appCodec codec.Codec, acknowledgement []byte) bool {
+func IsAckError(appCodec codec.Codec, acknowledgement []byte) bool {
 	var ack channeltypes.Acknowledgement
 	if err := appCodec.UnmarshalJSON(acknowledgement, &ack); err == nil && !ack.Success() {
 		return true
 	}
-
 	return false
 }
+
+func ExecMsg(ctx sdk.Context, msg *movetypes.MsgExecute, mk *movekeeper.Keeper, cdc coreaddress.Codec) (*movetypes.MsgExecuteResponse, error) {
+	if err := msg.Validate(cdc); err != nil {
+		return nil, err
+	}
+	moveMsgServer := movekeeper.NewMsgServerImpl(mk)
+	res, err := moveMsgServer.Execute(ctx, msg)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+// CheckACL checks if the given address is allowed to use IBC hooks
+func CheckACL(ctx sdk.Context, ac coreaddress.Codec, hooksKeeper *ibchookskeeper.Keeper, addrStr string) (bool, error) {
+	vmAddr, err := movetypes.AccAddressFromString(ac, addrStr)
+	if err != nil {
+		return false, err
+	}
+
+	sdkAddr := movetypes.ConvertVMAddressToSDKAddress(vmAddr)
+	return hooksKeeper.GetAllowed(ctx, sdkAddr)
+}
+

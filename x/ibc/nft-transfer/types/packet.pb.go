@@ -47,6 +47,11 @@ type NonFungibleTokenPacketData struct {
 	Memo string `protobuf:"bytes,9,opt,name=memo,proto3" json:"memo,omitempty"`
 }
 
+// GetPacketSender implements exported.PacketData.
+func (nftpd *NonFungibleTokenPacketData) GetPacketSender(sourcePortID string) string {
+	panic("unimplemented")
+}
+
 func (m *NonFungibleTokenPacketData) Reset()         { *m = NonFungibleTokenPacketData{} }
 func (m *NonFungibleTokenPacketData) String() string { return proto.CompactTextString(m) }
 func (*NonFungibleTokenPacketData) ProtoMessage()    {}

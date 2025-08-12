@@ -31,6 +31,7 @@ import (
 	groupkeeper "github.com/cosmos/cosmos-sdk/x/group/keeper"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
+	ibcapi "github.com/cosmos/ibc-go/v10/modules/core/api"
 
 	packetforward "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/packetforward"
 	packetforwardkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/packetforward/keeper"
@@ -38,6 +39,7 @@ import (
 	ratelimit "github.com/cosmos/ibc-apps/modules/rate-limiting/v10"
 	ratelimitkeeper "github.com/cosmos/ibc-apps/modules/rate-limiting/v10/keeper"
 	ratelimittypes "github.com/cosmos/ibc-apps/modules/rate-limiting/v10/types"
+	ratelimitv2 "github.com/cosmos/ibc-apps/modules/rate-limiting/v10/v2"
 	icacontroller "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/controller"
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/controller/keeper"
 	icacontrollertypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/controller/types"
@@ -45,6 +47,8 @@ import (
 	icahostkeeper "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/host/keeper"
 	icahosttypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/host/types"
 	ibctransfer "github.com/cosmos/ibc-go/v10/modules/apps/transfer"
+	ibctransferv2 "github.com/cosmos/ibc-go/v10/modules/apps/transfer/v2"
+
 	ibctransferkeeper "github.com/cosmos/ibc-go/v10/modules/apps/transfer/keeper"
 	ibctransfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
 	porttypes "github.com/cosmos/ibc-go/v10/modules/core/05-port/types"
@@ -54,7 +58,10 @@ import (
 	ibcnfttransfer "github.com/initia-labs/initia/x/ibc/nft-transfer"
 	ibcnfttransferkeeper "github.com/initia-labs/initia/x/ibc/nft-transfer/keeper"
 	ibcnfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
+	ibcnfttransferv2 "github.com/initia-labs/initia/x/ibc/nft-transfer/v2"
 	ibcperm "github.com/initia-labs/initia/x/ibc/perm"
+	ibcpermv2 "github.com/initia-labs/initia/x/ibc/perm/v2"
+
 	ibcpermkeeper "github.com/initia-labs/initia/x/ibc/perm/keeper"
 	ibcpermtypes "github.com/initia-labs/initia/x/ibc/perm/types"
 
@@ -68,6 +75,8 @@ import (
 	evidencekeeper "github.com/initia-labs/initia/x/evidence/keeper"
 	govkeeper "github.com/initia-labs/initia/x/gov/keeper"
 	ibchooks "github.com/initia-labs/initia/x/ibc-hooks"
+	ibchooksv2 "github.com/initia-labs/initia/x/ibc-hooks/v2"
+
 	ibchookskeeper "github.com/initia-labs/initia/x/ibc-hooks/keeper"
 	ibcmovehooks "github.com/initia-labs/initia/x/ibc-hooks/move-hooks"
 	ibchookstypes "github.com/initia-labs/initia/x/ibc-hooks/types"
@@ -99,6 +108,8 @@ import (
 	ibctm "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
 	appheaderinfo "github.com/initia-labs/initia/app/header_info"
 	"github.com/noble-assets/forwarding/v2"
+	forwardingibcv2 "github.com/noble-assets/forwarding/v2/v2"
+
 	forwardingkeeper "github.com/noble-assets/forwarding/v2/keeper"
 	forwardingtypes "github.com/noble-assets/forwarding/v2/types"
 )
@@ -362,13 +373,14 @@ func NewAppKeeper(
 	)
 	appKeepers.BankKeeper.AppendSendRestriction(appKeepers.ForwardingKeeper.SendRestrictionFn)
 
-	////////////////////////////
-	// Transfer configuration //
-	////////////////////////////
+	//////////////////////////////
+	// TransferV1 configuration //
+	//////////////////////////////
 	// Send   : transfer -> packet forward -> rate limit -> channel
 	// Receive: channel  -> perm           -> move       -> rate limit -> packet forward -> forwarding -> transfer
 
 	var transferStack porttypes.IBCModule
+	var transferStackV2 ibcapi.IBCModule
 	{
 		packetForwardKeeper := &packetforwardkeeper.Keeper{}
 		rateLimitKeeper := &ratelimitkeeper.Keeper{}
@@ -456,6 +468,23 @@ func NewAppKeeper(
 			nil,
 			*appKeepers.IBCPermKeeper,
 		)
+
+		// v2
+		transferStackV2 = ibctransferv2.NewIBCModule(*appKeepers.TransferKeeper)
+		// TODO: packet forwarding
+		forwardingMiddlewareV2 := forwardingibcv2.NewMiddleware(
+			// receive: forwarding -> transfer
+			transferStackV2,
+			appKeepers.AccountKeeper,
+			appKeepers.ForwardingKeeper,
+		)
+		ratelimitMiddlewareV2 := ratelimitv2.NewIBCMiddleware(*appKeepers.RatelimitKeeper, &forwardingMiddlewareV2)
+		movehookMiddlewareV2 := ibchooksv2.NewIBCMiddleware(ratelimitMiddlewareV2, nil, appKeepers.IBCHooksKeeper)
+		transferStackV2 = ibcpermv2.NewIBCMiddleware(
+			&movehookMiddlewareV2,
+			*appKeepers.IBCPermKeeper,
+		)
+
 	}
 
 	////////////////////////////////
@@ -463,6 +492,7 @@ func NewAppKeeper(
 	////////////////////////////////
 
 	var nftTransferStack porttypes.IBCModule
+	var nftTransferStackV2 ibcapi.IBCModule
 	{
 		// Create Transfer Keepers
 		appKeepers.NftTransferKeeper = ibcnfttransferkeeper.NewKeeper(
@@ -491,12 +521,20 @@ func NewAppKeeper(
 			nil,
 			*appKeepers.IBCPermKeeper,
 		)
+
+		// v2
+		nftTransferStackV2 = ibcnfttransferv2.NewIBCModule(*appKeepers.NftTransferKeeper)
+		movehookMiddlewareNftV2 := ibchooksv2.NewIBCMiddleware(nftTransferStackV2, nil, appKeepers.IBCHooksKeeper)
+		nftTransferStackV2 = ibcpermv2.NewIBCMiddleware(
+			&movehookMiddlewareNftV2,
+			*appKeepers.IBCPermKeeper,
+		)
 	}
 
 	///////////////////////
 	// ICA configuration //
 	///////////////////////
-
+	// TODO icahost stack, ica controller stack for ibc v2
 	var icaHostStack porttypes.IBCModule
 	var icaControllerStack porttypes.IBCModule
 	{
@@ -538,7 +576,8 @@ func NewAppKeeper(
 			nil,
 			*appKeepers.IBCPermKeeper,
 		)
-	}
+
+}
 
 	//////////////////////////////
 	// IBC router Configuration //
@@ -550,7 +589,13 @@ func NewAppKeeper(
 		AddRoute(icahosttypes.SubModuleName, icaHostStack).
 		AddRoute(icacontrollertypes.SubModuleName, icaControllerStack).
 		AddRoute(ibcnfttransfertypes.ModuleName, nftTransferStack)
+
+	ibcRouterV2 := ibcapi.NewRouter()
+	ibcRouterV2.AddRoute(ibctransfertypes.PortID, transferStackV2).
+		AddRoute(ibcnfttransfertypes.PortID, nftTransferStackV2)
+
 	appKeepers.IBCKeeper.SetRouter(ibcRouter)
+	appKeepers.IBCKeeper.SetRouterV2(ibcRouterV2)
 
 	//////////////////////////////
 	// MoveKeeper Configuration //
