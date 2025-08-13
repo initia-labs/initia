@@ -14504,14 +14504,18 @@ func (x *Pool) GetVotingPowerWeights() []*v1beta1.DecCoin {
 	return nil
 }
 
+// DelegationMigration is a migration of a delegation from one lp denom to another.
 type DelegationMigration struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	LpMetadataOut             []byte `protobuf:"bytes,1,opt,name=lp_metadata_out,json=lpMetadataOut,proto3" json:"lp_metadata_out,omitempty"`
+	// lp_metadata_out is the metadata of the lp token out.
+	LpMetadataOut []byte `protobuf:"bytes,1,opt,name=lp_metadata_out,json=lpMetadataOut,proto3" json:"lp_metadata_out,omitempty"`
+	// swap_contract_module_address is the address of the swap contract module.
 	SwapContractModuleAddress []byte `protobuf:"bytes,2,opt,name=swap_contract_module_address,json=swapContractModuleAddress,proto3" json:"swap_contract_module_address,omitempty"`
-	SwapContractModuleName    string `protobuf:"bytes,3,opt,name=swap_contract_module_name,json=swapContractModuleName,proto3" json:"swap_contract_module_name,omitempty"`
+	// swap_contract_module_name is the name of the swap contract module.
+	SwapContractModuleName string `protobuf:"bytes,3,opt,name=swap_contract_module_name,json=swapContractModuleName,proto3" json:"swap_contract_module_name,omitempty"`
 }
 
 func (x *DelegationMigration) Reset() {
