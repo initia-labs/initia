@@ -783,7 +783,7 @@ func Test_MigrateDelegation(t *testing.T) {
 		movetypes.ConvertSDKAddressToVMAddress(movetypes.TestAddr),
 		movetypes.ConvertSDKAddressToVMAddress(movetypes.TestAddr),
 		"swap",
-		"initialize",
+		movetypes.FunctionNameMigrateDelegationSwapContractInitialize,
 		[]vmtypes.TypeTag{},
 		[]string{
 			fmt.Sprintf("\"%s\"", metadataUusdc.String()),
@@ -798,7 +798,7 @@ func Test_MigrateDelegation(t *testing.T) {
 		movetypes.ConvertSDKAddressToVMAddress(fundedAccount),
 		movetypes.ConvertSDKAddressToVMAddress(movetypes.TestAddr),
 		"swap",
-		"provide_liquidity",
+		movetypes.FunctionNameMigrateDelegationSwapContractProvideLiquidity,
 		[]vmtypes.TypeTag{},
 		[]string{
 			fmt.Sprintf("\"%s\"", metadataUusdc2.String()),
@@ -824,8 +824,8 @@ func Test_MigrateDelegation(t *testing.T) {
 		ctx,
 		movetypes.ConvertSDKAddressToVMAddress(delAddr),
 		movetypes.ConvertSDKAddressToVMAddress(movetypes.StdAddr),
-		"dex",
-		"provide_liquidity_script",
+		movetypes.MoveModuleNameDex,
+		movetypes.FunctionNameDexProvideLiquidity,
 		[]vmtypes.TypeTag{},
 		[]string{
 			fmt.Sprintf("\"%s\"", metadataLPOld.String()),
@@ -884,8 +884,17 @@ func Test_MigrateDelegation(t *testing.T) {
 	err = input.StakingKeeper.RegisterMigration(ctx, lpDenomOld, lpDenomNew, "uusdc", "uusdc2", "0x2::swap")
 	require.NoError(t, err)
 
-	_, err = input.StakingKeeper.MigrateDelegation(ctx, delAddr, valAddr, lpDenomOld, "uusdc")
+	newShares, err := input.StakingKeeper.MigrateDelegation(ctx, delAddr, valAddr, lpDenomOld, "uusdc")
 	require.NoError(t, err)
+
+	delegation, err = input.StakingKeeper.GetDelegation(ctx, delAddr, valAddr)
+	require.NoError(t, err)
+
+	require.Equal(t, types.Delegation{
+		DelegatorAddress: delAddrStr,
+		ValidatorAddress: valAddrStr,
+		Shares:           newShares,
+	}, delegation)
 
 	metadataLPOldFeeRateAfter, err := input.MoveKeeper.BalancerKeeper().PoolFeeRate(ctx, metadataLPOld)
 	require.NoError(t, err)

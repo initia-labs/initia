@@ -64,7 +64,10 @@ const (
 	FunctionNameStakingSlashUnbondingCoinForChain   = "slash_unbonding_for_chain"
 
 	// function names for dex
-	FunctionNameDexSudoSwap = "sudo_swap"
+	FunctionNameDexSudoSwap          = "sudo_swap"
+	FunctionNameDexProvideLiquidity  = "provide_liquidity_script"
+	FunctionNameDexWithdrawLiquidity = "withdraw_liquidity_script"
+	FunctionNameDexUpdateSwapFeeRate = "update_swap_fee_rate"
 
 	// function names for object
 	FunctionNameObjectTransfer = "transfer"
@@ -77,6 +80,12 @@ const (
 	// function names for vesting
 	FunctionNameVestingTableHandle   = "vesting_table_handle"
 	FunctionNameVestingTokenMetadata = "vesting_token_metadata"
+
+	// function names for migrate delegation
+	FunctionNameMigrateDelegationSwapContractInitialize       = "initialize"
+	FunctionNameMigrateDelegationSwapContractDenomOut         = "denom_out"
+	FunctionNameMigrateDelegationSwapContractSwap             = "swap"
+	FunctionNameMigrateDelegationSwapContractProvideLiquidity = "provide_liquidity"
 
 	// resource names
 	ResourceNameFungibleStore = "FungibleStore"

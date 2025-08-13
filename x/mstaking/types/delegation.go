@@ -417,3 +417,7 @@ func (r RedelegationResponses) String() (out string) {
 
 	return strings.TrimSpace(out)
 }
+
+func (d DelegationMigration) String() string {
+	return fmt.Sprintf("LP Metadata Out: %s, Swap Contract Module Address: %s, Swap Contract Module Name: %s", d.LpMetadataOut, d.SwapContractModuleAddress, d.SwapContractModuleName)
+}

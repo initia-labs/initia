@@ -1130,13 +1130,13 @@ func (k Keeper) MigrateDelegation(ctx context.Context, delAddr sdk.AccAddress, v
 		return nil, err
 	}
 
-	lpMetadataOut := vmtypes.AccountAddress(registeredMigration.K1())
+	lpMetadataOut := vmtypes.AccountAddress(registeredMigration.LpMetadataOut)
 	lpDenomOut, err := movetypes.DenomFromMetadataAddress(ctx, k.fungibleAssetKeeper, lpMetadataOut)
 	if err != nil {
 		return nil, err
 	}
-	swapContractModuleAddress := registeredMigration.K2()
-	swapContractModuleName := registeredMigration.K3()
+	swapContractModuleAddress := vmtypes.AccountAddress(registeredMigration.SwapContractModuleAddress)
+	swapContractModuleName := registeredMigration.SwapContractModuleName
 
 	bondDenoms, err := k.BondDenoms(ctx)
 	if err != nil {
@@ -1180,14 +1180,16 @@ func (k Keeper) MigrateDelegation(ctx context.Context, delAddr sdk.AccAddress, v
 	fixedMetadata := metadatas[1]
 	if metadatas[1].Equals(metadataSwapIn) {
 		fixedMetadata = metadatas[0]
+	} else if !metadatas[0].Equals(metadataSwapIn) {
+		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "invalid pool metadata")
 	}
+
 	fixedDenom, err := movetypes.DenomFromMetadataAddress(ctx, k.fungibleAssetKeeper, fixedMetadata)
 	if err != nil {
 		return nil, err
 	}
 
 	balancesBefore := k.bankKeeper.GetAllBalances(ctx, delAddr)
-	lpInBalanceBefore := balancesBefore.AmountOf(lpDenomIn)
 	fixedDenomBalanceBefore := balancesBefore.AmountOf(fixedDenom)
 	denomSwapInBalanceBeforeWithdrawalBeforeSwap := balancesBefore.AmountOf(denomSwapIn)
 
@@ -1197,12 +1199,12 @@ func (k Keeper) MigrateDelegation(ctx context.Context, delAddr sdk.AccAddress, v
 		ctx,
 		movetypes.ConvertSDKAddressToVMAddress(delAddr),
 		movetypes.ConvertSDKAddressToVMAddress(movetypes.StdAddr),
-		"dex",
-		"withdraw_liquidity_script",
+		movetypes.MoveModuleNameDex,
+		movetypes.FunctionNameDexWithdrawLiquidity,
 		[]vmtypes.TypeTag{},
 		[]string{
 			fmt.Sprintf("\"%s\"", lpMetadataIn.String()),
-			fmt.Sprintf("\"%s\"", lpInBalanceBefore.String()),
+			fmt.Sprintf("\"%s\"", returnCoins.AmountOf(lpDenomIn).String()),
 			"null",
 			"null",
 		},
@@ -1214,7 +1216,7 @@ func (k Keeper) MigrateDelegation(ctx context.Context, delAddr sdk.AccAddress, v
 		ctx,
 		vmtypes.AccountAddress(swapContractModuleAddress),
 		swapContractModuleName,
-		"denom_out",
+		movetypes.FunctionNameMigrateDelegationSwapContractDenomOut,
 		[]vmtypes.TypeTag{},
 		[]string{fmt.Sprintf("\"%s\"", denomSwapIn)},
 	)
@@ -1250,7 +1252,7 @@ func (k Keeper) MigrateDelegation(ctx context.Context, delAddr sdk.AccAddress, v
 		movetypes.ConvertSDKAddressToVMAddress(delAddr),
 		vmtypes.AccountAddress(swapContractModuleAddress),
 		swapContractModuleName,
-		"swap",
+		movetypes.FunctionNameMigrateDelegationSwapContractSwap,
 		[]vmtypes.TypeTag{},
 		[]string{
 			fmt.Sprintf("\"%s\"", metadataSwapIn.String()),
@@ -1261,11 +1263,12 @@ func (k Keeper) MigrateDelegation(ctx context.Context, delAddr sdk.AccAddress, v
 	if err != nil {
 		return nil, err
 	}
-
 	balancesAfterSwap := k.bankKeeper.GetAllBalances(ctx, delAddr)
 	denomSwapInBalanceAfterWithdrawalAfterSwap := balancesAfterSwap.AmountOf(denomSwapIn)
 	denomSwapOutBalanceAfter := balancesAfterSwap.AmountOf(denomSwapOut)
+	lpDenomOutBalanceBeforeProvideLiquidity := balancesAfterSwap.AmountOf(lpDenomOut)
 
+	// swap contract should convert same amount of denom in to denom out
 	if !denomSwapInBalanceAfterWithdrawalBeforeSwap.Sub(denomSwapInBalanceAfterWithdrawalAfterSwap).Equal(denomSwapOutBalanceAfter.Sub(denomSwapOutBalanceBefore)) {
 		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "denom out balance is not equal")
 	}
@@ -1279,8 +1282,8 @@ func (k Keeper) MigrateDelegation(ctx context.Context, delAddr sdk.AccAddress, v
 		ctx,
 		movetypes.ConvertSDKAddressToVMAddress(movetypes.StdAddr),
 		movetypes.ConvertSDKAddressToVMAddress(movetypes.StdAddr),
-		"dex",
-		"update_swap_fee_rate",
+		movetypes.MoveModuleNameDex,
+		movetypes.FunctionNameDexUpdateSwapFeeRate,
 		[]vmtypes.TypeTag{},
 		[]string{
 			fmt.Sprintf("\"%s\"", lpMetadataOut.String()),
@@ -1310,8 +1313,8 @@ func (k Keeper) MigrateDelegation(ctx context.Context, delAddr sdk.AccAddress, v
 		ctx,
 		movetypes.ConvertSDKAddressToVMAddress(delAddr),
 		movetypes.ConvertSDKAddressToVMAddress(movetypes.StdAddr),
-		"dex",
-		"provide_liquidity_script",
+		movetypes.MoveModuleNameDex,
+		movetypes.FunctionNameDexProvideLiquidity,
 		[]vmtypes.TypeTag{},
 		[]string{
 			fmt.Sprintf("\"%s\"", lpMetadataOut.String()),
@@ -1328,8 +1331,8 @@ func (k Keeper) MigrateDelegation(ctx context.Context, delAddr sdk.AccAddress, v
 		ctx,
 		movetypes.ConvertSDKAddressToVMAddress(movetypes.StdAddr),
 		movetypes.ConvertSDKAddressToVMAddress(movetypes.StdAddr),
-		"dex",
-		"update_swap_fee_rate",
+		movetypes.MoveModuleNameDex,
+		movetypes.FunctionNameDexUpdateSwapFeeRate,
 		[]vmtypes.TypeTag{},
 		[]string{
 			fmt.Sprintf("\"%s\"", lpMetadataOut.String()),
@@ -1339,7 +1342,8 @@ func (k Keeper) MigrateDelegation(ctx context.Context, delAddr sdk.AccAddress, v
 		return nil, err
 	}
 
-	lpDenomOutBalance := k.bankKeeper.GetBalance(ctx, delAddr, lpDenomOut)
+	lpDenomOutBalanceAfterProvideLiquidity := k.bankKeeper.GetBalance(ctx, delAddr, lpDenomOut)
+	lpDenomOutBalance := lpDenomOutBalanceAfterProvideLiquidity.SubAmount(lpDenomOutBalanceBeforeProvideLiquidity)
 
 	validator, err = k.Validators.Get(ctx, valAddr)
 	if err != nil {

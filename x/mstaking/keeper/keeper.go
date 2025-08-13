@@ -73,7 +73,7 @@ type Keeper struct {
 
 	HistoricalInfos collections.Map[int64, cosmostypes.HistoricalInfo]
 
-	RegisteredMigrations collections.Map[[]byte, collections.Triple[[]byte, []byte, string]] // LpInMetadata, [LpOutMetadata, swapContractModuleAddress, swapContractModuleName]
+	RegisteredMigrations collections.Map[[]byte, types.DelegationMigration]
 
 	Params collections.Item[types.Params]
 }
@@ -149,7 +149,7 @@ func NewKeeper(
 
 		HistoricalInfos: collections.NewMap(sb, types.HistoricalInfosPrefix, "historical_infos", collections.Int64Key, codec.CollValue[cosmostypes.HistoricalInfo](cdc)),
 
-		RegisteredMigrations: collections.NewMap(sb, types.RegisteredMigrationsPrefix, "registered_migrations", collections.BytesKey, collectioncodec.KeyToValueCodec(collections.TripleKeyCodec(collections.BytesKey, collections.BytesKey, collections.StringKey))),
+		RegisteredMigrations: collections.NewMap(sb, types.RegisteredMigrationsPrefix, "registered_migrations", collections.BytesKey, codec.CollValue[types.DelegationMigration](cdc)),
 
 		Params: collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
 	}
@@ -232,9 +232,23 @@ func (k Keeper) RegisterMigration(ctx context.Context, lpDenomIn string, lpDenom
 		return err
 	}
 
+	hasPool, err := k.balancerKeeper.HasPool(ctx, lpMetadataIn)
+	if err != nil {
+		return err
+	} else if !hasPool {
+		return fmt.Errorf("lp metadata is not found in balancer")
+	}
+
 	lpMetadataOut, err := movetypes.MetadataAddressFromDenom(lpDenomOut)
 	if err != nil {
 		return err
+	}
+
+	hasPool, err = k.balancerKeeper.HasPool(ctx, lpMetadataOut)
+	if err != nil {
+		return err
+	} else if !hasPool {
+		return fmt.Errorf("lp metadata is not found in balancer")
 	}
 
 	swapContract := strings.Split(swapContractStr, "::")
@@ -264,7 +278,12 @@ func (k Keeper) RegisterMigration(ctx context.Context, lpDenomIn string, lpDenom
 		return fmt.Errorf("invalid denom out: got %s, expected %s", output.Ret, wrappedDenomOut)
 	}
 
-	err = k.RegisteredMigrations.Set(ctx, lpMetadataIn[:], collections.Join3(lpMetadataOut[:], swapContractModuleAddress[:], swapContract[1]))
+	// even if the migration is already registered, it will be overwritten
+	err = k.RegisteredMigrations.Set(ctx, lpMetadataIn[:], types.DelegationMigration{
+		LpMetadataOut:             lpMetadataOut[:],
+		SwapContractModuleAddress: swapContractModuleAddress[:],
+		SwapContractModuleName:    swapContract[1],
+	})
 	if err != nil {
 		return err
 	}

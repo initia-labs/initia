@@ -419,3 +419,12 @@ enum Infraction {
   // DOWNTIME defines a validator that missed signing too many blocks.
   INFRACTION_DOWNTIME = 2;
 }
+
+message DelegationMigration {
+  option (gogoproto.equal) = true;
+  option (gogoproto.goproto_stringer) = false;
+
+  bytes lp_metadata_out = 1;
+  bytes swap_contract_module_address = 2;
+  string swap_contract_module_name = 3;
+}

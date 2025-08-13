@@ -3,7 +3,6 @@ package keeper
 import (
 	"context"
 	"errors"
-	"slices"
 	"strconv"
 	"time"
 
@@ -567,17 +566,6 @@ func (ms msgServer) MigrateDelegation(ctx context.Context, msg *types.MsgMigrate
 	valAddr, err := ms.validatorAddressCodec.StringToBytes(msg.ValidatorAddress)
 	if err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid validator address: %s", err)
-	}
-
-	bondDenoms, err := ms.BondDenoms(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	if !slices.Contains(bondDenoms, msg.LpDenomIn) {
-		return nil, errorsmod.Wrapf(
-			sdkerrors.ErrInvalidRequest, "invalid lp denomination: got %s, expected one of %s", msg.LpDenomIn, bondDenoms,
-		)
 	}
 
 	newShares, err := ms.Keeper.MigrateDelegation(ctx, delAddr, valAddr, msg.LpDenomIn, msg.DenomIn)

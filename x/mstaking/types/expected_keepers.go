@@ -78,6 +78,7 @@ type FungibleAssetKeeper interface {
 }
 
 type BalancerKeeper interface {
+	HasPool(ctx context.Context, metadataLP vmtypes.AccountAddress) (bool, error)
 	PoolMetadata(
 		ctx context.Context,
 		metadataLP vmtypes.AccountAddress,
