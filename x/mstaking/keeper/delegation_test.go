@@ -895,3 +895,91 @@ func Test_MigrateDelegation(t *testing.T) {
 	require.Equal(t, metadataLPOldFeeRateBefore, metadataLPOldFeeRateAfter)
 	require.Equal(t, metadataLPNewFeeRateBefore, metadataLPNewFeeRateAfter)
 }
+
+func Test_UndelegateWithDelistedDenom(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+
+	// create dex to register second bond denom
+	baseDenom := bondDenom
+	metadataLP := createDexPool(t, ctx, input, sdk.NewInt64Coin(baseDenom, 1_000_000_000), sdk.NewInt64Coin("uusdc", 2_500_000_000), math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1), true)
+
+	secondBondDenom, err := movetypes.DenomFromMetadataAddress(ctx, input.MoveKeeper.MoveBankKeeper(), metadataLP)
+	require.NoError(t, err)
+
+	// update params to include second bond denom
+	params, err := input.StakingKeeper.GetParams(ctx)
+	require.NoError(t, err)
+	params.BondDenoms = append(params.BondDenoms, secondBondDenom)
+	err = input.StakingKeeper.SetParams(ctx, params)
+	require.NoError(t, err)
+
+	valAddr := createValidatorWithBalance(ctx, input, 100_000_000, 1_000_000, 1)
+
+	firstCoin := sdk.NewCoin(bondDenom, math.NewInt(1_000_000))
+	secondCoin := sdk.NewCoin(secondBondDenom, math.NewInt(2_500_000))
+	bondCoins := sdk.NewCoins(firstCoin, secondCoin)
+	delAddr := input.Faucet.NewFundedAccount(ctx, firstCoin)
+
+	// mint not possible for second bond denom, so transfer from the 0x1
+	require.NoError(t, input.BankKeeper.SendCoins(ctx, movetypes.TestAddr, delAddr, sdk.NewCoins(secondCoin)))
+
+	validator, err := input.StakingKeeper.Validators.Get(ctx, valAddr)
+	require.NoError(t, err)
+
+	// Delegate with both denoms
+	shares, err := input.StakingKeeper.Delegate(ctx, delAddr, bondCoins, types.Unbonded, validator, true)
+	require.NoError(t, err)
+	require.Equal(t, sdk.NewDecCoinsFromCoins(bondCoins...), shares)
+
+	// Now remove the second bond denom from BondDenoms (simulate delisting)
+	params, err = input.StakingKeeper.GetParams(ctx)
+	require.NoError(t, err)
+	// Remove the second bond denom
+	for i, denom := range params.BondDenoms {
+		if denom == secondBondDenom {
+			params.BondDenoms = append(params.BondDenoms[:i], params.BondDenoms[i+1:]...)
+			break
+		}
+	}
+	err = input.StakingKeeper.SetParams(ctx, params)
+	require.NoError(t, err)
+
+	// Verify the denom was removed
+	bondDenoms, err := input.StakingKeeper.BondDenoms(ctx)
+	require.NoError(t, err)
+	require.False(t, slices.Contains(bondDenoms, secondBondDenom))
+
+	// Test 1: Unbond existing delegation with delisted denom should still work
+	// Unbond half of the shares (which includes the delisted denom)
+	completeTime, _, err := input.StakingKeeper.Undelegate(ctx, delAddr, valAddr, shares.QuoDec(math.LegacyNewDec(2)))
+	require.NoError(t, err, "Unbonding with delisted denom should still work")
+	require.Equal(t, ctx.BlockHeader().Time.Add(params.UnbondingTime), completeTime)
+
+	// Test 2: Complete the unbonding should work
+	ctx = ctx.WithBlockTime(ctx.BlockTime().Add(params.UnbondingTime))
+	unbondedCoins, err := input.StakingKeeper.CompleteUnbonding(ctx, delAddr, valAddr)
+	require.NoError(t, err, "Completing unbonding with delisted denom should work")
+
+	// Verify we got the expected coins back
+	halfCoins, _ := sdk.NewDecCoinsFromCoins(bondCoins...).QuoDec(math.LegacyNewDec(2)).TruncateDecimal()
+	require.Equal(t, halfCoins, unbondedCoins)
+
+	// Test 3: Try to unbond the remaining shares (which still contain the delisted denom)
+	remainingShares, err := input.StakingKeeper.GetDelegation(ctx, delAddr, valAddr)
+	require.NoError(t, err)
+	require.False(t, remainingShares.Shares.IsZero())
+
+	// Unbond the remaining shares
+	completeTime2, _, err := input.StakingKeeper.Undelegate(ctx, delAddr, valAddr, remainingShares.Shares)
+	require.NoError(t, err, "Unbonding remaining shares with delisted denom should work")
+	require.Equal(t, ctx.BlockHeader().Time.Add(params.UnbondingTime), completeTime2)
+
+	// Complete the second unbonding
+	ctx = ctx.WithBlockTime(ctx.BlockTime().Add(params.UnbondingTime))
+	unbondedCoins2, err := input.StakingKeeper.CompleteUnbonding(ctx, delAddr, valAddr)
+	require.NoError(t, err, "Completing second unbonding with delisted denom should work")
+
+	// Verify we got the remaining coins back
+	require.True(t, unbondedCoins2.IsAllPositive())
+	require.Equal(t, halfCoins, unbondedCoins2)
+}
