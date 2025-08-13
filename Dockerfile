@@ -8,7 +8,7 @@ ARG VERSION
 ARG COMMIT
 
 # See https://github.com/initia-labs/movevm/releases
-ENV LIBMOVEVM_VERSION=v1.0.0
+ENV LIBMOVEVM_VERSION=v1.1.0-rc.0
 ENV MIMALLOC_VERSION=v2.2.2
 
 # Install necessary packages

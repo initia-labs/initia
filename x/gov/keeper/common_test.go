@@ -96,8 +96,6 @@ var ModuleBasics = module.NewBasicManager(
 const bondDenom = initiaapp.BondDenom
 
 var (
-	valPubKeys = testutilsims.CreateTestPubKeys(5)
-
 	pubKeys = []crypto.PubKey{
 		secp256k1.GenPrivKey().PubKey(),
 		secp256k1.GenPrivKey().PubKey(),
@@ -112,14 +110,6 @@ var (
 		sdk.AccAddress(pubKeys[2].Address()),
 		sdk.AccAddress(pubKeys[3].Address()),
 		sdk.AccAddress(pubKeys[4].Address()),
-	}
-
-	valAddrs = []sdk.ValAddress{
-		sdk.ValAddress(pubKeys[0].Address()),
-		sdk.ValAddress(pubKeys[1].Address()),
-		sdk.ValAddress(pubKeys[2].Address()),
-		sdk.ValAddress(pubKeys[3].Address()),
-		sdk.ValAddress(pubKeys[4].Address()),
 	}
 
 	testDenoms = []string{

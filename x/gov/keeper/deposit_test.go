@@ -341,11 +341,22 @@ func TestActivateVotingPeriodAndEmergency(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, proposal.Id, uint64(1))
 
+	// deposit from non-proposer should not activate emergency proposal
 	isActivated, err := input.GovKeeper.AddDeposit(ctx, 1, addrs[1], []sdk.Coin{sdk.NewCoin(bondDenom, emergencyMinDeposit)})
 	require.NoError(t, err)
 	require.True(t, isActivated)
 
 	prop, err := input.GovKeeper.Proposals.Get(ctx, 1)
+	require.NoError(t, err)
+	require.Equal(t, prop.Status, v1.StatusVotingPeriod)
+	require.False(t, prop.Emergency)
+
+	// deposit from proposer should activate emergency proposal
+	isActivated, err = input.GovKeeper.AddDeposit(ctx, 1, addrs[0], []sdk.Coin{sdk.NewCoin(bondDenom, bondDenomMinDeposit)})
+	require.NoError(t, err)
+	require.False(t, isActivated)
+
+	prop, err = input.GovKeeper.Proposals.Get(ctx, 1)
 	require.NoError(t, err)
 	require.Equal(t, prop.Status, v1.StatusVotingPeriod)
 	require.True(t, prop.Emergency)
