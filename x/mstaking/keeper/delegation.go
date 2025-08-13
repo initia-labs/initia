@@ -1114,6 +1114,10 @@ func (k Keeper) ValidateUnbondAmount(
 	return shares, nil
 }
 
+// MigrateDelegation migrates the delegation from one lp denom to another.
+// It will unbond the delegation, withdraw liquidity from the dex pool, swap the denom in to the denom out,
+// and provide liquidity to the dex pool.
+// It will return the new shares of the delegation.
 func (k Keeper) MigrateDelegation(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress, lpDenomIn string, denomSwapIn string) (sdk.DecCoins, error) {
 	lpMetadataIn, err := movetypes.MetadataAddressFromDenom(lpDenomIn)
 	if err != nil {

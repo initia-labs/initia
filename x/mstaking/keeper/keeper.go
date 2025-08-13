@@ -226,6 +226,12 @@ func (k Keeper) ConsensusAddressCodec() addresscodec.Codec {
 	return k.consensusAddressCodec
 }
 
+// RegisterMigration registers a migration of a delegation from one lp denom to another.
+// Swap contract requires the following functions:
+// - initialize(account: &signer, coin_in: Object<Metadata>, coin_out: Object<Metadata>)
+// - provide_liquidity(account: &signer, coin: Object<Metadata>, amount: u64)
+// - denom_out(denom_in: String) -> String
+// - swap(account: &signer, coin_in: Object<Metadata>, coin_out: Object<Metadata>, amount: u64)
 func (k Keeper) RegisterMigration(ctx context.Context, lpDenomIn string, lpDenomOut string, denomIn string, denomOut string, swapContractStr string) error {
 	lpMetadataIn, err := movetypes.MetadataAddressFromDenom(lpDenomIn)
 	if err != nil {

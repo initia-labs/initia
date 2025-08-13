@@ -420,11 +420,15 @@ enum Infraction {
   INFRACTION_DOWNTIME = 2;
 }
 
+// DelegationMigration is a migration of a delegation from one lp denom to another.
 message DelegationMigration {
   option (gogoproto.equal) = true;
   option (gogoproto.goproto_stringer) = false;
 
+  // lp_metadata_out is the metadata of the lp token out.
   bytes lp_metadata_out = 1;
+  // swap_contract_module_address is the address of the swap contract module.
   bytes swap_contract_module_address = 2;
+  // swap_contract_module_name is the name of the swap contract module.
   string swap_contract_module_name = 3;
 }
