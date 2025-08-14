@@ -707,14 +707,14 @@ $ %s query staking params
 // GetCmdQueryMigration implements the migration query command.
 func GetCmdQueryMigration() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "migration [lp-denom-in] [lp-denom-out]",
+		Use:   "migration [denom-lp-from] [denom-lp-to]",
 		Args:  cobra.ExactArgs(2),
 		Short: "Query the migration info",
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Query the migration info.
 
 Example:
-$ %s query staking migration USDC iUSD
+$ %s query staking migration LP1 LP2
 `,
 				version.AppName,
 			),
@@ -727,8 +727,8 @@ $ %s query staking migration USDC iUSD
 			queryClient := types.NewQueryClient(clientCtx)
 
 			res, err := queryClient.Migration(cmd.Context(), &types.QueryMigrationRequest{
-				LpDenomIn:  args[0],
-				LpDenomOut: args[1],
+				DenomLpFrom: args[0],
+				DenomLpTo:   args[1],
 			})
 			if err != nil {
 				return err

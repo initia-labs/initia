@@ -15,8 +15,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/query"
 
 	"github.com/initia-labs/initia/x/mstaking/types"
-
-	movetypes "github.com/initia-labs/initia/x/move/types"
 )
 
 const (
@@ -478,16 +476,7 @@ func (q Querier) Params(ctx context.Context, _ *types.QueryParamsRequest) (*type
 
 // Migration queries the migration info
 func (q Querier) Migration(ctx context.Context, req *types.QueryMigrationRequest) (*types.QueryMigrationResponse, error) {
-	lpDenomIn, err := movetypes.MetadataAddressFromDenom(req.LpDenomIn)
-	if err != nil {
-		return nil, err
-	}
-	lpDenomOut, err := movetypes.MetadataAddressFromDenom(req.LpDenomOut)
-	if err != nil {
-		return nil, err
-	}
-
-	migration, err := q.Migrations.Get(ctx, collections.Join(lpDenomIn[:], lpDenomOut[:]))
+	migration, err := q.Migrations.Get(ctx, collections.Join(req.DenomLpFrom, req.DenomLpTo))
 	if err != nil {
 		return nil, err
 	}

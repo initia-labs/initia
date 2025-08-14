@@ -3,7 +3,6 @@ package keeper
 import (
 	"context"
 	"errors"
-	"fmt"
 	"slices"
 
 	"cosmossdk.io/collections"
@@ -24,6 +23,7 @@ func NewBalancerKeeper(k *Keeper) BalancerKeeper {
 	return BalancerKeeper{k}
 }
 
+// HasPool checks if a pool exists for a given metadataLP
 func (k BalancerKeeper) HasPool(ctx context.Context, metadataLP vmtypes.AccountAddress) (bool, error) {
 	return k.HasResource(ctx, metadataLP, vmtypes.StructTag{
 		Address:  vmtypes.StdAddress,
@@ -193,13 +193,6 @@ func (k BalancerKeeper) getPoolInfo(ctx context.Context, metadataLP vmtypes.Acco
 	return
 }
 
-func (k BalancerKeeper) PoolMetadata(
-	ctx context.Context,
-	metadataLP vmtypes.AccountAddress,
-) ([]vmtypes.AccountAddress, error) {
-	return k.poolMetadata(ctx, metadataLP)
-}
-
 func (k BalancerKeeper) poolMetadata(ctx context.Context, metadataLP vmtypes.AccountAddress) ([]vmtypes.AccountAddress, error) {
 	bz, err := k.GetResourceBytes(ctx, metadataLP, vmtypes.StructTag{
 		Address:  vmtypes.StdAddress,
@@ -300,6 +293,7 @@ func (k BalancerKeeper) poolWeights(
 	return []math.LegacyDec{weightA, weightB}, nil
 }
 
+// PoolFeeRate returns the fee rate of a dex pair
 func (k BalancerKeeper) PoolFeeRate(
 	ctx context.Context,
 	metadataLP vmtypes.AccountAddress,
@@ -330,6 +324,7 @@ func (k BalancerKeeper) poolFeeRate(
 	return feeRate, nil
 }
 
+// isReverse checks if the dex pair is reverse
 func (k BalancerKeeper) isReverse(
 	ctx context.Context,
 	metadataLP vmtypes.AccountAddress,
@@ -349,63 +344,12 @@ func (k BalancerKeeper) isReverse(
 		return false, err
 	}
 
-	if metadataBase == metadata[0] {
+	switch metadataBase {
+	case metadata[0]:
 		return false, nil
-	} else if metadataBase == metadata[1] {
+	case metadata[1]:
 		return true, nil
 	}
 
 	return false, types.ErrInvalidDexConfig.Wrapf("the pair does not contain `%s`", denomBase)
-}
-
-// WithdrawLiquidity withdraw liquidity from a dex pair
-func (k BalancerKeeper) WithdrawLiquidity(ctx context.Context, provider vmtypes.AccountAddress, metadataLP vmtypes.AccountAddress, amount math.Int) error {
-	return k.ExecuteEntryFunctionJSON(
-		ctx,
-		provider,
-		vmtypes.StdAddress,
-		types.MoveModuleNameDex,
-		types.FunctionNameDexWithdrawLiquidity,
-		[]vmtypes.TypeTag{},
-		[]string{
-			fmt.Sprintf("\"%s\"", metadataLP.String()),
-			fmt.Sprintf("\"%s\"", amount.String()),
-			"null",
-			"null",
-		},
-	)
-}
-
-// ProvideLiquidity provide liquidity to a dex pair
-func (k BalancerKeeper) ProvideLiquidity(ctx context.Context, provider vmtypes.AccountAddress, metadataLP vmtypes.AccountAddress, amountA, amountB math.Int) error {
-	return k.ExecuteEntryFunctionJSON(
-		ctx,
-		provider,
-		vmtypes.StdAddress,
-		types.MoveModuleNameDex,
-		types.FunctionNameDexProvideLiquidity,
-		[]vmtypes.TypeTag{},
-		[]string{
-			fmt.Sprintf("\"%s\"", metadataLP.String()),
-			fmt.Sprintf("\"%s\"", amountA.String()),
-			fmt.Sprintf("\"%s\"", amountB.String()),
-			"null",
-		},
-	)
-}
-
-// UpdateFeeRate update fee rate of a dex pair
-func (k BalancerKeeper) UpdateFeeRate(ctx context.Context, metadataLP vmtypes.AccountAddress, feeRate math.LegacyDec) error {
-	return k.ExecuteEntryFunctionJSON(
-		ctx,
-		vmtypes.StdAddress,
-		vmtypes.StdAddress,
-		types.MoveModuleNameDex,
-		types.FunctionNameDexUpdateSwapFeeRate,
-		[]vmtypes.TypeTag{},
-		[]string{
-			fmt.Sprintf("\"%s\"", metadataLP.String()),
-			fmt.Sprintf("\"%s\"", feeRate.String()),
-		},
-	)
 }

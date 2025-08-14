@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -22,8 +23,6 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
 	"github.com/initia-labs/initia/x/mstaking/types"
-
-	movetypes "github.com/initia-labs/initia/x/move/types"
 )
 
 type msgServer struct {
@@ -536,7 +535,7 @@ func (ms msgServer) RegisterMigration(ctx context.Context, msg *types.MsgRegiste
 		return nil, errorsmod.Wrapf(govtypes.ErrInvalidSigner, "invalid authority; expected %s, got %s", ms.authority, msg.Authority)
 	}
 
-	if err := ms.Keeper.RegisterMigration(ctx, msg.LpDenomIn, msg.LpDenomOut, msg.DenomIn, msg.DenomOut, msg.SwapContractAddress); err != nil {
+	if err := ms.Keeper.RegisterMigration(ctx, msg.DenomLpFrom, msg.DenomLpTo, msg.ModuleAddress, msg.ModuleName); err != nil {
 		return nil, err
 	}
 
@@ -544,11 +543,9 @@ func (ms msgServer) RegisterMigration(ctx context.Context, msg *types.MsgRegiste
 	sdkCtx.EventManager().EmitEvent(
 		sdk.NewEvent(
 			types.EventTypeRegisterMigration,
-			sdk.NewAttribute(types.AttributeKeyLpDenomIn, msg.LpDenomIn),
-			sdk.NewAttribute(types.AttributeKeyLpDenomOut, msg.LpDenomOut),
-			sdk.NewAttribute(types.AttributeKeyDenomIn, msg.DenomIn),
-			sdk.NewAttribute(types.AttributeKeyDenomOut, msg.DenomOut),
-			sdk.NewAttribute(types.AttributeKeySwapContractAddress, msg.SwapContractAddress),
+			sdk.NewAttribute(types.AttributeKeyDenomLpFrom, msg.DenomLpFrom),
+			sdk.NewAttribute(types.AttributeKeyDenomLpTo, msg.DenomLpTo),
+			sdk.NewAttribute(types.AttributeKeyMigrationModule, fmt.Sprintf("%s::%s", msg.ModuleAddress, msg.ModuleName)),
 		),
 	)
 	return &types.MsgRegisterMigrationResponse{}, nil
@@ -570,17 +567,8 @@ func (ms msgServer) MigrateDelegation(ctx context.Context, msg *types.MsgMigrate
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid validator address: %s", err)
 	}
 
-	lpMetadataIn, err := movetypes.MetadataAddressFromDenom(msg.LpDenomIn)
-	if err != nil {
-		return nil, sdkerrors.ErrInvalidRequest.Wrap(err.Error())
-	}
-	lpMetadataOut, err := movetypes.MetadataAddressFromDenom(msg.LpDenomOut)
-	if err != nil {
-		return nil, sdkerrors.ErrInvalidRequest.Wrap(err.Error())
-	}
-
 	// get the migration info
-	migration, err := ms.Migrations.Get(ctx, collections.Join(lpMetadataIn[:], lpMetadataOut[:]))
+	migration, err := ms.Migrations.Get(ctx, collections.Join(msg.DenomLpFrom, msg.DenomLpTo))
 	if err != nil {
 		return nil, sdkerrors.ErrInvalidRequest.Wrap(err.Error())
 	}
@@ -596,8 +584,8 @@ func (ms msgServer) MigrateDelegation(ctx context.Context, msg *types.MsgMigrate
 			types.EventTypeMigrateDelegation,
 			sdk.NewAttribute(types.AttributeKeyDelegator, msg.DelegatorAddress),
 			sdk.NewAttribute(types.AttributeKeyValidator, msg.ValidatorAddress),
-			sdk.NewAttribute(types.AttributeKeyLpDenomIn, msg.LpDenomIn),
-			sdk.NewAttribute(types.AttributeKeyLpDenomOut, migration.LpDenomOut),
+			sdk.NewAttribute(types.AttributeKeyDenomLpFrom, msg.DenomLpFrom),
+			sdk.NewAttribute(types.AttributeKeyDenomLpTo, msg.DenomLpTo),
 			sdk.NewAttribute(types.AttributeKeyOriginShares, originShares.String()),
 			sdk.NewAttribute(types.AttributeKeyNewShares, newShares.String()),
 		),

@@ -239,124 +239,76 @@ func TestMsgUndelegate(t *testing.T) {
 // test Validate for MsgRegisterMigration
 func TestMsgRegisterMigration(t *testing.T) {
 	tests := []struct {
-		name                string
-		authority           sdk.AccAddress
-		lpDenomIn           string
-		lpDenomOut          string
-		denomIn             string
-		denomOut            string
-		swapContractAddress string
-		expectPass          bool
+		name          string
+		authority     sdk.AccAddress
+		lpDenomFrom   string
+		lpDenomTo     string
+		moduleAddress string
+		moduleName    string
+		expectPass    bool
 	}{
 		{
-			name:                "basic good",
-			authority:           sdk.AccAddress(valAddr1),
-			lpDenomIn:           "ulpinitiausdc",
-			lpDenomOut:          "ulpinitiausdt",
-			denomIn:             "uusdc",
-			denomOut:            "uusdt",
-			swapContractAddress: "0x2::swap",
-			expectPass:          true,
+			name:          "basic good",
+			authority:     sdk.AccAddress(valAddr1),
+			lpDenomFrom:   "ulpinitiausdc",
+			lpDenomTo:     "ulpinitiausdt",
+			moduleAddress: "0x2",
+			moduleName:    "dex_migration",
+			expectPass:    true,
 		},
 		{
-			name:                "empty authority",
-			authority:           sdk.AccAddress(emptyAddr),
-			lpDenomIn:           "ulpinitiausdc",
-			lpDenomOut:          "ulpinitiausdt",
-			denomIn:             "uusdc",
-			denomOut:            "uusdt",
-			swapContractAddress: "0x2::swap",
-			expectPass:          false,
+			name:          "empty authority",
+			authority:     sdk.AccAddress(emptyAddr),
+			lpDenomFrom:   "ulpinitiausdc",
+			lpDenomTo:     "ulpinitiausdt",
+			moduleAddress: "0x2",
+			moduleName:    "dex_migration",
+			expectPass:    false,
 		},
 		{
-			name:                "empty lp denom in",
-			authority:           sdk.AccAddress(valAddr1),
-			lpDenomIn:           "",
-			lpDenomOut:          "ulpinitiausdt",
-			denomIn:             "uusdc",
-			denomOut:            "uusdt",
-			swapContractAddress: "0x2::swap",
-			expectPass:          false,
+			name:          "empty lp denom from",
+			authority:     sdk.AccAddress(valAddr1),
+			lpDenomFrom:   "",
+			lpDenomTo:     "ulpinitiausdt",
+			moduleAddress: "0x2",
+			moduleName:    "dex_migration",
+			expectPass:    false,
 		},
 		{
-			name:                "empty lp denom out",
-			authority:           sdk.AccAddress(valAddr1),
-			lpDenomIn:           "ulpinitiausdc",
-			lpDenomOut:          "",
-			denomIn:             "uusdc",
-			denomOut:            "uusdt",
-			swapContractAddress: "0x2::swap",
-			expectPass:          false,
+			name:          "empty lp denom to",
+			authority:     sdk.AccAddress(valAddr1),
+			lpDenomFrom:   "ulpinitiausdc",
+			lpDenomTo:     "",
+			moduleAddress: "0x2",
+			moduleName:    "dex_migration",
+			expectPass:    false,
 		},
 		{
-			name:                "empty denom in",
-			authority:           sdk.AccAddress(valAddr1),
-			lpDenomIn:           "ulpinitiausdc",
-			lpDenomOut:          "ulpinitiausdt",
-			denomIn:             "",
-			denomOut:            "uusdt",
-			swapContractAddress: "0x2::swap",
-			expectPass:          false,
+			name:          "empty module address",
+			authority:     sdk.AccAddress(valAddr1),
+			lpDenomFrom:   "ulpinitiausdc",
+			lpDenomTo:     "ulpinitiausdt",
+			moduleAddress: "",
+			moduleName:    "dex_migration",
+			expectPass:    false,
 		},
 		{
-			name:                "empty denom out",
-			authority:           sdk.AccAddress(valAddr1),
-			lpDenomIn:           "ulpinitiausdc",
-			lpDenomOut:          "ulpinitiausdt",
-			denomIn:             "uusdc",
-			denomOut:            "",
-			swapContractAddress: "0x2::swap",
-			expectPass:          false,
+			name:          "empty module name",
+			authority:     sdk.AccAddress(valAddr1),
+			lpDenomFrom:   "ulpinitiausdc",
+			lpDenomTo:     "ulpinitiausdt",
+			moduleAddress: "0x2",
+			moduleName:    "",
+			expectPass:    false,
 		},
 		{
-			name:                "invalid swap contract format - missing separator",
-			authority:           sdk.AccAddress(valAddr1),
-			lpDenomIn:           "ulpinitiausdc",
-			lpDenomOut:          "ulpinitiausdt",
-			denomIn:             "uusdc",
-			denomOut:            "uusdt",
-			swapContractAddress: "0x2swap",
-			expectPass:          false,
-		},
-		{
-			name:                "invalid swap contract format - too many parts",
-			authority:           sdk.AccAddress(valAddr1),
-			lpDenomIn:           "ulpinitiausdc",
-			lpDenomOut:          "ulpinitiausdt",
-			denomIn:             "uusdc",
-			denomOut:            "uusdt",
-			swapContractAddress: "0x2::swap::extra",
-			expectPass:          false,
-		},
-		{
-			name:                "invalid swap contract format - empty module address",
-			authority:           sdk.AccAddress(valAddr1),
-			lpDenomIn:           "ulpinitiausdc",
-			lpDenomOut:          "ulpinitiausdt",
-			denomIn:             "uusdc",
-			denomOut:            "uusdt",
-			swapContractAddress: "::swap",
-			expectPass:          false,
-		},
-		{
-			name:                "invalid swap contract format - empty module name",
-			authority:           sdk.AccAddress(valAddr1),
-			lpDenomIn:           "ulpinitiausdc",
-			lpDenomOut:          "ulpinitiausdt",
-			denomIn:             "uusdc",
-			denomOut:            "uusdt",
-			swapContractAddress: "0x2::",
-			expectPass:          false,
-		},
-		{
-			name:                "valid swap contract with different format",
-			authority:           sdk.AccAddress(valAddr1),
-			lpDenomIn:           "ulpinitiausdc",
-			lpDenomOut:          "ulpinitiausdt",
-			denomIn:             "uusdc",
-			denomOut:            "uusdt",
-			swapContractAddress: "0x1::dex_swap",
-			expectPass:          true,
+			name:          "valid with different module address",
+			authority:     sdk.AccAddress(valAddr1),
+			lpDenomFrom:   "ulpinitiausdc",
+			lpDenomTo:     "ulpinitiausdt",
+			moduleAddress: "0x1",
+			moduleName:    "dex_migration",
+			expectPass:    true,
 		},
 	}
 
@@ -368,12 +320,11 @@ func TestMsgRegisterMigration(t *testing.T) {
 		require.NoError(t, err)
 
 		msg := &types.MsgRegisterMigration{
-			Authority:           authorityStr,
-			LpDenomIn:           tc.lpDenomIn,
-			LpDenomOut:          tc.lpDenomOut,
-			DenomIn:             tc.denomIn,
-			DenomOut:            tc.denomOut,
-			SwapContractAddress: tc.swapContractAddress,
+			Authority:     authorityStr,
+			DenomLpFrom:   tc.lpDenomFrom,
+			DenomLpTo:     tc.lpDenomTo,
+			ModuleAddress: tc.moduleAddress,
+			ModuleName:    tc.moduleName,
 		}
 
 		if tc.expectPass {
@@ -390,72 +341,72 @@ func TestMsgMigrateDelegation(t *testing.T) {
 		name          string
 		delegatorAddr sdk.AccAddress
 		validatorAddr sdk.ValAddress
-		lpDenomIn     string
-		lpDenomOut    string
+		lpDenomFrom   string
+		lpDenomTo     string
 		expectPass    bool
 	}{
 		{
 			name:          "basic good",
 			delegatorAddr: sdk.AccAddress(valAddr1),
 			validatorAddr: valAddr2,
-			lpDenomIn:     "ulpinitiausdc",
-			lpDenomOut:    "ulpinitiausdt",
+			lpDenomFrom:   "ulpinitiausdc",
+			lpDenomTo:     "ulpinitiausdt",
 			expectPass:    true,
 		},
 		{
 			name:          "self delegation",
 			delegatorAddr: sdk.AccAddress(valAddr1),
 			validatorAddr: valAddr1,
-			lpDenomIn:     "ulpinitiausdc",
-			lpDenomOut:    "ulpinitiausdt",
+			lpDenomFrom:   "ulpinitiausdc",
+			lpDenomTo:     "ulpinitiausdt",
 			expectPass:    true,
 		},
 		{
 			name:          "empty delegator address",
 			delegatorAddr: sdk.AccAddress(emptyAddr),
 			validatorAddr: valAddr2,
-			lpDenomIn:     "ulpinitiausdc",
-			lpDenomOut:    "ulpinitiausdt",
+			lpDenomFrom:   "ulpinitiausdc",
+			lpDenomTo:     "ulpinitiausdt",
 			expectPass:    false,
 		},
 		{
 			name:          "empty validator address",
 			delegatorAddr: sdk.AccAddress(valAddr1),
 			validatorAddr: emptyAddr,
-			lpDenomIn:     "ulpinitiausdc",
-			lpDenomOut:    "ulpinitiausdt",
+			lpDenomFrom:   "ulpinitiausdc",
+			lpDenomTo:     "ulpinitiausdt",
 			expectPass:    false,
 		},
 		{
-			name:          "empty lp denom in",
+			name:          "empty lp denom from",
 			delegatorAddr: sdk.AccAddress(valAddr1),
 			validatorAddr: valAddr2,
-			lpDenomIn:     "",
-			lpDenomOut:    "ulpinitiausdt",
+			lpDenomFrom:   "",
+			lpDenomTo:     "ulpinitiausdt",
 			expectPass:    false,
 		},
 		{
-			name:          "empty lp denom out",
+			name:          "empty lp denom to",
 			delegatorAddr: sdk.AccAddress(valAddr1),
 			validatorAddr: valAddr2,
-			lpDenomIn:     "ulpinitiausdc",
-			lpDenomOut:    "",
+			lpDenomFrom:   "ulpinitiausdc",
+			lpDenomTo:     "",
 			expectPass:    false,
 		},
 		{
 			name:          "same lp denoms",
 			delegatorAddr: sdk.AccAddress(valAddr1),
 			validatorAddr: valAddr2,
-			lpDenomIn:     "ulpinitiausdc",
-			lpDenomOut:    "ulpinitiausdc",
+			lpDenomFrom:   "ulpinitiausdc",
+			lpDenomTo:     "ulpinitiausdc",
 			expectPass:    true,
 		},
 		{
 			name:          "different lp denoms",
 			delegatorAddr: sdk.AccAddress(valAddr1),
 			validatorAddr: valAddr2,
-			lpDenomIn:     "ulpinitiausdc",
-			lpDenomOut:    "ulpinitiausdt",
+			lpDenomFrom:   "ulpinitiausdc",
+			lpDenomTo:     "ulpinitiausdt",
 			expectPass:    true,
 		},
 	}
@@ -472,8 +423,8 @@ func TestMsgMigrateDelegation(t *testing.T) {
 		msg := &types.MsgMigrateDelegation{
 			DelegatorAddress: delAddrStr,
 			ValidatorAddress: valAddrStr,
-			LpDenomIn:        tc.lpDenomIn,
-			LpDenomOut:       tc.lpDenomOut,
+			DenomLpFrom:      tc.lpDenomFrom,
+			DenomLpTo:        tc.lpDenomTo,
 		}
 
 		if tc.expectPass {

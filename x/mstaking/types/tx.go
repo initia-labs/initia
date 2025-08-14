@@ -1,8 +1,6 @@
 package types
 
 import (
-	"strings"
-
 	"cosmossdk.io/core/address"
 	"cosmossdk.io/errors"
 	"cosmossdk.io/math"
@@ -289,31 +287,20 @@ func (msg MsgRegisterMigration) Validate(accAddrCodec address.Codec, valAddrCode
 		return errors.Wrap(err, "invalid authority address")
 	}
 
-	if msg.LpDenomIn == "" {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "lp denom in is empty")
+	if msg.DenomLpFrom == "" {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "lp denom from is empty")
 	}
 
-	if msg.LpDenomOut == "" {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "lp denom out is empty")
+	if msg.DenomLpTo == "" {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "lp denom to is empty")
 	}
 
-	if msg.DenomIn == "" {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "denom in is empty")
+	if msg.ModuleAddress == "" {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "module address is empty")
 	}
 
-	if msg.DenomOut == "" {
+	if msg.ModuleName == "" {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "denom out is empty")
-	}
-
-	swapContract := strings.Split(msg.SwapContractAddress, "::")
-	if len(swapContract) != 2 {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "invalid swap contract address")
-	}
-	if swapContract[0] == "" {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "swap contract address is empty")
-	}
-	if swapContract[1] == "" {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "swap contract module name is empty")
 	}
 
 	return nil
@@ -334,11 +321,11 @@ func (msg MsgMigrateDelegation) Validate(accAddrCodec address.Codec, valAddrCode
 		return ErrEmptyValidatorAddr
 	}
 
-	if msg.LpDenomIn == "" {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "lp denom in is empty")
+	if msg.DenomLpFrom == "" {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "lp denom from is empty")
 	}
-	if msg.LpDenomOut == "" {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "lp denom out is empty")
+	if msg.DenomLpTo == "" {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "lp denom to is empty")
 	}
 
 	return nil

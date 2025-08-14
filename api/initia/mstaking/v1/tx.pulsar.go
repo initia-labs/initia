@@ -7265,24 +7265,22 @@ func (x *fastReflection_MsgUpdateParamsResponse) ProtoMethods() *protoiface.Meth
 }
 
 var (
-	md_MsgRegisterMigration                       protoreflect.MessageDescriptor
-	fd_MsgRegisterMigration_authority             protoreflect.FieldDescriptor
-	fd_MsgRegisterMigration_lp_denom_in           protoreflect.FieldDescriptor
-	fd_MsgRegisterMigration_lp_denom_out          protoreflect.FieldDescriptor
-	fd_MsgRegisterMigration_denom_in              protoreflect.FieldDescriptor
-	fd_MsgRegisterMigration_denom_out             protoreflect.FieldDescriptor
-	fd_MsgRegisterMigration_swap_contract_address protoreflect.FieldDescriptor
+	md_MsgRegisterMigration                protoreflect.MessageDescriptor
+	fd_MsgRegisterMigration_authority      protoreflect.FieldDescriptor
+	fd_MsgRegisterMigration_denom_lp_from  protoreflect.FieldDescriptor
+	fd_MsgRegisterMigration_denom_lp_to    protoreflect.FieldDescriptor
+	fd_MsgRegisterMigration_module_address protoreflect.FieldDescriptor
+	fd_MsgRegisterMigration_module_name    protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_initia_mstaking_v1_tx_proto_init()
 	md_MsgRegisterMigration = File_initia_mstaking_v1_tx_proto.Messages().ByName("MsgRegisterMigration")
 	fd_MsgRegisterMigration_authority = md_MsgRegisterMigration.Fields().ByName("authority")
-	fd_MsgRegisterMigration_lp_denom_in = md_MsgRegisterMigration.Fields().ByName("lp_denom_in")
-	fd_MsgRegisterMigration_lp_denom_out = md_MsgRegisterMigration.Fields().ByName("lp_denom_out")
-	fd_MsgRegisterMigration_denom_in = md_MsgRegisterMigration.Fields().ByName("denom_in")
-	fd_MsgRegisterMigration_denom_out = md_MsgRegisterMigration.Fields().ByName("denom_out")
-	fd_MsgRegisterMigration_swap_contract_address = md_MsgRegisterMigration.Fields().ByName("swap_contract_address")
+	fd_MsgRegisterMigration_denom_lp_from = md_MsgRegisterMigration.Fields().ByName("denom_lp_from")
+	fd_MsgRegisterMigration_denom_lp_to = md_MsgRegisterMigration.Fields().ByName("denom_lp_to")
+	fd_MsgRegisterMigration_module_address = md_MsgRegisterMigration.Fields().ByName("module_address")
+	fd_MsgRegisterMigration_module_name = md_MsgRegisterMigration.Fields().ByName("module_name")
 }
 
 var _ protoreflect.Message = (*fastReflection_MsgRegisterMigration)(nil)
@@ -7356,33 +7354,27 @@ func (x *fastReflection_MsgRegisterMigration) Range(f func(protoreflect.FieldDes
 			return
 		}
 	}
-	if x.LpDenomIn != "" {
-		value := protoreflect.ValueOfString(x.LpDenomIn)
-		if !f(fd_MsgRegisterMigration_lp_denom_in, value) {
+	if x.DenomLpFrom != "" {
+		value := protoreflect.ValueOfString(x.DenomLpFrom)
+		if !f(fd_MsgRegisterMigration_denom_lp_from, value) {
 			return
 		}
 	}
-	if x.LpDenomOut != "" {
-		value := protoreflect.ValueOfString(x.LpDenomOut)
-		if !f(fd_MsgRegisterMigration_lp_denom_out, value) {
+	if x.DenomLpTo != "" {
+		value := protoreflect.ValueOfString(x.DenomLpTo)
+		if !f(fd_MsgRegisterMigration_denom_lp_to, value) {
 			return
 		}
 	}
-	if x.DenomIn != "" {
-		value := protoreflect.ValueOfString(x.DenomIn)
-		if !f(fd_MsgRegisterMigration_denom_in, value) {
+	if x.ModuleAddress != "" {
+		value := protoreflect.ValueOfString(x.ModuleAddress)
+		if !f(fd_MsgRegisterMigration_module_address, value) {
 			return
 		}
 	}
-	if x.DenomOut != "" {
-		value := protoreflect.ValueOfString(x.DenomOut)
-		if !f(fd_MsgRegisterMigration_denom_out, value) {
-			return
-		}
-	}
-	if x.SwapContractAddress != "" {
-		value := protoreflect.ValueOfString(x.SwapContractAddress)
-		if !f(fd_MsgRegisterMigration_swap_contract_address, value) {
+	if x.ModuleName != "" {
+		value := protoreflect.ValueOfString(x.ModuleName)
+		if !f(fd_MsgRegisterMigration_module_name, value) {
 			return
 		}
 	}
@@ -7403,16 +7395,14 @@ func (x *fastReflection_MsgRegisterMigration) Has(fd protoreflect.FieldDescripto
 	switch fd.FullName() {
 	case "initia.mstaking.v1.MsgRegisterMigration.authority":
 		return x.Authority != ""
-	case "initia.mstaking.v1.MsgRegisterMigration.lp_denom_in":
-		return x.LpDenomIn != ""
-	case "initia.mstaking.v1.MsgRegisterMigration.lp_denom_out":
-		return x.LpDenomOut != ""
-	case "initia.mstaking.v1.MsgRegisterMigration.denom_in":
-		return x.DenomIn != ""
-	case "initia.mstaking.v1.MsgRegisterMigration.denom_out":
-		return x.DenomOut != ""
-	case "initia.mstaking.v1.MsgRegisterMigration.swap_contract_address":
-		return x.SwapContractAddress != ""
+	case "initia.mstaking.v1.MsgRegisterMigration.denom_lp_from":
+		return x.DenomLpFrom != ""
+	case "initia.mstaking.v1.MsgRegisterMigration.denom_lp_to":
+		return x.DenomLpTo != ""
+	case "initia.mstaking.v1.MsgRegisterMigration.module_address":
+		return x.ModuleAddress != ""
+	case "initia.mstaking.v1.MsgRegisterMigration.module_name":
+		return x.ModuleName != ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.mstaking.v1.MsgRegisterMigration"))
@@ -7431,16 +7421,14 @@ func (x *fastReflection_MsgRegisterMigration) Clear(fd protoreflect.FieldDescrip
 	switch fd.FullName() {
 	case "initia.mstaking.v1.MsgRegisterMigration.authority":
 		x.Authority = ""
-	case "initia.mstaking.v1.MsgRegisterMigration.lp_denom_in":
-		x.LpDenomIn = ""
-	case "initia.mstaking.v1.MsgRegisterMigration.lp_denom_out":
-		x.LpDenomOut = ""
-	case "initia.mstaking.v1.MsgRegisterMigration.denom_in":
-		x.DenomIn = ""
-	case "initia.mstaking.v1.MsgRegisterMigration.denom_out":
-		x.DenomOut = ""
-	case "initia.mstaking.v1.MsgRegisterMigration.swap_contract_address":
-		x.SwapContractAddress = ""
+	case "initia.mstaking.v1.MsgRegisterMigration.denom_lp_from":
+		x.DenomLpFrom = ""
+	case "initia.mstaking.v1.MsgRegisterMigration.denom_lp_to":
+		x.DenomLpTo = ""
+	case "initia.mstaking.v1.MsgRegisterMigration.module_address":
+		x.ModuleAddress = ""
+	case "initia.mstaking.v1.MsgRegisterMigration.module_name":
+		x.ModuleName = ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.mstaking.v1.MsgRegisterMigration"))
@@ -7460,20 +7448,17 @@ func (x *fastReflection_MsgRegisterMigration) Get(descriptor protoreflect.FieldD
 	case "initia.mstaking.v1.MsgRegisterMigration.authority":
 		value := x.Authority
 		return protoreflect.ValueOfString(value)
-	case "initia.mstaking.v1.MsgRegisterMigration.lp_denom_in":
-		value := x.LpDenomIn
+	case "initia.mstaking.v1.MsgRegisterMigration.denom_lp_from":
+		value := x.DenomLpFrom
 		return protoreflect.ValueOfString(value)
-	case "initia.mstaking.v1.MsgRegisterMigration.lp_denom_out":
-		value := x.LpDenomOut
+	case "initia.mstaking.v1.MsgRegisterMigration.denom_lp_to":
+		value := x.DenomLpTo
 		return protoreflect.ValueOfString(value)
-	case "initia.mstaking.v1.MsgRegisterMigration.denom_in":
-		value := x.DenomIn
+	case "initia.mstaking.v1.MsgRegisterMigration.module_address":
+		value := x.ModuleAddress
 		return protoreflect.ValueOfString(value)
-	case "initia.mstaking.v1.MsgRegisterMigration.denom_out":
-		value := x.DenomOut
-		return protoreflect.ValueOfString(value)
-	case "initia.mstaking.v1.MsgRegisterMigration.swap_contract_address":
-		value := x.SwapContractAddress
+	case "initia.mstaking.v1.MsgRegisterMigration.module_name":
+		value := x.ModuleName
 		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
@@ -7497,16 +7482,14 @@ func (x *fastReflection_MsgRegisterMigration) Set(fd protoreflect.FieldDescripto
 	switch fd.FullName() {
 	case "initia.mstaking.v1.MsgRegisterMigration.authority":
 		x.Authority = value.Interface().(string)
-	case "initia.mstaking.v1.MsgRegisterMigration.lp_denom_in":
-		x.LpDenomIn = value.Interface().(string)
-	case "initia.mstaking.v1.MsgRegisterMigration.lp_denom_out":
-		x.LpDenomOut = value.Interface().(string)
-	case "initia.mstaking.v1.MsgRegisterMigration.denom_in":
-		x.DenomIn = value.Interface().(string)
-	case "initia.mstaking.v1.MsgRegisterMigration.denom_out":
-		x.DenomOut = value.Interface().(string)
-	case "initia.mstaking.v1.MsgRegisterMigration.swap_contract_address":
-		x.SwapContractAddress = value.Interface().(string)
+	case "initia.mstaking.v1.MsgRegisterMigration.denom_lp_from":
+		x.DenomLpFrom = value.Interface().(string)
+	case "initia.mstaking.v1.MsgRegisterMigration.denom_lp_to":
+		x.DenomLpTo = value.Interface().(string)
+	case "initia.mstaking.v1.MsgRegisterMigration.module_address":
+		x.ModuleAddress = value.Interface().(string)
+	case "initia.mstaking.v1.MsgRegisterMigration.module_name":
+		x.ModuleName = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.mstaking.v1.MsgRegisterMigration"))
@@ -7529,16 +7512,14 @@ func (x *fastReflection_MsgRegisterMigration) Mutable(fd protoreflect.FieldDescr
 	switch fd.FullName() {
 	case "initia.mstaking.v1.MsgRegisterMigration.authority":
 		panic(fmt.Errorf("field authority of message initia.mstaking.v1.MsgRegisterMigration is not mutable"))
-	case "initia.mstaking.v1.MsgRegisterMigration.lp_denom_in":
-		panic(fmt.Errorf("field lp_denom_in of message initia.mstaking.v1.MsgRegisterMigration is not mutable"))
-	case "initia.mstaking.v1.MsgRegisterMigration.lp_denom_out":
-		panic(fmt.Errorf("field lp_denom_out of message initia.mstaking.v1.MsgRegisterMigration is not mutable"))
-	case "initia.mstaking.v1.MsgRegisterMigration.denom_in":
-		panic(fmt.Errorf("field denom_in of message initia.mstaking.v1.MsgRegisterMigration is not mutable"))
-	case "initia.mstaking.v1.MsgRegisterMigration.denom_out":
-		panic(fmt.Errorf("field denom_out of message initia.mstaking.v1.MsgRegisterMigration is not mutable"))
-	case "initia.mstaking.v1.MsgRegisterMigration.swap_contract_address":
-		panic(fmt.Errorf("field swap_contract_address of message initia.mstaking.v1.MsgRegisterMigration is not mutable"))
+	case "initia.mstaking.v1.MsgRegisterMigration.denom_lp_from":
+		panic(fmt.Errorf("field denom_lp_from of message initia.mstaking.v1.MsgRegisterMigration is not mutable"))
+	case "initia.mstaking.v1.MsgRegisterMigration.denom_lp_to":
+		panic(fmt.Errorf("field denom_lp_to of message initia.mstaking.v1.MsgRegisterMigration is not mutable"))
+	case "initia.mstaking.v1.MsgRegisterMigration.module_address":
+		panic(fmt.Errorf("field module_address of message initia.mstaking.v1.MsgRegisterMigration is not mutable"))
+	case "initia.mstaking.v1.MsgRegisterMigration.module_name":
+		panic(fmt.Errorf("field module_name of message initia.mstaking.v1.MsgRegisterMigration is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.mstaking.v1.MsgRegisterMigration"))
@@ -7554,15 +7535,13 @@ func (x *fastReflection_MsgRegisterMigration) NewField(fd protoreflect.FieldDesc
 	switch fd.FullName() {
 	case "initia.mstaking.v1.MsgRegisterMigration.authority":
 		return protoreflect.ValueOfString("")
-	case "initia.mstaking.v1.MsgRegisterMigration.lp_denom_in":
+	case "initia.mstaking.v1.MsgRegisterMigration.denom_lp_from":
 		return protoreflect.ValueOfString("")
-	case "initia.mstaking.v1.MsgRegisterMigration.lp_denom_out":
+	case "initia.mstaking.v1.MsgRegisterMigration.denom_lp_to":
 		return protoreflect.ValueOfString("")
-	case "initia.mstaking.v1.MsgRegisterMigration.denom_in":
+	case "initia.mstaking.v1.MsgRegisterMigration.module_address":
 		return protoreflect.ValueOfString("")
-	case "initia.mstaking.v1.MsgRegisterMigration.denom_out":
-		return protoreflect.ValueOfString("")
-	case "initia.mstaking.v1.MsgRegisterMigration.swap_contract_address":
+	case "initia.mstaking.v1.MsgRegisterMigration.module_name":
 		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
@@ -7637,23 +7616,19 @@ func (x *fastReflection_MsgRegisterMigration) ProtoMethods() *protoiface.Methods
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		l = len(x.LpDenomIn)
+		l = len(x.DenomLpFrom)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		l = len(x.LpDenomOut)
+		l = len(x.DenomLpTo)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		l = len(x.DenomIn)
+		l = len(x.ModuleAddress)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		l = len(x.DenomOut)
-		if l > 0 {
-			n += 1 + l + runtime.Sov(uint64(l))
-		}
-		l = len(x.SwapContractAddress)
+		l = len(x.ModuleName)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
@@ -7686,38 +7661,31 @@ func (x *fastReflection_MsgRegisterMigration) ProtoMethods() *protoiface.Methods
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
 		}
-		if len(x.SwapContractAddress) > 0 {
-			i -= len(x.SwapContractAddress)
-			copy(dAtA[i:], x.SwapContractAddress)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.SwapContractAddress)))
-			i--
-			dAtA[i] = 0x32
-		}
-		if len(x.DenomOut) > 0 {
-			i -= len(x.DenomOut)
-			copy(dAtA[i:], x.DenomOut)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.DenomOut)))
+		if len(x.ModuleName) > 0 {
+			i -= len(x.ModuleName)
+			copy(dAtA[i:], x.ModuleName)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.ModuleName)))
 			i--
 			dAtA[i] = 0x2a
 		}
-		if len(x.DenomIn) > 0 {
-			i -= len(x.DenomIn)
-			copy(dAtA[i:], x.DenomIn)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.DenomIn)))
+		if len(x.ModuleAddress) > 0 {
+			i -= len(x.ModuleAddress)
+			copy(dAtA[i:], x.ModuleAddress)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.ModuleAddress)))
 			i--
 			dAtA[i] = 0x22
 		}
-		if len(x.LpDenomOut) > 0 {
-			i -= len(x.LpDenomOut)
-			copy(dAtA[i:], x.LpDenomOut)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.LpDenomOut)))
+		if len(x.DenomLpTo) > 0 {
+			i -= len(x.DenomLpTo)
+			copy(dAtA[i:], x.DenomLpTo)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.DenomLpTo)))
 			i--
 			dAtA[i] = 0x1a
 		}
-		if len(x.LpDenomIn) > 0 {
-			i -= len(x.LpDenomIn)
-			copy(dAtA[i:], x.LpDenomIn)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.LpDenomIn)))
+		if len(x.DenomLpFrom) > 0 {
+			i -= len(x.DenomLpFrom)
+			copy(dAtA[i:], x.DenomLpFrom)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.DenomLpFrom)))
 			i--
 			dAtA[i] = 0x12
 		}
@@ -7811,7 +7779,7 @@ func (x *fastReflection_MsgRegisterMigration) ProtoMethods() *protoiface.Methods
 				iNdEx = postIndex
 			case 2:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field LpDenomIn", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field DenomLpFrom", wireType)
 				}
 				var stringLen uint64
 				for shift := uint(0); ; shift += 7 {
@@ -7839,11 +7807,11 @@ func (x *fastReflection_MsgRegisterMigration) ProtoMethods() *protoiface.Methods
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.LpDenomIn = string(dAtA[iNdEx:postIndex])
+				x.DenomLpFrom = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
 			case 3:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field LpDenomOut", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field DenomLpTo", wireType)
 				}
 				var stringLen uint64
 				for shift := uint(0); ; shift += 7 {
@@ -7871,11 +7839,11 @@ func (x *fastReflection_MsgRegisterMigration) ProtoMethods() *protoiface.Methods
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.LpDenomOut = string(dAtA[iNdEx:postIndex])
+				x.DenomLpTo = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
 			case 4:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field DenomIn", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field ModuleAddress", wireType)
 				}
 				var stringLen uint64
 				for shift := uint(0); ; shift += 7 {
@@ -7903,11 +7871,11 @@ func (x *fastReflection_MsgRegisterMigration) ProtoMethods() *protoiface.Methods
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.DenomIn = string(dAtA[iNdEx:postIndex])
+				x.ModuleAddress = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
 			case 5:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field DenomOut", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field ModuleName", wireType)
 				}
 				var stringLen uint64
 				for shift := uint(0); ; shift += 7 {
@@ -7935,39 +7903,7 @@ func (x *fastReflection_MsgRegisterMigration) ProtoMethods() *protoiface.Methods
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.DenomOut = string(dAtA[iNdEx:postIndex])
-				iNdEx = postIndex
-			case 6:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field SwapContractAddress", wireType)
-				}
-				var stringLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					stringLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				intStringLen := int(stringLen)
-				if intStringLen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + intStringLen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				x.SwapContractAddress = string(dAtA[iNdEx:postIndex])
+				x.ModuleName = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
@@ -8364,8 +8300,8 @@ var (
 	md_MsgMigrateDelegation                   protoreflect.MessageDescriptor
 	fd_MsgMigrateDelegation_delegator_address protoreflect.FieldDescriptor
 	fd_MsgMigrateDelegation_validator_address protoreflect.FieldDescriptor
-	fd_MsgMigrateDelegation_lp_denom_in       protoreflect.FieldDescriptor
-	fd_MsgMigrateDelegation_lp_denom_out      protoreflect.FieldDescriptor
+	fd_MsgMigrateDelegation_denom_lp_from     protoreflect.FieldDescriptor
+	fd_MsgMigrateDelegation_denom_lp_to       protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -8373,8 +8309,8 @@ func init() {
 	md_MsgMigrateDelegation = File_initia_mstaking_v1_tx_proto.Messages().ByName("MsgMigrateDelegation")
 	fd_MsgMigrateDelegation_delegator_address = md_MsgMigrateDelegation.Fields().ByName("delegator_address")
 	fd_MsgMigrateDelegation_validator_address = md_MsgMigrateDelegation.Fields().ByName("validator_address")
-	fd_MsgMigrateDelegation_lp_denom_in = md_MsgMigrateDelegation.Fields().ByName("lp_denom_in")
-	fd_MsgMigrateDelegation_lp_denom_out = md_MsgMigrateDelegation.Fields().ByName("lp_denom_out")
+	fd_MsgMigrateDelegation_denom_lp_from = md_MsgMigrateDelegation.Fields().ByName("denom_lp_from")
+	fd_MsgMigrateDelegation_denom_lp_to = md_MsgMigrateDelegation.Fields().ByName("denom_lp_to")
 }
 
 var _ protoreflect.Message = (*fastReflection_MsgMigrateDelegation)(nil)
@@ -8454,15 +8390,15 @@ func (x *fastReflection_MsgMigrateDelegation) Range(f func(protoreflect.FieldDes
 			return
 		}
 	}
-	if x.LpDenomIn != "" {
-		value := protoreflect.ValueOfString(x.LpDenomIn)
-		if !f(fd_MsgMigrateDelegation_lp_denom_in, value) {
+	if x.DenomLpFrom != "" {
+		value := protoreflect.ValueOfString(x.DenomLpFrom)
+		if !f(fd_MsgMigrateDelegation_denom_lp_from, value) {
 			return
 		}
 	}
-	if x.LpDenomOut != "" {
-		value := protoreflect.ValueOfString(x.LpDenomOut)
-		if !f(fd_MsgMigrateDelegation_lp_denom_out, value) {
+	if x.DenomLpTo != "" {
+		value := protoreflect.ValueOfString(x.DenomLpTo)
+		if !f(fd_MsgMigrateDelegation_denom_lp_to, value) {
 			return
 		}
 	}
@@ -8485,10 +8421,10 @@ func (x *fastReflection_MsgMigrateDelegation) Has(fd protoreflect.FieldDescripto
 		return x.DelegatorAddress != ""
 	case "initia.mstaking.v1.MsgMigrateDelegation.validator_address":
 		return x.ValidatorAddress != ""
-	case "initia.mstaking.v1.MsgMigrateDelegation.lp_denom_in":
-		return x.LpDenomIn != ""
-	case "initia.mstaking.v1.MsgMigrateDelegation.lp_denom_out":
-		return x.LpDenomOut != ""
+	case "initia.mstaking.v1.MsgMigrateDelegation.denom_lp_from":
+		return x.DenomLpFrom != ""
+	case "initia.mstaking.v1.MsgMigrateDelegation.denom_lp_to":
+		return x.DenomLpTo != ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.mstaking.v1.MsgMigrateDelegation"))
@@ -8509,10 +8445,10 @@ func (x *fastReflection_MsgMigrateDelegation) Clear(fd protoreflect.FieldDescrip
 		x.DelegatorAddress = ""
 	case "initia.mstaking.v1.MsgMigrateDelegation.validator_address":
 		x.ValidatorAddress = ""
-	case "initia.mstaking.v1.MsgMigrateDelegation.lp_denom_in":
-		x.LpDenomIn = ""
-	case "initia.mstaking.v1.MsgMigrateDelegation.lp_denom_out":
-		x.LpDenomOut = ""
+	case "initia.mstaking.v1.MsgMigrateDelegation.denom_lp_from":
+		x.DenomLpFrom = ""
+	case "initia.mstaking.v1.MsgMigrateDelegation.denom_lp_to":
+		x.DenomLpTo = ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.mstaking.v1.MsgMigrateDelegation"))
@@ -8535,11 +8471,11 @@ func (x *fastReflection_MsgMigrateDelegation) Get(descriptor protoreflect.FieldD
 	case "initia.mstaking.v1.MsgMigrateDelegation.validator_address":
 		value := x.ValidatorAddress
 		return protoreflect.ValueOfString(value)
-	case "initia.mstaking.v1.MsgMigrateDelegation.lp_denom_in":
-		value := x.LpDenomIn
+	case "initia.mstaking.v1.MsgMigrateDelegation.denom_lp_from":
+		value := x.DenomLpFrom
 		return protoreflect.ValueOfString(value)
-	case "initia.mstaking.v1.MsgMigrateDelegation.lp_denom_out":
-		value := x.LpDenomOut
+	case "initia.mstaking.v1.MsgMigrateDelegation.denom_lp_to":
+		value := x.DenomLpTo
 		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
@@ -8565,10 +8501,10 @@ func (x *fastReflection_MsgMigrateDelegation) Set(fd protoreflect.FieldDescripto
 		x.DelegatorAddress = value.Interface().(string)
 	case "initia.mstaking.v1.MsgMigrateDelegation.validator_address":
 		x.ValidatorAddress = value.Interface().(string)
-	case "initia.mstaking.v1.MsgMigrateDelegation.lp_denom_in":
-		x.LpDenomIn = value.Interface().(string)
-	case "initia.mstaking.v1.MsgMigrateDelegation.lp_denom_out":
-		x.LpDenomOut = value.Interface().(string)
+	case "initia.mstaking.v1.MsgMigrateDelegation.denom_lp_from":
+		x.DenomLpFrom = value.Interface().(string)
+	case "initia.mstaking.v1.MsgMigrateDelegation.denom_lp_to":
+		x.DenomLpTo = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.mstaking.v1.MsgMigrateDelegation"))
@@ -8593,10 +8529,10 @@ func (x *fastReflection_MsgMigrateDelegation) Mutable(fd protoreflect.FieldDescr
 		panic(fmt.Errorf("field delegator_address of message initia.mstaking.v1.MsgMigrateDelegation is not mutable"))
 	case "initia.mstaking.v1.MsgMigrateDelegation.validator_address":
 		panic(fmt.Errorf("field validator_address of message initia.mstaking.v1.MsgMigrateDelegation is not mutable"))
-	case "initia.mstaking.v1.MsgMigrateDelegation.lp_denom_in":
-		panic(fmt.Errorf("field lp_denom_in of message initia.mstaking.v1.MsgMigrateDelegation is not mutable"))
-	case "initia.mstaking.v1.MsgMigrateDelegation.lp_denom_out":
-		panic(fmt.Errorf("field lp_denom_out of message initia.mstaking.v1.MsgMigrateDelegation is not mutable"))
+	case "initia.mstaking.v1.MsgMigrateDelegation.denom_lp_from":
+		panic(fmt.Errorf("field denom_lp_from of message initia.mstaking.v1.MsgMigrateDelegation is not mutable"))
+	case "initia.mstaking.v1.MsgMigrateDelegation.denom_lp_to":
+		panic(fmt.Errorf("field denom_lp_to of message initia.mstaking.v1.MsgMigrateDelegation is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.mstaking.v1.MsgMigrateDelegation"))
@@ -8614,9 +8550,9 @@ func (x *fastReflection_MsgMigrateDelegation) NewField(fd protoreflect.FieldDesc
 		return protoreflect.ValueOfString("")
 	case "initia.mstaking.v1.MsgMigrateDelegation.validator_address":
 		return protoreflect.ValueOfString("")
-	case "initia.mstaking.v1.MsgMigrateDelegation.lp_denom_in":
+	case "initia.mstaking.v1.MsgMigrateDelegation.denom_lp_from":
 		return protoreflect.ValueOfString("")
-	case "initia.mstaking.v1.MsgMigrateDelegation.lp_denom_out":
+	case "initia.mstaking.v1.MsgMigrateDelegation.denom_lp_to":
 		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
@@ -8695,11 +8631,11 @@ func (x *fastReflection_MsgMigrateDelegation) ProtoMethods() *protoiface.Methods
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		l = len(x.LpDenomIn)
+		l = len(x.DenomLpFrom)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		l = len(x.LpDenomOut)
+		l = len(x.DenomLpTo)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
@@ -8732,17 +8668,17 @@ func (x *fastReflection_MsgMigrateDelegation) ProtoMethods() *protoiface.Methods
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
 		}
-		if len(x.LpDenomOut) > 0 {
-			i -= len(x.LpDenomOut)
-			copy(dAtA[i:], x.LpDenomOut)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.LpDenomOut)))
+		if len(x.DenomLpTo) > 0 {
+			i -= len(x.DenomLpTo)
+			copy(dAtA[i:], x.DenomLpTo)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.DenomLpTo)))
 			i--
 			dAtA[i] = 0x22
 		}
-		if len(x.LpDenomIn) > 0 {
-			i -= len(x.LpDenomIn)
-			copy(dAtA[i:], x.LpDenomIn)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.LpDenomIn)))
+		if len(x.DenomLpFrom) > 0 {
+			i -= len(x.DenomLpFrom)
+			copy(dAtA[i:], x.DenomLpFrom)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.DenomLpFrom)))
 			i--
 			dAtA[i] = 0x1a
 		}
@@ -8875,7 +8811,7 @@ func (x *fastReflection_MsgMigrateDelegation) ProtoMethods() *protoiface.Methods
 				iNdEx = postIndex
 			case 3:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field LpDenomIn", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field DenomLpFrom", wireType)
 				}
 				var stringLen uint64
 				for shift := uint(0); ; shift += 7 {
@@ -8903,11 +8839,11 @@ func (x *fastReflection_MsgMigrateDelegation) ProtoMethods() *protoiface.Methods
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.LpDenomIn = string(dAtA[iNdEx:postIndex])
+				x.DenomLpFrom = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
 			case 4:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field LpDenomOut", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field DenomLpTo", wireType)
 				}
 				var stringLen uint64
 				for shift := uint(0); ; shift += 7 {
@@ -8935,7 +8871,7 @@ func (x *fastReflection_MsgMigrateDelegation) ProtoMethods() *protoiface.Methods
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.LpDenomOut = string(dAtA[iNdEx:postIndex])
+				x.DenomLpTo = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
@@ -9967,12 +9903,11 @@ type MsgRegisterMigration struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Authority           string `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty"`
-	LpDenomIn           string `protobuf:"bytes,2,opt,name=lp_denom_in,json=lpDenomIn,proto3" json:"lp_denom_in,omitempty"`
-	LpDenomOut          string `protobuf:"bytes,3,opt,name=lp_denom_out,json=lpDenomOut,proto3" json:"lp_denom_out,omitempty"`
-	DenomIn             string `protobuf:"bytes,4,opt,name=denom_in,json=denomIn,proto3" json:"denom_in,omitempty"`
-	DenomOut            string `protobuf:"bytes,5,opt,name=denom_out,json=denomOut,proto3" json:"denom_out,omitempty"`
-	SwapContractAddress string `protobuf:"bytes,6,opt,name=swap_contract_address,json=swapContractAddress,proto3" json:"swap_contract_address,omitempty"`
+	Authority     string `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty"`
+	DenomLpFrom   string `protobuf:"bytes,2,opt,name=denom_lp_from,json=denomLpFrom,proto3" json:"denom_lp_from,omitempty"`
+	DenomLpTo     string `protobuf:"bytes,3,opt,name=denom_lp_to,json=denomLpTo,proto3" json:"denom_lp_to,omitempty"`
+	ModuleAddress string `protobuf:"bytes,4,opt,name=module_address,json=moduleAddress,proto3" json:"module_address,omitempty"`
+	ModuleName    string `protobuf:"bytes,5,opt,name=module_name,json=moduleName,proto3" json:"module_name,omitempty"`
 }
 
 func (x *MsgRegisterMigration) Reset() {
@@ -10002,37 +9937,30 @@ func (x *MsgRegisterMigration) GetAuthority() string {
 	return ""
 }
 
-func (x *MsgRegisterMigration) GetLpDenomIn() string {
+func (x *MsgRegisterMigration) GetDenomLpFrom() string {
 	if x != nil {
-		return x.LpDenomIn
+		return x.DenomLpFrom
 	}
 	return ""
 }
 
-func (x *MsgRegisterMigration) GetLpDenomOut() string {
+func (x *MsgRegisterMigration) GetDenomLpTo() string {
 	if x != nil {
-		return x.LpDenomOut
+		return x.DenomLpTo
 	}
 	return ""
 }
 
-func (x *MsgRegisterMigration) GetDenomIn() string {
+func (x *MsgRegisterMigration) GetModuleAddress() string {
 	if x != nil {
-		return x.DenomIn
+		return x.ModuleAddress
 	}
 	return ""
 }
 
-func (x *MsgRegisterMigration) GetDenomOut() string {
+func (x *MsgRegisterMigration) GetModuleName() string {
 	if x != nil {
-		return x.DenomOut
-	}
-	return ""
-}
-
-func (x *MsgRegisterMigration) GetSwapContractAddress() string {
-	if x != nil {
-		return x.SwapContractAddress
+		return x.ModuleName
 	}
 	return ""
 }
@@ -10073,8 +10001,8 @@ type MsgMigrateDelegation struct {
 
 	DelegatorAddress string `protobuf:"bytes,1,opt,name=delegator_address,json=delegatorAddress,proto3" json:"delegator_address,omitempty"`
 	ValidatorAddress string `protobuf:"bytes,2,opt,name=validator_address,json=validatorAddress,proto3" json:"validator_address,omitempty"`
-	LpDenomIn        string `protobuf:"bytes,3,opt,name=lp_denom_in,json=lpDenomIn,proto3" json:"lp_denom_in,omitempty"`
-	LpDenomOut       string `protobuf:"bytes,4,opt,name=lp_denom_out,json=lpDenomOut,proto3" json:"lp_denom_out,omitempty"`
+	DenomLpFrom      string `protobuf:"bytes,3,opt,name=denom_lp_from,json=denomLpFrom,proto3" json:"denom_lp_from,omitempty"`
+	DenomLpTo        string `protobuf:"bytes,4,opt,name=denom_lp_to,json=denomLpTo,proto3" json:"denom_lp_to,omitempty"`
 }
 
 func (x *MsgMigrateDelegation) Reset() {
@@ -10111,16 +10039,16 @@ func (x *MsgMigrateDelegation) GetValidatorAddress() string {
 	return ""
 }
 
-func (x *MsgMigrateDelegation) GetLpDenomIn() string {
+func (x *MsgMigrateDelegation) GetDenomLpFrom() string {
 	if x != nil {
-		return x.LpDenomIn
+		return x.DenomLpFrom
 	}
 	return ""
 }
 
-func (x *MsgMigrateDelegation) GetLpDenomOut() string {
+func (x *MsgMigrateDelegation) GetDenomLpTo() string {
 	if x != nil {
-		return x.LpDenomOut
+		return x.DenomLpTo
 	}
 	return ""
 }
@@ -10377,44 +10305,42 @@ var file_initia_mstaking_v1_tx_proto_rawDesc = []byte{
 	0x72, 0x69, 0x74, 0x79, 0x8a, 0xe7, 0xb0, 0x2a, 0x18, 0x6d, 0x73, 0x74, 0x61, 0x6b, 0x69, 0x6e,
 	0x67, 0x2f, 0x4d, 0x73, 0x67, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x50, 0x61, 0x72, 0x61, 0x6d,
 	0x73, 0x22, 0x19, 0x0a, 0x17, 0x4d, 0x73, 0x67, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x50, 0x61,
-	0x72, 0x61, 0x6d, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0xb6, 0x02, 0x0a,
+	0x72, 0x61, 0x6d, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x94, 0x02, 0x0a,
 	0x14, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x4d, 0x69, 0x67, 0x72,
 	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x36, 0x0a, 0x09, 0x61, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x69,
 	0x74, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x42, 0x18, 0xd2, 0xb4, 0x2d, 0x14, 0x63, 0x6f,
 	0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x53, 0x74, 0x72, 0x69,
-	0x6e, 0x67, 0x52, 0x09, 0x61, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x69, 0x74, 0x79, 0x12, 0x1e, 0x0a,
-	0x0b, 0x6c, 0x70, 0x5f, 0x64, 0x65, 0x6e, 0x6f, 0x6d, 0x5f, 0x69, 0x6e, 0x18, 0x02, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x09, 0x6c, 0x70, 0x44, 0x65, 0x6e, 0x6f, 0x6d, 0x49, 0x6e, 0x12, 0x20, 0x0a,
-	0x0c, 0x6c, 0x70, 0x5f, 0x64, 0x65, 0x6e, 0x6f, 0x6d, 0x5f, 0x6f, 0x75, 0x74, 0x18, 0x03, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x0a, 0x6c, 0x70, 0x44, 0x65, 0x6e, 0x6f, 0x6d, 0x4f, 0x75, 0x74, 0x12,
-	0x19, 0x0a, 0x08, 0x64, 0x65, 0x6e, 0x6f, 0x6d, 0x5f, 0x69, 0x6e, 0x18, 0x04, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x07, 0x64, 0x65, 0x6e, 0x6f, 0x6d, 0x49, 0x6e, 0x12, 0x1b, 0x0a, 0x09, 0x64, 0x65,
-	0x6e, 0x6f, 0x6d, 0x5f, 0x6f, 0x75, 0x74, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x64,
-	0x65, 0x6e, 0x6f, 0x6d, 0x4f, 0x75, 0x74, 0x12, 0x32, 0x0a, 0x15, 0x73, 0x77, 0x61, 0x70, 0x5f,
-	0x63, 0x6f, 0x6e, 0x74, 0x72, 0x61, 0x63, 0x74, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73,
-	0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x13, 0x73, 0x77, 0x61, 0x70, 0x43, 0x6f, 0x6e, 0x74,
-	0x72, 0x61, 0x63, 0x74, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x3a, 0x38, 0x88, 0xa0, 0x1f,
-	0x00, 0xe8, 0xa0, 0x1f, 0x00, 0x82, 0xe7, 0xb0, 0x2a, 0x09, 0x61, 0x75, 0x74, 0x68, 0x6f, 0x72,
-	0x69, 0x74, 0x79, 0x8a, 0xe7, 0xb0, 0x2a, 0x1d, 0x6d, 0x73, 0x74, 0x61, 0x6b, 0x69, 0x6e, 0x67,
-	0x2f, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x4d, 0x69, 0x67, 0x72,
-	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x22, 0x1e, 0x0a, 0x1c, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x67, 0x69,
-	0x73, 0x74, 0x65, 0x72, 0x4d, 0x69, 0x67, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x73,
-	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0xb1, 0x02, 0x0a, 0x14, 0x4d, 0x73, 0x67, 0x4d, 0x69, 0x67,
-	0x72, 0x61, 0x74, 0x65, 0x44, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x45,
-	0x0a, 0x11, 0x64, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x6f, 0x72, 0x5f, 0x61, 0x64, 0x64, 0x72,
-	0x65, 0x73, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x42, 0x18, 0xd2, 0xb4, 0x2d, 0x14, 0x63,
-	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x53, 0x74, 0x72,
-	0x69, 0x6e, 0x67, 0x52, 0x10, 0x64, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x6f, 0x72, 0x41, 0x64,
-	0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x4e, 0x0a, 0x11, 0x76, 0x61, 0x6c, 0x69, 0x64, 0x61, 0x74,
-	0x6f, 0x72, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
-	0x42, 0x21, 0xd2, 0xb4, 0x2d, 0x1d, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x56, 0x61, 0x6c,
-	0x69, 0x64, 0x61, 0x74, 0x6f, 0x72, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x53, 0x74, 0x72,
-	0x69, 0x6e, 0x67, 0x52, 0x10, 0x76, 0x61, 0x6c, 0x69, 0x64, 0x61, 0x74, 0x6f, 0x72, 0x41, 0x64,
-	0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x1e, 0x0a, 0x0b, 0x6c, 0x70, 0x5f, 0x64, 0x65, 0x6e, 0x6f,
-	0x6d, 0x5f, 0x69, 0x6e, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6c, 0x70, 0x44, 0x65,
-	0x6e, 0x6f, 0x6d, 0x49, 0x6e, 0x12, 0x20, 0x0a, 0x0c, 0x6c, 0x70, 0x5f, 0x64, 0x65, 0x6e, 0x6f,
-	0x6d, 0x5f, 0x6f, 0x75, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x6c, 0x70, 0x44,
-	0x65, 0x6e, 0x6f, 0x6d, 0x4f, 0x75, 0x74, 0x3a, 0x40, 0x88, 0xa0, 0x1f, 0x00, 0xe8, 0xa0, 0x1f,
+	0x6e, 0x67, 0x52, 0x09, 0x61, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x69, 0x74, 0x79, 0x12, 0x22, 0x0a,
+	0x0d, 0x64, 0x65, 0x6e, 0x6f, 0x6d, 0x5f, 0x6c, 0x70, 0x5f, 0x66, 0x72, 0x6f, 0x6d, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x64, 0x65, 0x6e, 0x6f, 0x6d, 0x4c, 0x70, 0x46, 0x72, 0x6f,
+	0x6d, 0x12, 0x1e, 0x0a, 0x0b, 0x64, 0x65, 0x6e, 0x6f, 0x6d, 0x5f, 0x6c, 0x70, 0x5f, 0x74, 0x6f,
+	0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x64, 0x65, 0x6e, 0x6f, 0x6d, 0x4c, 0x70, 0x54,
+	0x6f, 0x12, 0x25, 0x0a, 0x0e, 0x6d, 0x6f, 0x64, 0x75, 0x6c, 0x65, 0x5f, 0x61, 0x64, 0x64, 0x72,
+	0x65, 0x73, 0x73, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0d, 0x6d, 0x6f, 0x64, 0x75, 0x6c,
+	0x65, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x1f, 0x0a, 0x0b, 0x6d, 0x6f, 0x64, 0x75,
+	0x6c, 0x65, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x6d,
+	0x6f, 0x64, 0x75, 0x6c, 0x65, 0x4e, 0x61, 0x6d, 0x65, 0x3a, 0x38, 0x88, 0xa0, 0x1f, 0x00, 0xe8,
+	0xa0, 0x1f, 0x00, 0x82, 0xe7, 0xb0, 0x2a, 0x09, 0x61, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x69, 0x74,
+	0x79, 0x8a, 0xe7, 0xb0, 0x2a, 0x1d, 0x6d, 0x73, 0x74, 0x61, 0x6b, 0x69, 0x6e, 0x67, 0x2f, 0x4d,
+	0x73, 0x67, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x4d, 0x69, 0x67, 0x72, 0x61, 0x74,
+	0x69, 0x6f, 0x6e, 0x22, 0x1e, 0x0a, 0x1c, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74,
+	0x65, 0x72, 0x4d, 0x69, 0x67, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f,
+	0x6e, 0x73, 0x65, 0x22, 0xb3, 0x02, 0x0a, 0x14, 0x4d, 0x73, 0x67, 0x4d, 0x69, 0x67, 0x72, 0x61,
+	0x74, 0x65, 0x44, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x45, 0x0a, 0x11,
+	0x64, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x6f, 0x72, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73,
+	0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x42, 0x18, 0xd2, 0xb4, 0x2d, 0x14, 0x63, 0x6f, 0x73,
+	0x6d, 0x6f, 0x73, 0x2e, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x53, 0x74, 0x72, 0x69, 0x6e,
+	0x67, 0x52, 0x10, 0x64, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x6f, 0x72, 0x41, 0x64, 0x64, 0x72,
+	0x65, 0x73, 0x73, 0x12, 0x4e, 0x0a, 0x11, 0x76, 0x61, 0x6c, 0x69, 0x64, 0x61, 0x74, 0x6f, 0x72,
+	0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x42, 0x21,
+	0xd2, 0xb4, 0x2d, 0x1d, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x56, 0x61, 0x6c, 0x69, 0x64,
+	0x61, 0x74, 0x6f, 0x72, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x53, 0x74, 0x72, 0x69, 0x6e,
+	0x67, 0x52, 0x10, 0x76, 0x61, 0x6c, 0x69, 0x64, 0x61, 0x74, 0x6f, 0x72, 0x41, 0x64, 0x64, 0x72,
+	0x65, 0x73, 0x73, 0x12, 0x22, 0x0a, 0x0d, 0x64, 0x65, 0x6e, 0x6f, 0x6d, 0x5f, 0x6c, 0x70, 0x5f,
+	0x66, 0x72, 0x6f, 0x6d, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x64, 0x65, 0x6e, 0x6f,
+	0x6d, 0x4c, 0x70, 0x46, 0x72, 0x6f, 0x6d, 0x12, 0x1e, 0x0a, 0x0b, 0x64, 0x65, 0x6e, 0x6f, 0x6d,
+	0x5f, 0x6c, 0x70, 0x5f, 0x74, 0x6f, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x64, 0x65,
+	0x6e, 0x6f, 0x6d, 0x4c, 0x70, 0x54, 0x6f, 0x3a, 0x40, 0x88, 0xa0, 0x1f, 0x00, 0xe8, 0xa0, 0x1f,
 	0x00, 0x82, 0xe7, 0xb0, 0x2a, 0x11, 0x64, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x6f, 0x72, 0x5f,
 	0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x8a, 0xe7, 0xb0, 0x2a, 0x1d, 0x6d, 0x73, 0x74, 0x61,
 	0x6b, 0x69, 0x6e, 0x67, 0x2f, 0x4d, 0x73, 0x67, 0x4d, 0x69, 0x67, 0x72, 0x61, 0x74, 0x65, 0x44,

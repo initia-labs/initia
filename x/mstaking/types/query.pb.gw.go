@@ -938,26 +938,26 @@ func request_Query_Migration_0(ctx context.Context, marshaler runtime.Marshaler,
 		_   = err
 	)
 
-	val, ok = pathParams["lp_denom_in"]
+	val, ok = pathParams["denom_lp_from"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "lp_denom_in")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "denom_lp_from")
 	}
 
-	protoReq.LpDenomIn, err = runtime.String(val)
+	protoReq.DenomLpFrom, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "lp_denom_in", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "denom_lp_from", err)
 	}
 
-	val, ok = pathParams["lp_denom_out"]
+	val, ok = pathParams["denom_lp_to"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "lp_denom_out")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "denom_lp_to")
 	}
 
-	protoReq.LpDenomOut, err = runtime.String(val)
+	protoReq.DenomLpTo, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "lp_denom_out", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "denom_lp_to", err)
 	}
 
 	msg, err := client.Migration(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -976,26 +976,26 @@ func local_request_Query_Migration_0(ctx context.Context, marshaler runtime.Mars
 		_   = err
 	)
 
-	val, ok = pathParams["lp_denom_in"]
+	val, ok = pathParams["denom_lp_from"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "lp_denom_in")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "denom_lp_from")
 	}
 
-	protoReq.LpDenomIn, err = runtime.String(val)
+	protoReq.DenomLpFrom, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "lp_denom_in", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "denom_lp_from", err)
 	}
 
-	val, ok = pathParams["lp_denom_out"]
+	val, ok = pathParams["denom_lp_to"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "lp_denom_out")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "denom_lp_to")
 	}
 
-	protoReq.LpDenomOut, err = runtime.String(val)
+	protoReq.DenomLpTo, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "lp_denom_out", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "denom_lp_to", err)
 	}
 
 	msg, err := server.Migration(ctx, &protoReq)
@@ -1772,7 +1772,7 @@ var (
 
 	pattern_Query_Params_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"initia", "mstaking", "v1", "params"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_Migration_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 1, 0, 4, 1, 5, 5}, []string{"initia", "mstaking", "v1", "migration", "lp_denom_in", "lp_denom_out"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_Migration_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 1, 0, 4, 1, 5, 5}, []string{"initia", "mstaking", "v1", "migration", "denom_lp_from", "denom_lp_to"}, "", runtime.AssumeColonVerbOpt(false)))
 )
 
 var (

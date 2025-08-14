@@ -103,7 +103,7 @@ service Query {
 
   // Migration queries the migration info.
   rpc Migration(QueryMigrationRequest) returns (QueryMigrationResponse) {
-    option (google.api.http).get = "/initia/mstaking/v1/migration/{lp_denom_in}/{lp_denom_out}";
+    option (google.api.http).get = "/initia/mstaking/v1/migration/{denom_lp_from}/{denom_lp_to}";
   }
 }
 
@@ -378,11 +378,11 @@ message QueryParamsResponse {
 
 // QueryMigrationRequest is request type for the Query/Migration RPC method.
 message QueryMigrationRequest {
-  // lp_denom_in defines the lp denom to query for.
-  string lp_denom_in = 1;
+  // denom_lp_from defines the lp denom to query for.
+  string denom_lp_from = 1;
 
-  // lp_denom_out defines the lp denom to query for.
-  string lp_denom_out = 2;
+  // denom_lp_to defines the lp denom to query for.
+  string denom_lp_to = 2;
 }
 
 // QueryMigrationResponse is response type for the Query/Migration RPC method.

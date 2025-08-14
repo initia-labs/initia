@@ -42,7 +42,7 @@ func createDexPool(
 	// fund test account for dex creation
 	input.Faucet.Fund(ctx, types.TestAddr, baseCoin, quoteCoin)
 
-	denomLP := "ulp"
+	denomLP := "ulp" + baseCoin.Denom + quoteCoin.Denom
 
 	//
 	// prepare arguments

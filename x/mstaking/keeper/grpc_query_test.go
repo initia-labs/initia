@@ -557,9 +557,9 @@ func Test_grpcParams(t *testing.T) {
 func Test_grpcMigration(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
-	// Publish the swap module
-	swapModule := ReadMoveFile("swap")
-	err := input.MoveKeeper.PublishModuleBundle(ctx, movetypes.ConvertSDKAddressToVMAddress(movetypes.TestAddr), vmtypes.NewModuleBundle(vmtypes.Module{Code: swapModule}), movetypes.UpgradePolicy_COMPATIBLE)
+	// Publish the migration module
+	migrationModule := ReadMoveFile("dex_migration")
+	err := input.MoveKeeper.PublishModuleBundle(ctx, movetypes.ConvertSDKAddressToVMAddress(movetypes.TestAddr), vmtypes.NewModuleBundle(vmtypes.Module{Code: migrationModule}), movetypes.UpgradePolicy_COMPATIBLE)
 	require.NoError(t, err)
 
 	// Create DEX pools for both LP denominations
@@ -574,13 +574,13 @@ func Test_grpcMigration(t *testing.T) {
 	require.NoError(t, err)
 
 	// Register a migration
-	err = input.StakingKeeper.RegisterMigration(ctx, lpDenomOld, lpDenomNew, "uusdc", "uusdc2", "0x2::swap")
+	err = input.StakingKeeper.RegisterMigration(ctx, lpDenomOld, lpDenomNew, "0x2", "dex_migration")
 	require.NoError(t, err)
 
 	// Query the migration
 	req := types.QueryMigrationRequest{
-		LpDenomIn:  lpDenomOld,
-		LpDenomOut: lpDenomNew,
+		DenomLpFrom: lpDenomOld,
+		DenomLpTo:   lpDenomNew,
 	}
 
 	querier := keeper.Querier{&input.StakingKeeper}
@@ -591,12 +591,7 @@ func Test_grpcMigration(t *testing.T) {
 	require.NotNil(t, res.Migration)
 
 	// Get the expected migration from the keeper
-	lpMetadataIn, err := movetypes.MetadataAddressFromDenom(lpDenomOld)
-	require.NoError(t, err)
-	lpMetadataOut, err := movetypes.MetadataAddressFromDenom(lpDenomNew)
-	require.NoError(t, err)
-
-	expectedMigration, err := input.StakingKeeper.Migrations.Get(ctx, collections.Join(lpMetadataIn[:], lpMetadataOut[:]))
+	expectedMigration, err := input.StakingKeeper.Migrations.Get(ctx, collections.Join(lpDenomOld, lpDenomNew))
 	require.NoError(t, err)
 
 	require.Equal(t, expectedMigration, res.Migration)

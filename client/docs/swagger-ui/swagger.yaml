@@ -45808,7 +45808,7 @@ paths:
           type: string
       tags:
         - Query
-  /initia/mstaking/v1/migration/{lp_denom_in}/{lp_denom_out}:
+  /initia/mstaking/v1/migration/{denom_lp_from}/{denom_lp_to}:
     get:
       summary: Migration queries the migration info.
       operationId: Migration
@@ -45822,29 +45822,27 @@ paths:
                 description: migration defines the migration info.
                 type: object
                 properties:
-                  denom_in:
+                  denom_lp_from:
                     type: string
-                    description: denom_in is the input denom of the swap contract.
-                  denom_out:
+                    title: >-
+                      denom_lp_from defines the source LP token denomination
+                      that will be migrated from
+                  denom_lp_to:
                     type: string
-                    description: denom_out is the output denom of the swap contract.
-                  lp_denom_in:
-                    type: string
-                    description: lp_denom_in is the denom of the lp token in.
-                  lp_denom_out:
-                    type: string
-                    description: lp_denom_out is the denom of the lp token out.
-                  swap_contract_module_address:
+                    title: >-
+                      denom_lp_to defines the target LP token denomination that
+                      will be migrated to
+                  module_address:
                     type: string
                     format: byte
-                    description: >-
-                      swap_contract_module_address is the address of the swap
-                      contract module.
-                  swap_contract_module_name:
+                    title: >-
+                      module_address is the address of the module that will be
+                      used to migrate the delegation
+                  module_name:
                     type: string
-                    description: >-
-                      swap_contract_module_name is the name of the swap contract
-                      module.
+                    title: >-
+                      module_name is the name of the module that will be used to
+                      migrate the delegation
             description: >-
               QueryMigrationResponse is response type for the Query/Migration
               RPC method.
@@ -46043,13 +46041,13 @@ paths:
                           "value": "1.212s"
                         }
       parameters:
-        - name: lp_denom_in
-          description: lp_denom_in defines the lp denom to query for.
+        - name: denom_lp_from
+          description: denom_lp_from defines the lp denom to query for.
           in: path
           required: true
           type: string
-        - name: lp_denom_out
-          description: lp_denom_out defines the lp denom to query for.
+        - name: denom_lp_to
+          description: denom_lp_to defines the lp denom to query for.
           in: path
           required: true
           type: string
@@ -87431,27 +87429,27 @@ definitions:
   initia.mstaking.v1.DelegationMigration:
     type: object
     properties:
-      denom_in:
+      denom_lp_from:
         type: string
-        description: denom_in is the input denom of the swap contract.
-      denom_out:
+        title: >-
+          denom_lp_from defines the source LP token denomination that will be
+          migrated from
+      denom_lp_to:
         type: string
-        description: denom_out is the output denom of the swap contract.
-      lp_denom_in:
-        type: string
-        description: lp_denom_in is the denom of the lp token in.
-      lp_denom_out:
-        type: string
-        description: lp_denom_out is the denom of the lp token out.
-      swap_contract_module_address:
+        title: >-
+          denom_lp_to defines the target LP token denomination that will be
+          migrated to
+      module_address:
         type: string
         format: byte
-        description: >-
-          swap_contract_module_address is the address of the swap contract
-          module.
-      swap_contract_module_name:
+        title: >-
+          module_address is the address of the module that will be used to
+          migrate the delegation
+      module_name:
         type: string
-        description: swap_contract_module_name is the name of the swap contract module.
+        title: >-
+          module_name is the name of the module that will be used to migrate the
+          delegation
     description: >-
       DelegationMigration is a migration of a delegation from one lp denom to
       another.
@@ -88657,27 +88655,27 @@ definitions:
         description: migration defines the migration info.
         type: object
         properties:
-          denom_in:
+          denom_lp_from:
             type: string
-            description: denom_in is the input denom of the swap contract.
-          denom_out:
+            title: >-
+              denom_lp_from defines the source LP token denomination that will
+              be migrated from
+          denom_lp_to:
             type: string
-            description: denom_out is the output denom of the swap contract.
-          lp_denom_in:
-            type: string
-            description: lp_denom_in is the denom of the lp token in.
-          lp_denom_out:
-            type: string
-            description: lp_denom_out is the denom of the lp token out.
-          swap_contract_module_address:
+            title: >-
+              denom_lp_to defines the target LP token denomination that will be
+              migrated to
+          module_address:
             type: string
             format: byte
-            description: >-
-              swap_contract_module_address is the address of the swap contract
-              module.
-          swap_contract_module_name:
+            title: >-
+              module_address is the address of the module that will be used to
+              migrate the delegation
+          module_name:
             type: string
-            description: swap_contract_module_name is the name of the swap contract module.
+            title: >-
+              module_name is the name of the module that will be used to migrate
+              the delegation
     description: >-
       QueryMigrationResponse is response type for the Query/Migration RPC
       method.

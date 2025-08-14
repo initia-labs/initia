@@ -12662,24 +12662,20 @@ func (x *fastReflection_Pool) ProtoMethods() *protoiface.Methods {
 }
 
 var (
-	md_DelegationMigration                              protoreflect.MessageDescriptor
-	fd_DelegationMigration_denom_in                     protoreflect.FieldDescriptor
-	fd_DelegationMigration_denom_out                    protoreflect.FieldDescriptor
-	fd_DelegationMigration_lp_denom_in                  protoreflect.FieldDescriptor
-	fd_DelegationMigration_lp_denom_out                 protoreflect.FieldDescriptor
-	fd_DelegationMigration_swap_contract_module_address protoreflect.FieldDescriptor
-	fd_DelegationMigration_swap_contract_module_name    protoreflect.FieldDescriptor
+	md_DelegationMigration                protoreflect.MessageDescriptor
+	fd_DelegationMigration_denom_lp_from  protoreflect.FieldDescriptor
+	fd_DelegationMigration_denom_lp_to    protoreflect.FieldDescriptor
+	fd_DelegationMigration_module_address protoreflect.FieldDescriptor
+	fd_DelegationMigration_module_name    protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_initia_mstaking_v1_staking_proto_init()
 	md_DelegationMigration = File_initia_mstaking_v1_staking_proto.Messages().ByName("DelegationMigration")
-	fd_DelegationMigration_denom_in = md_DelegationMigration.Fields().ByName("denom_in")
-	fd_DelegationMigration_denom_out = md_DelegationMigration.Fields().ByName("denom_out")
-	fd_DelegationMigration_lp_denom_in = md_DelegationMigration.Fields().ByName("lp_denom_in")
-	fd_DelegationMigration_lp_denom_out = md_DelegationMigration.Fields().ByName("lp_denom_out")
-	fd_DelegationMigration_swap_contract_module_address = md_DelegationMigration.Fields().ByName("swap_contract_module_address")
-	fd_DelegationMigration_swap_contract_module_name = md_DelegationMigration.Fields().ByName("swap_contract_module_name")
+	fd_DelegationMigration_denom_lp_from = md_DelegationMigration.Fields().ByName("denom_lp_from")
+	fd_DelegationMigration_denom_lp_to = md_DelegationMigration.Fields().ByName("denom_lp_to")
+	fd_DelegationMigration_module_address = md_DelegationMigration.Fields().ByName("module_address")
+	fd_DelegationMigration_module_name = md_DelegationMigration.Fields().ByName("module_name")
 }
 
 var _ protoreflect.Message = (*fastReflection_DelegationMigration)(nil)
@@ -12747,39 +12743,27 @@ func (x *fastReflection_DelegationMigration) Interface() protoreflect.ProtoMessa
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
 func (x *fastReflection_DelegationMigration) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
-	if x.DenomIn != "" {
-		value := protoreflect.ValueOfString(x.DenomIn)
-		if !f(fd_DelegationMigration_denom_in, value) {
+	if x.DenomLpFrom != "" {
+		value := protoreflect.ValueOfString(x.DenomLpFrom)
+		if !f(fd_DelegationMigration_denom_lp_from, value) {
 			return
 		}
 	}
-	if x.DenomOut != "" {
-		value := protoreflect.ValueOfString(x.DenomOut)
-		if !f(fd_DelegationMigration_denom_out, value) {
+	if x.DenomLpTo != "" {
+		value := protoreflect.ValueOfString(x.DenomLpTo)
+		if !f(fd_DelegationMigration_denom_lp_to, value) {
 			return
 		}
 	}
-	if x.LpDenomIn != "" {
-		value := protoreflect.ValueOfString(x.LpDenomIn)
-		if !f(fd_DelegationMigration_lp_denom_in, value) {
+	if len(x.ModuleAddress) != 0 {
+		value := protoreflect.ValueOfBytes(x.ModuleAddress)
+		if !f(fd_DelegationMigration_module_address, value) {
 			return
 		}
 	}
-	if x.LpDenomOut != "" {
-		value := protoreflect.ValueOfString(x.LpDenomOut)
-		if !f(fd_DelegationMigration_lp_denom_out, value) {
-			return
-		}
-	}
-	if len(x.SwapContractModuleAddress) != 0 {
-		value := protoreflect.ValueOfBytes(x.SwapContractModuleAddress)
-		if !f(fd_DelegationMigration_swap_contract_module_address, value) {
-			return
-		}
-	}
-	if x.SwapContractModuleName != "" {
-		value := protoreflect.ValueOfString(x.SwapContractModuleName)
-		if !f(fd_DelegationMigration_swap_contract_module_name, value) {
+	if x.ModuleName != "" {
+		value := protoreflect.ValueOfString(x.ModuleName)
+		if !f(fd_DelegationMigration_module_name, value) {
 			return
 		}
 	}
@@ -12798,18 +12782,14 @@ func (x *fastReflection_DelegationMigration) Range(f func(protoreflect.FieldDesc
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_DelegationMigration) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "initia.mstaking.v1.DelegationMigration.denom_in":
-		return x.DenomIn != ""
-	case "initia.mstaking.v1.DelegationMigration.denom_out":
-		return x.DenomOut != ""
-	case "initia.mstaking.v1.DelegationMigration.lp_denom_in":
-		return x.LpDenomIn != ""
-	case "initia.mstaking.v1.DelegationMigration.lp_denom_out":
-		return x.LpDenomOut != ""
-	case "initia.mstaking.v1.DelegationMigration.swap_contract_module_address":
-		return len(x.SwapContractModuleAddress) != 0
-	case "initia.mstaking.v1.DelegationMigration.swap_contract_module_name":
-		return x.SwapContractModuleName != ""
+	case "initia.mstaking.v1.DelegationMigration.denom_lp_from":
+		return x.DenomLpFrom != ""
+	case "initia.mstaking.v1.DelegationMigration.denom_lp_to":
+		return x.DenomLpTo != ""
+	case "initia.mstaking.v1.DelegationMigration.module_address":
+		return len(x.ModuleAddress) != 0
+	case "initia.mstaking.v1.DelegationMigration.module_name":
+		return x.ModuleName != ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.mstaking.v1.DelegationMigration"))
@@ -12826,18 +12806,14 @@ func (x *fastReflection_DelegationMigration) Has(fd protoreflect.FieldDescriptor
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_DelegationMigration) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "initia.mstaking.v1.DelegationMigration.denom_in":
-		x.DenomIn = ""
-	case "initia.mstaking.v1.DelegationMigration.denom_out":
-		x.DenomOut = ""
-	case "initia.mstaking.v1.DelegationMigration.lp_denom_in":
-		x.LpDenomIn = ""
-	case "initia.mstaking.v1.DelegationMigration.lp_denom_out":
-		x.LpDenomOut = ""
-	case "initia.mstaking.v1.DelegationMigration.swap_contract_module_address":
-		x.SwapContractModuleAddress = nil
-	case "initia.mstaking.v1.DelegationMigration.swap_contract_module_name":
-		x.SwapContractModuleName = ""
+	case "initia.mstaking.v1.DelegationMigration.denom_lp_from":
+		x.DenomLpFrom = ""
+	case "initia.mstaking.v1.DelegationMigration.denom_lp_to":
+		x.DenomLpTo = ""
+	case "initia.mstaking.v1.DelegationMigration.module_address":
+		x.ModuleAddress = nil
+	case "initia.mstaking.v1.DelegationMigration.module_name":
+		x.ModuleName = ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.mstaking.v1.DelegationMigration"))
@@ -12854,23 +12830,17 @@ func (x *fastReflection_DelegationMigration) Clear(fd protoreflect.FieldDescript
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_DelegationMigration) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "initia.mstaking.v1.DelegationMigration.denom_in":
-		value := x.DenomIn
+	case "initia.mstaking.v1.DelegationMigration.denom_lp_from":
+		value := x.DenomLpFrom
 		return protoreflect.ValueOfString(value)
-	case "initia.mstaking.v1.DelegationMigration.denom_out":
-		value := x.DenomOut
+	case "initia.mstaking.v1.DelegationMigration.denom_lp_to":
+		value := x.DenomLpTo
 		return protoreflect.ValueOfString(value)
-	case "initia.mstaking.v1.DelegationMigration.lp_denom_in":
-		value := x.LpDenomIn
-		return protoreflect.ValueOfString(value)
-	case "initia.mstaking.v1.DelegationMigration.lp_denom_out":
-		value := x.LpDenomOut
-		return protoreflect.ValueOfString(value)
-	case "initia.mstaking.v1.DelegationMigration.swap_contract_module_address":
-		value := x.SwapContractModuleAddress
+	case "initia.mstaking.v1.DelegationMigration.module_address":
+		value := x.ModuleAddress
 		return protoreflect.ValueOfBytes(value)
-	case "initia.mstaking.v1.DelegationMigration.swap_contract_module_name":
-		value := x.SwapContractModuleName
+	case "initia.mstaking.v1.DelegationMigration.module_name":
+		value := x.ModuleName
 		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
@@ -12892,18 +12862,14 @@ func (x *fastReflection_DelegationMigration) Get(descriptor protoreflect.FieldDe
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_DelegationMigration) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "initia.mstaking.v1.DelegationMigration.denom_in":
-		x.DenomIn = value.Interface().(string)
-	case "initia.mstaking.v1.DelegationMigration.denom_out":
-		x.DenomOut = value.Interface().(string)
-	case "initia.mstaking.v1.DelegationMigration.lp_denom_in":
-		x.LpDenomIn = value.Interface().(string)
-	case "initia.mstaking.v1.DelegationMigration.lp_denom_out":
-		x.LpDenomOut = value.Interface().(string)
-	case "initia.mstaking.v1.DelegationMigration.swap_contract_module_address":
-		x.SwapContractModuleAddress = value.Bytes()
-	case "initia.mstaking.v1.DelegationMigration.swap_contract_module_name":
-		x.SwapContractModuleName = value.Interface().(string)
+	case "initia.mstaking.v1.DelegationMigration.denom_lp_from":
+		x.DenomLpFrom = value.Interface().(string)
+	case "initia.mstaking.v1.DelegationMigration.denom_lp_to":
+		x.DenomLpTo = value.Interface().(string)
+	case "initia.mstaking.v1.DelegationMigration.module_address":
+		x.ModuleAddress = value.Bytes()
+	case "initia.mstaking.v1.DelegationMigration.module_name":
+		x.ModuleName = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.mstaking.v1.DelegationMigration"))
@@ -12924,18 +12890,14 @@ func (x *fastReflection_DelegationMigration) Set(fd protoreflect.FieldDescriptor
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_DelegationMigration) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "initia.mstaking.v1.DelegationMigration.denom_in":
-		panic(fmt.Errorf("field denom_in of message initia.mstaking.v1.DelegationMigration is not mutable"))
-	case "initia.mstaking.v1.DelegationMigration.denom_out":
-		panic(fmt.Errorf("field denom_out of message initia.mstaking.v1.DelegationMigration is not mutable"))
-	case "initia.mstaking.v1.DelegationMigration.lp_denom_in":
-		panic(fmt.Errorf("field lp_denom_in of message initia.mstaking.v1.DelegationMigration is not mutable"))
-	case "initia.mstaking.v1.DelegationMigration.lp_denom_out":
-		panic(fmt.Errorf("field lp_denom_out of message initia.mstaking.v1.DelegationMigration is not mutable"))
-	case "initia.mstaking.v1.DelegationMigration.swap_contract_module_address":
-		panic(fmt.Errorf("field swap_contract_module_address of message initia.mstaking.v1.DelegationMigration is not mutable"))
-	case "initia.mstaking.v1.DelegationMigration.swap_contract_module_name":
-		panic(fmt.Errorf("field swap_contract_module_name of message initia.mstaking.v1.DelegationMigration is not mutable"))
+	case "initia.mstaking.v1.DelegationMigration.denom_lp_from":
+		panic(fmt.Errorf("field denom_lp_from of message initia.mstaking.v1.DelegationMigration is not mutable"))
+	case "initia.mstaking.v1.DelegationMigration.denom_lp_to":
+		panic(fmt.Errorf("field denom_lp_to of message initia.mstaking.v1.DelegationMigration is not mutable"))
+	case "initia.mstaking.v1.DelegationMigration.module_address":
+		panic(fmt.Errorf("field module_address of message initia.mstaking.v1.DelegationMigration is not mutable"))
+	case "initia.mstaking.v1.DelegationMigration.module_name":
+		panic(fmt.Errorf("field module_name of message initia.mstaking.v1.DelegationMigration is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.mstaking.v1.DelegationMigration"))
@@ -12949,17 +12911,13 @@ func (x *fastReflection_DelegationMigration) Mutable(fd protoreflect.FieldDescri
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_DelegationMigration) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "initia.mstaking.v1.DelegationMigration.denom_in":
+	case "initia.mstaking.v1.DelegationMigration.denom_lp_from":
 		return protoreflect.ValueOfString("")
-	case "initia.mstaking.v1.DelegationMigration.denom_out":
+	case "initia.mstaking.v1.DelegationMigration.denom_lp_to":
 		return protoreflect.ValueOfString("")
-	case "initia.mstaking.v1.DelegationMigration.lp_denom_in":
-		return protoreflect.ValueOfString("")
-	case "initia.mstaking.v1.DelegationMigration.lp_denom_out":
-		return protoreflect.ValueOfString("")
-	case "initia.mstaking.v1.DelegationMigration.swap_contract_module_address":
+	case "initia.mstaking.v1.DelegationMigration.module_address":
 		return protoreflect.ValueOfBytes(nil)
-	case "initia.mstaking.v1.DelegationMigration.swap_contract_module_name":
+	case "initia.mstaking.v1.DelegationMigration.module_name":
 		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
@@ -13030,27 +12988,19 @@ func (x *fastReflection_DelegationMigration) ProtoMethods() *protoiface.Methods 
 		var n int
 		var l int
 		_ = l
-		l = len(x.DenomIn)
+		l = len(x.DenomLpFrom)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		l = len(x.DenomOut)
+		l = len(x.DenomLpTo)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		l = len(x.LpDenomIn)
+		l = len(x.ModuleAddress)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		l = len(x.LpDenomOut)
-		if l > 0 {
-			n += 1 + l + runtime.Sov(uint64(l))
-		}
-		l = len(x.SwapContractModuleAddress)
-		if l > 0 {
-			n += 1 + l + runtime.Sov(uint64(l))
-		}
-		l = len(x.SwapContractModuleName)
+		l = len(x.ModuleName)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
@@ -13083,45 +13033,31 @@ func (x *fastReflection_DelegationMigration) ProtoMethods() *protoiface.Methods 
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
 		}
-		if len(x.SwapContractModuleName) > 0 {
-			i -= len(x.SwapContractModuleName)
-			copy(dAtA[i:], x.SwapContractModuleName)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.SwapContractModuleName)))
-			i--
-			dAtA[i] = 0x32
-		}
-		if len(x.SwapContractModuleAddress) > 0 {
-			i -= len(x.SwapContractModuleAddress)
-			copy(dAtA[i:], x.SwapContractModuleAddress)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.SwapContractModuleAddress)))
-			i--
-			dAtA[i] = 0x2a
-		}
-		if len(x.LpDenomOut) > 0 {
-			i -= len(x.LpDenomOut)
-			copy(dAtA[i:], x.LpDenomOut)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.LpDenomOut)))
+		if len(x.ModuleName) > 0 {
+			i -= len(x.ModuleName)
+			copy(dAtA[i:], x.ModuleName)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.ModuleName)))
 			i--
 			dAtA[i] = 0x22
 		}
-		if len(x.LpDenomIn) > 0 {
-			i -= len(x.LpDenomIn)
-			copy(dAtA[i:], x.LpDenomIn)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.LpDenomIn)))
+		if len(x.ModuleAddress) > 0 {
+			i -= len(x.ModuleAddress)
+			copy(dAtA[i:], x.ModuleAddress)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.ModuleAddress)))
 			i--
 			dAtA[i] = 0x1a
 		}
-		if len(x.DenomOut) > 0 {
-			i -= len(x.DenomOut)
-			copy(dAtA[i:], x.DenomOut)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.DenomOut)))
+		if len(x.DenomLpTo) > 0 {
+			i -= len(x.DenomLpTo)
+			copy(dAtA[i:], x.DenomLpTo)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.DenomLpTo)))
 			i--
 			dAtA[i] = 0x12
 		}
-		if len(x.DenomIn) > 0 {
-			i -= len(x.DenomIn)
-			copy(dAtA[i:], x.DenomIn)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.DenomIn)))
+		if len(x.DenomLpFrom) > 0 {
+			i -= len(x.DenomLpFrom)
+			copy(dAtA[i:], x.DenomLpFrom)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.DenomLpFrom)))
 			i--
 			dAtA[i] = 0xa
 		}
@@ -13176,7 +13112,7 @@ func (x *fastReflection_DelegationMigration) ProtoMethods() *protoiface.Methods 
 			switch fieldNum {
 			case 1:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field DenomIn", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field DenomLpFrom", wireType)
 				}
 				var stringLen uint64
 				for shift := uint(0); ; shift += 7 {
@@ -13204,11 +13140,11 @@ func (x *fastReflection_DelegationMigration) ProtoMethods() *protoiface.Methods 
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.DenomIn = string(dAtA[iNdEx:postIndex])
+				x.DenomLpFrom = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
 			case 2:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field DenomOut", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field DenomLpTo", wireType)
 				}
 				var stringLen uint64
 				for shift := uint(0); ; shift += 7 {
@@ -13236,75 +13172,11 @@ func (x *fastReflection_DelegationMigration) ProtoMethods() *protoiface.Methods 
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.DenomOut = string(dAtA[iNdEx:postIndex])
+				x.DenomLpTo = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
 			case 3:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field LpDenomIn", wireType)
-				}
-				var stringLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					stringLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				intStringLen := int(stringLen)
-				if intStringLen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + intStringLen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				x.LpDenomIn = string(dAtA[iNdEx:postIndex])
-				iNdEx = postIndex
-			case 4:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field LpDenomOut", wireType)
-				}
-				var stringLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					stringLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				intStringLen := int(stringLen)
-				if intStringLen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + intStringLen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				x.LpDenomOut = string(dAtA[iNdEx:postIndex])
-				iNdEx = postIndex
-			case 5:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field SwapContractModuleAddress", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field ModuleAddress", wireType)
 				}
 				var byteLen int
 				for shift := uint(0); ; shift += 7 {
@@ -13331,14 +13203,14 @@ func (x *fastReflection_DelegationMigration) ProtoMethods() *protoiface.Methods 
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.SwapContractModuleAddress = append(x.SwapContractModuleAddress[:0], dAtA[iNdEx:postIndex]...)
-				if x.SwapContractModuleAddress == nil {
-					x.SwapContractModuleAddress = []byte{}
+				x.ModuleAddress = append(x.ModuleAddress[:0], dAtA[iNdEx:postIndex]...)
+				if x.ModuleAddress == nil {
+					x.ModuleAddress = []byte{}
 				}
 				iNdEx = postIndex
-			case 6:
+			case 4:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field SwapContractModuleName", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field ModuleName", wireType)
 				}
 				var stringLen uint64
 				for shift := uint(0); ; shift += 7 {
@@ -13366,7 +13238,7 @@ func (x *fastReflection_DelegationMigration) ProtoMethods() *protoiface.Methods 
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.SwapContractModuleName = string(dAtA[iNdEx:postIndex])
+				x.ModuleName = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
@@ -14700,18 +14572,14 @@ type DelegationMigration struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// denom_in is the input denom of the swap contract.
-	DenomIn string `protobuf:"bytes,1,opt,name=denom_in,json=denomIn,proto3" json:"denom_in,omitempty"`
-	// denom_out is the output denom of the swap contract.
-	DenomOut string `protobuf:"bytes,2,opt,name=denom_out,json=denomOut,proto3" json:"denom_out,omitempty"`
-	// lp_denom_in is the denom of the lp token in.
-	LpDenomIn string `protobuf:"bytes,3,opt,name=lp_denom_in,json=lpDenomIn,proto3" json:"lp_denom_in,omitempty"`
-	// lp_denom_out is the denom of the lp token out.
-	LpDenomOut string `protobuf:"bytes,4,opt,name=lp_denom_out,json=lpDenomOut,proto3" json:"lp_denom_out,omitempty"`
-	// swap_contract_module_address is the address of the swap contract module.
-	SwapContractModuleAddress []byte `protobuf:"bytes,5,opt,name=swap_contract_module_address,json=swapContractModuleAddress,proto3" json:"swap_contract_module_address,omitempty"`
-	// swap_contract_module_name is the name of the swap contract module.
-	SwapContractModuleName string `protobuf:"bytes,6,opt,name=swap_contract_module_name,json=swapContractModuleName,proto3" json:"swap_contract_module_name,omitempty"`
+	// denom_lp_from defines the source LP token denomination that will be migrated from
+	DenomLpFrom string `protobuf:"bytes,1,opt,name=denom_lp_from,json=denomLpFrom,proto3" json:"denom_lp_from,omitempty"`
+	// denom_lp_to defines the target LP token denomination that will be migrated to
+	DenomLpTo string `protobuf:"bytes,2,opt,name=denom_lp_to,json=denomLpTo,proto3" json:"denom_lp_to,omitempty"`
+	// module_address is the address of the module that will be used to migrate the delegation
+	ModuleAddress []byte `protobuf:"bytes,3,opt,name=module_address,json=moduleAddress,proto3" json:"module_address,omitempty"`
+	// module_name is the name of the module that will be used to migrate the delegation
+	ModuleName string `protobuf:"bytes,4,opt,name=module_name,json=moduleName,proto3" json:"module_name,omitempty"`
 }
 
 func (x *DelegationMigration) Reset() {
@@ -14734,44 +14602,30 @@ func (*DelegationMigration) Descriptor() ([]byte, []int) {
 	return file_initia_mstaking_v1_staking_proto_rawDescGZIP(), []int{19}
 }
 
-func (x *DelegationMigration) GetDenomIn() string {
+func (x *DelegationMigration) GetDenomLpFrom() string {
 	if x != nil {
-		return x.DenomIn
+		return x.DenomLpFrom
 	}
 	return ""
 }
 
-func (x *DelegationMigration) GetDenomOut() string {
+func (x *DelegationMigration) GetDenomLpTo() string {
 	if x != nil {
-		return x.DenomOut
+		return x.DenomLpTo
 	}
 	return ""
 }
 
-func (x *DelegationMigration) GetLpDenomIn() string {
+func (x *DelegationMigration) GetModuleAddress() []byte {
 	if x != nil {
-		return x.LpDenomIn
-	}
-	return ""
-}
-
-func (x *DelegationMigration) GetLpDenomOut() string {
-	if x != nil {
-		return x.LpDenomOut
-	}
-	return ""
-}
-
-func (x *DelegationMigration) GetSwapContractModuleAddress() []byte {
-	if x != nil {
-		return x.SwapContractModuleAddress
+		return x.ModuleAddress
 	}
 	return nil
 }
 
-func (x *DelegationMigration) GetSwapContractModuleName() string {
+func (x *DelegationMigration) GetModuleName() string {
 	if x != nil {
-		return x.SwapContractModuleName
+		return x.ModuleName
 	}
 	return ""
 }
@@ -15194,56 +15048,49 @@ var file_initia_mstaking_v1_staking_proto_rawDesc = []byte{
 	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2d, 0x73, 0x64, 0x6b,
 	0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x2e, 0x44, 0x65, 0x63, 0x43, 0x6f, 0x69, 0x6e, 0x73, 0x52,
 	0x12, 0x76, 0x6f, 0x74, 0x69, 0x6e, 0x67, 0x50, 0x6f, 0x77, 0x65, 0x72, 0x57, 0x65, 0x69, 0x67,
-	0x68, 0x74, 0x73, 0x3a, 0x08, 0xe8, 0xa0, 0x1f, 0x01, 0xf0, 0xa0, 0x1f, 0x01, 0x22, 0x95, 0x02,
+	0x68, 0x74, 0x73, 0x3a, 0x08, 0xe8, 0xa0, 0x1f, 0x01, 0xf0, 0xa0, 0x1f, 0x01, 0x22, 0xab, 0x01,
 	0x0a, 0x13, 0x44, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x4d, 0x69, 0x67, 0x72,
-	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x19, 0x0a, 0x08, 0x64, 0x65, 0x6e, 0x6f, 0x6d, 0x5f, 0x69,
-	0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x64, 0x65, 0x6e, 0x6f, 0x6d, 0x49, 0x6e,
-	0x12, 0x1b, 0x0a, 0x09, 0x64, 0x65, 0x6e, 0x6f, 0x6d, 0x5f, 0x6f, 0x75, 0x74, 0x18, 0x02, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x08, 0x64, 0x65, 0x6e, 0x6f, 0x6d, 0x4f, 0x75, 0x74, 0x12, 0x1e, 0x0a,
-	0x0b, 0x6c, 0x70, 0x5f, 0x64, 0x65, 0x6e, 0x6f, 0x6d, 0x5f, 0x69, 0x6e, 0x18, 0x03, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x09, 0x6c, 0x70, 0x44, 0x65, 0x6e, 0x6f, 0x6d, 0x49, 0x6e, 0x12, 0x20, 0x0a,
-	0x0c, 0x6c, 0x70, 0x5f, 0x64, 0x65, 0x6e, 0x6f, 0x6d, 0x5f, 0x6f, 0x75, 0x74, 0x18, 0x04, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x0a, 0x6c, 0x70, 0x44, 0x65, 0x6e, 0x6f, 0x6d, 0x4f, 0x75, 0x74, 0x12,
-	0x3f, 0x0a, 0x1c, 0x73, 0x77, 0x61, 0x70, 0x5f, 0x63, 0x6f, 0x6e, 0x74, 0x72, 0x61, 0x63, 0x74,
-	0x5f, 0x6d, 0x6f, 0x64, 0x75, 0x6c, 0x65, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18,
-	0x05, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x19, 0x73, 0x77, 0x61, 0x70, 0x43, 0x6f, 0x6e, 0x74, 0x72,
-	0x61, 0x63, 0x74, 0x4d, 0x6f, 0x64, 0x75, 0x6c, 0x65, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73,
-	0x12, 0x39, 0x0a, 0x19, 0x73, 0x77, 0x61, 0x70, 0x5f, 0x63, 0x6f, 0x6e, 0x74, 0x72, 0x61, 0x63,
-	0x74, 0x5f, 0x6d, 0x6f, 0x64, 0x75, 0x6c, 0x65, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x06, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x16, 0x73, 0x77, 0x61, 0x70, 0x43, 0x6f, 0x6e, 0x74, 0x72, 0x61, 0x63,
-	0x74, 0x4d, 0x6f, 0x64, 0x75, 0x6c, 0x65, 0x4e, 0x61, 0x6d, 0x65, 0x3a, 0x08, 0x98, 0xa0, 0x1f,
-	0x00, 0xe8, 0xa0, 0x1f, 0x01, 0x2a, 0xb6, 0x01, 0x0a, 0x0a, 0x42, 0x6f, 0x6e, 0x64, 0x53, 0x74,
-	0x61, 0x74, 0x75, 0x73, 0x12, 0x2c, 0x0a, 0x17, 0x42, 0x4f, 0x4e, 0x44, 0x5f, 0x53, 0x54, 0x41,
-	0x54, 0x55, 0x53, 0x5f, 0x55, 0x4e, 0x53, 0x50, 0x45, 0x43, 0x49, 0x46, 0x49, 0x45, 0x44, 0x10,
-	0x00, 0x1a, 0x0f, 0x8a, 0x9d, 0x20, 0x0b, 0x55, 0x6e, 0x73, 0x70, 0x65, 0x63, 0x69, 0x66, 0x69,
-	0x65, 0x64, 0x12, 0x26, 0x0a, 0x14, 0x42, 0x4f, 0x4e, 0x44, 0x5f, 0x53, 0x54, 0x41, 0x54, 0x55,
-	0x53, 0x5f, 0x55, 0x4e, 0x42, 0x4f, 0x4e, 0x44, 0x45, 0x44, 0x10, 0x01, 0x1a, 0x0c, 0x8a, 0x9d,
-	0x20, 0x08, 0x55, 0x6e, 0x62, 0x6f, 0x6e, 0x64, 0x65, 0x64, 0x12, 0x28, 0x0a, 0x15, 0x42, 0x4f,
-	0x4e, 0x44, 0x5f, 0x53, 0x54, 0x41, 0x54, 0x55, 0x53, 0x5f, 0x55, 0x4e, 0x42, 0x4f, 0x4e, 0x44,
-	0x49, 0x4e, 0x47, 0x10, 0x02, 0x1a, 0x0d, 0x8a, 0x9d, 0x20, 0x09, 0x55, 0x6e, 0x62, 0x6f, 0x6e,
-	0x64, 0x69, 0x6e, 0x67, 0x12, 0x22, 0x0a, 0x12, 0x42, 0x4f, 0x4e, 0x44, 0x5f, 0x53, 0x54, 0x41,
-	0x54, 0x55, 0x53, 0x5f, 0x42, 0x4f, 0x4e, 0x44, 0x45, 0x44, 0x10, 0x03, 0x1a, 0x0a, 0x8a, 0x9d,
-	0x20, 0x06, 0x42, 0x6f, 0x6e, 0x64, 0x65, 0x64, 0x1a, 0x04, 0x88, 0xa3, 0x1e, 0x00, 0x2a, 0x5d,
-	0x0a, 0x0a, 0x49, 0x6e, 0x66, 0x72, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x1a, 0x0a, 0x16,
-	0x49, 0x4e, 0x46, 0x52, 0x41, 0x43, 0x54, 0x49, 0x4f, 0x4e, 0x5f, 0x55, 0x4e, 0x53, 0x50, 0x45,
-	0x43, 0x49, 0x46, 0x49, 0x45, 0x44, 0x10, 0x00, 0x12, 0x1a, 0x0a, 0x16, 0x49, 0x4e, 0x46, 0x52,
-	0x41, 0x43, 0x54, 0x49, 0x4f, 0x4e, 0x5f, 0x44, 0x4f, 0x55, 0x42, 0x4c, 0x45, 0x5f, 0x53, 0x49,
-	0x47, 0x4e, 0x10, 0x01, 0x12, 0x17, 0x0a, 0x13, 0x49, 0x4e, 0x46, 0x52, 0x41, 0x43, 0x54, 0x49,
-	0x4f, 0x4e, 0x5f, 0x44, 0x4f, 0x57, 0x4e, 0x54, 0x49, 0x4d, 0x45, 0x10, 0x02, 0x42, 0xd1, 0x01,
-	0x0a, 0x16, 0x63, 0x6f, 0x6d, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x6d, 0x73, 0x74,
-	0x61, 0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x76, 0x31, 0x42, 0x0c, 0x53, 0x74, 0x61, 0x6b, 0x69, 0x6e,
-	0x67, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x3f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62,
-	0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2d, 0x6c, 0x61, 0x62, 0x73,
-	0x2f, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x69, 0x6e, 0x69, 0x74,
-	0x69, 0x61, 0x2f, 0x6d, 0x73, 0x74, 0x61, 0x6b, 0x69, 0x6e, 0x67, 0x2f, 0x76, 0x31, 0x3b, 0x6d,
-	0x73, 0x74, 0x61, 0x6b, 0x69, 0x6e, 0x67, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x49, 0x4d, 0x58, 0xaa,
-	0x02, 0x12, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x4d, 0x73, 0x74, 0x61, 0x6b, 0x69, 0x6e,
-	0x67, 0x2e, 0x56, 0x31, 0xca, 0x02, 0x12, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x5c, 0x4d, 0x73,
-	0x74, 0x61, 0x6b, 0x69, 0x6e, 0x67, 0x5c, 0x56, 0x31, 0xe2, 0x02, 0x1e, 0x49, 0x6e, 0x69, 0x74,
-	0x69, 0x61, 0x5c, 0x4d, 0x73, 0x74, 0x61, 0x6b, 0x69, 0x6e, 0x67, 0x5c, 0x56, 0x31, 0x5c, 0x47,
-	0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x14, 0x49, 0x6e, 0x69,
-	0x74, 0x69, 0x61, 0x3a, 0x3a, 0x4d, 0x73, 0x74, 0x61, 0x6b, 0x69, 0x6e, 0x67, 0x3a, 0x3a, 0x56,
-	0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x22, 0x0a, 0x0d, 0x64, 0x65, 0x6e, 0x6f, 0x6d, 0x5f, 0x6c,
+	0x70, 0x5f, 0x66, 0x72, 0x6f, 0x6d, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x64, 0x65,
+	0x6e, 0x6f, 0x6d, 0x4c, 0x70, 0x46, 0x72, 0x6f, 0x6d, 0x12, 0x1e, 0x0a, 0x0b, 0x64, 0x65, 0x6e,
+	0x6f, 0x6d, 0x5f, 0x6c, 0x70, 0x5f, 0x74, 0x6f, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09,
+	0x64, 0x65, 0x6e, 0x6f, 0x6d, 0x4c, 0x70, 0x54, 0x6f, 0x12, 0x25, 0x0a, 0x0e, 0x6d, 0x6f, 0x64,
+	0x75, 0x6c, 0x65, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28,
+	0x0c, 0x52, 0x0d, 0x6d, 0x6f, 0x64, 0x75, 0x6c, 0x65, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73,
+	0x12, 0x1f, 0x0a, 0x0b, 0x6d, 0x6f, 0x64, 0x75, 0x6c, 0x65, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18,
+	0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x6d, 0x6f, 0x64, 0x75, 0x6c, 0x65, 0x4e, 0x61, 0x6d,
+	0x65, 0x3a, 0x08, 0x98, 0xa0, 0x1f, 0x00, 0xe8, 0xa0, 0x1f, 0x01, 0x2a, 0xb6, 0x01, 0x0a, 0x0a,
+	0x42, 0x6f, 0x6e, 0x64, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x2c, 0x0a, 0x17, 0x42, 0x4f,
+	0x4e, 0x44, 0x5f, 0x53, 0x54, 0x41, 0x54, 0x55, 0x53, 0x5f, 0x55, 0x4e, 0x53, 0x50, 0x45, 0x43,
+	0x49, 0x46, 0x49, 0x45, 0x44, 0x10, 0x00, 0x1a, 0x0f, 0x8a, 0x9d, 0x20, 0x0b, 0x55, 0x6e, 0x73,
+	0x70, 0x65, 0x63, 0x69, 0x66, 0x69, 0x65, 0x64, 0x12, 0x26, 0x0a, 0x14, 0x42, 0x4f, 0x4e, 0x44,
+	0x5f, 0x53, 0x54, 0x41, 0x54, 0x55, 0x53, 0x5f, 0x55, 0x4e, 0x42, 0x4f, 0x4e, 0x44, 0x45, 0x44,
+	0x10, 0x01, 0x1a, 0x0c, 0x8a, 0x9d, 0x20, 0x08, 0x55, 0x6e, 0x62, 0x6f, 0x6e, 0x64, 0x65, 0x64,
+	0x12, 0x28, 0x0a, 0x15, 0x42, 0x4f, 0x4e, 0x44, 0x5f, 0x53, 0x54, 0x41, 0x54, 0x55, 0x53, 0x5f,
+	0x55, 0x4e, 0x42, 0x4f, 0x4e, 0x44, 0x49, 0x4e, 0x47, 0x10, 0x02, 0x1a, 0x0d, 0x8a, 0x9d, 0x20,
+	0x09, 0x55, 0x6e, 0x62, 0x6f, 0x6e, 0x64, 0x69, 0x6e, 0x67, 0x12, 0x22, 0x0a, 0x12, 0x42, 0x4f,
+	0x4e, 0x44, 0x5f, 0x53, 0x54, 0x41, 0x54, 0x55, 0x53, 0x5f, 0x42, 0x4f, 0x4e, 0x44, 0x45, 0x44,
+	0x10, 0x03, 0x1a, 0x0a, 0x8a, 0x9d, 0x20, 0x06, 0x42, 0x6f, 0x6e, 0x64, 0x65, 0x64, 0x1a, 0x04,
+	0x88, 0xa3, 0x1e, 0x00, 0x2a, 0x5d, 0x0a, 0x0a, 0x49, 0x6e, 0x66, 0x72, 0x61, 0x63, 0x74, 0x69,
+	0x6f, 0x6e, 0x12, 0x1a, 0x0a, 0x16, 0x49, 0x4e, 0x46, 0x52, 0x41, 0x43, 0x54, 0x49, 0x4f, 0x4e,
+	0x5f, 0x55, 0x4e, 0x53, 0x50, 0x45, 0x43, 0x49, 0x46, 0x49, 0x45, 0x44, 0x10, 0x00, 0x12, 0x1a,
+	0x0a, 0x16, 0x49, 0x4e, 0x46, 0x52, 0x41, 0x43, 0x54, 0x49, 0x4f, 0x4e, 0x5f, 0x44, 0x4f, 0x55,
+	0x42, 0x4c, 0x45, 0x5f, 0x53, 0x49, 0x47, 0x4e, 0x10, 0x01, 0x12, 0x17, 0x0a, 0x13, 0x49, 0x4e,
+	0x46, 0x52, 0x41, 0x43, 0x54, 0x49, 0x4f, 0x4e, 0x5f, 0x44, 0x4f, 0x57, 0x4e, 0x54, 0x49, 0x4d,
+	0x45, 0x10, 0x02, 0x42, 0xd1, 0x01, 0x0a, 0x16, 0x63, 0x6f, 0x6d, 0x2e, 0x69, 0x6e, 0x69, 0x74,
+	0x69, 0x61, 0x2e, 0x6d, 0x73, 0x74, 0x61, 0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x76, 0x31, 0x42, 0x0c,
+	0x53, 0x74, 0x61, 0x6b, 0x69, 0x6e, 0x67, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x3f,
+	0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x69, 0x6e, 0x69, 0x74, 0x69,
+	0x61, 0x2d, 0x6c, 0x61, 0x62, 0x73, 0x2f, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2f, 0x61, 0x70,
+	0x69, 0x2f, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2f, 0x6d, 0x73, 0x74, 0x61, 0x6b, 0x69, 0x6e,
+	0x67, 0x2f, 0x76, 0x31, 0x3b, 0x6d, 0x73, 0x74, 0x61, 0x6b, 0x69, 0x6e, 0x67, 0x76, 0x31, 0xa2,
+	0x02, 0x03, 0x49, 0x4d, 0x58, 0xaa, 0x02, 0x12, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x4d,
+	0x73, 0x74, 0x61, 0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x56, 0x31, 0xca, 0x02, 0x12, 0x49, 0x6e, 0x69,
+	0x74, 0x69, 0x61, 0x5c, 0x4d, 0x73, 0x74, 0x61, 0x6b, 0x69, 0x6e, 0x67, 0x5c, 0x56, 0x31, 0xe2,
+	0x02, 0x1e, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x5c, 0x4d, 0x73, 0x74, 0x61, 0x6b, 0x69, 0x6e,
+	0x67, 0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61,
+	0xea, 0x02, 0x14, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x3a, 0x3a, 0x4d, 0x73, 0x74, 0x61, 0x6b,
+	0x69, 0x6e, 0x67, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (

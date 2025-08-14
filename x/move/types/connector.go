@@ -81,8 +81,8 @@ const (
 	FunctionNameVestingTableHandle   = "vesting_table_handle"
 	FunctionNameVestingTokenMetadata = "vesting_token_metadata"
 
-	// function names for migrate delegation
-	FunctionNameMigrateDelegationSwapContractSwap = "swap"
+	// function names for dex migration
+	FunctionNameDexMigrationConvert = "convert"
 
 	// resource names
 	ResourceNameFungibleStore = "FungibleStore"

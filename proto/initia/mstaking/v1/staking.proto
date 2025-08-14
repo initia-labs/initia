@@ -425,16 +425,12 @@ message DelegationMigration {
   option (gogoproto.equal) = true;
   option (gogoproto.goproto_stringer) = false;
 
-  // denom_in is the input denom of the swap contract.
-  string denom_in = 1;
-  // denom_out is the output denom of the swap contract.
-  string denom_out = 2;
-  // lp_denom_in is the denom of the lp token in.
-  string lp_denom_in = 3;
-  // lp_denom_out is the denom of the lp token out.
-  string lp_denom_out = 4;
-  // swap_contract_module_address is the address of the swap contract module.
-  bytes swap_contract_module_address = 5;
-  // swap_contract_module_name is the name of the swap contract module.
-  string swap_contract_module_name = 6;
+  // denom_lp_from defines the source LP token denomination that will be migrated from
+  string denom_lp_from = 1;
+  // denom_lp_to defines the target LP token denomination that will be migrated to
+  string denom_lp_to = 2;
+  // module_address is the address of the module that will be used to migrate the delegation
+  bytes module_address = 3;
+  // module_name is the name of the module that will be used to migrate the delegation
+  string module_name = 4;
 }

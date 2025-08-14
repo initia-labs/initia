@@ -51,60 +51,17 @@ type BankKeeper interface {
 	BurnCoins(ctx context.Context, name string, amt sdk.Coins) error
 }
 
-type MoveKeeper interface {
-	ExecuteEntryFunctionJSON(
-		ctx context.Context,
-		sender vmtypes.AccountAddress,
-		moduleAddr vmtypes.AccountAddress,
-		moduleName string,
-		functionName string,
-		typeArgs []vmtypes.TypeTag,
-		jsonArgs []string,
-	) error
-
-	ExecuteViewFunctionJSON(
-		ctx context.Context,
-		moduleAddr vmtypes.AccountAddress,
-		moduleName string,
-		functionName string,
-		typeArgs []vmtypes.TypeTag,
-		jsonArgs []string,
-	) (vmtypes.ViewOutput, uint64, error)
-}
-
-type FungibleAssetKeeper interface {
-	Issuer(context.Context, vmtypes.AccountAddress) (vmtypes.AccountAddress, error)
-	Symbol(context.Context, vmtypes.AccountAddress) (string, error)
-}
-
-type BalancerKeeper interface {
-	HasPool(ctx context.Context, metadataLP vmtypes.AccountAddress) (bool, error)
-	PoolMetadata(
-		ctx context.Context,
-		metadataLP vmtypes.AccountAddress,
-	) ([]vmtypes.AccountAddress, error)
-	PoolFeeRate(
-		ctx context.Context,
-		metadataLP vmtypes.AccountAddress,
-	) (math.LegacyDec, error)
-	ProvideLiquidity(
+type DexMigrationKeeper interface {
+	HasPoolByDenom(ctx context.Context, denomLP string) (bool, error)
+	MigrateLP(
 		ctx context.Context,
 		provider vmtypes.AccountAddress,
-		metadataLP vmtypes.AccountAddress,
-		amountA math.Int,
-		amountB math.Int,
-	) error
-	WithdrawLiquidity(
-		ctx context.Context,
-		provider vmtypes.AccountAddress,
-		metadataLP vmtypes.AccountAddress,
-		amount math.Int,
-	) error
-	UpdateFeeRate(
-		ctx context.Context,
-		metadataLP vmtypes.AccountAddress,
-		feeRate math.LegacyDec,
-	) error
+		lpFrom vmtypes.AccountAddress,
+		lpTo vmtypes.AccountAddress,
+		convertModuleAddr vmtypes.AccountAddress,
+		convertModuleName string,
+		amountLpFrom math.Int,
+	) (math.Int, error)
 }
 
 // ValidatorSet expected properties for the set of all validators (noalias)
