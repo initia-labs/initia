@@ -13884,6 +13884,861 @@ func (x *fastReflection_QueryParamsResponse) ProtoMethods() *protoiface.Methods 
 	}
 }
 
+var (
+	md_QueryMigrationRequest             protoreflect.MessageDescriptor
+	fd_QueryMigrationRequest_lp_denom_in protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_initia_mstaking_v1_query_proto_init()
+	md_QueryMigrationRequest = File_initia_mstaking_v1_query_proto.Messages().ByName("QueryMigrationRequest")
+	fd_QueryMigrationRequest_lp_denom_in = md_QueryMigrationRequest.Fields().ByName("lp_denom_in")
+}
+
+var _ protoreflect.Message = (*fastReflection_QueryMigrationRequest)(nil)
+
+type fastReflection_QueryMigrationRequest QueryMigrationRequest
+
+func (x *QueryMigrationRequest) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_QueryMigrationRequest)(x)
+}
+
+func (x *QueryMigrationRequest) slowProtoReflect() protoreflect.Message {
+	mi := &file_initia_mstaking_v1_query_proto_msgTypes[28]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_QueryMigrationRequest_messageType fastReflection_QueryMigrationRequest_messageType
+var _ protoreflect.MessageType = fastReflection_QueryMigrationRequest_messageType{}
+
+type fastReflection_QueryMigrationRequest_messageType struct{}
+
+func (x fastReflection_QueryMigrationRequest_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_QueryMigrationRequest)(nil)
+}
+func (x fastReflection_QueryMigrationRequest_messageType) New() protoreflect.Message {
+	return new(fastReflection_QueryMigrationRequest)
+}
+func (x fastReflection_QueryMigrationRequest_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_QueryMigrationRequest
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_QueryMigrationRequest) Descriptor() protoreflect.MessageDescriptor {
+	return md_QueryMigrationRequest
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_QueryMigrationRequest) Type() protoreflect.MessageType {
+	return _fastReflection_QueryMigrationRequest_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_QueryMigrationRequest) New() protoreflect.Message {
+	return new(fastReflection_QueryMigrationRequest)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_QueryMigrationRequest) Interface() protoreflect.ProtoMessage {
+	return (*QueryMigrationRequest)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_QueryMigrationRequest) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.LpDenomIn != "" {
+		value := protoreflect.ValueOfString(x.LpDenomIn)
+		if !f(fd_QueryMigrationRequest_lp_denom_in, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_QueryMigrationRequest) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "initia.mstaking.v1.QueryMigrationRequest.lp_denom_in":
+		return x.LpDenomIn != ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.mstaking.v1.QueryMigrationRequest"))
+		}
+		panic(fmt.Errorf("message initia.mstaking.v1.QueryMigrationRequest does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_QueryMigrationRequest) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "initia.mstaking.v1.QueryMigrationRequest.lp_denom_in":
+		x.LpDenomIn = ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.mstaking.v1.QueryMigrationRequest"))
+		}
+		panic(fmt.Errorf("message initia.mstaking.v1.QueryMigrationRequest does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_QueryMigrationRequest) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "initia.mstaking.v1.QueryMigrationRequest.lp_denom_in":
+		value := x.LpDenomIn
+		return protoreflect.ValueOfString(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.mstaking.v1.QueryMigrationRequest"))
+		}
+		panic(fmt.Errorf("message initia.mstaking.v1.QueryMigrationRequest does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_QueryMigrationRequest) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "initia.mstaking.v1.QueryMigrationRequest.lp_denom_in":
+		x.LpDenomIn = value.Interface().(string)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.mstaking.v1.QueryMigrationRequest"))
+		}
+		panic(fmt.Errorf("message initia.mstaking.v1.QueryMigrationRequest does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_QueryMigrationRequest) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "initia.mstaking.v1.QueryMigrationRequest.lp_denom_in":
+		panic(fmt.Errorf("field lp_denom_in of message initia.mstaking.v1.QueryMigrationRequest is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.mstaking.v1.QueryMigrationRequest"))
+		}
+		panic(fmt.Errorf("message initia.mstaking.v1.QueryMigrationRequest does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_QueryMigrationRequest) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "initia.mstaking.v1.QueryMigrationRequest.lp_denom_in":
+		return protoreflect.ValueOfString("")
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.mstaking.v1.QueryMigrationRequest"))
+		}
+		panic(fmt.Errorf("message initia.mstaking.v1.QueryMigrationRequest does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_QueryMigrationRequest) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in initia.mstaking.v1.QueryMigrationRequest", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_QueryMigrationRequest) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_QueryMigrationRequest) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_QueryMigrationRequest) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_QueryMigrationRequest) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*QueryMigrationRequest)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		l = len(x.LpDenomIn)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*QueryMigrationRequest)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.LpDenomIn) > 0 {
+			i -= len(x.LpDenomIn)
+			copy(dAtA[i:], x.LpDenomIn)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.LpDenomIn)))
+			i--
+			dAtA[i] = 0xa
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*QueryMigrationRequest)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: QueryMigrationRequest: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: QueryMigrationRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field LpDenomIn", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.LpDenomIn = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var (
+	md_QueryMigrationResponse           protoreflect.MessageDescriptor
+	fd_QueryMigrationResponse_migration protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_initia_mstaking_v1_query_proto_init()
+	md_QueryMigrationResponse = File_initia_mstaking_v1_query_proto.Messages().ByName("QueryMigrationResponse")
+	fd_QueryMigrationResponse_migration = md_QueryMigrationResponse.Fields().ByName("migration")
+}
+
+var _ protoreflect.Message = (*fastReflection_QueryMigrationResponse)(nil)
+
+type fastReflection_QueryMigrationResponse QueryMigrationResponse
+
+func (x *QueryMigrationResponse) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_QueryMigrationResponse)(x)
+}
+
+func (x *QueryMigrationResponse) slowProtoReflect() protoreflect.Message {
+	mi := &file_initia_mstaking_v1_query_proto_msgTypes[29]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_QueryMigrationResponse_messageType fastReflection_QueryMigrationResponse_messageType
+var _ protoreflect.MessageType = fastReflection_QueryMigrationResponse_messageType{}
+
+type fastReflection_QueryMigrationResponse_messageType struct{}
+
+func (x fastReflection_QueryMigrationResponse_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_QueryMigrationResponse)(nil)
+}
+func (x fastReflection_QueryMigrationResponse_messageType) New() protoreflect.Message {
+	return new(fastReflection_QueryMigrationResponse)
+}
+func (x fastReflection_QueryMigrationResponse_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_QueryMigrationResponse
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_QueryMigrationResponse) Descriptor() protoreflect.MessageDescriptor {
+	return md_QueryMigrationResponse
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_QueryMigrationResponse) Type() protoreflect.MessageType {
+	return _fastReflection_QueryMigrationResponse_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_QueryMigrationResponse) New() protoreflect.Message {
+	return new(fastReflection_QueryMigrationResponse)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_QueryMigrationResponse) Interface() protoreflect.ProtoMessage {
+	return (*QueryMigrationResponse)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_QueryMigrationResponse) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.Migration != nil {
+		value := protoreflect.ValueOfMessage(x.Migration.ProtoReflect())
+		if !f(fd_QueryMigrationResponse_migration, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_QueryMigrationResponse) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "initia.mstaking.v1.QueryMigrationResponse.migration":
+		return x.Migration != nil
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.mstaking.v1.QueryMigrationResponse"))
+		}
+		panic(fmt.Errorf("message initia.mstaking.v1.QueryMigrationResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_QueryMigrationResponse) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "initia.mstaking.v1.QueryMigrationResponse.migration":
+		x.Migration = nil
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.mstaking.v1.QueryMigrationResponse"))
+		}
+		panic(fmt.Errorf("message initia.mstaking.v1.QueryMigrationResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_QueryMigrationResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "initia.mstaking.v1.QueryMigrationResponse.migration":
+		value := x.Migration
+		return protoreflect.ValueOfMessage(value.ProtoReflect())
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.mstaking.v1.QueryMigrationResponse"))
+		}
+		panic(fmt.Errorf("message initia.mstaking.v1.QueryMigrationResponse does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_QueryMigrationResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "initia.mstaking.v1.QueryMigrationResponse.migration":
+		x.Migration = value.Message().Interface().(*DelegationMigration)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.mstaking.v1.QueryMigrationResponse"))
+		}
+		panic(fmt.Errorf("message initia.mstaking.v1.QueryMigrationResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_QueryMigrationResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "initia.mstaking.v1.QueryMigrationResponse.migration":
+		if x.Migration == nil {
+			x.Migration = new(DelegationMigration)
+		}
+		return protoreflect.ValueOfMessage(x.Migration.ProtoReflect())
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.mstaking.v1.QueryMigrationResponse"))
+		}
+		panic(fmt.Errorf("message initia.mstaking.v1.QueryMigrationResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_QueryMigrationResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "initia.mstaking.v1.QueryMigrationResponse.migration":
+		m := new(DelegationMigration)
+		return protoreflect.ValueOfMessage(m.ProtoReflect())
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.mstaking.v1.QueryMigrationResponse"))
+		}
+		panic(fmt.Errorf("message initia.mstaking.v1.QueryMigrationResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_QueryMigrationResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in initia.mstaking.v1.QueryMigrationResponse", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_QueryMigrationResponse) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_QueryMigrationResponse) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_QueryMigrationResponse) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_QueryMigrationResponse) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*QueryMigrationResponse)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.Migration != nil {
+			l = options.Size(x.Migration)
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*QueryMigrationResponse)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if x.Migration != nil {
+			encoded, err := options.Marshal(x.Migration)
+			if err != nil {
+				return protoiface.MarshalOutput{
+					NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+					Buf:               input.Buf,
+				}, err
+			}
+			i -= len(encoded)
+			copy(dAtA[i:], encoded)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+			i--
+			dAtA[i] = 0xa
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*QueryMigrationResponse)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: QueryMigrationResponse: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: QueryMigrationResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Migration", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if x.Migration == nil {
+					x.Migration = &DelegationMigration{}
+				}
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.Migration); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
 // Code generated by protoc-gen-go. DO NOT EDIT.
 // versions:
 // 	protoc-gen-go v1.27.0
@@ -15118,6 +15973,80 @@ func (x *QueryParamsResponse) GetParams() *Params {
 	return nil
 }
 
+// QueryMigrationRequest is request type for the Query/Migration RPC method.
+type QueryMigrationRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// lp_denom_in defines the lp denom to query for.
+	LpDenomIn string `protobuf:"bytes,1,opt,name=lp_denom_in,json=lpDenomIn,proto3" json:"lp_denom_in,omitempty"`
+}
+
+func (x *QueryMigrationRequest) Reset() {
+	*x = QueryMigrationRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_initia_mstaking_v1_query_proto_msgTypes[28]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *QueryMigrationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*QueryMigrationRequest) ProtoMessage() {}
+
+// Deprecated: Use QueryMigrationRequest.ProtoReflect.Descriptor instead.
+func (*QueryMigrationRequest) Descriptor() ([]byte, []int) {
+	return file_initia_mstaking_v1_query_proto_rawDescGZIP(), []int{28}
+}
+
+func (x *QueryMigrationRequest) GetLpDenomIn() string {
+	if x != nil {
+		return x.LpDenomIn
+	}
+	return ""
+}
+
+// QueryMigrationResponse is response type for the Query/Migration RPC method.
+type QueryMigrationResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// migration defines the migration info.
+	Migration *DelegationMigration `protobuf:"bytes,1,opt,name=migration,proto3" json:"migration,omitempty"`
+}
+
+func (x *QueryMigrationResponse) Reset() {
+	*x = QueryMigrationResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_initia_mstaking_v1_query_proto_msgTypes[29]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *QueryMigrationResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*QueryMigrationResponse) ProtoMessage() {}
+
+// Deprecated: Use QueryMigrationResponse.ProtoReflect.Descriptor instead.
+func (*QueryMigrationResponse) Descriptor() ([]byte, []int) {
+	return file_initia_mstaking_v1_query_proto_rawDescGZIP(), []int{29}
+}
+
+func (x *QueryMigrationResponse) GetMigration() *DelegationMigration {
+	if x != nil {
+		return x.Migration
+	}
+	return nil
+}
+
 var File_initia_mstaking_v1_query_proto protoreflect.FileDescriptor
 
 var file_initia_mstaking_v1_query_proto_rawDesc = []byte{
@@ -15379,7 +16308,17 @@ var file_initia_mstaking_v1_query_proto_rawDesc = []byte{
 	0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x69,
 	0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x6d, 0x73, 0x74, 0x61, 0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x76,
 	0x31, 0x2e, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x06,
-	0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x32, 0xb6, 0x16, 0x0a, 0x05, 0x51, 0x75, 0x65, 0x72, 0x79,
+	0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x22, 0x37, 0x0a, 0x15, 0x51, 0x75, 0x65, 0x72, 0x79, 0x4d,
+	0x69, 0x67, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12,
+	0x1e, 0x0a, 0x0b, 0x6c, 0x70, 0x5f, 0x64, 0x65, 0x6e, 0x6f, 0x6d, 0x5f, 0x69, 0x6e, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6c, 0x70, 0x44, 0x65, 0x6e, 0x6f, 0x6d, 0x49, 0x6e, 0x22,
+	0x65, 0x0a, 0x16, 0x51, 0x75, 0x65, 0x72, 0x79, 0x4d, 0x69, 0x67, 0x72, 0x61, 0x74, 0x69, 0x6f,
+	0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x4b, 0x0a, 0x09, 0x6d, 0x69, 0x67,
+	0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x27, 0x2e, 0x69,
+	0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x6d, 0x73, 0x74, 0x61, 0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x76,
+	0x31, 0x2e, 0x44, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x4d, 0x69, 0x67, 0x72,
+	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x09, 0x6d, 0x69, 0x67,
+	0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x32, 0xd0, 0x17, 0x0a, 0x05, 0x51, 0x75, 0x65, 0x72, 0x79,
 	0x12, 0x8d, 0x01, 0x0a, 0x0a, 0x56, 0x61, 0x6c, 0x69, 0x64, 0x61, 0x74, 0x6f, 0x72, 0x73, 0x12,
 	0x2a, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x6d, 0x73, 0x74, 0x61, 0x6b, 0x69, 0x6e,
 	0x67, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x56, 0x61, 0x6c, 0x69, 0x64, 0x61,
@@ -15558,21 +16497,31 @@ var file_initia_mstaking_v1_query_proto_rawDesc = []byte{
 	0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x50, 0x61, 0x72,
 	0x61, 0x6d, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x22, 0x82, 0xd3, 0xe4,
 	0x93, 0x02, 0x1c, 0x12, 0x1a, 0x2f, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2f, 0x6d, 0x73, 0x74,
-	0x61, 0x6b, 0x69, 0x6e, 0x67, 0x2f, 0x76, 0x31, 0x2f, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x42,
-	0xcf, 0x01, 0x0a, 0x16, 0x63, 0x6f, 0x6d, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x6d,
-	0x73, 0x74, 0x61, 0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x76, 0x31, 0x42, 0x0a, 0x51, 0x75, 0x65, 0x72,
-	0x79, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x3f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62,
-	0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2d, 0x6c, 0x61, 0x62, 0x73,
-	0x2f, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x69, 0x6e, 0x69, 0x74,
-	0x69, 0x61, 0x2f, 0x6d, 0x73, 0x74, 0x61, 0x6b, 0x69, 0x6e, 0x67, 0x2f, 0x76, 0x31, 0x3b, 0x6d,
-	0x73, 0x74, 0x61, 0x6b, 0x69, 0x6e, 0x67, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x49, 0x4d, 0x58, 0xaa,
-	0x02, 0x12, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x4d, 0x73, 0x74, 0x61, 0x6b, 0x69, 0x6e,
-	0x67, 0x2e, 0x56, 0x31, 0xca, 0x02, 0x12, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x5c, 0x4d, 0x73,
-	0x74, 0x61, 0x6b, 0x69, 0x6e, 0x67, 0x5c, 0x56, 0x31, 0xe2, 0x02, 0x1e, 0x49, 0x6e, 0x69, 0x74,
-	0x69, 0x61, 0x5c, 0x4d, 0x73, 0x74, 0x61, 0x6b, 0x69, 0x6e, 0x67, 0x5c, 0x56, 0x31, 0x5c, 0x47,
-	0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x14, 0x49, 0x6e, 0x69,
-	0x74, 0x69, 0x61, 0x3a, 0x3a, 0x4d, 0x73, 0x74, 0x61, 0x6b, 0x69, 0x6e, 0x67, 0x3a, 0x3a, 0x56,
-	0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x61, 0x6b, 0x69, 0x6e, 0x67, 0x2f, 0x76, 0x31, 0x2f, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x12,
+	0x97, 0x01, 0x0a, 0x09, 0x4d, 0x69, 0x67, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x29, 0x2e,
+	0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x6d, 0x73, 0x74, 0x61, 0x6b, 0x69, 0x6e, 0x67, 0x2e,
+	0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x4d, 0x69, 0x67, 0x72, 0x61, 0x74, 0x69, 0x6f,
+	0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x2a, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69,
+	0x61, 0x2e, 0x6d, 0x73, 0x74, 0x61, 0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75,
+	0x65, 0x72, 0x79, 0x4d, 0x69, 0x67, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x22, 0x33, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x2d, 0x12, 0x2b, 0x2f, 0x69,
+	0x6e, 0x69, 0x74, 0x69, 0x61, 0x2f, 0x6d, 0x73, 0x74, 0x61, 0x6b, 0x69, 0x6e, 0x67, 0x2f, 0x76,
+	0x31, 0x2f, 0x6d, 0x69, 0x67, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x2f, 0x7b, 0x6c, 0x70, 0x5f,
+	0x64, 0x65, 0x6e, 0x6f, 0x6d, 0x5f, 0x69, 0x6e, 0x7d, 0x42, 0xcf, 0x01, 0x0a, 0x16, 0x63, 0x6f,
+	0x6d, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2e, 0x6d, 0x73, 0x74, 0x61, 0x6b, 0x69, 0x6e,
+	0x67, 0x2e, 0x76, 0x31, 0x42, 0x0a, 0x51, 0x75, 0x65, 0x72, 0x79, 0x50, 0x72, 0x6f, 0x74, 0x6f,
+	0x50, 0x01, 0x5a, 0x3f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x69,
+	0x6e, 0x69, 0x74, 0x69, 0x61, 0x2d, 0x6c, 0x61, 0x62, 0x73, 0x2f, 0x69, 0x6e, 0x69, 0x74, 0x69,
+	0x61, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x2f, 0x6d, 0x73, 0x74,
+	0x61, 0x6b, 0x69, 0x6e, 0x67, 0x2f, 0x76, 0x31, 0x3b, 0x6d, 0x73, 0x74, 0x61, 0x6b, 0x69, 0x6e,
+	0x67, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x49, 0x4d, 0x58, 0xaa, 0x02, 0x12, 0x49, 0x6e, 0x69, 0x74,
+	0x69, 0x61, 0x2e, 0x4d, 0x73, 0x74, 0x61, 0x6b, 0x69, 0x6e, 0x67, 0x2e, 0x56, 0x31, 0xca, 0x02,
+	0x12, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x5c, 0x4d, 0x73, 0x74, 0x61, 0x6b, 0x69, 0x6e, 0x67,
+	0x5c, 0x56, 0x31, 0xe2, 0x02, 0x1e, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x5c, 0x4d, 0x73, 0x74,
+	0x61, 0x6b, 0x69, 0x6e, 0x67, 0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61,
+	0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x14, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x3a, 0x3a, 0x4d,
+	0x73, 0x74, 0x61, 0x6b, 0x69, 0x6e, 0x67, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x33,
 }
 
 var (
@@ -15587,7 +16536,7 @@ func file_initia_mstaking_v1_query_proto_rawDescGZIP() []byte {
 	return file_initia_mstaking_v1_query_proto_rawDescData
 }
 
-var file_initia_mstaking_v1_query_proto_msgTypes = make([]protoimpl.MessageInfo, 28)
+var file_initia_mstaking_v1_query_proto_msgTypes = make([]protoimpl.MessageInfo, 30)
 var file_initia_mstaking_v1_query_proto_goTypes = []interface{}{
 	(*QueryValidatorsRequest)(nil),                       // 0: initia.mstaking.v1.QueryValidatorsRequest
 	(*QueryValidatorsResponse)(nil),                      // 1: initia.mstaking.v1.QueryValidatorsResponse
@@ -15617,80 +16566,86 @@ var file_initia_mstaking_v1_query_proto_goTypes = []interface{}{
 	(*QueryPoolResponse)(nil),                            // 25: initia.mstaking.v1.QueryPoolResponse
 	(*QueryParamsRequest)(nil),                           // 26: initia.mstaking.v1.QueryParamsRequest
 	(*QueryParamsResponse)(nil),                          // 27: initia.mstaking.v1.QueryParamsResponse
-	(*v1beta1.PageRequest)(nil),                          // 28: cosmos.base.query.v1beta1.PageRequest
-	(*Validator)(nil),                                    // 29: initia.mstaking.v1.Validator
-	(*v1beta1.PageResponse)(nil),                         // 30: cosmos.base.query.v1beta1.PageResponse
-	(*DelegationResponse)(nil),                           // 31: initia.mstaking.v1.DelegationResponse
-	(*UnbondingDelegation)(nil),                          // 32: initia.mstaking.v1.UnbondingDelegation
-	(*RedelegationResponse)(nil),                         // 33: initia.mstaking.v1.RedelegationResponse
-	(*v1beta11.Coin)(nil),                                // 34: cosmos.base.v1beta1.Coin
-	(*Pool)(nil),                                         // 35: initia.mstaking.v1.Pool
-	(*Params)(nil),                                       // 36: initia.mstaking.v1.Params
+	(*QueryMigrationRequest)(nil),                        // 28: initia.mstaking.v1.QueryMigrationRequest
+	(*QueryMigrationResponse)(nil),                       // 29: initia.mstaking.v1.QueryMigrationResponse
+	(*v1beta1.PageRequest)(nil),                          // 30: cosmos.base.query.v1beta1.PageRequest
+	(*Validator)(nil),                                    // 31: initia.mstaking.v1.Validator
+	(*v1beta1.PageResponse)(nil),                         // 32: cosmos.base.query.v1beta1.PageResponse
+	(*DelegationResponse)(nil),                           // 33: initia.mstaking.v1.DelegationResponse
+	(*UnbondingDelegation)(nil),                          // 34: initia.mstaking.v1.UnbondingDelegation
+	(*RedelegationResponse)(nil),                         // 35: initia.mstaking.v1.RedelegationResponse
+	(*v1beta11.Coin)(nil),                                // 36: cosmos.base.v1beta1.Coin
+	(*Pool)(nil),                                         // 37: initia.mstaking.v1.Pool
+	(*Params)(nil),                                       // 38: initia.mstaking.v1.Params
+	(*DelegationMigration)(nil),                          // 39: initia.mstaking.v1.DelegationMigration
 }
 var file_initia_mstaking_v1_query_proto_depIdxs = []int32{
-	28, // 0: initia.mstaking.v1.QueryValidatorsRequest.pagination:type_name -> cosmos.base.query.v1beta1.PageRequest
-	29, // 1: initia.mstaking.v1.QueryValidatorsResponse.validators:type_name -> initia.mstaking.v1.Validator
-	30, // 2: initia.mstaking.v1.QueryValidatorsResponse.pagination:type_name -> cosmos.base.query.v1beta1.PageResponse
-	29, // 3: initia.mstaking.v1.QueryValidatorResponse.validator:type_name -> initia.mstaking.v1.Validator
-	28, // 4: initia.mstaking.v1.QueryValidatorDelegationsRequest.pagination:type_name -> cosmos.base.query.v1beta1.PageRequest
-	31, // 5: initia.mstaking.v1.QueryValidatorDelegationsResponse.delegation_responses:type_name -> initia.mstaking.v1.DelegationResponse
-	30, // 6: initia.mstaking.v1.QueryValidatorDelegationsResponse.pagination:type_name -> cosmos.base.query.v1beta1.PageResponse
-	28, // 7: initia.mstaking.v1.QueryValidatorUnbondingDelegationsRequest.pagination:type_name -> cosmos.base.query.v1beta1.PageRequest
-	32, // 8: initia.mstaking.v1.QueryValidatorUnbondingDelegationsResponse.unbonding_responses:type_name -> initia.mstaking.v1.UnbondingDelegation
-	30, // 9: initia.mstaking.v1.QueryValidatorUnbondingDelegationsResponse.pagination:type_name -> cosmos.base.query.v1beta1.PageResponse
-	31, // 10: initia.mstaking.v1.QueryDelegationResponse.delegation_response:type_name -> initia.mstaking.v1.DelegationResponse
-	32, // 11: initia.mstaking.v1.QueryUnbondingDelegationResponse.unbond:type_name -> initia.mstaking.v1.UnbondingDelegation
-	28, // 12: initia.mstaking.v1.QueryDelegatorDelegationsRequest.pagination:type_name -> cosmos.base.query.v1beta1.PageRequest
-	31, // 13: initia.mstaking.v1.QueryDelegatorDelegationsResponse.delegation_responses:type_name -> initia.mstaking.v1.DelegationResponse
-	30, // 14: initia.mstaking.v1.QueryDelegatorDelegationsResponse.pagination:type_name -> cosmos.base.query.v1beta1.PageResponse
-	28, // 15: initia.mstaking.v1.QueryDelegatorUnbondingDelegationsRequest.pagination:type_name -> cosmos.base.query.v1beta1.PageRequest
-	32, // 16: initia.mstaking.v1.QueryDelegatorUnbondingDelegationsResponse.unbonding_responses:type_name -> initia.mstaking.v1.UnbondingDelegation
-	30, // 17: initia.mstaking.v1.QueryDelegatorUnbondingDelegationsResponse.pagination:type_name -> cosmos.base.query.v1beta1.PageResponse
-	28, // 18: initia.mstaking.v1.QueryRedelegationsRequest.pagination:type_name -> cosmos.base.query.v1beta1.PageRequest
-	33, // 19: initia.mstaking.v1.QueryRedelegationsResponse.redelegation_responses:type_name -> initia.mstaking.v1.RedelegationResponse
-	30, // 20: initia.mstaking.v1.QueryRedelegationsResponse.pagination:type_name -> cosmos.base.query.v1beta1.PageResponse
-	28, // 21: initia.mstaking.v1.QueryDelegatorValidatorsRequest.pagination:type_name -> cosmos.base.query.v1beta1.PageRequest
-	29, // 22: initia.mstaking.v1.QueryDelegatorValidatorsResponse.validators:type_name -> initia.mstaking.v1.Validator
-	30, // 23: initia.mstaking.v1.QueryDelegatorValidatorsResponse.pagination:type_name -> cosmos.base.query.v1beta1.PageResponse
-	29, // 24: initia.mstaking.v1.QueryDelegatorValidatorResponse.validator:type_name -> initia.mstaking.v1.Validator
-	34, // 25: initia.mstaking.v1.QueryDelegatorTotalDelegationBalanceResponse.balance:type_name -> cosmos.base.v1beta1.Coin
-	35, // 26: initia.mstaking.v1.QueryPoolResponse.pool:type_name -> initia.mstaking.v1.Pool
-	36, // 27: initia.mstaking.v1.QueryParamsResponse.params:type_name -> initia.mstaking.v1.Params
-	0,  // 28: initia.mstaking.v1.Query.Validators:input_type -> initia.mstaking.v1.QueryValidatorsRequest
-	2,  // 29: initia.mstaking.v1.Query.Validator:input_type -> initia.mstaking.v1.QueryValidatorRequest
-	4,  // 30: initia.mstaking.v1.Query.ValidatorDelegations:input_type -> initia.mstaking.v1.QueryValidatorDelegationsRequest
-	6,  // 31: initia.mstaking.v1.Query.ValidatorUnbondingDelegations:input_type -> initia.mstaking.v1.QueryValidatorUnbondingDelegationsRequest
-	8,  // 32: initia.mstaking.v1.Query.Delegation:input_type -> initia.mstaking.v1.QueryDelegationRequest
-	10, // 33: initia.mstaking.v1.Query.UnbondingDelegation:input_type -> initia.mstaking.v1.QueryUnbondingDelegationRequest
-	12, // 34: initia.mstaking.v1.Query.DelegatorDelegations:input_type -> initia.mstaking.v1.QueryDelegatorDelegationsRequest
-	14, // 35: initia.mstaking.v1.Query.DelegatorUnbondingDelegations:input_type -> initia.mstaking.v1.QueryDelegatorUnbondingDelegationsRequest
-	16, // 36: initia.mstaking.v1.Query.RedelegationsOfDelegator:input_type -> initia.mstaking.v1.QueryRedelegationsRequest
-	18, // 37: initia.mstaking.v1.Query.DelegatorValidators:input_type -> initia.mstaking.v1.QueryDelegatorValidatorsRequest
-	20, // 38: initia.mstaking.v1.Query.DelegatorValidator:input_type -> initia.mstaking.v1.QueryDelegatorValidatorRequest
-	22, // 39: initia.mstaking.v1.Query.DelegatorTotalDelegationBalance:input_type -> initia.mstaking.v1.QueryDelegatorTotalDelegationBalanceRequest
-	16, // 40: initia.mstaking.v1.Query.Redelegations:input_type -> initia.mstaking.v1.QueryRedelegationsRequest
-	24, // 41: initia.mstaking.v1.Query.Pool:input_type -> initia.mstaking.v1.QueryPoolRequest
-	26, // 42: initia.mstaking.v1.Query.Params:input_type -> initia.mstaking.v1.QueryParamsRequest
-	1,  // 43: initia.mstaking.v1.Query.Validators:output_type -> initia.mstaking.v1.QueryValidatorsResponse
-	3,  // 44: initia.mstaking.v1.Query.Validator:output_type -> initia.mstaking.v1.QueryValidatorResponse
-	5,  // 45: initia.mstaking.v1.Query.ValidatorDelegations:output_type -> initia.mstaking.v1.QueryValidatorDelegationsResponse
-	7,  // 46: initia.mstaking.v1.Query.ValidatorUnbondingDelegations:output_type -> initia.mstaking.v1.QueryValidatorUnbondingDelegationsResponse
-	9,  // 47: initia.mstaking.v1.Query.Delegation:output_type -> initia.mstaking.v1.QueryDelegationResponse
-	11, // 48: initia.mstaking.v1.Query.UnbondingDelegation:output_type -> initia.mstaking.v1.QueryUnbondingDelegationResponse
-	13, // 49: initia.mstaking.v1.Query.DelegatorDelegations:output_type -> initia.mstaking.v1.QueryDelegatorDelegationsResponse
-	15, // 50: initia.mstaking.v1.Query.DelegatorUnbondingDelegations:output_type -> initia.mstaking.v1.QueryDelegatorUnbondingDelegationsResponse
-	17, // 51: initia.mstaking.v1.Query.RedelegationsOfDelegator:output_type -> initia.mstaking.v1.QueryRedelegationsResponse
-	19, // 52: initia.mstaking.v1.Query.DelegatorValidators:output_type -> initia.mstaking.v1.QueryDelegatorValidatorsResponse
-	21, // 53: initia.mstaking.v1.Query.DelegatorValidator:output_type -> initia.mstaking.v1.QueryDelegatorValidatorResponse
-	23, // 54: initia.mstaking.v1.Query.DelegatorTotalDelegationBalance:output_type -> initia.mstaking.v1.QueryDelegatorTotalDelegationBalanceResponse
-	17, // 55: initia.mstaking.v1.Query.Redelegations:output_type -> initia.mstaking.v1.QueryRedelegationsResponse
-	25, // 56: initia.mstaking.v1.Query.Pool:output_type -> initia.mstaking.v1.QueryPoolResponse
-	27, // 57: initia.mstaking.v1.Query.Params:output_type -> initia.mstaking.v1.QueryParamsResponse
-	43, // [43:58] is the sub-list for method output_type
-	28, // [28:43] is the sub-list for method input_type
-	28, // [28:28] is the sub-list for extension type_name
-	28, // [28:28] is the sub-list for extension extendee
-	0,  // [0:28] is the sub-list for field type_name
+	30, // 0: initia.mstaking.v1.QueryValidatorsRequest.pagination:type_name -> cosmos.base.query.v1beta1.PageRequest
+	31, // 1: initia.mstaking.v1.QueryValidatorsResponse.validators:type_name -> initia.mstaking.v1.Validator
+	32, // 2: initia.mstaking.v1.QueryValidatorsResponse.pagination:type_name -> cosmos.base.query.v1beta1.PageResponse
+	31, // 3: initia.mstaking.v1.QueryValidatorResponse.validator:type_name -> initia.mstaking.v1.Validator
+	30, // 4: initia.mstaking.v1.QueryValidatorDelegationsRequest.pagination:type_name -> cosmos.base.query.v1beta1.PageRequest
+	33, // 5: initia.mstaking.v1.QueryValidatorDelegationsResponse.delegation_responses:type_name -> initia.mstaking.v1.DelegationResponse
+	32, // 6: initia.mstaking.v1.QueryValidatorDelegationsResponse.pagination:type_name -> cosmos.base.query.v1beta1.PageResponse
+	30, // 7: initia.mstaking.v1.QueryValidatorUnbondingDelegationsRequest.pagination:type_name -> cosmos.base.query.v1beta1.PageRequest
+	34, // 8: initia.mstaking.v1.QueryValidatorUnbondingDelegationsResponse.unbonding_responses:type_name -> initia.mstaking.v1.UnbondingDelegation
+	32, // 9: initia.mstaking.v1.QueryValidatorUnbondingDelegationsResponse.pagination:type_name -> cosmos.base.query.v1beta1.PageResponse
+	33, // 10: initia.mstaking.v1.QueryDelegationResponse.delegation_response:type_name -> initia.mstaking.v1.DelegationResponse
+	34, // 11: initia.mstaking.v1.QueryUnbondingDelegationResponse.unbond:type_name -> initia.mstaking.v1.UnbondingDelegation
+	30, // 12: initia.mstaking.v1.QueryDelegatorDelegationsRequest.pagination:type_name -> cosmos.base.query.v1beta1.PageRequest
+	33, // 13: initia.mstaking.v1.QueryDelegatorDelegationsResponse.delegation_responses:type_name -> initia.mstaking.v1.DelegationResponse
+	32, // 14: initia.mstaking.v1.QueryDelegatorDelegationsResponse.pagination:type_name -> cosmos.base.query.v1beta1.PageResponse
+	30, // 15: initia.mstaking.v1.QueryDelegatorUnbondingDelegationsRequest.pagination:type_name -> cosmos.base.query.v1beta1.PageRequest
+	34, // 16: initia.mstaking.v1.QueryDelegatorUnbondingDelegationsResponse.unbonding_responses:type_name -> initia.mstaking.v1.UnbondingDelegation
+	32, // 17: initia.mstaking.v1.QueryDelegatorUnbondingDelegationsResponse.pagination:type_name -> cosmos.base.query.v1beta1.PageResponse
+	30, // 18: initia.mstaking.v1.QueryRedelegationsRequest.pagination:type_name -> cosmos.base.query.v1beta1.PageRequest
+	35, // 19: initia.mstaking.v1.QueryRedelegationsResponse.redelegation_responses:type_name -> initia.mstaking.v1.RedelegationResponse
+	32, // 20: initia.mstaking.v1.QueryRedelegationsResponse.pagination:type_name -> cosmos.base.query.v1beta1.PageResponse
+	30, // 21: initia.mstaking.v1.QueryDelegatorValidatorsRequest.pagination:type_name -> cosmos.base.query.v1beta1.PageRequest
+	31, // 22: initia.mstaking.v1.QueryDelegatorValidatorsResponse.validators:type_name -> initia.mstaking.v1.Validator
+	32, // 23: initia.mstaking.v1.QueryDelegatorValidatorsResponse.pagination:type_name -> cosmos.base.query.v1beta1.PageResponse
+	31, // 24: initia.mstaking.v1.QueryDelegatorValidatorResponse.validator:type_name -> initia.mstaking.v1.Validator
+	36, // 25: initia.mstaking.v1.QueryDelegatorTotalDelegationBalanceResponse.balance:type_name -> cosmos.base.v1beta1.Coin
+	37, // 26: initia.mstaking.v1.QueryPoolResponse.pool:type_name -> initia.mstaking.v1.Pool
+	38, // 27: initia.mstaking.v1.QueryParamsResponse.params:type_name -> initia.mstaking.v1.Params
+	39, // 28: initia.mstaking.v1.QueryMigrationResponse.migration:type_name -> initia.mstaking.v1.DelegationMigration
+	0,  // 29: initia.mstaking.v1.Query.Validators:input_type -> initia.mstaking.v1.QueryValidatorsRequest
+	2,  // 30: initia.mstaking.v1.Query.Validator:input_type -> initia.mstaking.v1.QueryValidatorRequest
+	4,  // 31: initia.mstaking.v1.Query.ValidatorDelegations:input_type -> initia.mstaking.v1.QueryValidatorDelegationsRequest
+	6,  // 32: initia.mstaking.v1.Query.ValidatorUnbondingDelegations:input_type -> initia.mstaking.v1.QueryValidatorUnbondingDelegationsRequest
+	8,  // 33: initia.mstaking.v1.Query.Delegation:input_type -> initia.mstaking.v1.QueryDelegationRequest
+	10, // 34: initia.mstaking.v1.Query.UnbondingDelegation:input_type -> initia.mstaking.v1.QueryUnbondingDelegationRequest
+	12, // 35: initia.mstaking.v1.Query.DelegatorDelegations:input_type -> initia.mstaking.v1.QueryDelegatorDelegationsRequest
+	14, // 36: initia.mstaking.v1.Query.DelegatorUnbondingDelegations:input_type -> initia.mstaking.v1.QueryDelegatorUnbondingDelegationsRequest
+	16, // 37: initia.mstaking.v1.Query.RedelegationsOfDelegator:input_type -> initia.mstaking.v1.QueryRedelegationsRequest
+	18, // 38: initia.mstaking.v1.Query.DelegatorValidators:input_type -> initia.mstaking.v1.QueryDelegatorValidatorsRequest
+	20, // 39: initia.mstaking.v1.Query.DelegatorValidator:input_type -> initia.mstaking.v1.QueryDelegatorValidatorRequest
+	22, // 40: initia.mstaking.v1.Query.DelegatorTotalDelegationBalance:input_type -> initia.mstaking.v1.QueryDelegatorTotalDelegationBalanceRequest
+	16, // 41: initia.mstaking.v1.Query.Redelegations:input_type -> initia.mstaking.v1.QueryRedelegationsRequest
+	24, // 42: initia.mstaking.v1.Query.Pool:input_type -> initia.mstaking.v1.QueryPoolRequest
+	26, // 43: initia.mstaking.v1.Query.Params:input_type -> initia.mstaking.v1.QueryParamsRequest
+	28, // 44: initia.mstaking.v1.Query.Migration:input_type -> initia.mstaking.v1.QueryMigrationRequest
+	1,  // 45: initia.mstaking.v1.Query.Validators:output_type -> initia.mstaking.v1.QueryValidatorsResponse
+	3,  // 46: initia.mstaking.v1.Query.Validator:output_type -> initia.mstaking.v1.QueryValidatorResponse
+	5,  // 47: initia.mstaking.v1.Query.ValidatorDelegations:output_type -> initia.mstaking.v1.QueryValidatorDelegationsResponse
+	7,  // 48: initia.mstaking.v1.Query.ValidatorUnbondingDelegations:output_type -> initia.mstaking.v1.QueryValidatorUnbondingDelegationsResponse
+	9,  // 49: initia.mstaking.v1.Query.Delegation:output_type -> initia.mstaking.v1.QueryDelegationResponse
+	11, // 50: initia.mstaking.v1.Query.UnbondingDelegation:output_type -> initia.mstaking.v1.QueryUnbondingDelegationResponse
+	13, // 51: initia.mstaking.v1.Query.DelegatorDelegations:output_type -> initia.mstaking.v1.QueryDelegatorDelegationsResponse
+	15, // 52: initia.mstaking.v1.Query.DelegatorUnbondingDelegations:output_type -> initia.mstaking.v1.QueryDelegatorUnbondingDelegationsResponse
+	17, // 53: initia.mstaking.v1.Query.RedelegationsOfDelegator:output_type -> initia.mstaking.v1.QueryRedelegationsResponse
+	19, // 54: initia.mstaking.v1.Query.DelegatorValidators:output_type -> initia.mstaking.v1.QueryDelegatorValidatorsResponse
+	21, // 55: initia.mstaking.v1.Query.DelegatorValidator:output_type -> initia.mstaking.v1.QueryDelegatorValidatorResponse
+	23, // 56: initia.mstaking.v1.Query.DelegatorTotalDelegationBalance:output_type -> initia.mstaking.v1.QueryDelegatorTotalDelegationBalanceResponse
+	17, // 57: initia.mstaking.v1.Query.Redelegations:output_type -> initia.mstaking.v1.QueryRedelegationsResponse
+	25, // 58: initia.mstaking.v1.Query.Pool:output_type -> initia.mstaking.v1.QueryPoolResponse
+	27, // 59: initia.mstaking.v1.Query.Params:output_type -> initia.mstaking.v1.QueryParamsResponse
+	29, // 60: initia.mstaking.v1.Query.Migration:output_type -> initia.mstaking.v1.QueryMigrationResponse
+	45, // [45:61] is the sub-list for method output_type
+	29, // [29:45] is the sub-list for method input_type
+	29, // [29:29] is the sub-list for extension type_name
+	29, // [29:29] is the sub-list for extension extendee
+	0,  // [0:29] is the sub-list for field type_name
 }
 
 func init() { file_initia_mstaking_v1_query_proto_init() }
@@ -16036,6 +16991,30 @@ func file_initia_mstaking_v1_query_proto_init() {
 				return nil
 			}
 		}
+		file_initia_mstaking_v1_query_proto_msgTypes[28].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*QueryMigrationRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_initia_mstaking_v1_query_proto_msgTypes[29].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*QueryMigrationResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -16043,7 +17022,7 @@ func file_initia_mstaking_v1_query_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_initia_mstaking_v1_query_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   28,
+			NumMessages:   30,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

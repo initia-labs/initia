@@ -419,5 +419,11 @@ func (r RedelegationResponses) String() (out string) {
 }
 
 func (d DelegationMigration) String() string {
-	return fmt.Sprintf("LP Metadata Out: %s, Swap Contract Module Address: %s, Swap Contract Module Name: %s", d.LpMetadataOut, d.SwapContractModuleAddress, d.SwapContractModuleName)
+	return fmt.Sprintf(`
+Denom In: %s
+Denom Out: %s
+LP Denom In: %s
+LP Denom Out: %s
+Swap Contract Module Address: %s
+Swap Contract Module Name: %s`, d.DenomIn, d.DenomOut, d.LpDenomIn, d.LpDenomOut, d.SwapContractModuleAddress, d.SwapContractModuleName)
 }

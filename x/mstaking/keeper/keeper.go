@@ -3,7 +3,6 @@ package keeper
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/initia-labs/initia/x/mstaking/types"
@@ -17,8 +16,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	cosmostypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-
-	movetypes "github.com/initia-labs/initia/x/move/types"
 )
 
 // Implements ValidatorSet interface
@@ -71,8 +68,7 @@ type Keeper struct {
 	ValidatorQueue    collections.Map[time.Time, types.ValAddresses]
 
 	HistoricalInfos collections.Map[int64, cosmostypes.HistoricalInfo]
-
-	RegisteredMigrations collections.Map[[]byte, types.DelegationMigration]
+	Migrations      collections.Map[collections.Pair[[]byte, []byte], types.DelegationMigration]
 
 	Params collections.Item[types.Params]
 }
@@ -148,7 +144,7 @@ func NewKeeper(
 
 		HistoricalInfos: collections.NewMap(sb, types.HistoricalInfosPrefix, "historical_infos", collections.Int64Key, codec.CollValue[cosmostypes.HistoricalInfo](cdc)),
 
-		RegisteredMigrations: collections.NewMap(sb, types.RegisteredMigrationsPrefix, "registered_migrations", collections.BytesKey, codec.CollValue[types.DelegationMigration](cdc)),
+		Migrations: collections.NewMap(sb, types.MigrationsPrefix, "migrations", collections.PairKeyCodec(collections.BytesKey, collections.BytesKey), codec.CollValue[types.DelegationMigration](cdc)),
 
 		Params: collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
 	}
@@ -223,55 +219,4 @@ func (k Keeper) ValidatorAddressCodec() addresscodec.Codec {
 // ConsensusAddressCodec returns the app consensus address codec.
 func (k Keeper) ConsensusAddressCodec() addresscodec.Codec {
 	return k.consensusAddressCodec
-}
-
-// RegisterMigration registers a migration of a delegation from one lp denom to another.
-// Swap contract requires the following function:
-// - swap(account: &signer, coin_in: Object<Metadata>, coin_out: Object<Metadata>, amount: u64)
-func (k Keeper) RegisterMigration(ctx context.Context, lpDenomIn string, lpDenomOut string, denomIn string, denomOut string, swapContractStr string) error {
-	lpMetadataIn, err := movetypes.MetadataAddressFromDenom(lpDenomIn)
-	if err != nil {
-		return err
-	}
-
-	hasPool, err := k.balancerKeeper.HasPool(ctx, lpMetadataIn)
-	if err != nil {
-		return err
-	} else if !hasPool {
-		return fmt.Errorf("lp metadata is not found in balancer")
-	}
-
-	lpMetadataOut, err := movetypes.MetadataAddressFromDenom(lpDenomOut)
-	if err != nil {
-		return err
-	}
-
-	hasPool, err = k.balancerKeeper.HasPool(ctx, lpMetadataOut)
-	if err != nil {
-		return err
-	} else if !hasPool {
-		return fmt.Errorf("lp metadata is not found in balancer")
-	}
-
-	swapContract := strings.Split(swapContractStr, "::")
-	if len(swapContract) != 2 {
-		return fmt.Errorf("invalid swap contract address: %s, expected format: <module_addr>::<module_name>", swapContractStr)
-	}
-
-	swapContractModuleAddress, err := movetypes.AccAddressFromString(k.authKeeper.AddressCodec(), swapContract[0])
-	if err != nil {
-		return err
-	}
-
-	// even if the migration is already registered, it will be overwritten
-	err = k.RegisteredMigrations.Set(ctx, lpMetadataIn[:], types.DelegationMigration{
-		DenomOut:                  denomOut,
-		LpMetadataOut:             lpMetadataOut[:],
-		SwapContractModuleAddress: swapContractModuleAddress[:],
-		SwapContractModuleName:    swapContract[1],
-	})
-	if err != nil {
-		return err
-	}
-	return nil
 }

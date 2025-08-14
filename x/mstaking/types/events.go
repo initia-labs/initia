@@ -21,6 +21,7 @@ const (
 	AttributeKeyCompletionTime      = "completion_time"
 	AttributeKeyCreationHeight      = "creation_height"
 	AttributeKeyNewShares           = "new_shares"
+	AttributeKeyOriginShares        = "origin_shares"
 	AttributeKeyLpDenomIn           = "lp_denom_in"
 	AttributeKeyLpDenomOut          = "lp_denom_out"
 	AttributeKeySwapContractAddress = "swap_contract_address"

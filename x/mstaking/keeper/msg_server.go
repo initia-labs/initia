@@ -22,6 +22,8 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
 	"github.com/initia-labs/initia/x/mstaking/types"
+
+	movetypes "github.com/initia-labs/initia/x/move/types"
 )
 
 type msgServer struct {
@@ -568,7 +570,22 @@ func (ms msgServer) MigrateDelegation(ctx context.Context, msg *types.MsgMigrate
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid validator address: %s", err)
 	}
 
-	newShares, err := ms.Keeper.MigrateDelegation(ctx, delAddr, valAddr, msg.LpDenomIn, msg.DenomIn)
+	lpMetadataIn, err := movetypes.MetadataAddressFromDenom(msg.LpDenomIn)
+	if err != nil {
+		return nil, sdkerrors.ErrInvalidRequest.Wrap(err.Error())
+	}
+	lpMetadataOut, err := movetypes.MetadataAddressFromDenom(msg.LpDenomOut)
+	if err != nil {
+		return nil, sdkerrors.ErrInvalidRequest.Wrap(err.Error())
+	}
+
+	// get the migration info
+	migration, err := ms.Migrations.Get(ctx, collections.Join(lpMetadataIn[:], lpMetadataOut[:]))
+	if err != nil {
+		return nil, sdkerrors.ErrInvalidRequest.Wrap(err.Error())
+	}
+
+	originShares, newShares, err := ms.Keeper.MigrateDelegation(ctx, delAddr, valAddr, migration)
 	if err != nil {
 		return nil, err
 	}
@@ -580,7 +597,8 @@ func (ms msgServer) MigrateDelegation(ctx context.Context, msg *types.MsgMigrate
 			sdk.NewAttribute(types.AttributeKeyDelegator, msg.DelegatorAddress),
 			sdk.NewAttribute(types.AttributeKeyValidator, msg.ValidatorAddress),
 			sdk.NewAttribute(types.AttributeKeyLpDenomIn, msg.LpDenomIn),
-			sdk.NewAttribute(types.AttributeKeyDenomIn, msg.DenomIn),
+			sdk.NewAttribute(types.AttributeKeyLpDenomOut, migration.LpDenomOut),
+			sdk.NewAttribute(types.AttributeKeyOriginShares, originShares.String()),
 			sdk.NewAttribute(types.AttributeKeyNewShares, newShares.String()),
 		),
 	)

@@ -87,6 +87,24 @@ type BalancerKeeper interface {
 		ctx context.Context,
 		metadataLP vmtypes.AccountAddress,
 	) (math.LegacyDec, error)
+	ProvideLiquidity(
+		ctx context.Context,
+		provider vmtypes.AccountAddress,
+		metadataLP vmtypes.AccountAddress,
+		amountA math.Int,
+		amountB math.Int,
+	) error
+	WithdrawLiquidity(
+		ctx context.Context,
+		provider vmtypes.AccountAddress,
+		metadataLP vmtypes.AccountAddress,
+		amount math.Int,
+	) error
+	UpdateFeeRate(
+		ctx context.Context,
+		metadataLP vmtypes.AccountAddress,
+		feeRate math.LegacyDec,
+	) error
 }
 
 // ValidatorSet expected properties for the set of all validators (noalias)

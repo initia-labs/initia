@@ -82,10 +82,7 @@ const (
 	FunctionNameVestingTokenMetadata = "vesting_token_metadata"
 
 	// function names for migrate delegation
-	FunctionNameMigrateDelegationSwapContractInitialize       = "initialize"
-	FunctionNameMigrateDelegationSwapContractDenomOut         = "denom_out"
-	FunctionNameMigrateDelegationSwapContractSwap             = "swap"
-	FunctionNameMigrateDelegationSwapContractProvideLiquidity = "provide_liquidity"
+	FunctionNameMigrateDelegationSwapContractSwap = "swap"
 
 	// resource names
 	ResourceNameFungibleStore = "FungibleStore"

@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 	"errors"
+	"fmt"
 	"slices"
 
 	"cosmossdk.io/collections"
@@ -355,4 +356,56 @@ func (k BalancerKeeper) isReverse(
 	}
 
 	return false, types.ErrInvalidDexConfig.Wrapf("the pair does not contain `%s`", denomBase)
+}
+
+// WithdrawLiquidity withdraw liquidity from a dex pair
+func (k BalancerKeeper) WithdrawLiquidity(ctx context.Context, provider vmtypes.AccountAddress, metadataLP vmtypes.AccountAddress, amount math.Int) error {
+	return k.ExecuteEntryFunctionJSON(
+		ctx,
+		provider,
+		vmtypes.StdAddress,
+		types.MoveModuleNameDex,
+		types.FunctionNameDexWithdrawLiquidity,
+		[]vmtypes.TypeTag{},
+		[]string{
+			fmt.Sprintf("\"%s\"", metadataLP.String()),
+			fmt.Sprintf("\"%s\"", amount.String()),
+			"null",
+			"null",
+		},
+	)
+}
+
+// ProvideLiquidity provide liquidity to a dex pair
+func (k BalancerKeeper) ProvideLiquidity(ctx context.Context, provider vmtypes.AccountAddress, metadataLP vmtypes.AccountAddress, amountA, amountB math.Int) error {
+	return k.ExecuteEntryFunctionJSON(
+		ctx,
+		provider,
+		vmtypes.StdAddress,
+		types.MoveModuleNameDex,
+		types.FunctionNameDexProvideLiquidity,
+		[]vmtypes.TypeTag{},
+		[]string{
+			fmt.Sprintf("\"%s\"", metadataLP.String()),
+			fmt.Sprintf("\"%s\"", amountA.String()),
+			fmt.Sprintf("\"%s\"", amountB.String()),
+			"null",
+		},
+	)
+}
+
+// UpdateFeeRate update fee rate of a dex pair
+func (k BalancerKeeper) UpdateFeeRate(ctx context.Context, metadataLP vmtypes.AccountAddress, feeRate math.LegacyDec) error {
+	return k.ExecuteEntryFunctionJSON(
+		ctx,
+		vmtypes.StdAddress,
+		vmtypes.StdAddress,
+		types.MoveModuleNameDex,
+		types.FunctionNameDexUpdateSwapFeeRate,
+		[]vmtypes.TypeTag{},
+		[]string{
+			fmt.Sprintf("\"%s\"", metadataLP.String()),
+			fmt.Sprintf("\"%s\"", feeRate.String()),
+		},
+	)
 }

@@ -15,6 +15,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/query"
 
 	"github.com/initia-labs/initia/x/mstaking/types"
+
+	movetypes "github.com/initia-labs/initia/x/move/types"
 )
 
 const (
@@ -472,6 +474,25 @@ func (q Querier) Params(ctx context.Context, _ *types.QueryParamsRequest) (*type
 	}
 
 	return &types.QueryParamsResponse{Params: params}, nil
+}
+
+// Migration queries the migration info
+func (q Querier) Migration(ctx context.Context, req *types.QueryMigrationRequest) (*types.QueryMigrationResponse, error) {
+	lpDenomIn, err := movetypes.MetadataAddressFromDenom(req.LpDenomIn)
+	if err != nil {
+		return nil, err
+	}
+	lpDenomOut, err := movetypes.MetadataAddressFromDenom(req.LpDenomOut)
+	if err != nil {
+		return nil, err
+	}
+
+	migration, err := q.Migrations.Get(ctx, collections.Join(lpDenomIn[:], lpDenomOut[:]))
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryMigrationResponse{Migration: migration}, nil
 }
 
 func queryRedelegation(ctx context.Context, q Querier, req *types.QueryRedelegationsRequest) (redels types.Redelegations, err error) {

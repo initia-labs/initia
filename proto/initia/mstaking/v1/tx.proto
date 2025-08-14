@@ -272,7 +272,7 @@ message MsgRegisterMigration {
   string lp_denom_out = 3;
   string denom_in = 4;
   string denom_out = 5;
-  string swap_contract_address = 6; 
+  string swap_contract_address = 6;
 }
 
 // MsgRegisterMigrationResponse defines the response structure for executing a
@@ -290,7 +290,7 @@ message MsgMigrateDelegation {
   string delegator_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   string validator_address = 2 [(cosmos_proto.scalar) = "cosmos.ValidatorAddressString"];
   string lp_denom_in = 3;
-  string denom_in = 4;
+  string lp_denom_out = 4;
 }
 
 // MsgMigrateDelegationResponse defines the response structure for executing a
