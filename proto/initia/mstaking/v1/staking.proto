@@ -425,10 +425,12 @@ message DelegationMigration {
   option (gogoproto.equal) = true;
   option (gogoproto.goproto_stringer) = false;
 
+  // denom_out is the output denom of the swap contract.
+  string denom_out = 1;
   // lp_metadata_out is the metadata of the lp token out.
-  bytes lp_metadata_out = 1;
+  bytes lp_metadata_out = 2;
   // swap_contract_module_address is the address of the swap contract module.
-  bytes swap_contract_module_address = 2;
+  bytes swap_contract_module_address = 3;
   // swap_contract_module_name is the name of the swap contract module.
-  string swap_contract_module_name = 3;
+  string swap_contract_module_name = 4;
 }

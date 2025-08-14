@@ -19,7 +19,6 @@ import (
 	cosmostypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
 	movetypes "github.com/initia-labs/initia/x/move/types"
-	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 // Implements ValidatorSet interface
@@ -227,10 +226,7 @@ func (k Keeper) ConsensusAddressCodec() addresscodec.Codec {
 }
 
 // RegisterMigration registers a migration of a delegation from one lp denom to another.
-// Swap contract requires the following functions:
-// - initialize(account: &signer, coin_in: Object<Metadata>, coin_out: Object<Metadata>)
-// - provide_liquidity(account: &signer, coin: Object<Metadata>, amount: u64)
-// - denom_out(denom_in: String) -> String
+// Swap contract requires the following function:
 // - swap(account: &signer, coin_in: Object<Metadata>, coin_out: Object<Metadata>, amount: u64)
 func (k Keeper) RegisterMigration(ctx context.Context, lpDenomIn string, lpDenomOut string, denomIn string, denomOut string, swapContractStr string) error {
 	lpMetadataIn, err := movetypes.MetadataAddressFromDenom(lpDenomIn)
@@ -267,25 +263,9 @@ func (k Keeper) RegisterMigration(ctx context.Context, lpDenomIn string, lpDenom
 		return err
 	}
 
-	output, _, err := k.moveKeeper.ExecuteViewFunctionJSON(
-		ctx,
-		vmtypes.AccountAddress(swapContractModuleAddress),
-		swapContract[1],
-		"denom_out",
-		[]vmtypes.TypeTag{},
-		[]string{fmt.Sprintf("\"%s\"", denomIn)},
-	)
-	if err != nil {
-		return err
-	}
-
-	wrappedDenomOut := fmt.Sprintf("\"%s\"", denomOut)
-	if output.Ret != wrappedDenomOut {
-		return fmt.Errorf("invalid denom out: got %s, expected %s", output.Ret, wrappedDenomOut)
-	}
-
 	// even if the migration is already registered, it will be overwritten
 	err = k.RegisteredMigrations.Set(ctx, lpMetadataIn[:], types.DelegationMigration{
+		DenomOut:                  denomOut,
 		LpMetadataOut:             lpMetadataOut[:],
 		SwapContractModuleAddress: swapContractModuleAddress[:],
 		SwapContractModuleName:    swapContract[1],

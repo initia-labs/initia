@@ -3,7 +3,6 @@ package keeper
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"slices"
@@ -1216,23 +1215,7 @@ func (k Keeper) MigrateDelegation(ctx context.Context, delAddr sdk.AccAddress, v
 		return nil, err
 	}
 
-	viewOutput, _, err := k.moveKeeper.ExecuteViewFunctionJSON(
-		ctx,
-		vmtypes.AccountAddress(swapContractModuleAddress),
-		swapContractModuleName,
-		movetypes.FunctionNameMigrateDelegationSwapContractDenomOut,
-		[]vmtypes.TypeTag{},
-		[]string{fmt.Sprintf("\"%s\"", denomSwapIn)},
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	var denomSwapOut string
-	if err := json.Unmarshal([]byte(viewOutput.Ret), &denomSwapOut); err != nil {
-		return nil, err
-	}
-	metadataSwapOut, err := movetypes.MetadataAddressFromDenom(denomSwapOut)
+	metadataSwapOut, err := movetypes.MetadataAddressFromDenom(registeredMigration.DenomOut)
 	if err != nil {
 		return nil, err
 	}
@@ -1241,7 +1224,7 @@ func (k Keeper) MigrateDelegation(ctx context.Context, delAddr sdk.AccAddress, v
 	lpInBalanceAfter := balancesAfter.AmountOf(lpDenomIn)
 	fixedDenomBalanceAfter := balancesAfter.AmountOf(fixedDenom)
 	denomSwapInBalanceAfterWithdrawalBeforeSwap := balancesAfter.AmountOf(denomSwapIn)
-	denomSwapOutBalanceBefore := balancesAfter.AmountOf(denomSwapOut)
+	denomSwapOutBalanceBefore := balancesAfter.AmountOf(registeredMigration.DenomOut)
 
 	if !lpInBalanceAfter.Equal(math.ZeroInt()) {
 		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "lp in balance is not zero")
@@ -1269,7 +1252,7 @@ func (k Keeper) MigrateDelegation(ctx context.Context, delAddr sdk.AccAddress, v
 	}
 	balancesAfterSwap := k.bankKeeper.GetAllBalances(ctx, delAddr)
 	denomSwapInBalanceAfterWithdrawalAfterSwap := balancesAfterSwap.AmountOf(denomSwapIn)
-	denomSwapOutBalanceAfter := balancesAfterSwap.AmountOf(denomSwapOut)
+	denomSwapOutBalanceAfter := balancesAfterSwap.AmountOf(registeredMigration.DenomOut)
 	lpDenomOutBalanceBeforeProvideLiquidity := balancesAfterSwap.AmountOf(lpDenomOut)
 
 	// swap contract should convert same amount of denom in to denom out
