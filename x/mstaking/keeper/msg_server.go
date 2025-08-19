@@ -570,6 +570,10 @@ func (ms msgServer) MigrateDelegation(ctx context.Context, msg *types.MsgMigrate
 	// get the migration info
 	migration, err := ms.Migrations.Get(ctx, collections.Join(msg.DenomLpFrom, msg.DenomLpTo))
 	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return nil, status.Error(codes.NotFound, "migration not found")
+		}
+
 		return nil, sdkerrors.ErrInvalidRequest.Wrap(err.Error())
 	}
 

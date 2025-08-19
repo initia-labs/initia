@@ -128,6 +128,10 @@ func (k BalancerMigrationKeeper) MigrateLP(
 	convertModuleName string,
 	amountLpFrom math.Int,
 ) (math.Int, error) {
+	if !amountLpFrom.IsPositive() {
+		return math.ZeroInt(), errors.New("amountLpFrom must be positive")
+	}
+
 	// get pool metadata
 	metadataFrom, err := k.poolMetadata(ctx, lpFrom)
 	if err != nil {

@@ -310,6 +310,15 @@ func TestMsgRegisterMigration(t *testing.T) {
 			moduleName:    "dex_migration",
 			expectPass:    true,
 		},
+		{
+			name:          "same lp denoms",
+			authority:     sdk.AccAddress(valAddr1),
+			lpDenomFrom:   "ulpinitiausdc",
+			lpDenomTo:     "ulpinitiausdc",
+			moduleAddress: "0x2",
+			moduleName:    "dex_migration",
+			expectPass:    false,
+		},
 	}
 
 	accAddrCodec := authcodec.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix())
@@ -399,7 +408,7 @@ func TestMsgMigrateDelegation(t *testing.T) {
 			validatorAddr: valAddr2,
 			lpDenomFrom:   "ulpinitiausdc",
 			lpDenomTo:     "ulpinitiausdc",
-			expectPass:    true,
+			expectPass:    false,
 		},
 		{
 			name:          "different lp denoms",

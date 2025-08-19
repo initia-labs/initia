@@ -300,7 +300,11 @@ func (msg MsgRegisterMigration) Validate(accAddrCodec address.Codec, valAddrCode
 	}
 
 	if msg.ModuleName == "" {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "denom out is empty")
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "module name is empty")
+	}
+
+	if msg.DenomLpFrom == msg.DenomLpTo {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "lp denom from and to must differ")
 	}
 
 	return nil
@@ -326,6 +330,9 @@ func (msg MsgMigrateDelegation) Validate(accAddrCodec address.Codec, valAddrCode
 	}
 	if msg.DenomLpTo == "" {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "lp denom to is empty")
+	}
+	if msg.DenomLpFrom == msg.DenomLpTo {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "lp denom from and to must differ")
 	}
 
 	return nil
