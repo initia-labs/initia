@@ -43,6 +43,8 @@ var (
 	HistoricalInfosPrefix = []byte{0x61} // prefix for the historical info
 
 	ParamsKey = []byte{0x71} // prefix for parameters for module x/staking
+
+	MigrationsPrefix = []byte{0x81} // prefix for the migrations
 )
 
 // UnbondingType defines the type of unbonding operation

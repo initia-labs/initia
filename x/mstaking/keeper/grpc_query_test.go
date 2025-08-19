@@ -3,13 +3,16 @@ package keeper_test
 import (
 	"testing"
 
+	"cosmossdk.io/collections"
 	"cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	movetypes "github.com/initia-labs/initia/x/move/types"
 	"github.com/initia-labs/initia/x/mstaking/keeper"
 	"github.com/initia-labs/initia/x/mstaking/types"
+	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 func Test_grpcQueryValidators(t *testing.T) {
@@ -549,4 +552,47 @@ func Test_grpcParams(t *testing.T) {
 	_params, err := input.StakingKeeper.GetParams(ctx)
 	require.NoError(t, err)
 	require.Equal(t, _params, params.Params)
+}
+
+func Test_grpcMigration(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+
+	// Publish the migration module
+	migrationModule := ReadMoveFile("dex_migration")
+	err := input.MoveKeeper.PublishModuleBundle(ctx, movetypes.ConvertSDKAddressToVMAddress(movetypes.TestAddr), vmtypes.NewModuleBundle(vmtypes.Module{Code: migrationModule}), movetypes.UpgradePolicy_COMPATIBLE)
+	require.NoError(t, err)
+
+	// Create DEX pools for both LP denominations
+	baseDenom := bondDenom
+	metadataLPOld := createDexPool(t, ctx, input, sdk.NewInt64Coin(baseDenom, 1_000_000_000), sdk.NewInt64Coin("uusdc", 2_500_000_000), math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1), true)
+	metadataLPNew := createDexPool(t, ctx, input, sdk.NewInt64Coin(baseDenom, 100_000_000), sdk.NewInt64Coin("uusdc2", 250_000_000), math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1), true)
+
+	// Get LP denominations from metadata
+	lpDenomOld, err := movetypes.DenomFromMetadataAddress(ctx, input.MoveKeeper.MoveBankKeeper(), metadataLPOld)
+	require.NoError(t, err)
+	lpDenomNew, err := movetypes.DenomFromMetadataAddress(ctx, input.MoveKeeper.MoveBankKeeper(), metadataLPNew)
+	require.NoError(t, err)
+
+	// Register a migration
+	err = input.StakingKeeper.RegisterMigration(ctx, lpDenomOld, lpDenomNew, "0x2", "dex_migration")
+	require.NoError(t, err)
+
+	// Query the migration
+	req := types.QueryMigrationRequest{
+		DenomLpFrom: lpDenomOld,
+		DenomLpTo:   lpDenomNew,
+	}
+
+	querier := keeper.Querier{&input.StakingKeeper}
+	res, err := querier.Migration(ctx, &req)
+	require.NoError(t, err)
+
+	// Verify the migration response
+	require.NotNil(t, res.Migration)
+
+	// Get the expected migration from the keeper
+	expectedMigration, err := input.StakingKeeper.Migrations.Get(ctx, collections.Join(lpDenomOld, lpDenomNew))
+	require.NoError(t, err)
+
+	require.Equal(t, expectedMigration, res.Migration)
 }

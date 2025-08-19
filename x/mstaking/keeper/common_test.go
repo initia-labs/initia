@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"encoding/binary"
+	"os"
 	"testing"
 	"time"
 
@@ -352,6 +353,7 @@ func _createTestInput(
 		runtime.NewKVStoreService(keys[stakingtypes.StoreKey]),
 		accountKeeper,
 		bankKeeper,
+		movekeeper.NewBalancerMigrationKeeper(moveKeeper),
 		movekeeper.NewVotingPowerKeeper(moveKeeper),
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		vc, cc,
@@ -504,4 +506,13 @@ func newTestMsgCreateValidator(address sdk.ValAddress, pubKey cryptotypes.PubKey
 		stakingtypes.NewDescription("homeDir", "", "", "", ""), commission,
 	)
 	return msg
+}
+
+func ReadMoveFile(filename string) []byte {
+	path := "../../move/keeper/binaries/" + filename + ".mv"
+	b, err := os.ReadFile(path)
+	if err != nil {
+		panic(err)
+	}
+	return b
 }

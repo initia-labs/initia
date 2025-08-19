@@ -39,6 +39,7 @@ func GetQueryCmd(ac, vc address.Codec) *cobra.Command {
 		GetCmdQueryValidatorRedelegations(vc),
 		GetCmdQueryParams(),
 		GetCmdQueryPool(),
+		GetCmdQueryMigration(),
 	)
 
 	return stakingQueryCmd
@@ -695,6 +696,45 @@ $ %s query staking params
 			}
 
 			return clientCtx.PrintProto(&res.Params)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
+}
+
+// GetCmdQueryMigration implements the migration query command.
+func GetCmdQueryMigration() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "migration [denom-lp-from] [denom-lp-to]",
+		Args:  cobra.ExactArgs(2),
+		Short: "Query the migration info",
+		Long: strings.TrimSpace(
+			fmt.Sprintf(`Query the migration info.
+
+Example:
+$ %s query staking migration LP1 LP2
+`,
+				version.AppName,
+			),
+		),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			queryClient := types.NewQueryClient(clientCtx)
+
+			res, err := queryClient.Migration(cmd.Context(), &types.QueryMigrationRequest{
+				DenomLpFrom: args[0],
+				DenomLpTo:   args[1],
+			})
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(&res.Migration)
 		},
 	}
 

@@ -20,6 +20,8 @@ var (
 	_ sdk.Msg                            = &MsgBeginRedelegate{}
 	_ sdk.Msg                            = &MsgCancelUnbondingDelegation{}
 	_ sdk.Msg                            = &MsgUpdateParams{}
+	_ sdk.Msg                            = &MsgRegisterMigration{}
+	_ sdk.Msg                            = &MsgMigrateDelegation{}
 )
 
 // NewMsgCreateValidator creates a new MsgCreateValidator instance.
@@ -271,6 +273,66 @@ func (msg MsgCancelUnbondingDelegation) Validate(accAddrCodec address.Codec, val
 			sdkerrors.ErrInvalidRequest,
 			"invalid height",
 		)
+	}
+
+	return nil
+}
+
+/* MsgRegisterMigration */
+
+func (msg MsgRegisterMigration) Validate(accAddrCodec address.Codec, valAddrCodec address.Codec) error {
+	if addr, err := accAddrCodec.StringToBytes(msg.Authority); err != nil {
+		return err
+	} else if len(addr) == 0 {
+		return errors.Wrap(err, "invalid authority address")
+	}
+
+	if msg.DenomLpFrom == "" {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "lp denom from is empty")
+	}
+
+	if msg.DenomLpTo == "" {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "lp denom to is empty")
+	}
+
+	if msg.ModuleAddress == "" {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "module address is empty")
+	}
+
+	if msg.ModuleName == "" {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "module name is empty")
+	}
+
+	if msg.DenomLpFrom == msg.DenomLpTo {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "lp denom from and to must differ")
+	}
+
+	return nil
+}
+
+/* MsgMigrateDelegation */
+
+func (msg MsgMigrateDelegation) Validate(accAddrCodec address.Codec, valAddrCodec address.Codec) error {
+	if addr, err := accAddrCodec.StringToBytes(msg.DelegatorAddress); err != nil {
+		return err
+	} else if len(addr) == 0 {
+		return ErrEmptyDelegatorAddr
+	}
+
+	if addr, err := valAddrCodec.StringToBytes(msg.ValidatorAddress); err != nil {
+		return err
+	} else if len(addr) == 0 {
+		return ErrEmptyValidatorAddr
+	}
+
+	if msg.DenomLpFrom == "" {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "lp denom from is empty")
+	}
+	if msg.DenomLpTo == "" {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "lp denom to is empty")
+	}
+	if msg.DenomLpFrom == msg.DenomLpTo {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "lp denom from and to must differ")
 	}
 
 	return nil

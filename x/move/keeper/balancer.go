@@ -23,6 +23,7 @@ func NewBalancerKeeper(k *Keeper) BalancerKeeper {
 	return BalancerKeeper{k}
 }
 
+// HasPool checks if a pool exists for a given metadataLP
 func (k BalancerKeeper) HasPool(ctx context.Context, metadataLP vmtypes.AccountAddress) (bool, error) {
 	return k.HasResource(ctx, metadataLP, vmtypes.StructTag{
 		Address:  vmtypes.StdAddress,
@@ -292,6 +293,38 @@ func (k BalancerKeeper) poolWeights(
 	return []math.LegacyDec{weightA, weightB}, nil
 }
 
+// PoolFeeRate returns the fee rate of a dex pair
+func (k BalancerKeeper) PoolFeeRate(
+	ctx context.Context,
+	metadataLP vmtypes.AccountAddress,
+) (math.LegacyDec, error) {
+	return k.poolFeeRate(ctx, metadataLP)
+}
+
+func (k BalancerKeeper) poolFeeRate(
+	ctx context.Context,
+	metadataLP vmtypes.AccountAddress,
+) (math.LegacyDec, error) {
+	bz, err := k.GetResourceBytes(ctx, metadataLP, vmtypes.StructTag{
+		Address:  vmtypes.StdAddress,
+		Module:   types.MoveModuleNameDex,
+		Name:     types.ResourceNameConfig,
+		TypeArgs: []vmtypes.TypeTag{},
+	})
+	if err != nil && errors.Is(err, collections.ErrNotFound) {
+		return math.LegacyZeroDec(), nil
+	} else if err != nil {
+		return math.LegacyZeroDec(), err
+	}
+
+	feeRate, err := types.ReadFeeRateFromDexConfig(bz)
+	if err != nil {
+		return math.LegacyZeroDec(), err
+	}
+	return feeRate, nil
+}
+
+// isReverse checks if the dex pair is reverse
 func (k BalancerKeeper) isReverse(
 	ctx context.Context,
 	metadataLP vmtypes.AccountAddress,
@@ -311,9 +344,10 @@ func (k BalancerKeeper) isReverse(
 		return false, err
 	}
 
-	if metadataBase == metadata[0] {
+	switch metadataBase {
+	case metadata[0]:
 		return false, nil
-	} else if metadataBase == metadata[1] {
+	case metadata[1]:
 		return true, nil
 	}
 

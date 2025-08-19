@@ -309,6 +309,7 @@ func _createTestInput(
 		runtime.NewKVStoreService(keys[stakingtypes.StoreKey]),
 		accountKeeper,
 		bankKeeper,
+		movekeeper.NewBalancerMigrationKeeper(moveKeeper),
 		votingPowerKeeper,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		vc, cc,

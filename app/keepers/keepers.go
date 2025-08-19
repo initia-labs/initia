@@ -242,6 +242,7 @@ func NewAppKeeper(
 		runtime.NewKVStoreService(appKeepers.keys[stakingtypes.StoreKey]),
 		appKeepers.AccountKeeper,
 		appKeepers.BankKeeper,
+		movekeeper.NewBalancerMigrationKeeper(appKeepers.MoveKeeper),
 		movekeeper.NewVotingPowerKeeper(appKeepers.MoveKeeper),
 		authorityAddr,
 		vc,

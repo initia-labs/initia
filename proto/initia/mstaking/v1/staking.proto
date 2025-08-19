@@ -419,3 +419,18 @@ enum Infraction {
   // DOWNTIME defines a validator that missed signing too many blocks.
   INFRACTION_DOWNTIME = 2;
 }
+
+// DelegationMigration is a migration of a delegation from one lp denom to another.
+message DelegationMigration {
+  option (gogoproto.equal) = true;
+  option (gogoproto.goproto_stringer) = false;
+
+  // denom_lp_from defines the source LP token denomination that will be migrated from
+  string denom_lp_from = 1;
+  // denom_lp_to defines the target LP token denomination that will be migrated to
+  string denom_lp_to = 2;
+  // module_address is the address of the module that will be used to migrate the delegation
+  bytes module_address = 3;
+  // module_name is the name of the module that will be used to migrate the delegation
+  string module_name = 4;
+}

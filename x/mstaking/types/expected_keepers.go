@@ -6,6 +6,8 @@ import (
 	"cosmossdk.io/core/address"
 	"cosmossdk.io/math"
 
+	vmtypes "github.com/initia-labs/movevm/types"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -42,10 +44,24 @@ type BankKeeper interface {
 	GetSupply(ctx context.Context, denom string) sdk.Coin
 
 	SendCoinsFromModuleToModule(ctx context.Context, senderPool, recipientPool string, amt sdk.Coins) error
+	SendCoinsFromModuleToAccount(ctx context.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
 	UndelegateCoinsFromModuleToAccount(ctx context.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
 	DelegateCoinsFromAccountToModule(ctx context.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error
 
 	BurnCoins(ctx context.Context, name string, amt sdk.Coins) error
+}
+
+type DexMigrationKeeper interface {
+	HasPoolByDenom(ctx context.Context, denomLP string) (bool, error)
+	MigrateLP(
+		ctx context.Context,
+		provider vmtypes.AccountAddress,
+		lpFrom vmtypes.AccountAddress,
+		lpTo vmtypes.AccountAddress,
+		convertModuleAddr vmtypes.AccountAddress,
+		convertModuleName string,
+		amountLpFrom math.Int,
+	) (math.Int, error)
 }
 
 // ValidatorSet expected properties for the set of all validators (noalias)

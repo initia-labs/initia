@@ -64,7 +64,10 @@ const (
 	FunctionNameStakingSlashUnbondingCoinForChain   = "slash_unbonding_for_chain"
 
 	// function names for dex
-	FunctionNameDexSudoSwap = "sudo_swap"
+	FunctionNameDexSudoSwap          = "sudo_swap"
+	FunctionNameDexProvideLiquidity  = "provide_liquidity_script"
+	FunctionNameDexWithdrawLiquidity = "withdraw_liquidity_script"
+	FunctionNameDexUpdateSwapFeeRate = "update_swap_fee_rate"
 
 	// function names for object
 	FunctionNameObjectTransfer = "transfer"
@@ -77,6 +80,9 @@ const (
 	// function names for vesting
 	FunctionNameVestingTableHandle   = "vesting_table_handle"
 	FunctionNameVestingTokenMetadata = "vesting_token_metadata"
+
+	// function names for dex migration
+	FunctionNameDexMigrationConvert = "convert"
 
 	// resource names
 	ResourceNameFungibleStore = "FungibleStore"
@@ -410,6 +416,40 @@ func ReadWeightsFromDexConfig(timestamp math.Int, bz []byte) (math.LegacyDec, ma
 		timestampAfter,
 		timestamp,
 	)
+}
+
+// ReadFeeRateFromDexConfig util function to read pool fee rate from the DexConfig
+func ReadFeeRateFromDexConfig(bz []byte) (math.LegacyDec, error) {
+	cursor := int(0)
+
+	// read extend_ref + version
+	cursor += AddressBytesLength + 8
+
+	// before weights
+	weightLen, len := readULEB128(bz[cursor:])
+	cursor += len + weightLen
+
+	weightLen, len = readULEB128(bz[cursor:])
+	cursor += len + weightLen
+
+	cursor += 8
+
+	// after weights
+	weightLen, len = readULEB128(bz[cursor:])
+	cursor += len + weightLen
+
+	weightLen, len = readULEB128(bz[cursor:])
+	cursor += len + weightLen
+
+	cursor += 8
+
+	feeRateLen, len := readULEB128(bz[cursor:])
+	cursor += len
+	feeRate, err := DeserializeBigDecimal(bz[cursor : cursor+feeRateLen])
+	if err != nil {
+		return math.LegacyZeroDec(), err
+	}
+	return feeRate, nil
 }
 
 // ReadStoresFromPool util function to read pool stores from the Pool
