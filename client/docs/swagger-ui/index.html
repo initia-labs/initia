@@ -14,12 +14,42 @@
     <div class="floating-header">
       <div class="header-content">
         <div class="nav-buttons">
-          <button class="nav-btn" onclick="loadSwaggerFile('./swagger-connect.yaml')">Connect</button>
-          <button class="nav-btn" onclick="loadSwaggerFile('./swagger-cosmos.yaml')">Cosmos SDK</button>
-          <button class="nav-btn" onclick="loadSwaggerFile('./swagger-ibc.yaml')">IBC</button>
-          <button class="nav-btn active" onclick="loadSwaggerFile('./swagger-initia.yaml')">Initia</button>
-          <button class="nav-btn" onclick="loadSwaggerFile('./swagger-opinit.yaml')">OPInit</button>
-          <button class="nav-btn" onclick="loadSwaggerFile('./swagger-sdk.yaml')">Block SDK</button>
+          <button
+            class="nav-btn"
+            onclick="loadSwaggerFile('./swagger-connect.yaml')"
+          >
+            Connect
+          </button>
+          <button
+            class="nav-btn"
+            onclick="loadSwaggerFile('./swagger-cosmos.yaml')"
+          >
+            Cosmos SDK
+          </button>
+          <button
+            class="nav-btn"
+            onclick="loadSwaggerFile('./swagger-ibc.yaml')"
+          >
+            IBC
+          </button>
+          <button
+            class="nav-btn active"
+            onclick="loadSwaggerFile('./swagger-initia.yaml')"
+          >
+            Initia
+          </button>
+          <button
+            class="nav-btn"
+            onclick="loadSwaggerFile('./swagger-opinit.yaml')"
+          >
+            OPInit
+          </button>
+          <button
+            class="nav-btn"
+            onclick="loadSwaggerFile('./swagger-sdk.yaml')"
+          >
+            Block SDK
+          </button>
         </div>
       </div>
     </div>
@@ -30,34 +60,40 @@
     <script src="swagger-ui-standalone-preset.js"></script>
     <script>
       function setActiveButton(clickedButton) {
-        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-        clickedButton.classList.add('active');
+        document
+          .querySelectorAll(".nav-btn")
+          .forEach((btn) => btn.classList.remove("active"));
+        clickedButton.classList.add("active");
       }
 
+      const uiMap = {};
       function loadSwaggerFile(filePath, init = false) {
-        const ui = SwaggerUIBundle({
-          url: filePath,
-          additionalUrls: [
-            "./swagger-connect.yaml",
-            "./swagger-cosmos.yaml",
-            "./swagger-ibc.yaml",
-            "./swagger-initia.yaml",
-            "./swagger-opinit.yaml",
-            "./swagger-sdk.yaml",
-          ],
-          dom_id: "#swagger-ui",
-          deepLinking: true,
-          presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
-          plugins: [SwaggerUIBundle.plugins.DownloadUrl],
-          layout: "BaseLayout",
-        });
+        if (!uiMap[filePath]) {
+          const ui = SwaggerUIBundle({
+            url: filePath,
+            additionalUrls: [
+              "./swagger-connect.yaml",
+              "./swagger-cosmos.yaml",
+              "./swagger-ibc.yaml",
+              "./swagger-initia.yaml",
+              "./swagger-opinit.yaml",
+              "./swagger-sdk.yaml",
+            ],
+            dom_id: "#swagger-ui",
+            deepLinking: true,
+            presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+            plugins: [SwaggerUIBundle.plugins.DownloadUrl],
+            layout: "BaseLayout",
+          });
+          uiMap[filePath] = ui;
+        }
 
-        window.ui = ui;
+        window.ui = uiMap[filePath];
 
         // set active button
         if (!init) {
           setActiveButton(window.event.target);
-        } 
+        }
       }
 
       window.onload = function () {
