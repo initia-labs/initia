@@ -1,0 +1,327 @@
+swagger: '2.0'
+info:
+  title: Block SDK - REST docs
+  description: A REST interface for state queries
+  version: 1.0.0
+paths:
+  /block-sdk/auction/v1/params:
+    get:
+      summary: Params queries the parameters of the x/auction module.
+      operationId: AuctionParams
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              params:
+                description: Params defines the parameters of the module.
+                type: object
+                properties:
+                  max_bundle_size:
+                    type: integer
+                    format: int64
+                    description: >-
+                      max_bundle_size is the maximum number of transactions that
+                      can be bundled
+
+                      in a single bundle.
+                  escrow_account_address:
+                    type: string
+                    format: byte
+                    description: >-
+                      escrow_account_address is the address of the account that
+                      will receive a
+
+                      portion of the bid proceeds.
+                  reserve_fee:
+                    description: reserve_fee specifies the bid floor for the auction.
+                    type: object
+                    properties:
+                      denom:
+                        type: string
+                      amount:
+                        type: string
+                  min_bid_increment:
+                    description: >-
+                      min_bid_increment specifies the minimum amount that the
+                      next bid must be
+
+                      greater than the previous bid.
+                    type: object
+                    properties:
+                      denom:
+                        type: string
+                      amount:
+                        type: string
+                  front_running_protection:
+                    type: boolean
+                    description: >-
+                      front_running_protection specifies whether front running
+                      and sandwich
+
+                      attack protection is enabled.
+                  proposer_fee:
+                    type: string
+                    description: >-
+                      proposer_fee defines the portion of the winning bid that
+                      goes to the block
+
+                      proposer that proposed the block.
+              escrow_address_string:
+                type: string
+                description: >-
+                  EscrowAddressString is the string representation of the escrow
+                  address stored
+
+                  in params.
+            description: >-
+              QueryParamsResponse is the response type for the Query/Params RPC
+              method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      tags:
+        - Query
+  /block-sdk/mempool/v1/distribution:
+    get:
+      summary: >-
+        GetTxDistribution returns the distribution of transactions in the
+        mempool.
+      operationId: GetTxDistribution
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              distribution:
+                type: object
+                additionalProperties:
+                  type: string
+                  format: uint64
+                description: >-
+                  Distribution is a map of lane to the number of transactions in
+                  the mempool for that lane.
+            description: >-
+              GetTxDistributionResponse is the response type for the
+              Service.GetTxDistribution
+
+              RPC method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      tags:
+        - Service
+definitions:
+  cosmos.base.v1beta1.Coin:
+    type: object
+    properties:
+      denom:
+        type: string
+      amount:
+        type: string
+    description: |-
+      Coin defines a token with a denomination and an amount.
+
+      NOTE: The amount field is an Int which implements the custom method
+      signatures required by gogoproto.
+  google.protobuf.Any:
+    type: object
+    properties:
+      type_url:
+        type: string
+      value:
+        type: string
+        format: byte
+  grpc.gateway.runtime.Error:
+    type: object
+    properties:
+      error:
+        type: string
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+      details:
+        type: array
+        items:
+          type: object
+          properties:
+            type_url:
+              type: string
+            value:
+              type: string
+              format: byte
+  sdk.auction.v1.Params:
+    type: object
+    properties:
+      max_bundle_size:
+        type: integer
+        format: int64
+        description: >-
+          max_bundle_size is the maximum number of transactions that can be
+          bundled
+
+          in a single bundle.
+      escrow_account_address:
+        type: string
+        format: byte
+        description: >-
+          escrow_account_address is the address of the account that will receive
+          a
+
+          portion of the bid proceeds.
+      reserve_fee:
+        description: reserve_fee specifies the bid floor for the auction.
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+      min_bid_increment:
+        description: >-
+          min_bid_increment specifies the minimum amount that the next bid must
+          be
+
+          greater than the previous bid.
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+      front_running_protection:
+        type: boolean
+        description: |-
+          front_running_protection specifies whether front running and sandwich
+          attack protection is enabled.
+      proposer_fee:
+        type: string
+        description: >-
+          proposer_fee defines the portion of the winning bid that goes to the
+          block
+
+          proposer that proposed the block.
+    description: Params defines the parameters of the x/auction module.
+  sdk.auction.v1.QueryParamsResponse:
+    type: object
+    properties:
+      params:
+        description: Params defines the parameters of the module.
+        type: object
+        properties:
+          max_bundle_size:
+            type: integer
+            format: int64
+            description: >-
+              max_bundle_size is the maximum number of transactions that can be
+              bundled
+
+              in a single bundle.
+          escrow_account_address:
+            type: string
+            format: byte
+            description: >-
+              escrow_account_address is the address of the account that will
+              receive a
+
+              portion of the bid proceeds.
+          reserve_fee:
+            description: reserve_fee specifies the bid floor for the auction.
+            type: object
+            properties:
+              denom:
+                type: string
+              amount:
+                type: string
+          min_bid_increment:
+            description: >-
+              min_bid_increment specifies the minimum amount that the next bid
+              must be
+
+              greater than the previous bid.
+            type: object
+            properties:
+              denom:
+                type: string
+              amount:
+                type: string
+          front_running_protection:
+            type: boolean
+            description: >-
+              front_running_protection specifies whether front running and
+              sandwich
+
+              attack protection is enabled.
+          proposer_fee:
+            type: string
+            description: >-
+              proposer_fee defines the portion of the winning bid that goes to
+              the block
+
+              proposer that proposed the block.
+      escrow_address_string:
+        type: string
+        description: >-
+          EscrowAddressString is the string representation of the escrow address
+          stored
+
+          in params.
+    description: QueryParamsResponse is the response type for the Query/Params RPC method.
+  sdk.mempool.v1.GetTxDistributionResponse:
+    type: object
+    properties:
+      distribution:
+        type: object
+        additionalProperties:
+          type: string
+          format: uint64
+        description: >-
+          Distribution is a map of lane to the number of transactions in the
+          mempool for that lane.
+    description: >-
+      GetTxDistributionResponse is the response type for the
+      Service.GetTxDistribution
+
+      RPC method.

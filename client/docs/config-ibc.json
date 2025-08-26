@@ -1,0 +1,81 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "IBC - REST docs",
+    "description": "A REST interface for state queries",
+    "version": "1.0.0"
+  },
+  "apis": [
+    {
+      "url": "./tmp-swagger-gen/ibc/core/channel/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "IBCChannelParams"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/ibc/core/client/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "IBCClientParams",
+          "UpgradedConsensusState": "IBCUpgradedConsensusState"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/ibc/core/connection/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "IBCConnectionParams"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/ibc/applications/transfer/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "IBCTransferParams"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/ibc/applications/interchain_accounts/controller/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "IBCInterChainAccountsControllerParams",
+          "InterchainAccount": "IBCInterChainAccountsControllerInterChainAccount"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/ibc/applications/interchain_accounts/host/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "IBCInterChainAccountsHostParams",
+          "InterchainAccount": "IBCInterChainAccountsHostInterChainAccount"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/ibc/applications/nft_transfer/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "IBCNftParams",
+          "EscrowAddress": "IBCNftEscrowAddress"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/ibc/applications/fee/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "FeeParams"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/ibc/applications/perm/v1/query.swagger.json"
+    }
+  ]
+}
