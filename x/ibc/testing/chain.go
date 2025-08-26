@@ -39,6 +39,8 @@ import (
 	"github.com/cosmos/ibc-go/v8/testing/simapp"
 
 	initiaapp "github.com/initia-labs/initia/app"
+
+	ibctmattestor "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint-attestor"
 )
 
 var MaxAccounts = 10
@@ -453,6 +455,16 @@ func (chain *TestChain) GetPrefix() commitmenttypes.MerklePrefix {
 // light client on the source chain.
 func (chain *TestChain) ConstructUpdateTMClientHeader(counterparty *TestChain, clientID string) (*ibctm.Header, error) {
 	return chain.ConstructUpdateTMClientHeaderWithTrustedHeight(counterparty, clientID, clienttypes.ZeroHeight())
+}
+
+func (chain *TestChain) ConstructUpdateTMAttestorClientHeader(counterparty *TestChain, clientID string) (*ibctmattestor.Header, error) {
+	header, err := chain.ConstructUpdateTMClientHeader(counterparty, clientID)
+	if err != nil {
+		return nil, err
+	}
+	return &ibctmattestor.Header{
+		Header: header,
+	}, nil
 }
 
 // ConstructUpdateTMClientHeader will construct a valid 07-tendermint Header to update the

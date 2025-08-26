@@ -93,29 +93,37 @@ func (coord *Coordinator) SetupClients(path *Path) {
 func (coord *Coordinator) SetupConnections(path *Path) {
 	coord.SetupClients(path)
 
-	coord.CreateConnections(path)
+	err := coord.CreateConnections(path)
+	require.NoError(coord.T, err)
 }
 
 // CreateConnection constructs and executes connection handshake messages in order to create
 // OPEN channels on chainA and chainB. The connection information of for chainA and chainB
 // are returned within a TestConnection struct. The function expects the connections to be
 // successfully opened otherwise testing will fail.
-func (coord *Coordinator) CreateConnections(path *Path) {
-	err := path.EndpointA.ConnOpenInit()
-	require.NoError(coord.T, err)
+func (coord *Coordinator) CreateConnections(path *Path) error {
+	if err := path.EndpointA.ConnOpenInit(); err != nil {
+		return err
+	}
 
-	err = path.EndpointB.ConnOpenTry()
-	require.NoError(coord.T, err)
+	if err := path.EndpointB.ConnOpenTry(); err != nil {
+		return err
+	}
 
-	err = path.EndpointA.ConnOpenAck()
-	require.NoError(coord.T, err)
+	if err := path.EndpointA.ConnOpenAck(); err != nil {
+		return err
+	}
 
-	err = path.EndpointB.ConnOpenConfirm()
-	require.NoError(coord.T, err)
+	if err := path.EndpointB.ConnOpenConfirm(); err != nil {
+		return err
+	}
 
 	// ensure counterparty is up to date
-	err = path.EndpointA.UpdateClient()
-	require.NoError(coord.T, err)
+	if err := path.EndpointA.UpdateClient(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // CreateMockChannels constructs and executes channel handshake messages to create OPEN
@@ -134,7 +142,9 @@ func (coord *Coordinator) CreateMockChannels(path *Path) {
 // successfully opened otherwise testing will fail.
 func (coord *Coordinator) CreateTransferChannels(path *Path) {
 	path.EndpointA.ChannelConfig.PortID = TransferPort
+	path.EndpointA.ChannelConfig.Version = TransferVersion
 	path.EndpointB.ChannelConfig.PortID = TransferPort
+	path.EndpointB.ChannelConfig.Version = TransferVersion
 
 	coord.CreateChannels(path)
 }

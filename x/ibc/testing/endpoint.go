@@ -17,6 +17,7 @@ import (
 	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
 	"github.com/cosmos/ibc-go/v8/modules/core/exported"
 	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
+	ibctmattestor "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint-attestor"
 )
 
 // Endpoint is a which represents a channel endpoint and its associated
@@ -55,6 +56,15 @@ func NewDefaultEndpoint(chain *TestChain) *Endpoint {
 	return &Endpoint{
 		Chain:            chain,
 		ClientConfig:     NewTendermintConfig(),
+		ConnectionConfig: NewConnectionConfig(),
+		ChannelConfig:    NewChannelConfig(),
+	}
+}
+
+func NewEndpointWithTendermintAttestor(chain *TestChain, numAttestors, threshold int) *Endpoint {
+	return &Endpoint{
+		Chain:            chain,
+		ClientConfig:     NewTendermintAttestorConfig(numAttestors, threshold),
 		ConnectionConfig: NewConnectionConfig(),
 		ChannelConfig:    NewChannelConfig(),
 	}
@@ -99,6 +109,25 @@ func (endpoint *Endpoint) CreateClient() {
 			endpoint.Counterparty.Chain.ChainID, tmConfig.TrustLevel, tmConfig.TrustingPeriod, tmConfig.UnbondingPeriod, tmConfig.MaxClockDrift,
 			height, commitmenttypes.GetSDKSpecs(), UpgradePath)
 		consensusState = endpoint.Counterparty.Chain.LastHeader.ConsensusState()
+	case exported.TendermintAttestor:
+		tmAttestorConfig, ok := endpoint.ClientConfig.(*TendermintAttestorConfig)
+		require.True(endpoint.Chain.T, ok)
+
+		height := endpoint.Counterparty.Chain.LastHeader.GetHeight().(clienttypes.Height)
+
+		attestors := make([]ibctmattestor.PubKey, 0, len(tmAttestorConfig.AttestorPrivkeys))
+		for _, privKey := range tmAttestorConfig.AttestorPrivkeys {
+			attestors = append(attestors, ibctmattestor.PubKey{
+				Type: ibctmattestor.PubKeyType(ibctmattestor.PubKeyType_value[strings.ToUpper(privKey.Type())]),
+				Key:  privKey.PubKey().Bytes(),
+			})
+		}
+
+		clientState = ibctmattestor.NewClientState(
+			endpoint.Counterparty.Chain.ChainID, tmAttestorConfig.TrustLevel, tmAttestorConfig.TrustingPeriod, tmAttestorConfig.UnbondingPeriod, tmAttestorConfig.MaxClockDrift,
+			height, commitmenttypes.GetSDKSpecs(), UpgradePath, attestors, tmAttestorConfig.Threshold)
+
+		consensusState = ibctmattestor.FromTendermintConsensusState(endpoint.Counterparty.Chain.LastHeader.ConsensusState())
 	case exported.Solomachine:
 		// TODO
 		//		solo := NewSolomachine(endpoint.Chain.T, endpoint.Chain.Codec, clientID, "", 1)
@@ -132,6 +161,8 @@ func (endpoint *Endpoint) UpdateClient() (err error) {
 	switch endpoint.ClientConfig.GetClientType() {
 	case exported.Tendermint:
 		header, err = endpoint.Chain.ConstructUpdateTMClientHeader(endpoint.Counterparty.Chain, endpoint.ClientID)
+	case exported.TendermintAttestor:
+		header, err = endpoint.Chain.ConstructUpdateTMAttestorClientHeader(endpoint.Counterparty.Chain, endpoint.ClientID)
 
 	default:
 		err = fmt.Errorf("client type %s is not supported", endpoint.ClientConfig.GetClientType())
@@ -200,6 +231,30 @@ func (endpoint *Endpoint) UpgradeChain() error {
 	return endpoint.Counterparty.UpdateClient()
 }
 
+func (endpoint *Endpoint) GetProofWithAttestations(proof []byte) ([]byte, error) {
+	if endpoint.ClientConfig.GetClientType() != exported.TendermintAttestor {
+		return proof, nil
+	}
+
+	proofWithAttestations := ibctmattestor.MerkleProofBytesWithAttestations{
+		ProofBytes:   proof,
+		Attestations: make([]*ibctmattestor.Attestation, 0, len(endpoint.ClientConfig.(*TendermintAttestorConfig).AttestorPrivkeys)),
+	}
+	for _, privKey := range endpoint.ClientConfig.(*TendermintAttestorConfig).AttestorPrivkeys {
+		signature, err := privKey.Sign(proof)
+		if err != nil {
+			return nil, err
+		}
+
+		proofWithAttestations.Attestations = append(proofWithAttestations.Attestations, &ibctmattestor.Attestation{
+			PubKey:    privKey.PubKey().Bytes(),
+			Signature: signature,
+		})
+	}
+
+	return proofWithAttestations.Marshal()
+}
+
 // ConnOpenInit will construct and execute a MsgConnectionOpenInit on the associated endpoint.
 func (endpoint *Endpoint) ConnOpenInit() error {
 	msg := connectiontypes.NewMsgConnectionOpenInit(
@@ -226,6 +281,13 @@ func (endpoint *Endpoint) ConnOpenTry() error {
 
 	counterpartyClient, proofClient, proofConsensus, consensusHeight, proofInit, proofHeight := endpoint.QueryConnectionHandshakeProof()
 
+	if endpoint.ClientConfig.GetClientType() == exported.TendermintAttestor {
+		proofInit, err = endpoint.GetProofWithAttestations(proofInit)
+		if err != nil {
+			return err
+		}
+	}
+
 	msg := connectiontypes.NewMsgConnectionOpenTry(
 		endpoint.ClientID, endpoint.Counterparty.ConnectionID, endpoint.Counterparty.ClientID,
 		counterpartyClient, endpoint.Counterparty.Chain.GetPrefix(), []*connectiontypes.Version{ConnectionVersion}, endpoint.ConnectionConfig.DelayPeriod,
@@ -238,11 +300,8 @@ func (endpoint *Endpoint) ConnOpenTry() error {
 		return err
 	}
 
-	if endpoint.ConnectionID == "" {
-		endpoint.ConnectionID, err = ParseConnectionIDFromEvents(res.Events)
-		require.NoError(endpoint.Chain.T, err)
-	}
-
+	endpoint.ConnectionID, err = ParseConnectionIDFromEvents(res.Events)
+	require.NoError(endpoint.Chain.T, err)
 	return nil
 }
 
@@ -252,6 +311,12 @@ func (endpoint *Endpoint) ConnOpenAck() error {
 	require.NoError(endpoint.Chain.T, err)
 
 	counterpartyClient, proofClient, proofConsensus, consensusHeight, proofTry, proofHeight := endpoint.QueryConnectionHandshakeProof()
+	if endpoint.ClientConfig.GetClientType() == exported.TendermintAttestor {
+		proofTry, err = endpoint.GetProofWithAttestations(proofTry)
+		if err != nil {
+			return err
+		}
+	}
 
 	msg := connectiontypes.NewMsgConnectionOpenAck(
 		endpoint.ConnectionID, endpoint.Counterparty.ConnectionID, counterpartyClient, // testing doesn't use flexible selection
@@ -271,6 +336,12 @@ func (endpoint *Endpoint) ConnOpenConfirm() error {
 	connectionKey := host.ConnectionKey(endpoint.Counterparty.ConnectionID)
 	proof, height := endpoint.Counterparty.Chain.QueryProof(connectionKey)
 
+	if endpoint.ClientConfig.GetClientType() == exported.TendermintAttestor {
+		proof, err = endpoint.GetProofWithAttestations(proof)
+		if err != nil {
+			return err
+		}
+	}
 	msg := connectiontypes.NewMsgConnectionOpenConfirm(
 		endpoint.ConnectionID,
 		proof, height,
@@ -339,6 +410,13 @@ func (endpoint *Endpoint) ChanOpenTry() error {
 	channelKey := host.ChannelKey(endpoint.Counterparty.ChannelConfig.PortID, endpoint.Counterparty.ChannelID)
 	proof, height := endpoint.Counterparty.Chain.QueryProof(channelKey)
 
+	if endpoint.ClientConfig.GetClientType() == exported.TendermintAttestor {
+		proof, err = endpoint.GetProofWithAttestations(proof)
+		if err != nil {
+			return err
+		}
+	}
+
 	msg := channeltypes.NewMsgChannelOpenTry(
 		endpoint.ChannelConfig.PortID,
 		endpoint.ChannelConfig.Version, endpoint.ChannelConfig.Order, []string{endpoint.ConnectionID},
@@ -351,10 +429,8 @@ func (endpoint *Endpoint) ChanOpenTry() error {
 		return err
 	}
 
-	if endpoint.ChannelID == "" {
-		endpoint.ChannelID, err = ParseChannelIDFromEvents(res.Events)
-		require.NoError(endpoint.Chain.T, err)
-	}
+	endpoint.ChannelID, err = ParseChannelIDFromEvents(res.Events)
+	require.NoError(endpoint.Chain.T, err)
 
 	// update version to selected app version
 	// NOTE: this update must be performed after the endpoint channelID is set
@@ -371,6 +447,13 @@ func (endpoint *Endpoint) ChanOpenAck() error {
 
 	channelKey := host.ChannelKey(endpoint.Counterparty.ChannelConfig.PortID, endpoint.Counterparty.ChannelID)
 	proof, height := endpoint.Counterparty.Chain.QueryProof(channelKey)
+
+	if endpoint.ClientConfig.GetClientType() == exported.TendermintAttestor {
+		proof, err = endpoint.GetProofWithAttestations(proof)
+		if err != nil {
+			return err
+		}
+	}
 
 	msg := channeltypes.NewMsgChannelOpenAck(
 		endpoint.ChannelConfig.PortID, endpoint.ChannelID,
@@ -397,6 +480,13 @@ func (endpoint *Endpoint) ChanOpenConfirm() error {
 	channelKey := host.ChannelKey(endpoint.Counterparty.ChannelConfig.PortID, endpoint.Counterparty.ChannelID)
 	proof, height := endpoint.Counterparty.Chain.QueryProof(channelKey)
 
+	if endpoint.ClientConfig.GetClientType() == exported.TendermintAttestor {
+		proof, err = endpoint.GetProofWithAttestations(proof)
+		if err != nil {
+			return err
+		}
+	}
+
 	msg := channeltypes.NewMsgChannelOpenConfirm(
 		endpoint.ChannelConfig.PortID, endpoint.ChannelID,
 		proof, height,
@@ -414,6 +504,224 @@ func (endpoint *Endpoint) ChanCloseInit() error {
 		endpoint.Chain.SenderAccount.GetAddress().String(),
 	)
 	return endpoint.Chain.sendMsgs(msg)
+}
+
+func (endpoint *Endpoint) UpgradeChannel(connectionHops []string) error {
+	upgradeFields := channeltypes.UpgradeFields{
+		Ordering:       endpoint.ChannelConfig.Order,
+		Version:        endpoint.ChannelConfig.Version,
+		ConnectionHops: connectionHops,
+	}
+
+	upgrade, upgradeSequence, err := endpoint.ChanUpgradeInit(upgradeFields)
+	if err != nil {
+		return err
+	}
+
+	counterpartyUpgrade, _, err := endpoint.Counterparty.ChanUpgradeTry(upgradeFields, upgradeSequence, []string{endpoint.Counterparty.ConnectionID})
+	if err != nil {
+		return err
+	}
+
+	err = endpoint.ChanUpgradeAck(counterpartyUpgrade)
+	if err != nil {
+		return err
+	}
+
+	err = endpoint.ChanUpgradeConfirm(upgrade)
+	if err != nil {
+		return err
+	}
+
+	endpoint.ConnectionID = connectionHops[0]
+	endpoint.Counterparty.ConnectionID = connectionHops[1]
+
+	connResponse, err := endpoint.Chain.QueryServer.Connection(endpoint.Chain.GetContext().Context(), &connectiontypes.QueryConnectionRequest{
+		ConnectionId: endpoint.ConnectionID,
+	})
+	if err != nil {
+		return err
+	}
+	endpoint.ClientID = connResponse.Connection.ClientId
+
+	connResponse, err = endpoint.Counterparty.Chain.QueryServer.Connection(endpoint.Counterparty.Chain.GetContext().Context(), &connectiontypes.QueryConnectionRequest{
+		ConnectionId: endpoint.Counterparty.ConnectionID,
+	})
+	if err != nil {
+		return err
+	}
+	endpoint.Counterparty.ClientID = connResponse.Connection.ClientId
+	return nil
+}
+
+func (endpoint *Endpoint) ChanUpgradeInit(upgradeFields channeltypes.UpgradeFields) (channeltypes.Upgrade, uint64, error) {
+	msg := channeltypes.NewMsgChannelUpgradeInit(
+		endpoint.ChannelConfig.PortID,
+		endpoint.ChannelID,
+		upgradeFields,
+		endpoint.Chain.App.GetIBCKeeper().GetAuthority(),
+	)
+	upgradeResponse, err := endpoint.Chain.App.GetIBCKeeper().ChannelUpgradeInit(
+		endpoint.Chain.GetContext(),
+		msg,
+	)
+	if err != nil {
+		return channeltypes.Upgrade{}, 0, err
+	}
+
+	endpoint.Chain.Coordinator.CommitBlock(endpoint.Chain)
+	return upgradeResponse.Upgrade, upgradeResponse.UpgradeSequence, nil
+}
+
+func (endpoint *Endpoint) ChanUpgradeTry(upgradeFields channeltypes.UpgradeFields, counterpartyUpgradeSequence uint64, connectionHops []string) (channeltypes.Upgrade, uint64, error) {
+	err := endpoint.UpdateClient()
+	require.NoError(endpoint.Chain.T, err)
+
+	channelKey := host.ChannelKey(endpoint.Counterparty.ChannelConfig.PortID, endpoint.Counterparty.ChannelID)
+	channelProof, height := endpoint.Counterparty.Chain.QueryProof(channelKey)
+
+	upgradeKey := host.ChannelUpgradeKey(endpoint.Counterparty.ChannelConfig.PortID, endpoint.Counterparty.ChannelID)
+	upgradeProof, upgradeHeight := endpoint.Counterparty.Chain.QueryProof(upgradeKey)
+
+	if height.Compare(upgradeHeight) != 0 {
+		return channeltypes.Upgrade{}, 0, fmt.Errorf("height mismatch: %s != %s", height.String(), upgradeHeight.String())
+	}
+
+	if endpoint.ClientConfig.GetClientType() == exported.TendermintAttestor {
+		channelProof, err = endpoint.GetProofWithAttestations(channelProof)
+		if err != nil {
+			return channeltypes.Upgrade{}, 0, err
+		}
+
+		upgradeProof, err = endpoint.GetProofWithAttestations(upgradeProof)
+		if err != nil {
+			return channeltypes.Upgrade{}, 0, err
+		}
+	}
+
+	msg := channeltypes.NewMsgChannelUpgradeTry(
+		endpoint.ChannelConfig.PortID,
+		endpoint.ChannelID,
+		connectionHops,
+		upgradeFields,
+		counterpartyUpgradeSequence,
+		channelProof, upgradeProof, height,
+		endpoint.Chain.SenderAccount.GetAddress().String(),
+	)
+	res, err := endpoint.Chain.SendMsgs(msg)
+	if err != nil {
+		return channeltypes.Upgrade{}, 0, err
+	}
+
+	upgradeResponse := channeltypes.MsgChannelUpgradeTryResponse{}
+	err = upgradeResponse.Unmarshal(res.Data)
+	if err != nil {
+		return channeltypes.Upgrade{}, 0, err
+	}
+	return upgradeResponse.Upgrade, upgradeResponse.UpgradeSequence, nil
+}
+
+func (endpoint *Endpoint) ChanUpgradeAck(counterpartyUpgrade channeltypes.Upgrade) error {
+	err := endpoint.UpdateClient()
+	require.NoError(endpoint.Chain.T, err)
+
+	channelKey := host.ChannelKey(endpoint.Counterparty.ChannelConfig.PortID, endpoint.Counterparty.ChannelID)
+	channelProof, height := endpoint.Counterparty.Chain.QueryProof(channelKey)
+
+	upgradeKey := host.ChannelUpgradeKey(endpoint.Counterparty.ChannelConfig.PortID, endpoint.Counterparty.ChannelID)
+	upgradeProof, upgradeHeight := endpoint.Counterparty.Chain.QueryProof(upgradeKey)
+
+	if height.Compare(upgradeHeight) != 0 {
+		return fmt.Errorf("height mismatch: %s != %s", height.String(), upgradeHeight.String())
+	}
+
+	if endpoint.ClientConfig.GetClientType() == exported.TendermintAttestor {
+		channelProof, err = endpoint.GetProofWithAttestations(channelProof)
+		if err != nil {
+			return err
+		}
+
+		upgradeProof, err = endpoint.GetProofWithAttestations(upgradeProof)
+		if err != nil {
+			return err
+		}
+	}
+
+	msg := channeltypes.NewMsgChannelUpgradeAck(
+		endpoint.ChannelConfig.PortID, endpoint.ChannelID,
+		counterpartyUpgrade,
+		channelProof, upgradeProof, height,
+		endpoint.Chain.SenderAccount.GetAddress().String(),
+	)
+
+	res, err := endpoint.Chain.SendMsgs(msg)
+	if err != nil {
+		return err
+	}
+
+	upgradeResponse := channeltypes.MsgChannelUpgradeAckResponse{}
+	err = upgradeResponse.Unmarshal(res.Data)
+	if err != nil {
+		return err
+	}
+
+	if upgradeResponse.Result == channeltypes.FAILURE {
+		return fmt.Errorf("upgrade result: %s", upgradeResponse.Result)
+	}
+
+	return nil
+}
+
+// ChanOpenConfirm will construct and execute a MsgChannelOpenConfirm on the associated endpoint.
+func (endpoint *Endpoint) ChanUpgradeConfirm(counterpartyUpgrade channeltypes.Upgrade) error {
+	err := endpoint.UpdateClient()
+	require.NoError(endpoint.Chain.T, err)
+
+	channelKey := host.ChannelKey(endpoint.Counterparty.ChannelConfig.PortID, endpoint.Counterparty.ChannelID)
+	channelProof, height := endpoint.Counterparty.Chain.QueryProof(channelKey)
+
+	upgradeKey := host.ChannelUpgradeKey(endpoint.Counterparty.ChannelConfig.PortID, endpoint.Counterparty.ChannelID)
+	upgradeProof, upgradeHeight := endpoint.Counterparty.Chain.QueryProof(upgradeKey)
+
+	if height.Compare(upgradeHeight) != 0 {
+		return fmt.Errorf("height mismatch: %s != %s", height.String(), upgradeHeight.String())
+	}
+
+	if endpoint.ClientConfig.GetClientType() == exported.TendermintAttestor {
+		channelProof, err = endpoint.GetProofWithAttestations(channelProof)
+		if err != nil {
+			return err
+		}
+
+		upgradeProof, err = endpoint.GetProofWithAttestations(upgradeProof)
+		if err != nil {
+			return err
+		}
+	}
+
+	channelResponse, err := endpoint.Counterparty.Chain.QueryServer.Channel(endpoint.Counterparty.Chain.GetContext().Context(), &channeltypes.QueryChannelRequest{
+		PortId:    endpoint.Counterparty.ChannelConfig.PortID,
+		ChannelId: endpoint.Counterparty.ChannelID,
+	})
+	if err != nil {
+		return err
+	}
+
+	msg := channeltypes.NewMsgChannelUpgradeConfirm(
+		endpoint.ChannelConfig.PortID, endpoint.ChannelID,
+		channelResponse.Channel.State,
+		counterpartyUpgrade,
+		channelProof, upgradeProof, height,
+		endpoint.Chain.SenderAccount.GetAddress().String(),
+	)
+	_, err = endpoint.Chain.SendMsgs(msg)
+	if err != nil {
+		return err
+	}
+
+	endpoint.ChannelConfig.Version = counterpartyUpgrade.Fields.Version
+	endpoint.Counterparty.ChannelConfig.Version = counterpartyUpgrade.Fields.Version
+	return nil
 }
 
 // SendPacket sends a packet through the channel keeper using the associated endpoint

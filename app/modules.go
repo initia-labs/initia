@@ -41,6 +41,7 @@ import (
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	solomachine "github.com/cosmos/ibc-go/v8/modules/light-clients/06-solomachine"
 	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
+	ibctmattestor "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint-attestor"
 
 	ibcnfttransfer "github.com/initia-labs/initia/x/ibc/nft-transfer"
 	ibcnfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
@@ -148,6 +149,7 @@ func appModules(
 		ibcfee.NewAppModule(*app.IBCFeeKeeper),
 		ibcperm.NewAppModule(app.appCodec, *app.IBCPermKeeper),
 		ibctm.NewAppModule(),
+		ibctmattestor.NewAppModule(),
 		solomachine.NewAppModule(),
 		packetforward.NewAppModule(app.PacketForwardKeeper, nil),
 		ibchooks.NewAppModule(app.appCodec, *app.IBCHooksKeeper),
