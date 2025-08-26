@@ -61,6 +61,7 @@ func (k Keeper) MigrateDelegation(
 	delAddr sdk.AccAddress,
 	valAddr sdk.ValAddress,
 	migration types.DelegationMigration,
+	newDelAddr sdk.AccAddress,
 ) (sdk.DecCoins, sdk.DecCoins, error) {
 	delegation, err := k.GetDelegation(ctx, delAddr, valAddr)
 	if err != nil {
@@ -109,9 +110,9 @@ func (k Keeper) MigrateDelegation(
 
 	// complete the unbonding
 	if validator.IsBonded() {
-		err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.BondedPoolName, delAddr, unbondedTokens)
+		err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.BondedPoolName, newDelAddr, unbondedTokens)
 	} else {
-		err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.NotBondedPoolName, delAddr, unbondedTokens)
+		err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.NotBondedPoolName, newDelAddr, unbondedTokens)
 	}
 	if err != nil {
 		return nil, nil, err
@@ -120,7 +121,7 @@ func (k Keeper) MigrateDelegation(
 	// Step 2: migrate LP token from lpFrom to lpTo
 	amountLpTo, err := k.dexMigrationKeeper.MigrateLP(
 		ctx,
-		movetypes.ConvertSDKAddressToVMAddress(delAddr),
+		movetypes.ConvertSDKAddressToVMAddress(newDelAddr),
 		metadataLpFrom,
 		metadataLpTo,
 		moduleAddress,
@@ -138,6 +139,6 @@ func (k Keeper) MigrateDelegation(
 	}
 
 	// Step 3: delegate the denomLpTo
-	newShares, err := k.Delegate(ctx, delAddr, sdk.NewCoins(sdk.NewCoin(denomLpTo, amountLpTo)), types.Unbonded, validator, true)
+	newShares, err := k.Delegate(ctx, newDelAddr, sdk.NewCoins(sdk.NewCoin(denomLpTo, amountLpTo)), types.Unbonded, validator, true)
 	return originShares, newShares, err
 }

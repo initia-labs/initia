@@ -290,6 +290,9 @@ message MsgMigrateDelegation {
   string validator_address = 2 [(cosmos_proto.scalar) = "cosmos.ValidatorAddressString"];
   string denom_lp_from = 3;
   string denom_lp_to = 4;
+
+  // optional new delegator address. If not provided, the delegator address will be used.
+  string new_delegator_address = 5 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 // MsgMigrateDelegationResponse defines the response structure for executing a

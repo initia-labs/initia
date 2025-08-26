@@ -567,6 +567,14 @@ func (ms msgServer) MigrateDelegation(ctx context.Context, msg *types.MsgMigrate
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid validator address: %s", err)
 	}
 
+	newDelAddr := delAddr
+	if msg.NewDelegatorAddress != "" {
+		newDelAddr, err = ms.authKeeper.AddressCodec().StringToBytes(msg.NewDelegatorAddress)
+		if err != nil {
+			return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid new delegator address: %s", err)
+		}
+	}
+
 	// get the migration info
 	migration, err := ms.Migrations.Get(ctx, collections.Join(msg.DenomLpFrom, msg.DenomLpTo))
 	if err != nil {
@@ -577,7 +585,7 @@ func (ms msgServer) MigrateDelegation(ctx context.Context, msg *types.MsgMigrate
 		return nil, sdkerrors.ErrInvalidRequest.Wrap(err.Error())
 	}
 
-	originShares, newShares, err := ms.Keeper.MigrateDelegation(ctx, delAddr, valAddr, migration)
+	originShares, newShares, err := ms.Keeper.MigrateDelegation(ctx, delAddr, valAddr, migration, newDelAddr)
 	if err != nil {
 		return nil, err
 	}
