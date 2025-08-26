@@ -18,6 +18,7 @@ const (
 	AttributeKeySrcValidator    = "source_validator"
 	AttributeKeyDstValidator    = "destination_validator"
 	AttributeKeyDelegator       = "delegator"
+	AttributeKeyNewDelegator    = "new_delegator"
 	AttributeKeyCompletionTime  = "completion_time"
 	AttributeKeyCreationHeight  = "creation_height"
 	AttributeKeyNewShares       = "new_shares"

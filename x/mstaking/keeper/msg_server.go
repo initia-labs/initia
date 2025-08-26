@@ -596,6 +596,7 @@ func (ms msgServer) MigrateDelegation(ctx context.Context, msg *types.MsgMigrate
 			types.EventTypeMigrateDelegation,
 			sdk.NewAttribute(types.AttributeKeyDelegator, msg.DelegatorAddress),
 			sdk.NewAttribute(types.AttributeKeyValidator, msg.ValidatorAddress),
+			sdk.NewAttribute(types.AttributeKeyNewDelegator, msg.NewDelegatorAddress),
 			sdk.NewAttribute(types.AttributeKeyDenomLpFrom, msg.DenomLpFrom),
 			sdk.NewAttribute(types.AttributeKeyDenomLpTo, msg.DenomLpTo),
 			sdk.NewAttribute(types.AttributeKeyOriginShares, originShares.String()),
