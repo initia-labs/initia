@@ -1,0 +1,21 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Block SDK - REST docs",
+    "description": "A REST interface for state queries",
+    "version": "1.0.0"
+  },
+  "apis": [
+    {
+      "url": "./tmp-swagger-gen/sdk/auction/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "AuctionParams"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/sdk/mempool/v1/query.swagger.json"
+    }
+  ]
+}

@@ -52,7 +52,13 @@ cd ..
 # combine swagger files
 # uses nodejs package `swagger-combine`.
 # all the individual swagger files need to be configured in `config.json` for merging
-swagger-combine ./client/docs/config.json -o ./client/docs/swagger-ui/swagger.yaml -f yaml --continueOnConflictingPaths true --includeDefinitions true
+
+swagger-combine ./client/docs/config-connect.json -o ./client/docs/swagger-ui/swagger-connect.yaml -f yaml --continueOnConflictingPaths true --includeDefinitions true
+swagger-combine ./client/docs/config-cosmos.json -o ./client/docs/swagger-ui/swagger-cosmos.yaml -f yaml --continueOnConflictingPaths true --includeDefinitions true
+swagger-combine ./client/docs/config-ibc.json -o ./client/docs/swagger-ui/swagger-ibc.yaml -f yaml --continueOnConflictingPaths true --includeDefinitions true
+swagger-combine ./client/docs/config-initia.json -o ./client/docs/swagger-ui/swagger-initia.yaml -f yaml --continueOnConflictingPaths true --includeDefinitions true
+swagger-combine ./client/docs/config-opinit.json -o ./client/docs/swagger-ui/swagger-opinit.yaml -f yaml --continueOnConflictingPaths true --includeDefinitions true
+swagger-combine ./client/docs/config-sdk.json -o ./client/docs/swagger-ui/swagger-sdk.yaml -f yaml --continueOnConflictingPaths true --includeDefinitions true
 
 # clean swagger files
 rm -rf ./tmp-swagger-gen
