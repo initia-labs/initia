@@ -81,6 +81,7 @@ import (
 	ibchookskeeper "github.com/initia-labs/initia/x/ibc-hooks/keeper"
 	ibcmovehooks "github.com/initia-labs/initia/x/ibc-hooks/move-hooks"
 	ibchookstypes "github.com/initia-labs/initia/x/ibc-hooks/types"
+	ibcupgrade "github.com/initia-labs/initia/x/ibc/upgrade"
 	moveconfig "github.com/initia-labs/initia/x/move/config"
 	movekeeper "github.com/initia-labs/initia/x/move/keeper"
 	movetypes "github.com/initia-labs/initia/x/move/types"
@@ -434,7 +435,8 @@ func NewAppKeeper(
 			authorityAddr,
 		)
 		appKeepers.TransferKeeper = &transferKeeper
-		transferStack = ibctransfer.NewIBCModule(*appKeepers.TransferKeeper)
+		transferIBCModule := ibctransfer.NewIBCModule(*appKeepers.TransferKeeper)
+		transferStack = transferIBCModule
 
 		// forwarding middleware
 		transferStack = forwarding.NewMiddleware(
@@ -510,6 +512,16 @@ func NewAppKeeper(
 			nil,
 			*appKeepers.IBCPermKeeper,
 		)
+
+		// create upgrade middleware for transfer
+		transferStack = ibcupgrade.NewIBCMiddleware(
+			// receive: upgrade -> perm -> fee -> move -> rate limit -> packet forward -> forwarding -> transfer
+			transferStack,
+			// ics4wrapper: not used
+			nil,
+			// upgrade: upgrade -> transfer
+			transferIBCModule,
+		)
 	}
 
 	////////////////////////////////
@@ -532,11 +544,12 @@ func NewAppKeeper(
 			authorityAddr,
 		)
 		nftTransferIBCModule := ibcnfttransfer.NewIBCModule(*appKeepers.NftTransferKeeper)
+		nftTransferStack = nftTransferIBCModule
 
 		// create move middleware for nft-transfer
-		hookMiddleware := ibchooks.NewIBCMiddleware(
+		nftTransferStack = ibchooks.NewIBCMiddleware(
 			// receive: move -> nft-transfer
-			nftTransferIBCModule,
+			nftTransferStack,
 			ibchooks.NewICS4Middleware(
 				nil, /* ics4wrapper: not used */
 				ibcmovehooks.NewMoveHooks(appCodec, ac, appKeepers.MoveKeeper),
@@ -548,7 +561,7 @@ func NewAppKeeper(
 			// receive: perm -> fee -> nft transfer
 			ibcfee.NewIBCMiddleware(
 				// receive: channel -> fee -> move -> nft transfer
-				hookMiddleware,
+				nftTransferStack,
 				*appKeepers.IBCFeeKeeper,
 			),
 			// ics4wrapper: not used
