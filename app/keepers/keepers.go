@@ -56,7 +56,7 @@ import (
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 
-	ibctmattestor "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint-attestor"
+	ibctmattestor "github.com/initia-labs/initia/x/ibc/light-clients/07-tendermint-attestor"
 	ibcnfttransfer "github.com/initia-labs/initia/x/ibc/nft-transfer"
 	ibcnfttransferkeeper "github.com/initia-labs/initia/x/ibc/nft-transfer/keeper"
 	ibcnfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"

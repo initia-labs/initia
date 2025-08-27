@@ -8,6 +8,7 @@ import (
 	"github.com/cosmos/ibc-go/v8/modules/core/exported"
 	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 	"github.com/cosmos/ibc-go/v8/testing/mock"
+	ibctmattestor "github.com/initia-labs/initia/x/ibc/light-clients/07-tendermint-attestor"
 
 	sdksecp256k1 "github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
@@ -37,11 +38,6 @@ func (tmcfg *TendermintConfig) GetClientType() string {
 	return exported.Tendermint
 }
 
-const (
-	Secp256k1    = "secp256k1"
-	EthSecp256k1 = "eth_secp256k1"
-)
-
 type TendermintAttestorConfig struct {
 	TendermintConfig
 	AttestorPrivkeys []cryptotypes.PrivKey
@@ -49,7 +45,7 @@ type TendermintAttestorConfig struct {
 }
 
 func (tmcfg *TendermintAttestorConfig) GetClientType() string {
-	return exported.TendermintAttestor
+	return ibctmattestor.TendermintAttestor
 }
 
 func NewTendermintAttestorConfig(numAttestors, threshold int) *TendermintAttestorConfig {
