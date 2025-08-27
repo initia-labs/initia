@@ -8,6 +8,9 @@ import (
 
 	abci "github.com/cometbft/cometbft/abci/types"
 	tmtypes "github.com/cometbft/cometbft/types"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/gogoproto/proto"
 )
 
 // ApplyValSetChanges takes in tmtypes.ValidatorSet and []abci.ValidatorUpdate and will return a new tmtypes.ValidatorSet which has the
@@ -32,4 +35,17 @@ func GenerateString(length uint) string {
 		bytes[i] = charset[rand.Intn(len(charset))] //nolint weak random number generator is acceptable here
 	}
 	return string(bytes)
+}
+
+func GetMarshaledValue(data []byte) ([][]byte, error) {
+	var msgData sdk.TxMsgData
+	err := proto.Unmarshal(data, &msgData)
+	if err != nil {
+		return nil, err
+	}
+	res := make([][]byte, len(msgData.MsgResponses))
+	for i, msgResponse := range msgData.MsgResponses {
+		res[i] = msgResponse.Value
+	}
+	return res, nil
 }

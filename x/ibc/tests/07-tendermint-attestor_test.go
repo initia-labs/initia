@@ -179,7 +179,12 @@ func (suite *TMAttestorTestSuite) TestTendermintChangeLightClientAndUpgradeChann
 		0,
 		"",
 	)
-	_, err := suite.chainA.SendMsgs(msgTransfer)
+	res, err := suite.chainA.SendMsgs(msgTransfer)
+	suite.Require().NoError(err)
+
+	packet, err := ibctesting.ParsePacketFromEvents(res.GetEvents())
+	suite.Require().NoError(err)
+	err = path.RelayPacket(packet)
 	suite.Require().NoError(err)
 
 	// create new path with 07-tendermint-attestor light client
@@ -193,10 +198,19 @@ func (suite *TMAttestorTestSuite) TestTendermintChangeLightClientAndUpgradeChann
 	suite.Require().Equal(path.EndpointA.ConnectionID, ibctesting.SecondConnectionID)
 	suite.Require().Equal(path.EndpointB.ConnectionID, ibctesting.SecondConnectionID)
 
-	// upgrade existing channel to use the new light client
-	err = path.EndpointA.UpgradeChannel([]string{ibctesting.FirstConnectionID})
-	suite.Require().NoError(err)
+	// apply old client config temporarily to upgrade channel
+	path.EndpointA.ClientConfig = ibctesting.NewTendermintConfig()
+	path.EndpointA.ClientID = ibctesting.FirstClientID
+	path.EndpointB.ClientID = ibctesting.FirstClientID
+	path.EndpointA.ConnectionID = ibctesting.FirstConnectionID
+	path.EndpointB.ConnectionID = ibctesting.FirstConnectionID
+	path.EndpointA.UpgradeChannel(
+		[]string{ibctesting.SecondConnectionID},
+		[]string{ibctesting.SecondConnectionID},
+	)
+	path.EndpointA.ClientConfig = ibctesting.NewTendermintAttestorConfig(0, 0)
 
+	// should be equal to original channel
 	suite.Require().Equal(path.EndpointA.ChannelID, ibctesting.FirstChannelID)
 	suite.Require().Equal(path.EndpointB.ChannelID, ibctesting.FirstChannelID)
 

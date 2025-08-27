@@ -181,6 +181,39 @@ func (endpoint *Endpoint) UpdateClient() (err error) {
 	return endpoint.Chain.sendMsgs(msg)
 }
 
+func (endpoint *Endpoint) UpdateClientWithClientID(clientID string) (err error) {
+	// ensure counterparty has committed state
+	endpoint.Chain.Coordinator.CommitBlock(endpoint.Counterparty.Chain)
+
+	var header exported.ClientMessage
+
+	clientType, _, err := clienttypes.ParseClientIdentifier(clientID)
+	if err != nil {
+		return err
+	}
+	switch clientType {
+	case exported.Tendermint:
+		header, err = endpoint.Chain.ConstructUpdateTMClientHeader(endpoint.Counterparty.Chain, clientID)
+	case exported.TendermintAttestor:
+		header, err = endpoint.Chain.ConstructUpdateTMAttestorClientHeader(endpoint.Counterparty.Chain, clientID)
+
+	default:
+		err = fmt.Errorf("client type %s is not supported", clientType)
+	}
+
+	if err != nil {
+		return err
+	}
+
+	msg, err := clienttypes.NewMsgUpdateClient(
+		clientID, header,
+		endpoint.Chain.SenderAccount.GetAddress().String(),
+	)
+	require.NoError(endpoint.Chain.T, err)
+
+	return endpoint.Chain.sendMsgs(msg)
+}
+
 // UpgradeChain will upgrade a chain's chainID to the next revision number.
 // It will also update the counterparty client.
 // TODO: implement actual upgrade chain functionality via scheduling an upgrade
@@ -506,74 +539,69 @@ func (endpoint *Endpoint) ChanCloseInit() error {
 	return endpoint.Chain.sendMsgs(msg)
 }
 
-func (endpoint *Endpoint) UpgradeChannel(connectionHops []string) error {
+func (endpoint *Endpoint) UpgradeChannel(connectionHops []string, counterpartyConnectionHops []string) {
 	upgradeFields := channeltypes.UpgradeFields{
 		Ordering:       endpoint.ChannelConfig.Order,
 		Version:        endpoint.ChannelConfig.Version,
 		ConnectionHops: connectionHops,
 	}
 
-	upgrade, upgradeSequence, err := endpoint.ChanUpgradeInit(upgradeFields)
-	if err != nil {
-		return err
-	}
+	err := endpoint.ChanUpgradeInit(upgradeFields)
+	require.NoError(endpoint.Chain.T, err)
 
-	counterpartyUpgrade, _, err := endpoint.Counterparty.ChanUpgradeTry(upgradeFields, upgradeSequence, []string{endpoint.Counterparty.ConnectionID})
-	if err != nil {
-		return err
-	}
+	err = endpoint.Counterparty.ChanUpgradeTry(counterpartyConnectionHops)
+	require.NoError(endpoint.Counterparty.Chain.T, err)
 
-	err = endpoint.ChanUpgradeAck(counterpartyUpgrade)
-	if err != nil {
-		return err
-	}
+	err = endpoint.ChanUpgradeAck()
+	require.NoError(endpoint.Chain.T, err)
 
-	err = endpoint.ChanUpgradeConfirm(upgrade)
-	if err != nil {
-		return err
-	}
+	err = endpoint.Counterparty.ChanUpgradeConfirm()
+	require.NoError(endpoint.Counterparty.Chain.T, err)
 
-	endpoint.ConnectionID = connectionHops[0]
-	endpoint.Counterparty.ConnectionID = connectionHops[1]
+	err = endpoint.ChanUpgradeOpen()
+	require.NoError(endpoint.Chain.T, err)
 
-	connResponse, err := endpoint.Chain.QueryServer.Connection(endpoint.Chain.GetContext().Context(), &connectiontypes.QueryConnectionRequest{
-		ConnectionId: endpoint.ConnectionID,
+	connResponse, err := endpoint.Chain.QueryServer.Connection(endpoint.Chain.GetContext(), &connectiontypes.QueryConnectionRequest{
+		ConnectionId: connectionHops[0],
 	})
-	if err != nil {
-		return err
-	}
+	require.NoError(endpoint.Chain.T, err)
 	endpoint.ClientID = connResponse.Connection.ClientId
+	endpoint.ConnectionID = connectionHops[0]
 
-	connResponse, err = endpoint.Counterparty.Chain.QueryServer.Connection(endpoint.Counterparty.Chain.GetContext().Context(), &connectiontypes.QueryConnectionRequest{
-		ConnectionId: endpoint.Counterparty.ConnectionID,
+	connResponse, err = endpoint.Counterparty.Chain.QueryServer.Connection(endpoint.Counterparty.Chain.GetContext(), &connectiontypes.QueryConnectionRequest{
+		ConnectionId: counterpartyConnectionHops[0],
 	})
-	if err != nil {
-		return err
-	}
+	require.NoError(endpoint.Counterparty.Chain.T, err)
 	endpoint.Counterparty.ClientID = connResponse.Connection.ClientId
-	return nil
+	endpoint.Counterparty.ConnectionID = counterpartyConnectionHops[0]
+
+	endpoint.ChannelConfig.Version = upgradeFields.Version
+	endpoint.Counterparty.ChannelConfig.Version = upgradeFields.Version
 }
 
-func (endpoint *Endpoint) ChanUpgradeInit(upgradeFields channeltypes.UpgradeFields) (channeltypes.Upgrade, uint64, error) {
+func (endpoint *Endpoint) ChanUpgradeInit(upgradeFields channeltypes.UpgradeFields) error {
+	err := endpoint.UpdateClient()
+	require.NoError(endpoint.Chain.T, err)
+
 	msg := channeltypes.NewMsgChannelUpgradeInit(
 		endpoint.ChannelConfig.PortID,
 		endpoint.ChannelID,
 		upgradeFields,
 		endpoint.Chain.App.GetIBCKeeper().GetAuthority(),
 	)
-	upgradeResponse, err := endpoint.Chain.App.GetIBCKeeper().ChannelUpgradeInit(
+	_, err = endpoint.Chain.App.GetIBCKeeper().ChannelUpgradeInit(
 		endpoint.Chain.GetContext(),
 		msg,
 	)
 	if err != nil {
-		return channeltypes.Upgrade{}, 0, err
+		return err
 	}
 
 	endpoint.Chain.Coordinator.CommitBlock(endpoint.Chain)
-	return upgradeResponse.Upgrade, upgradeResponse.UpgradeSequence, nil
+	return nil
 }
 
-func (endpoint *Endpoint) ChanUpgradeTry(upgradeFields channeltypes.UpgradeFields, counterpartyUpgradeSequence uint64, connectionHops []string) (channeltypes.Upgrade, uint64, error) {
+func (endpoint *Endpoint) ChanUpgradeTry(connectionHops []string) error {
 	err := endpoint.UpdateClient()
 	require.NoError(endpoint.Chain.T, err)
 
@@ -584,44 +612,55 @@ func (endpoint *Endpoint) ChanUpgradeTry(upgradeFields channeltypes.UpgradeField
 	upgradeProof, upgradeHeight := endpoint.Counterparty.Chain.QueryProof(upgradeKey)
 
 	if height.Compare(upgradeHeight) != 0 {
-		return channeltypes.Upgrade{}, 0, fmt.Errorf("height mismatch: %s != %s", height.String(), upgradeHeight.String())
+		return fmt.Errorf("height mismatch: %s != %s", height.String(), upgradeHeight.String())
 	}
 
 	if endpoint.ClientConfig.GetClientType() == exported.TendermintAttestor {
 		channelProof, err = endpoint.GetProofWithAttestations(channelProof)
 		if err != nil {
-			return channeltypes.Upgrade{}, 0, err
+			return err
 		}
 
 		upgradeProof, err = endpoint.GetProofWithAttestations(upgradeProof)
 		if err != nil {
-			return channeltypes.Upgrade{}, 0, err
+			return err
 		}
+	}
+
+	channelResponse, err := endpoint.Counterparty.Chain.QueryServer.Channel(endpoint.Counterparty.Chain.GetContext(), &channeltypes.QueryChannelRequest{
+		PortId:    endpoint.Counterparty.ChannelConfig.PortID,
+		ChannelId: endpoint.Counterparty.ChannelID,
+	})
+	if err != nil {
+		return err
+	}
+	counterpartyUpgradeSequence := channelResponse.Channel.UpgradeSequence
+
+	upgradeResponse, err := endpoint.Counterparty.Chain.QueryServer.Upgrade(endpoint.Counterparty.Chain.GetContext(), &channeltypes.QueryUpgradeRequest{
+		PortId:    endpoint.Counterparty.ChannelConfig.PortID,
+		ChannelId: endpoint.Counterparty.ChannelID,
+	})
+	if err != nil {
+		return err
 	}
 
 	msg := channeltypes.NewMsgChannelUpgradeTry(
 		endpoint.ChannelConfig.PortID,
 		endpoint.ChannelID,
 		connectionHops,
-		upgradeFields,
+		upgradeResponse.Upgrade.Fields,
 		counterpartyUpgradeSequence,
 		channelProof, upgradeProof, height,
 		endpoint.Chain.SenderAccount.GetAddress().String(),
 	)
-	res, err := endpoint.Chain.SendMsgs(msg)
+	_, err = endpoint.Chain.SendMsgs(msg)
 	if err != nil {
-		return channeltypes.Upgrade{}, 0, err
+		return err
 	}
-
-	upgradeResponse := channeltypes.MsgChannelUpgradeTryResponse{}
-	err = upgradeResponse.Unmarshal(res.Data)
-	if err != nil {
-		return channeltypes.Upgrade{}, 0, err
-	}
-	return upgradeResponse.Upgrade, upgradeResponse.UpgradeSequence, nil
+	return nil
 }
 
-func (endpoint *Endpoint) ChanUpgradeAck(counterpartyUpgrade channeltypes.Upgrade) error {
+func (endpoint *Endpoint) ChanUpgradeAck() error {
 	err := endpoint.UpdateClient()
 	require.NoError(endpoint.Chain.T, err)
 
@@ -647,9 +686,17 @@ func (endpoint *Endpoint) ChanUpgradeAck(counterpartyUpgrade channeltypes.Upgrad
 		}
 	}
 
+	upgradeResponse, err := endpoint.Counterparty.Chain.QueryServer.Upgrade(endpoint.Counterparty.Chain.GetContext(), &channeltypes.QueryUpgradeRequest{
+		PortId:    endpoint.Counterparty.ChannelConfig.PortID,
+		ChannelId: endpoint.Counterparty.ChannelID,
+	})
+	if err != nil {
+		return err
+	}
+
 	msg := channeltypes.NewMsgChannelUpgradeAck(
 		endpoint.ChannelConfig.PortID, endpoint.ChannelID,
-		counterpartyUpgrade,
+		upgradeResponse.Upgrade,
 		channelProof, upgradeProof, height,
 		endpoint.Chain.SenderAccount.GetAddress().String(),
 	)
@@ -659,21 +706,23 @@ func (endpoint *Endpoint) ChanUpgradeAck(counterpartyUpgrade channeltypes.Upgrad
 		return err
 	}
 
-	upgradeResponse := channeltypes.MsgChannelUpgradeAckResponse{}
-	err = upgradeResponse.Unmarshal(res.Data)
+	upgradeAckResponse := channeltypes.MsgChannelUpgradeAckResponse{}
+	values, err := GetMarshaledValue(res.Data)
+	if err != nil {
+		return err
+	}
+	err = upgradeAckResponse.Unmarshal(values[0])
 	if err != nil {
 		return err
 	}
 
-	if upgradeResponse.Result == channeltypes.FAILURE {
-		return fmt.Errorf("upgrade result: %s", upgradeResponse.Result)
+	if upgradeAckResponse.Result == channeltypes.FAILURE {
+		return fmt.Errorf("upgrade result: %s", upgradeAckResponse.Result)
 	}
-
 	return nil
 }
 
-// ChanOpenConfirm will construct and execute a MsgChannelOpenConfirm on the associated endpoint.
-func (endpoint *Endpoint) ChanUpgradeConfirm(counterpartyUpgrade channeltypes.Upgrade) error {
+func (endpoint *Endpoint) ChanUpgradeConfirm() error {
 	err := endpoint.UpdateClient()
 	require.NoError(endpoint.Chain.T, err)
 
@@ -699,7 +748,14 @@ func (endpoint *Endpoint) ChanUpgradeConfirm(counterpartyUpgrade channeltypes.Up
 		}
 	}
 
-	channelResponse, err := endpoint.Counterparty.Chain.QueryServer.Channel(endpoint.Counterparty.Chain.GetContext().Context(), &channeltypes.QueryChannelRequest{
+	channelResponse, err := endpoint.Counterparty.Chain.QueryServer.Channel(endpoint.Counterparty.Chain.GetContext(), &channeltypes.QueryChannelRequest{
+		PortId:    endpoint.Counterparty.ChannelConfig.PortID,
+		ChannelId: endpoint.Counterparty.ChannelID,
+	})
+	if err != nil {
+		return err
+	}
+	upgradeResponse, err := endpoint.Counterparty.Chain.QueryServer.Upgrade(endpoint.Counterparty.Chain.GetContext(), &channeltypes.QueryUpgradeRequest{
 		PortId:    endpoint.Counterparty.ChannelConfig.PortID,
 		ChannelId: endpoint.Counterparty.ChannelID,
 	})
@@ -710,7 +766,7 @@ func (endpoint *Endpoint) ChanUpgradeConfirm(counterpartyUpgrade channeltypes.Up
 	msg := channeltypes.NewMsgChannelUpgradeConfirm(
 		endpoint.ChannelConfig.PortID, endpoint.ChannelID,
 		channelResponse.Channel.State,
-		counterpartyUpgrade,
+		upgradeResponse.Upgrade,
 		channelProof, upgradeProof, height,
 		endpoint.Chain.SenderAccount.GetAddress().String(),
 	)
@@ -718,9 +774,42 @@ func (endpoint *Endpoint) ChanUpgradeConfirm(counterpartyUpgrade channeltypes.Up
 	if err != nil {
 		return err
 	}
+	return nil
+}
 
-	endpoint.ChannelConfig.Version = counterpartyUpgrade.Fields.Version
-	endpoint.Counterparty.ChannelConfig.Version = counterpartyUpgrade.Fields.Version
+func (endpoint *Endpoint) ChanUpgradeOpen() error {
+	err := endpoint.UpdateClient()
+	require.NoError(endpoint.Chain.T, err)
+
+	channelKey := host.ChannelKey(endpoint.Counterparty.ChannelConfig.PortID, endpoint.Counterparty.ChannelID)
+	channelProof, height := endpoint.Counterparty.Chain.QueryProof(channelKey)
+
+	if endpoint.ClientConfig.GetClientType() == exported.TendermintAttestor {
+		channelProof, err = endpoint.GetProofWithAttestations(channelProof)
+		if err != nil {
+			return err
+		}
+	}
+
+	channelResponse, err := endpoint.Counterparty.Chain.QueryServer.Channel(endpoint.Counterparty.Chain.GetContext(), &channeltypes.QueryChannelRequest{
+		PortId:    endpoint.Counterparty.ChannelConfig.PortID,
+		ChannelId: endpoint.Counterparty.ChannelID,
+	})
+	if err != nil {
+		return err
+	}
+
+	msg := channeltypes.NewMsgChannelUpgradeOpen(
+		endpoint.ChannelConfig.PortID, endpoint.ChannelID,
+		channelResponse.Channel.State,
+		channelResponse.Channel.UpgradeSequence,
+		channelProof, height,
+		endpoint.Chain.SenderAccount.GetAddress().String(),
+	)
+	_, err = endpoint.Chain.SendMsgs(msg)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
