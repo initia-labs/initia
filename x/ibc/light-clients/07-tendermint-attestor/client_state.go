@@ -270,6 +270,7 @@ func verifyDelayPeriodPassed(ctx sdk.Context, store storetypes.KVStore, proofHei
 	return nil
 }
 
+// GetAttestorPubkeys returns the attestor pubkeys for the client state.
 func (cs ClientState) GetAttestorPubkeys() []cryptotypes.PubKey {
 	pubKeys := make([]cryptotypes.PubKey, 0, len(cs.AttestorPubkeys))
 	for _, attestorPubkey := range cs.AttestorPubkeys {
@@ -278,6 +279,7 @@ func (cs ClientState) GetAttestorPubkeys() []cryptotypes.PubKey {
 	return pubKeys
 }
 
+// UnpackInterfaces implements UnpackInterfacesMessage.UnpackInterfaces
 func (cs *ClientState) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
 	for i := range cs.AttestorPubkeys {
 		var pubKey cryptotypes.PubKey

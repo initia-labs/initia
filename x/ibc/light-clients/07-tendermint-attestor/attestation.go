@@ -22,24 +22,8 @@ func (cs ClientState) VerifySignatures(
 		return errorsmod.Wrapf(ErrUnauthorizedAttestation, "not enough attestations: %d < %d", len(attestations), cs.Threshold)
 	}
 	for _, attestation := range attestations {
-		// var attestationPubKey cryptotypes.PubKey
-		// err := PubkeyCdc.UnpackAny(&attestation.PubKey, &attestationPubKey)
-		// if err != nil {
-		// 	return err
-		// }
 		attestationPubKey := attestation.GetPubKey()
-
-		if !slices.ContainsFunc(cs.AttestorPubkeys, func(registeredPubkeyAny *codectypes.Any) bool {
-			// var registeredPubkey cryptotypes.PubKey
-			// err := PubkeyCdc.UnpackAny(&registeredPubkeyAny, &registeredPubkey)
-			// if err != nil {
-			// 	return false
-			// }
-			registeredPubkey, ok := registeredPubkeyAny.GetCachedValue().(cryptotypes.PubKey)
-			if !ok {
-				return false
-			}
-
+		if !slices.ContainsFunc(cs.GetAttestorPubkeys(), func(registeredPubkey cryptotypes.PubKey) bool {
 			return attestationPubKey.Equals(registeredPubkey)
 		}) {
 			return ErrUnauthorizedAttestation
@@ -63,6 +47,7 @@ func (m *MerkleProofBytesWithAttestations) UnpackInterfaces(unpacker codectypes.
 	return nil
 }
 
+// GetPubKey returns the public key from the attestation.
 func (at Attestation) GetPubKey() (pk cryptotypes.PubKey) {
 	content, ok := at.PubKey.GetCachedValue().(cryptotypes.PubKey)
 	if !ok {

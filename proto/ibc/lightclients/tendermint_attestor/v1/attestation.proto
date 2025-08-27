@@ -2,23 +2,25 @@ syntax = "proto3";
 
 package ibc.lightclients.tendermint_attestor.v1;
 
-option go_package = "github.com/initia-labs/initia/x/ibc/light-clients/07-tendermint-attestor;tendermintattestor";
-
-import "cosmos_proto/cosmos.proto";
-import "google/protobuf/any.proto";
-import "gogoproto/gogo.proto";
 import "cosmos/ics23/v1/proofs.proto";
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+import "google/protobuf/any.proto";
 import "ibc/core/commitment/v1/commitment.proto";
 
+option go_package = "github.com/initia-labs/initia/x/ibc/light-clients/07-tendermint-attestor;tendermintattestor";
+
+// MerkleProofBytesWithAttestations is a wrapper around a Merkle proof and a list of attestations.
+// It is used to verify the authenticity of a Merkle proof by providing a list of attestations that
+// have signed the proof.
 message MerkleProofBytesWithAttestations {
   bytes proof_bytes = 1;
   repeated Attestation attestations = 2;
 }
 
+// Attestation is a wrapper around a public key and a signature.
 message Attestation {
   option (gogoproto.goproto_getters) = false;
-  google.protobuf.Any pub_key = 1 [
-    (cosmos_proto.accepts_interface) = "cosmos.crypto.PubKey"
-  ];
+  google.protobuf.Any pub_key = 1 [(cosmos_proto.accepts_interface) = "cosmos.crypto.PubKey"];
   bytes signature = 2;
 }
