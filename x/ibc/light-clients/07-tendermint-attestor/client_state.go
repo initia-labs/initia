@@ -1,6 +1,7 @@
 package tendermintattestor
 
 import (
+	"slices"
 	"time"
 
 	ics23 "github.com/cosmos/ics23/go"
@@ -286,4 +287,27 @@ func (cs *ClientState) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
 		}
 	}
 	return nil
+}
+
+// hasSameAttestorsAndThreshold returns true if the attestors and threshold are the same between the two client states
+func (cs ClientState) hasSameAttestorsAndThreshold(cs2 ClientState) bool {
+	if cs.Threshold != cs2.Threshold {
+		return false
+	}
+
+	pubkeys1 := cs.GetAttestorPubkeys()
+	pubkeys2 := cs2.GetAttestorPubkeys()
+	if len(pubkeys1) != len(pubkeys2) {
+		return false
+	}
+
+	for _, pubkey := range pubkeys1 {
+		if !slices.ContainsFunc(pubkeys2, func(pubkey2 cryptotypes.PubKey) bool {
+			return pubkey.Equals(pubkey2)
+		}) {
+			return false
+		}
+	}
+
+	return true
 }

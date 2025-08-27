@@ -1,9 +1,6 @@
 package tendermintattestor
 
 import (
-	"reflect"
-	"time"
-
 	errorsmod "cosmossdk.io/errors"
 	storetypes "cosmossdk.io/store/types"
 
@@ -12,6 +9,7 @@ import (
 
 	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
 	"github.com/cosmos/ibc-go/v8/modules/core/exported"
+	tmlightclient "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 )
 
 // CheckSubstituteAndUpdateState will try to update the client with the state of the
@@ -81,23 +79,14 @@ func (cs ClientState) CheckSubstituteAndUpdateState(
 	return nil
 }
 
-// IsMatchingClientState returns true if all the client state parameters match
-// except for frozen height, latest height, trusting period, chain-id.
+// IsMatchingClientState returns true if all the client state parameters match between subject and substitute
+// except for frozen height, latest height, trusting period, and chain-id. Additionally checks that attestors
+// and threshold match between the two clients.
 func IsMatchingClientState(subject, substitute ClientState) bool {
-	// zero out parameters which do not need to match
-	subject.LatestHeight = clienttypes.ZeroHeight()
-	subject.FrozenHeight = clienttypes.ZeroHeight()
-	subject.TrustingPeriod = time.Duration(0)
-	substitute.LatestHeight = clienttypes.ZeroHeight()
-	substitute.FrozenHeight = clienttypes.ZeroHeight()
-	substitute.TrustingPeriod = time.Duration(0)
-	subject.ChainId = ""
-	substitute.ChainId = ""
-	// sets both sets of flags to true as these flags have been DEPRECATED, see ADR-026 for more information
-	subject.AllowUpdateAfterExpiry = true
-	substitute.AllowUpdateAfterExpiry = true
-	subject.AllowUpdateAfterMisbehaviour = true
-	substitute.AllowUpdateAfterMisbehaviour = true
+	// check if the attestors and threshold are the same
+	if !subject.hasSameAttestorsAndThreshold(substitute) {
+		return false
+	}
 
-	return reflect.DeepEqual(subject, substitute)
+	return tmlightclient.IsMatchingClientState(*subject.ClientState, *substitute.ClientState)
 }

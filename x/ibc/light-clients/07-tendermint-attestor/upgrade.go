@@ -59,6 +59,11 @@ func (cs ClientState) VerifyUpgradeAndUpdateState(
 			&ConsensusState{}, upgradedConsState)
 	}
 
+	// check if the upgraded client has the same attestors and threshold
+	if !cs.hasSameAttestorsAndThreshold(*tmUpgradeClient) {
+		return errorsmod.Wrap(clienttypes.ErrInvalidUpgradeClient, "upgraded client has different attestors and threshold")
+	}
+
 	// unmarshal proofs
 	var merkleProofClient, merkleProofConsState commitmenttypes.MerkleProof
 	if err := cdc.Unmarshal(upgradeClientProof, &merkleProofClient); err != nil {
