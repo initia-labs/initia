@@ -38,7 +38,9 @@ func GenerateString(length uint) string {
 	return string(bytes)
 }
 
-func GetMarshaledValue(data []byte) ([][]byte, error) {
+// GetMarshaledResultData unmarshals the data into a sdk.TxMsgData and returns the
+// marshaled result data.
+func GetMarshaledResultData(data []byte) ([][]byte, error) {
 	var msgData sdk.TxMsgData
 	err := proto.Unmarshal(data, &msgData)
 	if err != nil {

@@ -21,13 +21,14 @@ func NewConsensusState(
 	}
 }
 
+// FromTendermintConsensusState creates a new ConsensusState from a tendermint consensus state.
 func FromTendermintConsensusState(cs *tmlightclient.ConsensusState) *ConsensusState {
 	return &ConsensusState{
 		ConsensusState: cs,
 	}
 }
 
-// ClientType returns Tendermint
+// ClientType returns Tendermint attestor client type.
 func (ConsensusState) ClientType() string {
 	return TendermintAttestor
 }

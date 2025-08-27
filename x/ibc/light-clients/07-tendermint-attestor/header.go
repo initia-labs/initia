@@ -19,7 +19,7 @@ func (h Header) ConsensusState() *ConsensusState {
 	}
 }
 
-// ClientType defines that the Header is a Tendermint consensus algorithm
+// ClientType defines that the Header is a Tendermint consensus algorithm with attestation verification.
 func (Header) ClientType() string {
 	return TendermintAttestor
 }

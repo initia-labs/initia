@@ -713,7 +713,7 @@ func (endpoint *Endpoint) ChanUpgradeAck() error {
 	}
 
 	upgradeAckResponse := channeltypes.MsgChannelUpgradeAckResponse{}
-	values, err := GetMarshaledValue(res.Data)
+	values, err := GetMarshaledResultData(res.Data)
 	if err != nil {
 		return err
 	}
