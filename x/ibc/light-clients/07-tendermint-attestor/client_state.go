@@ -19,6 +19,7 @@ import (
 	tmlightclient "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 )
 
 var _ exported.ClientState = (*ClientState)(nil)
@@ -28,7 +29,7 @@ func NewClientState(
 	chainID string, trustLevel tmlightclient.Fraction,
 	trustingPeriod, ubdPeriod, maxClockDrift time.Duration,
 	latestHeight clienttypes.Height, specs []*ics23.ProofSpec,
-	upgradePath []string, attestorPubkeys []codectypes.Any, threshold uint32,
+	upgradePath []string, attestorPubkeys []*codectypes.Any, threshold uint32,
 ) *ClientState {
 	return &ClientState{
 		ClientState:     tmlightclient.NewClientState(chainID, trustLevel, trustingPeriod, ubdPeriod, maxClockDrift, latestHeight, specs, upgradePath),
@@ -103,7 +104,7 @@ func (cs ClientState) ZeroCustomFields() exported.ClientState {
 	// and leave custom fields empty
 	return &ClientState{
 		ClientState:     cs.ClientState.ZeroCustomFields().(*tmlightclient.ClientState),
-		AttestorPubkeys: []codectypes.Any{},
+		AttestorPubkeys: []*codectypes.Any{},
 		Threshold:       0,
 	}
 }
@@ -265,5 +266,24 @@ func verifyDelayPeriodPassed(ctx sdk.Context, store storetypes.KVStore, proofHei
 		}
 	}
 
+	return nil
+}
+
+func (cs ClientState) GetAttestorPubkeys() []cryptotypes.PubKey {
+	pubKeys := make([]cryptotypes.PubKey, 0, len(cs.AttestorPubkeys))
+	for _, attestorPubkey := range cs.AttestorPubkeys {
+		pubKeys = append(pubKeys, attestorPubkey.GetCachedValue().(cryptotypes.PubKey))
+	}
+	return pubKeys
+}
+
+func (cs *ClientState) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
+	for i := range cs.AttestorPubkeys {
+		var pubKey cryptotypes.PubKey
+		err := unpacker.UnpackAny(cs.AttestorPubkeys[i], &pubKey)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }

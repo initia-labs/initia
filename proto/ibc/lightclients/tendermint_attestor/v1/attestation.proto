@@ -16,9 +16,9 @@ message MerkleProofBytesWithAttestations {
 }
 
 message Attestation {
+  option (gogoproto.goproto_getters) = false;
   google.protobuf.Any pub_key = 1 [
-    (cosmos_proto.accepts_interface) = "cosmos.crypto.PubKey",
-    (gogoproto.nullable) = false
+    (cosmos_proto.accepts_interface) = "cosmos.crypto.PubKey"
   ];
   bytes signature = 2;
 }

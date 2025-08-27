@@ -117,11 +117,11 @@ func (endpoint *Endpoint) CreateClient() {
 
 		height := endpoint.Counterparty.Chain.LastHeader.GetHeight().(clienttypes.Height)
 
-		attestors := make([]codectypes.Any, 0, len(tmAttestorConfig.AttestorPrivkeys))
+		attestors := make([]*codectypes.Any, 0, len(tmAttestorConfig.AttestorPrivkeys))
 		for _, privKey := range tmAttestorConfig.AttestorPrivkeys {
 			pubKeyAny, err := codectypes.NewAnyWithValue(privKey.PubKey())
 			require.NoError(endpoint.Chain.T, err)
-			attestors = append(attestors, *pubKeyAny)
+			attestors = append(attestors, pubKeyAny)
 		}
 
 		clientState = ibctmattestor.NewClientState(
@@ -286,7 +286,7 @@ func (endpoint *Endpoint) GetProofWithAttestations(proof []byte) ([]byte, error)
 		}
 
 		proofWithAttestations.Attestations = append(proofWithAttestations.Attestations, &ibctmattestor.Attestation{
-			PubKey:    *pubKeyAny,
+			PubKey:    pubKeyAny,
 			Signature: signature,
 		})
 	}
