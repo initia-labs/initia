@@ -1,0 +1,81 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Initia - REST docs",
+    "description": "A REST interface for state queries",
+    "version": "1.0.0"
+  },
+  "apis": [
+    {
+      "url": "./tmp-swagger-gen/initia/tx/v1/query.swagger.json",
+      "dereference": {
+        "circular": "ignore"
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/initia/dynamicfee/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "DynamicFeeParams"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/initia/intertx/v1/query.swagger.json"
+    },
+    {
+      "url": "./tmp-swagger-gen/initia/reward/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "RewardParams"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/initia/distribution/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "CustomDistributionParams",
+          "DelegationTotalRewards": "CustomDelegationTotalRewards",
+          "DelegationRewards": "CustomDelegationRewards",
+          "ValidatorCommission": "CustomValidatorCommission",
+          "ValidatorOutstandingRewards": "CustomValidatorOutstandingRewards",
+          "ValidatorSlashes": "CustomValidatorSlashes"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/initia/mstaking/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "StakingParams",
+          "DelegatorValidators": "StakingDelegatorValidators"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/initia/gov/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "CustomGovParams"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/initia/move/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "MoveParams"
+        }
+      }
+    },
+    {
+      "url": "./tmp-swagger-gen/initia/ibchooks/v1/query.swagger.json",
+      "operationIds": {
+        "rename": {
+          "Params": "IBCHooksParams"
+        }
+      }
+    }
+  ]
+}
