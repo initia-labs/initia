@@ -12,7 +12,7 @@ import (
 )
 
 func (cs ClientState) VerifySignatures(
-	ctx sdk.Context,
+	_ sdk.Context,
 	proofBytes []byte,
 	attestations []*Attestation,
 ) error {
@@ -21,12 +21,20 @@ func (cs ClientState) VerifySignatures(
 	} else if len(attestations) < int(cs.Threshold) {
 		return errorsmod.Wrapf(ErrUnauthorizedAttestation, "not enough attestations: %d < %d", len(attestations), cs.Threshold)
 	}
+
+	seenPubKeys := make([]*cryptotypes.PubKey, 0, len(attestations))
 	for _, attestation := range attestations {
 		attestationPubKey := attestation.GetPubKey()
+		if slices.Contains(seenPubKeys, &attestationPubKey) {
+			return errorsmod.Wrapf(ErrUnauthorizedAttestation, "duplicate attestation public key: %s", attestationPubKey.String())
+		} else {
+			seenPubKeys = append(seenPubKeys, &attestationPubKey)
+		}
+
 		if !slices.ContainsFunc(cs.GetAttestorPubkeys(), func(registeredPubkey cryptotypes.PubKey) bool {
 			return attestationPubKey.Equals(registeredPubkey)
 		}) {
-			return ErrUnauthorizedAttestation
+			return errorsmod.Wrapf(ErrUnauthorizedAttestation, "unauthorized attestation public key: %s", attestationPubKey.String())
 		}
 
 		if !attestationPubKey.VerifySignature(proofBytes, attestation.Signature) {
@@ -38,6 +46,10 @@ func (cs ClientState) VerifySignatures(
 
 // UnpackInterfaces implements UnpackInterfacesMessage.UnpackInterfaces
 func (m *MerkleProofBytesWithAttestations) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
+	if m == nil {
+		return nil
+	}
+
 	for i := range m.Attestations {
 		err := m.Attestations[i].UnpackInterfaces(unpacker)
 		if err != nil {

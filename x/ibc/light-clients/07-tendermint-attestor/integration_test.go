@@ -98,7 +98,7 @@ func (suite *TMAttestorTestSuite) TestTendermintAttestorAnotherConnection() {
 
 	msgTransfer := transfertypes.NewMsgTransfer(
 		ibctesting.TransferPort,
-		ibctesting.FirstChannelID,
+		path.EndpointA.ChannelID,
 		sdk.NewCoin(sdk.DefaultBondDenom, sdkmath.NewInt(100)),
 		suite.chainA.SenderAccount.GetAddress().String(),
 		suite.chainB.SenderAccount.GetAddress().String(),
@@ -122,19 +122,14 @@ func (suite *TMAttestorTestSuite) TestTendermintChangeAttestorSet() {
 	suite.Require().Equal(path.EndpointB.ConnectionID, ibctesting.FirstConnectionID)
 	suite.coordinator.CreateTransferChannels(path)
 
-	path.EndpointA.ClientConfig = ibctesting.NewTendermintAttestorConfig(2, 3)
-	path.EndpointA.CreateClient()
-	err := suite.coordinator.CreateConnections(path)
-	suite.Require().Error(err)
-
 	path.EndpointA.ClientConfig = ibctesting.NewTendermintAttestorConfig(5, 3)
-	path.EndpointA.CreateClient()
-	suite.Require().Equal(path.EndpointA.ClientID, ibctesting.ThirdAttestorClientID)
+	suite.Require().NoError(path.EndpointA.CreateClient())
+	suite.Require().Equal(path.EndpointA.ClientID, ibctesting.SecondAttestorClientID)
 	suite.Require().Equal(path.EndpointB.ClientID, ibctesting.FirstClientID)
-	err = suite.coordinator.CreateConnections(path)
+	err := suite.coordinator.CreateConnections(path)
 	suite.Require().NoError(err)
-	suite.Require().Equal(path.EndpointA.ConnectionID, ibctesting.ThirdConnectionID)
-	suite.Require().Equal(path.EndpointB.ConnectionID, ibctesting.ThirdConnectionID)
+	suite.Require().Equal(path.EndpointA.ConnectionID, ibctesting.SecondConnectionID)
+	suite.Require().Equal(path.EndpointB.ConnectionID, ibctesting.SecondConnectionID)
 
 	suite.coordinator.CreateTransferChannels(path)
 	suite.Require().Equal(path.EndpointA.ChannelID, ibctesting.SecondChannelID)

@@ -43,6 +43,20 @@ func (cs ClientState) Validate() error {
 	if err := cs.ClientState.Validate(); err != nil {
 		return err
 	}
+
+	if len(cs.AttestorPubkeys) < int(cs.Threshold) {
+		return errorsmod.Wrapf(clienttypes.ErrInvalidClient, "not enough attestor pubkeys are provided")
+	}
+
+	// duplication check for attestor pubkeys
+	seenPubKeys := make([]*cryptotypes.PubKey, 0, len(cs.AttestorPubkeys))
+	attestorPubKeys := cs.GetAttestorPubkeys()
+	for _, attestorPubkey := range attestorPubKeys {
+		if slices.Contains(seenPubKeys, &attestorPubkey) {
+			return errorsmod.Wrapf(clienttypes.ErrInvalidClient, "duplicate attestor pubkey: %s", attestorPubkey.String())
+		}
+		seenPubKeys = append(seenPubKeys, &attestorPubkey)
+	}
 	return nil
 }
 

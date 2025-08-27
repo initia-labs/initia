@@ -92,7 +92,7 @@ func (endpoint *Endpoint) QueryProofAtHeight(key []byte, height uint64) ([]byte,
 // CreateClient creates an IBC client on the endpoint. It will update the
 // clientID for the endpoint if the message is successfully executed.
 // NOTE: a solo machine client will be created with an empty diversifier.
-func (endpoint *Endpoint) CreateClient() {
+func (endpoint *Endpoint) CreateClient() error {
 	// ensure counterparty has committed state
 	endpoint.Counterparty.Chain.NextBlock()
 
@@ -142,14 +142,21 @@ func (endpoint *Endpoint) CreateClient() {
 	msg, err := clienttypes.NewMsgCreateClient(
 		clientState, consensusState, endpoint.Chain.SenderAccount.GetAddress().String(),
 	)
-	require.NoError(endpoint.Chain.T, err)
+	if err != nil {
+		return err
+	}
 
 	res, err := endpoint.Chain.SendMsgs(msg)
-	require.NoError(endpoint.Chain.T, err)
+	if err != nil {
+		return err
+	}
 
 	endpoint.ClientID, err = ParseClientIDFromEvents(res.Events)
-	require.NoError(endpoint.Chain.T, err)
+	if err != nil {
+		return err
+	}
 
+	return nil
 }
 
 // UpdateClient updates the IBC client associated with the endpoint.

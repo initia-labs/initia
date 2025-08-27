@@ -90,7 +90,9 @@ The light client verifies headers through a multi-step process:
 2. **Header Validation**: Ensures header height is newer than the trusted consensus state
 3. **Revision Consistency**: Verifies header revision matches the trusted consensus state revision
 4. **Validator Set Verification**: Validates the new validator set against the trusted validator set
-5. **Attestation Verification**: If attestations are present, verifies them using the threshold mechanism
+5. **Attestation Verification**:
+   - If `threshold > 0`, headers/proofs MUST include attestations and MUST pass threshold verification.
+   - If `threshold == 0`, attestation verification is skipped and the client behaves like standard 07-tendermint for proof verification.
 
 #### Misbehaviour Handling
 
@@ -132,6 +134,13 @@ The light client verifies headers through a multi-step process:
 
 - `attestorPubkeys`: List of authorized attestor public keys
 - `threshold`: Minimum number of attestations required for updates
+
+#### Invariants
+
+- `0 ≤ threshold ≤ len(attestorPubkeys)`.
+- All `attestorPubkeys` MUST be unique.
+- All keys MUST be of supported types (e.g., secp256k1, eth_secp256k1) and valid.
+- If `threshold == 0`, the client operates without attestation checks (compat mode).
 
 ## Conclusion
 

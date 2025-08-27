@@ -83,8 +83,8 @@ func (coord *Coordinator) Setup(path *Path) {
 // SetupClients is a helper function to create clients on both chains. It assumes the
 // caller does not anticipate any errors.
 func (coord *Coordinator) SetupClients(path *Path) {
-	path.EndpointA.CreateClient()
-	path.EndpointB.CreateClient()
+	require.NoError(coord.T, path.EndpointA.CreateClient())
+	require.NoError(coord.T, path.EndpointB.CreateClient())
 }
 
 // SetupClientConnections is a helper function to create clients and the appropriate
