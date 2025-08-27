@@ -67,12 +67,15 @@ message DelegationMigration {
 - `validator_address`: Address of the validator
 - `denom_lp_from`: Source LP token denomination
 - `denom_lp_to`: Target LP token denomination
+- `new_delegator_address`: Optional new delegator address. If not provided, the original delegator address will be used
 
 **Validation**:
 
 - Delegator must have active delegation with specified validator
 - Migration path must be registered for the source and target LP denominations
 - Target LP denomination must be in bond denoms list
+- If `new_delegator_address` is provided, it must be a valid address
+- Source and target LP denominations must be different
 
 ## Migration Process
 
@@ -89,13 +92,13 @@ message DelegationMigration {
 
 1. **Ecosystem Transition**: Delegator responds to announced ecosystem asset transition
 2. **Path Lookup**: Retrieve registered migration for source LP and target LP denominations
-3. **Delegation Unbonding**: Unbond delegation shares from validator
+3. **Delegation Unbonding**: Unbond delegation shares from validator (instant unbonding, no waiting period)
 4. **Liquidity Migration**: Execute migration through the registered migration module which handles:
    - Withdrawing liquidity from source DEX pool
    - Converting underlying tokens through the migration module's `convert` function (e.g., USDC → USDT)
    - Providing liquidity to target DEX pool
    - Managing fee rates during migration
-5. **Re-delegation**: Delegate new LP tokens back to same validator
+5. **Re-delegation**: New delegator delegates LP tokens back to same validator (if new delegator specified, otherwise original delegator)
 6. **Event Emission**: Emit `EventTypeMigrateDelegation` event
 
 ### 3. Migration Module Requirements
@@ -128,6 +131,7 @@ public entry fun convert(
 - Migration module must be verified and implement required interface
 - Migration path must be pre-registered
 - Module address and name must be valid
+- New delegator address (if provided) must be a valid address
 
 ### Economic Security
 
@@ -156,6 +160,7 @@ sdk.NewEvent(
     types.EventTypeMigrateDelegation,
     sdk.NewAttribute(types.AttributeKeyDelegator, msg.DelegatorAddress),
     sdk.NewAttribute(types.AttributeKeyValidator, msg.ValidatorAddress),
+    sdk.NewAttribute(types.AttributeKeyNewDelegator, msg.NewDelegatorAddress),
     sdk.NewAttribute(types.AttributeKeyDenomLpFrom, msg.DenomLpFrom),
     sdk.NewAttribute(types.AttributeKeyDenomLpTo, msg.DenomLpTo),
     sdk.NewAttribute(types.AttributeKeyOriginShares, originShares.String()),

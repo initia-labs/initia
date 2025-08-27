@@ -567,6 +567,17 @@ func (ms msgServer) MigrateDelegation(ctx context.Context, msg *types.MsgMigrate
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid validator address: %s", err)
 	}
 
+	newDelAddr := delAddr
+	newDelAddrStr := msg.DelegatorAddress
+	if msg.NewDelegatorAddress != "" {
+		newDelAddr, err = ms.authKeeper.AddressCodec().StringToBytes(msg.NewDelegatorAddress)
+		if err != nil {
+			return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid new delegator address: %s", err)
+		}
+
+		newDelAddrStr = msg.NewDelegatorAddress
+	}
+
 	// get the migration info
 	migration, err := ms.Migrations.Get(ctx, collections.Join(msg.DenomLpFrom, msg.DenomLpTo))
 	if err != nil {
@@ -577,7 +588,7 @@ func (ms msgServer) MigrateDelegation(ctx context.Context, msg *types.MsgMigrate
 		return nil, sdkerrors.ErrInvalidRequest.Wrap(err.Error())
 	}
 
-	originShares, newShares, err := ms.Keeper.MigrateDelegation(ctx, delAddr, valAddr, migration)
+	originShares, newShares, err := ms.Keeper.MigrateDelegation(ctx, delAddr, valAddr, migration, newDelAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -588,6 +599,7 @@ func (ms msgServer) MigrateDelegation(ctx context.Context, msg *types.MsgMigrate
 			types.EventTypeMigrateDelegation,
 			sdk.NewAttribute(types.AttributeKeyDelegator, msg.DelegatorAddress),
 			sdk.NewAttribute(types.AttributeKeyValidator, msg.ValidatorAddress),
+			sdk.NewAttribute(types.AttributeKeyNewDelegator, newDelAddrStr),
 			sdk.NewAttribute(types.AttributeKeyDenomLpFrom, msg.DenomLpFrom),
 			sdk.NewAttribute(types.AttributeKeyDenomLpTo, msg.DenomLpTo),
 			sdk.NewAttribute(types.AttributeKeyOriginShares, originShares.String()),
