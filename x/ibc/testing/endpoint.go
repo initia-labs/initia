@@ -17,7 +17,9 @@ import (
 	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
 	"github.com/cosmos/ibc-go/v8/modules/core/exported"
 	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
-	ibctmattestor "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint-attestor"
+	ibctmattestor "github.com/initia-labs/initia/x/ibc/light-clients/07-tendermint-attestor"
+
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 )
 
 // Endpoint is a which represents a channel endpoint and its associated
@@ -109,18 +111,17 @@ func (endpoint *Endpoint) CreateClient() {
 			endpoint.Counterparty.Chain.ChainID, tmConfig.TrustLevel, tmConfig.TrustingPeriod, tmConfig.UnbondingPeriod, tmConfig.MaxClockDrift,
 			height, commitmenttypes.GetSDKSpecs(), UpgradePath)
 		consensusState = endpoint.Counterparty.Chain.LastHeader.ConsensusState()
-	case exported.TendermintAttestor:
+	case ibctmattestor.TendermintAttestor:
 		tmAttestorConfig, ok := endpoint.ClientConfig.(*TendermintAttestorConfig)
 		require.True(endpoint.Chain.T, ok)
 
 		height := endpoint.Counterparty.Chain.LastHeader.GetHeight().(clienttypes.Height)
 
-		attestors := make([]ibctmattestor.PubKey, 0, len(tmAttestorConfig.AttestorPrivkeys))
+		attestors := make([]codectypes.Any, 0, len(tmAttestorConfig.AttestorPrivkeys))
 		for _, privKey := range tmAttestorConfig.AttestorPrivkeys {
-			attestors = append(attestors, ibctmattestor.PubKey{
-				Type: ibctmattestor.PubKeyType(ibctmattestor.PubKeyType_value[strings.ToUpper(privKey.Type())]),
-				Key:  privKey.PubKey().Bytes(),
-			})
+			pubKeyAny, err := codectypes.NewAnyWithValue(privKey.PubKey())
+			require.NoError(endpoint.Chain.T, err)
+			attestors = append(attestors, *pubKeyAny)
 		}
 
 		clientState = ibctmattestor.NewClientState(
@@ -161,7 +162,7 @@ func (endpoint *Endpoint) UpdateClient() (err error) {
 	switch endpoint.ClientConfig.GetClientType() {
 	case exported.Tendermint:
 		header, err = endpoint.Chain.ConstructUpdateTMClientHeader(endpoint.Counterparty.Chain, endpoint.ClientID)
-	case exported.TendermintAttestor:
+	case ibctmattestor.TendermintAttestor:
 		header, err = endpoint.Chain.ConstructUpdateTMAttestorClientHeader(endpoint.Counterparty.Chain, endpoint.ClientID)
 
 	default:
@@ -194,7 +195,7 @@ func (endpoint *Endpoint) UpdateClientWithClientID(clientID string) (err error) 
 	switch clientType {
 	case exported.Tendermint:
 		header, err = endpoint.Chain.ConstructUpdateTMClientHeader(endpoint.Counterparty.Chain, clientID)
-	case exported.TendermintAttestor:
+	case ibctmattestor.TendermintAttestor:
 		header, err = endpoint.Chain.ConstructUpdateTMAttestorClientHeader(endpoint.Counterparty.Chain, clientID)
 
 	default:
@@ -265,7 +266,7 @@ func (endpoint *Endpoint) UpgradeChain() error {
 }
 
 func (endpoint *Endpoint) GetProofWithAttestations(proof []byte) ([]byte, error) {
-	if endpoint.ClientConfig.GetClientType() != exported.TendermintAttestor {
+	if endpoint.ClientConfig.GetClientType() != ibctmattestor.TendermintAttestor {
 		return proof, nil
 	}
 
@@ -279,8 +280,13 @@ func (endpoint *Endpoint) GetProofWithAttestations(proof []byte) ([]byte, error)
 			return nil, err
 		}
 
+		pubKeyAny, err := codectypes.NewAnyWithValue(privKey.PubKey())
+		if err != nil {
+			return nil, err
+		}
+
 		proofWithAttestations.Attestations = append(proofWithAttestations.Attestations, &ibctmattestor.Attestation{
-			PubKey:    privKey.PubKey().Bytes(),
+			PubKey:    *pubKeyAny,
 			Signature: signature,
 		})
 	}
@@ -314,7 +320,7 @@ func (endpoint *Endpoint) ConnOpenTry() error {
 
 	counterpartyClient, proofClient, proofConsensus, consensusHeight, proofInit, proofHeight := endpoint.QueryConnectionHandshakeProof()
 
-	if endpoint.ClientConfig.GetClientType() == exported.TendermintAttestor {
+	if endpoint.ClientConfig.GetClientType() == ibctmattestor.TendermintAttestor {
 		proofInit, err = endpoint.GetProofWithAttestations(proofInit)
 		if err != nil {
 			return err
@@ -344,7 +350,7 @@ func (endpoint *Endpoint) ConnOpenAck() error {
 	require.NoError(endpoint.Chain.T, err)
 
 	counterpartyClient, proofClient, proofConsensus, consensusHeight, proofTry, proofHeight := endpoint.QueryConnectionHandshakeProof()
-	if endpoint.ClientConfig.GetClientType() == exported.TendermintAttestor {
+	if endpoint.ClientConfig.GetClientType() == ibctmattestor.TendermintAttestor {
 		proofTry, err = endpoint.GetProofWithAttestations(proofTry)
 		if err != nil {
 			return err
@@ -369,7 +375,7 @@ func (endpoint *Endpoint) ConnOpenConfirm() error {
 	connectionKey := host.ConnectionKey(endpoint.Counterparty.ConnectionID)
 	proof, height := endpoint.Counterparty.Chain.QueryProof(connectionKey)
 
-	if endpoint.ClientConfig.GetClientType() == exported.TendermintAttestor {
+	if endpoint.ClientConfig.GetClientType() == ibctmattestor.TendermintAttestor {
 		proof, err = endpoint.GetProofWithAttestations(proof)
 		if err != nil {
 			return err
@@ -443,7 +449,7 @@ func (endpoint *Endpoint) ChanOpenTry() error {
 	channelKey := host.ChannelKey(endpoint.Counterparty.ChannelConfig.PortID, endpoint.Counterparty.ChannelID)
 	proof, height := endpoint.Counterparty.Chain.QueryProof(channelKey)
 
-	if endpoint.ClientConfig.GetClientType() == exported.TendermintAttestor {
+	if endpoint.ClientConfig.GetClientType() == ibctmattestor.TendermintAttestor {
 		proof, err = endpoint.GetProofWithAttestations(proof)
 		if err != nil {
 			return err
@@ -481,7 +487,7 @@ func (endpoint *Endpoint) ChanOpenAck() error {
 	channelKey := host.ChannelKey(endpoint.Counterparty.ChannelConfig.PortID, endpoint.Counterparty.ChannelID)
 	proof, height := endpoint.Counterparty.Chain.QueryProof(channelKey)
 
-	if endpoint.ClientConfig.GetClientType() == exported.TendermintAttestor {
+	if endpoint.ClientConfig.GetClientType() == ibctmattestor.TendermintAttestor {
 		proof, err = endpoint.GetProofWithAttestations(proof)
 		if err != nil {
 			return err
@@ -513,7 +519,7 @@ func (endpoint *Endpoint) ChanOpenConfirm() error {
 	channelKey := host.ChannelKey(endpoint.Counterparty.ChannelConfig.PortID, endpoint.Counterparty.ChannelID)
 	proof, height := endpoint.Counterparty.Chain.QueryProof(channelKey)
 
-	if endpoint.ClientConfig.GetClientType() == exported.TendermintAttestor {
+	if endpoint.ClientConfig.GetClientType() == ibctmattestor.TendermintAttestor {
 		proof, err = endpoint.GetProofWithAttestations(proof)
 		if err != nil {
 			return err
@@ -615,7 +621,7 @@ func (endpoint *Endpoint) ChanUpgradeTry(connectionHops []string) error {
 		return fmt.Errorf("height mismatch: %s != %s", height.String(), upgradeHeight.String())
 	}
 
-	if endpoint.ClientConfig.GetClientType() == exported.TendermintAttestor {
+	if endpoint.ClientConfig.GetClientType() == ibctmattestor.TendermintAttestor {
 		channelProof, err = endpoint.GetProofWithAttestations(channelProof)
 		if err != nil {
 			return err
@@ -674,7 +680,7 @@ func (endpoint *Endpoint) ChanUpgradeAck() error {
 		return fmt.Errorf("height mismatch: %s != %s", height.String(), upgradeHeight.String())
 	}
 
-	if endpoint.ClientConfig.GetClientType() == exported.TendermintAttestor {
+	if endpoint.ClientConfig.GetClientType() == ibctmattestor.TendermintAttestor {
 		channelProof, err = endpoint.GetProofWithAttestations(channelProof)
 		if err != nil {
 			return err
@@ -736,7 +742,7 @@ func (endpoint *Endpoint) ChanUpgradeConfirm() error {
 		return fmt.Errorf("height mismatch: %s != %s", height.String(), upgradeHeight.String())
 	}
 
-	if endpoint.ClientConfig.GetClientType() == exported.TendermintAttestor {
+	if endpoint.ClientConfig.GetClientType() == ibctmattestor.TendermintAttestor {
 		channelProof, err = endpoint.GetProofWithAttestations(channelProof)
 		if err != nil {
 			return err
@@ -784,7 +790,7 @@ func (endpoint *Endpoint) ChanUpgradeOpen() error {
 	channelKey := host.ChannelKey(endpoint.Counterparty.ChannelConfig.PortID, endpoint.Counterparty.ChannelID)
 	channelProof, height := endpoint.Counterparty.Chain.QueryProof(channelKey)
 
-	if endpoint.ClientConfig.GetClientType() == exported.TendermintAttestor {
+	if endpoint.ClientConfig.GetClientType() == ibctmattestor.TendermintAttestor {
 		channelProof, err = endpoint.GetProofWithAttestations(channelProof)
 		if err != nil {
 			return err

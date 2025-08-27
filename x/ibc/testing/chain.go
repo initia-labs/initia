@@ -40,7 +40,7 @@ import (
 
 	initiaapp "github.com/initia-labs/initia/app"
 
-	ibctmattestor "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint-attestor"
+	ibctmattestor "github.com/initia-labs/initia/x/ibc/light-clients/07-tendermint-attestor"
 )
 
 var MaxAccounts = 10

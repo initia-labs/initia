@@ -66,6 +66,8 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 )
 
+require github.com/cosmos/ics23/go v0.11.0
+
 require (
 	cloud.google.com/go v0.115.0 // indirect
 	cloud.google.com/go/auth v0.7.2 // indirect
@@ -99,7 +101,6 @@ require (
 	github.com/consensys/gnark-crypto v0.12.1 // indirect
 	github.com/cosmos/btcutil v1.0.5 // indirect
 	github.com/cosmos/gogogateway v1.2.0 // indirect
-	github.com/cosmos/ics23/go v0.11.0 // indirect
 	github.com/cosmos/interchain-security/v6 v6.3.0 // indirect
 	github.com/crate-crypto/go-ipa v0.0.0-20240223125850-b1e8a79f509c // indirect
 	github.com/crate-crypto/go-kzg-4844 v1.0.0 // indirect
@@ -264,7 +265,7 @@ replace (
 	github.com/cometbft/cometbft => github.com/initia-labs/cometbft v0.0.0-20250611034257-a68d9d17ca83
 	github.com/cosmos/cosmos-sdk => github.com/initia-labs/cosmos-sdk v0.0.0-20250609080732-be6c5d492f50
 
-	github.com/cosmos/ibc-go/v8 => ../ibc-go
+	// github.com/cosmos/ibc-go/v8 => ../ibc-go
 	github.com/initia-labs/movevm => github.com/initia-labs/movevm v1.1.0-rc.0
 	github.com/skip-mev/connect/v2 => github.com/initia-labs/connect/v2 v2.3.1
 )
