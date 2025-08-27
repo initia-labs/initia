@@ -1,4 +1,4 @@
-package tests
+package tendermintattestor_test
 
 import (
 	"testing"
