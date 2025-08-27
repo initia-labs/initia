@@ -7,11 +7,12 @@ import (
 
 	"cosmossdk.io/collections"
 	errorsmod "cosmossdk.io/errors"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	movetypes "github.com/initia-labs/initia/x/move/types"
 	"github.com/initia-labs/initia/x/mstaking/types"
 	vmtypes "github.com/initia-labs/movevm/types"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 // RegisterMigration registers a migration of a delegation from one lp denom to another.

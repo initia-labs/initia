@@ -7,11 +7,12 @@ import (
 
 	"cosmossdk.io/collections"
 	"cosmossdk.io/math"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	movetypes "github.com/initia-labs/initia/x/move/types"
 	"github.com/initia-labs/initia/x/mstaking/types"
 	vmtypes "github.com/initia-labs/movevm/types"
 	"github.com/stretchr/testify/require"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func Test_RegisterMigration(t *testing.T) {
