@@ -316,14 +316,21 @@ func (cs ClientState) hasSameAttestorsAndThreshold(cs2 ClientState) bool {
 	if len(pubkeys1) != len(pubkeys2) {
 		return false
 	}
-
-	for _, pubkey := range pubkeys1 {
-		if !slices.ContainsFunc(pubkeys2, func(pubkey2 cryptotypes.PubKey) bool {
-			return pubkey.Equals(pubkey2)
-		}) {
+	count1 := make(map[string]int, len(pubkeys1))
+	for _, pk := range pubkeys1 {
+		count1[pk.Address().String()]++
+	}
+	count2 := make(map[string]int, len(pubkeys2))
+	for _, pk := range pubkeys2 {
+		count2[pk.Address().String()]++
+	}
+	if len(count1) != len(count2) {
+		return false
+	}
+	for k, n := range count1 {
+		if count2[k] != n {
 			return false
 		}
 	}
-
 	return true
 }
