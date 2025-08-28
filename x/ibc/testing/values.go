@@ -20,10 +20,16 @@ import (
 )
 
 const (
-	FirstClientID     = "07-tendermint-0"
-	SecondClientID    = "07-tendermint-1"
-	FirstChannelID    = "channel-0"
-	FirstConnectionID = "connection-0"
+	FirstClientID          = "07-tendermint-0"
+	SecondClientID         = "07-tendermint-1"
+	FirstAttestorClientID  = "07-tendermint-attestor-0"
+	SecondAttestorClientID = "07-tendermint-attestor-1"
+	ThirdAttestorClientID  = "07-tendermint-attestor-2"
+	FirstChannelID         = "channel-0"
+	SecondChannelID        = "channel-1"
+	FirstConnectionID      = "connection-0"
+	SecondConnectionID     = "connection-1"
+	ThirdConnectionID      = "connection-2"
 
 	// Default params constants used to create a TM client
 	TrustingPeriod     time.Duration = time.Hour * 24 * 7 * 2
@@ -38,6 +44,8 @@ const (
 	TransferPort = ibctransfertypes.ModuleName
 	MockPort     = mock.ModuleName
 	MockFeePort  = simapp.MockFeePort
+
+	TransferVersion = ibctransfertypes.Version
 
 	// used for testing proposals
 	Title       = "title"

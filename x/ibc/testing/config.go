@@ -8,6 +8,10 @@ import (
 	"github.com/cosmos/ibc-go/v8/modules/core/exported"
 	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 	"github.com/cosmos/ibc-go/v8/testing/mock"
+	ibctmattestor "github.com/initia-labs/initia/x/ibc/light-clients/07-tendermint-attestor"
+
+	sdksecp256k1 "github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
+	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 )
 
 type ClientConfig interface {
@@ -32,6 +36,34 @@ func NewTendermintConfig() *TendermintConfig {
 
 func (tmcfg *TendermintConfig) GetClientType() string {
 	return exported.Tendermint
+}
+
+type TendermintAttestorConfig struct {
+	TendermintConfig
+	AttestorPrivkeys []cryptotypes.PrivKey
+	Threshold        uint32
+}
+
+func (tmcfg *TendermintAttestorConfig) GetClientType() string {
+	return ibctmattestor.TendermintAttestor
+}
+
+func NewTendermintAttestorConfig(numAttestors, threshold int) *TendermintAttestorConfig {
+	privKeys := make([]cryptotypes.PrivKey, 0, numAttestors)
+	for range numAttestors {
+		privKeys = append(privKeys, sdksecp256k1.GenPrivKey())
+	}
+
+	return &TendermintAttestorConfig{
+		TendermintConfig: TendermintConfig{
+			TrustLevel:      DefaultTrustLevel,
+			TrustingPeriod:  TrustingPeriod,
+			UnbondingPeriod: UnbondingPeriod,
+			MaxClockDrift:   MaxClockDrift,
+		},
+		AttestorPrivkeys: privKeys,
+		Threshold:        uint32(threshold),
+	}
 }
 
 type ConnectionConfig struct {

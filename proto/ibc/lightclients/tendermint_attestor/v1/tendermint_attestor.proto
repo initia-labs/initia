@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package ibc.lightclients.tendermint_attestor.v1;
+
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+import "google/protobuf/any.proto";
+import "ibc/lightclients/tendermint/v1/tendermint.proto";
+
+option go_package = "github.com/initia-labs/initia/x/ibc/light-clients/07-tendermint-attestor;tendermintattestor";
+
+// ClientState defines the client state for a Tendermint attestor.
+message ClientState {
+  option (gogoproto.goproto_getters) = false;
+
+  ibc.lightclients.tendermint.v1.ClientState client_state = 1 [(gogoproto.embed) = true];
+  repeated google.protobuf.Any attestor_pubkeys = 2 [(cosmos_proto.accepts_interface) = "cosmos.crypto.PubKey"];
+  uint32 threshold = 3;
+}
+
+// ConsensusState defines the consensus state from Tendermint attestor.
+message ConsensusState {
+  ibc.lightclients.tendermint.v1.ConsensusState consensus_state = 1 [(gogoproto.embed) = true];
+}
+
+// Misbehaviour defines the misbehaviour of a Tendermint attestor.
+message Misbehaviour {
+  option (gogoproto.goproto_getters) = false;
+
+  Header header_1 = 1 [(gogoproto.customname) = "Header1"];
+  Header header_2 = 2 [(gogoproto.customname) = "Header2"];
+}
+
+// Header defines the header for a Tendermint attestor.
+message Header {
+  ibc.lightclients.tendermint.v1.Header header = 1 [(gogoproto.embed) = true];
+}
