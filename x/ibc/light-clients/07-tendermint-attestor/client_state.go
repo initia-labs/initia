@@ -49,18 +49,16 @@ func (cs ClientState) Validate() error {
 	}
 
 	// duplication check for attestor pubkeys
-	seenPubKeys := make([]cryptotypes.PubKey, 0, len(cs.AttestorPubkeys))
+	seenPubKeys := make([]*cryptotypes.PubKey, 0, len(cs.AttestorPubkeys))
 	attestorPubKeys, err := cs.GetAttestorPubkeys()
 	if err != nil {
 		return err
 	}
 	for _, attestorPubkey := range attestorPubKeys {
-		if slices.ContainsFunc(seenPubKeys, func(seenPubKey cryptotypes.PubKey) bool {
-			return attestorPubkey.Equals(seenPubKey)
-		}) {
+		if slices.Contains(seenPubKeys, &attestorPubkey) {
 			return errorsmod.Wrapf(clienttypes.ErrInvalidClient, "duplicate attestor pubkey: %s", attestorPubkey.String())
 		}
-		seenPubKeys = append(seenPubKeys, attestorPubkey)
+		seenPubKeys = append(seenPubKeys, &attestorPubkey)
 	}
 	return nil
 }
@@ -293,10 +291,11 @@ func verifyDelayPeriodPassed(ctx sdk.Context, store storetypes.KVStore, proofHei
 func (cs ClientState) GetAttestorPubkeys() ([]cryptotypes.PubKey, error) {
 	pubKeys := make([]cryptotypes.PubKey, 0, len(cs.AttestorPubkeys))
 	for i, attestorPubkey := range cs.AttestorPubkeys {
-		if attestorPubkey == nil || attestorPubkey.GetCachedValue() == nil {
-			return nil, errorsmod.Wrapf(clienttypes.ErrInvalidClient, "invalid attestor pubkey: %d", i)
+		if pk, ok := attestorPubkey.GetCachedValue().(cryptotypes.PubKey); ok {
+			pubKeys = append(pubKeys, pk)
+		} else {
+			return nil, errorsmod.Wrapf(clienttypes.ErrInvalidClient, "attestor pubkey at index %d has unexpected type", i)
 		}
-		pubKeys = append(pubKeys, attestorPubkey.GetCachedValue().(cryptotypes.PubKey))
 	}
 	return pubKeys, nil
 }

@@ -944,6 +944,13 @@ func (endpoint *Endpoint) AcknowledgePacket(packet channeltypes.Packet, ack []by
 	// get proof of acknowledgement on counterparty
 	packetKey := host.PacketAcknowledgementKey(packet.GetDestPort(), packet.GetDestChannel(), packet.GetSequence())
 	proof, proofHeight := endpoint.Counterparty.QueryProof(packetKey)
+	if endpoint.ClientConfig.GetClientType() == ibctmattestor.TendermintAttestor {
+		proofWithAttestations, err := endpoint.GetProofWithAttestations(proof)
+		if err != nil {
+			return err
+		}
+		proof = proofWithAttestations
+	}
 
 	ackMsg := channeltypes.NewMsgAcknowledgement(packet, ack, proof, proofHeight, endpoint.Chain.SenderAccount.GetAddress().String())
 
@@ -966,6 +973,14 @@ func (endpoint *Endpoint) TimeoutPacket(packet channeltypes.Packet) error {
 
 	counterparty := endpoint.Counterparty
 	proof, proofHeight := counterparty.QueryProof(packetKey)
+	if endpoint.ClientConfig.GetClientType() == ibctmattestor.TendermintAttestor {
+		proofWithAttestations, err := endpoint.GetProofWithAttestations(proof)
+		if err != nil {
+			return err
+		}
+		proof = proofWithAttestations
+	}
+
 	nextSeqRecv, found := counterparty.Chain.App.GetIBCKeeper().ChannelKeeper.GetNextSequenceRecv(counterparty.Chain.GetContext(), counterparty.ChannelConfig.PortID, counterparty.ChannelID)
 	require.True(endpoint.Chain.T, found)
 
@@ -992,6 +1007,13 @@ func (endpoint *Endpoint) TimeoutOnClose(packet channeltypes.Packet) error {
 	}
 
 	proof, proofHeight := endpoint.Counterparty.QueryProof(packetKey)
+	if endpoint.ClientConfig.GetClientType() == ibctmattestor.TendermintAttestor {
+		proofWithAttestations, err := endpoint.GetProofWithAttestations(proof)
+		if err != nil {
+			return err
+		}
+		proof = proofWithAttestations
+	}
 
 	channelKey := host.ChannelKey(packet.GetDestPort(), packet.GetDestChannel())
 	proofClosed, _ := endpoint.Counterparty.QueryProof(channelKey)

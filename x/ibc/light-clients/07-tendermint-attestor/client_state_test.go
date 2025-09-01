@@ -365,7 +365,7 @@ func (suite *TMAttestorTestSuite) TestVerifyMembership() {
 				err = testingpath.EndpointB.UpdateClient()
 				suite.Require().NoError(err)
 
-				res, err = testingpath.EndpointB.RecvPacketWithResult(packet)
+				_, err = testingpath.EndpointB.RecvPacketWithResult(packet)
 				suite.Require().NoError(err)
 
 				key := host.PacketAcknowledgementKey(packet.GetDestPort(), packet.GetDestChannel(), packet.GetSequence())

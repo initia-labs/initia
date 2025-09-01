@@ -3,9 +3,13 @@ package tendermintattestor_test
 import (
 	"time"
 
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	sdksecp256k1 "github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
+
 	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
 	"github.com/cosmos/ibc-go/v8/modules/core/exported"
 	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
+
 	ibctmattestor "github.com/initia-labs/initia/x/ibc/light-clients/07-tendermint-attestor"
 	ibctesting "github.com/initia-labs/initia/x/ibc/testing"
 )
@@ -29,13 +33,32 @@ func (suite *TMAttestorTestSuite) TestCheckSubstituteUpdateStateBasic() {
 		{
 			"non-matching substitute", func() {
 				suite.coordinator.SetupClients(substitutePath)
-				substituteClientState, ok := suite.chainA.GetClientState(substitutePath.EndpointA.ClientID).(*ibctmattestor.ClientState)
+				var ok bool
+				substituteClientState, ok = suite.chainA.GetClientState(substitutePath.EndpointA.ClientID).(*ibctmattestor.ClientState)
 				suite.Require().True(ok)
-				// change trusting period so that test should fail
-				substituteClientState.TrustingPeriod = time.Hour * 24 * 7
-
-				tmClientState := substituteClientState
-				tmClientState.ChainId += "different chain"
+				// change trust level so that test should fail
+				substituteClientState.(*ibctmattestor.ClientState).TrustLevel = ibctm.Fraction{Numerator: 1, Denominator: 4}
+			},
+		},
+		{
+			"non-matching attestors", func() {
+				suite.coordinator.SetupClients(substitutePath)
+				var ok bool
+				substituteClientState, ok = suite.chainA.GetClientState(substitutePath.EndpointA.ClientID).(*ibctmattestor.ClientState)
+				suite.Require().True(ok)
+				privKey := sdksecp256k1.GenPrivKey()
+				anyPk, err := codectypes.NewAnyWithValue(privKey.PubKey())
+				suite.Require().NoError(err)
+				substituteClientState.(*ibctmattestor.ClientState).AttestorPubkeys = []*codectypes.Any{anyPk}
+			},
+		},
+		{
+			"non-matching threshold", func() {
+				suite.coordinator.SetupClients(substitutePath)
+				var ok bool
+				substituteClientState, ok = suite.chainA.GetClientState(substitutePath.EndpointA.ClientID).(*ibctmattestor.ClientState)
+				suite.Require().True(ok)
+				substituteClientState.(*ibctmattestor.ClientState).Threshold = 1
 			},
 		},
 	}

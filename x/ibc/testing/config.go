@@ -3,16 +3,16 @@ package ibctesting
 import (
 	"time"
 
+	sdksecp256k1 "github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
+	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
+
+	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	connectiontypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	"github.com/cosmos/ibc-go/v8/modules/core/exported"
 	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
+
 	ibctmattestor "github.com/initia-labs/initia/x/ibc/light-clients/07-tendermint-attestor"
-
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-
-	sdksecp256k1 "github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
-	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 )
 
 type ClientConfig interface {

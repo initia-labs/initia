@@ -1,6 +1,7 @@
 package tendermintattestor_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -176,6 +177,11 @@ func (suite *TMAttestorTestSuite) TestTendermintChangeLightClientAndUpgradeChann
 	err = path.RelayPacket(packet)
 	suite.Require().NoError(err)
 
+	// check balance on receiver side should be increased
+	counterPartyDenom := transfertypes.ParseDenomTrace(fmt.Sprintf("%s/%s/%s", ibctesting.TransferPort, ibctesting.FirstChannelID, sdk.DefaultBondDenom)).IBCDenom()
+	balance := path.EndpointB.Chain.GetInitiaApp().BankKeeper.GetBalance(suite.chainB.GetContext(), suite.chainB.SenderAccount.GetAddress(), counterPartyDenom)
+	suite.Require().Equal(sdkmath.NewInt(100), balance.Amount)
+
 	// create new path with 07-tendermint-attestor light client
 	path.EndpointA.ClientConfig = ibctesting.NewTendermintAttestorConfig(0, 0)
 	err = path.EndpointA.CreateClient()
@@ -204,6 +210,15 @@ func (suite *TMAttestorTestSuite) TestTendermintChangeLightClientAndUpgradeChann
 	suite.Require().Equal(path.EndpointA.ChannelID, ibctesting.FirstChannelID)
 	suite.Require().Equal(path.EndpointB.ChannelID, ibctesting.FirstChannelID)
 
-	_, err = suite.chainA.SendMsgs(msgTransfer)
+	res, err = suite.chainA.SendMsgs(msgTransfer)
 	suite.Require().NoError(err)
+
+	packet, err = ibctesting.ParsePacketFromEvents(res.GetEvents())
+	suite.Require().NoError(err)
+	err = path.RelayPacket(packet)
+	suite.Require().NoError(err)
+
+	// check balance on receiver side should be increased again
+	balance = path.EndpointB.Chain.GetInitiaApp().BankKeeper.GetBalance(suite.chainB.GetContext(), suite.chainB.SenderAccount.GetAddress(), counterPartyDenom)
+	suite.Require().Equal(sdkmath.NewInt(200), balance.Amount)
 }
