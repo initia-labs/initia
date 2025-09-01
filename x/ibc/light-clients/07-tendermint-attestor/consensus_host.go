@@ -1,6 +1,8 @@
 package tendermintattestor
 
 import (
+	errorsmod "cosmossdk.io/errors"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
@@ -29,5 +31,9 @@ func (c *ConsensusHost) GetSelfConsensusState(ctx sdk.Context, height exported.H
 
 // ValidateSelfClient implements the 02-client clienttypes.ConsensusHost interface.
 func (c *ConsensusHost) ValidateSelfClient(ctx sdk.Context, clientState exported.ClientState) error {
-	return c.ConsensusHost.ValidateSelfClient(ctx, clientState)
+	tmAttestorClient, ok := clientState.(*ClientState)
+	if !ok {
+		return errorsmod.Wrapf(clienttypes.ErrInvalidClient, "client must be a Tendermint client, expected: %T, got: %T", &ClientState{}, tmAttestorClient)
+	}
+	return c.ConsensusHost.ValidateSelfClient(ctx, tmAttestorClient.ClientState)
 }

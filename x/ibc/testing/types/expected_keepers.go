@@ -10,4 +10,6 @@ import (
 // IBC testing package
 type StakingKeeper interface {
 	GetHistoricalInfo(ctx context.Context, height int64) (stakingtypes.HistoricalInfo, error)
+	DeleteHistoricalInfo(ctx context.Context, height int64) error
+	TrackHistoricalInfo(ctx context.Context) error
 }

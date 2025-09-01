@@ -52,3 +52,7 @@ func GetMarshaledResultData(data []byte) ([][]byte, error) {
 	}
 	return res, nil
 }
+
+func GetAltSigners(altVal *tmtypes.Validator, altPrivVal tmtypes.PrivValidator) map[string]tmtypes.PrivValidator {
+	return map[string]tmtypes.PrivValidator{altVal.Address.String(): altPrivVal}
+}

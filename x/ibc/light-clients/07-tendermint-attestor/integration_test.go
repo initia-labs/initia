@@ -32,11 +32,12 @@ func (suite *TMAttestorTestSuite) SetupTest() {
 	suite.coordinator = ibctesting.NewCoordinator(suite.T(), 2)
 	suite.chainA = suite.coordinator.GetChain(ibctesting.GetChainID(1))
 	suite.chainB = suite.coordinator.GetChain(ibctesting.GetChainID(2))
+	// commit some blocks so that QueryProof returns valid proof (cannot return valid query if height <= 1)
+	suite.coordinator.CommitNBlocks(suite.chainA, 2)
+	suite.coordinator.CommitNBlocks(suite.chainB, 2)
 }
 
 func (suite *TMAttestorTestSuite) TestTendermintAttestor() {
-	suite.SetupTest()
-
 	path := ibctesting.NewPathWithOneTendermintAttestor(suite.chainA, suite.chainB, 5, 3)
 
 	suite.coordinator.SetupConnections(path)
@@ -57,8 +58,6 @@ func (suite *TMAttestorTestSuite) TestTendermintAttestor() {
 }
 
 func (suite *TMAttestorTestSuite) TestTendermintZeroAttestor() {
-	suite.SetupTest()
-
 	path := ibctesting.NewPathWithOneTendermintAttestor(suite.chainA, suite.chainB, 0, 0)
 
 	suite.coordinator.SetupConnections(path)
@@ -79,8 +78,6 @@ func (suite *TMAttestorTestSuite) TestTendermintZeroAttestor() {
 }
 
 func (suite *TMAttestorTestSuite) TestTendermintAttestorAnotherConnection() {
-	suite.SetupTest()
-
 	path := ibctesting.NewPathWithOneTendermintAttestor(suite.chainA, suite.chainB, 0, 0)
 
 	suite.coordinator.SetupConnections(path)
@@ -111,8 +108,6 @@ func (suite *TMAttestorTestSuite) TestTendermintAttestorAnotherConnection() {
 }
 
 func (suite *TMAttestorTestSuite) TestTendermintChangeAttestorSet() {
-	suite.SetupTest()
-
 	path := ibctesting.NewPathWithOneTendermintAttestor(suite.chainA, suite.chainB, 0, 0)
 
 	suite.coordinator.SetupConnections(path)
@@ -150,8 +145,6 @@ func (suite *TMAttestorTestSuite) TestTendermintChangeAttestorSet() {
 }
 
 func (suite *TMAttestorTestSuite) TestTendermintChangeLightClientAndUpgradeChannel() {
-	suite.SetupTest()
-
 	// create a path with 07-tendermint light clients
 	path := ibctesting.NewPath(suite.chainA, suite.chainB)
 

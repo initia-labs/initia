@@ -84,7 +84,7 @@ func (cs ClientState) CheckSubstituteAndUpdateState(
 // and threshold match between the two clients.
 func IsMatchingClientState(subject, substitute ClientState) bool {
 	// check if the attestors and threshold are the same
-	if !subject.hasSameAttestorsAndThreshold(substitute) {
+	if !subject.HasSameAttestorsAndThreshold(substitute) {
 		return false
 	}
 

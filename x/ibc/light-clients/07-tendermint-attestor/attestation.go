@@ -61,6 +61,9 @@ func (m *MerkleProofBytesWithAttestations) UnpackInterfaces(unpacker codectypes.
 
 // GetPubKey returns the public key from the attestation.
 func (at Attestation) GetPubKey() (pk cryptotypes.PubKey) {
+	if at.PubKey == nil {
+		return nil
+	}
 	content, ok := at.PubKey.GetCachedValue().(cryptotypes.PubKey)
 	if !ok {
 		return nil

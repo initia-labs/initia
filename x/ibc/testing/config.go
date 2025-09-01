@@ -7,8 +7,9 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	"github.com/cosmos/ibc-go/v8/modules/core/exported"
 	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
-	"github.com/cosmos/ibc-go/v8/testing/mock"
 	ibctmattestor "github.com/initia-labs/initia/x/ibc/light-clients/07-tendermint-attestor"
+
+	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 
 	sdksecp256k1 "github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
@@ -86,8 +87,8 @@ type ChannelConfig struct {
 
 func NewChannelConfig() *ChannelConfig {
 	return &ChannelConfig{
-		PortID:  mock.PortID,
-		Version: DefaultChannelVersion,
+		PortID:  transfertypes.PortID,
+		Version: transfertypes.Version,
 		Order:   channeltypes.UNORDERED,
 	}
 }

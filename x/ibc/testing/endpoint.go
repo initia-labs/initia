@@ -232,11 +232,21 @@ func (endpoint *Endpoint) UpgradeChain() error {
 		return fmt.Errorf("cannot upgrade chain if there is no counterparty client")
 	}
 
-	clientState := endpoint.Counterparty.GetClientState().(*ibctm.ClientState)
+	var clientState exported.ClientState
+	var tmClientState *ibctm.ClientState
+
+	switch endpoint.Counterparty.ClientConfig.GetClientType() {
+	case exported.Tendermint:
+		clientState = endpoint.Counterparty.GetClientState()
+		tmClientState = clientState.(*ibctm.ClientState)
+	case ibctmattestor.TendermintAttestor:
+		clientState = endpoint.Counterparty.GetClientState()
+		tmClientState = clientState.(*ibctmattestor.ClientState).ClientState
+	}
 
 	// increment revision number in chainID
 
-	oldChainID := clientState.ChainId
+	oldChainID := tmClientState.ChainId
 	if !clienttypes.IsRevisionFormat(oldChainID) {
 		return fmt.Errorf("cannot upgrade chain which is not of revision format: %s", oldChainID)
 	}
@@ -254,15 +264,33 @@ func (endpoint *Endpoint) UpgradeChain() error {
 	endpoint.Chain.NextBlock() // commit changes
 
 	// update counterparty client manually
-	clientState.ChainId = newChainID
-	clientState.LatestHeight = clienttypes.NewHeight(revisionNumber+1, clientState.LatestHeight.GetRevisionHeight()+1)
-	endpoint.Counterparty.SetClientState(clientState)
+	tmClientState.ChainId = newChainID
+	tmClientState.LatestHeight = clienttypes.NewHeight(revisionNumber+1, tmClientState.LatestHeight.GetRevisionHeight()+1)
 
-	consensusState := &ibctm.ConsensusState{
+	var consensusState exported.ConsensusState
+	tmConsensusState := &ibctm.ConsensusState{
 		Timestamp:          endpoint.Chain.LastHeader.GetTime(),
 		Root:               commitmenttypes.NewMerkleRoot(endpoint.Chain.LastHeader.Header.GetAppHash()),
 		NextValidatorsHash: endpoint.Chain.LastHeader.Header.NextValidatorsHash,
 	}
+
+	switch endpoint.Counterparty.ClientConfig.GetClientType() {
+	case exported.Tendermint:
+		clientState = tmClientState
+		consensusState = tmConsensusState
+
+	case ibctmattestor.TendermintAttestor:
+		attestorClientState := clientState.(*ibctmattestor.ClientState)
+		attestorClientState.ClientState = tmClientState
+		clientState = attestorClientState
+
+		attestorConsensusState := &ibctmattestor.ConsensusState{
+			ConsensusState: tmConsensusState,
+		}
+		consensusState = attestorConsensusState
+	}
+	endpoint.Counterparty.SetClientState(clientState)
+
 	endpoint.Counterparty.SetConsensusState(consensusState, clientState.GetLatestHeight())
 
 	// ensure the next update isn't identical to the one set in state
@@ -871,6 +899,13 @@ func (endpoint *Endpoint) RecvPacketWithResult(packet channeltypes.Packet) (*abc
 	// get proof of packet commitment on source
 	packetKey := host.PacketCommitmentKey(packet.GetSourcePort(), packet.GetSourceChannel(), packet.GetSequence())
 	proof, proofHeight := endpoint.Counterparty.Chain.QueryProof(packetKey)
+	if endpoint.ClientConfig.GetClientType() == ibctmattestor.TendermintAttestor {
+		proofWithAttestations, err := endpoint.Counterparty.GetProofWithAttestations(proof)
+		if err != nil {
+			return nil, err
+		}
+		proof = proofWithAttestations
+	}
 
 	recvMsg := channeltypes.NewMsgRecvPacket(packet, proof, proofHeight, endpoint.Chain.SenderAccount.GetAddress().String())
 

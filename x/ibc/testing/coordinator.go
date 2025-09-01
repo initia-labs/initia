@@ -13,7 +13,7 @@ var (
 	ChainIDPrefix = "testchain"
 	// to disable revision format, set ChainIDSuffix to ""
 	ChainIDSuffix   = "-1"
-	globalStartTime = time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC)
+	GlobalStartTime = time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC)
 	TimeIncrement   = time.Second * 5
 )
 
@@ -31,7 +31,7 @@ func NewCoordinator(t *testing.T, n int) *Coordinator {
 	chains := make(map[string]*TestChain)
 	coord := &Coordinator{
 		T:           t,
-		CurrentTime: globalStartTime,
+		CurrentTime: GlobalStartTime,
 	}
 
 	for i := 1; i <= n; i++ {
@@ -124,17 +124,6 @@ func (coord *Coordinator) CreateConnections(path *Path) error {
 	}
 
 	return nil
-}
-
-// CreateMockChannels constructs and executes channel handshake messages to create OPEN
-// channels that use a mock application module that returns nil on all callbacks. This
-// function is expects the channels to be successfully opened otherwise testing will
-// fail.
-func (coord *Coordinator) CreateMockChannels(path *Path) {
-	path.EndpointA.ChannelConfig.PortID = MockPort
-	path.EndpointB.ChannelConfig.PortID = MockPort
-
-	coord.CreateChannels(path)
 }
 
 // CreateTransferChannels constructs and executes channel handshake messages to create OPEN

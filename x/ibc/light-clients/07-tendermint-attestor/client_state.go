@@ -167,7 +167,7 @@ func (cs ClientState) VerifyMembership(
 
 	var merkleProofBytesWithAttestations MerkleProofBytesWithAttestations
 	if err := cdc.Unmarshal(proofWithAttestations, &merkleProofBytesWithAttestations); err != nil {
-		return errorsmod.Wrap(commitmenttypes.ErrInvalidProof, "failed to unmarshal proof into ICS 23 commitment merkle proof")
+		return errorsmod.Wrap(commitmenttypes.ErrInvalidProof, "failed to unmarshal proof into merkle proof bytes with attestations")
 	}
 
 	if err := cs.VerifySignatures(ctx, merkleProofBytesWithAttestations.ProofBytes, merkleProofBytesWithAttestations.Attestations); err != nil {
@@ -306,7 +306,7 @@ func (cs *ClientState) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
 }
 
 // hasSameAttestorsAndThreshold returns true if the attestors and threshold are the same between the two client states
-func (cs ClientState) hasSameAttestorsAndThreshold(cs2 ClientState) bool {
+func (cs ClientState) HasSameAttestorsAndThreshold(cs2 ClientState) bool {
 	if cs.Threshold != cs2.Threshold {
 		return false
 	}

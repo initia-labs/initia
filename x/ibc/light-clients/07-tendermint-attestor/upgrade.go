@@ -31,7 +31,7 @@ import (
 func (cs ClientState) VerifyUpgradeAndUpdateState(
 	ctx sdk.Context, cdc codec.BinaryCodec, clientStore storetypes.KVStore,
 	upgradedClient exported.ClientState, upgradedConsState exported.ConsensusState,
-	upgradeClientProof, upgradeConsStateProof []byte,
+	upgradeClientProofWithAttestations, upgradeConsStateProofWithAttestations []byte,
 ) error {
 	if len(cs.UpgradePath) == 0 {
 		return errorsmod.Wrap(clienttypes.ErrInvalidUpgradeClient, "cannot upgrade client, no upgrade path set")
@@ -60,16 +60,33 @@ func (cs ClientState) VerifyUpgradeAndUpdateState(
 	}
 
 	// check if the upgraded client has the same attestors and threshold
-	if !cs.hasSameAttestorsAndThreshold(*tmUpgradeClient) {
+	if !cs.HasSameAttestorsAndThreshold(*tmUpgradeClient) {
 		return errorsmod.Wrap(clienttypes.ErrInvalidUpgradeClient, "upgraded client has different attestors and threshold")
+	}
+
+	var merkleProofClientBytesWithAttestations, merkleProofConsStateBytesWithAttestations MerkleProofBytesWithAttestations
+	if err := cdc.Unmarshal(upgradeClientProofWithAttestations, &merkleProofClientBytesWithAttestations); err != nil {
+		return errorsmod.Wrap(commitmenttypes.ErrInvalidProof, "failed to unmarshal proof into merkle proof bytes with attestations")
+	}
+
+	if err := cdc.Unmarshal(upgradeConsStateProofWithAttestations, &merkleProofConsStateBytesWithAttestations); err != nil {
+		return errorsmod.Wrap(commitmenttypes.ErrInvalidProof, "failed to unmarshal proof into merkle proof bytes with attestations")
+	}
+
+	if err := cs.VerifySignatures(ctx, merkleProofClientBytesWithAttestations.ProofBytes, merkleProofClientBytesWithAttestations.Attestations); err != nil {
+		return err
+	}
+
+	if err := cs.VerifySignatures(ctx, merkleProofConsStateBytesWithAttestations.ProofBytes, merkleProofConsStateBytesWithAttestations.Attestations); err != nil {
+		return err
 	}
 
 	// unmarshal proofs
 	var merkleProofClient, merkleProofConsState commitmenttypes.MerkleProof
-	if err := cdc.Unmarshal(upgradeClientProof, &merkleProofClient); err != nil {
+	if err := cdc.Unmarshal(merkleProofClientBytesWithAttestations.ProofBytes, &merkleProofClient); err != nil {
 		return errorsmod.Wrapf(commitmenttypes.ErrInvalidProof, "could not unmarshal client merkle proof: %v", err)
 	}
-	if err := cdc.Unmarshal(upgradeConsStateProof, &merkleProofConsState); err != nil {
+	if err := cdc.Unmarshal(merkleProofConsStateBytesWithAttestations.ProofBytes, &merkleProofConsState); err != nil {
 		return errorsmod.Wrapf(commitmenttypes.ErrInvalidProof, "could not unmarshal consensus state merkle proof: %v", err)
 	}
 
