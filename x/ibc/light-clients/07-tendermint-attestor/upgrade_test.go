@@ -221,6 +221,7 @@ func (suite *TMAttestorTestSuite) TestVerifyUpgrade() {
 		{
 			name: "unsuccessful upgrade: client proof unmarshal failed",
 			setup: func() {
+				lastHeight = clienttypes.NewHeight(0, uint64(suite.chainB.GetContext().BlockHeight()+1))
 				suite.chainB.App.GetUpgradeKeeper().SetUpgradedConsensusState(suite.chainB.GetContext(), int64(lastHeight.GetRevisionHeight()), upgradedConsStateBz) //nolint:errcheck // ignore error for test
 
 				suite.coordinator.CommitBlock(suite.chainB)
@@ -239,6 +240,7 @@ func (suite *TMAttestorTestSuite) TestVerifyUpgrade() {
 		{
 			name: "unsuccessful upgrade: consensus state proof unmarshal failed",
 			setup: func() {
+				lastHeight = clienttypes.NewHeight(0, uint64(suite.chainB.GetContext().BlockHeight()+1))
 				suite.chainB.App.GetUpgradeKeeper().SetUpgradedClient(suite.chainB.GetContext(), int64(lastHeight.GetRevisionHeight()), upgradedClientBz) //nolint:errcheck // ignore error for test
 				suite.coordinator.CommitBlock(suite.chainB)
 				err := path.EndpointA.UpdateClient()
@@ -373,6 +375,8 @@ func (suite *TMAttestorTestSuite) TestVerifyUpgrade() {
 		{
 			name: "unsuccessful upgrade: client is expired",
 			setup: func() {
+				lastHeight = clienttypes.NewHeight(0, uint64(suite.chainB.GetContext().BlockHeight()+1))
+
 				// zero custom fields and store in upgrade store
 				suite.chainB.App.GetUpgradeKeeper().SetUpgradedClient(suite.chainB.GetContext(), int64(lastHeight.GetRevisionHeight()), upgradedClientBz) //nolint:errcheck // ignore error for test
 
