@@ -244,6 +244,8 @@ func (suite *TMAttestorTestSuite) TestValidateSelfClient() {
 		suite.Run(tc.name, func() {
 			suite.SetupTest()
 
+			suite.chainA.App.GetIBCKeeper().ClientKeeper.SetConsensusHost(ibctmattestor.NewConsensusHost(suite.chainA.App.GetStakingKeeper()))
+
 			tc.malleate()
 
 			err := suite.chainA.App.GetIBCKeeper().ClientKeeper.ValidateSelfClient(suite.chainA.GetContext(), clientState)

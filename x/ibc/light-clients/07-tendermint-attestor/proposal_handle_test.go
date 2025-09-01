@@ -209,8 +209,8 @@ func (suite *TMAttestorTestSuite) TestIsMatchingClientState() {
 		},
 		{
 			"not matching, trust level is different", func() {
-				subjectClientState.TrustLevel = ibctm.Fraction{2, 3}
-				substituteClientState.TrustLevel = ibctm.Fraction{1, 3}
+				subjectClientState.TrustLevel = ibctm.Fraction{Numerator: 2, Denominator: 3}
+				substituteClientState.TrustLevel = ibctm.Fraction{Numerator: 1, Denominator: 3}
 			}, false,
 		},
 	}
