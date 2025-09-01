@@ -13,6 +13,7 @@ import (
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/keeper"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 
+	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
 	ibctestingtypes "github.com/initia-labs/initia/x/ibc/testing/types"
 	icaauthkeeper "github.com/initia-labs/initia/x/intertx/keeper"
 	movekeeper "github.com/initia-labs/initia/x/move/keeper"
@@ -83,4 +84,8 @@ func (app *InitiaApp) CheckStateContextGetter() func() sdk.Context {
 	return func() sdk.Context {
 		return app.GetContextForCheckTx(nil)
 	}
+}
+
+func (app *InitiaApp) GetTransferKeeper() *ibctransferkeeper.Keeper {
+	return app.TransferKeeper
 }

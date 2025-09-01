@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
-	ibctesting "github.com/cosmos/ibc-go/v8/testing"
+	ibctesting "github.com/initia-labs/initia/x/ibc/testing"
 
 	"github.com/cosmos/cosmos-sdk/codec/address"
 	sdk "github.com/cosmos/cosmos-sdk/types"

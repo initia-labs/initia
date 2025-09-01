@@ -12,7 +12,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
 	connectiontypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	commitmenttypes "github.com/cosmos/ibc-go/v8/modules/core/23-commitment/types"
 	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 	"github.com/cosmos/ibc-go/v8/testing/mock"
@@ -20,10 +22,20 @@ import (
 )
 
 const (
-	FirstClientID     = "07-tendermint-0"
-	SecondClientID    = "07-tendermint-1"
-	FirstChannelID    = "channel-0"
-	FirstConnectionID = "connection-0"
+	ChainID          = "initiation-0"
+	ChainIDRevision0 = "initiation-0"
+	ChainIDRevision1 = "initiation-1"
+
+	FirstClientID          = "07-tendermint-0"
+	SecondClientID         = "07-tendermint-1"
+	FirstAttestorClientID  = "07-tendermint-attestor-0"
+	SecondAttestorClientID = "07-tendermint-attestor-1"
+	ThirdAttestorClientID  = "07-tendermint-attestor-2"
+	FirstChannelID         = "channel-0"
+	SecondChannelID        = "channel-1"
+	FirstConnectionID      = "connection-0"
+	SecondConnectionID     = "connection-1"
+	ThirdConnectionID      = "connection-2"
 
 	// Default params constants used to create a TM client
 	TrustingPeriod     time.Duration = time.Hour * 24 * 7 * 2
@@ -39,6 +51,8 @@ const (
 	MockPort     = mock.ModuleName
 	MockFeePort  = simapp.MockFeePort
 
+	TransferVersion = ibctransfertypes.Version
+
 	// used for testing proposals
 	Title       = "title"
 	Description = "description"
@@ -48,6 +62,9 @@ const (
 )
 
 var (
+	Height          = clienttypes.NewHeight(0, 4)
+	NewClientHeight = clienttypes.NewHeight(1, 1)
+
 	DefaultOpenInitVersion *connectiontypes.Version
 
 	// DefaultTrustLevel sets params variables used to create a TM client
@@ -61,10 +78,7 @@ var (
 
 	ConnectionVersion = connectiontypes.GetCompatibleVersions()[0]
 
-	MockAcknowledgement          = mock.MockAcknowledgement.Acknowledgement()
-	MockPacketData               = mock.MockPacketData
-	MockFailPacketData           = mock.MockFailPacketData
-	MockRecvCanaryCapabilityName = mock.MockRecvCanaryCapabilityName
+	TransferSuccessAcknowledgement = channeltypes.NewResultAcknowledgement([]byte{byte(1)})
 
 	prefix = commitmenttypes.NewMerklePrefix([]byte("ibc"))
 )

@@ -39,6 +39,9 @@ import (
 	moveconfig "github.com/initia-labs/initia/x/move/config"
 	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
 
+	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
+
+	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
 	oracleconfig "github.com/skip-mev/connect/v2/oracle/config"
 )
 
@@ -63,6 +66,8 @@ type TestingApp interface {
 	GetScopedIBCKeeper() capabilitykeeper.ScopedKeeper
 	GetICAControllerKeeper() *icacontrollerkeeper.Keeper
 	GetICAAuthKeeper() *icaauthkeeper.Keeper
+	GetTransferKeeper() *ibctransferkeeper.Keeper
+	GetUpgradeKeeper() *upgradekeeper.Keeper
 	TxConfig() client.TxConfig
 
 	// Implemented by SimApp

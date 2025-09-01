@@ -262,7 +262,7 @@ import (
  dbm "github.com/cosmos/cosmos-db"
 
  "github.com/cosmos/ibc-go/v8/modules/apps/transfer/simapp"
- ibctesting "github.com/cosmos/ibc-go/v8/testing"
+ "github.com/initia-labs/initia/x/ibc/testing"
 )
 
 func SetupTransferTestingApp() (ibctesting.TestingApp, map[string]json.RawMessage) {
