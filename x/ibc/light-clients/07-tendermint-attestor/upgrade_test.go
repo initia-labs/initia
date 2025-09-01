@@ -165,6 +165,7 @@ func (suite *TMAttestorTestSuite) TestVerifyUpgrade() {
 		{
 			name: "unsuccessful upgrade: client-specified parameters do not match previous client",
 			setup: func() {
+				lastHeight = clienttypes.NewHeight(0, uint64(suite.chainB.GetContext().BlockHeight()+1))
 				// zero custom fields and store in upgrade store
 				suite.chainB.App.GetUpgradeKeeper().SetUpgradedClient(suite.chainB.GetContext(), int64(lastHeight.GetRevisionHeight()), upgradedClientBz)            //nolint:errcheck // ignore error for test
 				suite.chainB.App.GetUpgradeKeeper().SetUpgradedConsensusState(suite.chainB.GetContext(), int64(lastHeight.GetRevisionHeight()), upgradedConsStateBz) //nolint:errcheck // ignore error for test

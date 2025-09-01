@@ -49,13 +49,18 @@ func (cs ClientState) Validate() error {
 	}
 
 	// duplication check for attestor pubkeys
-	seenPubKeys := make([]*cryptotypes.PubKey, 0, len(cs.AttestorPubkeys))
-	attestorPubKeys := cs.GetAttestorPubkeys()
+	seenPubKeys := make([]cryptotypes.PubKey, 0, len(cs.AttestorPubkeys))
+	attestorPubKeys, err := cs.GetAttestorPubkeys()
+	if err != nil {
+		return err
+	}
 	for _, attestorPubkey := range attestorPubKeys {
-		if slices.Contains(seenPubKeys, &attestorPubkey) {
+		if slices.ContainsFunc(seenPubKeys, func(seenPubKey cryptotypes.PubKey) bool {
+			return attestorPubkey.Equals(seenPubKey)
+		}) {
 			return errorsmod.Wrapf(clienttypes.ErrInvalidClient, "duplicate attestor pubkey: %s", attestorPubkey.String())
 		}
-		seenPubKeys = append(seenPubKeys, &attestorPubkey)
+		seenPubKeys = append(seenPubKeys, attestorPubkey)
 	}
 	return nil
 }
@@ -285,12 +290,15 @@ func verifyDelayPeriodPassed(ctx sdk.Context, store storetypes.KVStore, proofHei
 }
 
 // GetAttestorPubkeys returns the attestor pubkeys for the client state.
-func (cs ClientState) GetAttestorPubkeys() []cryptotypes.PubKey {
+func (cs ClientState) GetAttestorPubkeys() ([]cryptotypes.PubKey, error) {
 	pubKeys := make([]cryptotypes.PubKey, 0, len(cs.AttestorPubkeys))
-	for _, attestorPubkey := range cs.AttestorPubkeys {
+	for i, attestorPubkey := range cs.AttestorPubkeys {
+		if attestorPubkey == nil || attestorPubkey.GetCachedValue() == nil {
+			return nil, errorsmod.Wrapf(clienttypes.ErrInvalidClient, "invalid attestor pubkey: %d", i)
+		}
 		pubKeys = append(pubKeys, attestorPubkey.GetCachedValue().(cryptotypes.PubKey))
 	}
-	return pubKeys
+	return pubKeys, nil
 }
 
 // UnpackInterfaces implements UnpackInterfacesMessage.UnpackInterfaces
@@ -306,15 +314,20 @@ func (cs *ClientState) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
 }
 
 // hasSameAttestorsAndThreshold returns true if the attestors and threshold are the same between the two client states
-func (cs ClientState) HasSameAttestorsAndThreshold(cs2 ClientState) bool {
+func (cs ClientState) HasSameAttestorsAndThreshold(cs2 ClientState) (bool, error) {
 	if cs.Threshold != cs2.Threshold {
-		return false
+		return false, nil
 	}
 
-	pubkeys1 := cs.GetAttestorPubkeys()
-	pubkeys2 := cs2.GetAttestorPubkeys()
-	if len(pubkeys1) != len(pubkeys2) {
-		return false
+	pubkeys1, err := cs.GetAttestorPubkeys()
+	if err != nil {
+		return false, err
+	}
+	pubkeys2, err := cs2.GetAttestorPubkeys()
+	if err != nil {
+		return false, err
+	} else if len(pubkeys1) != len(pubkeys2) {
+		return false, nil
 	}
 	count1 := make(map[string]int, len(pubkeys1))
 	for _, pk := range pubkeys1 {
@@ -325,12 +338,12 @@ func (cs ClientState) HasSameAttestorsAndThreshold(cs2 ClientState) bool {
 		count2[pk.Address().String()]++
 	}
 	if len(count1) != len(count2) {
-		return false
+		return false, nil
 	}
 	for k, n := range count1 {
 		if count2[k] != n {
-			return false
+			return false, nil
 		}
 	}
-	return true
+	return true, nil
 }

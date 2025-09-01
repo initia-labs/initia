@@ -900,7 +900,7 @@ func (endpoint *Endpoint) RecvPacketWithResult(packet channeltypes.Packet) (*abc
 	packetKey := host.PacketCommitmentKey(packet.GetSourcePort(), packet.GetSourceChannel(), packet.GetSequence())
 	proof, proofHeight := endpoint.Counterparty.Chain.QueryProof(packetKey)
 	if endpoint.ClientConfig.GetClientType() == ibctmattestor.TendermintAttestor {
-		proofWithAttestations, err := endpoint.Counterparty.GetProofWithAttestations(proof)
+		proofWithAttestations, err := endpoint.GetProofWithAttestations(proof)
 		if err != nil {
 			return nil, err
 		}

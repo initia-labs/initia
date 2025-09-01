@@ -195,9 +195,12 @@ func (suite *TMAttestorTestSuite) TestVerifyMisbehaviour() {
 
 				height := path.EndpointA.GetClientState().GetLatestHeight().(clienttypes.Height)
 
-				// Create bothValSet with both suite validator and altVal
 				bothValSet := tmtypes.NewValidatorSet(append(suite.chainB.Vals.Validators, altValSet.Proposer))
-				bothSigners := suite.chainB.Signers
+				// Create bothValSet with both suite validator and altVal
+				bothSigners := make(map[string]tmtypes.PrivValidator, len(suite.chainB.Signers)+1)
+				for k, v := range suite.chainB.Signers {
+					bothSigners[k] = v
+				}
 				bothSigners[altValSet.Proposer.Address.String()] = altPrivVal
 
 				misbehaviour = &ibctmattestor.Misbehaviour{
@@ -340,7 +343,8 @@ func (suite *TMAttestorTestSuite) TestVerifyMisbehaviour() {
 			suite.SetupTest()
 			path = ibctesting.NewPathWithTendermintAttestors(suite.chainA, suite.chainB, 0, 0)
 
-			path.EndpointA.CreateClient()
+			err := path.EndpointA.CreateClient()
+			suite.Require().NoError(err)
 
 			tc.malleate()
 
@@ -363,7 +367,9 @@ func (suite *TMAttestorTestSuite) TestVerifyMisbehaviour() {
 // to initialize chains not in the revision format
 func (suite *TMAttestorTestSuite) TestVerifyMisbehaviourNonRevisionChainID() {
 	// NOTE: chains set to non revision format
+	prevSuffix := ibctesting.ChainIDSuffix
 	ibctesting.ChainIDSuffix = ""
+	defer func() { ibctesting.ChainIDSuffix = prevSuffix }()
 
 	// Setup different validators and signers for testing different types of updates
 	altPrivVal := ibctestingmock.NewPV()
@@ -483,7 +489,10 @@ func (suite *TMAttestorTestSuite) TestVerifyMisbehaviourNonRevisionChainID() {
 
 				// Create bothValSet with both suite validator and altVal
 				bothValSet := tmtypes.NewValidatorSet(append(suite.chainB.Vals.Validators, altValSet.Proposer))
-				bothSigners := suite.chainB.Signers
+				bothSigners := make(map[string]tmtypes.PrivValidator, len(suite.chainB.Signers)+1)
+				for k, v := range suite.chainB.Signers {
+					bothSigners[k] = v
+				}
 				bothSigners[altValSet.Proposer.Address.String()] = altPrivVal
 
 				misbehaviour = &ibctmattestor.Misbehaviour{
@@ -642,7 +651,4 @@ func (suite *TMAttestorTestSuite) TestVerifyMisbehaviourNonRevisionChainID() {
 			}
 		})
 	}
-
-	// NOTE: reset chain creation to revision format
-	ibctesting.ChainIDSuffix = "-1"
 }

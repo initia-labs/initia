@@ -129,7 +129,7 @@ func (suite *TMAttestorTestSuite) TestCheckSubstituteAndUpdateState() {
 			expectedConsState := substitutePath.EndpointA.GetConsensusState(substituteClientState.GetLatestHeight())
 			expectedProcessedTime, found := ibctmattestor.GetProcessedTime(substituteClientStore, substituteClientState.GetLatestHeight())
 			suite.Require().True(found)
-			expectedProcessedHeight, found := ibctmattestor.GetProcessedTime(substituteClientStore, substituteClientState.GetLatestHeight())
+			expectedProcessedHeight, found := ibctmattestor.GetProcessedHeight(substituteClientStore, substituteClientState.GetLatestHeight())
 			suite.Require().True(found)
 			expectedIterationKey := ibctmattestor.GetIterationKey(substituteClientStore, substituteClientState.GetLatestHeight())
 
@@ -148,9 +148,9 @@ func (suite *TMAttestorTestSuite) TestCheckSubstituteAndUpdateState() {
 				subjectConsState := subjectPath.EndpointA.GetConsensusState(updatedClient.GetLatestHeight())
 				subjectProcessedTime, found := ibctmattestor.GetProcessedTime(subjectClientStore, updatedClient.GetLatestHeight())
 				suite.Require().True(found)
-				subjectProcessedHeight, found := ibctmattestor.GetProcessedTime(substituteClientStore, updatedClient.GetLatestHeight())
+				subjectProcessedHeight, found := ibctmattestor.GetProcessedHeight(subjectClientStore, updatedClient.GetLatestHeight())
 				suite.Require().True(found)
-				subjectIterationKey := ibctmattestor.GetIterationKey(substituteClientStore, updatedClient.GetLatestHeight())
+				subjectIterationKey := ibctmattestor.GetIterationKey(subjectClientStore, updatedClient.GetLatestHeight())
 
 				suite.Require().Equal(expectedConsState, subjectConsState)
 				suite.Require().Equal(expectedProcessedTime, subjectProcessedTime)
@@ -228,7 +228,9 @@ func (suite *TMAttestorTestSuite) TestIsMatchingClientState() {
 
 			tc.malleate()
 
-			suite.Require().Equal(tc.expPass, ibctmattestor.IsMatchingClientState(*subjectClientState, *substituteClientState))
+			res, err := ibctmattestor.IsMatchingClientState(*subjectClientState, *substituteClientState)
+			suite.Require().NoError(err)
+			suite.Require().Equal(tc.expPass, res)
 		})
 	}
 }

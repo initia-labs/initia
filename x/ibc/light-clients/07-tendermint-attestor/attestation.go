@@ -31,7 +31,11 @@ func (cs ClientState) VerifySignatures(
 			seenPubKeys = append(seenPubKeys, &attestationPubKey)
 		}
 
-		if !slices.ContainsFunc(cs.GetAttestorPubkeys(), func(registeredPubkey cryptotypes.PubKey) bool {
+		attestorPubkeys, err := cs.GetAttestorPubkeys()
+		if err != nil {
+			return err
+		}
+		if !slices.ContainsFunc(attestorPubkeys, func(registeredPubkey cryptotypes.PubKey) bool {
 			return attestationPubKey.Equals(registeredPubkey)
 		}) {
 			return errorsmod.Wrapf(ErrUnauthorizedAttestation, "unauthorized attestation public key: %s", attestationPubKey.String())

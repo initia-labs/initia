@@ -50,7 +50,7 @@ func (suite *TMAttestorTestSuite) TestExportMetadata() {
 	updateHeight := clientState.GetLatestHeight()
 
 	iteration := ibctmttestor.GetIterationKey(clientStore, updateHeight)
-	suite.Require().NotEqual(0, len(initIteration))
+	suite.Require().NotEqual(0, len(iteration))
 	processedTime, found := ibctmttestor.GetProcessedTime(clientStore, updateHeight)
 	suite.Require().True(found)
 	processedHeight, found := ibctmttestor.GetProcessedHeight(clientStore, updateHeight)

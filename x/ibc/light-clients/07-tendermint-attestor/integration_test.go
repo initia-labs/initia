@@ -178,7 +178,8 @@ func (suite *TMAttestorTestSuite) TestTendermintChangeLightClientAndUpgradeChann
 
 	// create new path with 07-tendermint-attestor light client
 	path.EndpointA.ClientConfig = ibctesting.NewTendermintAttestorConfig(0, 0)
-	path.EndpointA.CreateClient()
+	err = path.EndpointA.CreateClient()
+	suite.Require().NoError(err)
 
 	suite.Require().Equal(path.EndpointA.ClientID, ibctesting.SecondAttestorClientID)
 	suite.Require().Equal(path.EndpointB.ClientID, ibctesting.FirstClientID)

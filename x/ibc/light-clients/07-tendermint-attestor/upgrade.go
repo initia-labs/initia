@@ -60,7 +60,10 @@ func (cs ClientState) VerifyUpgradeAndUpdateState(
 	}
 
 	// check if the upgraded client has the same attestors and threshold
-	if !cs.HasSameAttestorsAndThreshold(*tmUpgradeClient) {
+	res, err := cs.HasSameAttestorsAndThreshold(*tmUpgradeClient)
+	if err != nil {
+		return err
+	} else if !res {
 		return errorsmod.Wrap(clienttypes.ErrInvalidUpgradeClient, "upgraded client has different attestors and threshold")
 	}
 

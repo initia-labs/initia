@@ -33,7 +33,10 @@ func (cs ClientState) CheckSubstituteAndUpdateState(
 		return errorsmod.Wrapf(clienttypes.ErrInvalidClient, "expected type %T, got %T", &ClientState{}, substituteClient)
 	}
 
-	if !IsMatchingClientState(cs, *substituteClientState) {
+	res, err := IsMatchingClientState(cs, *substituteClientState)
+	if err != nil {
+		return err
+	} else if !res {
 		return errorsmod.Wrap(clienttypes.ErrInvalidSubstitute, "subject client state does not match substitute client state")
 	}
 
@@ -82,11 +85,14 @@ func (cs ClientState) CheckSubstituteAndUpdateState(
 // IsMatchingClientState returns true if all the client state parameters match between subject and substitute
 // except for frozen height, latest height, trusting period, and chain-id. Additionally checks that attestors
 // and threshold match between the two clients.
-func IsMatchingClientState(subject, substitute ClientState) bool {
+func IsMatchingClientState(subject, substitute ClientState) (bool, error) {
 	// check if the attestors and threshold are the same
-	if !subject.HasSameAttestorsAndThreshold(substitute) {
-		return false
+	res, err := subject.HasSameAttestorsAndThreshold(substitute)
+	if err != nil {
+		return false, err
+	} else if !res {
+		return false, nil
 	}
 
-	return tmlightclient.IsMatchingClientState(*subject.ClientState, *substitute.ClientState)
+	return tmlightclient.IsMatchingClientState(*subject.ClientState, *substitute.ClientState), nil
 }

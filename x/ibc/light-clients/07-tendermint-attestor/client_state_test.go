@@ -927,7 +927,8 @@ func Test_hasSameAttestorsAndThreshold(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := tt.cs1.HasSameAttestorsAndThreshold(tt.cs2)
+			result, err := tt.cs1.HasSameAttestorsAndThreshold(tt.cs2)
+			require.NoError(t, err)
 			require.Equal(t, tt.expected, result, "test case: %s", tt.name)
 		})
 	}
@@ -1026,7 +1027,8 @@ func Test_hasSameAttestorsAndThreshold_EdgeCases(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := tt.cs1.HasSameAttestorsAndThreshold(tt.cs2)
+			result, err := tt.cs1.HasSameAttestorsAndThreshold(tt.cs2)
+			require.NoError(t, err)
 			require.Equal(t, tt.expected, result, "test case: %s", tt.name)
 		})
 	}

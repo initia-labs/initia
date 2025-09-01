@@ -12,7 +12,7 @@ import (
 
 func (suite *TMAttestorTestSuite) TestGetHeight() {
 	header := suite.chainA.LastHeader
-	suite.Require().NotEqual(uint64(0), header.GetHeight())
+	suite.Require().NotZero(header.GetHeight().GetRevisionHeight())
 }
 
 func (suite *TMAttestorTestSuite) TestGetTime() {
