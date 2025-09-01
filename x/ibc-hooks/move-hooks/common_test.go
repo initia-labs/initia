@@ -61,6 +61,12 @@ import (
 
 	vmprecom "github.com/initia-labs/movevm/precompile"
 	vmtypes "github.com/initia-labs/movevm/types"
+
+	ibctransfer "github.com/cosmos/ibc-go/v8/modules/apps/transfer"
+	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
+	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+
+	movebank "github.com/initia-labs/initia/x/bank/keeper"
 )
 
 var ModuleBasics = module.NewBasicManager(
@@ -183,7 +189,8 @@ type TestKeepers struct {
 	CommunityPoolKeeper *MockCommunityPoolKeeper
 	IBCHooksKeeper      *ibchookskeeper.Keeper
 	IBCHooksMiddleware  ibchooks.IBCMiddleware
-	MoveKeeper          movekeeper.Keeper
+	TransferStack       ibchooks.IBCMiddleware
+	MoveKeeper          *movekeeper.Keeper
 
 	EncodingConfig EncodingConfig
 	Faucet         *TestFaucet
@@ -224,12 +231,19 @@ func _createTestInput(
 ) (sdk.Context, TestKeepers) {
 	keys := storetypes.NewKVStoreKeys(
 		authtypes.StoreKey, banktypes.StoreKey, stakingtypes.StoreKey,
-		distributiontypes.StoreKey, movetypes.StoreKey, ibchookstypes.StoreKey,
+		distributiontypes.StoreKey, movetypes.StoreKey, ibchookstypes.StoreKey, ibctransfertypes.StoreKey,
 	)
 	ms := store.NewCommitMultiStore(db, log.NewNopLogger(), metrics.NewNoOpMetrics())
 	for _, v := range keys {
 		ms.MountStoreWithDB(v, storetypes.StoreTypeIAVL, db)
 	}
+	tkeys := storetypes.NewTransientStoreKeys(
+		ibchookstypes.TStoreKey,
+	)
+	for _, v := range tkeys {
+		ms.MountStoreWithDB(v, storetypes.StoreTypeTransient, db)
+	}
+
 	memKeys := storetypes.NewMemoryStoreKeys()
 	for _, v := range memKeys {
 		ms.MountStoreWithDB(v, storetypes.StoreTypeMemory, db)
@@ -246,7 +260,8 @@ func _createTestInput(
 	appCodec := encodingConfig.Codec
 
 	maccPerms := map[string][]string{ // module account permissions
-		authtypes.FeeCollectorName: nil,
+		authtypes.FeeCollectorName:  nil,
+		ibctransfertypes.ModuleName: {authtypes.Minter, authtypes.Burner},
 
 		// for testing
 		authtypes.Minter: {authtypes.Minter, authtypes.Burner},
@@ -268,26 +283,29 @@ func _createTestInput(
 		blockedAddrs[authtypes.NewModuleAddress(acc).String()] = true
 	}
 
-	bankKeeper := bankkeeper.NewBaseKeeper(
+	moveKeeper := &movekeeper.Keeper{}
+
+	bankKeeper := movebank.NewBaseKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[banktypes.StoreKey]),
 		accountKeeper,
+		movekeeper.NewMoveBankKeeper(moveKeeper),
 		blockedAddrs,
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
-		ctx.Logger().With("module", "x/"+banktypes.ModuleName),
 	)
 	require.NoError(t, bankKeeper.SetParams(ctx, banktypes.DefaultParams()))
 
 	ibcHooksKeeper := ibchookskeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[ibchookstypes.StoreKey]),
+		runtime.NewTransientStoreService(tkeys[ibchookstypes.TStoreKey]),
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		ac,
 	)
 	ibcHooksKeeper.Params.Set(ctx, ibchookstypes.DefaultParams())
 
 	communityPoolKeeper := &MockCommunityPoolKeeper{}
-	moveKeeper := movekeeper.NewKeeper(
+	*moveKeeper = movekeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[movetypes.StoreKey]),
 		accountKeeper,
@@ -304,7 +322,11 @@ func _createTestInput(
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		ac,
 		nil,
-	)
+	).WithVMQueryWhitelist(movetypes.VMQueryWhiteList{
+		Custom: map[string]movetypes.CustomQuery{
+			ibchookstypes.VMCustomQueryGetTransferFunds: ibcHooksKeeper.GetTransferFunds,
+		},
+	})
 	moveParams := movetypes.DefaultParams()
 	require.NoError(t, moveKeeper.Params.Set(ctx, moveParams.ToRaw()))
 	if initialize {
@@ -317,18 +339,37 @@ func _createTestInput(
 
 	// ibc middleware setup
 
+	transferKeeper := ibctransferkeeper.NewKeeper(
+		appCodec,
+		keys[ibctransfertypes.StoreKey],
+		nil,
+		nil,
+		nil,
+		nil,
+		accountKeeper,
+		bankKeeper,
+		nil,
+		accountKeeper.GetAuthority(),
+	)
+	transferKeeper.SetParams(ctx, ibctransfertypes.DefaultParams())
+
+	transferIBCModule := ibctransfer.NewIBCModule(transferKeeper)
 	mockIBCMiddleware := mockIBCMiddleware{}
 	moveHooks := movehooks.NewMoveHooks(appCodec, ac, moveKeeper)
 
 	middleware := ibchooks.NewICS4Middleware(mockIBCMiddleware, moveHooks)
 	ibcHookMiddleware := ibchooks.NewIBCMiddleware(mockIBCMiddleware, middleware, ibcHooksKeeper)
 
+	transferStack := ibchooks.NewIBCMiddleware(transferIBCModule, ibchooks.NewICS4Middleware(
+		nil, /* ics4wrapper: not used */
+		moveHooks,
+	), ibcHooksKeeper)
 	// deploy counter module
 	require.NoError(t,
 		moveKeeper.PublishModuleBundle(
 			ctx,
 			vmtypes.StdAddress,
-			vmtypes.NewModuleBundle(vmtypes.NewModule(counterModule)),
+			vmtypes.NewModuleBundle(vmtypes.NewModule(counterModule), vmtypes.NewModule(hookSenderModule)),
 			movetypes.UpgradePolicy_COMPATIBLE,
 		),
 	)
@@ -338,7 +379,8 @@ func _createTestInput(
 		CommunityPoolKeeper: communityPoolKeeper,
 		IBCHooksKeeper:      ibcHooksKeeper,
 		IBCHooksMiddleware:  ibcHookMiddleware,
-		MoveKeeper:          *moveKeeper,
+		TransferStack:       transferStack,
+		MoveKeeper:          moveKeeper,
 		BankKeeper:          bankKeeper,
 		EncodingConfig:      encodingConfig,
 		Faucet:              faucet,
@@ -348,9 +390,11 @@ func _createTestInput(
 }
 
 var counterModule []byte
+var hookSenderModule []byte
 
 func init() {
 	counterModule = ReadMoveFile("Counter")
+	hookSenderModule = ReadMoveFile("hook_sender")
 }
 
 func ReadMoveFile(filename string) []byte {

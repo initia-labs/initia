@@ -1,6 +1,7 @@
 package move_hooks
 
 import (
+	"errors"
 	"fmt"
 
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
@@ -9,7 +10,9 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	sdkmath "cosmossdk.io/math"
 	ibchooks "github.com/initia-labs/initia/x/ibc-hooks"
+	ibchookstypes "github.com/initia-labs/initia/x/ibc-hooks/types"
 	nfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 	movekeeper "github.com/initia-labs/initia/x/move/keeper"
 	movetypes "github.com/initia-labs/initia/x/move/types"
@@ -58,12 +61,27 @@ func (h MoveHooks) onRecvIcs20Packet(
 		return ack
 	}
 
+	denom := ibchookstypes.GetReceivedTokenDenom(packet, data)
+
+	transferFundsAmount, ok := sdkmath.NewIntFromString(data.Amount)
+	if !ok {
+		return newEmitErrorAcknowledgement(errors.New("invalid amount for transfer"))
+	}
+	transferFunds := sdk.NewCoin(denom, transferFundsAmount)
+	if err := im.HooksKeeper.SetTransferFunds(ctx, transferFunds); err != nil {
+		return newEmitErrorAcknowledgement(err)
+	}
+
 	msg.Sender = intermediateSender
 	_, err = h.execMsg(ctx, msg)
 	if err != nil {
 		return newEmitErrorAcknowledgement(err)
 	}
 
+	// clear transfer funds
+	if err := im.HooksKeeper.EmptyTransferFunds(ctx); err != nil {
+		return newEmitErrorAcknowledgement(err)
+	}
 	return ack
 }
 
