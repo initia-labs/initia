@@ -3,17 +3,25 @@ module std::hook_sender {
     use initia_std::query;
     use initia_std::string::String;
     use initia_std::json;
+    use initia_std::option::{Self, Option};
 
-    struct HookTransferFunds has copy, drop {
+    struct TransferFunds has copy, drop {
+        balance_change: Coin,
+        amount_in_packet: Coin,
+    }
+
+    struct Coin has copy, drop {
         denom: String,
-        amount: u64
+        amount: u64,
     }
 
     public entry fun send_funds(sender: &signer, receiver: address) {
         let response = query::query_custom(b"move_hook_get_transfer_funds", b"");
-        let res = json::unmarshal<HookTransferFunds>(response);
+        let res = json::unmarshal<Option<TransferFunds>>(response);
+        assert!(option::is_some(&res), 1000);
 
-        let coin_metadata = coin::denom_to_metadata(res.denom);
-        coin::transfer(sender, receiver, coin_metadata, res.amount);
+        let res = option::borrow(&res);
+        let coin_metadata = coin::denom_to_metadata(res.balance_change.denom);
+        coin::transfer(sender, receiver, coin_metadata, res.balance_change.amount);
     }
 }

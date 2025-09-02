@@ -8,6 +8,9 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	sdkmath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	nfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
@@ -97,6 +100,28 @@ func Test_onReceiveIcs20Packet_memo(t *testing.T) {
 	)
 	require.NoError(t, err)
 	require.Equal(t, "\"1\"", queryRes.Ret)
+}
+
+func Test_TransferFunds_Option_None(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+
+	_, _, addr := keyPubAddr()
+	coin := sdk.NewCoin("uinit", sdkmath.NewInt(10000))
+	input.Faucet.Fund(ctx, addr, coin)
+
+	// if we call 0x1::hook_sender::send_funds without storing transfer funds, it should return an error
+	err := input.MoveKeeper.ExecuteEntryFunctionJSON(
+		ctx,
+		vmtypes.StdAddress,
+		vmtypes.StdAddress,
+		"hook_sender",
+		"send_funds",
+		[]vmtypes.TypeTag{},
+		[]string{
+			fmt.Sprintf(`"0x%x"`, addr),
+		},
+	)
+	require.ErrorContains(t, err, "code=1000")
 }
 
 func Test_onReceiveIcs20Packet_memo_and_transfer_funds(t *testing.T) {

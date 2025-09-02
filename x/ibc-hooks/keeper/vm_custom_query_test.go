@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/initia-labs/initia/x/ibc-hooks/types"
 	"github.com/stretchr/testify/require"
 
 	sdkmath "cosmossdk.io/math"
@@ -17,25 +18,28 @@ func TestGetTransferFunds(t *testing.T) {
 	res, err := input.IBCHooksKeeper.GetTransferFunds(ctx, nil)
 	require.NoError(t, err)
 
-	var coin sdk.Coin
-	coinbz, err := json.Marshal(coin)
+	nullBz, err := json.Marshal(nil)
 	require.NoError(t, err)
+	require.True(t, bytes.Equal(res, nullBz))
 
-	require.True(t, bytes.Equal(res, coinbz))
-
+	var coin sdk.Coin
 	coin.Denom = "init"
 	coin.Amount = sdkmath.NewInt(10000)
 
-	err = input.IBCHooksKeeper.SetTransferFunds(ctx, coin)
+	expected := types.TransferFunds{
+		AmountInPacket: coin,
+		BalanceChange:  coin.Sub(coin),
+	}
+	err = input.IBCHooksKeeper.SetTransferFunds(ctx, expected)
 	require.NoError(t, err)
 
 	res, err = input.IBCHooksKeeper.GetTransferFunds(ctx, nil)
 	require.NoError(t, err)
 
-	coinbz, err = json.Marshal(coin)
+	expectedBz, err := json.Marshal(expected)
 	require.NoError(t, err)
 
-	require.True(t, bytes.Equal(res, coinbz))
+	require.True(t, bytes.Equal(res, expectedBz))
 
 	err = input.IBCHooksKeeper.EmptyTransferFunds(ctx)
 	require.NoError(t, err)
@@ -43,8 +47,5 @@ func TestGetTransferFunds(t *testing.T) {
 	res, err = input.IBCHooksKeeper.GetTransferFunds(ctx, nil)
 	require.NoError(t, err)
 
-	coinbz, err = json.Marshal(sdk.Coin{})
-	require.NoError(t, err)
-
-	require.True(t, bytes.Equal(res, coinbz))
+	require.True(t, bytes.Equal(res, nullBz))
 }
