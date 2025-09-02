@@ -85,5 +85,5 @@ func (k Keeper) SetTransferFunds(ctx context.Context, transferFunds sdk.Coin) er
 }
 
 func (k Keeper) EmptyTransferFunds(ctx context.Context) error {
-	return k.transferFunds.Remove(ctx)
+	return k.transferFunds.Set(ctx, sdk.Coin{})
 }
