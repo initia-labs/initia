@@ -266,6 +266,12 @@ func _createTestInput(
 	for _, v := range keys {
 		ms.MountStoreWithDB(v, storetypes.StoreTypeIAVL, db)
 	}
+	tkeys := storetypes.NewTransientStoreKeys(
+		ibchookstypes.TStoreKey,
+	)
+	for _, v := range tkeys {
+		ms.MountStoreWithDB(v, storetypes.StoreTypeTransient, db)
+	}
 	memKeys := storetypes.NewMemoryStoreKeys()
 	for _, v := range memKeys {
 		ms.MountStoreWithDB(v, storetypes.StoreTypeMemory, db)
@@ -406,6 +412,7 @@ func _createTestInput(
 	ibcHooksKeeper := ibchookskeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(keys[ibchookstypes.StoreKey]),
+		runtime.NewTransientStoreService(tkeys[ibchookstypes.TStoreKey]),
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		ac,
 	)

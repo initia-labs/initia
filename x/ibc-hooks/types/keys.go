@@ -8,6 +8,8 @@ const (
 	// not using the module name because of collisions with key "ibc"
 	StoreKey = "hooks-for-ibc"
 
+	MemStoreKey = "mem_" + ModuleName
+
 	// TStoreKey is the string transient store representation
 	TStoreKey = "transient_" + ModuleName
 
@@ -21,6 +23,7 @@ const (
 // Keys for hook store
 // Items are stored with the following key: values
 var (
-	ACLPrefix = []byte{0x11} // prefix for allowed
-	ParamsKey = []byte{0x21} // prefix for parameters for module x/hook
+	ACLPrefix        = []byte{0x11} // prefix for allowed
+	ParamsKey        = []byte{0x21} // prefix for parameters for module x/hook
+	TransferFundsKey = []byte{0x31} // prefix for transfer funds
 )

@@ -20,16 +20,21 @@ type Keeper struct {
 
 	authority string
 
-	Schema collections.Schema
-	ACLs   collections.Map[[]byte, bool]
-	Params collections.Item[types.Params]
+	Schema          collections.Schema
+	TransientSchema collections.Schema
+	ACLs            collections.Map[[]byte, bool]
+	Params          collections.Item[types.Params]
 
 	ac address.Codec
+
+	// these are used for custom queries
+	transferFunds collections.Item[sdk.Coin]
 }
 
 func NewKeeper(
 	cdc codec.Codec,
 	storeService corestoretypes.KVStoreService,
+	transientStoreService corestoretypes.TransientStoreService,
 	authority string,
 	ac address.Codec,
 ) *Keeper {
@@ -39,13 +44,15 @@ func NewKeeper(
 	}
 
 	sb := collections.NewSchemaBuilder(storeService)
+	transientSb := collections.NewSchemaBuilderFromAccessor(transientStoreService.OpenTransientStore)
 	k := &Keeper{
 		cdc:          cdc,
 		storeService: storeService,
 		authority:    authority,
 
-		ACLs:   collections.NewMap(sb, types.ACLPrefix, "acls", collections.BytesKey, collections.BoolValue),
-		Params: collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
+		ACLs:          collections.NewMap(sb, types.ACLPrefix, "acls", collections.BytesKey, collections.BoolValue),
+		Params:        collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
+		transferFunds: collections.NewItem(transientSb, types.TransferFundsKey, "transfer_funds", codec.CollValue[sdk.Coin](cdc)),
 
 		ac: ac,
 	}
@@ -53,7 +60,12 @@ func NewKeeper(
 	if err != nil {
 		panic(err)
 	}
+	transientSchema, err := transientSb.Build()
+	if err != nil {
+		panic(err)
+	}
 	k.Schema = schema
+	k.TransientSchema = transientSchema
 	return k
 }
 
@@ -66,4 +78,12 @@ func (ak Keeper) GetAuthority() string {
 func (k Keeper) Logger(ctx context.Context) log.Logger {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	return sdkCtx.Logger().With("module", "x/"+types.ModuleName)
+}
+
+func (k Keeper) SetTransferFunds(ctx context.Context, transferFunds sdk.Coin) error {
+	return k.transferFunds.Set(ctx, transferFunds)
+}
+
+func (k Keeper) EmptyTransferFunds(ctx context.Context) error {
+	return k.transferFunds.Set(ctx, sdk.Coin{})
 }

@@ -113,6 +113,8 @@ import (
 )
 
 type AppKeepers struct {
+	ac address.Codec
+
 	// keys to access the substores
 	keys    map[string]*storetypes.KVStoreKey
 	tkeys   map[string]*storetypes.TransientStoreKey
@@ -176,7 +178,9 @@ func NewAppKeeper(
 	moveConfig moveconfig.MoveConfig,
 	appOpts servertypes.AppOptions,
 ) AppKeepers {
-	appKeepers := AppKeepers{}
+	appKeepers := AppKeepers{
+		ac: ac,
+	}
 
 	// Set keys KVStoreKey, TransientStoreKey, MemoryStoreKey
 	appKeepers.GenerateKeys()
@@ -387,6 +391,7 @@ func NewAppKeeper(
 	appKeepers.IBCHooksKeeper = ibchookskeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(appKeepers.keys[ibchookstypes.StoreKey]),
+		runtime.NewTransientStoreService(appKeepers.tkeys[ibchookstypes.TStoreKey]),
 		authorityAddr,
 		ac,
 	)
@@ -645,44 +650,7 @@ func NewAppKeeper(
 	//////////////////////////////
 	// MoveKeeper Configuration //
 	//////////////////////////////
-
-	queryWhitelist := movetypes.DefaultVMQueryWhiteList(ac)
-	queryWhitelist.Stargate["/initia.mstaking.v1.Query/UnbondingDelegation"] = movetypes.ProtoSet{
-		Request:  &stakingtypes.QueryUnbondingDelegationRequest{},
-		Response: &stakingtypes.QueryUnbondingDelegationResponse{},
-	}
-	queryWhitelist.Stargate["/initia.mstaking.v1.Query/Pool"] = movetypes.ProtoSet{
-		Request:  &stakingtypes.QueryPoolRequest{},
-		Response: &stakingtypes.QueryPoolResponse{},
-	}
-	queryWhitelist.Stargate["/initia.mstaking.v1.Query/DelegatorDelegations"] = movetypes.ProtoSet{
-		Request:  &stakingtypes.QueryDelegatorDelegationsRequest{},
-		Response: &stakingtypes.QueryDelegatorDelegationsResponse{},
-	}
-	queryWhitelist.Stargate["/initia.mstaking.v1.Query/DelegatorTotalDelegationBalance"] = movetypes.ProtoSet{
-		Request:  &stakingtypes.QueryDelegatorTotalDelegationBalanceRequest{},
-		Response: &stakingtypes.QueryDelegatorTotalDelegationBalanceResponse{},
-	}
-	queryWhitelist.Stargate["/initia.mstaking.v1.Query/Delegation"] = movetypes.ProtoSet{
-		Request:  &stakingtypes.QueryDelegationRequest{},
-		Response: &stakingtypes.QueryDelegationResponse{},
-	}
-	queryWhitelist.Stargate["/initia.mstaking.v1.Query/Redelegations"] = movetypes.ProtoSet{
-		Request:  &stakingtypes.QueryRedelegationsRequest{},
-		Response: &stakingtypes.QueryRedelegationsResponse{},
-	}
-	queryWhitelist.Stargate["/connect.oracle.v2.Query/GetAllCurrencyPairs"] = movetypes.ProtoSet{
-		Request:  &oracletypes.GetAllCurrencyPairsRequest{},
-		Response: &oracletypes.GetAllCurrencyPairsResponse{},
-	}
-	queryWhitelist.Stargate["/connect.oracle.v2.Query/GetPrice"] = movetypes.ProtoSet{
-		Request:  &oracletypes.GetPriceRequest{},
-		Response: &oracletypes.GetPriceResponse{},
-	}
-	queryWhitelist.Stargate["/connect.oracle.v2.Query/GetPrices"] = movetypes.ProtoSet{
-		Request:  &oracletypes.GetPricesRequest{},
-		Response: &oracletypes.GetPricesResponse{},
-	}
+	queryWhitelist := appKeepers.makeQueryWhitelist()
 
 	*appKeepers.MoveKeeper = movekeeper.NewKeeper(
 		appCodec,
