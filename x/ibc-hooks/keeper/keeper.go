@@ -28,7 +28,7 @@ type Keeper struct {
 	ac address.Codec
 
 	// these are used for custom queries
-	transferFunds collections.Item[sdk.Coin]
+	transferFunds collections.Item[types.TransferFunds]
 }
 
 func NewKeeper(
@@ -52,7 +52,7 @@ func NewKeeper(
 
 		ACLs:          collections.NewMap(sb, types.ACLPrefix, "acls", collections.BytesKey, collections.BoolValue),
 		Params:        collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
-		transferFunds: collections.NewItem(transientSb, types.TransferFundsKey, "transfer_funds", codec.CollValue[sdk.Coin](cdc)),
+		transferFunds: collections.NewItem(transientSb, types.TransferFundsKey, "transfer_funds", codec.CollValue[types.TransferFunds](cdc)),
 
 		ac: ac,
 	}
@@ -80,10 +80,10 @@ func (k Keeper) Logger(ctx context.Context) log.Logger {
 	return sdkCtx.Logger().With("module", "x/"+types.ModuleName)
 }
 
-func (k Keeper) SetTransferFunds(ctx context.Context, transferFunds sdk.Coin) error {
+func (k Keeper) SetTransferFunds(ctx context.Context, transferFunds types.TransferFunds) error {
 	return k.transferFunds.Set(ctx, transferFunds)
 }
 
 func (k Keeper) EmptyTransferFunds(ctx context.Context) error {
-	return k.transferFunds.Set(ctx, sdk.Coin{})
+	return k.transferFunds.Remove(ctx)
 }

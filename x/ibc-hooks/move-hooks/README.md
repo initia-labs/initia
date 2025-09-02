@@ -15,7 +15,7 @@ Move hooks is an IBC middleware that parses an ICS20 transfer, and if the `memo`
 ### Move Contract Execution Format
 
 Before we dive into the IBC metadata format, we show the hook data format, so the reader has a sense of what are the fields we need to be setting in.
-The move `MsgExecute` is defined [here](../../move/types/tx.pb.go) and other types are defined [here](./message.go) as the following type:
+The move `MsgExecute` is defined [tx.pb.go](../../move/types/tx.pb.go) and other types are defined [message.go](./message.go) as the following type:
 
 ```go
 // HookData defines a wrapper for move execute message

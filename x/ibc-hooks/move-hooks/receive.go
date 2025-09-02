@@ -1,8 +1,10 @@
 package move_hooks
 
 import (
+	"errors"
 	"fmt"
 
+	"cosmossdk.io/math"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
@@ -79,12 +81,24 @@ func (h MoveHooks) onRecvIcs20Packet(
 		return newEmitErrorAcknowledgement(err)
 	}
 
-	// store transfer funds to be used in contract call
+	// compute amount in packet
+	amountInPacket, ok := math.NewIntFromString(data.Amount)
+	if !ok {
+		return newEmitErrorAcknowledgement(errors.New("invalid amount for transfer"))
+	}
+
+	// compute balance change
+	balanceChange := math.ZeroInt()
 	if afterBalance.GT(beforeBalance) {
-		transferFunds := sdk.NewCoin(denom, afterBalance.Sub(beforeBalance))
-		if err := im.HooksKeeper.SetTransferFunds(ctx, transferFunds); err != nil {
-			return newEmitErrorAcknowledgement(err)
-		}
+		balanceChange = afterBalance.Sub(beforeBalance)
+	}
+
+	// store transfer funds to be used in contract call
+	if err := im.HooksKeeper.SetTransferFunds(ctx, ibchookstypes.TransferFunds{
+		BalanceChange:  sdk.NewCoin(denom, balanceChange),
+		AmountInPacket: sdk.NewCoin(denom, amountInPacket),
+	}); err != nil {
+		return newEmitErrorAcknowledgement(err)
 	}
 
 	// execute contract call

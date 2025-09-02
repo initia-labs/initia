@@ -2,6 +2,7 @@ syntax = "proto3";
 package initia.ibchooks.v1;
 
 import "amino/amino.proto";
+import "cosmos/base/v1beta1/coin.proto";
 import "gogoproto/gogo.proto";
 
 option go_package = "github.com/initia-labs/initia/x/ibc-hooks/types";
@@ -23,4 +24,20 @@ message Params {
 message ACL {
   string address = 1;
   bool allowed = 2;
+}
+
+// TransferFunds defines the transfer funds.
+message TransferFunds {
+  cosmos.base.v1beta1.Coin balance_change = 1 [
+    (gogoproto.moretags) = "yaml:\"balance_change\"",
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coin",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  cosmos.base.v1beta1.Coin amount_in_packet = 2 [
+    (gogoproto.moretags) = "yaml:\"amount_in_packet\"",
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coin",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }
