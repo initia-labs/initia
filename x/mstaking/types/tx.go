@@ -335,6 +335,13 @@ func (msg MsgMigrateDelegation) Validate(accAddrCodec address.Codec, valAddrCode
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "lp denom from and to must differ")
 	}
 
+	// this is optional, so we only validate if it's provided
+	if msg.NewDelegatorAddress != "" {
+		if _, err := accAddrCodec.StringToBytes(msg.NewDelegatorAddress); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 

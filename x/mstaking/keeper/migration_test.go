@@ -8,6 +8,7 @@ import (
 	"cosmossdk.io/collections"
 	"cosmossdk.io/math"
 	movetypes "github.com/initia-labs/initia/x/move/types"
+	"github.com/initia-labs/initia/x/mstaking/keeper"
 	"github.com/initia-labs/initia/x/mstaking/types"
 	vmtypes "github.com/initia-labs/movevm/types"
 	"github.com/stretchr/testify/require"
@@ -163,16 +164,16 @@ func Test_MigrateDelegation_CompleteFlow(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	// Delegate LP tokens
-	validator, err := input.StakingKeeper.Validators.Get(ctx, valAddr)
-	require.NoError(t, err)
-	_, err = input.StakingKeeper.Delegate(ctx, delAddr, sdk.NewCoins(balanceLpOld), types.Unbonded, validator, true)
+	// Register migration
+	err = input.StakingKeeper.RegisterMigration(ctx, denomLpOld, denomLpNew, movetypes.TestAddr.String(), "dex_migration")
 	require.NoError(t, err)
 
 	// Test case 1: Successful migration flow
 	t.Run("SuccessfulMigration", func(t *testing.T) {
-		// Register migration
-		err = input.StakingKeeper.RegisterMigration(ctx, denomLpOld, denomLpNew, movetypes.TestAddr.String(), "dex_migration")
+		// Delegate LP tokens
+		validator, err := input.StakingKeeper.Validators.Get(ctx, valAddr)
+		require.NoError(t, err)
+		_, err = input.StakingKeeper.Delegate(ctx, delAddr, sdk.NewCoins(balanceLpOld).QuoInt(math.NewInt(3)), types.Unbonded, validator, true)
 		require.NoError(t, err)
 
 		// Whitelist target LP denom (only if not already whitelisted)
@@ -189,7 +190,7 @@ func Test_MigrateDelegation_CompleteFlow(t *testing.T) {
 		require.NoError(t, err)
 
 		// Execute migration
-		originShares, newShares, err := input.StakingKeeper.MigrateDelegation(ctx, delAddr, valAddr, migration)
+		originShares, newShares, err := input.StakingKeeper.MigrateDelegation(ctx, delAddr, valAddr, migration, delAddr)
 		require.NoError(t, err)
 
 		// Verify migration results
@@ -202,6 +203,96 @@ func Test_MigrateDelegation_CompleteFlow(t *testing.T) {
 		delegation, err := input.StakingKeeper.GetDelegation(ctx, delAddr, valAddr)
 		require.NoError(t, err)
 		require.Equal(t, newShares, delegation.Shares)
+	})
+
+	t.Run("SuccessfulMigrationWithNewDelegatorAddress", func(t *testing.T) {
+		// Delegate again
+		validator, err := input.StakingKeeper.Validators.Get(ctx, valAddr)
+		require.NoError(t, err)
+		_, err = input.StakingKeeper.Delegate(ctx, delAddr, sdk.NewCoins(balanceLpOld).QuoInt(math.NewInt(3)), types.Unbonded, validator, true)
+		require.NoError(t, err)
+
+		newDelAddr := input.Faucet.NewFundedAccount(ctx, sdk.NewInt64Coin(baseDenom, 1_000_000_000), sdk.NewInt64Coin("uusdc", 2_500_000_000))
+
+		// Get migration info
+		migration, err := input.StakingKeeper.Migrations.Get(ctx, collections.Join(denomLpOld, denomLpNew))
+		require.NoError(t, err)
+
+		// Execute migration
+		originShares, newShares, err := input.StakingKeeper.MigrateDelegation(ctx, delAddr, valAddr, migration, newDelAddr)
+		require.NoError(t, err)
+
+		// Verify migration results
+		require.NotNil(t, originShares)
+		require.NotNil(t, newShares)
+		require.False(t, originShares.IsZero())
+		require.False(t, newShares.IsZero())
+
+		// Verify delegation was updated
+		delegation, err := input.StakingKeeper.GetDelegation(ctx, newDelAddr, valAddr)
+		require.NoError(t, err)
+		require.Equal(t, newShares, delegation.Shares)
+	})
+
+	t.Run("MigrateDelegationMessageServer", func(t *testing.T) {
+		// Delegate again
+		validator, err := input.StakingKeeper.Validators.Get(ctx, valAddr)
+		require.NoError(t, err)
+		_, err = input.StakingKeeper.Delegate(ctx, delAddr, sdk.NewCoins(balanceLpOld).QuoInt(math.NewInt(3)), types.Unbonded, validator, true)
+		require.NoError(t, err)
+
+		// Test message server validation and error handling
+		msgServer := keeper.NewMsgServerImpl(input.StakingKeeper)
+
+		// success case
+		msg := &types.MsgMigrateDelegation{
+			DelegatorAddress:    delAddr.String(),
+			ValidatorAddress:    valAddr.String(),
+			DenomLpFrom:         denomLpOld,
+			DenomLpTo:           denomLpNew,
+			NewDelegatorAddress: addrs[1].String(),
+		}
+		_, err = msgServer.MigrateDelegation(ctx, msg)
+		require.NoError(t, err)
+
+		// Test 1: Invalid delegator address
+		msg = &types.MsgMigrateDelegation{
+			DelegatorAddress:    "invalid_address",
+			ValidatorAddress:    valAddr.String(),
+			DenomLpFrom:         denomLpOld,
+			DenomLpTo:           denomLpNew,
+			NewDelegatorAddress: addrs[1].String(),
+		}
+
+		_, err = msgServer.MigrateDelegation(ctx, msg)
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "decoding bech32 failed")
+
+		// Test 2: Invalid validator address
+		msg = &types.MsgMigrateDelegation{
+			DelegatorAddress:    addrs[0].String(),
+			ValidatorAddress:    "invalid_address",
+			DenomLpFrom:         denomLpOld,
+			DenomLpTo:           denomLpNew,
+			NewDelegatorAddress: addrs[1].String(),
+		}
+
+		_, err = msgServer.MigrateDelegation(ctx, msg)
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "decoding bech32 failed")
+
+		// Test 3: Migration not found
+		msg = &types.MsgMigrateDelegation{
+			DelegatorAddress:    addrs[0].String(),
+			ValidatorAddress:    valAddr.String(),
+			DenomLpFrom:         "non_existent_pool",
+			DenomLpTo:           denomLpNew,
+			NewDelegatorAddress: addrs[1].String(),
+		}
+
+		_, err = msgServer.MigrateDelegation(ctx, msg)
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "migration not found")
 	})
 
 	// Test case 2: Migration with insufficient balance
@@ -217,7 +308,7 @@ func Test_MigrateDelegation_CompleteFlow(t *testing.T) {
 			ModuleName:    "dex_migration",
 		}
 
-		_, _, err = input.StakingKeeper.MigrateDelegation(ctx, delAddr, valAddr, largeMigration)
+		_, _, err = input.StakingKeeper.MigrateDelegation(ctx, delAddr, valAddr, largeMigration, delAddr)
 		require.Error(t, err)
 	})
 
@@ -234,7 +325,7 @@ func Test_MigrateDelegation_CompleteFlow(t *testing.T) {
 			ModuleName:    "dex_migration",
 		}
 
-		_, _, err = input.StakingKeeper.MigrateDelegation(ctx, delAddr, valAddr, invalidMigration)
+		_, _, err = input.StakingKeeper.MigrateDelegation(ctx, delAddr, valAddr, invalidMigration, delAddr)
 		require.Error(t, err)
 	})
 }
@@ -311,7 +402,7 @@ func Test_MigrateDelegation_ErrorHandling(t *testing.T) {
 			DenomLpTo:     "test_lp_out",
 			ModuleAddress: []byte("0x2"),
 			ModuleName:    "dex_migration",
-		})
+		}, addrs[0])
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "invalid request")
 	})
@@ -329,7 +420,7 @@ func Test_MigrateDelegation_ErrorHandling(t *testing.T) {
 			DenomLpTo:     "test_lp_out",
 			ModuleAddress: []byte("0x2"),
 			ModuleName:    "dex_migration",
-		})
+		}, addrs[0])
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "invalid request")
 	})
@@ -346,7 +437,7 @@ func Test_MigrateDelegation_ErrorHandling(t *testing.T) {
 			DenomLpTo:     "test_lp_out",
 			ModuleAddress: []byte("0x2"),
 			ModuleName:    "dex_migration",
-		})
+		}, addrs[0])
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "invalid request")
 	})
@@ -475,7 +566,7 @@ func Test_MigrateDelegation(t *testing.T) {
 	require.NoError(t, err)
 
 	// denomLpNew is not in bond denoms
-	_, _, err = input.StakingKeeper.MigrateDelegation(ctx, delAddr, valAddr, migration)
+	_, _, err = input.StakingKeeper.MigrateDelegation(ctx, delAddr, valAddr, migration, delAddr)
 	require.Error(t, err)
 
 	err = input.MoveKeeper.Whitelist(ctx, movetypes.MsgWhitelist{
@@ -493,7 +584,7 @@ func Test_MigrateDelegation(t *testing.T) {
 	migration, err = input.StakingKeeper.Migrations.Get(ctx, collections.Join(denomLpOld, denomLpNew))
 	require.NoError(t, err)
 
-	_, newShares, err := input.StakingKeeper.MigrateDelegation(ctx, delAddr, valAddr, migration)
+	_, newShares, err := input.StakingKeeper.MigrateDelegation(ctx, delAddr, valAddr, migration, delAddr)
 	require.NoError(t, err)
 
 	delegation, err = input.StakingKeeper.GetDelegation(ctx, delAddr, valAddr)
