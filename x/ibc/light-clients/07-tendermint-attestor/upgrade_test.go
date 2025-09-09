@@ -9,8 +9,6 @@ import (
 	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 	ibctmattestor "github.com/initia-labs/initia/x/ibc/light-clients/07-tendermint-attestor"
 	ibctesting "github.com/initia-labs/initia/x/ibc/testing"
-
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 )
 
 func (suite *TMAttestorTestSuite) TestVerifyUpgrade() {
@@ -57,7 +55,7 @@ func (suite *TMAttestorTestSuite) TestVerifyUpgrade() {
 		{
 			name: "successful upgrade to same revision",
 			setup: func() {
-				upgradedClient = ibctmattestor.NewClientState(suite.chainB.ChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod+ibctesting.TrustingPeriod, ibctesting.MaxClockDrift, clienttypes.NewHeight(clienttypes.ParseChainID(suite.chainB.ChainID), upgradedClient.GetLatestHeight().GetRevisionHeight()+10), commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, []*codectypes.Any{}, 0)
+				upgradedClient = ibctmattestor.NewClientState(suite.chainB.ChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod+ibctesting.TrustingPeriod, ibctesting.MaxClockDrift, clienttypes.NewHeight(clienttypes.ParseChainID(suite.chainB.ChainID), upgradedClient.GetLatestHeight().GetRevisionHeight()+10), commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, [][]byte{}, 0)
 				upgradedClient = upgradedClient.ZeroCustomFields()
 				upgradedClientBz, err = clienttypes.MarshalClientState(suite.chainA.App.AppCodec(), upgradedClient)
 				suite.Require().NoError(err)
@@ -112,7 +110,7 @@ func (suite *TMAttestorTestSuite) TestVerifyUpgrade() {
 			name: "unsuccessful upgrade: committed client does not have zeroed custom fields",
 			setup: func() {
 				// non-zeroed upgrade client
-				upgradedClient = ibctmattestor.NewClientState(newChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod+ibctesting.TrustingPeriod, ibctesting.MaxClockDrift, ibctesting.NewClientHeight, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, []*codectypes.Any{}, 0)
+				upgradedClient = ibctmattestor.NewClientState(newChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod+ibctesting.TrustingPeriod, ibctesting.MaxClockDrift, ibctesting.NewClientHeight, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, [][]byte{}, 0)
 				upgradedClientBz, err = clienttypes.MarshalClientState(suite.chainA.App.AppCodec(), upgradedClient)
 				suite.Require().NoError(err)
 
@@ -148,7 +146,7 @@ func (suite *TMAttestorTestSuite) TestVerifyUpgrade() {
 				suite.chainB.App.GetUpgradeKeeper().SetUpgradedConsensusState(suite.chainB.GetContext(), int64(lastHeight.GetRevisionHeight()), upgradedConsStateBz) //nolint:errcheck // ignore error for test
 
 				// change upgradedClient client-specified parameters
-				upgradedClient = ibctmattestor.NewClientState("wrongchainID", ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, ibctesting.NewClientHeight, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, []*codectypes.Any{}, 0)
+				upgradedClient = ibctmattestor.NewClientState("wrongchainID", ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, ibctesting.NewClientHeight, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, [][]byte{}, 0)
 
 				suite.coordinator.CommitBlock(suite.chainB)
 				err := path.EndpointA.UpdateClient()
@@ -171,7 +169,7 @@ func (suite *TMAttestorTestSuite) TestVerifyUpgrade() {
 				suite.chainB.App.GetUpgradeKeeper().SetUpgradedConsensusState(suite.chainB.GetContext(), int64(lastHeight.GetRevisionHeight()), upgradedConsStateBz) //nolint:errcheck // ignore error for test
 
 				// change upgradedClient client-specified parameters
-				upgradedClient = ibctmattestor.NewClientState(newChainID, ibctesting.DefaultTrustLevel, ibctesting.UnbondingPeriod, ibctesting.UnbondingPeriod+ibctesting.TrustingPeriod, ibctesting.MaxClockDrift+5, lastHeight, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, []*codectypes.Any{}, 0)
+				upgradedClient = ibctmattestor.NewClientState(newChainID, ibctesting.DefaultTrustLevel, ibctesting.UnbondingPeriod, ibctesting.UnbondingPeriod+ibctesting.TrustingPeriod, ibctesting.MaxClockDrift+5, lastHeight, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, [][]byte{}, 0)
 
 				suite.coordinator.CommitBlock(suite.chainB)
 				err := path.EndpointA.UpdateClient()
@@ -424,7 +422,7 @@ func (suite *TMAttestorTestSuite) TestVerifyUpgrade() {
 			name: "unsuccessful upgrade: final client is not valid",
 			setup: func() {
 				// new client has smaller unbonding period such that old trusting period is no longer valid
-				upgradedClient = ibctmattestor.NewClientState(newChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.TrustingPeriod, ibctesting.MaxClockDrift, ibctesting.NewClientHeight, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, []*codectypes.Any{}, 0)
+				upgradedClient = ibctmattestor.NewClientState(newChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.TrustingPeriod, ibctesting.MaxClockDrift, ibctesting.NewClientHeight, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, [][]byte{}, 0)
 				upgradedClientBz, err = clienttypes.MarshalClientState(suite.chainA.App.AppCodec(), upgradedClient)
 				suite.Require().NoError(err)
 
@@ -468,7 +466,7 @@ func (suite *TMAttestorTestSuite) TestVerifyUpgrade() {
 			newChainID, err = clienttypes.SetRevisionNumber(clientState.ChainId, revisionNumber+1)
 			suite.Require().NoError(err)
 
-			upgradedClient = ibctmattestor.NewClientState(newChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod+ibctesting.TrustingPeriod, ibctesting.MaxClockDrift, clienttypes.NewHeight(revisionNumber+1, clientState.GetLatestHeight().GetRevisionHeight()+1), commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, []*codectypes.Any{}, 0)
+			upgradedClient = ibctmattestor.NewClientState(newChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod+ibctesting.TrustingPeriod, ibctesting.MaxClockDrift, clienttypes.NewHeight(revisionNumber+1, clientState.GetLatestHeight().GetRevisionHeight()+1), commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, [][]byte{}, 0)
 			upgradedClient = upgradedClient.ZeroCustomFields()
 			upgradedClientBz, err = clienttypes.MarshalClientState(suite.chainA.App.AppCodec(), upgradedClient)
 			suite.Require().NoError(err)

@@ -1,7 +1,6 @@
 package tendermintattestor
 
 import (
-	"slices"
 	"time"
 
 	ics23 "github.com/cosmos/ics23/go"
@@ -18,9 +17,6 @@ import (
 	"github.com/cosmos/ibc-go/v8/modules/core/exported"
 
 	tmlightclient "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
-
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 )
 
 var _ exported.ClientState = (*ClientState)(nil)
@@ -30,7 +26,7 @@ func NewClientState(
 	chainID string, trustLevel tmlightclient.Fraction,
 	trustingPeriod, ubdPeriod, maxClockDrift time.Duration,
 	latestHeight clienttypes.Height, specs []*ics23.ProofSpec,
-	upgradePath []string, attestorPubkeys []*codectypes.Any, threshold uint32,
+	upgradePath []string, attestorPubkeys [][]byte, threshold uint32,
 ) *ClientState {
 	return &ClientState{
 		ClientState:     tmlightclient.NewClientState(chainID, trustLevel, trustingPeriod, ubdPeriod, maxClockDrift, latestHeight, specs, upgradePath),
@@ -49,16 +45,13 @@ func (cs ClientState) Validate() error {
 	}
 
 	// duplication check for attestor pubkeys
-	seenPubKeys := make([]*cryptotypes.PubKey, 0, len(cs.AttestorPubkeys))
-	attestorPubKeys, err := cs.GetAttestorPubkeys()
-	if err != nil {
-		return err
-	}
+	seenPubKeys := make(map[string]struct{})
+	attestorPubKeys := cs.AttestorPubkeys
 	for _, attestorPubkey := range attestorPubKeys {
-		if slices.Contains(seenPubKeys, &attestorPubkey) {
-			return errorsmod.Wrapf(clienttypes.ErrInvalidClient, "duplicate attestor pubkey: %s", attestorPubkey.String())
+		if _, ok := seenPubKeys[string(attestorPubkey)]; ok {
+			return errorsmod.Wrapf(clienttypes.ErrInvalidClient, "duplicate attestor pubkey: %s", string(attestorPubkey))
 		}
-		seenPubKeys = append(seenPubKeys, &attestorPubkey)
+		seenPubKeys[string(attestorPubkey)] = struct{}{}
 	}
 	return nil
 }
@@ -122,7 +115,7 @@ func (cs ClientState) ZeroCustomFields() exported.ClientState {
 	// and leave custom fields empty
 	return &ClientState{
 		ClientState:     cs.ClientState.ZeroCustomFields().(*tmlightclient.ClientState),
-		AttestorPubkeys: []*codectypes.Any{},
+		AttestorPubkeys: [][]byte{},
 		Threshold:       0,
 	}
 }
@@ -287,54 +280,25 @@ func verifyDelayPeriodPassed(ctx sdk.Context, store storetypes.KVStore, proofHei
 	return nil
 }
 
-// GetAttestorPubkeys returns the attestor pubkeys for the client state.
-func (cs ClientState) GetAttestorPubkeys() ([]cryptotypes.PubKey, error) {
-	pubKeys := make([]cryptotypes.PubKey, 0, len(cs.AttestorPubkeys))
-	for i, attestorPubkey := range cs.AttestorPubkeys {
-		if pk, ok := attestorPubkey.GetCachedValue().(cryptotypes.PubKey); ok {
-			pubKeys = append(pubKeys, pk)
-		} else {
-			return nil, errorsmod.Wrapf(clienttypes.ErrInvalidClient, "attestor pubkey at index %d has unexpected type", i)
-		}
-	}
-	return pubKeys, nil
-}
-
-// UnpackInterfaces implements UnpackInterfacesMessage.UnpackInterfaces
-func (cs *ClientState) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
-	for i := range cs.AttestorPubkeys {
-		var pubKey cryptotypes.PubKey
-		err := unpacker.UnpackAny(cs.AttestorPubkeys[i], &pubKey)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 // hasSameAttestorsAndThreshold returns true if the attestors and threshold are the same between the two client states
 func (cs ClientState) HasSameAttestorsAndThreshold(cs2 ClientState) (bool, error) {
 	if cs.Threshold != cs2.Threshold {
 		return false, nil
 	}
 
-	pubkeys1, err := cs.GetAttestorPubkeys()
-	if err != nil {
-		return false, err
-	}
-	pubkeys2, err := cs2.GetAttestorPubkeys()
-	if err != nil {
-		return false, err
-	} else if len(pubkeys1) != len(pubkeys2) {
+	pubkeys1 := cs.AttestorPubkeys
+	pubkeys2 := cs2.AttestorPubkeys
+	if len(pubkeys1) != len(pubkeys2) {
 		return false, nil
 	}
+
 	count1 := make(map[string]int, len(pubkeys1))
 	for _, pk := range pubkeys1 {
-		count1[pk.Address().String()]++
+		count1[string(pk)]++
 	}
 	count2 := make(map[string]int, len(pubkeys2))
 	for _, pk := range pubkeys2 {
-		count2[pk.Address().String()]++
+		count2[string(pk)]++
 	}
 	if len(count1) != len(count2) {
 		return false, nil

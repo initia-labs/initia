@@ -7,7 +7,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 
 	abci "github.com/cometbft/cometbft/abci/types"
 
@@ -117,11 +116,9 @@ func (endpoint *Endpoint) CreateClient() error {
 
 		height := endpoint.Counterparty.Chain.LastHeader.GetHeight().(clienttypes.Height)
 
-		attestors := make([]*codectypes.Any, 0, len(tmAttestorConfig.AttestorPrivkeys))
+		attestors := make([][]byte, 0, len(tmAttestorConfig.AttestorPrivkeys))
 		for _, privKey := range tmAttestorConfig.AttestorPrivkeys {
-			pubKeyAny, err := codectypes.NewAnyWithValue(privKey.PubKey())
-			require.NoError(endpoint.Chain.T, err)
-			attestors = append(attestors, pubKeyAny)
+			attestors = append(attestors, privKey.PubKey().Bytes())
 		}
 
 		clientState = ibctmattestor.NewClientState(
@@ -315,13 +312,8 @@ func (endpoint *Endpoint) GetProofWithAttestations(proof []byte) ([]byte, error)
 			return nil, err
 		}
 
-		pubKeyAny, err := codectypes.NewAnyWithValue(privKey.PubKey())
-		if err != nil {
-			return nil, err
-		}
-
 		proofWithAttestations.Attestations = append(proofWithAttestations.Attestations, &ibctmattestor.Attestation{
-			PubKey:    pubKeyAny,
+			PubKey:    privKey.PubKey().Bytes(),
 			Signature: signature,
 		})
 	}

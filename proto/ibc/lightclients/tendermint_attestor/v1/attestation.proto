@@ -19,6 +19,7 @@ message MerkleProofBytesWithAttestations {
 // Attestation is a wrapper around a public key and a signature.
 message Attestation {
   option (gogoproto.goproto_getters) = false;
-  google.protobuf.Any pub_key = 1 [(cosmos_proto.accepts_interface) = "cosmos.crypto.PubKey"];
+  // The public key of the attestor. This is ed25519 public key.
+  bytes pub_key = 1;
   bytes signature = 2;
 }

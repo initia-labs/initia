@@ -3,7 +3,7 @@ package ibctesting
 import (
 	"time"
 
-	sdksecp256k1 "github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
+	sdked25519 "github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
@@ -52,7 +52,7 @@ func (tmcfg *TendermintAttestorConfig) GetClientType() string {
 func NewTendermintAttestorConfig(numAttestors, threshold int) *TendermintAttestorConfig {
 	privKeys := make([]cryptotypes.PrivKey, 0, numAttestors)
 	for range numAttestors {
-		privKeys = append(privKeys, sdksecp256k1.GenPrivKey())
+		privKeys = append(privKeys, sdked25519.GenPrivKey())
 	}
 
 	return &TendermintAttestorConfig{

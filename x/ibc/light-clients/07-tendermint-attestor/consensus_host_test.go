@@ -3,7 +3,6 @@ package tendermintattestor_test
 import (
 	collections "cosmossdk.io/collections"
 
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
@@ -130,14 +129,14 @@ func (suite *TMAttestorTestSuite) TestValidateSelfClient() {
 		{
 			name: "success",
 			malleate: func() {
-				clientState = ibctmattestor.NewClientState(suite.chainA.ChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, testClientHeight, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, []*codectypes.Any{}, 0)
+				clientState = ibctmattestor.NewClientState(suite.chainA.ChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, testClientHeight, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, [][]byte{}, 0)
 			},
 			expError: nil,
 		},
 		{
 			name: "success with nil UpgradePath",
 			malleate: func() {
-				clientState = ibctmattestor.NewClientState(suite.chainA.ChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, testClientHeight, commitmenttypes.GetSDKSpecs(), nil, []*codectypes.Any{}, 0)
+				clientState = ibctmattestor.NewClientState(suite.chainA.ChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, testClientHeight, commitmenttypes.GetSDKSpecs(), nil, [][]byte{}, 0)
 			},
 			expError: nil,
 		},
@@ -168,7 +167,7 @@ func (suite *TMAttestorTestSuite) TestValidateSelfClient() {
 					ClientState: &ibctm.ClientState{
 						ChainId: suite.chainA.ChainID, TrustLevel: ibctesting.DefaultTrustLevel, TrustingPeriod: ibctesting.TrustingPeriod, UnbondingPeriod: ibctesting.UnbondingPeriod, MaxClockDrift: ibctesting.MaxClockDrift, FrozenHeight: testClientHeight, LatestHeight: testClientHeight, ProofSpecs: commitmenttypes.GetSDKSpecs(), UpgradePath: ibctesting.UpgradePath,
 					},
-					AttestorPubkeys: []*codectypes.Any{},
+					AttestorPubkeys: [][]byte{},
 					Threshold:       0,
 				}
 			},
@@ -177,14 +176,14 @@ func (suite *TMAttestorTestSuite) TestValidateSelfClient() {
 		{
 			name: "incorrect chainID",
 			malleate: func() {
-				clientState = ibctmattestor.NewClientState("gaiatestnet", ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, testClientHeight, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, []*codectypes.Any{}, 0)
+				clientState = ibctmattestor.NewClientState("gaiatestnet", ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, testClientHeight, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, [][]byte{}, 0)
 			},
 			expError: clienttypes.ErrInvalidClient,
 		},
 		{
 			name: "invalid client height",
 			malleate: func() {
-				clientState = ibctmattestor.NewClientState(suite.chainA.ChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, clienttypes.GetSelfHeight(suite.chainA.GetContext()).Increment().(clienttypes.Height), commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, []*codectypes.Any{}, 0)
+				clientState = ibctmattestor.NewClientState(suite.chainA.ChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, clienttypes.GetSelfHeight(suite.chainA.GetContext()).Increment().(clienttypes.Height), commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, [][]byte{}, 0)
 			},
 			expError: clienttypes.ErrInvalidClient,
 		},
@@ -198,42 +197,42 @@ func (suite *TMAttestorTestSuite) TestValidateSelfClient() {
 		{
 			name: "invalid client revision",
 			malleate: func() {
-				clientState = ibctmattestor.NewClientState(suite.chainA.ChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, clienttypes.NewHeight(1, 5), commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, []*codectypes.Any{}, 0)
+				clientState = ibctmattestor.NewClientState(suite.chainA.ChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, clienttypes.NewHeight(1, 5), commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, [][]byte{}, 0)
 			},
 			expError: clienttypes.ErrInvalidClient,
 		},
 		{
 			name: "invalid proof specs",
 			malleate: func() {
-				clientState = ibctmattestor.NewClientState(suite.chainA.ChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, testClientHeight, nil, ibctesting.UpgradePath, []*codectypes.Any{}, 0)
+				clientState = ibctmattestor.NewClientState(suite.chainA.ChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, testClientHeight, nil, ibctesting.UpgradePath, [][]byte{}, 0)
 			},
 			expError: clienttypes.ErrInvalidClient,
 		},
 		{
 			name: "invalid trust level",
 			malleate: func() {
-				clientState = ibctmattestor.NewClientState(suite.chainA.ChainID, ibctm.Fraction{Numerator: 0, Denominator: 1}, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, testClientHeight, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, []*codectypes.Any{}, 0)
+				clientState = ibctmattestor.NewClientState(suite.chainA.ChainID, ibctm.Fraction{Numerator: 0, Denominator: 1}, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, testClientHeight, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, [][]byte{}, 0)
 			},
 			expError: clienttypes.ErrInvalidClient,
 		},
 		{
 			name: "invalid unbonding period",
 			malleate: func() {
-				clientState = ibctmattestor.NewClientState(suite.chainA.ChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod+10, ibctesting.MaxClockDrift, testClientHeight, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, []*codectypes.Any{}, 0)
+				clientState = ibctmattestor.NewClientState(suite.chainA.ChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod+10, ibctesting.MaxClockDrift, testClientHeight, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, [][]byte{}, 0)
 			},
 			expError: clienttypes.ErrInvalidClient,
 		},
 		{
 			name: "invalid trusting period",
 			malleate: func() {
-				clientState = ibctmattestor.NewClientState(suite.chainA.ChainID, ibctesting.DefaultTrustLevel, ibctesting.UnbondingPeriod+10, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, testClientHeight, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, []*codectypes.Any{}, 0)
+				clientState = ibctmattestor.NewClientState(suite.chainA.ChainID, ibctesting.DefaultTrustLevel, ibctesting.UnbondingPeriod+10, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, testClientHeight, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, [][]byte{}, 0)
 			},
 			expError: clienttypes.ErrInvalidClient,
 		},
 		{
 			name: "invalid upgrade path",
 			malleate: func() {
-				clientState = ibctmattestor.NewClientState(suite.chainA.ChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, testClientHeight, commitmenttypes.GetSDKSpecs(), []string{"bad", "upgrade", "path"}, []*codectypes.Any{}, 0)
+				clientState = ibctmattestor.NewClientState(suite.chainA.ChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, testClientHeight, commitmenttypes.GetSDKSpecs(), []string{"bad", "upgrade", "path"}, [][]byte{}, 0)
 			},
 			expError: clienttypes.ErrInvalidClient,
 		},
