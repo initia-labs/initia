@@ -14,7 +14,8 @@ message ClientState {
   option (gogoproto.goproto_getters) = false;
 
   ibc.lightclients.tendermint.v1.ClientState client_state = 1 [(gogoproto.embed) = true];
-  repeated google.protobuf.Any attestor_pubkeys = 2 [(cosmos_proto.accepts_interface) = "cosmos.crypto.PubKey"];
+  // The public keys of the attestors. These are ed25519 public keys.
+  repeated bytes attestor_pubkeys = 2;
   uint32 threshold = 3;
 }
 

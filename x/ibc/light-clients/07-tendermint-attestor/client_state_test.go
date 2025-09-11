@@ -6,7 +6,6 @@ import (
 	sdkmath "cosmossdk.io/math"
 	ics23 "github.com/cosmos/ics23/go"
 
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -88,17 +87,17 @@ func (suite *TMAttestorTestSuite) TestValidate() {
 	}{
 		{
 			name:        "valid client",
-			clientState: ibctmattestor.NewClientState(ibctesting.ChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, ibctesting.Height, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, []*codectypes.Any{}, 0),
+			clientState: ibctmattestor.NewClientState(ibctesting.ChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, ibctesting.Height, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, [][]byte{}, 0),
 			expPass:     true,
 		},
 		{
 			name:        "valid client with nil upgrade path",
-			clientState: ibctmattestor.NewClientState(ibctesting.ChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, ibctesting.Height, commitmenttypes.GetSDKSpecs(), nil, []*codectypes.Any{}, 0),
+			clientState: ibctmattestor.NewClientState(ibctesting.ChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, ibctesting.Height, commitmenttypes.GetSDKSpecs(), nil, [][]byte{}, 0),
 			expPass:     true,
 		},
 		{
 			name:        "invalid chainID",
-			clientState: ibctmattestor.NewClientState("  ", ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, ibctesting.Height, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, []*codectypes.Any{}, 0),
+			clientState: ibctmattestor.NewClientState("  ", ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, ibctesting.Height, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, [][]byte{}, 0),
 			expPass:     false,
 		},
 		{
@@ -106,7 +105,7 @@ func (suite *TMAttestorTestSuite) TestValidate() {
 			// Do not only fix the test, fix the code!
 			// https://github.com/cosmos/ibc-go/issues/177
 			name:        "valid chainID - chainID validation failed for chainID of length 50! ",
-			clientState: ibctmattestor.NewClientState(fiftyCharChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, ibctesting.Height, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, []*codectypes.Any{}, 0),
+			clientState: ibctmattestor.NewClientState(fiftyCharChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, ibctesting.Height, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, [][]byte{}, 0),
 			expPass:     true,
 		},
 		{
@@ -114,67 +113,67 @@ func (suite *TMAttestorTestSuite) TestValidate() {
 			// Do not only fix the test, fix the code!
 			// https://github.com/cosmos/ibc-go/issues/177
 			name:        "invalid chainID - chainID validation did not fail for chainID of length 51! ",
-			clientState: ibctmattestor.NewClientState(fiftyOneCharChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, ibctesting.Height, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, []*codectypes.Any{}, 0),
+			clientState: ibctmattestor.NewClientState(fiftyOneCharChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, ibctesting.Height, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, [][]byte{}, 0),
 			expPass:     false,
 		},
 		{
 			name:        "invalid trust level",
-			clientState: ibctmattestor.NewClientState(ibctesting.ChainID, ibctm.Fraction{Numerator: 0, Denominator: 1}, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, ibctesting.Height, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, []*codectypes.Any{}, 0),
+			clientState: ibctmattestor.NewClientState(ibctesting.ChainID, ibctm.Fraction{Numerator: 0, Denominator: 1}, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, ibctesting.Height, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, [][]byte{}, 0),
 			expPass:     false,
 		},
 		{
 			name:        "invalid zero trusting period",
-			clientState: ibctmattestor.NewClientState(ibctesting.ChainID, ibctesting.DefaultTrustLevel, 0, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, ibctesting.Height, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, []*codectypes.Any{}, 0),
+			clientState: ibctmattestor.NewClientState(ibctesting.ChainID, ibctesting.DefaultTrustLevel, 0, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, ibctesting.Height, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, [][]byte{}, 0),
 			expPass:     false,
 		},
 		{
 			name:        "invalid negative trusting period",
-			clientState: ibctmattestor.NewClientState(ibctesting.ChainID, ibctesting.DefaultTrustLevel, -1, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, ibctesting.Height, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, []*codectypes.Any{}, 0),
+			clientState: ibctmattestor.NewClientState(ibctesting.ChainID, ibctesting.DefaultTrustLevel, -1, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, ibctesting.Height, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, [][]byte{}, 0),
 			expPass:     false,
 		},
 		{
 			name:        "invalid zero unbonding period",
-			clientState: ibctmattestor.NewClientState(ibctesting.ChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, 0, ibctesting.MaxClockDrift, ibctesting.Height, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, []*codectypes.Any{}, 0),
+			clientState: ibctmattestor.NewClientState(ibctesting.ChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, 0, ibctesting.MaxClockDrift, ibctesting.Height, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, [][]byte{}, 0),
 			expPass:     false,
 		},
 		{
 			name:        "invalid negative unbonding period",
-			clientState: ibctmattestor.NewClientState(ibctesting.ChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, -1, ibctesting.MaxClockDrift, ibctesting.Height, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, []*codectypes.Any{}, 0),
+			clientState: ibctmattestor.NewClientState(ibctesting.ChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, -1, ibctesting.MaxClockDrift, ibctesting.Height, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, [][]byte{}, 0),
 			expPass:     false,
 		},
 		{
 			name:        "invalid zero max clock drift",
-			clientState: ibctmattestor.NewClientState(ibctesting.ChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod, 0, ibctesting.Height, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, []*codectypes.Any{}, 0),
+			clientState: ibctmattestor.NewClientState(ibctesting.ChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod, 0, ibctesting.Height, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, [][]byte{}, 0),
 			expPass:     false,
 		},
 		{
 			name:        "invalid negative max clock drift",
-			clientState: ibctmattestor.NewClientState(ibctesting.ChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod, -1, ibctesting.Height, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, []*codectypes.Any{}, 0),
+			clientState: ibctmattestor.NewClientState(ibctesting.ChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod, -1, ibctesting.Height, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, [][]byte{}, 0),
 			expPass:     false,
 		},
 		{
 			name:        "invalid revision number",
-			clientState: ibctmattestor.NewClientState(ibctesting.ChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, clienttypes.NewHeight(1, 1), commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, []*codectypes.Any{}, 0),
+			clientState: ibctmattestor.NewClientState(ibctesting.ChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, clienttypes.NewHeight(1, 1), commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, [][]byte{}, 0),
 			expPass:     false,
 		},
 		{
 			name:        "invalid revision height",
-			clientState: ibctmattestor.NewClientState(ibctesting.ChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, clienttypes.ZeroHeight(), commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, []*codectypes.Any{}, 0),
+			clientState: ibctmattestor.NewClientState(ibctesting.ChainID, ibctesting.DefaultTrustLevel, ibctesting.TrustingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, clienttypes.ZeroHeight(), commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, [][]byte{}, 0),
 			expPass:     false,
 		},
 		{
 			name:        "trusting period not less than unbonding period",
-			clientState: ibctmattestor.NewClientState(ibctesting.ChainID, ibctesting.DefaultTrustLevel, ibctesting.UnbondingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, ibctesting.Height, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, []*codectypes.Any{}, 0),
+			clientState: ibctmattestor.NewClientState(ibctesting.ChainID, ibctesting.DefaultTrustLevel, ibctesting.UnbondingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, ibctesting.Height, commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath, [][]byte{}, 0),
 			expPass:     false,
 		},
 		{
 			name:        "proof specs is nil",
-			clientState: ibctmattestor.NewClientState(ibctesting.ChainID, ibctesting.DefaultTrustLevel, ibctesting.UnbondingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, ibctesting.Height, nil, ibctesting.UpgradePath, []*codectypes.Any{}, 0),
+			clientState: ibctmattestor.NewClientState(ibctesting.ChainID, ibctesting.DefaultTrustLevel, ibctesting.UnbondingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, ibctesting.Height, nil, ibctesting.UpgradePath, [][]byte{}, 0),
 			expPass:     false,
 		},
 		{
 			name:        "proof specs contains nil",
-			clientState: ibctmattestor.NewClientState(ibctesting.ChainID, ibctesting.DefaultTrustLevel, ibctesting.UnbondingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, ibctesting.Height, []*ics23.ProofSpec{ics23.TendermintSpec, nil}, ibctesting.UpgradePath, []*codectypes.Any{}, 0),
+			clientState: ibctmattestor.NewClientState(ibctesting.ChainID, ibctesting.DefaultTrustLevel, ibctesting.UnbondingPeriod, ibctesting.UnbondingPeriod, ibctesting.MaxClockDrift, ibctesting.Height, []*ics23.ProofSpec{ics23.TendermintSpec, nil}, ibctesting.UpgradePath, [][]byte{}, 0),
 			expPass:     false,
 		},
 	}
@@ -223,7 +222,7 @@ func (suite *TMAttestorTestSuite) TestInitialize() {
 				path.EndpointB.Chain.ChainID,
 				tmConfig.TrustLevel, tmConfig.TrustingPeriod, tmConfig.UnbondingPeriod, tmConfig.MaxClockDrift,
 				suite.chainB.LastHeader.GetTrustedHeight(), commitmenttypes.GetSDKSpecs(), ibctesting.UpgradePath,
-				[]*codectypes.Any{}, tmConfig.Threshold,
+				[][]byte{}, tmConfig.Threshold,
 			)
 
 			store := suite.chainA.App.GetIBCKeeper().ClientKeeper.ClientStore(suite.chainA.GetContext(), path.EndpointA.ClientID)
@@ -745,18 +744,16 @@ func Test_hasSameAttestorsAndThreshold(t *testing.T) {
 	pubkey4 := secp256k1.GenPrivKey().PubKey()
 
 	// Helper function to create attestor pubkeys
-	createAttestorPubkeys := func(pubkeys ...cryptotypes.PubKey) []*codectypes.Any {
-		result := make([]*codectypes.Any, len(pubkeys))
+	createAttestorPubkeys := func(pubkeys ...cryptotypes.PubKey) [][]byte {
+		result := make([][]byte, len(pubkeys))
 		for i, pk := range pubkeys {
-			any, err := codectypes.NewAnyWithValue(pk)
-			require.NoError(t, err)
-			result[i] = any
+			result[i] = pk.Bytes()
 		}
 		return result
 	}
 
 	// Helper function to create client state
-	createClientState := func(attestorPubkeys []*codectypes.Any, threshold uint32) ibctmattestor.ClientState {
+	createClientState := func(attestorPubkeys [][]byte, threshold uint32) ibctmattestor.ClientState {
 		return ibctmattestor.ClientState{
 			ClientState: &ibctm.ClientState{
 				ChainId:         "test-chain",
@@ -866,11 +863,11 @@ func Test_hasSameAttestorsAndThreshold(t *testing.T) {
 		{
 			name: "empty attestor sets with same threshold",
 			cs1: createClientState(
-				[]*codectypes.Any{},
+				[][]byte{},
 				0,
 			),
 			cs2: createClientState(
-				[]*codectypes.Any{},
+				[][]byte{},
 				0,
 			),
 			expected: true,
@@ -878,11 +875,11 @@ func Test_hasSameAttestorsAndThreshold(t *testing.T) {
 		{
 			name: "empty attestor sets with different threshold",
 			cs1: createClientState(
-				[]*codectypes.Any{},
+				[][]byte{},
 				0,
 			),
 			cs2: createClientState(
-				[]*codectypes.Any{},
+				[][]byte{},
 				1,
 			),
 			expected: false,
@@ -941,18 +938,16 @@ func Test_hasSameAttestorsAndThreshold_EdgeCases(t *testing.T) {
 	pubkey2 := secp256k1.GenPrivKey().PubKey()
 
 	// Helper function to create attestor pubkeys
-	createAttestorPubkeys := func(pubkeys ...cryptotypes.PubKey) []*codectypes.Any {
-		result := make([]*codectypes.Any, len(pubkeys))
+	createAttestorPubkeys := func(pubkeys ...cryptotypes.PubKey) [][]byte {
+		result := make([][]byte, len(pubkeys))
 		for i, pk := range pubkeys {
-			any, err := codectypes.NewAnyWithValue(pk)
-			require.NoError(t, err)
-			result[i] = any
+			result[i] = pk.Bytes()
 		}
 		return result
 	}
 
 	// Helper function to create client state
-	createClientState := func(attestorPubkeys []*codectypes.Any, threshold uint32) ibctmattestor.ClientState {
+	createClientState := func(attestorPubkeys [][]byte, threshold uint32) ibctmattestor.ClientState {
 		return ibctmattestor.ClientState{
 			ClientState: &ibctm.ClientState{
 				ChainId:         "test-chain",
@@ -978,11 +973,11 @@ func Test_hasSameAttestorsAndThreshold_EdgeCases(t *testing.T) {
 		{
 			name: "zero threshold with empty attestors",
 			cs1: createClientState(
-				[]*codectypes.Any{},
+				[][]byte{},
 				0,
 			),
 			cs2: createClientState(
-				[]*codectypes.Any{},
+				[][]byte{},
 				0,
 			),
 			expected: true,

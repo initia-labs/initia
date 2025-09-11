@@ -3,8 +3,7 @@ package tendermintattestor_test
 import (
 	"time"
 
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	sdksecp256k1 "github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
+	sdked25519 "github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 
 	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
 	"github.com/cosmos/ibc-go/v8/modules/core/exported"
@@ -46,10 +45,8 @@ func (suite *TMAttestorTestSuite) TestCheckSubstituteUpdateStateBasic() {
 				var ok bool
 				substituteClientState, ok = suite.chainA.GetClientState(substitutePath.EndpointA.ClientID).(*ibctmattestor.ClientState)
 				suite.Require().True(ok)
-				privKey := sdksecp256k1.GenPrivKey()
-				anyPk, err := codectypes.NewAnyWithValue(privKey.PubKey())
-				suite.Require().NoError(err)
-				substituteClientState.(*ibctmattestor.ClientState).AttestorPubkeys = []*codectypes.Any{anyPk}
+				privKey := sdked25519.GenPrivKey()
+				substituteClientState.(*ibctmattestor.ClientState).AttestorPubkeys = [][]byte{privKey.PubKey().Bytes()}
 			},
 		},
 		{

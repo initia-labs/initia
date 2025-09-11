@@ -13,7 +13,7 @@ The `ClientState` embeds the standard Tendermint light client state and extends 
 ```go
 type ClientState struct {
     *tmlightclient.ClientState  // Embedded standard Tendermint client state
-    AttestorPubkeys []codectypes.Any  // List of authorized attestor public keys
+    AttestorPubkeys [][]byte    // List of authorized attestor public keys (ed25519 public keys)
     Threshold       uint32             // Minimum number of attestations required
 }
 ```
@@ -36,7 +36,7 @@ type ConsensusState struct {
 
 ```go
 type Attestation struct {
-    PubKey    codectypes.Any  // Attestor's public key
+    PubKey    []byte  // Attestor's public key (ed25519 public key)
     Signature []byte          // Signature over proof bytes
 }
 ```
