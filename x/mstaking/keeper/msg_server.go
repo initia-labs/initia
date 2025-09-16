@@ -3,7 +3,6 @@ package keeper
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strconv"
 	"time"
 
@@ -523,78 +522,6 @@ func (k msgServer) CancelUnbondingDelegation(ctx context.Context, msg *types.Msg
 	)
 
 	return &types.MsgCancelUnbondingDelegationResponse{}, nil
-}
-
-// RegisterMigration defines a method for registering a migration of a delegation.
-func (ms msgServer) RegisterMigration(ctx context.Context, msg *types.MsgRegisterMigration) (*types.MsgRegisterMigrationResponse, error) {
-	if err := msg.Validate(ms.authKeeper.AddressCodec(), ms.validatorAddressCodec); err != nil {
-		return nil, err
-	}
-
-	if ms.authority != msg.Authority {
-		return nil, errorsmod.Wrapf(govtypes.ErrInvalidSigner, "invalid authority; expected %s, got %s", ms.authority, msg.Authority)
-	}
-
-	if err := ms.Keeper.RegisterMigration(ctx, msg.DenomLpFrom, msg.DenomLpTo, msg.ModuleAddress, msg.ModuleName); err != nil {
-		return nil, err
-	}
-
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	sdkCtx.EventManager().EmitEvent(
-		sdk.NewEvent(
-			types.EventTypeRegisterMigration,
-			sdk.NewAttribute(types.AttributeKeyDenomLpFrom, msg.DenomLpFrom),
-			sdk.NewAttribute(types.AttributeKeyDenomLpTo, msg.DenomLpTo),
-			sdk.NewAttribute(types.AttributeKeyMigrationModule, fmt.Sprintf("%s::%s", msg.ModuleAddress, msg.ModuleName)),
-		),
-	)
-	return &types.MsgRegisterMigrationResponse{}, nil
-}
-
-// MigrateDelegation defines a method for migrating a delegation.
-func (ms msgServer) MigrateDelegation(ctx context.Context, msg *types.MsgMigrateDelegation) (*types.MsgMigrateDelegationResponse, error) {
-	if err := msg.Validate(ms.authKeeper.AddressCodec(), ms.validatorAddressCodec); err != nil {
-		return nil, err
-	}
-
-	delAddr, err := ms.authKeeper.AddressCodec().StringToBytes(msg.DelegatorAddress)
-	if err != nil {
-		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid delegator address: %s", err)
-	}
-
-	valAddr, err := ms.validatorAddressCodec.StringToBytes(msg.ValidatorAddress)
-	if err != nil {
-		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid validator address: %s", err)
-	}
-
-	// get the migration info
-	migration, err := ms.Migrations.Get(ctx, collections.Join(msg.DenomLpFrom, msg.DenomLpTo))
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return nil, status.Error(codes.NotFound, "migration not found")
-		}
-
-		return nil, sdkerrors.ErrInvalidRequest.Wrap(err.Error())
-	}
-
-	originShares, newShares, err := ms.Keeper.MigrateDelegation(ctx, delAddr, valAddr, migration)
-	if err != nil {
-		return nil, err
-	}
-
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	sdkCtx.EventManager().EmitEvent(
-		sdk.NewEvent(
-			types.EventTypeMigrateDelegation,
-			sdk.NewAttribute(types.AttributeKeyDelegator, msg.DelegatorAddress),
-			sdk.NewAttribute(types.AttributeKeyValidator, msg.ValidatorAddress),
-			sdk.NewAttribute(types.AttributeKeyDenomLpFrom, msg.DenomLpFrom),
-			sdk.NewAttribute(types.AttributeKeyDenomLpTo, msg.DenomLpTo),
-			sdk.NewAttribute(types.AttributeKeyOriginShares, originShares.String()),
-			sdk.NewAttribute(types.AttributeKeyNewShares, newShares.String()),
-		),
-	)
-	return &types.MsgMigrateDelegationResponse{}, nil
 }
 
 func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {

@@ -26,8 +26,6 @@ const (
 	Msg_Undelegate_FullMethodName                = "/initia.mstaking.v1.Msg/Undelegate"
 	Msg_CancelUnbondingDelegation_FullMethodName = "/initia.mstaking.v1.Msg/CancelUnbondingDelegation"
 	Msg_UpdateParams_FullMethodName              = "/initia.mstaking.v1.Msg/UpdateParams"
-	Msg_RegisterMigration_FullMethodName         = "/initia.mstaking.v1.Msg/RegisterMigration"
-	Msg_MigrateDelegation_FullMethodName         = "/initia.mstaking.v1.Msg/MigrateDelegation"
 )
 
 // MsgClient is the client API for Msg service.
@@ -53,10 +51,6 @@ type MsgClient interface {
 	// UpdateParams defines an operation for updating the x/staking module
 	// parameters.
 	UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error)
-	// RegisterMigration defines a method for registering a migration.
-	RegisterMigration(ctx context.Context, in *MsgRegisterMigration, opts ...grpc.CallOption) (*MsgRegisterMigrationResponse, error)
-	// MigrateDelegation defines a method for migrating a delegation.
-	MigrateDelegation(ctx context.Context, in *MsgMigrateDelegation, opts ...grpc.CallOption) (*MsgMigrateDelegationResponse, error)
 }
 
 type msgClient struct {
@@ -130,24 +124,6 @@ func (c *msgClient) UpdateParams(ctx context.Context, in *MsgUpdateParams, opts 
 	return out, nil
 }
 
-func (c *msgClient) RegisterMigration(ctx context.Context, in *MsgRegisterMigration, opts ...grpc.CallOption) (*MsgRegisterMigrationResponse, error) {
-	out := new(MsgRegisterMigrationResponse)
-	err := c.cc.Invoke(ctx, Msg_RegisterMigration_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *msgClient) MigrateDelegation(ctx context.Context, in *MsgMigrateDelegation, opts ...grpc.CallOption) (*MsgMigrateDelegationResponse, error) {
-	out := new(MsgMigrateDelegationResponse)
-	err := c.cc.Invoke(ctx, Msg_MigrateDelegation_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // MsgServer is the server API for Msg service.
 // All implementations must embed UnimplementedMsgServer
 // for forward compatibility
@@ -171,10 +147,6 @@ type MsgServer interface {
 	// UpdateParams defines an operation for updating the x/staking module
 	// parameters.
 	UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error)
-	// RegisterMigration defines a method for registering a migration.
-	RegisterMigration(context.Context, *MsgRegisterMigration) (*MsgRegisterMigrationResponse, error)
-	// MigrateDelegation defines a method for migrating a delegation.
-	MigrateDelegation(context.Context, *MsgMigrateDelegation) (*MsgMigrateDelegationResponse, error)
 	mustEmbedUnimplementedMsgServer()
 }
 
@@ -202,12 +174,6 @@ func (UnimplementedMsgServer) CancelUnbondingDelegation(context.Context, *MsgCan
 }
 func (UnimplementedMsgServer) UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateParams not implemented")
-}
-func (UnimplementedMsgServer) RegisterMigration(context.Context, *MsgRegisterMigration) (*MsgRegisterMigrationResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RegisterMigration not implemented")
-}
-func (UnimplementedMsgServer) MigrateDelegation(context.Context, *MsgMigrateDelegation) (*MsgMigrateDelegationResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method MigrateDelegation not implemented")
 }
 func (UnimplementedMsgServer) mustEmbedUnimplementedMsgServer() {}
 
@@ -348,42 +314,6 @@ func _Msg_UpdateParams_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_RegisterMigration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgRegisterMigration)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServer).RegisterMigration(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Msg_RegisterMigration_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).RegisterMigration(ctx, req.(*MsgRegisterMigration))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Msg_MigrateDelegation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgMigrateDelegation)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServer).MigrateDelegation(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Msg_MigrateDelegation_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).MigrateDelegation(ctx, req.(*MsgMigrateDelegation))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // Msg_ServiceDesc is the grpc.ServiceDesc for Msg service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -418,14 +348,6 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateParams",
 			Handler:    _Msg_UpdateParams_Handler,
-		},
-		{
-			MethodName: "RegisterMigration",
-			Handler:    _Msg_RegisterMigration_Handler,
-		},
-		{
-			MethodName: "MigrateDelegation",
-			Handler:    _Msg_MigrateDelegation_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
