@@ -81,9 +81,6 @@ const (
 	FunctionNameVestingTableHandle   = "vesting_table_handle"
 	FunctionNameVestingTokenMetadata = "vesting_token_metadata"
 
-	// function names for dex migration
-	FunctionNameDexMigrationConvert = "convert"
-
 	// resource names
 	ResourceNameFungibleStore = "FungibleStore"
 	ResourceNameMetadata      = "Metadata"
@@ -416,40 +413,6 @@ func ReadWeightsFromDexConfig(timestamp math.Int, bz []byte) (math.LegacyDec, ma
 		timestampAfter,
 		timestamp,
 	)
-}
-
-// ReadFeeRateFromDexConfig util function to read pool fee rate from the DexConfig
-func ReadFeeRateFromDexConfig(bz []byte) (math.LegacyDec, error) {
-	cursor := int(0)
-
-	// read extend_ref + version
-	cursor += AddressBytesLength + 8
-
-	// before weights
-	weightLen, len := readULEB128(bz[cursor:])
-	cursor += len + weightLen
-
-	weightLen, len = readULEB128(bz[cursor:])
-	cursor += len + weightLen
-
-	cursor += 8
-
-	// after weights
-	weightLen, len = readULEB128(bz[cursor:])
-	cursor += len + weightLen
-
-	weightLen, len = readULEB128(bz[cursor:])
-	cursor += len + weightLen
-
-	cursor += 8
-
-	feeRateLen, len := readULEB128(bz[cursor:])
-	cursor += len
-	feeRate, err := DeserializeBigDecimal(bz[cursor : cursor+feeRateLen])
-	if err != nil {
-		return math.LegacyZeroDec(), err
-	}
-	return feeRate, nil
 }
 
 // ReadStoresFromPool util function to read pool stores from the Pool

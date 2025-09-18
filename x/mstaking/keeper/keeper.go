@@ -29,12 +29,11 @@ type Keeper struct {
 	cdc          codec.BinaryCodec
 	storeService corestoretypes.KVStoreService
 
-	authKeeper         types.AccountKeeper
-	bankKeeper         types.BankKeeper
-	dexMigrationKeeper types.DexMigrationKeeper
-	VotingPowerKeeper  types.VotingPowerKeeper
-	hooks              types.StakingHooks
-	slashingHooks      types.SlashingHooks
+	authKeeper        types.AccountKeeper
+	bankKeeper        types.BankKeeper
+	VotingPowerKeeper types.VotingPowerKeeper
+	hooks             types.StakingHooks
+	slashingHooks     types.SlashingHooks
 
 	authority string
 
@@ -66,7 +65,6 @@ type Keeper struct {
 	ValidatorQueue    collections.Map[time.Time, types.ValAddresses]
 
 	HistoricalInfos collections.Map[int64, cosmostypes.HistoricalInfo]
-	Migrations      collections.Map[collections.Pair[string, string], types.DelegationMigration]
 
 	Params collections.Item[types.Params]
 }
@@ -77,7 +75,6 @@ func NewKeeper(
 	storeService corestoretypes.KVStoreService,
 	ak types.AccountKeeper,
 	bk types.BankKeeper,
-	dmk types.DexMigrationKeeper,
 	vk types.VotingPowerKeeper,
 	authority string,
 	validatorAddressCodec addresscodec.Codec,
@@ -100,14 +97,13 @@ func NewKeeper(
 	sb := collections.NewSchemaBuilder(storeService)
 
 	k := &Keeper{
-		cdc:                cdc,
-		storeService:       storeService,
-		authKeeper:         ak,
-		bankKeeper:         bk,
-		dexMigrationKeeper: dmk,
-		VotingPowerKeeper:  vk,
-		hooks:              nil,
-		slashingHooks:      nil,
+		cdc:               cdc,
+		storeService:      storeService,
+		authKeeper:        ak,
+		bankKeeper:        bk,
+		VotingPowerKeeper: vk,
+		hooks:             nil,
+		slashingHooks:     nil,
 
 		authority: authority,
 
@@ -137,8 +133,6 @@ func NewKeeper(
 		ValidatorQueue:    collections.NewMap(sb, types.ValidatorQueuePrefix, "validator_queue", sdk.TimeKey, codec.CollValue[types.ValAddresses](cdc)),
 
 		HistoricalInfos: collections.NewMap(sb, types.HistoricalInfosPrefix, "historical_infos", collections.Int64Key, codec.CollValue[cosmostypes.HistoricalInfo](cdc)),
-
-		Migrations: collections.NewMap(sb, types.MigrationsPrefix, "migrations", collections.PairKeyCodec(collections.StringKey, collections.StringKey), codec.CollValue[types.DelegationMigration](cdc)),
 
 		Params: collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
 	}

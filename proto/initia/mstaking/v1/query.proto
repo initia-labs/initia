@@ -100,11 +100,6 @@ service Query {
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/initia/mstaking/v1/params";
   }
-
-  // Migration queries the migration info.
-  rpc Migration(QueryMigrationRequest) returns (QueryMigrationResponse) {
-    option (google.api.http).get = "/initia/mstaking/v1/migration/{denom_lp_from}/{denom_lp_to}";
-  }
 }
 
 // QueryValidatorsRequest is request type for Query/Validators RPC method.
@@ -374,19 +369,4 @@ message QueryParamsRequest {}
 message QueryParamsResponse {
   // params holds all the parameters of this module.
   Params params = 1 [(gogoproto.nullable) = false];
-}
-
-// QueryMigrationRequest is request type for the Query/Migration RPC method.
-message QueryMigrationRequest {
-  // denom_lp_from defines the lp denom to query for.
-  string denom_lp_from = 1;
-
-  // denom_lp_to defines the lp denom to query for.
-  string denom_lp_to = 2;
-}
-
-// QueryMigrationResponse is response type for the Query/Migration RPC method.
-message QueryMigrationResponse {
-  // migration defines the migration info.
-  DelegationMigration migration = 1 [(gogoproto.nullable) = false];
 }

@@ -19,8 +19,6 @@ func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	legacy.RegisterAminoMsg(cdc, &MsgBeginRedelegate{}, "mstaking/MsgBeginRedelegate")
 	legacy.RegisterAminoMsg(cdc, &MsgCancelUnbondingDelegation{}, "mstaking/MsgCancelUnbondingDelegation")
 	legacy.RegisterAminoMsg(cdc, &MsgUpdateParams{}, "mstaking/MsgUpdateParams")
-	legacy.RegisterAminoMsg(cdc, &MsgRegisterMigration{}, "mstaking/MsgRegisterMigration")
-	legacy.RegisterAminoMsg(cdc, &MsgMigrateDelegation{}, "mstaking/MsgMigrateDelegation")
 
 	cdc.RegisterInterface((*isStakeAuthorization_Validators)(nil), nil)
 	cdc.RegisterConcrete(&StakeAuthorization_AllowList{}, "mstaking/StakeAuthorization/AllowList", nil)
@@ -39,8 +37,6 @@ func RegisterInterfaces(registry types.InterfaceRegistry) {
 		&MsgBeginRedelegate{},
 		&MsgCancelUnbondingDelegation{},
 		&MsgUpdateParams{},
-		&MsgRegisterMigration{},
-		&MsgMigrateDelegation{},
 	)
 	registry.RegisterImplementations(
 		(*authz.Authorization)(nil),

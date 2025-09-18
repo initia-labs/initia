@@ -417,11 +417,3 @@ func (r RedelegationResponses) String() (out string) {
 
 	return strings.TrimSpace(out)
 }
-
-func (d DelegationMigration) String() string {
-	return fmt.Sprintf(`
-LP Denom From: %s
-LP Denom To: %s
-Module Address: %s
-Module Name: %s`, d.DenomLpFrom, d.DenomLpTo, d.ModuleAddress, d.ModuleName)
-}
