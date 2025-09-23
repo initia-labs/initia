@@ -121,6 +121,13 @@ else
 	go build -mod=readonly $(BUILD_FLAGS) -o build/initiad ./cmd/initiad
 endif
 
+build-vendor: go.sum
+ifeq ($(OS),Windows_NT)
+	exit 1
+else
+	go build -mod=vendor $(BUILD_FLAGS) -o build/initiad ./cmd/initiad
+endif
+
 build-linux:
 	mkdir -p $(BUILDDIR)
 	docker build --no-cache --tag initia/initiad ./ 
