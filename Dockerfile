@@ -6,6 +6,7 @@ ARG TARGETARCH
 ARG GOARCH
 ARG VERSION
 ARG COMMIT
+ARG BUILD_TARGET=build
 
 # See https://github.com/initia-labs/movevm/releases
 ENV LIBMOVEVM_VERSION=v1.1.0-rc.0
@@ -39,7 +40,7 @@ RUN set -eux; \
 # RUN sha256sum /lib/libcompiler_muslc.${ARCH}.a | grep ...
 
 # Build the project with the specified architecture and linker flags
-RUN VERSION=${VERSION} COMMIT=${COMMIT} LEDGER_ENABLED=false BUILD_TAGS=muslc GOARCH=${GOARCH} LDFLAGS="-linkmode=external -extldflags \"-L/code/mimalloc/build -lmimalloc -Wl,-z,muldefs -static\"" make build
+RUN VERSION=${VERSION} COMMIT=${COMMIT} LEDGER_ENABLED=false BUILD_TAGS=muslc GOARCH=${GOARCH} LDFLAGS="-linkmode=external -extldflags \"-L/code/mimalloc/build -lmimalloc -Wl,-z,muldefs -static\"" make ${BUILD_TARGET}
 
 # Stage 2: Create the final image
 FROM alpine:3.19
