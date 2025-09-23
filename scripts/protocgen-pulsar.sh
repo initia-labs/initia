@@ -21,12 +21,34 @@ echo "Cleaning API directory"
 
 echo "Generating API module"
 
+# clone dependency proto files
+IBC_URL=github.com/cosmos/ibc-go
+IBC_V=v8
+ICS23_URL=github.com/cosmos/ics23
+
+IBC_VERSION=$(cat ./go.mod | grep "$IBC_URL/$IBC_V v" | sed -n -e "s/^.* //p")
+ICS23_VERSION=$(cat ./go.mod | grep "$ICS23_URL/go v" | sed -n -e "s/^.* //p")
+
+mkdir -p ./third_party
+cd third_party
+# git clone -b $IBC_VERSION https://$IBC_URL
+# git clone -b go/$ICS23_VERSION https://$ICS23_URL
+cd ..
+
 # exclude ibc modules
 cd proto
-proto_dirs=$(find ./initia ./ibc/applications/perm -path -prune -o -name '*.proto' -print0 | xargs -0 -n1 dirname | sort | uniq)
+proto_dirs=$(find \
+./initia \
+./ibc/applications \
+../third_party/ibc-go/proto/ibc \
+../third_party/ics23/proto/cosmos/ics23 \
+-path -prune -o -name '*.proto' -print0 | xargs -0 -n1 dirname | sort | uniq)
 for dir in $proto_dirs; do
   for file in $(find "${dir}" -maxdepth 1 -name '*.proto'); do
     buf generate --template buf.gen.pulsar.yaml $file
   done
 done
 cd ..
+
+# clean third party files
+rm -rf ./third_party

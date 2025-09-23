@@ -63,6 +63,9 @@ import (
 	movetypes "github.com/initia-labs/initia/x/move/types"
 	rewardtypes "github.com/initia-labs/initia/x/reward/types"
 
+	// import ibc module for proto init
+	_ "github.com/initia-labs/initia/x/ibc"
+
 	// block-sdk dependencies
 
 	blockchecktx "github.com/skip-mev/block-sdk/v2/abci/checktx"
