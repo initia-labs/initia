@@ -7,7 +7,7 @@ import (
 	fmt "fmt"
 	runtime "github.com/cosmos/cosmos-proto/runtime"
 	_ "github.com/cosmos/gogoproto/gogoproto"
-	types "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	v1 "github.com/initia-labs/initia/api/ibc/core/channel/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoiface "google.golang.org/protobuf/runtime/protoiface"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -225,7 +225,7 @@ func (x *fastReflection_MsgRegisterAccount) Set(fd protoreflect.FieldDescriptor,
 	case "initia.intertx.v1.MsgRegisterAccount.version":
 		x.Version = value.Interface().(string)
 	case "initia.intertx.v1.MsgRegisterAccount.ordering":
-		x.Ordering = (types.Order)(value.Enum())
+		x.Ordering = (v1.Order)(value.Enum())
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: initia.intertx.v1.MsgRegisterAccount"))
@@ -573,7 +573,7 @@ func (x *fastReflection_MsgRegisterAccount) ProtoMethods() *protoiface.Methods {
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					x.Ordering |= types.Order(b&0x7F) << shift
+					x.Ordering |= v1.Order(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
@@ -1907,10 +1907,10 @@ type MsgRegisterAccount struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Owner        string      `protobuf:"bytes,1,opt,name=owner,proto3" json:"owner,omitempty"`
-	ConnectionId string      `protobuf:"bytes,2,opt,name=connection_id,json=connectionId,proto3" json:"connection_id,omitempty"`
-	Version      string      `protobuf:"bytes,3,opt,name=version,proto3" json:"version,omitempty"`
-	Ordering     types.Order `protobuf:"varint,4,opt,name=ordering,proto3,enum=ibc.core.channel.v1.Order" json:"ordering,omitempty"`
+	Owner        string   `protobuf:"bytes,1,opt,name=owner,proto3" json:"owner,omitempty"`
+	ConnectionId string   `protobuf:"bytes,2,opt,name=connection_id,json=connectionId,proto3" json:"connection_id,omitempty"`
+	Version      string   `protobuf:"bytes,3,opt,name=version,proto3" json:"version,omitempty"`
+	Ordering     v1.Order `protobuf:"varint,4,opt,name=ordering,proto3,enum=ibc.core.channel.v1.Order" json:"ordering,omitempty"`
 }
 
 func (x *MsgRegisterAccount) Reset() {
@@ -1954,11 +1954,11 @@ func (x *MsgRegisterAccount) GetVersion() string {
 	return ""
 }
 
-func (x *MsgRegisterAccount) GetOrdering() types.Order {
+func (x *MsgRegisterAccount) GetOrdering() v1.Order {
 	if x != nil {
 		return x.Ordering
 	}
-	return types.Order(0)
+	return v1.Order(0)
 }
 
 // MsgRegisterAccountResponse defines the response for Msg/RegisterAccount
@@ -2157,7 +2157,7 @@ var file_initia_intertx_v1_tx_proto_goTypes = []interface{}{
 	(*MsgRegisterAccountResponse)(nil), // 1: initia.intertx.v1.MsgRegisterAccountResponse
 	(*MsgSubmitTx)(nil),                // 2: initia.intertx.v1.MsgSubmitTx
 	(*MsgSubmitTxResponse)(nil),        // 3: initia.intertx.v1.MsgSubmitTxResponse
-	(types.Order)(0),                   // 4: ibc.core.channel.v1.Order
+	(v1.Order)(0),                      // 4: ibc.core.channel.v1.Order
 	(*anypb.Any)(nil),                  // 5: google.protobuf.Any
 }
 var file_initia_intertx_v1_tx_proto_depIdxs = []int32{
