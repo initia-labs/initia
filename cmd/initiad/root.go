@@ -132,6 +132,9 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 				}
 
 				// Prevent keyring change from inner commands
+				// client/cmd.go:func GetClientTxContext
+				// client/cmd.go:func readTxCommandFlags
+				// client/cmd.go:func ReadPersistentCommandFlags
 				if keyringFlag := cmd.Flags().Lookup(flags.FlagKeyringBackend); keyringFlag != nil {
 					keyringFlag.Changed = false
 				}
