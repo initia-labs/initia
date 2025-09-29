@@ -7,7 +7,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	cosmoskeyring "github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/crypto/ledger"
-	"github.com/cosmos/cosmos-sdk/crypto/types"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
@@ -20,7 +19,7 @@ import (
 // of private keys' material.
 type unsafeExporter interface {
 	// ExportPrivateKeyObject returns a private key in unarmored format.
-	ExportPrivateKeyObject(uid string) (types.PrivKey, error)
+	ExportPrivateKeyObject(uid string) (cryptotypes.PrivKey, error)
 }
 
 var _ unsafeExporter = (*Keyring)(nil)
@@ -55,7 +54,7 @@ func (ks Keyring) Sign(uid string, msg []byte, signMode signing.SignMode) ([]byt
 // SignWithLedger signs a binary message with the ledger device referenced by an Info object
 // and returns the signed bytes and the public key. It returns an error if the device could
 // not be queried or it returned an error.
-func SignWithLedger(k *cosmoskeyring.Record, msg []byte, signMode signing.SignMode) (sig []byte, pub types.PubKey, err error) {
+func SignWithLedger(k *cosmoskeyring.Record, msg []byte, signMode signing.SignMode) (sig []byte, pub cryptotypes.PubKey, err error) {
 	pubKey, err := k.GetPubKey()
 	if err != nil {
 		return nil, nil, err
@@ -105,6 +104,6 @@ func SignWithLedger(k *cosmoskeyring.Record, msg []byte, signMode signing.SignMo
 }
 
 // ExportPrivateKeyObject implements the unsafeExporter interface.
-func (k *Keyring) ExportPrivateKeyObject(uid string) (types.PrivKey, error) {
+func (k *Keyring) ExportPrivateKeyObject(uid string) (cryptotypes.PrivKey, error) {
 	return k.Keyring.(unsafeExporter).ExportPrivateKeyObject(uid)
 }

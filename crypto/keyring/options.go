@@ -1,7 +1,6 @@
 package keyring
 
 import (
-	"github.com/initia-labs/initia/crypto/hd"
 	ethhd "github.com/initia-labs/initia/crypto/hd"
 	"github.com/spf13/cobra"
 
@@ -30,8 +29,8 @@ func OverrideDefaultKeyType(cmd *cobra.Command) *cobra.Command {
 			continue
 		}
 
-		f.DefValue = string(hd.EthSecp256k1Type)
-		err := f.Value.Set(string(hd.EthSecp256k1Type))
+		f.DefValue = string(ethhd.EthSecp256k1Type)
+		err := f.Value.Set(string(ethhd.EthSecp256k1Type))
 		if err != nil {
 			panic(err)
 		}
