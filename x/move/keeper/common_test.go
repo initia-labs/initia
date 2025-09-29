@@ -344,7 +344,6 @@ func _createTestInput(
 		runtime.NewKVStoreService(keys[stakingtypes.StoreKey]),
 		accountKeeper,
 		bankKeeper,
-		movekeeper.NewBalancerMigrationKeeper(moveKeeper),
 		movekeeper.NewVotingPowerKeeper(moveKeeper),
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		vc, cc,
@@ -499,7 +498,6 @@ var submsgModule []byte
 var dispatchableTokenModule []byte
 var invalidDispatchableTokenModule []byte
 var publicKeyAuthenticator []byte
-var dexMigrateModule []byte
 
 func init() {
 	basicCoinModule = ReadMoveFile("BasicCoin")
@@ -512,7 +510,6 @@ func init() {
 	dispatchableTokenModule = ReadMoveFile("test_dispatchable_token")
 	invalidDispatchableTokenModule = ReadMoveFile("test_invalid_dispatchable_token")
 	publicKeyAuthenticator = ReadMoveFile("public_key_authenticator")
-	dexMigrateModule = ReadMoveFile("dex_migration")
 	basicCoinMintScript = ReadScriptFile("main")
 }
 
