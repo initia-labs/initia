@@ -192,7 +192,7 @@ upgrade a move package via @std::object_code_deployment::upgrade_v2.
 This command adds the named address to the build config, so the user must set 
 the target name to '_' in the Move.toml file.
 `,
-		Args: cobra.ExactArgs(1),
+		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 
 			arg, err := getCompilerArgument(cmd)
