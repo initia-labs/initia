@@ -54,7 +54,13 @@ func moveDeployCmd(ac address.Codec) *cobra.Command {
 				return err
 			}
 
-			return deploy(cmd, ac, false, flagVerify)
+			return deploy(DeployArgs{
+				ac:     ac,
+				cmd:    cmd,
+				verify: flagVerify,
+
+				deployMode: DeployModeNormal,
+			})
 		},
 	}
 
@@ -74,9 +80,9 @@ var OBJECT_CODE_DEPLOYMENT_DOMAIN_SEPARATOR string = "initia_std::object_code_de
 func deployObjectCmd(ac address.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "deploy-object [target-name] [flags]",
-		Short: "build and deploy a move package via @std::object_code_deployment",
+		Short: "build and deploy a move package via @std::object_code_deployment::publish_v2",
 		Long: `
-Build and deploy a move package via @std::object_code_deployment.
+Build and deploy a move package via @std::object_code_deployment::publish_v2.
 
 This command adds the named address to the build config, so the user must set 
 the target name to '_' in the Move.toml file.
@@ -161,7 +167,69 @@ the target name to '_' in the Move.toml file.
 				return err
 			}
 
-			return deploy(cmd, ac, true, false)
+			return deploy(DeployArgs{
+				cmd:    cmd,
+				ac:     ac,
+				verify: false,
+
+				deployMode: DeployModeObject,
+			})
+		},
+	}
+
+	addMoveBuildFlags(cmd)
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+func upgradeObjectCmd(ac address.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "upgrade-object [target-name] [object-addr] [flags]",
+		Short: "upgrade deployed move package via @std::object_code_deployment::upgrade_v2",
+		Long: `
+upgrade a move package via @std::object_code_deployment::upgrade_v2.
+
+This command adds the named address to the build config, so the user must set 
+the target name to '_' in the Move.toml file.
+`,
+		Args: cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+
+			arg, err := getCompilerArgument(cmd)
+			if err != nil {
+				return err
+			}
+
+			objectAddressName := args[0]
+			objectVmAddr, err := movetypes.AccAddressFromString(ac, args[1])
+			if err != nil {
+				return err
+			}
+
+			// add object address's named address
+			arg.BuildConfig.AdditionalNamedAddresses = append(arg.BuildConfig.AdditionalNamedAddresses,
+				struct {
+					Field0 string
+					Field1 vmtypes.AccountAddress
+				}{
+					Field0: objectAddressName,
+					Field1: objectVmAddr,
+				},
+			)
+
+			err = buildContract(arg)
+			if err != nil {
+				return err
+			}
+
+			return deploy(DeployArgs{
+				ac:     ac,
+				cmd:    cmd,
+				verify: false,
+
+				deployMode:    DeployModeObjectUpgrade,
+				objectAddress: objectVmAddr,
+			})
 		},
 	}
 
@@ -194,7 +262,30 @@ func buildContract(arg *vmtypes.CompilerArguments) error {
 	return nil
 }
 
-func deploy(cmd *cobra.Command, ac address.Codec, isObjectDeployment, verify bool) error {
+type DeployMode int
+
+const (
+	DeployModeNormal DeployMode = iota
+	DeployModeObject
+	DeployModeObjectUpgrade
+)
+
+type DeployArgs struct {
+	cmd        *cobra.Command
+	ac         address.Codec
+	deployMode DeployMode
+	verify     bool
+
+	// optional, only for object upgrade
+	objectAddress vmtypes.AccountAddress
+}
+
+func deploy(deployArgs DeployArgs) error {
+	cmd := deployArgs.cmd
+	ac := deployArgs.ac
+	deployMode := deployArgs.deployMode
+	verify := deployArgs.verify
+
 	// deploy package
 	clientCtx, err := client.GetClientTxContext(cmd)
 	if err != nil {
@@ -222,24 +313,8 @@ func deploy(cmd *cobra.Command, ac address.Codec, isObjectDeployment, verify boo
 	}
 
 	var msg sdk.Msg
-	if isObjectDeployment {
-		moduleBundleStr := marshalBytesArrayToHexArray(moduleBundle)
-		executeMsg := &movetypes.MsgExecuteJSON{
-			Sender:        senderStrAddr,
-			ModuleAddress: vmtypes.StdAddress.String(),
-			ModuleName:    "object_code_deployment",
-			FunctionName:  "publish_v2",
-			Args: []string{
-				moduleBundleStr, // code bytes array
-			},
-		}
-
-		if err = executeMsg.Validate(ac); err != nil {
-			return err
-		}
-
-		msg = executeMsg
-	} else {
+	switch deployMode {
+	case DeployModeNormal:
 		upgradePolicyStr, err := cmd.Flags().GetString(movecli.FlagUpgradePolicy)
 		if err != nil {
 			return err
@@ -261,6 +336,43 @@ func deploy(cmd *cobra.Command, ac address.Codec, isObjectDeployment, verify boo
 		}
 
 		msg = publishMsg
+	case DeployModeObject:
+		moduleBundleStr := marshalBytesArrayToHexArray(moduleBundle)
+		executeMsg := &movetypes.MsgExecuteJSON{
+			Sender:        senderStrAddr,
+			ModuleAddress: vmtypes.StdAddress.String(),
+			ModuleName:    "object_code_deployment",
+			FunctionName:  "publish_v2",
+			Args: []string{
+				moduleBundleStr, // code bytes array
+			},
+		}
+
+		if err = executeMsg.Validate(ac); err != nil {
+			return err
+		}
+
+		msg = executeMsg
+	case DeployModeObjectUpgrade:
+		moduleBundleStr := marshalBytesArrayToHexArray(moduleBundle)
+		executeMsg := &movetypes.MsgExecuteJSON{
+			Sender:        senderStrAddr,
+			ModuleAddress: vmtypes.StdAddress.String(),
+			ModuleName:    "object_code_deployment",
+			FunctionName:  "upgrade_v2",
+			Args: []string{
+				moduleBundleStr, // code bytes array
+				fmt.Sprintf("\"%s\"", deployArgs.objectAddress.CanonicalString()), // object address
+			},
+		}
+
+		if err = executeMsg.Validate(ac); err != nil {
+			return err
+		}
+
+		msg = executeMsg
+	default:
+		return fmt.Errorf("invalid deploy mode")
 	}
 
 	err = tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
