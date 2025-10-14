@@ -39,8 +39,6 @@ import (
 	"github.com/cosmos/ibc-go/v8/testing/simapp"
 
 	initiaapp "github.com/initia-labs/initia/app"
-
-	ibctmattestor "github.com/initia-labs/initia/x/ibc/light-clients/07-tendermint-attestor"
 )
 
 var MaxAccounts = 10
@@ -457,16 +455,6 @@ func (chain *TestChain) ConstructUpdateTMClientHeader(counterparty *TestChain, c
 	return chain.ConstructUpdateTMClientHeaderWithTrustedHeight(counterparty, clientID, clienttypes.ZeroHeight())
 }
 
-func (chain *TestChain) ConstructUpdateTMAttestorClientHeader(counterparty *TestChain, clientID string) (*ibctmattestor.Header, error) {
-	header, err := chain.ConstructUpdateTMClientHeader(counterparty, clientID)
-	if err != nil {
-		return nil, err
-	}
-	return &ibctmattestor.Header{
-		Header: header,
-	}, nil
-}
-
 // ConstructUpdateTMClientHeader will construct a valid 07-tendermint Header to update the
 // light client on the source chain.
 func (chain *TestChain) ConstructUpdateTMClientHeaderWithTrustedHeight(counterparty *TestChain, clientID string, trustedHeight clienttypes.Height) (*ibctm.Header, error) {
@@ -517,12 +505,6 @@ func (chain *TestChain) CurrentTMClientHeader() *ibctm.Header {
 		nil,
 		chain.Signers,
 	)
-}
-
-func (chain *TestChain) CreateTMAttestorClientHeader(chainID string, blockHeight int64, trustedHeight clienttypes.Height, timestamp time.Time, cmtValSet, nextVals, tmTrustedVals *cmttypes.ValidatorSet, signers map[string]cmttypes.PrivValidator) *ibctmattestor.Header {
-	return &ibctmattestor.Header{
-		Header: chain.CreateTMClientHeader(chainID, blockHeight, trustedHeight, timestamp, cmtValSet, nextVals, tmTrustedVals, signers),
-	}
 }
 
 // CreateTMClientHeader creates a TM header to update the TM client. Args are passed in to allow
