@@ -29,32 +29,6 @@ func NewPath(chainA, chainB *TestChain) *Path {
 	}
 }
 
-func NewPathWithTendermintAttestors(chainA, chainB *TestChain, numAttestors, threshold int) *Path {
-	endpointA := NewEndpointWithTendermintAttestor(chainA, numAttestors, threshold)
-	endpointB := NewEndpointWithTendermintAttestor(chainB, numAttestors, threshold)
-
-	endpointA.Counterparty = endpointB
-	endpointB.Counterparty = endpointA
-
-	return &Path{
-		EndpointA: endpointA,
-		EndpointB: endpointB,
-	}
-}
-
-func NewPathWithOneTendermintAttestor(chainA, chainB *TestChain, numAttestors, threshold int) *Path {
-	endpointA := NewEndpointWithTendermintAttestor(chainA, numAttestors, threshold)
-	endpointB := NewDefaultEndpoint(chainB)
-
-	endpointA.Counterparty = endpointB
-	endpointB.Counterparty = endpointA
-
-	return &Path{
-		EndpointA: endpointA,
-		EndpointB: endpointB,
-	}
-}
-
 // SetChannelOrdered sets the channel order for both endpoints to ORDERED.
 func (path *Path) SetChannelOrdered() {
 	path.EndpointA.ChannelConfig.Order = channeltypes.ORDERED

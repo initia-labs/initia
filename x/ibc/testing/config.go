@@ -3,16 +3,11 @@ package ibctesting
 import (
 	"time"
 
-	sdked25519 "github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
-	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
-
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	connectiontypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	"github.com/cosmos/ibc-go/v8/modules/core/exported"
 	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
-
-	ibctmattestor "github.com/initia-labs/initia/x/ibc/light-clients/07-tendermint-attestor"
+	"github.com/cosmos/ibc-go/v8/testing/mock"
 )
 
 type ClientConfig interface {
@@ -39,34 +34,6 @@ func (tmcfg *TendermintConfig) GetClientType() string {
 	return exported.Tendermint
 }
 
-type TendermintAttestorConfig struct {
-	TendermintConfig
-	AttestorPrivkeys []cryptotypes.PrivKey
-	Threshold        uint32
-}
-
-func (tmcfg *TendermintAttestorConfig) GetClientType() string {
-	return ibctmattestor.TendermintAttestor
-}
-
-func NewTendermintAttestorConfig(numAttestors, threshold int) *TendermintAttestorConfig {
-	privKeys := make([]cryptotypes.PrivKey, 0, numAttestors)
-	for range numAttestors {
-		privKeys = append(privKeys, sdked25519.GenPrivKey())
-	}
-
-	return &TendermintAttestorConfig{
-		TendermintConfig: TendermintConfig{
-			TrustLevel:      DefaultTrustLevel,
-			TrustingPeriod:  TrustingPeriod,
-			UnbondingPeriod: UnbondingPeriod,
-			MaxClockDrift:   MaxClockDrift,
-		},
-		AttestorPrivkeys: privKeys,
-		Threshold:        uint32(threshold),
-	}
-}
-
 type ConnectionConfig struct {
 	DelayPeriod uint64
 	Version     *connectiontypes.Version
@@ -87,8 +54,8 @@ type ChannelConfig struct {
 
 func NewChannelConfig() *ChannelConfig {
 	return &ChannelConfig{
-		PortID:  transfertypes.PortID,
-		Version: transfertypes.Version,
+		PortID:  mock.PortID,
+		Version: DefaultChannelVersion,
 		Order:   channeltypes.UNORDERED,
 	}
 }

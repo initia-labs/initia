@@ -135,23 +135,6 @@ func ParseAckFromEvents(events []abci.Event) ([]byte, error) {
 	return nil, fmt.Errorf("acknowledgement event attribute not found")
 }
 
-func ParseUpgradeSequenceFromEvents(events []abci.Event) (uint64, error) {
-	for _, ev := range events {
-		if ev.Type == channeltypes.EventTypeChannelUpgradeInit {
-			for _, attr := range ev.Attributes {
-				if attr.Key == channeltypes.AttributeKeyUpgradeSequence {
-					seq, err := strconv.ParseUint(attr.Value, 10, 64)
-					if err != nil {
-						return 0, err
-					}
-					return seq, nil
-				}
-			}
-		}
-	}
-	return 0, fmt.Errorf("channel identifier event attribute not found")
-}
-
 // AssertEventsLegacy asserts that expected events are present in the actual events.
 // Expected map needs to be a subset of actual events to pass.
 func AssertEventsLegacy(

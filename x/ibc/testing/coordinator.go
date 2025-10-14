@@ -13,7 +13,7 @@ var (
 	ChainIDPrefix = "testchain"
 	// to disable revision format, set ChainIDSuffix to ""
 	ChainIDSuffix   = "-1"
-	GlobalStartTime = time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC)
+	globalStartTime = time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC)
 	TimeIncrement   = time.Second * 5
 )
 
@@ -31,7 +31,7 @@ func NewCoordinator(t *testing.T, n int) *Coordinator {
 	chains := make(map[string]*TestChain)
 	coord := &Coordinator{
 		T:           t,
-		CurrentTime: GlobalStartTime,
+		CurrentTime: globalStartTime,
 	}
 
 	for i := 1; i <= n; i++ {
@@ -83,8 +83,8 @@ func (coord *Coordinator) Setup(path *Path) {
 // SetupClients is a helper function to create clients on both chains. It assumes the
 // caller does not anticipate any errors.
 func (coord *Coordinator) SetupClients(path *Path) {
-	require.NoError(coord.T, path.EndpointA.CreateClient())
-	require.NoError(coord.T, path.EndpointB.CreateClient())
+	path.EndpointA.CreateClient()
+	path.EndpointB.CreateClient()
 }
 
 // SetupClientConnections is a helper function to create clients and the appropriate
@@ -93,37 +93,40 @@ func (coord *Coordinator) SetupClients(path *Path) {
 func (coord *Coordinator) SetupConnections(path *Path) {
 	coord.SetupClients(path)
 
-	err := coord.CreateConnections(path)
-	require.NoError(coord.T, err)
+	coord.CreateConnections(path)
 }
 
 // CreateConnection constructs and executes connection handshake messages in order to create
 // OPEN channels on chainA and chainB. The connection information of for chainA and chainB
 // are returned within a TestConnection struct. The function expects the connections to be
 // successfully opened otherwise testing will fail.
-func (coord *Coordinator) CreateConnections(path *Path) error {
-	if err := path.EndpointA.ConnOpenInit(); err != nil {
-		return err
-	}
+func (coord *Coordinator) CreateConnections(path *Path) {
+	err := path.EndpointA.ConnOpenInit()
+	require.NoError(coord.T, err)
 
-	if err := path.EndpointB.ConnOpenTry(); err != nil {
-		return err
-	}
+	err = path.EndpointB.ConnOpenTry()
+	require.NoError(coord.T, err)
 
-	if err := path.EndpointA.ConnOpenAck(); err != nil {
-		return err
-	}
+	err = path.EndpointA.ConnOpenAck()
+	require.NoError(coord.T, err)
 
-	if err := path.EndpointB.ConnOpenConfirm(); err != nil {
-		return err
-	}
+	err = path.EndpointB.ConnOpenConfirm()
+	require.NoError(coord.T, err)
 
 	// ensure counterparty is up to date
-	if err := path.EndpointA.UpdateClient(); err != nil {
-		return err
-	}
+	err = path.EndpointA.UpdateClient()
+	require.NoError(coord.T, err)
+}
 
-	return nil
+// CreateMockChannels constructs and executes channel handshake messages to create OPEN
+// channels that use a mock application module that returns nil on all callbacks. This
+// function is expects the channels to be successfully opened otherwise testing will
+// fail.
+func (coord *Coordinator) CreateMockChannels(path *Path) {
+	path.EndpointA.ChannelConfig.PortID = MockPort
+	path.EndpointB.ChannelConfig.PortID = MockPort
+
+	coord.CreateChannels(path)
 }
 
 // CreateTransferChannels constructs and executes channel handshake messages to create OPEN
@@ -131,9 +134,7 @@ func (coord *Coordinator) CreateConnections(path *Path) error {
 // successfully opened otherwise testing will fail.
 func (coord *Coordinator) CreateTransferChannels(path *Path) {
 	path.EndpointA.ChannelConfig.PortID = TransferPort
-	path.EndpointA.ChannelConfig.Version = TransferVersion
 	path.EndpointB.ChannelConfig.PortID = TransferPort
-	path.EndpointB.ChannelConfig.Version = TransferVersion
 
 	coord.CreateChannels(path)
 }
