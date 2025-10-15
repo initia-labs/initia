@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"sort"
 	"strconv"
 	"strings"
 	"unsafe"
@@ -644,7 +645,14 @@ func emitContractEvents(ctx sdk.Context, events []vmtypes.JsonEvent) {
 
 		var dataEvent map[string]any
 		if err := json.Unmarshal([]byte(event.EventData), &dataEvent); err == nil {
-			for k, v := range dataEvent {
+			keys := make([]string, 0, len(dataEvent))
+			for k := range dataEvent {
+				keys = append(keys, k)
+			}
+			sort.Strings(keys)
+
+			for _, k := range keys {
+				v := dataEvent[k]
 				var strVal string
 				switch val := v.(type) {
 				case string:
