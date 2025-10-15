@@ -3,6 +3,7 @@ package initia.reward.v1;
 
 import "amino/amino.proto";
 import "cosmos/msg/v1/msg.proto";
+import "cosmos/base/v1beta1/coin.proto";
 import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 import "initia/reward/v1/types.proto";
@@ -15,6 +16,9 @@ service Msg {
 
   // UpdateParams defines a rpc handler method for MsgUpdateParams.
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
+
+  // FundCommunityPool defines a rpc handler method for MsgFundCommunityPool.
+  rpc FundCommunityPool(MsgFundCommunityPool) returns (MsgFundCommunityPoolResponse);
 }
 
 // MsgUpdateParams is the Msg/UpdateParams request type.
@@ -36,3 +40,22 @@ message MsgUpdateParams {
 // MsgUpdateParamsResponse defines the response structure for executing a
 // MsgUpdateParams message.
 message MsgUpdateParamsResponse {}
+
+// MsgFundCommunityPool is the Msg/FundCommunityPool request type.
+message MsgFundCommunityPool {
+  option (cosmos.msg.v1.signer) = "authority";
+  option (amino.name) = "reward/MsgFundCommunityPool";
+
+  // authority is the address that controls the module (defaults to x/gov unless overwritten).
+  string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // amount is the amount to fund the community pool.
+  repeated cosmos.base.v1beta1.Coin amount = 2 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
+    (amino.dont_omitempty) = true
+  ];
+}
+
+// MsgFundCommunityPoolResponse defines the response structure for executing a
+// MsgFundCommunityPool message.
+message MsgFundCommunityPoolResponse {}

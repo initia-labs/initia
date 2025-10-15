@@ -21,8 +21,10 @@ type Keeper struct {
 	cdc          codec.BinaryCodec
 	storeService corestoretypes.KVStoreService
 
-	accKeeper        types.AccountKeeper
-	bankKeeper       types.BankKeeper
+	accKeeper           types.AccountKeeper
+	bankKeeper          types.BankKeeper
+	communityPoolKeeper types.CommunityPoolKeeper
+
 	feeCollectorName string
 
 	// the address capable of executing a MsgUpdateParams message. Typically, this
@@ -41,6 +43,7 @@ func NewKeeper(
 	storeService corestoretypes.KVStoreService,
 	ak types.AccountKeeper,
 	bk types.BankKeeper,
+	cpk types.CommunityPoolKeeper,
 	feeCollectorName, authority string,
 ) *Keeper {
 	// ensure reward module account is set
@@ -55,6 +58,7 @@ func NewKeeper(
 		storeService:          storeService,
 		accKeeper:             ak,
 		bankKeeper:            bk,
+		communityPoolKeeper:   cpk,
 		feeCollectorName:      feeCollectorName,
 		authority:             authority,
 		Params:                collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),

@@ -33,3 +33,24 @@ func (msg MsgUpdateParams) Validate(accCodec address.Codec) error {
 
 	return msg.Params.Validate()
 }
+
+/* MsgFundCommunityPool */
+func NewMsgFundCommunityPool(authority string, amount sdk.Coins) *MsgFundCommunityPool {
+	return &MsgFundCommunityPool{
+		Authority: authority,
+		Amount:    amount,
+	}
+}
+
+// Validate performs basic MsgFundCommunityPool message validation.
+func (msg MsgFundCommunityPool) Validate(accCodec address.Codec) error {
+	if _, err := accCodec.StringToBytes(msg.Authority); err != nil {
+		return sdkerrors.ErrInvalidAddress.Wrapf("invalid authority address: %s", err)
+	}
+
+	if err := msg.Amount.Validate(); err != nil {
+		return sdkerrors.ErrInvalidCoins.Wrapf("amount must be positive: %s", err)
+	}
+
+	return nil
+}

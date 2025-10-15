@@ -253,15 +253,6 @@ func NewAppKeeper(
 		cc,
 	)
 
-	appKeepers.RewardKeeper = rewardkeeper.NewKeeper(
-		appCodec,
-		runtime.NewKVStoreService(appKeepers.keys[rewardtypes.StoreKey]),
-		appKeepers.AccountKeeper,
-		appKeepers.BankKeeper,
-		authtypes.FeeCollectorName,
-		authorityAddr,
-	)
-
 	appKeepers.DistrKeeper = distrkeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(appKeepers.keys[distrtypes.StoreKey]),
@@ -269,6 +260,16 @@ func NewAppKeeper(
 		appKeepers.BankKeeper,
 		appKeepers.StakingKeeper,
 		movekeeper.NewDexKeeper(appKeepers.MoveKeeper),
+		authtypes.FeeCollectorName,
+		authorityAddr,
+	)
+
+	appKeepers.RewardKeeper = rewardkeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(appKeepers.keys[rewardtypes.StoreKey]),
+		appKeepers.AccountKeeper,
+		appKeepers.BankKeeper,
+		appKeepers.DistrKeeper,
 		authtypes.FeeCollectorName,
 		authorityAddr,
 	)
