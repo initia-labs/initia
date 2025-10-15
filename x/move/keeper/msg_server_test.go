@@ -103,6 +103,9 @@ func Test_ExecuteMsg(t *testing.T) {
 	require.Equal(t, sdk.NewEvent(types.EventTypeMove,
 		sdk.NewAttribute(types.AttributeKeyTypeTag, "0x1::BasicCoin::MintEvent"),
 		sdk.NewAttribute(types.AttributeKeyData, `{"account":"0x2","amount":"100","coin_type":"0x1::BasicCoin::Initia"}`),
+		sdk.NewAttribute("account", "0x2"),
+		sdk.NewAttribute("amount", "100"),
+		sdk.NewAttribute("coin_type", "0x1::BasicCoin::Initia"),
 	), event)
 
 	// cleanup events
@@ -125,6 +128,9 @@ func Test_ExecuteMsg(t *testing.T) {
 	require.Equal(t, sdk.NewEvent(types.EventTypeMove,
 		sdk.NewAttribute(types.AttributeKeyTypeTag, "0x1::BasicCoin::MintEvent"),
 		sdk.NewAttribute(types.AttributeKeyData, `{"account":"0x2","amount":"200","coin_type":"0x1::BasicCoin::Initia"}`),
+		sdk.NewAttribute("account", "0x2"),
+		sdk.NewAttribute("amount", "200"),
+		sdk.NewAttribute("coin_type", "0x1::BasicCoin::Initia"),
 	), event)
 }
 
@@ -152,6 +158,9 @@ func Test_GovExecuteMsg(t *testing.T) {
 	require.Equal(t, sdk.NewEvent(types.EventTypeMove,
 		sdk.NewAttribute(types.AttributeKeyTypeTag, "0x1::BasicCoin::MintEvent"),
 		sdk.NewAttribute(types.AttributeKeyData, `{"account":"0x2","amount":"100","coin_type":"0x1::BasicCoin::Initia"}`),
+		sdk.NewAttribute("account", "0x2"),
+		sdk.NewAttribute("amount", "100"),
+		sdk.NewAttribute("coin_type", "0x1::BasicCoin::Initia"),
 	), event)
 
 	// cleanup events
@@ -175,6 +184,9 @@ func Test_GovExecuteMsg(t *testing.T) {
 	require.Equal(t, sdk.NewEvent(types.EventTypeMove,
 		sdk.NewAttribute(types.AttributeKeyTypeTag, "0x1::BasicCoin::MintEvent"),
 		sdk.NewAttribute(types.AttributeKeyData, `{"account":"0x2","amount":"100","coin_type":"0x1::BasicCoin::Initia"}`),
+		sdk.NewAttribute("account", "0x2"),
+		sdk.NewAttribute("amount", "100"),
+		sdk.NewAttribute("coin_type", "0x1::BasicCoin::Initia"),
 	), event)
 }
 

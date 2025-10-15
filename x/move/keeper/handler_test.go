@@ -90,6 +90,9 @@ func TestExecuteEntryFunction(t *testing.T) {
 	require.Equal(t, sdk.NewEvent(types.EventTypeMove,
 		sdk.NewAttribute(types.AttributeKeyTypeTag, "0x1::BasicCoin::MintEvent"),
 		sdk.NewAttribute(types.AttributeKeyData, `{"account":"0x2","amount":"100","coin_type":"0x1::BasicCoin::Initia"}`),
+		sdk.NewAttribute("account", "0x2"),
+		sdk.NewAttribute("amount", "100"),
+		sdk.NewAttribute("coin_type", "0x1::BasicCoin::Initia"),
 	), event)
 
 	// cleanup events
@@ -109,6 +112,9 @@ func TestExecuteEntryFunction(t *testing.T) {
 	require.Equal(t, sdk.NewEvent(types.EventTypeMove,
 		sdk.NewAttribute(types.AttributeKeyTypeTag, "0x1::BasicCoin::MintEvent"),
 		sdk.NewAttribute(types.AttributeKeyData, `{"account":"0x2","amount":"200","coin_type":"0x1::BasicCoin::Initia"}`),
+		sdk.NewAttribute("account", "0x2"),
+		sdk.NewAttribute("amount", "200"),
+		sdk.NewAttribute("coin_type", "0x1::BasicCoin::Initia"),
 	), event)
 }
 
@@ -623,6 +629,8 @@ func TestSubmsgCallback(t *testing.T) {
 	require.Equal(t, sdk.NewEvent("move",
 		sdk.NewAttribute("type_tag", "0x2::submsg::ResultEvent"),
 		sdk.NewAttribute("data", "{\"id\":\"123\",\"success\":false}"),
+		sdk.NewAttribute("id", "123"),
+		sdk.NewAttribute("success", "false"),
 	), event)
 
 	// 1. callback without signer
@@ -644,6 +652,8 @@ func TestSubmsgCallback(t *testing.T) {
 	require.Equal(t, sdk.NewEvent("move",
 		sdk.NewAttribute("type_tag", "0x2::submsg::ResultEvent"),
 		sdk.NewAttribute("data", "{\"id\":\"123\",\"success\":false}"),
+		sdk.NewAttribute("id", "123"),
+		sdk.NewAttribute("success", "false"),
 	), event)
 
 	// events should not be committed
@@ -670,6 +680,9 @@ func TestSubmsgCallback(t *testing.T) {
 	require.Equal(t, sdk.NewEvent("move",
 		sdk.NewAttribute("type_tag", "0x2::submsg::ResultEventWithSigner"),
 		sdk.NewAttribute("data", fmt.Sprintf("{\"account\":\"%s\",\"id\":\"234\",\"success\":false}", senderAddr)),
+		sdk.NewAttribute("account", senderAddr.String()),
+		sdk.NewAttribute("id", "234"),
+		sdk.NewAttribute("success", "false"),
 	), event)
 
 	// events should not be committed
@@ -707,6 +720,9 @@ func TestSubmsgCallback(t *testing.T) {
 	require.Equal(t, sdk.NewEvent("move",
 		sdk.NewAttribute("type_tag", "0x2::submsg::ResultEventWithSigner"),
 		sdk.NewAttribute("data", fmt.Sprintf("{\"account\":\"%s\",\"id\":\"345\",\"success\":true}", senderAddr)),
+		sdk.NewAttribute("account", senderAddr.String()),
+		sdk.NewAttribute("id", "345"),
+		sdk.NewAttribute("success", "true"),
 	), event)
 
 	// events should be committed
