@@ -317,18 +317,6 @@ func _createTestInput(
 	stakingParams.BondDenoms = []string{bondDenom}
 	require.NoError(t, stakingKeeper.SetParams(ctx, stakingParams))
 
-	rewardKeeper := rewardkeeper.NewKeeper(
-		appCodec,
-		runtime.NewKVStoreService(keys[rewardtypes.StoreKey]),
-		accountKeeper,
-		bankKeeper,
-		authtypes.FeeCollectorName,
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
-	)
-	rewardParams := rewardtypes.DefaultParams()
-	rewardParams.RewardDenom = bondDenom
-	require.NoError(t, rewardKeeper.SetParams(ctx, rewardParams))
-
 	dexKeeper := NewTestDexKeeper(moveKeeper)
 	distKeeper := distrkeeper.NewKeeper(
 		appCodec,
@@ -349,6 +337,19 @@ func _createTestInput(
 
 	// set genesis items required for distribution
 	require.NoError(t, distKeeper.FeePool.Set(ctx, distributiontypes.InitialFeePool()))
+
+	rewardKeeper := rewardkeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[rewardtypes.StoreKey]),
+		accountKeeper,
+		bankKeeper,
+		distKeeper,
+		authtypes.FeeCollectorName,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+	)
+	rewardParams := rewardtypes.DefaultParams()
+	rewardParams.RewardDenom = bondDenom
+	require.NoError(t, rewardKeeper.SetParams(ctx, rewardParams))
 
 	accountKeeper.GetModuleAccount(ctx, movetypes.MoveStakingModuleName)
 
