@@ -34,6 +34,6 @@ jobs:
         # Commonly enabled options, see https://github.com/actions/dependency-review-action#configuration-options for all available options.
         with:
           comment-summary-in-pr: always
-          fail-on-severity: moderate
-          deny-licenses: GPL-1.0-or-later, LGPL-2.0-or-later
+          fail-on-severity: high
+          allow-licenses: Apache-2.0 MIT BSD-2-Clause BSD-3-Clause ISC Unlicense CC0-1.0 Zlib MIT-0 PostgreSQL-2.0 BSL-1.0 MPL-2.0 LGPL-2.1-only LGPL-2.1-or-later LGPL-3.0-only LGPL-3.0-or-later
           retry-on-snapshot-warnings: true
