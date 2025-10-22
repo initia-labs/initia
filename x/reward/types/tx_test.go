@@ -64,7 +64,6 @@ func TestMsgUpdateParamsValidate(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			err := tc.msg.Validate(ac)
 			if tc.err != nil {
@@ -133,7 +132,6 @@ func TestMsgFundCommunityPoolValidate(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			err := tc.msg.Validate(ac)
 			if tc.err != nil {

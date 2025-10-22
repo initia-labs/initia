@@ -60,7 +60,6 @@ func TestMsgUpdateParams(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			_, err := bankkeeper.NewMsgServerImpl(input.BankKeeper).UpdateParams(ctx, tc.input)
 
@@ -151,7 +150,6 @@ func TestMsgSend(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 
 			if !tc.input.Amount.IsZero() && tc.input.FromAddress != "" {
@@ -266,7 +264,6 @@ func TestMsgMultiSend(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			if len(tc.input.Inputs) > 0 && !tc.input.Inputs[0].Coins.IsZero() && tc.input.Inputs[0].Address != "" {
 				fromAddr, err := input.AccountKeeper.AddressCodec().StringToBytes(tc.input.Inputs[0].Address)

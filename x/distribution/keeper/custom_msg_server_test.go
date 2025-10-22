@@ -61,7 +61,6 @@ func TestDepositValidatorRewardsPool(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			out, err := customMsgServer.DepositValidatorRewardsPool(ctx, tc.msg)
 			if tc.errMsg == "" {
