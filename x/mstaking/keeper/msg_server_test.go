@@ -78,7 +78,6 @@ func TestMsgDelegate(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			_, err := ms.Delegate(ctx, tc.input)
 			if tc.errMsg == "" {
@@ -145,7 +144,6 @@ func TestBeginRedelegate(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			_, err := ms.BeginRedelegate(ctx, tc.input)
 			if tc.errMsg == "" {
@@ -208,7 +206,6 @@ func TestUndelegate(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			_, err := ms.Undelegate(ctx, tc.input)
 			if tc.errMsg == "" {
@@ -307,7 +304,6 @@ func TestCancelUnbondingDelegation(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			_, err := ms.CancelUnbondingDelegation(ctx, tc.input)
 			if tc.errMsg == "" {

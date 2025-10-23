@@ -99,7 +99,6 @@ func TestValidateGenesis(t *testing.T) {
 
 	ac := address.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix())
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			err := types.ValidateGenesis(tc.genesisState(), ac)
 			if tc.expErr {
