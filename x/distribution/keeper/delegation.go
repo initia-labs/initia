@@ -46,7 +46,7 @@ func (k Keeper) initializeDelegation(ctx context.Context, val sdk.ValAddress, de
 	stake := validator.TokensFromSharesTruncated(delegation.GetShares())
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	return k.DelegatorStartingInfos.Set(ctx, collections.Join[[]byte, []byte](val, del), customtypes.NewDelegatorStartingInfo(previousPeriod, stake, uint64(sdkCtx.BlockHeight())))
+	return k.DelegatorStartingInfos.Set(ctx, collections.Join[[]byte, []byte](val, del), customtypes.NewDelegatorStartingInfo(previousPeriod, stake, uint64(sdkCtx.BlockHeight()))) //nolint: gosec
 }
 
 // calculate the rewards accrued by a delegation between two periods
@@ -112,7 +112,7 @@ func (k Keeper) CalculateDelegationRewards(ctx context.Context, val stakingtypes
 	}
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	if startingInfo.Height == uint64(sdkCtx.BlockHeight()) {
+	if startingInfo.Height == uint64(sdkCtx.BlockHeight()) { //nolint: gosec
 		// started this height, no rewards yet
 		return
 	}
@@ -130,7 +130,7 @@ func (k Keeper) CalculateDelegationRewards(ctx context.Context, val stakingtypes
 	startingHeight := startingInfo.Height
 	// Slashes this block happened after reward allocation, but we have to account
 	// for them for the stake sanity check below.
-	endingHeight := uint64(sdkCtx.BlockHeight())
+	endingHeight := uint64(sdkCtx.BlockHeight()) //nolint: gosec
 	if endingHeight > startingHeight {
 		err = k.ValidatorSlashEvents.Walk(ctx, new(collections.Range[collections.Triple[[]byte, uint64, uint64]]).
 			StartInclusive(collections.Join3[[]byte, uint64, uint64](valAddr, startingHeight, 0)).

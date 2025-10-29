@@ -70,8 +70,8 @@ func (k msgServer) SubmitTx(goCtx context.Context, msg *types.MsgSubmitTx) (*typ
 		Data: data,
 	}
 
-	relativeTimeoutTimestamp := uint64((time.Minute * 5).Nanoseconds())
-	icaMsg := icacontrollertypes.NewMsgSendTx(msg.Owner, msg.ConnectionId, uint64(relativeTimeoutTimestamp), packetData)
+	relativeTimeoutTimestamp := uint64((time.Minute * 5).Nanoseconds()) //nolint: gosec
+	icaMsg := icacontrollertypes.NewMsgSendTx(msg.Owner, msg.ConnectionId, relativeTimeoutTimestamp, packetData)
 
 	// validate the icaMsg
 	err = icaMsg.ValidateBasic()

@@ -23,7 +23,7 @@ func Test_BeginBlocker(t *testing.T) {
 	_, err := app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1})
 	require.NoError(t, err)
 
-	ctx := app.BaseApp.NewUncachedContext(false, tmproto.Header{})
+	ctx := app.NewUncachedContext(false, tmproto.Header{})
 
 	// update params & mint coins for reward distribution
 	params, err := app.RewardKeeper.GetParams(ctx)
@@ -50,7 +50,7 @@ func Test_BeginBlocker(t *testing.T) {
 	_, err = app.Commit()
 	require.NoError(t, err)
 
-	ctx = app.BaseApp.NewContext(true)
+	ctx = app.NewContext(true)
 	paramsAfter, err := app.RewardKeeper.GetParams(ctx)
 	require.NoError(t, err)
 	require.Equal(t, paramsAfter, params)
@@ -74,7 +74,7 @@ func Test_BeginBlocker(t *testing.T) {
 	checkBalance(t, app, authtypes.NewModuleAddress(types.ModuleName), rewardCoins.Sub(sdk.NewCoin(rewardDenom, expectedReleasedAmount)))
 
 	// release rate should be half
-	ctx = app.BaseApp.NewContext(true)
+	ctx = app.NewContext(true)
 	releaseRate, err := app.RewardKeeper.GetReleaseRate(ctx)
 	require.NoError(t, err)
 	require.Equal(t, math.LegacyNewDecWithPrec(35, 3), releaseRate)
@@ -94,7 +94,7 @@ func Test_BeginBlockerNotEnabled(t *testing.T) {
 	_, err := app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1})
 	require.NoError(t, err)
 
-	ctx := app.BaseApp.NewUncachedContext(false, tmproto.Header{})
+	ctx := app.NewUncachedContext(false, tmproto.Header{})
 
 	// update params & mint coins for reward distribution
 	params, err := app.RewardKeeper.GetParams(ctx)
@@ -133,7 +133,7 @@ func Test_BeginBlockerNotEnabled(t *testing.T) {
 	_, err = app.Commit()
 	require.NoError(t, err)
 
-	ctx = app.BaseApp.NewContext(true)
+	ctx = app.NewContext(true)
 
 	// check supply
 	expectedReleasedAmount := math.ZeroInt()

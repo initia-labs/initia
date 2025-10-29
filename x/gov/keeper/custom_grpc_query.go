@@ -88,7 +88,7 @@ func (q CustomQueryServer) Proposals(ctx context.Context, req *customtypes.Query
 				return false, err
 			}
 
-			has, err := q.Keeper.Votes.Has(ctx, collections.Join(p.Id, sdk.AccAddress(voter)))
+			has, err := q.Votes.Has(ctx, collections.Join(p.Id, sdk.AccAddress(voter)))
 			// if no error, vote found, matchVoter = true
 			matchVoter = err == nil && has
 		}
@@ -99,7 +99,7 @@ func (q CustomQueryServer) Proposals(ctx context.Context, req *customtypes.Query
 			if err != nil {
 				return false, err
 			}
-			has, err := q.Keeper.Deposits.Has(ctx, collections.Join(p.Id, sdk.AccAddress(depositor)))
+			has, err := q.Deposits.Has(ctx, collections.Join(p.Id, sdk.AccAddress(depositor)))
 			// if no error, deposit found, matchDepositor = true
 			matchDepositor = err == nil && has
 		}
@@ -141,11 +141,11 @@ func (q CustomQueryServer) TallyResult(ctx context.Context, req *customtypes.Que
 
 	var tallyResult customtypes.TallyResult
 
-	switch {
-	case proposal.Status == v1.StatusDepositPeriod:
+	switch proposal.Status {
+	case v1.StatusDepositPeriod:
 		tallyResult = customtypes.EmptyTallyResult()
 
-	case proposal.Status == v1.StatusPassed || proposal.Status == v1.StatusRejected:
+	case v1.StatusPassed, v1.StatusRejected:
 		tallyResult = proposal.FinalTallyResult
 
 	default:
@@ -155,7 +155,7 @@ func (q CustomQueryServer) TallyResult(ctx context.Context, req *customtypes.Que
 			return nil, err
 		}
 
-		_, _, _, tallyResult, err = q.Keeper.Tally(ctx, params, proposal)
+		_, _, _, tallyResult, err = q.Tally(ctx, params, proposal)
 		if err != nil {
 			return nil, err
 		}
@@ -184,12 +184,12 @@ func (q CustomQueryServer) SimulateProposal(ctx context.Context, req *customtype
 
 	for msgIndex, anyMsg := range msgs {
 		var msg sdk.Msg
-		err := q.Keeper.cdc.UnpackAny(anyMsg, &msg)
+		err := q.cdc.UnpackAny(anyMsg, &msg)
 		if err != nil {
 			return nil, status.Errorf(codes.InvalidArgument, "invalid message %d", msgIndex)
 		}
 
-		handler := q.Keeper.router.Handler(msg)
+		handler := q.router.Handler(msg)
 		if handler == nil {
 			return nil, status.Errorf(codes.InvalidArgument, "invalid message %d", msgIndex)
 		}

@@ -113,7 +113,7 @@ func NewTestChainWithValSet(t *testing.T, coord *Coordinator, chainID string, va
 	// generate genesis accounts
 	for i := 0; i < MaxAccounts; i++ {
 		senderPrivKey := secp256k1.GenPrivKey()
-		acc := authtypes.NewBaseAccount(senderPrivKey.PubKey().Address().Bytes(), senderPrivKey.PubKey(), uint64(i), 0)
+		acc := authtypes.NewBaseAccount(senderPrivKey.PubKey().Address().Bytes(), senderPrivKey.PubKey(), uint64(i), 0) //nolint: gosec
 		amount, ok := math.NewIntFromString(DefaultGenesisAccBalance)
 		require.True(t, ok)
 
@@ -246,7 +246,7 @@ func (chain *TestChain) QueryProofForStore(storeKey string, key []byte, height i
 	// proof height + 1 is returned as the proof created corresponds to the height the proof
 	// was created in the IAVL tree. Tendermint and subsequently the clients that rely on it
 	// have heights 1 above the IAVL tree. Thus we return proof height + 1
-	return proof, clienttypes.NewHeight(revision, uint64(res.Height)+1)
+	return proof, clienttypes.NewHeight(revision, uint64(res.Height)+1) //nolint: gosec
 }
 
 // QueryUpgradeProof performs an abci query with the given key and returns the proto encoded merkle proof
@@ -256,7 +256,7 @@ func (chain *TestChain) QueryUpgradeProof(key []byte, height uint64) ([]byte, cl
 		chain.GetContext().Context(),
 		&abci.RequestQuery{
 			Path:   "store/upgrade/key",
-			Height: int64(height - 1),
+			Height: int64(height - 1), //nolint: gosec
 			Data:   key,
 			Prove:  true,
 		})
@@ -273,7 +273,7 @@ func (chain *TestChain) QueryUpgradeProof(key []byte, height uint64) ([]byte, cl
 	// proof height + 1 is returned as the proof created corresponds to the height the proof
 	// was created in the IAVL tree. Tendermint and subsequently the clients that rely on it
 	// have heights 1 above the IAVL tree. Thus we return proof height + 1
-	return proof, clienttypes.NewHeight(revision, uint64(res.Height+1))
+	return proof, clienttypes.NewHeight(revision, uint64(res.Height+1)) //nolint: gosec
 }
 
 // QueryConsensusStateProof performs an abci query for a consensus state
@@ -468,7 +468,7 @@ func (chain *TestChain) ConstructUpdateTMClientHeaderWithTrustedHeight(counterpa
 		ok            bool
 	)
 
-	tmTrustedVals, ok = counterparty.GetValsAtHeight(int64(trustedHeight.RevisionHeight))
+	tmTrustedVals, ok = counterparty.GetValsAtHeight(int64(trustedHeight.RevisionHeight)) //nolint: gosec
 	if !ok {
 		return nil, errorsmod.Wrapf(ibctm.ErrInvalidHeaderHeight, "could not retrieve trusted validators at trustedHeight: %d", trustedHeight)
 	}
@@ -642,7 +642,7 @@ func (chain *TestChain) GetChannelCapability(portID, channelID string) *capabili
 // GetTimeoutHeight is a convenience function which returns a IBC packet timeout height
 // to be used for testing. It returns the current IBC height + 100 blocks
 func (chain *TestChain) GetTimeoutHeight() clienttypes.Height {
-	return clienttypes.NewHeight(clienttypes.ParseChainID(chain.ChainID), uint64(chain.GetContext().BlockHeight())+100)
+	return clienttypes.NewHeight(clienttypes.ParseChainID(chain.ChainID), uint64(chain.GetContext().BlockHeight())+100) //nolint: gosec
 }
 
 // DeleteKey deletes the specified key from the ibc store.

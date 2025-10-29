@@ -564,7 +564,8 @@ func (k Keeper) walkVMStore(ctx context.Context, cb func(*types.Module, *types.C
 		}
 
 		cursor += 1
-		if separator == types.ModuleSeparator {
+		switch separator {
+		case types.ModuleSeparator:
 			// Module
 			moduleName, err := vmtypes.BcsDeserializeIdentifier(key[cursor:])
 			if err != nil {
@@ -582,7 +583,7 @@ func (k Keeper) walkVMStore(ctx context.Context, cb func(*types.Module, *types.C
 				RawBytes:      value,
 				UpgradePolicy: policy,
 			}, nil, nil, nil, nil)
-		} else if separator == types.ChecksumSeparator {
+		case types.ChecksumSeparator:
 			// Checksum
 			moduleName, err := vmtypes.BcsDeserializeIdentifier(key[cursor:])
 			if err != nil {
@@ -594,7 +595,7 @@ func (k Keeper) walkVMStore(ctx context.Context, cb func(*types.Module, *types.C
 				ModuleName: string(moduleName),
 				Checksum:   value,
 			}, nil, nil, nil)
-		} else if separator == types.ResourceSeparator {
+		case types.ResourceSeparator:
 			// Resource
 			structTag, err := vmtypes.BcsDeserializeStructTag(key[cursor:])
 			if err != nil {
@@ -611,7 +612,7 @@ func (k Keeper) walkVMStore(ctx context.Context, cb func(*types.Module, *types.C
 				StructTag: structTagStr,
 				RawBytes:  value,
 			}, nil, nil)
-		} else if separator == types.TableInfoSeparator {
+		case types.TableInfoSeparator:
 			// Table Info
 			tableInfo, err := vmtypes.BcsDeserializeTableInfo(value)
 			if err != nil {
@@ -633,14 +634,14 @@ func (k Keeper) walkVMStore(ctx context.Context, cb func(*types.Module, *types.C
 				KeyType:   keyType,
 				ValueType: valueType,
 			}, nil)
-		} else if separator == types.TableEntrySeparator {
+		case types.TableEntrySeparator:
 			// Table Entry
 			cb(nil, nil, nil, nil, &types.TableEntry{
 				Address:    vmAddr.String(),
 				KeyBytes:   key[cursor:],
 				ValueBytes: value,
 			})
-		} else {
+		default:
 			return true, errors.New("unknown prefix")
 		}
 

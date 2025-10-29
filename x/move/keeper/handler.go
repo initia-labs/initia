@@ -494,7 +494,7 @@ func (k Keeper) DistributeContractSharedRevenue(ctx context.Context, gasUsages [
 			continue
 		}
 
-		revenue, _ := revenueGasPrices.MulDec(sdkmath.LegacyNewDec(int64(gasUsage.GasUsed))).TruncateDecimal()
+		revenue, _ := revenueGasPrices.MulDec(sdkmath.LegacyNewDec(int64(gasUsage.GasUsed))).TruncateDecimal() //nolint: gosec
 		if revenue.IsZero() {
 			continue
 		}

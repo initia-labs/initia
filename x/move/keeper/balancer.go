@@ -106,11 +106,12 @@ func (k BalancerKeeper) Whitelist(ctx context.Context, metadataLP vmtypes.Accoun
 	}
 
 	var metadataQuote vmtypes.AccountAddress
-	if metadataBase == metadata[0] {
+	switch metadataBase {
+	case metadata[0]:
 		metadataQuote = metadata[1]
-	} else if metadataBase == metadata[1] {
+	case metadata[1]:
 		metadataQuote = metadata[0]
-	} else {
+	default:
 		return false, moderrors.Wrapf(
 			types.ErrInvalidDexConfig,
 			"To be whitelisted, a dex should contain `%s` in its pair", denomBase,

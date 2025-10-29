@@ -94,7 +94,7 @@ func GenerateKeys(t *testing.T, n uint64) ([]cryptotypes.PrivKey, []cryptotypes.
 	var pk cryptotypes.PubKey
 	if len(privKeys) > 1 {
 		// generate multi sig pk
-		pk = kmultisig.NewLegacyAminoPubKey(int(n), pubKeys)
+		pk = kmultisig.NewLegacyAminoPubKey(int(n), pubKeys) //nolint: gosec
 	} else {
 		pk = privKeys[0].PubKey()
 	}
@@ -199,9 +199,9 @@ func (solo *Solomachine) CreateHeader(newDiversifier string) *solomachine.Header
 	return header
 }
 
-// CreateMisbehaviour constructs testing misbehaviour for the solo machine client
+// CreateMisbehaviour constructs testing misbehavior for the solo machine client
 // by signing over two different data bytes at the same sequence.
-func (solo *Solomachine) CreateMisbehaviour() *solomachine.Misbehaviour {
+func (solo *Solomachine) CreateMisbehaviour() *solomachine.Misbehaviour { //nolint
 	merklePath := commitmenttypes.NewMerklePath(host.FullClientStatePath("counterparty"))
 	path, err := solo.cdc.Marshal(&merklePath)
 	require.NoError(solo.t, err)
@@ -228,7 +228,7 @@ func (solo *Solomachine) CreateMisbehaviour() *solomachine.Misbehaviour {
 		Timestamp: solo.Time,
 	}
 
-	// misbehaviour signaturess can have different timestamps
+	// misbehavior signaturess can have different timestamps
 	solo.Time++
 
 	merklePath = commitmenttypes.NewMerklePath(host.FullConsensusStatePath("counterparty", clienttypes.NewHeight(0, 1)))
@@ -257,7 +257,7 @@ func (solo *Solomachine) CreateMisbehaviour() *solomachine.Misbehaviour {
 		Timestamp: solo.Time,
 	}
 
-	return &solomachine.Misbehaviour{
+	return &solomachine.Misbehaviour{ //nolint
 		Sequence:     solo.Sequence,
 		SignatureOne: &signatureOne,
 		SignatureTwo: &signatureTwo,
@@ -375,7 +375,7 @@ func (solo *Solomachine) SendTransfer(chain *TestChain, portID, channelID string
 		Sender:           chain.SenderAccount.GetAddress().String(),
 		Receiver:         chain.SenderAccount.GetAddress().String(),
 		TimeoutHeight:    clienttypes.ZeroHeight(),
-		TimeoutTimestamp: uint64(chain.GetContext().BlockTime().Add(time.Hour).UnixNano()),
+		TimeoutTimestamp: uint64(chain.GetContext().BlockTime().Add(time.Hour).UnixNano()), //nolint: gosec
 	}
 
 	for _, fn := range fns {

@@ -186,7 +186,7 @@ func (k Keeper) updateValidatorSlashFraction(ctx context.Context, valAddr sdk.Va
 	slashEvent := customtypes.NewValidatorSlashEvent(newPeriod, fractions)
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	height := uint64(sdkCtx.BlockHeight())
+	height := uint64(sdkCtx.BlockHeight()) //nolint: gosec
 
 	err = k.ValidatorSlashEvents.Set(ctx, collections.Join3(valAddr.Bytes(), height, newPeriod), slashEvent)
 	if err != nil {

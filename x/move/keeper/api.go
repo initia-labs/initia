@@ -62,7 +62,7 @@ func (api GoApi) AmountToShare(valBz []byte, metadata vmtypes.AccountAddress, am
 		return "0", err
 	}
 
-	denom, err := types.DenomFromMetadataAddress(api.ctx, api.Keeper.MoveBankKeeper(), metadata)
+	denom, err := types.DenomFromMetadataAddress(api.ctx, api.MoveBankKeeper(), metadata)
 	if err != nil {
 		return "0", err
 	}
@@ -78,7 +78,7 @@ func (api GoApi) ShareToAmount(valBz []byte, metadata vmtypes.AccountAddress, sh
 		return 0, err
 	}
 
-	denom, err := types.DenomFromMetadataAddress(api.ctx, api.Keeper.MoveBankKeeper(), metadata)
+	denom, err := types.DenomFromMetadataAddress(api.ctx, api.MoveBankKeeper(), metadata)
 	if err != nil {
 		return 0, err
 	}
@@ -102,7 +102,7 @@ func (api GoApi) UnbondTimestamp() uint64 {
 	}
 
 	sdkCtx := sdk.UnwrapSDKContext(api.ctx)
-	return uint64(sdkCtx.BlockTime().Unix()) + uint64(unbondingTime.Seconds())
+	return uint64(sdkCtx.BlockTime().Unix()) + uint64(unbondingTime.Seconds()) //nolint: gosec
 }
 
 func (api GoApi) GetPrice(pairId string) ([]byte, uint64, uint64, error) {
@@ -127,14 +127,14 @@ func (api GoApi) GetPrice(pairId string) ([]byte, uint64, uint64, error) {
 		return nil, 0, 0, err
 	}
 
-	return priceBz, uint64(price.BlockTimestamp.Unix()), decimal, nil
+	return priceBz, uint64(price.BlockTimestamp.Unix()), decimal, nil //nolint: gosec
 }
 
 func (api GoApi) Query(req vmtypes.QueryRequest, gasBalance uint64) ([]byte, uint64, error) {
 	// use normal gas meter to meter gas consumption during query with max gas limit
 	sdkCtx := sdk.UnwrapSDKContext(api.ctx).WithGasMeter(storetypes.NewGasMeter(gasBalance))
 
-	res, err := api.Keeper.HandleVMQuery(sdkCtx, &req)
+	res, err := api.HandleVMQuery(sdkCtx, &req)
 	if err != nil {
 		return nil, sdkCtx.GasMeter().GasConsumed(), err
 	}

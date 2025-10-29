@@ -63,7 +63,6 @@ func (suite *KeeperTestSuite) TestRegisterInterchainAccount() {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 
 		suite.Run(tc.name, func() {
 			suite.SetupTest()
@@ -137,7 +136,6 @@ func (suite *KeeperTestSuite) TestSubmitTx() {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 
 		suite.Run(tc.name, func() {
 			suite.SetupTest()

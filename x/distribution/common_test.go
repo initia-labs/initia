@@ -41,7 +41,7 @@ var (
 )
 
 func checkBalance(t *testing.T, app *initiaapp.InitiaApp, addr sdk.AccAddress, balances sdk.Coins) {
-	ctxCheck := app.BaseApp.NewContext(true)
+	ctxCheck := app.NewContext(true)
 	require.True(t, balances.Equal(app.BankKeeper.GetAllBalances(ctxCheck, addr)))
 }
 
@@ -65,7 +65,7 @@ func createApp(t *testing.T) *initiaapp.InitiaApp {
 	distrParams.RewardWeights = []customdistrtypes.RewardWeight{
 		{Denom: bondDenom, Weight: math.LegacyOneDec()},
 	}
-	err = app.DistrKeeper.Params.Set(app.BaseApp.NewContext(false), distrParams)
+	err = app.DistrKeeper.Params.Set(app.NewContext(false), distrParams)
 	require.NoError(t, err)
 
 	// create validator

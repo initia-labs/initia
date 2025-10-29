@@ -110,7 +110,7 @@ func (q QueryServer) ValidatorOutstandingRewards(ctx context.Context, req *types
 	if err != nil {
 		return nil, err
 	}
-	rewards, err := q.Keeper.GetValidatorOutstandingRewards(ctx, valAddr)
+	rewards, err := q.GetValidatorOutstandingRewards(ctx, valAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +134,7 @@ func (q QueryServer) ValidatorCommission(ctx context.Context, req *types.QueryVa
 	if err != nil {
 		return nil, err
 	}
-	commission, err := q.Keeper.GetValidatorAccumulatedCommission(ctx, valAddr)
+	commission, err := q.GetValidatorAccumulatedCommission(ctx, valAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -162,7 +162,7 @@ func (q QueryServer) ValidatorSlashes(ctx context.Context, req *types.QueryValid
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid validator address")
 	}
-	events, pageRes, err := query.CollectionFilteredPaginate(ctx, q.Keeper.ValidatorSlashEvents, req.Pagination,
+	events, pageRes, err := query.CollectionFilteredPaginate(ctx, q.ValidatorSlashEvents, req.Pagination,
 		func(key collections.Triple[[]byte, uint64, uint64], result customtypes.ValidatorSlashEvent) (bool, error) {
 			if result.ValidatorPeriod < req.StartingHeight || result.ValidatorPeriod > req.EndingHeight {
 				return false, nil

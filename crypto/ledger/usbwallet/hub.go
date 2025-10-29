@@ -45,6 +45,9 @@ const refreshCycle = time.Second
 // trashing.
 const refreshThrottling = 500 * time.Millisecond
 
+// osLinux is the GOOS value for Linux systems.
+const osLinux = "linux"
+
 // Hub is a accounts.Backend that can find and handle generic USB hardware wallets.
 type Hub struct {
 	scheme     string                  // Protocol scheme prefixing account and wallet URLs.
@@ -154,7 +157,7 @@ func (hub *Hub) refreshWallets() {
 	// Retrieve the current list of USB wallet devices
 	var devices []hid.DeviceInfo
 
-	if runtime.GOOS == "linux" {
+	if runtime.GOOS == osLinux {
 		// hidapi on Linux opens the device during enumeration to retrieve some infos,
 		// breaking the Ledger protocol if that is waiting for user confirmation. This
 		// is a bug acknowledged at Ledger, but it won't be fixed on old devices so we
@@ -170,7 +173,7 @@ func (hub *Hub) refreshWallets() {
 	infos := hid.Enumerate(hub.vendorID, 0)
 	if infos == nil {
 		failcount := hub.enumFails.Add(1)
-		if runtime.GOOS == "linux" {
+		if runtime.GOOS == osLinux {
 			// See rationale before the enumeration why this is needed and only on Linux.
 			hub.commsLock.Unlock()
 		}
@@ -189,7 +192,7 @@ func (hub *Hub) refreshWallets() {
 			}
 		}
 	}
-	if runtime.GOOS == "linux" {
+	if runtime.GOOS == osLinux {
 		// See rationale before the enumeration why this is needed and only on Linux.
 		hub.commsLock.Unlock()
 	}

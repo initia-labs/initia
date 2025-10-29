@@ -126,10 +126,10 @@ func (k Keeper) UpdateBaseGasPrice(ctx sdk.Context) error {
 	}
 
 	// baseFeeMultiplier = (accumulatedGas - targetGas) / targetGas * maxChangeRate + 1
-	baseFeeMultiplier := math.LegacyNewDec(int64(accumulatedGas) - params.TargetGas).
-		QuoInt64(params.TargetGas).
-		Mul(params.MaxChangeRate).
-		Add(math.LegacyOneDec())
+	baseFeeMultiplier := math.LegacyNewDec(int64(accumulatedGas) - params.TargetGas). //nolint: gosec
+												QuoInt64(params.TargetGas).
+												Mul(params.MaxChangeRate).
+												Add(math.LegacyOneDec())
 	newBaseGasPrice := params.BaseGasPrice.Mul(baseFeeMultiplier)
 	if newBaseGasPrice.LT(params.MinBaseGasPrice) {
 		newBaseGasPrice = params.MinBaseGasPrice

@@ -57,7 +57,7 @@ func (t *txQueryServer) TxsByEvents(ctx context.Context, req *txtypes.TxsByEvent
 		return nil, status.Error(codes.InvalidArgument, "request cannot be nil")
 	}
 
-	result, err := txcli.TxSearchV2(t.clientCtx, int(req.Page), int(req.Limit), req.Query)
+	result, err := txcli.TxSearchV2(t.clientCtx, int(req.Page), int(req.Limit), req.Query) //nolint: gosec
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}

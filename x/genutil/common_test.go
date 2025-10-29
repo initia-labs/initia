@@ -36,7 +36,7 @@ func createApp(t *testing.T) *initiaapp.InitiaApp {
 }
 
 func checkBalance(t *testing.T, app *initiaapp.InitiaApp, addr sdk.AccAddress, balances sdk.Coins) {
-	ctxCheck := app.BaseApp.NewContext(true)
+	ctxCheck := app.NewContext(true)
 	require.True(t, balances.Equal(app.BankKeeper.GetAllBalances(ctxCheck, addr)))
 }
 
@@ -49,7 +49,7 @@ func setAccountBalance(t *testing.T, addr sdk.AccAddress, genCoins sdk.Coins) js
 
 	checkBalance(t, app, addr, genCoins)
 
-	ctxCheck := app.BaseApp.NewContext(true)
+	ctxCheck := app.NewContext(true)
 
 	bankGenesisState := app.BankKeeper.ExportGenesis(ctxCheck)
 	bankGenesis, err := initiaapp.MakeEncodingConfig().Amino.MarshalJSON(bankGenesisState) // TODO switch this to use Marshaler

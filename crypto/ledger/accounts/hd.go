@@ -109,7 +109,7 @@ func ParseDerivationPath(path string) (DerivationPath, error) {
 			}
 			return nil, fmt.Errorf("component %v out of allowed hardened range [0, %d]", bigval, max)
 		}
-		value += uint32(bigval.Uint64())
+		value += uint32(bigval.Uint64()) //nolint: gosec
 
 		// Append and repeat
 		result = append(result, value)

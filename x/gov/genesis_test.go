@@ -11,7 +11,7 @@ import (
 
 func TestExportImportState(t *testing.T) {
 	app := createDefaultApp(t)
-	ctx := app.BaseApp.NewContext(true)
+	ctx := app.NewContext(true)
 
 	exportedState, err := gov.ExportGenesis(ctx, app.GovKeeper)
 	require.NoError(t, err)

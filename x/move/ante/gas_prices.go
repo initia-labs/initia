@@ -34,7 +34,7 @@ func (d GasPricesDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool
 		}
 
 		// store a tx gas prices
-		ctx = ctx.WithValue(movetypes.GasPricesContextKey, sdk.NewDecCoinsFromCoins(feeCoins...).QuoDecTruncate(math.LegacyNewDec(int64(gas))))
+		ctx = ctx.WithValue(movetypes.GasPricesContextKey, sdk.NewDecCoinsFromCoins(feeCoins...).QuoDecTruncate(math.LegacyNewDec(int64(gas)))) //nolint: gosec
 	}
 
 	if next != nil {

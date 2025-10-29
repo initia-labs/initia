@@ -23,7 +23,7 @@ func Test_BeginBlocker(t *testing.T) {
 	require.NoError(t, err)
 
 	// initialize staking for secondBondDenom
-	ctx := app.BaseApp.NewUncachedContext(false, tmproto.Header{})
+	ctx := app.NewUncachedContext(false, tmproto.Header{})
 	err = app.MoveKeeper.InitializeStaking(ctx, secondBondDenom)
 	require.NoError(t, err)
 
@@ -62,7 +62,7 @@ func Test_BeginBlocker(t *testing.T) {
 	require.NoError(t, err)
 
 	// generate rewards
-	ctx = app.BaseApp.NewUncachedContext(false, tmproto.Header{})
+	ctx = app.NewUncachedContext(false, tmproto.Header{})
 	validator, err := app.StakingKeeper.Validator(ctx, sdk.ValAddress(addr1))
 	require.NoError(t, err)
 

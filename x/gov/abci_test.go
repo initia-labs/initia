@@ -15,7 +15,7 @@ import (
 
 func TestSimpleProposalPassedEndblocker(t *testing.T) {
 	app := createAppWithSimpleValidators(t)
-	ctx := app.BaseApp.NewContext(false)
+	ctx := app.NewContext(false)
 	initTime := ctx.BlockHeader().Time
 
 	govMsgSvr := keeper.NewMsgServerImpl(app.GovKeeper)
@@ -74,7 +74,7 @@ func TestSimpleProposalPassedEndblocker(t *testing.T) {
 
 func TestEmergencyProposalPassedEndblocker(t *testing.T) {
 	app := createAppWithSimpleValidators(t)
-	ctx := app.BaseApp.NewContext(false)
+	ctx := app.NewContext(false)
 	initTime := ctx.BlockHeader().Time
 
 	govMsgSvr := keeper.NewMsgServerImpl(app.GovKeeper)
@@ -220,7 +220,7 @@ func TestTickSingleProposal(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			app := createAppWithSimpleValidators(t)
-			ctx := app.BaseApp.NewContext(false)
+			ctx := app.NewContext(false)
 
 			govMsgSvr := keeper.NewMsgServerImpl(app.GovKeeper)
 			propMsg := createTextProposalMsg(t, 100, false)
@@ -266,7 +266,7 @@ func TestTickSingleProposal(t *testing.T) {
 
 func TestEmergencyProposal_Rejected_VotingPeriodOver(t *testing.T) {
 	app := createAppWithSimpleValidators(t)
-	ctx := app.BaseApp.NewContext(false)
+	ctx := app.NewContext(false)
 	initTime := ctx.BlockHeader().Time
 
 	govMsgSvr := keeper.NewMsgServerImpl(app.GovKeeper)

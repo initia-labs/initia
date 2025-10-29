@@ -154,7 +154,7 @@ func (k Keeper) GetMissedBlockBitmapValue(ctx context.Context, addr sdk.ConsAddr
 	// get the bit position in the chunk of the logical bitmap, where Test()
 	// checks if the bit is set.
 	bitIndex := index % types.MissedBlockBitmapChunkSize
-	return bs.Test(uint(bitIndex)), nil
+	return bs.Test(uint(bitIndex)), nil //nolint: gosec
 }
 
 // SetMissedBlockBitmapValue sets, i.e. flips, a bit in the validator's missed
@@ -181,7 +181,7 @@ func (k Keeper) SetMissedBlockBitmapValue(ctx context.Context, addr sdk.ConsAddr
 	}
 
 	// get the bit position in the chunk of the logical bitmap
-	bitIndex := uint(index % types.MissedBlockBitmapChunkSize)
+	bitIndex := uint(index % types.MissedBlockBitmapChunkSize) //nolint: gosec
 	if missed {
 		bs.Set(bitIndex)
 	} else {

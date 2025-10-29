@@ -257,7 +257,7 @@ func (policy UpgradePolicy) ToVmUpgradePolicy() uint8 {
 	// 0 => Unspecified
 	// 1 => Compatible
 	// 2 => Immutable
-	return uint8(policy)
+	return uint8(policy) //nolint: gosec
 }
 
 // ReadTableHandleFromTable util function to read table handle from the table raw bytes
@@ -647,7 +647,7 @@ func ReadFungibleAssetMetadata(bz []byte) (string, string, uint8) {
 	symbol := string(bz[cursor : cursor+symbolLen])
 	cursor += symbolLen
 
-	decimals := uint8(bz[cursor])
+	decimals := bz[cursor]
 	cursor += 1 //nolint
 
 	return name, symbol, decimals

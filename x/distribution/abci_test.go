@@ -22,7 +22,7 @@ func Test_BeginBlocker(t *testing.T) {
 	// initialize staking for bondDenom
 	header := tmproto.Header{Height: app.LastBlockHeight() + 1, ProposerAddress: valKey.PubKey().Address()}
 
-	ctx := app.BaseApp.NewContextLegacy(false, header)
+	ctx := app.NewContextLegacy(false, header)
 	err = app.BankKeeper.MintCoins(ctx, authtypes.Minter, genCoins)
 	require.NoError(t, err)
 	err = app.BankKeeper.SendCoinsFromModuleToModule(ctx, authtypes.Minter, authtypes.FeeCollectorName, genCoins)
@@ -49,7 +49,7 @@ func Test_BeginBlocker(t *testing.T) {
 	require.NoError(t, err)
 
 	header = tmproto.Header{Height: app.LastBlockHeight() + 1}
-	ctx = app.BaseApp.NewContextLegacy(false, header)
+	ctx = app.NewContextLegacy(false, header)
 	rewards, err := app.DistrKeeper.GetValidatorOutstandingRewards(ctx, sdk.ValAddress(addr1))
 	require.NoError(t, err)
 
