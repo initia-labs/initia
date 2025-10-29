@@ -67,7 +67,7 @@ func (fc MempoolFeeChecker) CheckTxFeeWithMinGasPrices(ctx sdk.Context, tx sdk.T
 				return nil, 0, err
 			}
 
-			gasPriceFromTotalFee := math.LegacyNewDecFromInt(totalFeeBaseAmount).Quo(math.LegacyNewDec(int64(gas)))
+			gasPriceFromTotalFee := math.LegacyNewDecFromInt(totalFeeBaseAmount).Quo(math.LegacyNewDec(int64(gas))) //nolint: gosec
 
 			// priority is max(gasPriceFromTotalFee * 1e6, 1)
 			priority = math.Max(gasPriceFromTotalFee.MulInt64(1000000).TruncateInt64(), 1)

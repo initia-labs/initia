@@ -116,7 +116,7 @@ func TestAuthzPublishAuthorization(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
+
 		t.Run(tc.msg, func(t *testing.T) {
 			pubAuth, err := movetypes.NewPublishAuthorization(tc.pubItem)
 			require.NoError(t, err)
@@ -350,7 +350,7 @@ func TestAuthzExecuteAuthorization(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
+
 		t.Run(tc.msg, func(t *testing.T) {
 			execAuth, err := movetypes.NewExecuteAuthorization(address.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix()), tc.execItem)
 			require.NoError(t, err)

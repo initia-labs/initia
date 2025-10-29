@@ -46,7 +46,7 @@ var (
 )
 
 func checkBalance(t *testing.T, app *initiaapp.InitiaApp, addr sdk.AccAddress, balances sdk.Coins) {
-	ctxCheck := app.BaseApp.NewContext(true)
+	ctxCheck := app.NewContext(true)
 	require.True(t, balances.Equal(app.BankKeeper.GetAllBalances(ctxCheck, addr)))
 }
 
@@ -72,7 +72,7 @@ func createApp(t *testing.T) *initiaapp.InitiaApp {
 	_, err := app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1})
 	require.NoError(t, err)
 
-	ctx := app.BaseApp.NewUncachedContext(false, tmproto.Header{})
+	ctx := app.NewUncachedContext(false, tmproto.Header{})
 	createDexPool(t, ctx, app, baseCoin, quoteCoin, math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1))
 
 	// set reward weight

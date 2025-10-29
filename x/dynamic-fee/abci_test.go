@@ -24,7 +24,7 @@ func Test_EndBlocker(t *testing.T) {
 	_, err := app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1})
 	require.NoError(t, err)
 
-	ctx := app.BaseApp.NewUncachedContext(false, tmproto.Header{})
+	ctx := app.NewUncachedContext(false, tmproto.Header{})
 	err = app.DynamicFeeKeeper.SetParams(ctx, types.Params{
 		BaseGasPrice:    math.LegacyNewDecWithPrec(15, 3),
 		MinBaseGasPrice: math.LegacyNewDecWithPrec(1, 3),
@@ -40,7 +40,7 @@ func Test_EndBlocker(t *testing.T) {
 	require.NoError(t, err)
 
 	// initialize staking for secondBondDenom
-	ctx = app.BaseApp.NewUncachedContext(false, tmproto.Header{})
+	ctx = app.NewUncachedContext(false, tmproto.Header{})
 
 	// fund addr2
 	app.BankKeeper.SendCoins(ctx, movetypes.StdAddr, addr2, sdk.NewCoins(secondBondCoin))
@@ -48,7 +48,7 @@ func Test_EndBlocker(t *testing.T) {
 	_, err = app.Commit()
 	require.NoError(t, err)
 
-	ctx = app.BaseApp.NewUncachedContext(false, tmproto.Header{})
+	ctx = app.NewUncachedContext(false, tmproto.Header{})
 	lessBaseGasPrice, err := app.DynamicFeeKeeper.BaseGasPrice(ctx)
 	require.NoError(t, err)
 	require.True(t, lessBaseGasPrice.LT(types.DefaultBaseGasPrice))
@@ -65,7 +65,7 @@ func Test_EndBlocker(t *testing.T) {
 	_, err = executeMsgsWithGasInfo(t, app, msgs, []uint64{1}, []uint64{0}, priv2)
 	require.NoError(t, err)
 
-	ctx = app.BaseApp.NewUncachedContext(false, tmproto.Header{})
+	ctx = app.NewUncachedContext(false, tmproto.Header{})
 	baseGasPrice, err := app.DynamicFeeKeeper.BaseGasPrice(ctx)
 	require.NoError(t, err)
 	require.True(t, baseGasPrice.GT(lessBaseGasPrice))
@@ -77,7 +77,7 @@ func Test_EndBlocker_NoBaseGasPriceChange(t *testing.T) {
 	_, err := app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1})
 	require.NoError(t, err)
 
-	ctx := app.BaseApp.NewUncachedContext(false, tmproto.Header{})
+	ctx := app.NewUncachedContext(false, tmproto.Header{})
 	err = app.DynamicFeeKeeper.SetParams(ctx, types.NoBaseGasPriceChangeParams())
 	require.NoError(t, err)
 	_, err = app.Commit()
@@ -87,7 +87,7 @@ func Test_EndBlocker_NoBaseGasPriceChange(t *testing.T) {
 	require.NoError(t, err)
 
 	// initialize staking for secondBondDenom
-	ctx = app.BaseApp.NewUncachedContext(false, tmproto.Header{})
+	ctx = app.NewUncachedContext(false, tmproto.Header{})
 
 	// fund addr2
 	app.BankKeeper.SendCoins(ctx, movetypes.StdAddr, addr2, sdk.NewCoins(secondBondCoin))
@@ -95,7 +95,7 @@ func Test_EndBlocker_NoBaseGasPriceChange(t *testing.T) {
 	_, err = app.Commit()
 	require.NoError(t, err)
 
-	ctx = app.BaseApp.NewUncachedContext(false, tmproto.Header{})
+	ctx = app.NewUncachedContext(false, tmproto.Header{})
 	baseGasPrice, err := app.DynamicFeeKeeper.BaseGasPrice(ctx)
 	require.NoError(t, err)
 	require.True(t, baseGasPrice.Equal(types.DefaultBaseGasPrice))
@@ -112,7 +112,7 @@ func Test_EndBlocker_NoBaseGasPriceChange(t *testing.T) {
 	_, err = executeMsgsWithGasInfo(t, app, msgs, []uint64{1}, []uint64{0}, priv2)
 	require.NoError(t, err)
 
-	ctx = app.BaseApp.NewUncachedContext(false, tmproto.Header{})
+	ctx = app.NewUncachedContext(false, tmproto.Header{})
 	baseGasPrice, err = app.DynamicFeeKeeper.BaseGasPrice(ctx)
 	require.NoError(t, err)
 	require.True(t, baseGasPrice.Equal(types.DefaultBaseGasPrice))

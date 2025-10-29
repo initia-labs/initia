@@ -208,7 +208,7 @@ func (s *poolTestSuite) TestIsAnyNegativePools() {
 		expected bool
 	}{
 		{types.NewPools(s.pool111, s.pool222, s.pool444), false},
-		{types.NewPools(types.Pool{"test", sdk.Coins{sdk.Coin{"testdenom", math.NewInt(-10)}}}), true},
+		{types.NewPools(types.Pool{"test", sdk.Coins{sdk.Coin{Denom: "testdenom", Amount: math.NewInt(-10)}}}), true},
 	}
 
 	for tcIndex, tc := range cases {

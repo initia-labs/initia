@@ -135,13 +135,14 @@ func bcsSerializeArg(argType string, arg string, s serde.Serializer, ac address.
 		return s.GetBytes(), err
 
 	case "bool":
-		if arg == "true" || arg == "True" {
+		switch arg {
+		case "true", "True":
 			err := s.SerializeBool(true)
 			return s.GetBytes(), err
-		} else if arg == "false" || arg == "False" {
+		case "false", "False":
 			err := s.SerializeBool(false)
 			return s.GetBytes(), err
-		} else {
+		default:
 			return nil, errors.New("unsupported bool value")
 		}
 
@@ -164,11 +165,11 @@ func bcsSerializeArg(argType string, arg string, s serde.Serializer, ac address.
 
 		switch argType {
 		case "u8":
-			_ = s.SerializeU8(uint8(num))
+			_ = s.SerializeU8(uint8(num)) //nolint: gosec
 		case "u16":
-			_ = s.SerializeU16(uint16(num))
+			_ = s.SerializeU16(uint16(num)) //nolint: gosec
 		case "u32":
-			_ = s.SerializeU32(uint32(num))
+			_ = s.SerializeU32(uint32(num)) //nolint: gosec
 		case "u64":
 			_ = s.SerializeU64(num)
 		}

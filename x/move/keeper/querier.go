@@ -49,7 +49,7 @@ func (q Querier) Modules(ctx context.Context, req *types.QueryModulesRequest) (*
 	}
 
 	prefixBytes := types.GetModulePrefix(moduleAddr)
-	modules, pageRes, err := query.CollectionPaginate(ctx, q.Keeper.VMStore, req.Pagination, func(key []byte, rawBytes []byte) (types.Module, error) {
+	modules, pageRes, err := query.CollectionPaginate(ctx, q.VMStore, req.Pagination, func(key []byte, rawBytes []byte) (types.Module, error) {
 		bz, err := q.DecodeModuleBytes(rawBytes)
 		if err != nil {
 			return types.Module{}, err
@@ -435,7 +435,7 @@ func (q Querier) Denom(ctx context.Context, req *types.QueryDenomRequest) (*type
 		return nil, err
 	}
 
-	denom, err := types.DenomFromMetadataAddress(ctx, q.Keeper.MoveBankKeeper(), metadata)
+	denom, err := types.DenomFromMetadataAddress(ctx, q.MoveBankKeeper(), metadata)
 	if err != nil {
 		return nil, err
 	}

@@ -28,7 +28,7 @@ var _ signing.SignModeHandler = SignModeAccountAbstractionHandler{}
 
 // Mode implements signing.SignModeHandler.Mode.
 func (SignModeAccountAbstractionHandler) Mode() signingv1beta1.SignMode {
-	return signingv1beta1.SignMode(SignModeAccountAbstraction) //nolint
+	return signingv1beta1.SignMode(SignModeAccountAbstraction)
 }
 
 // GetSignBytes implements SignModeHandler.GetSignBytes
