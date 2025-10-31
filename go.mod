@@ -256,7 +256,7 @@ require github.com/cosmos/iavl v1.2.6 // indirect
 //
 // forwarding
 // - https://github.com/initia-labs/forwarding/pull/1
-// 
+//
 // connect
 // - https://github.com/initia-labs/connect/pull/1
 replace (
