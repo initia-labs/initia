@@ -698,6 +698,7 @@ func NewAppKeeper(
 	appKeepers.OPHostKeeper = ophostkeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(appKeepers.keys[ophosttypes.StoreKey]),
+		bApp.MsgServiceRouter(),
 		appKeepers.AccountKeeper,
 		appKeepers.BankKeeper,
 		appKeepers.DistrKeeper,

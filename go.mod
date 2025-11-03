@@ -262,3 +262,6 @@ replace (
 	github.com/initia-labs/movevm => github.com/initia-labs/movevm v1.1.0-rc.0
 	github.com/skip-mev/connect/v2 => github.com/initia-labs/connect/v2 v2.3.1
 )
+
+// temporary replace until we release new OPinit version
+replace github.com/initia-labs/OPinit => github.com/initia-labs/OPinit v1.1.4-0.20251031030733-6db6286a1e13
