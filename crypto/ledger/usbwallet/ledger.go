@@ -180,7 +180,7 @@ func (w *ledgerDriver) SignTx(path accounts.DerivationPath, tx *types.Transactio
 	// Ensure the wallet is capable of signing the given transaction
 	if chainID != nil && w.version[0] <= 1 && w.version[1] <= 0 && w.version[2] <= 2 {
 		//lint:ignore ST1005 brand name displayed on the console
-		return common.Address{}, nil, fmt.Errorf("Ledger v%d.%d.%d doesn't support signing this transaction, please update to v1.0.3 at least", w.version[0], w.version[1], w.version[2])
+		return common.Address{}, nil, fmt.Errorf("ledger v%d.%d.%d doesn't support signing this transaction, please update to v1.0.3 at least", w.version[0], w.version[1], w.version[2])
 	}
 	// All infos gathered and metadata checks out, request signing
 	return w.ledgerSign(path, tx, chainID)
@@ -198,7 +198,7 @@ func (w *ledgerDriver) SignTypedMessage(path accounts.DerivationPath, domainHash
 	// Ensure the wallet is capable of signing the given transaction
 	if w.version[0] < 1 && w.version[1] < 5 {
 		//lint:ignore ST1005 brand name displayed on the console
-		return nil, fmt.Errorf("Ledger version >= 1.5.0 required for EIP-712 signing (found version v%d.%d.%d)", w.version[0], w.version[1], w.version[2])
+		return nil, fmt.Errorf("ledger version >= 1.5.0 required for EIP-712 signing (found version v%d.%d.%d)", w.version[0], w.version[1], w.version[2])
 	}
 	// All infos gathered and metadata checks out, request signing
 	return w.ledgerSignTypedMessage(path, domainHash, messageHash)
@@ -216,7 +216,7 @@ func (w *ledgerDriver) SignPersonalMessage(path accounts.DerivationPath, data []
 	// Ensure the wallet is capable of signing the given transaction
 	if w.version[0] <= 1 && w.version[1] <= 0 && w.version[2] <= 7 {
 		//lint:ignore ST1005 brand name displayed on the console
-		return nil, fmt.Errorf("Ledger version >= 1.0.8 required for personal message signing (found version v%d.%d.%d)", w.version[0], w.version[1], w.version[2])
+		return nil, fmt.Errorf("ledger version >= 1.0.8 required for personal message signing (found version v%d.%d.%d)", w.version[0], w.version[1], w.version[2])
 	}
 	// All infos gathered and metadata checks out, request signing
 	return w.ledgerSignPersonalMessage(path, data)
@@ -552,7 +552,7 @@ func (w *ledgerDriver) ledgerSignPersonalMessage(derivationPath []uint32, data [
 		if first {
 			buffer = make([]byte, len(path)+4+chunkSize)
 			copy(buffer[:], path)
-			binary.BigEndian.PutUint32(buffer[len(path):], uint32(len(data)))
+			binary.BigEndian.PutUint32(buffer[len(path):], uint32(len(data))) //nolint: gosec
 			copy(buffer[len(path)+4:], data[:chunkSize])
 			op = ledgerP1PersonalMessageData
 		} else {
@@ -619,7 +619,7 @@ func (w *ledgerDriver) ledgerExchange(opcode ledgerOpcode, p1 ledgerParam1, p2 l
 	// Construct the message payload, possibly split into multiple chunks
 	apdu := make([]byte, 2, 7+len(data))
 
-	binary.BigEndian.PutUint16(apdu, uint16(5+len(data)))
+	binary.BigEndian.PutUint16(apdu, uint16(5+len(data))) //nolint: gosec
 	apdu = append(apdu, []byte{0xe0, byte(opcode), byte(p1), byte(p2), byte(len(data))}...)
 	apdu = append(apdu, data...)
 
@@ -631,7 +631,7 @@ func (w *ledgerDriver) ledgerExchange(opcode ledgerOpcode, p1 ledgerParam1, p2 l
 	for i := 0; len(apdu) > 0; i++ {
 		// Construct the new message to stream
 		chunk = append(chunk[:0], header...)
-		binary.BigEndian.PutUint16(chunk[3:], uint16(i))
+		binary.BigEndian.PutUint16(chunk[3:], uint16(i)) //nolint: gosec
 
 		if len(apdu) > space {
 			chunk = append(chunk, apdu[:space]...)

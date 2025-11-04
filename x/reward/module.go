@@ -47,7 +47,7 @@ func (AppModuleBasic) Name() string {
 	return types.ModuleName
 }
 
-func (b AppModuleBasic) RegisterLegacyAminoCodec(amino *codec.LegacyAmino) { //nolint:staticcheck
+func (b AppModuleBasic) RegisterLegacyAminoCodec(amino *codec.LegacyAmino) {
 	types.RegisterLegacyAminoCodec(amino)
 }
 

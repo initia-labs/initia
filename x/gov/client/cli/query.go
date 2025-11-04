@@ -235,7 +235,7 @@ $ %s query gov proposals --page=2 --limit=100
 
 // GetCmdQueryParams implements the query params command.
 //
-//nolint:staticcheck // this function contains deprecated commands that we need.
+
 func GetCmdQueryParams() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "params",

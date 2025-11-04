@@ -187,13 +187,14 @@ func Test_IterateSupply(t *testing.T) {
 
 	counter := 0
 	moveBankKeeper.IterateSupply(ctx, func(supply sdk.Coin) (bool, error) {
-		if supply.Denom == bondDenom {
+		switch supply.Denom {
+		case bondDenom:
 			counter++
 			require.Equal(t, initiaSupply, supply.Amount)
-		} else if supply.Denom == testDenom {
+		case testDenom:
 			counter++
 			require.Equal(t, initiaSupply.Add(mintAmount.MulRaw(int64(mintNum))), supply.Amount)
-		} else {
+		default:
 			require.Equal(t, initiaSupply, supply.Amount)
 		}
 

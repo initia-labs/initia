@@ -262,7 +262,7 @@ func TxSearchV2(clientCtx client.Context, page, limit int, query string) (*sdk.S
 		return nil, err
 	}
 
-	return sdk.NewSearchTxsResult(uint64(resTxs.TotalCount), uint64(len(txs)), uint64(page), uint64(limit), txs), nil
+	return sdk.NewSearchTxsResult(uint64(resTxs.TotalCount), uint64(len(txs)), uint64(page), uint64(limit), txs), nil //nolint: gosec
 }
 
 // formatTxResults parses the indexed txs into a slice of TxResponse objects.

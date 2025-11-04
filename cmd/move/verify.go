@@ -133,6 +133,9 @@ func verifyContract(vc verifyConfig) (err error) {
 	req.Header.Set("Accept-Encoding", "deflate")
 
 	res, err := http.DefaultClient.Do(req)
+	if res != nil {
+		defer res.Body.Close()
+	}
 	if err != nil || (res.StatusCode/100 != 2) {
 		if err != nil {
 			return errors.Wrap(err, "failed to post to verifier")

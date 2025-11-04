@@ -308,7 +308,7 @@ func NewAppKeeper(
 	authzKeeper = authzKeeper.SetBankKeeper(appKeepers.BankKeeper)
 	appKeepers.AuthzKeeper = &authzKeeper
 
-	// Create evidence Keeper for to register the IBC light client misbehaviour evidence route
+	// Create evidence Keeper for to register the IBC light client misbehavior evidence route
 	appKeepers.EvidenceKeeper = evidencekeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(appKeepers.keys[evidencetypes.StoreKey]),

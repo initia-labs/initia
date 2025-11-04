@@ -179,7 +179,7 @@ func (k Keeper) Tally(ctx context.Context, params customtypes.Params, proposal c
 	v1TallyResult := v1.NewTallyResultFromMap(results)
 	tallyResults = customtypes.TallyResult{
 		V1TallyResult:     &v1TallyResult,
-		TallyHeight:       uint64(sdk.UnwrapSDKContext(ctx).BlockHeight()),
+		TallyHeight:       uint64(sdk.UnwrapSDKContext(ctx).BlockHeight()), //nolint: gosec
 		TotalStakingPower: totalStakingPower.String(),
 		TotalVestingPower: totalVestingPower.String(),
 	}
