@@ -175,7 +175,7 @@ func TestModules(t *testing.T) {
 		},
 	)
 	require.NoError(t, err)
-	require.Equal(t, basicCoinModuleAbi, moduleRes.Module.Abi)
+	require.Equal(t, basicCoinModuleAbi, moduleRes.Abi)
 	require.Equal(t, moduleRes.Module, types.Module{
 		Address:       "0x1",
 		ModuleName:    "BasicCoin",

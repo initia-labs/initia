@@ -33,7 +33,7 @@ func (ms customMsgServer) SetDenomMetadata(ctx context.Context, req *customtypes
 		return nil, err
 	}
 
-	ms.Keeper.SetDenomMetaData(ctx, req.Metadata)
+	ms.SetDenomMetaData(ctx, req.Metadata)
 
 	return &customtypes.MsgSetDenomMetadataResponse{}, nil
 }

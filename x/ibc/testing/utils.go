@@ -29,7 +29,7 @@ func ApplyValSetChanges(tb testing.TB, valSet *tmtypes.ValidatorSet, valUpdates 
 func GenerateString(length uint) string {
 	bytes := make([]byte, length)
 	for i := range bytes {
-		bytes[i] = charset[rand.Intn(len(charset))] //nolint weak random number generator is acceptable here
+		bytes[i] = charset[rand.Intn(len(charset))] //nolint
 	}
 	return string(bytes)
 }

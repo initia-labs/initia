@@ -62,7 +62,7 @@ var (
 )
 
 func checkBalance(t *testing.T, app *initiaapp.InitiaApp, addr sdk.AccAddress, balances sdk.Coins) {
-	ctxCheck := app.BaseApp.NewContext(true)
+	ctxCheck := app.NewContext(true)
 	require.True(t, balances.Equal(app.BankKeeper.GetAllBalances(ctxCheck, addr)))
 }
 
@@ -86,7 +86,7 @@ func createApp(t *testing.T) *initiaapp.InitiaApp {
 	distrParams.RewardWeights = []customdistrtypes.RewardWeight{
 		{Denom: bondDenom, Weight: math.LegacyOneDec()},
 	}
-	app.DistrKeeper.Params.Set(app.BaseApp.NewContext(false), distrParams)
+	app.DistrKeeper.Params.Set(app.NewContext(false), distrParams)
 
 	vc := address.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix())
 	val1AddrStr, err := vc.BytesToString(addr1)

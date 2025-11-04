@@ -50,7 +50,7 @@ func (suite *AnteTestSuite) createTestApp(tempDir string) (*initiaapp.InitiaApp,
 	app := initiaapp.NewInitiaApp(
 		log.NewNopLogger(), dbm.NewMemDB(), nil, true, moveconfig.DefaultMoveConfig(), oracleconfig.NewDefaultAppConfig(), appOptions,
 	)
-	ctx := app.BaseApp.NewUncachedContext(false, tmproto.Header{})
+	ctx := app.NewUncachedContext(false, tmproto.Header{})
 	err := app.AccountKeeper.Params.Set(ctx, authtypes.DefaultParams())
 	suite.NoError(err)
 

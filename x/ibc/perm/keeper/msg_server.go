@@ -25,11 +25,11 @@ func NewMsgServerImpl(k *Keeper) MsgServer {
 
 // UpdateAdmin update channel relayer to restrict relaying operation of a channel to specific relayer.
 func (ms MsgServer) UpdateAdmin(ctx context.Context, req *types.MsgUpdateAdmin) (*types.MsgUpdateAdminResponse, error) {
-	if err := req.Validate(ms.Keeper.ac); err != nil {
+	if err := req.Validate(ms.ac); err != nil {
 		return nil, err
 	}
 
-	cs, err := ms.Keeper.GetChannelState(ctx, req.PortId, req.ChannelId)
+	cs, err := ms.GetChannelState(ctx, req.PortId, req.ChannelId)
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +40,7 @@ func (ms MsgServer) UpdateAdmin(ctx context.Context, req *types.MsgUpdateAdmin) 
 	}
 
 	cs.Admin = req.Admin
-	err = ms.Keeper.SetChannelState(ctx, cs)
+	err = ms.SetChannelState(ctx, cs)
 	if err != nil {
 		return nil, err
 	}
@@ -67,11 +67,11 @@ func (ms MsgServer) UpdateAdmin(ctx context.Context, req *types.MsgUpdateAdmin) 
 
 // UpdatePermissionedRelayers update channel relayer to restrict relaying operation of a channel to specific relayer.
 func (ms MsgServer) UpdatePermissionedRelayers(ctx context.Context, req *types.MsgUpdatePermissionedRelayers) (*types.MsgUpdatePermissionedRelayersResponse, error) {
-	if err := req.Validate(ms.Keeper.ac); err != nil {
+	if err := req.Validate(ms.ac); err != nil {
 		return nil, err
 	}
 
-	cs, err := ms.Keeper.GetChannelState(ctx, req.PortId, req.ChannelId)
+	cs, err := ms.GetChannelState(ctx, req.PortId, req.ChannelId)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +82,7 @@ func (ms MsgServer) UpdatePermissionedRelayers(ctx context.Context, req *types.M
 	}
 
 	cs.Relayers = req.Relayers
-	err = ms.Keeper.SetChannelState(ctx, cs)
+	err = ms.SetChannelState(ctx, cs)
 	if err != nil {
 		return nil, err
 	}

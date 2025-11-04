@@ -86,7 +86,7 @@ func createAppWithSimpleValidators(t *testing.T) *initiaapp.InitiaApp {
 	)
 	_, err := app.FinalizeBlock(&abci.RequestFinalizeBlock{Height: app.LastBlockHeight() + 1})
 	require.NoError(t, err)
-	ctx := app.BaseApp.NewContext(false)
+	ctx := app.NewContext(false)
 	params, err := app.GovKeeper.Params.Get(ctx)
 	require.NoError(t, err)
 	params.MinDepositRatio = minDepositRatio

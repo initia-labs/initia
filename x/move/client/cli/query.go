@@ -401,7 +401,6 @@ Note that there should be no spaces within the arguments, since each argument is
 
 			queryClient := types.NewQueryClient(clientCtx)
 
-			//nolint
 			res, err := queryClient.ViewJSON(
 				context.Background(),
 				&types.QueryViewJSONRequest{

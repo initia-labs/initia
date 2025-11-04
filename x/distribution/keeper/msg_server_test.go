@@ -49,7 +49,7 @@ func TestMsgSetWithdrawAddress(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		tc := tc
+
 		t.Run(tc.name, func(t *testing.T) {
 			_, err := msgServer.SetWithdrawAddress(ctx, tc.msg)
 			if tc.errMsg == "" {
@@ -100,7 +100,7 @@ func TestMsgWithdrawDelegatorReward(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		tc := tc
+
 		t.Run(tc.name, func(t *testing.T) {
 			if tc.preRun != nil {
 				tc.preRun()
@@ -144,7 +144,7 @@ func TestMsgWithdrawValidatorCommission(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		tc := tc
+
 		t.Run(tc.name, func(t *testing.T) {
 			if tc.preRun != nil {
 				tc.preRun()
@@ -189,7 +189,7 @@ func TestMsgFundCommunityPool(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		tc := tc
+
 		t.Run(tc.name, func(t *testing.T) {
 			_, err := msgServer.FundCommunityPool(ctx, tc.msg)
 			if tc.errMsg == "" {

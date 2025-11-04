@@ -90,7 +90,7 @@ func (vk VestingKeeper) getVestingTokenDenom(ctx context.Context, moduleAccAddr 
 		return "", err
 	}
 
-	return types.DenomFromMetadataAddress(ctx, vk.Keeper.MoveBankKeeper(), vmtypes.AccountAddress(vestingTokenMetadata))
+	return types.DenomFromMetadataAddress(ctx, vk.MoveBankKeeper(), vmtypes.AccountAddress(vestingTokenMetadata))
 }
 
 // getVestingTableHandler returns the vesting table handle for the given module and creator
@@ -149,7 +149,7 @@ func (vk VestingKeeper) GetUnclaimedVestedAmount(ctx context.Context, tableHandl
 		return math.ZeroInt(), err
 	}
 
-	curTime := uint64(sdk.UnwrapSDKContext(ctx).BlockTime().Unix())
+	curTime := uint64(sdk.UnwrapSDKContext(ctx).BlockTime().Unix()) //nolint: gosec
 	if curTime < startTime {
 		return math.ZeroInt(), nil
 	}

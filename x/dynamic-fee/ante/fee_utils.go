@@ -16,7 +16,7 @@ func computeRequiredFees(gas storetypes.Gas, minGasPrices sdk.DecCoins) sdk.Coin
 	if !minGasPrices.IsZero() {
 		// Determine the required fees by multiplying each required minimum gas
 		// price by the gas limit, where fee = ceil(minGasPrice * gasLimit).
-		glDec := math.LegacyNewDec(int64(gas))
+		glDec := math.LegacyNewDec(int64(gas)) //nolint: gosec
 		for i, gp := range minGasPrices {
 			fee := gp.Amount.Mul(glDec)
 			requiredFees[i] = sdk.NewCoin(gp.Denom, fee.Ceil().RoundInt())
