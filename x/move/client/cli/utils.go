@@ -70,13 +70,13 @@ func asciiDecodeString(s string) ([]byte, error) {
 func BCSEncode(ac address.Codec, flagArgs []string) ([][]byte, error) {
 	bcsArgs := [][]byte{}
 	for _, flagArg := range flagArgs {
-		ss := strings.Split(flagArg, ":")
-		if len(ss) != 2 {
+		idx := strings.Index(flagArg, ":")
+		if idx == -1 {
 			return nil, fmt.Errorf(`expect "type:value" format but got "%s"`, flagArg)
 		}
 
-		moveType := ss[0]
-		moveValue := ss[1]
+		moveType := flagArg[:idx]
+		moveValue := flagArg[idx+1:]
 
 		serializer := NewSerializer()
 		bcsArg, err := bcsSerializeArg(moveType, moveValue, serializer, ac)

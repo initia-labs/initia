@@ -112,6 +112,7 @@ func Test_BCSEncode(t *testing.T) {
 		{"badtype:1", nil, true, "badtype 1"},
 		{"biguint:1077952576", []byte{4, 64, 64, 64, 64}, false, "biguint 1077952576"},
 		{"bigdecimal:0.00000027595585952", []byte{5, 64, 64, 64, 64, 64}, false, "bigdecimal 0.00000027595585952"},
+		{"string:test:uri", []byte{8, 116, 101, 115, 116, 58, 117, 114, 105}, false, "string with colon"},
 	}
 
 	ac := address.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix())
