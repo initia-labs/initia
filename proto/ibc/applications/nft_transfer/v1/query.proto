@@ -26,6 +26,11 @@ service Query {
     option (google.api.http).get = "/ibc/apps/nft_transfer/v1/class_hashes/{trace=**}";
   }
 
+  // ClassData queries a class id data information.
+  rpc ClassData(QueryClassDataRequest) returns (QueryClassDataResponse) {
+    option (google.api.http).get = "/ibc/apps/nft_transfer/v1/class_data/{hash}";
+  }
+
   // EscrowAddress returns the escrow address for a particular port and channel id.
   rpc EscrowAddress(QueryEscrowAddressRequest) returns (QueryEscrowAddressResponse) {
     option (google.api.http).get = "/ibc/apps/nft_transfer/v1/channels/{channel_id=**}/ports/{port_id}/escrow_address";
@@ -82,6 +87,20 @@ message QueryClassHashRequest {
 message QueryClassHashResponse {
   // hash (in hex format) of the class id trace information.
   string hash = 1;
+}
+
+// QueryClassDataRequest is the request type for the Query/ClassData RPC
+// method
+message QueryClassDataRequest {
+  // hash (in hex format) of the class id trace information.
+  string hash = 1;
+}
+
+// QueryClassDataResponse is the response type for the Query/ClassData RPC
+// method.
+message QueryClassDataResponse {
+  // data returns the requested class id data information.
+  string data = 1;
 }
 
 // QueryEscrowAddressRequest is the request type for the EscrowAddress RPC method.

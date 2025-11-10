@@ -129,3 +129,32 @@ func (q QueryServerImpl) ClassHash(c context.Context, req *types.QueryClassHashR
 		Hash: classIdHash.String(),
 	}, nil
 }
+
+// ClassData implements the Query/ClassData gRPC method
+func (q QueryServerImpl) ClassData(ctx context.Context, req *types.QueryClassDataRequest) (*types.QueryClassDataResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "empty request")
+	}
+
+	hash, err := types.ParseHexHash(strings.TrimPrefix(req.Hash, "ibc/"))
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("invalid class id data hash: %s, error: %s", hash.String(), err))
+	}
+
+	data, err := q.Keeper.ClassData.Get(ctx, hash)
+	if err != nil && errors.Is(err, collections.ErrNotFound) {
+		return nil, status.Error(
+			codes.NotFound,
+			errorsmod.Wrap(types.ErrClassDataNotFound, req.Hash).Error(),
+		)
+	} else if err != nil {
+		return nil, status.Error(
+			codes.Internal,
+			err.Error(),
+		)
+	}
+
+	return &types.QueryClassDataResponse{
+		Data: data,
+	}, nil
+}

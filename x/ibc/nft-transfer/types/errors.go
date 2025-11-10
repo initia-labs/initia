@@ -16,4 +16,5 @@ var (
 	ErrSendDisabled                 = errorsmod.Register(ModuleName, 9, "non-fungible token transfers from this chain are disabled")
 	ErrReceiveDisabled              = errorsmod.Register(ModuleName, 10, "non-fungible token transfers to this chain are disabled")
 	ErrMaxNftTransferChannels       = errorsmod.Register(ModuleName, 11, "max non-fungible token transfer channels")
+	ErrClassDataNotFound            = errorsmod.Register(ModuleName, 12, "class data not found")
 )

@@ -168,3 +168,35 @@ func GetCmdQueryClassHash() *cobra.Command {
 	flags.AddQueryFlagsToCmd(cmd)
 	return cmd
 }
+
+// GetCmdQueryClassData defines the command to query a a class data from a given trace hash or ibc denom.
+func GetCmdQueryClassData() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "class-id-data [hash/class-id]",
+		Short:   "Query the class-id data info from a given trace hash or ibc class-id",
+		Long:    "Query the class-id data info from a given trace hash or ibc class-id",
+		Example: fmt.Sprintf("%s query ibc-nft-transfer class-id-data 27A6394C3F9FF9C9DCF5DFFADF9BB5FE9A37C7E92B006199894CF1824DF9AC7C", version.AppName),
+		Args:    cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			queryClient := types.NewQueryClient(clientCtx)
+
+			req := &types.QueryClassDataRequest{
+				Hash: args[0],
+			}
+
+			res, err := queryClient.ClassData(cmd.Context(), req)
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
