@@ -12070,6 +12070,54 @@ paths:
           type: string
       tags:
         - Query
+  /ibc/apps/nft_transfer/v1/class_data/{hash}:
+    get:
+      summary: ClassData queries a class id data information.
+      operationId: ClassData
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              data:
+                type: string
+                description: data returns the requested class id data information.
+            description: >-
+              QueryClassDataResponse is the response type for the
+              Query/ClassData RPC
+
+              method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: hash
+          description: hash (in hex format) of the class id trace information.
+          in: path
+          required: true
+          type: string
+      tags:
+        - Query
   /ibc/apps/nft_transfer/v1/class_hashes/{trace}:
     get:
       summary: ClassHash queries a class id hash information.
@@ -21020,6 +21068,15 @@ definitions:
           receive_enabled enables or disables all cross-chain token transfers to
           this chain.
     description: Params defines the set of IBC nft transfer parameters.
+  ibc.applications.nft_transfer.v1.QueryClassDataResponse:
+    type: object
+    properties:
+      data:
+        type: string
+        description: data returns the requested class id data information.
+    description: |-
+      QueryClassDataResponse is the response type for the Query/ClassData RPC
+      method.
   ibc.applications.nft_transfer.v1.QueryClassHashResponse:
     type: object
     properties:
