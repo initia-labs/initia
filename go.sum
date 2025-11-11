@@ -737,8 +737,8 @@ github.com/initia-labs/cometbft v0.38.19-initia.0 h1:Ropqz2Y77DrcCPGGgEYIFOruYq0
 github.com/initia-labs/cometbft v0.38.19-initia.0/go.mod h1:CQ/VkJXRdaWxDLyKT+JYAWV0m215oRFtymtIr7skA6o=
 github.com/initia-labs/connect/v2 v2.3.1 h1:Y32LCwUHDBgUzzQHqPBJeWeItYoNu2oYD57JKbZCtjw=
 github.com/initia-labs/connect/v2 v2.3.1/go.mod h1:35hM7xSgI0h3GMUTgspzKY8Ff2yCXNGNwmAdjqo3z8s=
-github.com/initia-labs/cosmos-sdk v0.50.14-initia.1 h1:8K7wtdPdL2uZe8opznZPPXwZsUrL7oevC9FJPpdva7g=
-github.com/initia-labs/cosmos-sdk v0.50.14-initia.1/go.mod h1:hrWEFMU1eoXqLJeE6VVESpJDQH67FS1nnMrQIjO2daw=
+github.com/initia-labs/cosmos-sdk v0.50.14-initia.2 h1:slqvt5Li5oxkvWejweN3JDvm6C6/7s0vdE8zCM7ivNY=
+github.com/initia-labs/cosmos-sdk v0.50.14-initia.2/go.mod h1:hrWEFMU1eoXqLJeE6VVESpJDQH67FS1nnMrQIjO2daw=
 github.com/initia-labs/forwarding/simapp v1.0.0 h1:MNHLACO0053BAMO3+Ra2ZTlTTB5WieFElguDQH5d8fc=
 github.com/initia-labs/forwarding/simapp v1.0.0/go.mod h1:MOIDS73NjoIvTZ3OxUmJXY+Ry7xxXumrXPVZrAeJOhY=
 github.com/initia-labs/forwarding/v2 v2.0.3-initia.3 h1:Uu1VqRsSwX7rgS2A4M3Snzyzk9mJRq2v/ZD4xKHTJkM=
