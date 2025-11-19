@@ -183,7 +183,7 @@ func (suite *AnteTestSuite) TestEthereumDerivableAccountAbstraction() {
 	tx, err := suite.CreateEthereumDerivableAccountAbstractionTransferTx(daaAccAddress, acc2, acc.GetAccountNumber(), acc.GetSequence(), suite.ctx.ChainID(), signerPriv, signerPub, signerEthereumAddress, abstractPublicKey)
 	suite.Require().NoError(err)
 
-	decorator := sigverify.NewSigVerificationDecorator(suite.app.AccountKeeper, suite.clientCtx.TxConfig.SignModeHandler(), suite.app.MoveKeeper)
+	decorator := sigverify.NewSigVerificationDecoratorWithAccountAbstraction(suite.app.AccountKeeper, suite.clientCtx.TxConfig.SignModeHandler(), suite.app.MoveKeeper)
 
 	_, err = decorator.AnteHandle(suite.ctx.WithIsCheckTx(false), tx, false, nil)
 	suite.Require().NoError(err)

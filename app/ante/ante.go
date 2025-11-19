@@ -26,14 +26,16 @@ import (
 // channel keeper.
 type HandlerOptions struct {
 	ante.HandlerOptions
-	MoveKeeper       sigverify.MoveKeeper
-	Codec            codec.BinaryCodec
-	DynamicFeeKeeper dynamicfeetypes.AnteKeeper
-	IBCkeeper        *ibckeeper.Keeper
-	AuctionKeeper    auctionkeeper.Keeper
-	TxEncoder        sdk.TxEncoder
-	MevLane          auctionante.MEVLane
-	FreeLane         block.Lane
+	Codec     codec.BinaryCodec
+	TxEncoder sdk.TxEncoder
+	MevLane   auctionante.MEVLane
+	FreeLane  block.Lane
+
+	// expected keepers
+	DynamicFeeKeeper         dynamicfeetypes.AnteKeeper
+	IBCkeeper                *ibckeeper.Keeper
+	AuctionKeeper            auctionkeeper.Keeper
+	AccountAbstractionKeeper sigverify.AccountAbstractionKeeper
 }
 
 // NewAnteHandler returns an AnteHandler that checks and increments sequence
@@ -48,8 +50,8 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 		return nil, errors.Wrap(sdkerrors.ErrLogic, "bank keeper is required for ante builder")
 	}
 
-	if options.MoveKeeper == nil {
-		return nil, errors.Wrap(sdkerrors.ErrLogic, "move keeper is required for ante builder")
+	if options.AccountAbstractionKeeper == nil {
+		return nil, errors.Wrap(sdkerrors.ErrLogic, "account abstraction keeper is required for ante builder")
 	}
 
 	if options.SignModeHandler == nil {
@@ -96,7 +98,7 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 		ante.NewSetPubKeyDecorator(options.AccountKeeper),
 		ante.NewValidateSigCountDecorator(options.AccountKeeper),
 		ante.NewSigGasConsumeDecorator(options.AccountKeeper, sigGasConsumer),
-		sigverify.NewSigVerificationDecorator(options.AccountKeeper, options.SignModeHandler, options.MoveKeeper),
+		sigverify.NewSigVerificationDecoratorWithAccountAbstraction(options.AccountKeeper, options.SignModeHandler, options.AccountAbstractionKeeper),
 		ante.NewIncrementSequenceDecorator(options.AccountKeeper),
 		ibcante.NewRedundantRelayDecorator(options.IBCkeeper),
 		auctionante.NewAuctionDecorator(options.AuctionKeeper, options.TxEncoder, options.MevLane),

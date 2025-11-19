@@ -17,6 +17,8 @@ import (
 	ibctestingtypes "github.com/initia-labs/initia/x/ibc/testing/types"
 	icaauthkeeper "github.com/initia-labs/initia/x/intertx/keeper"
 	movekeeper "github.com/initia-labs/initia/x/move/keeper"
+
+	marketmapkeeper "github.com/skip-mev/connect/v2/x/marketmap/keeper"
 )
 
 // GetBaseApp returns the base app for the app.
@@ -86,6 +88,12 @@ func (app *InitiaApp) CheckStateContextGetter() func() sdk.Context {
 	}
 }
 
+// GetTransferKeeper returns the IBC transfer keeper for the app.
 func (app *InitiaApp) GetTransferKeeper() *ibctransferkeeper.Keeper {
 	return app.TransferKeeper
+}
+
+// GetMarketMapKeeper returns the marketmap keeper for the app.
+func (app *InitiaApp) GetMarketMapKeeper() *marketmapkeeper.Keeper {
+	return app.MarketMapKeeper
 }

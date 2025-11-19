@@ -29,7 +29,7 @@ import (
 	vmtypes "github.com/initia-labs/movevm/types"
 )
 
-type MoveKeeper interface {
+type AccountAbstractionKeeper interface {
 	VerifyAccountAbstractionSignature(ctx context.Context, sender string, abstractionData vmtypes.AbstractionData) (*vmtypes.AccountAddress, error)
 }
 
@@ -39,16 +39,25 @@ type MoveKeeper interface {
 // CONTRACT: Pubkeys are set in context for all signers before this decorator runs
 // CONTRACT: Tx must implement SigVerifiableTx interface
 type SigVerificationDecorator struct {
-	ak              authante.AccountKeeper
-	signModeHandler *txsigning.HandlerMap
-	moveKeeper      MoveKeeper
+	ak                       authante.AccountKeeper
+	signModeHandler          *txsigning.HandlerMap
+	accountAbstractionKeeper AccountAbstractionKeeper
 }
 
-func NewSigVerificationDecorator(ak authante.AccountKeeper, signModeHandler *txsigning.HandlerMap, moveKeeper MoveKeeper) SigVerificationDecorator {
+// NewSigVerificationDecorator returns a new SigVerificationDecorator instance
+func NewSigVerificationDecorator(ak authante.AccountKeeper, signModeHandler *txsigning.HandlerMap) SigVerificationDecorator {
 	return SigVerificationDecorator{
 		ak:              ak,
 		signModeHandler: signModeHandler,
-		moveKeeper:      moveKeeper,
+	}
+}
+
+// NewSigVerificationDecoratorWithAccountAbstraction returns a new SigVerificationDecorator instance that supports account abstraction
+func NewSigVerificationDecoratorWithAccountAbstraction(ak authante.AccountKeeper, signModeHandler *txsigning.HandlerMap, accountAbstractionKeeper AccountAbstractionKeeper) SigVerificationDecorator {
+	return SigVerificationDecorator{
+		ak:                       ak,
+		signModeHandler:          signModeHandler,
+		accountAbstractionKeeper: accountAbstractionKeeper,
 	}
 }
 
@@ -122,7 +131,7 @@ func (svd SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simul
 				return ctx, fmt.Errorf("expected tx to implement V2AdaptableTx, got %T", tx)
 			}
 			txData := adaptableTx.GetSigningTxData()
-			err = verifySignature(ctx, svd.moveKeeper, pubKey, signerData, sig.Data, svd.signModeHandler, txData)
+			err = verifySignature(ctx, svd.accountAbstractionKeeper, pubKey, signerData, sig.Data, svd.signModeHandler, txData)
 			if err != nil {
 				var errMsg string
 				if authante.OnlyLegacyAminoSigners(sig.Data) {
