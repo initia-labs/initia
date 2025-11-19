@@ -44,7 +44,7 @@ func InternalSignModeToAPI(mode signing.SignMode) (signingv1beta1.SignMode, erro
 // modes. It differs from verifySignature in that it uses the new txsigning.TxData interface in x/tx.
 func verifySignature(
 	ctx context.Context,
-	moveKeeper MoveKeeper,
+	accountAbstractionKeeper AccountAbstractionKeeper,
 	pubKey cryptotypes.PubKey,
 	signerData txsigning.SignerData,
 	signatureData signing.SignatureData,
@@ -63,7 +63,7 @@ func verifySignature(
 		}
 
 		// conduct account abstraction signature verification
-		if data.SignMode == initiatx.Signing_SignMode_ACCOUNT_ABSTRACTION {
+		if accountAbstractionKeeper != nil && data.SignMode == initiatx.Signing_SignMode_ACCOUNT_ABSTRACTION {
 			abstractionData := vmtypes.AbstractionData{}
 			err = json.Unmarshal(data.Signature, &abstractionData)
 			if err != nil {
@@ -88,7 +88,7 @@ func verifySignature(
 				return fmt.Errorf("signing message digest mismatch: expected %x (calculated from sign bytes), got %x (from signature)", digestBytes, digestInSignature)
 			}
 
-			_, err = moveKeeper.VerifyAccountAbstractionSignature(ctx, signerData.Address, abstractionData)
+			_, err = accountAbstractionKeeper.VerifyAccountAbstractionSignature(ctx, signerData.Address, abstractionData)
 			if err != nil {
 				return fmt.Errorf("failed to verify account abstraction signature: %w", err)
 			}

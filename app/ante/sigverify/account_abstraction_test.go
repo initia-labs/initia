@@ -314,7 +314,7 @@ func (suite *AnteTestSuite) TestAccountAbstractionAuthentication() {
 	tx, err := suite.CreateAccountAbstractionTransferTx(priv1, acc2, acc.GetAccountNumber(), acc.GetSequence(), suite.ctx.ChainID(), signerPriv, signerPub)
 	suite.Require().NoError(err)
 
-	decorator := sigverify.NewSigVerificationDecorator(suite.app.AccountKeeper, suite.clientCtx.TxConfig.SignModeHandler(), suite.app.MoveKeeper)
+	decorator := sigverify.NewSigVerificationDecoratorWithAccountAbstraction(suite.app.AccountKeeper, suite.clientCtx.TxConfig.SignModeHandler(), suite.app.MoveKeeper)
 
 	_, err = decorator.AnteHandle(suite.ctx.WithIsCheckTx(false), tx, false, nil)
 	suite.Require().NoError(err)

@@ -90,14 +90,15 @@ func setupBlockSDK(
 				FeegrantKeeper:  app.FeeGrantKeeper,
 				SignModeHandler: app.txConfig.SignModeHandler(),
 			},
-			MoveKeeper:       app.MoveKeeper,
-			IBCkeeper:        app.IBCKeeper,
-			DynamicFeeKeeper: dynamicfeekeeper.NewAnteKeeper(app.DynamicFeeKeeper),
-			Codec:            app.appCodec,
-			TxEncoder:        app.txConfig.TxEncoder(),
-			AuctionKeeper:    *app.AuctionKeeper,
-			MevLane:          mevLane,
-			FreeLane:         freeLane,
+			Codec:     app.appCodec,
+			TxEncoder: app.txConfig.TxEncoder(),
+			MevLane:   mevLane,
+			FreeLane:  freeLane,
+
+			AuctionKeeper:            *app.AuctionKeeper,
+			IBCkeeper:                app.IBCKeeper,
+			DynamicFeeKeeper:         dynamicfeekeeper.NewAnteKeeper(app.DynamicFeeKeeper),
+			AccountAbstractionKeeper: app.MoveKeeper,
 		},
 	)
 	if err != nil {

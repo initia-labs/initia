@@ -42,7 +42,7 @@ require (
 	github.com/huandu/skiplist v1.2.0
 	github.com/initia-labs/OPinit v1.2.0
 	// we also need to update `LIBMOVEVM_VERSION` of Dockerfile#11
-	github.com/initia-labs/movevm v1.1.0-rc.0
+	github.com/initia-labs/movevm v1.1.0
 	github.com/noble-assets/forwarding/v2 v2.0.3
 	github.com/pelletier/go-toml v1.9.5
 	github.com/pkg/errors v0.9.1
@@ -262,7 +262,6 @@ require github.com/cosmos/iavl v1.2.6 // indirect
 replace (
 	github.com/cometbft/cometbft => github.com/initia-labs/cometbft v0.38.19-initia.0
 	github.com/cosmos/cosmos-sdk => github.com/initia-labs/cosmos-sdk v0.50.14-initia.2
-	github.com/initia-labs/movevm => github.com/initia-labs/movevm v1.1.0-rc.0
 	github.com/noble-assets/forwarding/simapp => github.com/initia-labs/forwarding/simapp v1.0.0
 	github.com/noble-assets/forwarding/v2 => github.com/initia-labs/forwarding/v2 v2.0.3-initia.3
 	github.com/skip-mev/connect/v2 => github.com/initia-labs/connect/v2 v2.3.1
