@@ -8,11 +8,13 @@ import (
 	"cosmossdk.io/collections"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
 	"github.com/initia-labs/initia/app/upgrades"
 	movetypes "github.com/initia-labs/initia/x/move/types"
 
+	vmapi "github.com/initia-labs/movevm/api"
 	vmprecom "github.com/initia-labs/movevm/precompile"
 	vmtypes "github.com/initia-labs/movevm/types"
 
@@ -34,6 +36,17 @@ func RegisterUpgradeHandlers(app upgrades.InitiaApp) {
 
 			var modules []vmtypes.Module
 			for _, module := range moduleBytesArray {
+				// initaition-2 network upgrade, skip minitswap.move module
+				if sdk.UnwrapSDKContext(ctx).ChainID() == "initiation-2" {
+					_, name, err := vmapi.ReadModuleInfo(module)
+					if err != nil {
+						return nil, err
+					}
+					if name == "minitswap" {
+						continue
+					}
+				}
+
 				modules = append(modules, vmtypes.NewModule(module))
 			}
 
