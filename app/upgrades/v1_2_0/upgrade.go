@@ -42,7 +42,7 @@ func RegisterUpgradeHandlers(app upgrades.InitiaApp) {
 					if err != nil {
 						return nil, err
 					}
-					if name == "minitswap.move" {
+					if name == "minitswap" {
 						continue
 					}
 				}
