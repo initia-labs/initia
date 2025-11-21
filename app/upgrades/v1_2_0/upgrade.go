@@ -36,7 +36,7 @@ func RegisterUpgradeHandlers(app upgrades.InitiaApp) {
 
 			var modules []vmtypes.Module
 			for _, module := range moduleBytesArray {
-				// initaition-2 network upgrade, skip minitswap.move module
+				// initiation-2 network upgrade, skip minitswap.move module
 				if sdk.UnwrapSDKContext(ctx).ChainID() == "initiation-2" {
 					_, name, err := vmapi.ReadModuleInfo(module)
 					if err != nil {
