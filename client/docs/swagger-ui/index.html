@@ -16,37 +16,37 @@
         <div class="nav-buttons">
           <button
             class="nav-btn"
-            onclick="loadSwaggerFile('./swagger-connect.yaml')"
+            onclick="loadSwaggerFile('./swagger-connect.yaml', this)"
           >
             Connect
           </button>
           <button
             class="nav-btn"
-            onclick="loadSwaggerFile('./swagger-cosmos.yaml')"
+            onclick="loadSwaggerFile('./swagger-cosmos.yaml', this)"
           >
             Cosmos SDK
           </button>
           <button
             class="nav-btn"
-            onclick="loadSwaggerFile('./swagger-ibc.yaml')"
+            onclick="loadSwaggerFile('./swagger-ibc.yaml', this)"
           >
             IBC
           </button>
           <button
             class="nav-btn active"
-            onclick="loadSwaggerFile('./swagger-initia.yaml')"
+            onclick="loadSwaggerFile('./swagger-initia.yaml', this)"
           >
             Initia
           </button>
           <button
             class="nav-btn"
-            onclick="loadSwaggerFile('./swagger-opinit.yaml')"
+            onclick="loadSwaggerFile('./swagger-opinit.yaml', this)"
           >
             OPInit
           </button>
           <button
             class="nav-btn"
-            onclick="loadSwaggerFile('./swagger-sdk.yaml')"
+            onclick="loadSwaggerFile('./swagger-sdk.yaml', this)"
           >
             Block SDK
           </button>
@@ -60,16 +60,17 @@
     <script src="swagger-ui-standalone-preset.js"></script>
     <script>
       function setActiveButton(clickedButton) {
+        if (!clickedButton) return;
         document
           .querySelectorAll(".nav-btn")
           .forEach((btn) => btn.classList.remove("active"));
         clickedButton.classList.add("active");
       }
 
-      const uiMap = {};
-      function loadSwaggerFile(filePath, init = false) {
-        if (!uiMap[filePath]) {
-          const ui = SwaggerUIBundle({
+      let ui;
+      function loadSwaggerFile(filePath, clickedButton = null) {
+        if (!ui) {
+          ui = SwaggerUIBundle({
             url: filePath,
             additionalUrls: [
               "./swagger-connect.yaml",
@@ -85,19 +86,18 @@
             plugins: [SwaggerUIBundle.plugins.DownloadUrl],
             layout: "BaseLayout",
           });
-          uiMap[filePath] = ui;
+        } else {
+          ui.specActions.updateUrl(filePath);
+          ui.specActions.download(filePath);
         }
 
-        window.ui = uiMap[filePath];
-
-        // set active button
-        if (!init) {
-          setActiveButton(window.event.target);
-        }
+        window.ui = ui;
+        setActiveButton(clickedButton);
       }
 
       window.onload = function () {
-        loadSwaggerFile("./swagger-initia.yaml", true);
+        const initButton = document.querySelector(".nav-btn.active");
+        loadSwaggerFile("./swagger-initia.yaml", initButton);
       };
     </script>
   </body>

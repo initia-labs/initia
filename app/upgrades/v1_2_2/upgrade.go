@@ -22,7 +22,7 @@ import (
 	marketmaptypes "github.com/skip-mev/connect/v2/x/marketmap/types"
 )
 
-const upgradeName = "v1.2.0"
+const upgradeName = "v1.2.2"
 
 // RegisterUpgradeHandlers returns upgrade handlers
 func RegisterUpgradeHandlers(app upgrades.InitiaApp) {
@@ -74,7 +74,7 @@ func updateMarketMap(ctx context.Context, k *marketmapkeeper.Keeper) error {
 	if len(authorities) == 0 {
 		return nil
 	}
-	market, err := k.GetMarket(ctx, "USDC/USD")
+	market, err := k.GetMarket(ctx, "USDT/USD")
 	if err != nil && errors.Is(err, collections.ErrNotFound) {
 		return nil
 	} else if err != nil {

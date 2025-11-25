@@ -46,19 +46,19 @@ func setupMarketMapKeeper(t *testing.T) (sdk.Context, *marketmapkeeper.Keeper) {
 	return ctx, k
 }
 
-func makeUSDCUSDMarket(providers ...string) marketmaptypes.Market {
+func makeUSDTUSDMarket(providers ...string) marketmaptypes.Market {
 	cfgs := make([]marketmaptypes.ProviderConfig, 0, len(providers))
 	for _, provider := range providers {
 		cfgs = append(cfgs, marketmaptypes.ProviderConfig{
 			Name:           provider,
-			OffChainTicker: "USDC/USD",
+			OffChainTicker: "USDT/USD",
 		})
 	}
 
 	return marketmaptypes.Market{
 		Ticker: marketmaptypes.Ticker{
 			CurrencyPair: connecttypes.CurrencyPair{
-				Base:  "USDC",
+				Base:  "USDT",
 				Quote: "USD",
 			},
 			Decimals:         6,
@@ -70,12 +70,12 @@ func makeUSDCUSDMarket(providers ...string) marketmaptypes.Market {
 
 func TestUpdateMarketMap_RemovesKraken(t *testing.T) {
 	ctx, keeper := setupMarketMapKeeper(t)
-	require.NoError(t, keeper.CreateMarket(ctx, makeUSDCUSDMarket("kraken_api", "coinbase_api")))
+	require.NoError(t, keeper.CreateMarket(ctx, makeUSDTUSDMarket("kraken_api", "coinbase_api")))
 
 	err := updateMarketMap(ctx, keeper)
 	require.NoError(t, err)
 
-	updated, err := keeper.GetMarket(ctx, "USDC/USD")
+	updated, err := keeper.GetMarket(ctx, "USDT/USD")
 	require.NoError(t, err)
 	require.Len(t, updated.ProviderConfigs, 1)
 	require.Equal(t, "coinbase_api", updated.ProviderConfigs[0].Name)
@@ -91,12 +91,12 @@ func TestUpdateMarketMap_NoOpCases(t *testing.T) {
 
 	t.Run("provider already removed", func(t *testing.T) {
 		ctx, keeper := setupMarketMapKeeper(t)
-		require.NoError(t, keeper.CreateMarket(ctx, makeUSDCUSDMarket("coinbase_api")))
+		require.NoError(t, keeper.CreateMarket(ctx, makeUSDTUSDMarket("coinbase_api")))
 
 		err := updateMarketMap(ctx, keeper)
 		require.NoError(t, err)
 
-		unchanged, err := keeper.GetMarket(ctx, "USDC/USD")
+		unchanged, err := keeper.GetMarket(ctx, "USDT/USD")
 		require.NoError(t, err)
 		require.Len(t, unchanged.ProviderConfigs, 1)
 		require.Equal(t, "coinbase_api", unchanged.ProviderConfigs[0].Name)

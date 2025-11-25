@@ -28,7 +28,7 @@ import (
 	l2connect "github.com/initia-labs/OPinit/x/opchild/l2connect"
 )
 
-func setupSlinky(
+func setupConnect(
 	app *InitiaApp,
 	oracleConfig oracleconfig.AppConfig,
 	prepareProposalHandler sdk.PrepareProposalHandler,
