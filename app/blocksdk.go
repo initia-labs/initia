@@ -1,8 +1,6 @@
 package app
 
 import (
-	"cosmossdk.io/math"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/mempool"
 	cosmosante "github.com/cosmos/cosmos-sdk/x/auth/ante"
@@ -25,7 +23,6 @@ import (
 
 func setupBlockSDK(
 	app *InitiaApp,
-	mempoolMaxTxs int,
 ) (
 	mempool.Mempool,
 	sdk.AnteHandler,
@@ -43,38 +40,30 @@ func setupBlockSDK(
 		Logger:          app.Logger(),
 		TxEncoder:       app.txConfig.TxEncoder(),
 		TxDecoder:       app.txConfig.TxDecoder(),
-		MaxBlockSpace:   math.LegacyMustNewDecFromStr("0.01"),
-		MaxTxs:          1,
 		SignerExtractor: signerExtractor,
-	}, applanes.RejectMatchHandler())
+	}, applanes.RejectMatchHandler(), app.LaneKeeper)
 
 	factory := mevlane.NewDefaultAuctionFactory(app.txConfig.TxDecoder(), signerExtractor)
 	mevLane := applanes.NewMEVLane(blockbase.LaneConfig{
 		Logger:          app.Logger(),
 		TxEncoder:       app.txConfig.TxEncoder(),
 		TxDecoder:       app.txConfig.TxDecoder(),
-		MaxBlockSpace:   math.LegacyMustNewDecFromStr("0.09"),
-		MaxTxs:          100,
 		SignerExtractor: signerExtractor,
-	}, factory, factory.MatchHandler())
+	}, factory, factory.MatchHandler(), app.LaneKeeper)
 
 	freeLane := applanes.NewFreeLane(blockbase.LaneConfig{
 		Logger:          app.Logger(),
 		TxEncoder:       app.txConfig.TxEncoder(),
 		TxDecoder:       app.txConfig.TxDecoder(),
-		MaxBlockSpace:   math.LegacyMustNewDecFromStr("0.1"),
-		MaxTxs:          100,
 		SignerExtractor: signerExtractor,
-	}, applanes.FreeLaneMatchHandler())
+	}, applanes.FreeLaneMatchHandler(), app.LaneKeeper)
 
 	defaultLane := applanes.NewDefaultLane(blockbase.LaneConfig{
 		Logger:          app.Logger(),
 		TxEncoder:       app.txConfig.TxEncoder(),
 		TxDecoder:       app.txConfig.TxDecoder(),
-		MaxBlockSpace:   math.LegacyMustNewDecFromStr("0.8"),
-		MaxTxs:          mempoolMaxTxs,
 		SignerExtractor: signerExtractor,
-	})
+	}, app.LaneKeeper)
 
 	lanes := []block.Lane{systemLane, mevLane, freeLane, defaultLane}
 	mempool, err := block.NewLanedMempool(app.Logger(), lanes)
