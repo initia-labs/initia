@@ -94,6 +94,8 @@ import (
 
 	auctionkeeper "github.com/skip-mev/block-sdk/v2/x/auction/keeper"
 	auctiontypes "github.com/skip-mev/block-sdk/v2/x/auction/types"
+	blocklanekeeper "github.com/skip-mev/block-sdk/v2/x/lane/keeper"
+	blocklanetypes "github.com/skip-mev/block-sdk/v2/x/lane/types"
 
 	// connect oracle dependencies
 
@@ -148,7 +150,8 @@ type AppKeepers struct {
 	PacketForwardKeeper   *packetforwardkeeper.Keeper
 	MoveKeeper            *movekeeper.Keeper
 	IBCHooksKeeper        *ibchookskeeper.Keeper
-	AuctionKeeper         *auctionkeeper.Keeper // x/auction keeper used to process bids for TOB auctions
+	AuctionKeeper         *auctionkeeper.Keeper   // x/auction keeper used to process bids for TOB auctions
+	LaneKeeper            *blocklanekeeper.Keeper // x/lane keeper used to store lanes
 	OPHostKeeper          *ophostkeeper.Keeper
 	OracleKeeper          *oraclekeeper.Keeper // x/oracle keeper used for the connect oracle
 	MarketMapKeeper       *marketmapkeeper.Keeper
@@ -694,6 +697,13 @@ func NewAppKeeper(
 		authorityAddr,
 	)
 	appKeepers.AuctionKeeper = &auctionKeeper
+
+	laneKeeper := blocklanekeeper.NewKeeper(
+		appCodec,
+		appKeepers.keys[blocklanetypes.StoreKey],
+		authorityAddr,
+	)
+	appKeepers.LaneKeeper = &laneKeeper
 
 	appKeepers.OPHostKeeper = ophostkeeper.NewKeeper(
 		appCodec,

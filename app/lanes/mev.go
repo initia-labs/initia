@@ -9,6 +9,8 @@ import (
 	blockbase "github.com/skip-mev/block-sdk/v2/block/base"
 	mevlane "github.com/skip-mev/block-sdk/v2/lanes/mev"
 	auctiontypes "github.com/skip-mev/block-sdk/v2/x/auction/types"
+
+	blocklanekeeper "github.com/skip-mev/block-sdk/v2/x/lane/keeper"
 )
 
 var _ auctiontypes.RewardsAddressProvider = (*RewardsAddressProvider)(nil)
@@ -51,23 +53,13 @@ func NewMEVLane(
 	cfg blockbase.LaneConfig,
 	factory mevlane.Factory,
 	matchHandler blockbase.MatchHandler,
+	laneKeeper *blocklanekeeper.Keeper,
 ) *mevlane.MEVLane {
-	mempool, err := NewMempool(
-		mevlane.TxPriority(factory),
-		cfg.SignerExtractor,
-		cfg.MaxTxs,
-		cfg.MaxBlockSpace,
-		cfg.TxEncoder,
-	)
-	if err != nil {
-		panic(err)
-	}
-
 	baseLane, err := blockbase.NewBaseLane(
 		cfg,
 		mevlane.LaneName,
+		laneKeeper,
 		blockbase.WithMatchHandler(matchHandler),
-		blockbase.WithMempool(mempool),
 	)
 	if err != nil {
 		panic(err)
@@ -76,7 +68,6 @@ func NewMEVLane(
 	// Create the mev proposal handler.
 	handler := mevlane.NewProposalHandler(baseLane, factory)
 	baseLane.WithOptions(
-		blockbase.WithMempool(mempool),
 		blockbase.WithPrepareLaneHandler(handler.PrepareLaneHandler()),
 		blockbase.WithProcessLaneHandler(handler.ProcessLaneHandler()),
 	)

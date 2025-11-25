@@ -5,6 +5,8 @@ import (
 
 	"github.com/skip-mev/block-sdk/v2/block"
 	blockbase "github.com/skip-mev/block-sdk/v2/block/base"
+
+	blocklanekeeper "github.com/skip-mev/block-sdk/v2/x/lane/keeper"
 )
 
 func RejectMatchHandler() blockbase.MatchHandler {
@@ -22,27 +24,14 @@ const (
 func NewSystemLane(
 	cfg blockbase.LaneConfig,
 	matchFn blockbase.MatchHandler,
+	laneKeeper *blocklanekeeper.Keeper,
 ) block.Lane {
 	lane := &blockbase.BaseLane{}
-	proposalHandler := NewDefaultProposalHandler(lane)
-
-	mempool, err := NewMempool(
-		blockbase.NewDefaultTxPriority(),
-		cfg.SignerExtractor,
-		cfg.MaxTxs,
-		cfg.MaxBlockSpace,
-		cfg.TxEncoder,
-	)
-	if err != nil {
-		panic(err)
-	}
 	_lane, err := blockbase.NewBaseLane(
 		cfg,
 		SystemLaneName,
+		laneKeeper,
 		blockbase.WithMatchHandler(matchFn),
-		blockbase.WithMempool(mempool),
-		blockbase.WithPrepareLaneHandler(proposalHandler.PrepareLaneHandler()),
-		blockbase.WithProcessLaneHandler(proposalHandler.ProcessLaneHandler()),
 	)
 	if err != nil {
 		panic(err)
