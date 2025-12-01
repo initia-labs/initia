@@ -42,7 +42,7 @@ require (
 	github.com/huandu/skiplist v1.2.0
 	github.com/initia-labs/OPinit v1.2.2
 	// we also need to update `LIBMOVEVM_VERSION` of Dockerfile#11
-	github.com/initia-labs/movevm v1.1.1
+	github.com/initia-labs/movevm v1.1.2
 	github.com/noble-assets/forwarding/v2 v2.0.3
 	github.com/pelletier/go-toml v1.9.5
 	github.com/pkg/errors v0.9.1

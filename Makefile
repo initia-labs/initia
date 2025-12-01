@@ -135,15 +135,6 @@ build-linux:
 	docker cp temp:/usr/local/bin/initiad $(BUILDDIR)/
 	docker rm temp
 
-build-linux-with-shared-library:
-	mkdir -p $(BUILDDIR)
-	docker build --tag initia/initiad-shared ./ -f ./shared.Dockerfile
-	docker create --name temp initia/initiad-shared:latest --env VERSION=$(VERSION)
-	docker cp temp:/usr/local/bin/initiad $(BUILDDIR)/
-	docker cp temp:/lib/libmovevm.so $(BUILDDIR)/
-	docker cp temp:/lib/libcompiler.so $(BUILDDIR)/
-	docker rm temp
-
 install: go.sum 
 	go install -mod=readonly $(BUILD_FLAGS) ./cmd/initiad
 
