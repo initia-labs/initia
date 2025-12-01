@@ -71,6 +71,8 @@ import (
 
 	"github.com/skip-mev/block-sdk/v2/x/auction"
 	auctiontypes "github.com/skip-mev/block-sdk/v2/x/auction/types"
+	blocklane "github.com/skip-mev/block-sdk/v2/x/lane"
+	blocklanetypes "github.com/skip-mev/block-sdk/v2/x/lane/types"
 
 	// connect oracle dependencies
 
@@ -135,6 +137,7 @@ func appModules(
 		consensus.NewAppModule(app.appCodec, *app.ConsensusParamsKeeper),
 		move.NewAppModule(app.appCodec, *app.MoveKeeper, app.vc, maps.Keys(maccPerms)),
 		auction.NewAppModule(app.appCodec, *app.AuctionKeeper),
+		blocklane.NewAppModule(app.appCodec, *app.LaneKeeper),
 		ophost.NewAppModule(app.appCodec, *app.OPHostKeeper),
 		// connect modules
 		oracle.NewAppModule(app.appCodec, *app.OracleKeeper),
@@ -241,7 +244,7 @@ func orderInitBlockers() []string {
 		authz.ModuleName, group.ModuleName, upgradetypes.ModuleName, feegrant.ModuleName,
 		consensusparamtypes.ModuleName, ibcexported.ModuleName, ibctransfertypes.ModuleName,
 		ibcnfttransfertypes.ModuleName, icatypes.ModuleName, icaauthtypes.ModuleName, ibcfeetypes.ModuleName,
-		ibcpermtypes.ModuleName, auctiontypes.ModuleName, ophosttypes.ModuleName,
+		ibcpermtypes.ModuleName, auctiontypes.ModuleName, blocklanetypes.ModuleName, ophosttypes.ModuleName,
 		oracletypes.ModuleName, marketmaptypes.ModuleName, packetforwardtypes.ModuleName, ibchookstypes.ModuleName,
 		forwardingtypes.ModuleName, ratelimittypes.ModuleName,
 	}

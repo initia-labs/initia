@@ -48,6 +48,8 @@ import (
 	oracleconfig "github.com/skip-mev/connect/v2/oracle/config"
 
 	txcli "github.com/initia-labs/initia/tx/cli"
+
+	blocklanecli "github.com/skip-mev/block-sdk/v2/x/lane/client/cli"
 )
 
 // NewRootCmd creates a new root command for initiad. It is called once in the
@@ -246,6 +248,7 @@ func genesisCommand(encodingConfig params.EncodingConfig, basicManager module.Ba
 		genutilcli.GenTxCmd(basicManager, encodingConfig.TxConfig, banktypes.GenesisBalancesIterator{}, initiaapp.DefaultNodeHome, ac, vc),
 		cosmosgenutilcli.ValidateGenesisCmd(basicManager),
 		genutilcli.AddGenesisAccountCmd(initiaapp.DefaultNodeHome, encodingConfig.InterfaceRegistry.SigningContext().AddressCodec()),
+		blocklanecli.ConfigureLanes(basicManager, encodingConfig.TxConfig),
 	)
 
 	return cmd

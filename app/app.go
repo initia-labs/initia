@@ -279,7 +279,7 @@ func NewInitiaApp(
 
 	// setup BlockSDK
 
-	mempool, anteHandler, checkTx, prepareProposalHandler, processProposalHandler, err := setupBlockSDK(app, mempoolMaxTxs)
+	mempool, anteHandler, checkTx, prepareProposalHandler, processProposalHandler, err := setupBlockSDK(app)
 	if err != nil {
 		tmos.Exit(err.Error())
 	}
