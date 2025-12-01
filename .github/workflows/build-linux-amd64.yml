@@ -8,6 +8,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Set up Go
         uses: actions/setup-go@v4
@@ -25,15 +27,30 @@ jobs:
           fi
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
           echo "ARCH_NAME=x86_64" >> $GITHUB_ENV
+          MOVEVM_VERSION=$(go list -m github.com/initia-labs/movevm | awk '{print $2}')    
+          echo "MOVEVM_VERSION=${MOVEVM_VERSION}" >> $GITHUB_ENV
+
+      - name: Ensure dependencies
+        run: |
+          go mod tidy
+          go get github.com/initia-labs/movevm@${MOVEVM_VERSION}
+
+      - name: Print environment variables
+        run: |
+          echo "GOARCH=${GOARCH}"
+          echo "GOOS=${GOOS}"
+          echo "VERSION=${VERSION}"
+          echo "ARCH_NAME=${ARCH_NAME}"
+          echo "MOVEVM_VERSION=${MOVEVM_VERSION}"
 
       - name: Build for Linux AMD64
         run: |
-          make build-linux-with-shared-library \
+          make build \
           && cd ./build \
-          && mv libmovevm.so libmovevm.${ARCH_NAME}.so \
-          && mv libcompiler.so libcompiler.${ARCH_NAME}.so \
+          && cp ~/go/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libmovevm.${ARCH_NAME}.so libmovevm.${ARCH_NAME}.so \
+          && cp ~/go/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libcompiler.${ARCH_NAME}.so libcompiler.${ARCH_NAME}.so \
           && tar -czvf initia_${VERSION}_Linux_${ARCH_NAME}.tar.gz initiad libmovevm.${ARCH_NAME}.so libcompiler.${ARCH_NAME}.so \
-          && mv initia_${VERSION}_Linux_${ARCH_NAME}.tar.gz $GITHUB_WORKSPACE/ \
+          && mv initia_${VERSION}_Linux_${ARCH_NAME}.tar.gz ${GITHUB_WORKSPACE}/ \
           && rm -rf ./initiad ./libmovevm.${ARCH_NAME}.so ./libcompiler.${ARCH_NAME}.so
 
       - name: Static Build for Linux AMD64
@@ -41,7 +58,7 @@ jobs:
           make build-linux \
           && cd ./build \
           && tar -czvf initia_${VERSION}_Linux_${ARCH_NAME}_static.tar.gz initiad \
-          && mv initia_${VERSION}_Linux_${ARCH_NAME}_static.tar.gz $GITHUB_WORKSPACE/ \
+          && mv initia_${VERSION}_Linux_${ARCH_NAME}_static.tar.gz ${GITHUB_WORKSPACE}/ \
           && rm -rf ./initiad
 
       - name: Upload artifact
@@ -49,6 +66,5 @@ jobs:
         with:
           name: initia-linux-amd64
           path: |
-            initia_${{ env.VERSION }}_Linux_${{ env.ARCH_NAME }}.tar.gz
-            initia_${{ env.VERSION }}_Linux_${{ env.ARCH_NAME }}_static.tar.gz
+            initia_*.tar.gz
           retention-days: 1

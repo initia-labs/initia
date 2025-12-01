@@ -743,8 +743,8 @@ github.com/initia-labs/forwarding/simapp v1.0.0 h1:MNHLACO0053BAMO3+Ra2ZTlTTB5Wi
 github.com/initia-labs/forwarding/simapp v1.0.0/go.mod h1:MOIDS73NjoIvTZ3OxUmJXY+Ry7xxXumrXPVZrAeJOhY=
 github.com/initia-labs/forwarding/v2 v2.0.3-initia.3 h1:Uu1VqRsSwX7rgS2A4M3Snzyzk9mJRq2v/ZD4xKHTJkM=
 github.com/initia-labs/forwarding/v2 v2.0.3-initia.3/go.mod h1:N3OzYf14ton71zCxomBmpR7tOxZ2dKwhsMxUmtuJuVQ=
-github.com/initia-labs/movevm v1.1.1 h1:HXhfdttsflfPDWfqBUuARf7sy53RsCbuBM4/+1R6Qyk=
-github.com/initia-labs/movevm v1.1.1/go.mod h1:sj/kXD7mUQASqogPTjqltIr4Uid3xxnlcbfiFvvqeXA=
+github.com/initia-labs/movevm v1.1.2 h1:udIkzni6h0juPm9m3dM8eEUczxooTWU/OaW99fHSmEE=
+github.com/initia-labs/movevm v1.1.2/go.mod h1:sj/kXD7mUQASqogPTjqltIr4Uid3xxnlcbfiFvvqeXA=
 github.com/jhump/protoreflect v1.15.3 h1:6SFRuqU45u9hIZPJAoZ8c28T3nK64BNdp9w6jFonzls=
 github.com/jhump/protoreflect v1.15.3/go.mod h1:4ORHmSBmlCW8fh3xHmJMGyul1zNqZK4Elxc8qKP+p1k=
 github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af/go.mod h1:Nht3zPeWKUH0NzdCt2Blrr5ys8VGpn0CEB0cQHVjt7k=
