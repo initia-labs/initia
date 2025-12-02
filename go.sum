@@ -276,7 +276,6 @@ github.com/bgentry/speakeasy v0.1.1-0.20220910012023-760eaf8b6816 h1:41iFGWnSlI2
 github.com/bgentry/speakeasy v0.1.1-0.20220910012023-760eaf8b6816/go.mod h1:+zsyZBPWlz7T6j88CTgSN5bM796AkVf0kBD4zp0CCIs=
 github.com/bits-and-blooms/bitset v1.20.0 h1:2F+rfL86jE2d/bmw7OhqUg2Sj/1rURkBn3MdfoPyRVU=
 github.com/bits-and-blooms/bitset v1.20.0/go.mod h1:7hO7Gc7Pp1vODcmWvKMRA9BNmbv6a/7QIWpPxHddWR8=
-github.com/btcsuite/btcd v0.24.2 h1:aLmxPguqxza+4ag8R1I2nnJjSu2iFn/kqtHTIImswcY=
 github.com/btcsuite/btcd/btcec/v2 v2.3.4 h1:3EJjcN70HCu/mwqlUsGK8GcNVyLVxFDlWurTXGPFfiQ=
 github.com/btcsuite/btcd/btcec/v2 v2.3.4/go.mod h1:zYzJ8etWJQIv1Ogk7OzpWjowwOdXY1W/17j2MW85J04=
 github.com/btcsuite/btcd/btcutil v1.1.6 h1:zFL2+c3Lb9gEgqKNzowKUPQNb8jV7v5Oaodi/AYFd6c=
@@ -729,8 +728,8 @@ github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANyt
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
 github.com/influxdata/influxdb1-client v0.0.0-20191209144304-8bf82d3c094d/go.mod h1:qj24IKcXYK6Iy9ceXlo3Tc+vtHo9lIhSX5JddghvEPo=
-github.com/initia-labs/OPinit v1.2.2 h1:edIddyRnrTGetbbQW5RNpM843VSMclgL9a5m1BqQvL0=
-github.com/initia-labs/OPinit v1.2.2/go.mod h1:bCuyrUxpxZ12TA2YD8B4NXKs1RTXKQ0RZkkAHqwLWGU=
+github.com/initia-labs/OPinit v1.2.3 h1:rRSFk7rs0iWnQu3yh8tWhyVyFhRfXVSCeNFnb1oCCq0=
+github.com/initia-labs/OPinit v1.2.3/go.mod h1:28v9Z4Mn6UN0I4/I3nBlGy/8ufio7qO00RDg7C8s06o=
 github.com/initia-labs/OPinit/api v1.2.0 h1:puw1ppyQgg9oFYv2KrKva/eMwNUKfyLK077/erdKZ28=
 github.com/initia-labs/OPinit/api v1.2.0/go.mod h1:Qz11o6zlTtJe495JO7FhEyLhJLPit0rEuLN4pweKL24=
 github.com/initia-labs/cometbft v0.38.19-initia.2 h1:4gksfbncDcypfNkZoVCjxcgZTZRprGC1BdCMqCHt7kI=
