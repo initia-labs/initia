@@ -74,6 +74,15 @@ paths:
                           description: >-
                             Normally it is IBC channelID for permissioned IBC
                             relayer.
+                        bridge_disabled:
+                          type: boolean
+                          description: bridge_disabled is a flag to disable the bridge.
+                        bridge_disabled_at:
+                          type: string
+                          format: date-time
+                          description: >-
+                            bridge_disabled_at is the timestamp when the bridge
+                            is disabled.
                       description: BridgeConfig defines the set of bridge config.
                   title: >-
                     QueryBridgeResponse is response type for the Query/Bridge
@@ -243,6 +252,15 @@ paths:
                     type: string
                     format: byte
                     description: Normally it is IBC channelID for permissioned IBC relayer.
+                  bridge_disabled:
+                    type: boolean
+                    description: bridge_disabled is a flag to disable the bridge.
+                  bridge_disabled_at:
+                    type: string
+                    format: date-time
+                    description: >-
+                      bridge_disabled_at is the timestamp when the bridge is
+                      disabled.
                 description: BridgeConfig defines the set of bridge config.
             title: >-
               QueryBridgeResponse is response type for the Query/Bridge RPC
@@ -510,6 +528,70 @@ paths:
           required: true
           type: string
           format: uint64
+      tags:
+        - Query
+  /opinit/ophost/v1/bridges/{bridge_id}/migration_info/by_l1_denom:
+    get:
+      summary: MigrationInfo queries the migration info.
+      operationId: MigrationInfo
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              migration_info:
+                type: object
+                properties:
+                  bridge_id:
+                    type: string
+                    format: uint64
+                    description: BridgeID is the id of the bridge.
+                  ibc_channel_id:
+                    type: string
+                    description: IBC ChannelID is the channel id of the ibc.
+                  ibc_port_id:
+                    type: string
+                    description: IBC PortID is the port id of the ibc.
+                  l1_denom:
+                    type: string
+                    description: L1Denom is the denom of the l1.
+                description: MigrationInfo defines the information for migration.
+            description: >-
+              QueryMigrationInfoResponse is response type for
+              Query/MigrationInfo RPC method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: bridge_id
+          in: path
+          required: true
+          type: string
+          format: uint64
+        - name: l1_denom
+          in: query
+          required: false
+          type: string
       tags:
         - Query
   /opinit/ophost/v1/bridges/{bridge_id}/next_l1_sequence:
@@ -1371,7 +1453,31 @@ definitions:
         type: string
         format: byte
         description: Normally it is IBC channelID for permissioned IBC relayer.
+      bridge_disabled:
+        type: boolean
+        description: bridge_disabled is a flag to disable the bridge.
+      bridge_disabled_at:
+        type: string
+        format: date-time
+        description: bridge_disabled_at is the timestamp when the bridge is disabled.
     description: BridgeConfig defines the set of bridge config.
+  opinit.ophost.v1.MigrationInfo:
+    type: object
+    properties:
+      bridge_id:
+        type: string
+        format: uint64
+        description: BridgeID is the id of the bridge.
+      ibc_channel_id:
+        type: string
+        description: IBC ChannelID is the channel id of the ibc.
+      ibc_port_id:
+        type: string
+        description: IBC PortID is the port id of the ibc.
+      l1_denom:
+        type: string
+        description: L1Denom is the denom of the l1.
+    description: MigrationInfo defines the information for migration.
   opinit.ophost.v1.Output:
     type: object
     properties:
@@ -1532,6 +1638,13 @@ definitions:
             type: string
             format: byte
             description: Normally it is IBC channelID for permissioned IBC relayer.
+          bridge_disabled:
+            type: boolean
+            description: bridge_disabled is a flag to disable the bridge.
+          bridge_disabled_at:
+            type: string
+            format: date-time
+            description: bridge_disabled_at is the timestamp when the bridge is disabled.
         description: BridgeConfig defines the set of bridge config.
     title: QueryBridgeResponse is response type for the Query/Bridge RPC method
   opinit.ophost.v1.QueryBridgesResponse:
@@ -1594,6 +1707,15 @@ definitions:
                   type: string
                   format: byte
                   description: Normally it is IBC channelID for permissioned IBC relayer.
+                bridge_disabled:
+                  type: boolean
+                  description: bridge_disabled is a flag to disable the bridge.
+                bridge_disabled_at:
+                  type: string
+                  format: date-time
+                  description: >-
+                    bridge_disabled_at is the timestamp when the bridge is
+                    disabled.
               description: BridgeConfig defines the set of bridge config.
           title: QueryBridgeResponse is response type for the Query/Bridge RPC method
       pagination:
@@ -1651,6 +1773,29 @@ definitions:
     title: >-
       QueryLastFinalizedOutputResponse is response type for the
       Query/LastFinalizedOutput RPC method
+  opinit.ophost.v1.QueryMigrationInfoResponse:
+    type: object
+    properties:
+      migration_info:
+        type: object
+        properties:
+          bridge_id:
+            type: string
+            format: uint64
+            description: BridgeID is the id of the bridge.
+          ibc_channel_id:
+            type: string
+            description: IBC ChannelID is the channel id of the ibc.
+          ibc_port_id:
+            type: string
+            description: IBC PortID is the port id of the ibc.
+          l1_denom:
+            type: string
+            description: L1Denom is the denom of the l1.
+        description: MigrationInfo defines the information for migration.
+    description: >-
+      QueryMigrationInfoResponse is response type for Query/MigrationInfo RPC
+      method.
   opinit.ophost.v1.QueryNextL1SequenceResponse:
     type: object
     properties:
