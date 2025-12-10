@@ -85,12 +85,13 @@ var _ types.UnpackInterfacesMessage = Proposals{}
 
 // String implements stringer interface
 func (p Proposals) String() string {
-	out := "ID - (Status) [Type] Title\n"
+	var out strings.Builder
+	out.WriteString("ID - (Status) [Type] Title\n")
 	for _, prop := range p {
-		out += fmt.Sprintf("%d - %s\n",
-			prop.Id, prop.Status)
+		out.WriteString(fmt.Sprintf("%d - %s\n",
+			prop.Id, prop.Status))
 	}
-	return strings.TrimSpace(out)
+	return strings.TrimSpace(out.String())
 }
 
 // UnpackInterfaces implements UnpackInterfacesMessage.UnpackInterfaces
