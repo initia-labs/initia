@@ -6,9 +6,6 @@ BINDIR ?= $(GOPATH)/bin
 BUILDDIR ?= $(CURDIR)/build
 DOCKER := $(shell which docker)
 
-# default to CGO_ENABLED=1 for movevm and rocksdb support
-CGO_ENABLED := 1
-
 # don't override user values of COMMIT and VERSION
 ifeq (,$(COMMIT))
   COMMIT := $(shell git log -1 --format='%H')
@@ -24,6 +21,7 @@ endif
 
 TM_VERSION := $(shell go list -m github.com/cometbft/cometbft | sed 's:.* ::')
 
+export CGO_ENABLED = 1
 export GO111MODULE = on
 
 # process build tags

@@ -2,6 +2,7 @@ name: Build Darwin ARM64
 
 on:
   workflow_call:
+  workflow_dispatch:
 
 jobs:
   build:
@@ -12,7 +13,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: "1.23"
       - name: Set environment variables
