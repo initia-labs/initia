@@ -6,7 +6,8 @@ import (
 	"fmt"
 	"strings"
 
-	"cosmossdk.io/errors"
+	coreaddress "cosmossdk.io/core/address"
+	moderrors "cosmossdk.io/errors"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -16,9 +17,6 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
 	nfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
-	movetypes "github.com/initia-labs/initia/x/move/types"
-
-	coreaddress "cosmossdk.io/core/address"
 )
 
 const senderPrefix = "ibc-move-hook-intermediary"
@@ -64,21 +62,20 @@ func validateAndParseMemo(memo string) (
 	// parse move raw bytes to execute message
 	bz, err := json.Marshal(moveHookRaw)
 	if err != nil {
-		err = errors.Wrap(channeltypes.ErrInvalidPacket, err.Error())
+		err = moderrors.Wrap(channeltypes.ErrInvalidPacket, err.Error())
 		return
 	}
 
 	err = json.Unmarshal(bz, &hookData)
 	if err != nil {
-		err = errors.Wrap(channeltypes.ErrInvalidPacket, err.Error())
+		err = moderrors.Wrap(channeltypes.ErrInvalidPacket, err.Error())
 		return
 	}
 
 	return
 }
 
-func validateReceiver(msg *movetypes.MsgExecute, receiver string, ac coreaddress.Codec) error {
-	functionIdentifier := fmt.Sprintf("%s::%s::%s", msg.ModuleAddress, msg.ModuleName, msg.FunctionName)
+func validateReceiver(functionIdentifier string, receiver string, ac coreaddress.Codec) error {
 	if receiver == functionIdentifier {
 		return nil
 	}
@@ -86,7 +83,7 @@ func validateReceiver(msg *movetypes.MsgExecute, receiver string, ac coreaddress
 	hashedFunctionIdentifier := sha256.Sum256([]byte(functionIdentifier))
 	hashedFunctionIdentifierString, err := ac.BytesToString(hashedFunctionIdentifier[:])
 	if err != nil || receiver != hashedFunctionIdentifierString {
-		return errors.Wrap(channeltypes.ErrInvalidPacket, "receiver is not properly set")
+		return moderrors.Wrap(channeltypes.ErrInvalidPacket, "receiver is not properly set")
 	}
 	return nil
 }

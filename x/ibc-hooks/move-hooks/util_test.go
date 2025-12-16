@@ -78,11 +78,12 @@ func Test_validateAndParseMemo_without_callback(t *testing.T) {
 		},
 		AsyncCallback: nil,
 	}, hookData)
-	require.NoError(t, validateReceiver(hookData.Message, "0x1::dex::swap", ac))
+	functionIdentifier := fmt.Sprintf("%s::%s::%s", hookData.Message.ModuleAddress, hookData.Message.ModuleName, hookData.Message.FunctionName)
+	require.NoError(t, validateReceiver(functionIdentifier, "0x1::dex::swap", ac))
 
 	// invalid receiver
 	require.NoError(t, err)
-	require.Error(t, validateReceiver(hookData.Message, "0x2::dex::swap", ac))
+	require.Error(t, validateReceiver(functionIdentifier, "0x2::dex::swap", ac))
 
 	isMoveRouted, _, err = validateAndParseMemo("hihi")
 	require.False(t, isMoveRouted)
@@ -129,7 +130,8 @@ func Test_validateAndParseMemo_with_callback(t *testing.T) {
 			ModuleName:    "dex",
 		},
 	}, hookData)
-	require.NoError(t, validateReceiver(hookData.Message, "0x1::dex::swap", ac))
+	functionIdentifier := fmt.Sprintf("%s::%s::%s", hookData.Message.ModuleAddress, hookData.Message.ModuleName, hookData.Message.FunctionName)
+	require.NoError(t, validateReceiver(functionIdentifier, "0x1::dex::swap", ac))
 }
 
 func Test_validateReceiver(t *testing.T) {
@@ -145,6 +147,8 @@ func Test_validateReceiver(t *testing.T) {
 		},
 	}
 
-	require.NoError(t, validateReceiver(hookData.Message, "cosmos14ve5y0rgh6aaa45k0g99ctj4la0hw3prr6h7e57mzqx86eg63r6s9yz06a", ac))
-	require.NoError(t, validateReceiver(hookData.Message, "0x1::dex::swap", ac))
+	functionIdentifier := fmt.Sprintf("%s::%s::%s", hookData.Message.ModuleAddress, hookData.Message.ModuleName, hookData.Message.FunctionName)
+
+	require.NoError(t, validateReceiver(functionIdentifier, "cosmos14ve5y0rgh6aaa45k0g99ctj4la0hw3prr6h7e57mzqx86eg63r6s9yz06a", ac))
+	require.NoError(t, validateReceiver(functionIdentifier, "0x1::dex::swap", ac))
 }
