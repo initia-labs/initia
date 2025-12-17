@@ -22,6 +22,7 @@ const (
 	Query_ClassTrace_FullMethodName    = "/ibc.applications.nft_transfer.v1.Query/ClassTrace"
 	Query_ClassTraces_FullMethodName   = "/ibc.applications.nft_transfer.v1.Query/ClassTraces"
 	Query_ClassHash_FullMethodName     = "/ibc.applications.nft_transfer.v1.Query/ClassHash"
+	Query_ClassData_FullMethodName     = "/ibc.applications.nft_transfer.v1.Query/ClassData"
 	Query_EscrowAddress_FullMethodName = "/ibc.applications.nft_transfer.v1.Query/EscrowAddress"
 	Query_Params_FullMethodName        = "/ibc.applications.nft_transfer.v1.Query/Params"
 )
@@ -36,6 +37,8 @@ type QueryClient interface {
 	ClassTraces(ctx context.Context, in *QueryClassTracesRequest, opts ...grpc.CallOption) (*QueryClassTracesResponse, error)
 	// ClassHash queries a class id hash information.
 	ClassHash(ctx context.Context, in *QueryClassHashRequest, opts ...grpc.CallOption) (*QueryClassHashResponse, error)
+	// ClassData queries a class id data information.
+	ClassData(ctx context.Context, in *QueryClassDataRequest, opts ...grpc.CallOption) (*QueryClassDataResponse, error)
 	// EscrowAddress returns the escrow address for a particular port and channel id.
 	EscrowAddress(ctx context.Context, in *QueryEscrowAddressRequest, opts ...grpc.CallOption) (*QueryEscrowAddressResponse, error)
 	// Params queries all parameters of the ibc-transfer module.
@@ -77,6 +80,15 @@ func (c *queryClient) ClassHash(ctx context.Context, in *QueryClassHashRequest, 
 	return out, nil
 }
 
+func (c *queryClient) ClassData(ctx context.Context, in *QueryClassDataRequest, opts ...grpc.CallOption) (*QueryClassDataResponse, error) {
+	out := new(QueryClassDataResponse)
+	err := c.cc.Invoke(ctx, Query_ClassData_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *queryClient) EscrowAddress(ctx context.Context, in *QueryEscrowAddressRequest, opts ...grpc.CallOption) (*QueryEscrowAddressResponse, error) {
 	out := new(QueryEscrowAddressResponse)
 	err := c.cc.Invoke(ctx, Query_EscrowAddress_FullMethodName, in, out, opts...)
@@ -105,6 +117,8 @@ type QueryServer interface {
 	ClassTraces(context.Context, *QueryClassTracesRequest) (*QueryClassTracesResponse, error)
 	// ClassHash queries a class id hash information.
 	ClassHash(context.Context, *QueryClassHashRequest) (*QueryClassHashResponse, error)
+	// ClassData queries a class id data information.
+	ClassData(context.Context, *QueryClassDataRequest) (*QueryClassDataResponse, error)
 	// EscrowAddress returns the escrow address for a particular port and channel id.
 	EscrowAddress(context.Context, *QueryEscrowAddressRequest) (*QueryEscrowAddressResponse, error)
 	// Params queries all parameters of the ibc-transfer module.
@@ -124,6 +138,9 @@ func (UnimplementedQueryServer) ClassTraces(context.Context, *QueryClassTracesRe
 }
 func (UnimplementedQueryServer) ClassHash(context.Context, *QueryClassHashRequest) (*QueryClassHashResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ClassHash not implemented")
+}
+func (UnimplementedQueryServer) ClassData(context.Context, *QueryClassDataRequest) (*QueryClassDataResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ClassData not implemented")
 }
 func (UnimplementedQueryServer) EscrowAddress(context.Context, *QueryEscrowAddressRequest) (*QueryEscrowAddressResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method EscrowAddress not implemented")
@@ -198,6 +215,24 @@ func _Query_ClassHash_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_ClassData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryClassDataRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).ClassData(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_ClassData_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).ClassData(ctx, req.(*QueryClassDataRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Query_EscrowAddress_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryEscrowAddressRequest)
 	if err := dec(in); err != nil {
@@ -252,6 +287,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ClassHash",
 			Handler:    _Query_ClassHash_Handler,
+		},
+		{
+			MethodName: "ClassData",
+			Handler:    _Query_ClassData_Handler,
 		},
 		{
 			MethodName: "EscrowAddress",
