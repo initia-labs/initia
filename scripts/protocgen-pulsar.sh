@@ -26,13 +26,13 @@ IBC_URL=github.com/cosmos/ibc-go
 IBC_V=v8
 ICS23_URL=github.com/cosmos/ics23
 
-IBC_VERSION=$(cat ./go.mod | grep "$IBC_URL/$IBC_V v" | sed -n -e "s/^.* //p")
-ICS23_VERSION=$(cat ./go.mod | grep "$ICS23_URL/go v" | sed -n -e "s/^.* //p")
+IBC_VERSION=$(cat ./go.mod | grep "$IBC_URL/$IBC_V v" | sed -nE 's/.* (v[0-9][^[:space:]]*).*/\1/p')
+ICS23_VERSION=$(cat ./go.mod | grep "$ICS23_URL/go v" | sed -nE 's/.* (v[0-9][^[:space:]]*).*/\1/p')
 
 mkdir -p ./third_party
 cd third_party
-# git clone -b $IBC_VERSION https://$IBC_URL
-# git clone -b go/$ICS23_VERSION https://$ICS23_URL
+git clone -b $IBC_VERSION https://$IBC_URL
+git clone -b go/$ICS23_VERSION https://$ICS23_URL
 cd ..
 
 # exclude ibc modules
