@@ -20,6 +20,7 @@ tools/bin/*
 examples/build/*
 docs/_build
 tools-stamp
+go.work.sum
 
 # Data - ideally these don't exist
 examples/basecoin/app/data
