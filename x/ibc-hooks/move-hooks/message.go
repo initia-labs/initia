@@ -49,6 +49,10 @@ type HookData struct {
 	// at `OnRecvPacket` of receiver chain.
 	Message *movetypes.MsgExecute `json:"message,omitempty"`
 
+	// MessageJSON is a move execute message in JSON format
+	// which will be executed at `OnRecvPacket` of receiver chain.
+	MessageJSON *movetypes.MsgExecuteJSON `json:"message_json,omitempty"`
+
 	// AsyncCallback is a callback message which will be executed
 	// at `OnTimeoutPacket` and `OnAcknowledgementPacket` of
 	// sender chain.

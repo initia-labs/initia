@@ -102,6 +102,63 @@ func Test_onReceiveIcs20Packet_memo(t *testing.T) {
 	require.Equal(t, "\"1\"", queryRes.Ret)
 }
 
+func Test_onReceiveIcs20Packet_memo_JSON(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+	_, _, addr := keyPubAddr()
+
+	data := transfertypes.FungibleTokenPacketData{
+		Denom:    "foo",
+		Amount:   "10000",
+		Sender:   addr.String(),
+		Receiver: "0x1::Counter::increase",
+		Memo: `{
+			"move": {
+				"message_json": {
+					"module_address": "0x1",
+					"module_name": "Counter",
+					"function_name": "increase",
+					"type_args": [],
+					"args": []
+				}
+			}
+		}`,
+	}
+
+	dataBz, err := json.Marshal(&data)
+	require.NoError(t, err)
+
+	// fails due to acl
+	ack := input.IBCHooksMiddleware.OnRecvPacket(ctx, channeltypes.Packet{
+		Data: dataBz,
+	}, addr)
+	require.False(t, ack.Success())
+
+	// allow std module address
+	require.NoError(t, input.IBCHooksKeeper.SetAllowed(ctx, movetypes.ConvertVMAddressToSDKAddress(vmtypes.StdAddress), true))
+
+	// success with message_json path
+	ack = input.IBCHooksMiddleware.OnRecvPacket(ctx, channeltypes.Packet{
+		SourcePort:         "transfer",
+		SourceChannel:      "channel-0",
+		DestinationPort:    "transfer",
+		DestinationChannel: "channel-0",
+		Data:               dataBz,
+	}, addr)
+	require.True(t, ack.Success())
+
+	// check the contract state
+	queryRes, _, err := input.MoveKeeper.ExecuteViewFunction(
+		ctx,
+		vmtypes.StdAddress,
+		"Counter",
+		"get",
+		[]vmtypes.TypeTag{},
+		[][]byte{},
+	)
+	require.NoError(t, err)
+	require.Equal(t, "\"1\"", queryRes.Ret)
+}
+
 func Test_TransferFunds_Option_None(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
@@ -281,6 +338,63 @@ func Test_onReceivePacket_memo_ICS721(t *testing.T) {
 					"module_address": "0x1",
 					"module_name": "Counter",
 					"function_name": "increase"
+				}
+			}
+		}`,
+	}
+
+	dataBz, err := json.Marshal(&data)
+	require.NoError(t, err)
+
+	// failed to due to acl
+	ack := input.IBCHooksMiddleware.OnRecvPacket(ctx, channeltypes.Packet{
+		Data: dataBz,
+	}, addr)
+	require.False(t, ack.Success())
+
+	// set acl
+	require.NoError(t, input.IBCHooksKeeper.SetAllowed(ctx, movetypes.ConvertVMAddressToSDKAddress(vmtypes.StdAddress), true))
+
+	// success
+	ack = input.IBCHooksMiddleware.OnRecvPacket(ctx, channeltypes.Packet{
+		Data: dataBz,
+	}, addr)
+	require.True(t, ack.Success())
+
+	// check the contract state
+	queryRes, _, err := input.MoveKeeper.ExecuteViewFunction(
+		ctx,
+		vmtypes.StdAddress,
+		"Counter",
+		"get",
+		[]vmtypes.TypeTag{},
+		[][]byte{},
+	)
+	require.NoError(t, err)
+	require.Equal(t, "\"1\"", queryRes.Ret)
+}
+
+func Test_onReceivePacket_memo_ICS721_JSON(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+	_, _, addr := keyPubAddr()
+
+	data := nfttransfertypes.NonFungibleTokenPacketData{
+		ClassId:   "classId",
+		ClassUri:  "classUri",
+		ClassData: "classData",
+		TokenIds:  []string{"tokenId"},
+		TokenUris: []string{"tokenUri"},
+		TokenData: []string{"tokenData"},
+		Sender:    addr.String(),
+		Receiver:  "0x1::Counter::increase",
+		Memo: `{
+			"move": {
+				"message_json": {
+					"module_address": "0x1",
+					"module_name": "Counter",
+					"function_name": "increase",
+					"type_args": [],
+					"args": []
 				}
 			}
 		}`,

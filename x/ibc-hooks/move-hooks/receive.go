@@ -26,21 +26,29 @@ func (h MoveHooks) onRecvIcs20Packet(
 	data transfertypes.FungibleTokenPacketData,
 ) ibcexported.Acknowledgement {
 	isMoveRouted, hookData, err := validateAndParseMemo(data.GetMemo())
-	if !isMoveRouted || (err == nil && hookData.Message == nil) {
+	if !isMoveRouted {
 		return im.App.OnRecvPacket(ctx, packet, relayer)
-	} else if err != nil {
+	}
+	if err != nil {
 		return newEmitErrorAcknowledgement(err)
 	}
 
-	msg := hookData.Message
-	if allowed, err := h.checkACL(im, ctx, msg.ModuleAddress); err != nil {
+	hookMsg, err := h.prepareHookMessage(hookData)
+	if err != nil {
+		return newEmitErrorAcknowledgement(err)
+	}
+	if hookMsg.exec == nil {
+		return im.App.OnRecvPacket(ctx, packet, relayer)
+	}
+
+	if allowed, err := h.checkACL(im, ctx, hookMsg.moduleAddress); err != nil {
 		return newEmitErrorAcknowledgement(err)
 	} else if !allowed {
-		return newEmitErrorAcknowledgement(fmt.Errorf("modules deployed by `%s` are not allowed to be used in ibchooks", msg.ModuleAddress))
+		return newEmitErrorAcknowledgement(fmt.Errorf("modules deployed by `%s` are not allowed to be used in ibchooks", hookMsg.moduleAddress))
 	}
 
 	// Validate whether the receiver is correctly specified or not.
-	if err := validateReceiver(msg, data.Receiver, h.ac); err != nil {
+	if err := validateReceiver(hookMsg.functionIdentifier, data.Receiver, h.ac); err != nil {
 		return newEmitErrorAcknowledgement(err)
 	}
 
@@ -102,9 +110,7 @@ func (h MoveHooks) onRecvIcs20Packet(
 	}
 
 	// execute contract call
-	msg.Sender = intermediateSender
-	_, err = h.execMsg(ctx, msg)
-	if err != nil {
+	if err := hookMsg.exec(ctx, intermediateSender); err != nil {
 		return newEmitErrorAcknowledgement(err)
 	}
 
@@ -112,6 +118,7 @@ func (h MoveHooks) onRecvIcs20Packet(
 	if err := im.HooksKeeper.EmptyTransferFunds(ctx); err != nil {
 		return newEmitErrorAcknowledgement(err)
 	}
+
 	return ack
 }
 
@@ -123,21 +130,29 @@ func (h MoveHooks) onRecvIcs721Packet(
 	data nfttransfertypes.NonFungibleTokenPacketData,
 ) ibcexported.Acknowledgement {
 	isMoveRouted, hookData, err := validateAndParseMemo(data.GetMemo())
-	if !isMoveRouted || (err == nil && hookData.Message == nil) {
+	if !isMoveRouted {
 		return im.App.OnRecvPacket(ctx, packet, relayer)
-	} else if err != nil {
+	}
+	if err != nil {
 		return newEmitErrorAcknowledgement(err)
 	}
 
-	msg := hookData.Message
-	if allowed, err := h.checkACL(im, ctx, msg.ModuleAddress); err != nil {
+	hookMsg, err := h.prepareHookMessage(hookData)
+	if err != nil {
+		return newEmitErrorAcknowledgement(err)
+	}
+	if hookMsg.exec == nil {
+		return im.App.OnRecvPacket(ctx, packet, relayer)
+	}
+
+	if allowed, err := h.checkACL(im, ctx, hookMsg.moduleAddress); err != nil {
 		return newEmitErrorAcknowledgement(err)
 	} else if !allowed {
-		return newEmitErrorAcknowledgement(fmt.Errorf("modules deployed by `%s` are not allowed to be used in ibchooks", msg.ModuleAddress))
+		return newEmitErrorAcknowledgement(fmt.Errorf("modules deployed by `%s` are not allowed to be used in ibchooks", hookMsg.moduleAddress))
 	}
 
 	// Validate whether the receiver is correctly specified or not.
-	if err := validateReceiver(msg, data.Receiver, h.ac); err != nil {
+	if err := validateReceiver(hookMsg.functionIdentifier, data.Receiver, h.ac); err != nil {
 		return newEmitErrorAcknowledgement(err)
 	}
 
@@ -158,9 +173,8 @@ func (h MoveHooks) onRecvIcs721Packet(
 		return ack
 	}
 
-	msg.Sender = intermediateSender
-	_, err = h.execMsg(ctx, msg)
-	if err != nil {
+	// execute contract call
+	if err := hookMsg.exec(ctx, intermediateSender); err != nil {
 		return newEmitErrorAcknowledgement(err)
 	}
 
@@ -179,4 +193,55 @@ func (h MoveHooks) execMsg(ctx sdk.Context, msg *movetypes.MsgExecute) (*movetyp
 	}
 
 	return res, nil
+}
+
+func (h MoveHooks) execMsgJSON(ctx sdk.Context, msg *movetypes.MsgExecuteJSON) (*movetypes.MsgExecuteJSONResponse, error) {
+	if err := msg.Validate(h.ac); err != nil {
+		return nil, err
+	}
+
+	moveMsgServer := movekeeper.NewMsgServerImpl(h.moveKeeper)
+	res, err := moveMsgServer.ExecuteJSON(ctx, msg)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+type hookMessage struct {
+	moduleAddress      string
+	functionIdentifier string
+	exec               func(ctx sdk.Context, sender string) error
+}
+
+func (h MoveHooks) prepareHookMessage(hookData HookData) (hookMessage, error) {
+	if hookData.Message != nil && hookData.MessageJSON != nil {
+		return hookMessage{}, errors.New("only one of message or message_json can be set")
+	}
+
+	switch {
+	case hookData.Message != nil:
+		return hookMessage{
+			moduleAddress:      hookData.Message.ModuleAddress,
+			functionIdentifier: fmt.Sprintf("%s::%s::%s", hookData.Message.ModuleAddress, hookData.Message.ModuleName, hookData.Message.FunctionName),
+			exec: func(ctx sdk.Context, sender string) error {
+				hookData.Message.Sender = sender
+				_, err := h.execMsg(ctx, hookData.Message)
+				return err
+			},
+		}, nil
+	case hookData.MessageJSON != nil:
+		return hookMessage{
+			moduleAddress:      hookData.MessageJSON.ModuleAddress,
+			functionIdentifier: fmt.Sprintf("%s::%s::%s", hookData.MessageJSON.ModuleAddress, hookData.MessageJSON.ModuleName, hookData.MessageJSON.FunctionName),
+			exec: func(ctx sdk.Context, sender string) error {
+				hookData.MessageJSON.Sender = sender
+				_, err := h.execMsgJSON(ctx, hookData.MessageJSON)
+				return err
+			},
+		}, nil
+	default:
+		return hookMessage{}, nil
+	}
 }
