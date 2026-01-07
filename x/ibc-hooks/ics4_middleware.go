@@ -3,6 +3,7 @@ package ibc_hooks
 import (
 	// external libraries
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
+	"github.com/initia-labs/initia/x/ibc-hooks/keeper"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -16,14 +17,16 @@ var _ porttypes.ICS4Wrapper = &ICS4Middleware{}
 
 type ICS4Middleware struct {
 	ICS4Wrapper porttypes.ICS4Wrapper
+	HooksKeeper *keeper.Keeper
 
 	// Hooks
 	Hooks Hooks
 }
 
-func NewICS4Middleware(ics4Wrapper porttypes.ICS4Wrapper, hooks Hooks) *ICS4Middleware {
+func NewICS4Middleware(ics4Wrapper porttypes.ICS4Wrapper, hooksKeeper *keeper.Keeper, hooks Hooks) *ICS4Middleware {
 	return &ICS4Middleware{
 		ICS4Wrapper: ics4Wrapper,
+		HooksKeeper: hooksKeeper,
 		Hooks:       hooks,
 	}
 }

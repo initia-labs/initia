@@ -421,6 +421,7 @@ func NewAppKeeper(
 	{
 		packetForwardKeeper := &packetforwardkeeper.Keeper{}
 		rateLimitKeeper := &ratelimitkeeper.Keeper{}
+		ibcHooksICS4Wrapper := &ibchooks.ICS4Middleware{}
 
 		// create Transfer Keepers
 		transferKeeper := ibctransferkeeper.NewKeeper(
@@ -476,8 +477,8 @@ func NewAppKeeper(
 			authorityAddr,
 			appKeepers.BankKeeper,
 			appKeepers.IBCKeeper.ChannelKeeper,
-			// ics4wrapper: transfer -> packet forward -> rate limit -> fee
-			appKeepers.IBCFeeKeeper,
+			// ics4wrapper: transfer -> packet forward -> rate limit -> ibchooks
+			ibcHooksICS4Wrapper,
 		)
 		appKeepers.RatelimitKeeper = rateLimitKeeper
 
@@ -489,13 +490,16 @@ func NewAppKeeper(
 		)
 
 		// create move middleware for transfer
+		*ibcHooksICS4Wrapper = *ibchooks.NewICS4Middleware(
+			// ics4wrapper: transfer -> packet forward -> rate limit -> ibchooks -> fee
+			appKeepers.IBCFeeKeeper,
+			appKeepers.IBCHooksKeeper,
+			ibcmovehooks.NewMoveHooks(ac, appCodec, logger, appKeepers.MoveKeeper),
+		)
 		transferStack = ibchooks.NewIBCMiddleware(
 			// receive: move -> rate limit -> packet forward -> forwarding -> transfer
 			transferStack,
-			ibchooks.NewICS4Middleware(
-				nil, /* ics4wrapper: not used */
-				ibcmovehooks.NewMoveHooks(appCodec, ac, appKeepers.MoveKeeper),
-			),
+			ibcHooksICS4Wrapper,
 			appKeepers.IBCHooksKeeper,
 		)
 
@@ -532,12 +536,14 @@ func NewAppKeeper(
 
 	var nftTransferStack porttypes.IBCModule
 	{
+		ibcHooksICS4Wrapper := &ibchooks.ICS4Middleware{}
+
 		// Create Transfer Keepers
 		appKeepers.NftTransferKeeper = ibcnfttransferkeeper.NewKeeper(
 			appCodec,
 			runtime.NewKVStoreService(appKeepers.keys[ibcnfttransfertypes.StoreKey]),
-			// ics4wrapper: nft transfer -> fee -> channel
-			appKeepers.IBCFeeKeeper,
+			// ics4wrapper: nft transfer -> ibchooks
+			ibcHooksICS4Wrapper,
 			appKeepers.IBCKeeper.ChannelKeeper,
 			appKeepers.IBCKeeper.PortKeeper,
 			appKeepers.AccountKeeper,
@@ -549,13 +555,16 @@ func NewAppKeeper(
 		nftTransferStack = nftTransferIBCModule
 
 		// create move middleware for nft-transfer
+		*ibcHooksICS4Wrapper = *ibchooks.NewICS4Middleware(
+			// ics4wrapper: nft transfer -> ibchooks -> fee
+			appKeepers.IBCFeeKeeper,
+			appKeepers.IBCHooksKeeper,
+			ibcmovehooks.NewMoveHooks(ac, appCodec, logger, appKeepers.MoveKeeper),
+		)
 		nftTransferStack = ibchooks.NewIBCMiddleware(
 			// receive: move -> nft-transfer
 			nftTransferStack,
-			ibchooks.NewICS4Middleware(
-				nil, /* ics4wrapper: not used */
-				ibcmovehooks.NewMoveHooks(appCodec, ac, appKeepers.MoveKeeper),
-			),
+			ibcHooksICS4Wrapper,
 			appKeepers.IBCHooksKeeper,
 		)
 

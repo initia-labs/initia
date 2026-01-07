@@ -62,8 +62,6 @@ import (
 	vmprecom "github.com/initia-labs/movevm/precompile"
 	vmtypes "github.com/initia-labs/movevm/types"
 
-	ibctransfer "github.com/cosmos/ibc-go/v8/modules/apps/transfer"
-	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
 	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 
 	movebank "github.com/initia-labs/initia/x/bank/keeper"
@@ -189,7 +187,6 @@ type TestKeepers struct {
 	CommunityPoolKeeper *MockCommunityPoolKeeper
 	IBCHooksKeeper      *ibchookskeeper.Keeper
 	IBCHooksMiddleware  ibchooks.IBCMiddleware
-	TransferStack       ibchooks.IBCMiddleware
 	MoveKeeper          *movekeeper.Keeper
 
 	EncodingConfig EncodingConfig
@@ -231,7 +228,7 @@ func _createTestInput(
 ) (sdk.Context, TestKeepers) {
 	keys := storetypes.NewKVStoreKeys(
 		authtypes.StoreKey, banktypes.StoreKey, stakingtypes.StoreKey,
-		distributiontypes.StoreKey, movetypes.StoreKey, ibchookstypes.StoreKey, ibctransfertypes.StoreKey,
+		distributiontypes.StoreKey, movetypes.StoreKey, ibchookstypes.StoreKey,
 	)
 	ms := store.NewCommitMultiStore(db, log.NewNopLogger(), metrics.NewNoOpMetrics())
 	for _, v := range keys {
@@ -324,7 +321,7 @@ func _createTestInput(
 		nil,
 	).WithVMQueryWhitelist(movetypes.VMQueryWhiteList{
 		Custom: map[string]movetypes.CustomQuery{
-			ibchookstypes.VMCustomQueryGetTransferFunds: ibcHooksKeeper.GetTransferFunds,
+			ibchookstypes.VMCustomQueryTransferFunds: ibcHooksKeeper.QueryTransferFunds,
 		},
 	})
 	moveParams := movetypes.DefaultParams()
@@ -338,32 +335,11 @@ func _createTestInput(
 	faucet := NewTestFaucet(t, ctx, bankKeeper, authtypes.Minter, initialTotalSupply()...)
 
 	// ibc middleware setup
-
-	transferKeeper := ibctransferkeeper.NewKeeper(
-		appCodec,
-		keys[ibctransfertypes.StoreKey],
-		nil,
-		nil,
-		nil,
-		nil,
-		accountKeeper,
-		bankKeeper,
-		nil,
-		accountKeeper.GetAuthority(),
-	)
-	transferKeeper.SetParams(ctx, ibctransfertypes.DefaultParams())
-
-	transferIBCModule := ibctransfer.NewIBCModule(transferKeeper)
 	mockIBCMiddleware := mockIBCMiddleware{}
-	moveHooks := movehooks.NewMoveHooks(appCodec, ac, moveKeeper)
+	moveHooks := movehooks.NewMoveHooks(ac, appCodec, ctx.Logger(), moveKeeper)
+	middleware := ibchooks.NewICS4Middleware(mockIBCMiddleware, ibcHooksKeeper, moveHooks)
 
-	middleware := ibchooks.NewICS4Middleware(mockIBCMiddleware, moveHooks)
 	ibcHookMiddleware := ibchooks.NewIBCMiddleware(mockIBCMiddleware, middleware, ibcHooksKeeper)
-
-	transferStack := ibchooks.NewIBCMiddleware(transferIBCModule, ibchooks.NewICS4Middleware(
-		nil, /* ics4wrapper: not used */
-		moveHooks,
-	), ibcHooksKeeper)
 	// deploy counter module
 	require.NoError(t,
 		moveKeeper.PublishModuleBundle(
@@ -379,7 +355,6 @@ func _createTestInput(
 		CommunityPoolKeeper: communityPoolKeeper,
 		IBCHooksKeeper:      ibcHooksKeeper,
 		IBCHooksMiddleware:  ibcHookMiddleware,
-		TransferStack:       transferStack,
 		MoveKeeper:          moveKeeper,
 		BankKeeper:          bankKeeper,
 		EncodingConfig:      encodingConfig,

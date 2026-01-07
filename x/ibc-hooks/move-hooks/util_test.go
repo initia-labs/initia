@@ -65,10 +65,9 @@ func Test_validateAndParseMemo_without_callback(t *testing.T) {
 				}
 			}
 		}`, base64.StdEncoding.EncodeToString(argBz))
-	isMoveRouted, hookData, err := validateAndParseMemo(memo)
-	require.True(t, isMoveRouted)
-	require.NoError(t, err)
-	require.Equal(t, HookData{
+	hookData := unmarshalMemo(memo)
+	require.NotNil(t, hookData)
+	require.Equal(t, &HookData{
 		Message: &movetypes.MsgExecute{
 			ModuleAddress: "0x1",
 			ModuleName:    "dex",
@@ -85,9 +84,8 @@ func Test_validateAndParseMemo_without_callback(t *testing.T) {
 	require.NoError(t, err)
 	require.Error(t, validateReceiver(functionIdentifier, "0x2::dex::swap", ac))
 
-	isMoveRouted, _, err = validateAndParseMemo("hihi")
-	require.False(t, isMoveRouted)
-	require.NoError(t, err)
+	hookData = unmarshalMemo("hihi")
+	require.Nil(t, hookData)
 }
 
 func Test_validateAndParseMemo_with_callback(t *testing.T) {
@@ -113,10 +111,9 @@ func Test_validateAndParseMemo_with_callback(t *testing.T) {
 				}
 			}			
 		}`, base64.StdEncoding.EncodeToString(argBz))
-	isMoveRouted, hookData, err := validateAndParseMemo(memo)
-	require.True(t, isMoveRouted)
-	require.NoError(t, err)
-	require.Equal(t, HookData{
+	hookData := unmarshalMemo(memo)
+	require.NotNil(t, hookData)
+	require.Equal(t, &HookData{
 		Message: &movetypes.MsgExecute{
 			ModuleAddress: "0x1",
 			ModuleName:    "dex",

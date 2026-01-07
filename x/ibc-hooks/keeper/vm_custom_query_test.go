@@ -12,10 +12,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func TestGetTransferFunds(t *testing.T) {
+func TestQueryTransferFunds(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
-	res, err := input.IBCHooksKeeper.GetTransferFunds(ctx, nil)
+	res, err := input.IBCHooksKeeper.QueryTransferFunds(ctx, nil)
 	require.NoError(t, err)
 
 	nullBz, err := json.Marshal(nil)
@@ -33,7 +33,7 @@ func TestGetTransferFunds(t *testing.T) {
 	err = input.IBCHooksKeeper.SetTransferFunds(ctx, expected)
 	require.NoError(t, err)
 
-	res, err = input.IBCHooksKeeper.GetTransferFunds(ctx, nil)
+	res, err = input.IBCHooksKeeper.QueryTransferFunds(ctx, nil)
 	require.NoError(t, err)
 
 	expectedBz, err := json.Marshal(expected)
@@ -41,10 +41,10 @@ func TestGetTransferFunds(t *testing.T) {
 
 	require.True(t, bytes.Equal(res, expectedBz))
 
-	err = input.IBCHooksKeeper.EmptyTransferFunds(ctx)
+	err = input.IBCHooksKeeper.RemoveTransferFunds(ctx)
 	require.NoError(t, err)
 
-	res, err = input.IBCHooksKeeper.GetTransferFunds(ctx, nil)
+	res, err = input.IBCHooksKeeper.QueryTransferFunds(ctx, nil)
 	require.NoError(t, err)
 
 	require.True(t, bytes.Equal(res, nullBz))
