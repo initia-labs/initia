@@ -92,10 +92,22 @@ func (h MoveHooks) handleOnAck(
 	}
 	callbackIdBz, err := vmtypes.SerializeUint64(asyncCallback.Id)
 	if err != nil {
+		h.logger.Error("failed to serialize callbackId", "error", err)
+		ctx.EventManager().EmitEvent(sdk.NewEvent(
+			types.EventTypeHookFailed,
+			sdk.NewAttribute(types.AttributeKeyReason, "failed to serialize callback id"),
+			sdk.NewAttribute(types.AttributeKeyError, err.Error()),
+		))
 		return nil
 	}
 	successBz, err := vmtypes.SerializeBool(!isAckError(h.codec, acknowledgement))
 	if err != nil {
+		h.logger.Error("failed to serialize success flag", "error", err)
+		ctx.EventManager().EmitEvent(sdk.NewEvent(
+			types.EventTypeHookFailed,
+			sdk.NewAttribute(types.AttributeKeyReason, "failed to serialize success flag"),
+			sdk.NewAttribute(types.AttributeKeyError, err.Error()),
+		))
 		return nil
 	}
 	_, err = h.execMsg(cacheCtx, &movetypes.MsgExecute{
