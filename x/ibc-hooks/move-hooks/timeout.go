@@ -89,6 +89,13 @@ func (h MoveHooks) handleOnTimeout(
 	}
 	callbackIdBz, err := vmtypes.SerializeUint64(asyncCallback.Id)
 	if err != nil {
+		h.moveKeeper.Logger(cacheCtx).Error("failed to execute callback", "error", err)
+		ctx.EventManager().EmitEvent(sdk.NewEvent(
+			types.EventTypeHookFailed,
+			sdk.NewAttribute(types.AttributeKeyReason, "failed to serialize callback id"),
+			sdk.NewAttribute(types.AttributeKeyError, err.Error()),
+		))
+
 		return nil
 	}
 	_, err = h.execMsg(cacheCtx, &movetypes.MsgExecute{

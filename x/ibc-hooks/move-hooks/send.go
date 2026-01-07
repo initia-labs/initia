@@ -71,10 +71,16 @@ func (h MoveHooks) handleSendPacket(
 		moveMemo := MoveMemo{
 			MoveHook: hookData,
 		}
-		bz, _ := json.Marshal(moveMemo)
+		bz, err := json.Marshal(moveMemo)
+		if err != nil {
+			return 0, err
+		}
 		memoMap[moveHookMemoKey] = json.RawMessage(bz)
 	}
-	bz, _ := json.Marshal(memoMap)
+	bz, err := json.Marshal(memoMap)
+	if err != nil {
+		return 0, err
+	}
 	icsData.SetMemo(string(bz))
 
 	sequence, err := im.ICS4Wrapper.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, icsData.GetBytes())
@@ -82,7 +88,10 @@ func (h MoveHooks) handleSendPacket(
 		return sequence, err
 	}
 
-	asyncCallbackBz, _ := json.Marshal(asyncCallback)
+	asyncCallbackBz, err := json.Marshal(asyncCallback)
+	if err != nil {
+		return sequence, err
+	}
 	if err := im.HooksKeeper.SetAsyncCallback(ctx, sourcePort, sourceChannel, sequence, asyncCallbackBz); err != nil {
 		return sequence, err
 	}
