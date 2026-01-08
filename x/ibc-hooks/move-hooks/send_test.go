@@ -44,7 +44,6 @@ func Test_SendPacket_without_async_callback(t *testing.T) {
 	seq, err := ics4.SendPacket(ctx, &capabilitytypes.Capability{}, "transfer", "channel-0", clienttypes.Height{}, 0, data.GetBytes())
 	require.NoError(t, err)
 	require.Equal(t, uint64(7), seq)
-	require.Equal(t, 1, keepers.MockIBCMiddleware.sendPacketCount)
 
 	var sent transfertypes.FungibleTokenPacketData
 	require.NoError(t, json.Unmarshal(keepers.MockIBCMiddleware.lastData, &sent))

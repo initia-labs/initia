@@ -400,11 +400,8 @@ var _ porttypes.IBCModule = (*mockIBCMiddleware)(nil)
 var _ porttypes.ICS4Wrapper = (*mockIBCMiddleware)(nil)
 
 type mockIBCMiddleware struct {
-	sendPacketCount   int
-	lastData          []byte
-	lastSourcePort    string
-	lastSourceChannel string
-	sequence          uint64
+	lastData []byte
+	sequence uint64
 }
 
 // GetAppVersion implements types.ICS4Wrapper.
@@ -414,9 +411,6 @@ func (m *mockIBCMiddleware) GetAppVersion(ctx sdk.Context, portID string, channe
 
 // SendPacket implements types.ICS4Wrapper.
 func (m *mockIBCMiddleware) SendPacket(ctx sdk.Context, chanCap *capabilitytypes.Capability, sourcePort string, sourceChannel string, timeoutHeight clienttypes.Height, timeoutTimestamp uint64, data []byte) (sequence uint64, err error) {
-	m.sendPacketCount++
-	m.lastSourcePort = sourcePort
-	m.lastSourceChannel = sourceChannel
 	m.lastData = append([]byte(nil), data...)
 	return m.sequence, nil
 }
