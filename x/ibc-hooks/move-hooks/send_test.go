@@ -29,7 +29,7 @@ func Test_SendPacket_without_async_callback(t *testing.T) {
 	argBz, err := vmtypes.SerializeUint64(100)
 	require.NoError(t, err)
 	memo := fmt.Sprintf(
-		`{"move":{"message":{"module_address":"0x1","module_name":"dex","function_name":"swap","type_args":["0x1::native_uinit::Coin"],"args":["%s"]}}}`,
+		`{"move":{"message":{"module_address":"0x1","module_name":"dex","function_name":"swap","type_args":["0x1::native_uinit::Coin"],"args":["%s"]}},"key":"value"}`,
 		base64.StdEncoding.EncodeToString(argBz),
 	)
 
@@ -62,7 +62,7 @@ func Test_SendPacket_with_async_callback(t *testing.T) {
 	argBz, err := vmtypes.SerializeUint64(42)
 	require.NoError(t, err)
 	memo := fmt.Sprintf(
-		`{"move":{"message":{"module_address":"0x1","module_name":"dex","function_name":"swap","type_args":["0x1::native_uinit::Coin"],"args":["%s"]},"async_callback":{"id":7,"module_address":"0x1","module_name":"Counter"}}}`,
+		`{"move":{"message":{"module_address":"0x1","module_name":"dex","function_name":"swap","type_args":["0x1::native_uinit::Coin"],"args":["%s"]},"async_callback":{"id":7,"module_address":"0x1","module_name":"Counter"}},"key":"value"}`,
 		base64.StdEncoding.EncodeToString(argBz),
 	)
 
@@ -82,6 +82,7 @@ func Test_SendPacket_with_async_callback(t *testing.T) {
 	require.NoError(t, json.Unmarshal(keepers.MockIBCMiddleware.lastData, &sent))
 	require.False(t, strings.Contains(sent.Memo, "async_callback"))
 	require.True(t, strings.Contains(sent.Memo, "\"message\""))
+	require.True(t, strings.Contains(sent.Memo, "\"key\":\"value\""))
 
 	callbackBz, err := keepers.IBCHooksKeeper.GetAsyncCallback(ctx, "transfer", "channel-1", seq)
 	require.NoError(t, err)
