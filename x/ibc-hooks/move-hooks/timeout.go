@@ -1,6 +1,9 @@
 package move_hooks
 
 import (
+	"errors"
+
+	"cosmossdk.io/collections"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
@@ -46,8 +49,15 @@ func (h MoveHooks) handleOnTimeout(
 
 	// if no async callback, return early
 	bz, err := im.HooksKeeper.GetAsyncCallback(ctx, packet.GetSourcePort(), packet.GetSourceChannel(), packet.GetSequence())
-	if err != nil {
+	if err != nil && errors.Is(err, collections.ErrNotFound) {
 		return nil
+	} else if err != nil {
+		h.logger.Error("failed to get async callback", "error", err)
+		ctx.EventManager().EmitEvent(sdk.NewEvent(
+			types.EventTypeHookFailed,
+			sdk.NewAttribute(types.AttributeKeyReason, "failed to get async callback"),
+			sdk.NewAttribute(types.AttributeKeyError, err.Error()),
+		))
 	}
 
 	// ignore error on removal; it should not happen
