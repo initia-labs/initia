@@ -71,10 +71,7 @@ func (h MoveHooks) handleSendPacket(
 		delete(memoMap, moveHookMemoKey)
 	} else {
 		hookData.AsyncCallback = nil
-		moveMemo := MoveMemo{
-			MoveHook: hookData,
-		}
-		bz, err := json.Marshal(moveMemo)
+		bz, err := json.Marshal(hookData)
 		if err != nil {
 			return 0, err
 		}

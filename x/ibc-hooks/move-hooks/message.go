@@ -42,11 +42,6 @@ type AsyncCallback struct {
 	ModuleName    string `json:"module_name"`
 }
 
-// MoveMemo is a wrapper for move hook data in memo field.
-type MoveMemo struct {
-	MoveHook *HookData `json:"move,omitempty"`
-}
-
 // HookData defines a wrapper for move execute message
 // and async callback.
 type HookData struct {
