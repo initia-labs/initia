@@ -26,7 +26,7 @@ func (h MoveHooks) onRecvIcs20Packet(
 	data transfertypes.FungibleTokenPacketData,
 ) ibcexported.Acknowledgement {
 	var beforeBalance math.Int
-	return h.handleOnReceive(ctx, im, packet, relayer, data.GetSender(), ibchookstypes.ICSData{
+	return h.handleOnReceive(ctx, im, packet, relayer, ibchookstypes.ICSData{
 		ICS20Data: &data,
 	}, func(intermediateAddr sdk.AccAddress) error {
 		denom := ibchookstypes.GetReceivedTokenDenom(packet, data)
@@ -77,7 +77,7 @@ func (h MoveHooks) onRecvIcs721Packet(
 	relayer sdk.AccAddress,
 	data nfttransfertypes.NonFungibleTokenPacketData,
 ) ibcexported.Acknowledgement {
-	return h.handleOnReceive(ctx, im, packet, relayer, data.GetSender(), ibchookstypes.ICSData{
+	return h.handleOnReceive(ctx, im, packet, relayer, ibchookstypes.ICSData{
 		ICS721Data: &data,
 	}, nil, nil, nil)
 }
@@ -152,7 +152,6 @@ func (h MoveHooks) handleOnReceive(
 	im ibchooks.IBCMiddleware,
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
-	sender string,
 	data ibchookstypes.ICSData,
 	beforeAppExecuted func(intermediateAddr sdk.AccAddress) error,
 	beforeHookExecuted func(intermediateAddr sdk.AccAddress) error,
