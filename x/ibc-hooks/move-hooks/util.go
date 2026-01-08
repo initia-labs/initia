@@ -47,12 +47,29 @@ func isIcs721Packet(packetData []byte) (isIcs721 bool, ics721data nfttransfertyp
 	}
 }
 
-func unmarshalMemo(memo string) *HookData {
-	var moveMemo MoveMemo
-	if err := json.Unmarshal([]byte(memo), &moveMemo); err != nil {
-		return nil
+func parseHookData(memo string) (*HookData, bool, error) {
+	if len(memo) == 0 {
+		return nil, false, nil
 	}
-	return moveMemo.MoveHook
+
+	var memoMap map[string]json.RawMessage
+	if err := json.Unmarshal([]byte(memo), &memoMap); err != nil {
+		return nil, false, nil
+	}
+
+	raw, ok := memoMap[moveHookMemoKey]
+	if !ok {
+		return nil, false, nil
+	}
+
+	var hookData HookData
+	decoder := json.NewDecoder(strings.NewReader(string(raw)))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&hookData); err != nil {
+		return nil, true, moderrors.Wrap(channeltypes.ErrInvalidPacket, err.Error())
+	}
+
+	return &hookData, true, nil
 }
 
 func validateReceiver(functionIdentifier string, receiver string, ac coreaddress.Codec) error {

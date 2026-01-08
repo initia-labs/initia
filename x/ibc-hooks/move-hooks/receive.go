@@ -157,8 +157,11 @@ func (h MoveHooks) handleOnReceive(
 	beforeHookExecuted func(intermediateAddr sdk.AccAddress) error,
 	afterHookExecuted func() error,
 ) ibcexported.Acknowledgement {
-	hookData := unmarshalMemo(data.GetMemo())
-	if hookData == nil {
+	hookData, isMoveRouted, err := parseHookData(data.GetMemo())
+	if err != nil {
+		return newEmitErrorAcknowledgement(err)
+	}
+	if !isMoveRouted || hookData == nil {
 		return im.App.OnRecvPacket(ctx, packet, relayer)
 	}
 

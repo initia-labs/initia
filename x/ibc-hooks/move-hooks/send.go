@@ -54,8 +54,11 @@ func (h MoveHooks) handleSendPacket(
 	timeoutTimestamp uint64,
 	icsData ibchookstypes.ICSData,
 ) (uint64, error) {
-	hookData := unmarshalMemo(icsData.GetMemo())
-	if hookData == nil || hookData.AsyncCallback == nil {
+	hookData, isMoveRouted, err := parseHookData(icsData.GetMemo())
+	if err != nil {
+		return 0, err
+	}
+	if !isMoveRouted || hookData == nil || hookData.AsyncCallback == nil {
 		return im.ICS4Wrapper.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, icsData.GetBytes())
 	}
 
