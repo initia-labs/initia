@@ -58,6 +58,8 @@ func (h MoveHooks) handleOnTimeout(
 			sdk.NewAttribute(types.AttributeKeyReason, "failed to get async callback"),
 			sdk.NewAttribute(types.AttributeKeyError, err.Error()),
 		))
+
+		return nil
 	}
 
 	// ignore error on removal; it should not happen
