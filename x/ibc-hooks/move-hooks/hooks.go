@@ -20,6 +20,7 @@ var (
 	_ ibchooks.OnRecvPacketOverrideHooks            = MoveHooks{}
 	_ ibchooks.OnAcknowledgementPacketOverrideHooks = MoveHooks{}
 	_ ibchooks.OnTimeoutPacketOverrideHooks         = MoveHooks{}
+	_ ibchooks.SendPacketOverrideHooks              = MoveHooks{}
 )
 
 type MoveHooks struct {
