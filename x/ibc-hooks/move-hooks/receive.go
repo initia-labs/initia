@@ -192,7 +192,7 @@ func (h MoveHooks) handleOnReceive(
 	}
 
 	// The funds sent on this packet need to be transferred to the intermediary account for the sender.
-	// For this, we override the ICS721 packet's Receiver (essentially hijacking the funds to this new address)
+	// For this, we override the packet receiver (essentially hijacking the funds to this new address)
 	// and execute the underlying OnRecvPacket() call (which should eventually land on the transfer app's
 	// relay.go and send the funds to the intermediary account.
 	//

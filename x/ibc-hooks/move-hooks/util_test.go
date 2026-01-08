@@ -47,7 +47,7 @@ func Test_isIcs721Packet(t *testing.T) {
 	require.False(t, ok)
 }
 
-func Test_validateAndParseMemo_without_callback(t *testing.T) {
+func Test_parseHookData_without_callback(t *testing.T) {
 	ac := authcodec.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix())
 
 	argBz, err := vmtypes.SerializeUint64(100)
@@ -92,7 +92,7 @@ func Test_validateAndParseMemo_without_callback(t *testing.T) {
 	require.Nil(t, hookData)
 }
 
-func Test_validateAndParseMemo_with_callback(t *testing.T) {
+func Test_parseHookData_with_callback(t *testing.T) {
 	ac := authcodec.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix())
 
 	argBz, err := vmtypes.SerializeUint64(100)
