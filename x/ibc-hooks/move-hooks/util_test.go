@@ -47,7 +47,7 @@ func Test_isIcs721Packet(t *testing.T) {
 	require.False(t, ok)
 }
 
-func Test_validateAndParseMemo_without_callback(t *testing.T) {
+func Test_parseHookData_without_callback(t *testing.T) {
 	ac := authcodec.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix())
 
 	argBz, err := vmtypes.SerializeUint64(100)
@@ -65,10 +65,11 @@ func Test_validateAndParseMemo_without_callback(t *testing.T) {
 				}
 			}
 		}`, base64.StdEncoding.EncodeToString(argBz))
-	isMoveRouted, hookData, err := validateAndParseMemo(memo)
-	require.True(t, isMoveRouted)
+	hookData, isMoveRouted, err := parseHookData(memo)
 	require.NoError(t, err)
-	require.Equal(t, HookData{
+	require.True(t, isMoveRouted)
+	require.NotNil(t, hookData)
+	require.Equal(t, &HookData{
 		Message: &movetypes.MsgExecute{
 			ModuleAddress: "0x1",
 			ModuleName:    "dex",
@@ -85,12 +86,13 @@ func Test_validateAndParseMemo_without_callback(t *testing.T) {
 	require.NoError(t, err)
 	require.Error(t, validateReceiver(functionIdentifier, "0x2::dex::swap", ac))
 
-	isMoveRouted, _, err = validateAndParseMemo("hihi")
-	require.False(t, isMoveRouted)
+	hookData, isMoveRouted, err = parseHookData("hihi")
 	require.NoError(t, err)
+	require.False(t, isMoveRouted)
+	require.Nil(t, hookData)
 }
 
-func Test_validateAndParseMemo_with_callback(t *testing.T) {
+func Test_parseHookData_with_callback(t *testing.T) {
 	ac := authcodec.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix())
 
 	argBz, err := vmtypes.SerializeUint64(100)
@@ -113,10 +115,11 @@ func Test_validateAndParseMemo_with_callback(t *testing.T) {
 				}
 			}			
 		}`, base64.StdEncoding.EncodeToString(argBz))
-	isMoveRouted, hookData, err := validateAndParseMemo(memo)
-	require.True(t, isMoveRouted)
+	hookData, isMoveRouted, err := parseHookData(memo)
 	require.NoError(t, err)
-	require.Equal(t, HookData{
+	require.True(t, isMoveRouted)
+	require.NotNil(t, hookData)
+	require.Equal(t, &HookData{
 		Message: &movetypes.MsgExecute{
 			ModuleAddress: "0x1",
 			ModuleName:    "dex",

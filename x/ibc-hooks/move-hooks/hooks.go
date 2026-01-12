@@ -1,10 +1,13 @@
 package move_hooks
 
 import (
-	"cosmossdk.io/core/address"
+	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
+	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 
+	"cosmossdk.io/core/address"
+	"cosmossdk.io/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -17,20 +20,41 @@ var (
 	_ ibchooks.OnRecvPacketOverrideHooks            = MoveHooks{}
 	_ ibchooks.OnAcknowledgementPacketOverrideHooks = MoveHooks{}
 	_ ibchooks.OnTimeoutPacketOverrideHooks         = MoveHooks{}
+	_ ibchooks.SendPacketOverrideHooks              = MoveHooks{}
 )
 
 type MoveHooks struct {
-	codec      codec.Codec
-	ac         address.Codec
+	ac     address.Codec
+	codec  codec.Codec
+	logger log.Logger
+
 	moveKeeper *movekeeper.Keeper
 }
 
-func NewMoveHooks(codec codec.Codec, ac address.Codec, moveKeeper *movekeeper.Keeper) *MoveHooks {
+func NewMoveHooks(
+	ac address.Codec,
+	codec codec.Codec,
+	logger log.Logger,
+	moveKeeper *movekeeper.Keeper,
+) *MoveHooks {
 	return &MoveHooks{
 		codec:      codec,
 		ac:         ac,
+		logger:     logger.With("module", "ibc-hooks/move-hooks"),
 		moveKeeper: moveKeeper,
 	}
+}
+
+func (h MoveHooks) SendPacketOverride(im ibchooks.ICS4Middleware, ctx sdk.Context, chanCap *capabilitytypes.Capability, sourcePort string, sourceChannel string, timeoutHeight clienttypes.Height, timeoutTimestamp uint64, data []byte) (uint64, error) {
+	if isIcs20, ics20Data := isIcs20Packet(data); isIcs20 {
+		return h.sendIcs20Packet(ctx, im, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, ics20Data)
+	}
+
+	if isIcs721, ics721Data := isIcs721Packet(data); isIcs721 {
+		return h.sendIcs721Packet(ctx, im, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, ics721Data)
+	}
+
+	return im.ICS4Wrapper.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data)
 }
 
 func (h MoveHooks) OnRecvPacketOverride(im ibchooks.IBCMiddleware, ctx sdk.Context, packet channeltypes.Packet, relayer sdk.AccAddress) ibcexported.Acknowledgement {

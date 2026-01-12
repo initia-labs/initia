@@ -8,9 +8,9 @@ import (
 	"cosmossdk.io/collections"
 )
 
-// GetTransferFunds is a custom query that returns the transfer funds.
-func (k Keeper) GetTransferFunds(ctx context.Context, _ []byte) ([]byte, error) {
-	transferFunds, err := k.transferFunds.Get(ctx)
+// QueryTransferFunds is a custom query that returns the transfer funds.
+func (k Keeper) QueryTransferFunds(ctx context.Context, _ []byte) ([]byte, error) {
+	transferFunds, err := k.GetTransferFunds(ctx)
 	if errors.Is(err, collections.ErrNotFound) {
 		return json.Marshal(nil)
 	} else if err != nil {

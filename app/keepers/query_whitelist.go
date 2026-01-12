@@ -51,6 +51,6 @@ func (appKeepers *AppKeepers) makeQueryWhitelist() movetypes.VMQueryWhiteList {
 
 	// custom queries
 
-	queryWhitelist.Custom[movehooktypes.VMCustomQueryGetTransferFunds] = appKeepers.IBCHooksKeeper.GetTransferFunds
+	queryWhitelist.Custom[movehooktypes.VMCustomQueryTransferFunds] = appKeepers.IBCHooksKeeper.QueryTransferFunds
 	return queryWhitelist
 }

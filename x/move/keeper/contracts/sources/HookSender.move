@@ -16,12 +16,12 @@ module std::hook_sender {
     }
 
     public entry fun send_funds(sender: &signer, receiver: address) {
-        let response = query::query_custom(b"move_hook_get_transfer_funds", b"");
+        let response = query::query_custom(b"move_hook_query_transfer_funds", b"");
         let res = json::unmarshal<Option<TransferFunds>>(response);
         assert!(option::is_some(&res), 1000);
 
         let res = option::borrow(&res);
-        let coin_metadata = coin::denom_to_metadata(res.balance_change.denom);
-        coin::transfer(sender, receiver, coin_metadata, res.balance_change.amount);
+        let coin_metadata = coin::denom_to_metadata(res.amount_in_packet.denom);
+        coin::transfer(sender, receiver, coin_metadata, res.amount_in_packet.amount);
     }
 }

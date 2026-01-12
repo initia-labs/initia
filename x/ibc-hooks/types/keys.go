@@ -23,7 +23,13 @@ const (
 // Keys for hook store
 // Items are stored with the following key: values
 var (
-	ACLPrefix        = []byte{0x11} // prefix for allowed
-	ParamsKey        = []byte{0x21} // prefix for parameters for module x/hook
-	TransferFundsKey = []byte{0x31} // prefix for transfer funds
+	ACLPrefix           = []byte{0x11} // prefix for allowed
+	ParamsKey           = []byte{0x21} // prefix for parameters for module x/hook
+	AsyncCallbackPrefix = []byte{0x31} // prefix for async callback data
+
+)
+
+// Keys for hook transient store
+var (
+	TransferFundsKey = []byte{0x11} // prefix for transfer funds
 )

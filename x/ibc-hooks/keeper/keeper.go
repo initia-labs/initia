@@ -20,15 +20,16 @@ type Keeper struct {
 
 	authority string
 
-	Schema          collections.Schema
-	TransientSchema collections.Schema
-	ACLs            collections.Map[[]byte, bool]
-	Params          collections.Item[types.Params]
+	Schema         collections.Schema
+	ACLs           collections.Map[[]byte, bool]
+	Params         collections.Item[types.Params]
+	AsyncCallbacks collections.Map[collections.Triple[string, string, uint64], []byte]
 
 	ac address.Codec
 
 	// these are used for custom queries
-	transferFunds collections.Item[types.TransferFunds]
+	TransientSchema collections.Schema
+	transferFunds   collections.Item[types.TransferFunds]
 }
 
 func NewKeeper(
@@ -50,8 +51,11 @@ func NewKeeper(
 		storeService: storeService,
 		authority:    authority,
 
-		ACLs:          collections.NewMap(sb, types.ACLPrefix, "acls", collections.BytesKey, collections.BoolValue),
-		Params:        collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
+		ACLs:           collections.NewMap(sb, types.ACLPrefix, "acls", collections.BytesKey, collections.BoolValue),
+		Params:         collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
+		AsyncCallbacks: collections.NewMap(sb, types.AsyncCallbackPrefix, "async_callbacks", collections.TripleKeyCodec(collections.StringKey, collections.StringKey, collections.Uint64Key), collections.BytesValue),
+
+		// transient store items
 		transferFunds: collections.NewItem(transientSb, types.TransferFundsKey, "transfer_funds", codec.CollValue[types.TransferFunds](cdc)),
 
 		ac: ac,
@@ -80,10 +84,32 @@ func (k Keeper) Logger(ctx context.Context) log.Logger {
 	return sdkCtx.Logger().With("module", "x/"+types.ModuleName)
 }
 
+// SetTransferFunds sets transfer funds in transient store
 func (k Keeper) SetTransferFunds(ctx context.Context, transferFunds types.TransferFunds) error {
 	return k.transferFunds.Set(ctx, transferFunds)
 }
 
-func (k Keeper) EmptyTransferFunds(ctx context.Context) error {
+// GetTransferFunds gets transfer funds from transient store
+func (k Keeper) GetTransferFunds(ctx context.Context) (types.TransferFunds, error) {
+	return k.transferFunds.Get(ctx)
+}
+
+// RemoveTransferFunds removes transfer funds from transient store
+func (k Keeper) RemoveTransferFunds(ctx context.Context) error {
 	return k.transferFunds.Remove(ctx)
+}
+
+// SetAsyncCallback sets async callback data
+func (k Keeper) SetAsyncCallback(ctx context.Context, sourcePort string, sourceChannel string, packetID uint64, callbackData []byte) error {
+	return k.AsyncCallbacks.Set(ctx, collections.Join3(sourcePort, sourceChannel, packetID), callbackData)
+}
+
+// GetAsyncCallback gets async callback data
+func (k Keeper) GetAsyncCallback(ctx context.Context, sourcePort string, sourceChannel string, packetID uint64) ([]byte, error) {
+	return k.AsyncCallbacks.Get(ctx, collections.Join3(sourcePort, sourceChannel, packetID))
+}
+
+// RemoveAsyncCallback removes async callback data
+func (k Keeper) RemoveAsyncCallback(ctx context.Context, sourcePort string, sourceChannel string, packetID uint64) error {
+	return k.AsyncCallbacks.Remove(ctx, collections.Join3(sourcePort, sourceChannel, packetID))
 }

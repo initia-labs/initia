@@ -15,6 +15,7 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	nfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 
+	movehooks "github.com/initia-labs/initia/x/ibc-hooks/move-hooks"
 	ibchookstypes "github.com/initia-labs/initia/x/ibc-hooks/types"
 	movetypes "github.com/initia-labs/initia/x/move/types"
 	vmtypes "github.com/initia-labs/movevm/types"
@@ -228,8 +229,14 @@ func Test_onReceiveIcs20Packet_memo_and_transfer_funds(t *testing.T) {
 	require.NoError(t, err)
 	require.Zero(t, beforeBalance.Int64())
 
+	// fund intermediate account
+	intermediateSender := movehooks.DeriveIntermediateSender(packet.GetDestChannel(), data.GetSender())
+	intermediateAddr, err := input.AccountKeeper.AddressCodec().StringToBytes(intermediateSender)
+	require.NoError(t, err)
+	input.Faucet.Fund(ctx, intermediateAddr, sdk.NewCoin(denom, sdkmath.NewInt(10000)))
+
 	// success
-	ack := input.TransferStack.OnRecvPacket(ctx, packet, addr)
+	ack := input.IBCHooksMiddleware.OnRecvPacket(ctx, packet, addr)
 	require.True(t, ack.Success())
 
 	afterBalance, err := input.MoveKeeper.MoveBankKeeper().GetBalance(ctx, addr2, denom)
