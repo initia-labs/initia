@@ -20,7 +20,6 @@ jobs:
 
       - name: Set environment variables
         run: |
-          fi
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
           echo "ARCH_NAME=aarch64" >> $GITHUB_ENV
           MOVEVM_VERSION=$(go list -m github.com/initia-labs/movevm | awk '{print $2}')    
