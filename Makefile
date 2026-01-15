@@ -131,8 +131,11 @@ endif
 
 build-linux:
 	mkdir -p $(BUILDDIR)
-	docker build --no-cache --tag initia/initiad ./ 
-	docker create --name temp initia/initiad:latest --env VERSION=$(VERSION)
+	docker build --no-cache --tag initia/initiad \
+		--build-arg VERSION=$(VERSION) \
+		--build-arg COMMIT=$(COMMIT) \
+		./
+	docker create --name temp initia/initiad:latest
 	docker cp temp:/usr/local/bin/initiad $(BUILDDIR)/
 	docker rm temp
 
