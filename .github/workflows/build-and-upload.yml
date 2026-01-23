@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: read
+
 jobs:
   build-linux-amd64:
     uses: ./.github/workflows/build-linux-amd64.yml
