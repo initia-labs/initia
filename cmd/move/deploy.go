@@ -2,8 +2,10 @@ package movecmd
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/sha3"
@@ -125,11 +127,30 @@ the target name to '_' in the Move.toml file.
 				return err
 			}
 
+			// get deployment count from resource
+			queryClient := movetypes.NewQueryClient(clientCtx)
+			countRes, err := queryClient.Resource(context.Background(), &movetypes.QueryResourceRequest{
+				Address:   vmAddr.String(),
+				StructTag: "0x1::object_code_deployment::DeploymentCounter",
+			})
+			var countBz []byte
+			if err != nil && strings.Contains(err.Error(), "not found") {
+				countBz, err = vmtypes.SerializeUint64(0)
+				if err != nil {
+					return err
+				}
+			} else if err == nil {
+				countBz = countRes.RawBytes
+			} else {
+				return err
+			}
+
 			// derive object address
 			// address + domain separator + sequence + 0xFE
 			buf = append(buf, vmAddr[:]...)
 			buf = append(buf, bz1...)
 			buf = append(buf, bz2...)
+			buf = append(buf, countBz...)
 			buf = append(buf, 0xFE)
 
 			objectAddrBz := sha3.Sum256(buf)
@@ -396,8 +417,13 @@ func deploy(deployArgs DeployArgs) error {
 }
 
 func marshalBytesArrayToHexArray(data [][]byte) string {
+	sorted, err := api.SortModuleBundle(data)
+	if err != nil {
+		panic(err)
+	}
+
 	str := "["
-	for _, b := range data {
+	for _, b := range sorted {
 		str += fmt.Sprintf("\"%02x\",", b)
 	}
 	str = str[:len(str)-1]
