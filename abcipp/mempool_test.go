@@ -135,10 +135,11 @@ func TestPriorityMempoolSelectOrdersByTierAndTracksDistribution(t *testing.T) {
 	}
 }
 
-func TestPriorityMempoolRecheckRemovesStaleEntries(t *testing.T) {
+func TestPriorityMempoolCleanUpEntries(t *testing.T) {
 	mp := newTestPriorityMempool(t, nil)
 	sdkCtx := testSDKContext()
 	ctx := sdk.WrapSDKContext(sdkCtx)
+	baseApp := testBaseApp{ctx: sdkCtx}
 
 	priv := secp256k1.GenPrivKey()
 	tx1 := newTestTxWithPriv(priv, 1, 1000, "default")
@@ -153,9 +154,8 @@ func TestPriorityMempoolRecheckRemovesStaleEntries(t *testing.T) {
 
 	keeper := newMockAccountKeeper()
 	keeper.SetSequence(tx1.sender, 3)
-	mp.ak = keeper
 
-	mp.runRecheckOnce(sdkCtx)
+	mp.cleanUpEntries(baseApp, keeper)
 
 	if mp.CountTx() != 0 {
 		t.Fatalf("expected stale entries removed, still have %d", mp.CountTx())
@@ -163,6 +163,12 @@ func TestPriorityMempoolRecheckRemovesStaleEntries(t *testing.T) {
 
 	if mp.Contains(tx1) || mp.Contains(tx2) {
 		t.Fatalf("stale entries should be gone")
+	}
+
+	if _, ok, err := mp.NextExpectedSequence(sdkCtx, tx1.sender.String()); err != nil {
+		t.Fatalf("fetch after cleanup: %v", err)
+	} else if ok {
+		t.Fatalf("expected sender reset after cleanup")
 	}
 }
 
@@ -187,4 +193,16 @@ func (m *mockAccountKeeper) GetSequence(_ context.Context, addr sdk.AccAddress) 
 		return 0, fmt.Errorf("sequence not found for %s", addr)
 	}
 	return seq, nil
+}
+
+type testBaseApp struct {
+	ctx sdk.Context
+}
+
+func (b testBaseApp) GetContextForCheckTx(_ []byte) sdk.Context {
+	return b.ctx
+}
+
+func (b testBaseApp) IsSealed() bool {
+	return true
 }
