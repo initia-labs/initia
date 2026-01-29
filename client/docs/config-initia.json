@@ -76,6 +76,9 @@
           "Params": "IBCHooksParams"
         }
       }
+    },
+    {
+      "url": "./tmp-swagger-gen/initia/abcipp/mempool/v1/query.swagger.json"
     }
   ]
 }

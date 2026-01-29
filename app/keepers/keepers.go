@@ -69,7 +69,6 @@ import (
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 
 	appheaderinfo "github.com/initia-labs/initia/app/header_info"
-	applanes "github.com/initia-labs/initia/app/lanes"
 	bankkeeper "github.com/initia-labs/initia/x/bank/keeper"
 	distrkeeper "github.com/initia-labs/initia/x/distribution/keeper"
 	dynamicfeekeeper "github.com/initia-labs/initia/x/dynamic-fee/keeper"
@@ -89,11 +88,6 @@ import (
 	rewardkeeper "github.com/initia-labs/initia/x/reward/keeper"
 	rewardtypes "github.com/initia-labs/initia/x/reward/types"
 	slashingkeeper "github.com/initia-labs/initia/x/slashing/keeper"
-
-	// block-sdk dependencies
-
-	auctionkeeper "github.com/skip-mev/block-sdk/v2/x/auction/keeper"
-	auctiontypes "github.com/skip-mev/block-sdk/v2/x/auction/types"
 
 	// connect oracle dependencies
 
@@ -148,7 +142,6 @@ type AppKeepers struct {
 	PacketForwardKeeper   *packetforwardkeeper.Keeper
 	MoveKeeper            *movekeeper.Keeper
 	IBCHooksKeeper        *ibchookskeeper.Keeper
-	AuctionKeeper         *auctionkeeper.Keeper // x/auction keeper used to process bids for TOB auctions
 	OPHostKeeper          *ophostkeeper.Keeper
 	OracleKeeper          *oraclekeeper.Keeper // x/oracle keeper used for the connect oracle
 	MarketMapKeeper       *marketmapkeeper.Keeper
@@ -690,19 +683,6 @@ func NewAppKeeper(
 		),
 	)
 	appKeepers.StakingKeeper.SetSlashingHooks(appKeepers.MoveKeeper.Hooks())
-
-	// x/auction module keeper initialization
-
-	// initialize the keeper
-	auctionKeeper := auctionkeeper.NewKeeperWithRewardsAddressProvider(
-		appCodec,
-		appKeepers.keys[auctiontypes.StoreKey],
-		appKeepers.AccountKeeper,
-		appKeepers.BankKeeper,
-		applanes.NewRewardsAddressProvider(*appKeepers.StakingKeeper, *appKeepers.DistrKeeper),
-		authorityAddr,
-	)
-	appKeepers.AuctionKeeper = &auctionKeeper
 
 	appKeepers.OPHostKeeper = ophostkeeper.NewKeeper(
 		appCodec,

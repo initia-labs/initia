@@ -54,6 +54,7 @@ import (
 
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 
+	"github.com/initia-labs/initia/abcipp"
 	"github.com/initia-labs/initia/app/keepers"
 	"github.com/initia-labs/initia/app/params"
 	upgrades_v1_3_0 "github.com/initia-labs/initia/app/upgrades/v1_3_0"
@@ -65,12 +66,6 @@ import (
 
 	// import ibc module for proto init
 	_ "github.com/initia-labs/initia/x/ibc"
-
-	// block-sdk dependencies
-
-	blockchecktx "github.com/skip-mev/block-sdk/v2/abci/checktx"
-	"github.com/skip-mev/block-sdk/v2/block"
-	blockservice "github.com/skip-mev/block-sdk/v2/block/service"
 
 	// connect oracle dependencies
 
@@ -126,7 +121,7 @@ type InitiaApp struct {
 	configurator module.Configurator
 
 	// Override of BaseApp's CheckTx
-	checkTxHandler blockchecktx.CheckTx
+	checkTxHandler abcipp.CheckTx
 }
 
 // NewInitiaApp returns a reference to an initialized Initia.
@@ -279,7 +274,12 @@ func NewInitiaApp(
 
 	// setup BlockSDK
 
-	mempool, anteHandler, checkTx, prepareProposalHandler, processProposalHandler, err := setupBlockSDK(app, mempoolMaxTxs)
+	// mempool, anteHandler, checkTx, prepareProposalHandler, processProposalHandler, err := setupBlockSDK(app, mempoolMaxTxs)
+	// if err != nil {
+	// 	tmos.Exit(err.Error())
+	// }
+
+	mempool, anteHandler, prepareProposalHandler, processProposalHandler, checkTx, err := app.setupABCIPP(mempoolMaxTxs)
 	if err != nil {
 		tmos.Exit(err.Error())
 	}
@@ -343,7 +343,7 @@ func (app *InitiaApp) CheckTx(req *abci.RequestCheckTx) (*abci.ResponseCheckTx, 
 }
 
 // SetCheckTx sets the checkTxHandler for the app.
-func (app *InitiaApp) SetCheckTx(handler blockchecktx.CheckTx) {
+func (app *InitiaApp) SetCheckTx(handler abcipp.CheckTx) {
 	app.checkTxHandler = handler
 }
 
@@ -458,8 +458,8 @@ func (app *InitiaApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.API
 	// Register node gRPC service for grpc-gateway.
 	nodeservice.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 
-	// Register the Block SDK mempool API routes.
-	blockservice.RegisterGRPCGatewayRoutes(apiSvr.ClientCtx, apiSvr.GRPCGatewayRouter)
+	// Register the ABCI++ API routes.
+	abcipp.RegisterGRPCGatewayRoutes(apiSvr.ClientCtx, apiSvr.GRPCGatewayRouter)
 
 	// Register grpc-gateway routes for all modules.
 	app.BasicModuleManager.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
@@ -483,12 +483,12 @@ func (app *InitiaApp) RegisterTxService(clientCtx client.Context) {
 	initiatx.RegisterQueryService(app.GRPCQueryRouter(), clientCtx, app.DynamicFeeKeeper)
 
 	// Register the Block SDK mempool transaction service.
-	mempool, ok := app.Mempool().(block.Mempool)
+	mempool, ok := app.Mempool().(abcipp.Mempool)
 	if !ok {
 		panic("mempool is not a block.Mempool")
 	}
 
-	blockservice.RegisterMempoolService(app.GRPCQueryRouter(), mempool)
+	abcipp.RegisterQueryServer(app.GRPCQueryRouter(), mempool)
 }
 
 // RegisterTendermintService implements the Application.RegisterTendermintService method.

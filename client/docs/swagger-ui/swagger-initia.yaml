@@ -12737,6 +12737,103 @@ paths:
                       format: byte
       tags:
         - Query
+  /initia/abcipp/mempool/v1/distribution:
+    get:
+      summary: >-
+        QueryTxDistribution returns the distribution of transactions in the
+        mempool.
+      operationId: QueryTxDistribution
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              distribution:
+                type: object
+                additionalProperties:
+                  type: string
+                  format: uint64
+                description: >-
+                  Distribution is a map of lane to the number of transactions in
+                  the mempool for that lane.
+            description: >-
+              QueryTxDistributionResponse is the response type for the
+              Query.QueryTxDistribution
+
+              RPC method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      tags:
+        - Query
+  /initia/abcipp/mempool/v1/{sender}/{sequence}:
+    get:
+      summary: QueryTxHash checks if a transaction is in the mempool.
+      operationId: QueryTxHash
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              txHash:
+                type: string
+            description: |-
+              QueryTxHashResponse is the response type for the Query.QueryTxHash
+              RPC method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: sender
+          in: path
+          required: true
+          type: string
+        - name: sequence
+          in: path
+          required: true
+          type: string
+      tags:
+        - Query
 definitions:
   cosmos.base.abci.v1beta1.ABCIMessageLog:
     type: object
@@ -23282,3 +23379,27 @@ definitions:
               if the ACL of a address is not set,
               then we use this value to decide the ACL.
     description: QueryParamsResponse is the response type for the Query/Params RPC method.
+  initia.abcipp.mempool.v1.QueryTxDistributionResponse:
+    type: object
+    properties:
+      distribution:
+        type: object
+        additionalProperties:
+          type: string
+          format: uint64
+        description: >-
+          Distribution is a map of lane to the number of transactions in the
+          mempool for that lane.
+    description: >-
+      QueryTxDistributionResponse is the response type for the
+      Query.QueryTxDistribution
+
+      RPC method.
+  initia.abcipp.mempool.v1.QueryTxHashResponse:
+    type: object
+    properties:
+      txHash:
+        type: string
+    description: |-
+      QueryTxHashResponse is the response type for the Query.QueryTxHash
+      RPC method.

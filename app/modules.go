@@ -67,11 +67,6 @@ import (
 	rewardtypes "github.com/initia-labs/initia/x/reward/types"
 	"github.com/initia-labs/initia/x/slashing"
 
-	// block-sdk dependencies
-
-	"github.com/skip-mev/block-sdk/v2/x/auction"
-	auctiontypes "github.com/skip-mev/block-sdk/v2/x/auction/types"
-
 	// connect oracle dependencies
 
 	marketmap "github.com/skip-mev/connect/v2/x/marketmap"
@@ -101,9 +96,6 @@ var maccPerms = map[string][]string{
 	govtypes.ModuleName:             {authtypes.Burner},
 	ibctransfertypes.ModuleName:     {authtypes.Minter, authtypes.Burner},
 	movetypes.MoveStakingModuleName: nil,
-	// x/auction's module account must be instantiated upon genesis to accrue auction rewards not
-	// distributed to proposers
-	auctiontypes.ModuleName: nil,
 	// connect oracle permissions
 	oracletypes.ModuleName:    nil,
 	marketmaptypes.ModuleName: nil,
@@ -134,7 +126,6 @@ func appModules(
 		groupmodule.NewAppModule(app.appCodec, *app.GroupKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		consensus.NewAppModule(app.appCodec, *app.ConsensusParamsKeeper),
 		move.NewAppModule(app.appCodec, *app.MoveKeeper, app.vc, maps.Keys(maccPerms)),
-		auction.NewAppModule(app.appCodec, *app.AuctionKeeper),
 		ophost.NewAppModule(app.appCodec, *app.OPHostKeeper),
 		// connect modules
 		oracle.NewAppModule(app.appCodec, *app.OracleKeeper),
@@ -241,8 +232,7 @@ func orderInitBlockers() []string {
 		authz.ModuleName, group.ModuleName, upgradetypes.ModuleName, feegrant.ModuleName,
 		consensusparamtypes.ModuleName, ibcexported.ModuleName, ibctransfertypes.ModuleName,
 		ibcnfttransfertypes.ModuleName, icatypes.ModuleName, icaauthtypes.ModuleName, ibcfeetypes.ModuleName,
-		ibcpermtypes.ModuleName, auctiontypes.ModuleName, ophosttypes.ModuleName,
-		oracletypes.ModuleName, marketmaptypes.ModuleName, packetforwardtypes.ModuleName, ibchookstypes.ModuleName,
-		forwardingtypes.ModuleName, ratelimittypes.ModuleName,
+		ibcpermtypes.ModuleName, ophosttypes.ModuleName, oracletypes.ModuleName, marketmaptypes.ModuleName,
+		packetforwardtypes.ModuleName, ibchookstypes.ModuleName, forwardingtypes.ModuleName, ratelimittypes.ModuleName,
 	}
 }
