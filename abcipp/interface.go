@@ -50,4 +50,5 @@ type CheckTx func(req *cometabci.RequestCheckTx) (*cometabci.ResponseCheckTx, er
 // as well as retrieve the latest committed state.
 type BaseApp interface {
 	GetContextForCheckTx(txBytes []byte) sdk.Context
+	IsSealed() bool
 }

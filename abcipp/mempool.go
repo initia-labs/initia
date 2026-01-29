@@ -7,6 +7,7 @@ import (
 	"math"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/huandu/skiplist"
@@ -65,10 +66,6 @@ type PriorityMempool struct {
 	listeners        []TxEventListener
 	tiers            []tierMatcher
 	tierDistribution map[string]uint64
-	recheckMu        sync.Mutex
-	recheckActive    bool
-	recheckCtx       sdk.Context
-	recheckPending   bool
 }
 
 // NewPriorityMempool creates a new PriorityMempool with the provided limits.
@@ -107,6 +104,10 @@ func (p *PriorityMempool) StartCleaningWorker(baseApp BaseApp, ak AccountKeeper,
 // cleanUpEntries removes transactions from users whose on-chain sequence
 // has advanced beyond the sequences of their pending transactions.
 func (p *PriorityMempool) cleanUpEntries(baseApp BaseApp, ak AccountKeeper) {
+	if !baseApp.IsSealed() {
+		return
+	}
+
 	sdkCtx := baseApp.GetContextForCheckTx(nil)
 
 	buckets := p.snapshotBuckets()
@@ -445,64 +446,6 @@ func (b *userBucket) nextSequence() (uint64, bool) {
 	return b.next, true
 }
 
-func (p *PriorityMempool) Recheck(ctx sdk.Context) error {
-	if p.ak == nil {
-		return nil
-	}
-
-	p.recheckMu.Lock()
-	if p.recheckActive {
-		p.recheckCtx = ctx
-		p.recheckPending = true
-		p.recheckMu.Unlock()
-		return nil
-	}
-
-	p.recheckCtx = ctx
-	p.recheckPending = false
-	p.recheckActive = true
-	p.recheckMu.Unlock()
-
-	go p.recheckWorker(ctx)
-	return nil
-}
-
-func (p *PriorityMempool) recheckWorker(ctx sdk.Context) {
-	for {
-		p.runRecheckOnce(ctx)
-
-		p.recheckMu.Lock()
-		if !p.recheckPending {
-			p.recheckActive = false
-			p.recheckMu.Unlock()
-			return
-		}
-		ctx = p.recheckCtx
-		p.recheckPending = false
-		p.recheckMu.Unlock()
-	}
-}
-
-func (p *PriorityMempool) runRecheckOnce(ctx sdk.Context) {
-	targets := p.snapshotBuckets()
-	toRemove := p.collectStaleEntries(targets, ctx)
-	if len(toRemove) == 0 {
-		return
-	}
-
-	p.mtx.Lock()
-	listeners := append([]TxEventListener(nil), p.listeners...)
-	var removed []*txEntry
-	for _, entry := range toRemove {
-		if existing, ok := p.entries[entry.key]; ok {
-			removed = append(removed, p.removeEntry(existing))
-		}
-	}
-	p.mtx.Unlock()
-
-	p.dispatchRemoved(listeners, removed)
-}
-
 func (p *PriorityMempool) snapshotBuckets() map[string]*userBucket {
 	p.mtx.Lock()
 	defer p.mtx.Unlock()
@@ -510,34 +453,6 @@ func (p *PriorityMempool) snapshotBuckets() map[string]*userBucket {
 	targets := make(map[string]*userBucket, len(p.userBuckets))
 	maps.Copy(targets, p.userBuckets)
 	return targets
-}
-
-func (p *PriorityMempool) collectStaleEntries(targets map[string]*userBucket, ctx sdk.Context) []*txEntry {
-	if p.ak == nil {
-		return nil
-	}
-
-	ctxCtx := ctx.Context()
-	var toRemove []*txEntry
-	for sender, bucket := range targets {
-		startSeq, ok := bucket.snapshotStart()
-		if !ok {
-			continue
-		}
-		addr, err := sdk.AccAddressFromBech32(sender)
-		if err != nil {
-			continue
-		}
-		seq, err := p.ak.GetSequence(ctxCtx, addr)
-		if err != nil {
-			continue
-		}
-		if seq <= startSeq {
-			continue
-		}
-		toRemove = append(toRemove, bucket.collectStale(seq)...)
-	}
-	return toRemove
 }
 
 type priorityIterator struct {
@@ -600,8 +515,7 @@ func compareEntries(a, b any) int {
 }
 
 func (p *PriorityMempool) nextOrder() int64 {
-	p.orderSeq++
-	return p.orderSeq
+	return atomic.AddInt64(&p.orderSeq, 1)
 }
 
 func (p *PriorityMempool) selectTier(ctx sdk.Context, tx sdk.Tx) int {
