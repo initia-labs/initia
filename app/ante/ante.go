@@ -10,7 +10,6 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 
-	"github.com/initia-labs/initia/app/ante/accnum"
 	"github.com/initia-labs/initia/app/ante/sigverify"
 	dynamicfeeante "github.com/initia-labs/initia/x/dynamic-fee/ante"
 	moveante "github.com/initia-labs/initia/x/move/ante"
@@ -62,7 +61,6 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 	}
 
 	anteDecorators := []sdk.AnteDecorator{
-		accnum.NewAccountNumberDecorator(options.AccountKeeper),
 		ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
 		ante.NewExtensionOptionsDecorator(options.ExtensionOptionChecker),
 		moveante.NewGasPricesDecorator(),

@@ -91,6 +91,7 @@ func NewPriorityMempool(cfg PriorityMempoolConfig, txEncoder sdk.TxEncoder) *Pri
 const DefaultMempoolCleaningInterval = time.Second * 5
 
 // StartCleaningWorker starts a background worker that periodically cleans up
+// stale transactions.
 func (p *PriorityMempool) StartCleaningWorker(baseApp BaseApp, ak AccountKeeper, interval time.Duration) {
 	p.ak = ak
 	go func() {
@@ -101,14 +102,25 @@ func (p *PriorityMempool) StartCleaningWorker(baseApp BaseApp, ak AccountKeeper,
 	}()
 }
 
+// safeGetContext tries to get a non-panicking context from the BaseApp.
+func safeGetContext(bApp BaseApp) (ctx sdk.Context, ok bool) {
+	defer func() {
+		if r := recover(); r != nil {
+			ok = false
+		}
+	}()
+	ctx = bApp.NewContext(false)
+	ok = true
+	return
+}
+
 // cleanUpEntries removes transactions from users whose on-chain sequence
 // has advanced beyond the sequences of their pending transactions.
-func (p *PriorityMempool) cleanUpEntries(baseApp BaseApp, ak AccountKeeper) {
-	if !baseApp.IsSealed() {
+func (p *PriorityMempool) cleanUpEntries(bApp BaseApp, ak AccountKeeper) {
+	sdkCtx, ok := safeGetContext(bApp)
+	if !ok {
 		return
 	}
-
-	sdkCtx := baseApp.GetContextForCheckTx(nil)
 
 	buckets := p.snapshotBuckets()
 	var removed []*txEntry
@@ -136,7 +148,7 @@ func (p *PriorityMempool) cleanUpEntries(baseApp BaseApp, ak AccountKeeper) {
 	}
 
 	p.mtx.Lock()
-	listeners := append([]TxEventListener(nil), p.listeners...)
+	listeners := copyListeners(p.listeners)
 	var finalRemoved []*txEntry
 	for _, entry := range removed {
 		if existing, ok := p.entries[entry.key]; ok {
@@ -160,14 +172,23 @@ func (p *PriorityMempool) RegisterEventListener(listener TxEventListener) {
 	p.listeners = append(p.listeners, listener)
 }
 
+// copyListeners produces a shallow snapshot of listeners so we can iterate without holding the lock.
+func copyListeners(list []TxEventListener) []TxEventListener {
+	if len(list) == 0 {
+		return nil
+	}
+	copied := make([]TxEventListener, len(list))
+	copy(copied, list)
+	return copied
+}
+
 // Contains implements Mempool.
 func (p *PriorityMempool) Contains(tx sdk.Tx) bool {
-	sender, sequence, err := FirstSignature(tx)
+	key, err := txKeyFromTx(tx)
 	if err != nil {
 		return false
 	}
 
-	key := txKey{sender: sender.String(), nonce: sequence}
 	p.mtx.Lock()
 	defer p.mtx.Unlock()
 	_, ok := p.entries[key]
@@ -187,9 +208,7 @@ func (p *PriorityMempool) GetTxDistribution() map[string]uint64 {
 	defer p.mtx.Unlock()
 
 	out := make(map[string]uint64, len(p.tierDistribution))
-	for name, count := range p.tierDistribution {
-		out[name] = count
-	}
+	maps.Copy(out, p.tierDistribution)
 	return out
 }
 
@@ -198,7 +217,7 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	priority := sdkCtx.Priority()
 
-	sender, sequence, err := FirstSignature(tx)
+	key, err := txKeyFromTx(tx)
 	if err != nil {
 		return err
 	}
@@ -219,11 +238,8 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 		tx:       tx,
 		priority: priority,
 		size:     size,
-		key: txKey{
-			sender: sender.String(),
-			nonce:  sequence,
-		},
-		sequence: sequence,
+		key:      key,
+		sequence: key.nonce,
 		order:    p.nextOrder(),
 		tier:     p.selectTier(sdkCtx, tx),
 		gas:      gas,
@@ -231,7 +247,7 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 	}
 
 	p.mtx.Lock()
-	listeners := append([]TxEventListener(nil), p.listeners...)
+	listeners := copyListeners(p.listeners)
 	var removed []*txEntry
 	isNewEntry := true
 
@@ -270,41 +286,15 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 	return nil
 }
 
-// GetTxInfo implements Mempool.
-func (p *PriorityMempool) GetTxInfo(ctx sdk.Context, tx sdk.Tx) (TxInfo, error) {
-	sender, sequence, err := FirstSignature(tx)
-	if err != nil {
-		return TxInfo{}, err
-	}
-
-	key := txKey{sender: sender.String(), nonce: sequence}
-	p.mtx.Lock()
-	defer p.mtx.Unlock()
-	entry, ok := p.entries[key]
-	if !ok {
-		return TxInfo{}, sdkmempool.ErrTxNotFound
-	}
-	tierName := p.tierName(entry.tier)
-	return TxInfo{
-		Size:     entry.size,
-		GasLimit: entry.gas,
-		Sender:   entry.key.sender,
-		Sequence: entry.sequence,
-		TxBytes:  entry.bytes,
-		Tier:     tierName,
-	}, nil
-}
-
 // Remove implements Mempool.
 func (p *PriorityMempool) Remove(tx sdk.Tx) error {
-	sender, sequence, err := FirstSignature(tx)
+	key, err := txKeyFromTx(tx)
 	if err != nil {
 		return err
 	}
 
-	key := txKey{sender: sender.String(), nonce: sequence}
 	p.mtx.Lock()
-	listeners := append([]TxEventListener(nil), p.listeners...)
+	listeners := copyListeners(p.listeners)
 	entry, ok := p.entries[key]
 	if !ok {
 		p.mtx.Unlock()
@@ -338,6 +328,7 @@ func (p *PriorityMempool) Select(ctx context.Context, _ [][]byte) sdkmempool.Ite
 	}
 }
 
+// Lookup returns the transaction hash for the given sender and nonce.
 func (p *PriorityMempool) Lookup(sender string, nonce uint64) (string, bool) {
 	key := txKey{sender: sender, nonce: nonce}
 	p.mtx.Lock()
@@ -347,6 +338,37 @@ func (p *PriorityMempool) Lookup(sender string, nonce uint64) (string, bool) {
 		return "", false
 	}
 	return TxHash(entry.bytes), true
+}
+
+// GetTxInfo implements Mempool.
+func (p *PriorityMempool) GetTxInfo(ctx sdk.Context, tx sdk.Tx) (TxInfo, error) {
+	key, err := txKeyFromTx(tx)
+	if err != nil {
+		return TxInfo{}, err
+	}
+
+	p.mtx.Lock()
+	defer p.mtx.Unlock()
+	entry, ok := p.entries[key]
+	if !ok {
+		return TxInfo{}, sdkmempool.ErrTxNotFound
+	}
+	tierName := p.tierName(entry.tier)
+	return TxInfo{
+		Size:     entry.size,
+		GasLimit: entry.gas,
+		Sender:   entry.key.sender,
+		Sequence: entry.sequence,
+		TxBytes:  entry.bytes,
+		Tier:     tierName,
+	}, nil
+}
+
+// NextExpectedSequence returns the next expected sequence for a sender.
+func (p *PriorityMempool) NextExpectedSequence(ctx sdk.Context, sender string) (uint64, bool, error) {
+	p.mtx.Lock()
+	defer p.mtx.Unlock()
+	return p.expectedNextSequenceLocked(ctx, sender)
 }
 
 type txEntry struct {
@@ -370,6 +392,7 @@ type userBucket struct {
 	next    uint64
 }
 
+// newUserBucket creates an empty bucket for a single sender.
 func newUserBucket() *userBucket {
 	return &userBucket{
 		entries: make(map[uint64]*txEntry),
@@ -377,6 +400,7 @@ func newUserBucket() *userBucket {
 	}
 }
 
+// add records a tx entry in the bucket and updates bounds.
 func (b *userBucket) add(entry *txEntry) {
 	if entry.sequence < b.start {
 		b.start = entry.sequence
@@ -387,6 +411,7 @@ func (b *userBucket) add(entry *txEntry) {
 	b.entries[entry.sequence] = entry
 }
 
+// remove deletes an entry from the bucket and keeps start/next consistent.
 func (b *userBucket) remove(sequence uint64) {
 	delete(b.entries, sequence)
 	if len(b.entries) == 0 {
@@ -397,6 +422,7 @@ func (b *userBucket) remove(sequence uint64) {
 	b.recomputeBounds()
 }
 
+// recomputeBounds recalculates the min/max sequence in the bucket.
 func (b *userBucket) recomputeBounds() {
 	minSeq := uint64(math.MaxUint64)
 	maxSeq := uint64(0)
@@ -412,6 +438,7 @@ func (b *userBucket) recomputeBounds() {
 	b.next = maxSeq + 1
 }
 
+// snapshotStart returns the current start sequence or false if empty.
 func (b *userBucket) snapshotStart() (uint64, bool) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -421,6 +448,7 @@ func (b *userBucket) snapshotStart() (uint64, bool) {
 	return b.start, true
 }
 
+// collectStale gathers entries whose sequence is below the provided threshold.
 func (b *userBucket) collectStale(upto uint64) []*txEntry {
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -437,6 +465,7 @@ func (b *userBucket) collectStale(upto uint64) []*txEntry {
 	return entries
 }
 
+// nextSequence returns the next expected sequence from this bucket.
 func (b *userBucket) nextSequence() (uint64, bool) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -455,11 +484,13 @@ func (p *PriorityMempool) snapshotBuckets() map[string]*userBucket {
 	return targets
 }
 
+// priorityIterator walks entries in the order determined by the priority index.
 type priorityIterator struct {
 	entries []*txEntry
 	idx     int
 }
 
+// Next advances the iterator to the next entry and returns nil when exhausted.
 func (it *priorityIterator) Next() sdkmempool.Iterator {
 	it.idx++
 	if it.idx >= len(it.entries) {
@@ -468,6 +499,7 @@ func (it *priorityIterator) Next() sdkmempool.Iterator {
 	return it
 }
 
+// Tx returns the tx currently pointed to by the iterator.
 func (it *priorityIterator) Tx() sdk.Tx {
 	if it.idx >= len(it.entries) || it.idx < 0 {
 		return nil
@@ -475,6 +507,7 @@ func (it *priorityIterator) Tx() sdk.Tx {
 	return it.entries[it.idx].tx
 }
 
+// compareEntries orders txEntries by tier, priority, order, sender, and nonce.
 func compareEntries(a, b any) int {
 	left := a.(*txEntry)
 	right := b.(*txEntry)
@@ -514,10 +547,12 @@ func compareEntries(a, b any) int {
 	}
 }
 
+// nextOrder returns a unique sequence number used to preserve insertion order.
 func (p *PriorityMempool) nextOrder() int64 {
 	return atomic.AddInt64(&p.orderSeq, 1)
 }
 
+// selectTier returns the index of the first matching tier matcher for the tx.
 func (p *PriorityMempool) selectTier(ctx sdk.Context, tx sdk.Tx) int {
 	for idx, tier := range p.tiers {
 		if tier.Matcher == nil || tier.Matcher(ctx, tx) {
@@ -532,6 +567,7 @@ type tierMatcher struct {
 	Matcher TierMatcher
 }
 
+// tierName returns the configured name for a tier index, or empty if invalid.
 func (p *PriorityMempool) tierName(idx int) string {
 	if idx < 0 || idx >= len(p.tiers) {
 		return ""
@@ -539,6 +575,7 @@ func (p *PriorityMempool) tierName(idx int) string {
 	return p.tiers[idx].Name
 }
 
+// buildTierMatchers canonicalizes the configured tiers into matcher helpers and ensures a default tier.
 func buildTierMatchers(cfg PriorityMempoolConfig) []tierMatcher {
 	matchers := make([]tierMatcher, 0, len(cfg.Tiers)+1)
 	for idx, tier := range cfg.Tiers {
@@ -565,6 +602,7 @@ func buildTierMatchers(cfg PriorityMempoolConfig) []tierMatcher {
 	return matchers
 }
 
+// initTierDistribution creates a zeroed counter map for each named tier.
 func initTierDistribution(tiers []tierMatcher) map[string]uint64 {
 	dist := make(map[string]uint64, len(tiers))
 	for _, tier := range tiers {
@@ -576,6 +614,7 @@ func initTierDistribution(tiers []tierMatcher) map[string]uint64 {
 	return dist
 }
 
+// canAccept checks whether a tx can remain in the pool given the configured limits and evicts as needed.
 func (p *PriorityMempool) canAccept(ctx sdk.Context, tier int, priority int64, size int64, gas uint64) (bool, []*txEntry) {
 	var removed []*txEntry
 
@@ -603,6 +642,7 @@ func (p *PriorityMempool) canAccept(ctx sdk.Context, tier int, priority int64, s
 	return true, removed
 }
 
+// expectedNextSequenceLocked reads the next expected sequence for sender; caller must hold the lock.
 func (p *PriorityMempool) expectedNextSequenceLocked(ctx sdk.Context, sender string) (uint64, bool, error) {
 	bucket, ok := p.userBuckets[sender]
 	if !ok {
@@ -612,13 +652,7 @@ func (p *PriorityMempool) expectedNextSequenceLocked(ctx sdk.Context, sender str
 	return next, ok, nil
 }
 
-// NextExpectedSequence returns the next expected sequence for a sender.
-func (p *PriorityMempool) NextExpectedSequence(ctx sdk.Context, sender string) (uint64, bool, error) {
-	p.mtx.Lock()
-	defer p.mtx.Unlock()
-	return p.expectedNextSequenceLocked(ctx, sender)
-}
-
+// evictLower removes the lowest-priority entry that is worse than the provided tier/priority.
 func (p *PriorityMempool) evictLower(tier int, priority int64) *txEntry {
 	back := p.priorityIndex.Back()
 	if back == nil {
@@ -633,6 +667,7 @@ func (p *PriorityMempool) evictLower(tier int, priority int64) *txEntry {
 	return p.removeEntry(entry)
 }
 
+// isBetterThan determines whether a new entry should outrank an existing one.
 func (p *PriorityMempool) isBetterThan(entry *txEntry, tier int, priority int64) bool {
 	if tier != entry.tier {
 		return tier < entry.tier
@@ -640,6 +675,7 @@ func (p *PriorityMempool) isBetterThan(entry *txEntry, tier int, priority int64)
 	return priority > entry.priority
 }
 
+// addEntry inserts the tx entry into all indexes and updates per-sender/tier bookkeeping.
 func (p *PriorityMempool) addEntry(entry *txEntry) {
 	p.priorityIndex.Set(entry, entry)
 	p.entries[entry.key] = entry
@@ -659,6 +695,7 @@ func (p *PriorityMempool) addEntry(entry *txEntry) {
 	}
 }
 
+// removeEntry evicts an entry from every structure and adjusts tier counts.
 func (p *PriorityMempool) removeEntry(entry *txEntry) *txEntry {
 	if entry == nil {
 		return nil
@@ -686,6 +723,7 @@ func (p *PriorityMempool) removeEntry(entry *txEntry) *txEntry {
 	return entry
 }
 
+// dispatchInserted notifies listeners about a newly accepted transaction.
 func (p *PriorityMempool) dispatchInserted(listeners []TxEventListener, tx sdk.Tx) {
 	if len(listeners) == 0 {
 		return
@@ -696,6 +734,7 @@ func (p *PriorityMempool) dispatchInserted(listeners []TxEventListener, tx sdk.T
 	}
 }
 
+// dispatchRemoved notifies listeners about transactions that left the pool.
 func (p *PriorityMempool) dispatchRemoved(listeners []TxEventListener, entries []*txEntry) {
 	if len(listeners) == 0 || len(entries) == 0 {
 		return
@@ -708,10 +747,23 @@ func (p *PriorityMempool) dispatchRemoved(listeners []TxEventListener, entries [
 	}
 }
 
+// txBytesAndSize encodes the tx and returns its bytes with length.
 func (p *PriorityMempool) txBytesAndSize(tx sdk.Tx) ([]byte, int64, error) {
 	bz, err := p.txEncoder(tx)
 	if err != nil {
 		return nil, 0, err
 	}
 	return bz, int64(len(bz)), nil
+}
+
+// txKeyFromTx extracts the sender address and nonce that uniquely identifies the tx.
+func txKeyFromTx(tx sdk.Tx) (txKey, error) {
+	sender, sequence, err := FirstSignature(tx)
+	if err != nil {
+		return txKey{}, err
+	}
+	return txKey{
+		sender: sender.String(),
+		nonce:  sequence,
+	}, nil
 }
