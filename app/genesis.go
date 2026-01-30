@@ -24,7 +24,6 @@ import (
 	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
 	rewardtypes "github.com/initia-labs/initia/x/reward/types"
 
-	auctiontypes "github.com/skip-mev/block-sdk/v2/x/auction/types"
 	connecttypes "github.com/skip-mev/connect/v2/pkg/types"
 	marketmaptypes "github.com/skip-mev/connect/v2/x/marketmap/types"
 	oracletypes "github.com/skip-mev/connect/v2/x/oracle/types"
@@ -81,13 +80,6 @@ func (genState GenesisState) ConfigureBondDenom(cdc codec.JSONCodec, bondDenom s
 	cdc.MustUnmarshalJSON(genState[movetypes.ModuleName], &moveGenState)
 	moveGenState.Params.BaseDenom = bondDenom
 	genState[movetypes.ModuleName] = cdc.MustMarshalJSON(&moveGenState)
-
-	// Auction module genesis-state bond denom configuration
-	var auctionGenState auctiontypes.GenesisState
-	cdc.MustUnmarshalJSON(genState[auctiontypes.ModuleName], &auctionGenState)
-	auctionGenState.Params.ReserveFee.Denom = bondDenom
-	auctionGenState.Params.MinBidIncrement.Denom = bondDenom
-	genState[auctiontypes.ModuleName] = cdc.MustMarshalJSON(&auctionGenState)
 
 	return genState
 }

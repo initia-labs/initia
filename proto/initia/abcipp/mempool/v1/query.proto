@@ -1,0 +1,48 @@
+syntax = "proto3";
+package initia.abcipp.mempool.v1;
+
+option go_package = "github.com/initia-labs/initia/abcipp/types";
+
+import "google/api/annotations.proto";
+
+
+// Query provides defines the gRPC querier service
+service Query {
+    // QueryTxDistribution returns the distribution of transactions in the mempool.
+    rpc QueryTxDistribution(QueryTxDistributionRequest) returns (QueryTxDistributionResponse) {
+        option (google.api.http) = {
+            get: "/initia/abcipp/mempool/v1/distribution"
+        };
+    }
+
+    // QueryTxHash checks if a transaction is in the mempool.
+    rpc QueryTxHash(QueryTxHashRequest) returns (QueryTxHashResponse) {
+        option (google.api.http) = {
+            get: "/initia/abcipp/mempool/v1/{sender}/{sequence}"
+        };
+    }
+}
+
+// QueryTxDistributionRequest is the request type for the Query.QueryTxDistribution
+// RPC method.
+message QueryTxDistributionRequest {}
+
+// QueryTxDistributionResponse is the response type for the Query.QueryTxDistribution
+// RPC method.
+message QueryTxDistributionResponse {
+    // Distribution is a map of lane to the number of transactions in the mempool for that lane.
+    map<string, uint64> distribution = 1;
+}
+
+// QueryTxHashRequest is the request type for the Query.QueryTxHash
+// RPC method.
+message QueryTxHashRequest {
+    string sender = 1;
+    string sequence = 2;
+}
+
+// QueryTxHashResponse is the response type for the Query.QueryTxHash
+// RPC method.
+message QueryTxHashResponse {
+    string txHash = 1;
+}

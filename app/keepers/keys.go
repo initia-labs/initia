@@ -37,7 +37,6 @@ import (
 	ophosttypes "github.com/initia-labs/OPinit/x/ophost/types"
 
 	// skip-mev dependencies
-	auctiontypes "github.com/skip-mev/block-sdk/v2/x/auction/types"
 	marketmaptypes "github.com/skip-mev/connect/v2/x/marketmap/types"
 	oracletypes "github.com/skip-mev/connect/v2/x/oracle/types"
 
@@ -58,10 +57,9 @@ func (appKeepers *AppKeepers) GenerateKeys() {
 		ibctransfertypes.StoreKey, ibcnfttransfertypes.StoreKey, capabilitytypes.StoreKey,
 		authzkeeper.StoreKey, feegrant.StoreKey, icahosttypes.StoreKey,
 		icacontrollertypes.StoreKey, ibcfeetypes.StoreKey, ibcpermtypes.StoreKey,
-		movetypes.StoreKey, auctiontypes.StoreKey, ophosttypes.StoreKey,
-		oracletypes.StoreKey, packetforwardtypes.StoreKey, ibchookstypes.StoreKey,
-		forwardingtypes.StoreKey, marketmaptypes.StoreKey, ratelimittypes.StoreKey,
-		dynamicfeetypes.StoreKey,
+		movetypes.StoreKey, ophosttypes.StoreKey, oracletypes.StoreKey,
+		packetforwardtypes.StoreKey, ibchookstypes.StoreKey, forwardingtypes.StoreKey,
+		marketmaptypes.StoreKey, ratelimittypes.StoreKey, dynamicfeetypes.StoreKey,
 	)
 
 	// Define transient store keys
