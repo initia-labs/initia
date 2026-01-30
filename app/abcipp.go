@@ -23,14 +23,6 @@ func (app *InitiaApp) setupABCIPP(mempoolMaxTxs int) (
 	abcipp.CheckTx,
 	error,
 ) {
-	mempool := abcipp.NewPriorityMempool(
-		abcipp.PriorityMempoolConfig{
-			MaxTx: mempoolMaxTxs,
-		}, app.TxEncode,
-	)
-
-	// start mempool cleaning worker
-	mempool.StartCleaningWorker(app.BaseApp, app.AccountKeeper, abcipp.DefaultMempoolCleaningInterval)
 
 	feeChecker := dynamicfeeante.NewMempoolFeeChecker(dynamicfeekeeper.NewAnteKeeper(app.DynamicFeeKeeper)).CheckTxFeeWithMinGasPrices
 	feeCheckerWrapper := func(ctx sdk.Context, tx sdk.Tx) (sdk.Coins, int64, error) {
@@ -80,6 +72,16 @@ func (app *InitiaApp) setupABCIPP(mempoolMaxTxs int) (
 	if err != nil {
 		return nil, nil, nil, nil, nil, err
 	}
+
+	mempool := abcipp.NewPriorityMempool(
+		abcipp.PriorityMempoolConfig{
+			MaxTx:       mempoolMaxTxs,
+			AnteHandler: anteHandler,
+		}, app.TxEncode,
+	)
+
+	// start mempool cleaning worker
+	mempool.StartCleaningWorker(app.BaseApp, app.AccountKeeper, abcipp.DefaultMempoolCleaningInterval)
 
 	proposalHandler := abcipp.NewProposalHandler(
 		app.Logger(),

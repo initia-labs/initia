@@ -1,13 +1,21 @@
 package abcipp
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"testing"
 
+	"cosmossdk.io/core/address"
+	txsigning "cosmossdk.io/x/tx/signing"
+	"cosmossdk.io/x/tx/signing/direct"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	sdkmempool "github.com/cosmos/cosmos-sdk/types/mempool"
+	authante "github.com/cosmos/cosmos-sdk/x/auth/ante"
+	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )
 
 func TestPriorityMempoolRejectsOutOfOrderSequences(t *testing.T) {
@@ -172,6 +180,67 @@ func TestPriorityMempoolCleanUpEntries(t *testing.T) {
 	}
 }
 
+func TestPriorityMempoolCleanUpAnteErrors(t *testing.T) {
+	accountKeeper := newTestAccountKeeper(authcodec.NewBech32Codec("initia"))
+	bankKeeper := newTestBankKeeper()
+	signModeHandler := txsigning.NewHandlerMap(direct.SignModeHandler{})
+
+	anteHandler, err := authante.NewAnteHandler(authante.HandlerOptions{
+		AccountKeeper:   accountKeeper,
+		BankKeeper:      bankKeeper,
+		SignModeHandler: signModeHandler,
+	})
+	if err != nil {
+		t.Fatalf("failed to build ante handler: %v", err)
+	}
+
+	mp := NewPriorityMempool(PriorityMempoolConfig{
+		MaxTx:       10,
+		AnteHandler: anteHandler,
+	}, testTxEncoder)
+
+	sdkCtx := testSDKContext()
+	priv := secp256k1.GenPrivKey()
+	sender := sdk.AccAddress(priv.PubKey().Address())
+	accountKeeper.SetAccount(sdkCtx, authtypes.NewBaseAccountWithAddress(sender))
+	ctx := sdk.WrapSDKContext(sdkCtx)
+
+	tx := newTestTxWithPriv(priv, 0, 1000, "default")
+	txBytes, err := testTxEncoder(tx)
+	if err != nil {
+		t.Fatalf("encode tx: %v", err)
+	}
+	recheckCtx := sdkCtx.WithTxBytes(txBytes).WithIsReCheckTx(true)
+	if _, err := anteHandler(recheckCtx, tx, false); err == nil {
+		t.Fatalf("expected ante to reject tx without funds")
+	}
+	if err := mp.Insert(ctx, tx); err != nil {
+		t.Fatalf("insert tx: %v", err)
+	}
+
+	senderKey := tx.sender.String()
+	buckets := mp.snapshotBuckets()
+	bucket, ok := buckets[senderKey]
+	if !ok {
+		t.Fatalf("bucket not found for sender")
+	}
+	invalid := bucket.collectInvalid(sdkCtx, mp.cfg.AnteHandler, 0)
+	if len(invalid) == 0 {
+		t.Fatalf("expected collectInvalid to detect the tx as invalid")
+	}
+
+	baseApp := testBaseApp{ctx: sdkCtx}
+	mp.cleanUpEntries(baseApp, accountKeeper)
+
+	if mp.CountTx() != 0 {
+		t.Fatalf("expected ante failure to remove tx, still have %d", mp.CountTx())
+	}
+
+	if mp.Contains(tx) {
+		t.Fatalf("expected tx removed after ante failure")
+	}
+}
+
 type mockAccountKeeper struct {
 	sequences map[string]uint64
 }
@@ -199,6 +268,108 @@ type testBaseApp struct {
 	ctx sdk.Context
 }
 
-func (b testBaseApp) NewContext(_ bool) sdk.Context {
+func (b testBaseApp) GetContextForSimulate(_ []byte) sdk.Context {
 	return b.ctx
+}
+
+type testAccountKeeper struct {
+	accounts     map[string]sdk.AccountI
+	params       authtypes.Params
+	moduleAddrs  map[string]sdk.AccAddress
+	addressCodec address.Codec
+}
+
+func newTestAccountKeeper(codec address.Codec) *testAccountKeeper {
+	moduleAddr := sdk.AccAddress(bytes.Repeat([]byte{0xA}, 20))
+	return &testAccountKeeper{
+		accounts: make(map[string]sdk.AccountI),
+		params:   authtypes.DefaultParams(),
+		moduleAddrs: map[string]sdk.AccAddress{
+			authtypes.FeeCollectorName: moduleAddr,
+		},
+		addressCodec: codec,
+	}
+}
+
+func (k *testAccountKeeper) GetParams(ctx context.Context) authtypes.Params {
+	return k.params
+}
+
+func (k *testAccountKeeper) GetAccount(ctx context.Context, addr sdk.AccAddress) sdk.AccountI {
+	return k.accounts[addr.String()]
+}
+
+func (k *testAccountKeeper) SetAccount(ctx context.Context, acc sdk.AccountI) {
+	k.accounts[acc.GetAddress().String()] = acc
+}
+
+func (k *testAccountKeeper) GetModuleAddress(name string) sdk.AccAddress {
+	return k.moduleAddrs[name]
+}
+
+func (k *testAccountKeeper) AddressCodec() address.Codec {
+	return k.addressCodec
+}
+
+func (k *testAccountKeeper) GetSequence(ctx context.Context, addr sdk.AccAddress) (uint64, error) {
+	account := k.GetAccount(ctx, addr)
+	if account == nil {
+		return 0, fmt.Errorf("account not found for %s", addr)
+	}
+	return account.GetSequence(), nil
+}
+
+type testBankKeeper struct {
+	balances    map[string]sdk.Coins
+	moduleCoins map[string]sdk.Coins
+}
+
+func newTestBankKeeper() *testBankKeeper {
+	return &testBankKeeper{
+		balances:    make(map[string]sdk.Coins),
+		moduleCoins: make(map[string]sdk.Coins),
+	}
+}
+
+func (b *testBankKeeper) IsSendEnabledCoins(ctx context.Context, coins ...sdk.Coin) error {
+	return nil
+}
+
+func (b *testBankKeeper) SendCoins(ctx context.Context, from, to sdk.AccAddress, amt sdk.Coins) error {
+	if !b.hasBalance(from, amt) {
+		return sdkerrors.ErrInsufficientFunds
+	}
+	b.debit(from, amt)
+	b.balances[to.String()] = b.balance(to).Add(amt...)
+	return nil
+}
+
+func (b *testBankKeeper) SendCoinsFromAccountToModule(ctx context.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error {
+	if !b.hasBalance(senderAddr, amt) {
+		return sdkerrors.ErrInsufficientFunds
+	}
+	b.debit(senderAddr, amt)
+	b.moduleCoins[recipientModule] = b.moduleCoins[recipientModule].Add(amt...)
+	return nil
+}
+
+func (b *testBankKeeper) balance(addr sdk.AccAddress) sdk.Coins {
+	coins := b.balances[addr.String()]
+	if coins == nil {
+		return sdk.NewCoins()
+	}
+	return coins
+}
+
+func (b *testBankKeeper) hasBalance(addr sdk.AccAddress, amt sdk.Coins) bool {
+	return b.balance(addr).IsAllGTE(amt)
+}
+
+func (b *testBankKeeper) debit(addr sdk.AccAddress, amt sdk.Coins) {
+	remaining := b.balance(addr).Sub(amt...)
+	if remaining.IsZero() {
+		delete(b.balances, addr.String())
+		return
+	}
+	b.balances[addr.String()] = remaining
 }

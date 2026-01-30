@@ -49,5 +49,5 @@ type CheckTx func(req *cometabci.RequestCheckTx) (*cometabci.ResponseCheckTx, er
 // BaseApp is an interface that allows us to call baseapp's CheckTx method
 // as well as retrieve the latest committed state.
 type BaseApp interface {
-	NewContext(isCheckTx bool) sdk.Context
+	GetContextForSimulate(txBytes []byte) sdk.Context
 }
