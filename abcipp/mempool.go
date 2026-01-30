@@ -23,6 +23,9 @@ var _ Mempool = (*PriorityMempool)(nil)
 type PriorityMempoolConfig struct {
 	MaxTx int // total transaction limit
 	Tiers []Tier
+
+	// AnteHandler to filter out invalid transactions from the mempool
+	AnteHandler sdk.AnteHandler
 }
 
 type TierMatcher func(ctx sdk.Context, tx sdk.Tx) bool
@@ -109,8 +112,11 @@ func safeGetContext(bApp BaseApp) (ctx sdk.Context, ok bool) {
 			ok = false
 		}
 	}()
-	ctx = bApp.NewContext(false)
+
+	// use simulate context to avoid state mutation during cleanup
+	ctx = bApp.GetContextForSimulate(nil)
 	ok = true
+
 	return
 }
 
@@ -137,10 +143,15 @@ func (p *PriorityMempool) cleanUpEntries(bApp BaseApp, ak AccountKeeper) {
 		if err != nil {
 			continue
 		}
-		if accountSeq <= startSeq {
-			continue
+
+		// remove stale entries below on-chain sequence
+		if accountSeq > startSeq {
+			removed = append(removed, bucket.collectStale(accountSeq)...)
+			startSeq = accountSeq
 		}
-		removed = append(removed, bucket.collectStale(accountSeq)...)
+
+		// remove invalid entries starting from current on-chain sequence
+		removed = append(removed, bucket.collectInvalid(sdkCtx, p.cfg.AnteHandler, startSeq)...)
 	}
 
 	if len(removed) == 0 {
@@ -463,6 +474,43 @@ func (b *userBucket) collectStale(upto uint64) []*txEntry {
 		}
 	}
 	return entries
+}
+
+// collectInvalid gathers entries that fail anteHandler checks starting from start.
+func (b *userBucket) collectInvalid(ctx sdk.Context, anteHandler sdk.AnteHandler, start uint64) []*txEntry {
+	if anteHandler == nil {
+		return nil
+	}
+
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
+	if b.next == 0 {
+		return nil
+	}
+
+	// if we find first invalid entry, trash all next entries to the end
+	failed := false
+	var invalidEntries []*txEntry
+	for seq := start; seq < b.next; seq++ {
+		if entry, ok := b.entries[seq]; ok {
+			if failed {
+				invalidEntries = append(invalidEntries, entry)
+				continue
+			}
+
+			sdkCtx, write := ctx.WithTxBytes(entry.bytes).WithIsReCheckTx(true).CacheContext()
+			if _, err := anteHandler(sdkCtx, entry.tx, false); err != nil {
+				failed = true
+				invalidEntries = append(invalidEntries, entry)
+				continue
+			}
+
+			write()
+		}
+	}
+
+	return invalidEntries
 }
 
 // nextSequence returns the next expected sequence from this bucket.

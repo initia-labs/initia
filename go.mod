@@ -21,7 +21,7 @@ require (
 	github.com/IGLOU-EU/go-wildcard v1.0.3
 	github.com/aptos-labs/serde-reflection/serde-generate/runtime/golang v0.0.0-20231213012317-73b6bbf74833
 	github.com/bits-and-blooms/bitset v1.20.0
-	github.com/cometbft/cometbft v0.38.19
+	github.com/cometbft/cometbft v0.38.20
 	github.com/cosmos/cosmos-db v1.1.1
 	github.com/cosmos/cosmos-proto v1.0.0-beta.5
 	github.com/cosmos/cosmos-sdk v0.50.14
@@ -261,7 +261,7 @@ require github.com/cosmos/iavl v1.2.6 // indirect
 // - https://github.com/initia-labs/connect/pull/1
 replace (
 	github.com/cometbft/cometbft => github.com/initia-labs/cometbft v0.38.21-initia.0
-	github.com/cosmos/cosmos-sdk => github.com/initia-labs/cosmos-sdk v0.50.14-initia.4
+	github.com/cosmos/cosmos-sdk => github.com/initia-labs/cosmos-sdk v0.50.15-initia.0
 	github.com/noble-assets/forwarding/simapp => github.com/initia-labs/forwarding/simapp v1.0.0
 	github.com/noble-assets/forwarding/v2 => github.com/initia-labs/forwarding/v2 v2.0.3-initia.3
 	github.com/skip-mev/connect/v2 => github.com/initia-labs/connect/v2 v2.3.1
