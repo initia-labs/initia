@@ -38,12 +38,10 @@ func NewProposalHandler(
 	}
 }
 
-// PrepareProposalHandler prepares the proposal by selecting transactions from each lane
-// according to each lane's selection logic. We select transactions in the order in which the
-// lanes are configured on the chain. Note that each lane has an boundary on the number of
-// bytes/gas that can be included in the proposal. By default, the default lane will not have
-// a boundary on the number of bytes that can be included in the proposal and will include all
-// valid transactions in the proposal (up to MaxBlockSize, MaxGasLimit).
+// PrepareProposalHandler only runs on the block proposer. It selects transactions from the mempool,
+// enforces gas/byte limits, removes submissions that exceed the block limits, and drops entries from
+// the mempool whenever the ante handler rejects them (including txs that individually exceed the
+// configured max gas or size).
 func (h *ProposalHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 	return func(ctx sdk.Context, req *abci.RequestPrepareProposal) (resp *abci.ResponsePrepareProposal, err error) {
 		if req.Height <= 1 {
@@ -68,7 +66,7 @@ func (h *ProposalHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 		)
 
 		// Get the max gas limit and max block size for the proposal.
-		maxGasLimit := uint64(ctx.ConsensusParams().Block.MaxGas)
+		maxGasLimit := uint64(ctx.ConsensusParams().Block.MaxGas) //nolint: gosec
 		maxBlockSize := ctx.ConsensusParams().Block.MaxBytes
 
 		// Fill the proposal with transactions from each lane.
@@ -155,7 +153,10 @@ func (h *ProposalHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 
 		// remove the invalid transactions from the mempool.
 		for _, tx := range txsToRemove {
-			h.mempool.Remove(tx)
+			err := h.mempool.Remove(tx)
+			if err != nil {
+				h.logger.Error("failed to remove tx from mempool", "err", err)
+			}
 		}
 
 		h.logger.Info(
@@ -180,12 +181,9 @@ func (h *ProposalHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 	}
 }
 
-// ProcessProposalHandler processes the proposal by verifying all transactions in the proposal
-// according to each lane's verification logic. Proposals are verified similar to how they are
-// constructed. After a proposal is processed, it should amount to the same proposal that was prepared.
-// The proposal is verified in a greedy fashion, respecting the ordering of lanes. A lane will
-// verify all transactions in the proposal that belong to the lane and pass any remaining transactions
-// to the next lane in the chain.
+// ProcessProposalHandler runs on the validators that did not propose the block. It mirrors the same
+// limits and ante logic used during PrepareProposal, rejecting proposals if any transaction exceeds the
+// configured limits or fails validation so all honest validators arrive at the same view.
 func (h *ProposalHandler) ProcessProposalHandler() sdk.ProcessProposalHandler {
 	return func(ctx sdk.Context, req *abci.RequestProcessProposal) (resp *abci.ResponseProcessProposal, err error) {
 		if req.Height <= 1 {
@@ -210,7 +208,7 @@ func (h *ProposalHandler) ProcessProposalHandler() sdk.ProcessProposalHandler {
 		}
 
 		// Get the max gas limit and max block size for the proposal.
-		maxGasLimit := uint64(ctx.ConsensusParams().Block.MaxGas)
+		maxGasLimit := uint64(ctx.ConsensusParams().Block.MaxGas) //nolint: gosec
 		maxBlockSize := ctx.ConsensusParams().Block.MaxBytes
 
 		// Verify the transaction.

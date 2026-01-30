@@ -199,10 +199,6 @@ type testBaseApp struct {
 	ctx sdk.Context
 }
 
-func (b testBaseApp) GetContextForCheckTx(_ []byte) sdk.Context {
+func (b testBaseApp) NewContext(_ bool) sdk.Context {
 	return b.ctx
-}
-
-func (b testBaseApp) IsSealed() bool {
-	return true
 }
