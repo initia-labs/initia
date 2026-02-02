@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 mkdir -p testnet
 
 initiad init base --home testnet/base --chain-id testnet
