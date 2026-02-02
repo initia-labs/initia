@@ -251,3 +251,11 @@ format:
 	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/docs/statik/statik.go" -not -path "./tests/mocks/*" -not -path "./api/*" -not -name '*.pb.go' | xargs misspell -w
 	find . -name '*.go' -type f -not -path "./vendor*" -not -path "*.git*" -not -path "./client/docs/statik/statik.go" -not -path "./tests/mocks/*" -not -path "./api/*" -not -name '*.pb.go' | xargs goimports -w -local github.com/cosmos/cosmos-sdk
 .PHONY: format
+
+###############################################################################
+###                               Tesnet                                    ###
+###############################################################################
+
+testnet-gen:
+	bash ./scripts/testnet-generation.sh
+.PHONY: testnet-gen

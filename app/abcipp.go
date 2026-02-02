@@ -77,6 +77,7 @@ func (app *InitiaApp) setupABCIPP(mempoolMaxTxs int) (
 		abcipp.PriorityMempoolConfig{
 			MaxTx:       mempoolMaxTxs,
 			AnteHandler: anteHandler,
+			Tiers:       []abcipp.Tier{}, // no tiers on L1
 		}, app.TxEncode,
 	)
 

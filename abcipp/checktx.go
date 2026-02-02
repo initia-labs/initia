@@ -42,6 +42,22 @@ func NewCheckTxHandler(
 
 // CheckTx processes a CheckTx request from CometBFT.
 func (h CheckTxHandler) CheckTx(req *cometabci.RequestCheckTx) (resp *cometabci.ResponseCheckTx, err error) {
+	defer func() {
+		if rec := recover(); rec != nil {
+			h.logger.Error("failed to check tx", "err", err)
+
+			resp = sdkerrors.ResponseCheckTxWithEvents(
+				fmt.Errorf("failed to check tx: %v", rec),
+				0,
+				0,
+				nil,
+				false,
+			)
+			err = fmt.Errorf("failed to check tx: %v", rec)
+		}
+
+	}()
+
 	tx, err := h.txDecoder(req.Tx)
 	if err != nil {
 		return sdkerrors.ResponseCheckTxWithEvents(
@@ -74,11 +90,11 @@ func (h CheckTxHandler) CheckTx(req *cometabci.RequestCheckTx) (resp *cometabci.
 	}
 
 	// baseApp.CheckTx will insert the tx into the mempool if valid
-	res, checkTxError := h.checkTx(req)
+	resp, err = h.checkTx(req)
 
 	// if re-check fails for a transaction, we'll need to explicitly purge the tx from
 	// the app-side mempool
-	if isInvalidCheckTxExecution(res, checkTxError) && isRecheck && txInMempool {
+	if isInvalidCheckTxExecution(resp, err) && isRecheck && txInMempool {
 		// remove the tx
 		if err := h.mempool.Remove(tx); err != nil {
 			h.logger.Debug(
