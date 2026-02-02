@@ -51,6 +51,9 @@ func (p *MempoolQueryServer) QueryTxHash(ctx context.Context, req *types.QueryTx
 	if !ok {
 		return nil, fmt.Errorf("invalid sequence number: %s", req.Sequence)
 	}
+	if !nonce.IsUint64() {
+		return nil, fmt.Errorf("sequence number out of range: %s", req.Sequence)
+	}
 
 	txHash, ok := p.mempool.Lookup(sender, nonce.Uint64())
 	if ok {

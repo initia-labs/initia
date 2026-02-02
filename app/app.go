@@ -485,7 +485,7 @@ func (app *InitiaApp) RegisterTxService(clientCtx client.Context) {
 	// Register the Block SDK mempool transaction service.
 	mempool, ok := app.Mempool().(abcipp.Mempool)
 	if !ok {
-		panic("mempool is not a block.Mempool")
+		panic("mempool is not a abcipp.Mempool")
 	}
 
 	abcipp.RegisterQueryServer(app.GRPCQueryRouter(), mempool)
@@ -542,6 +542,10 @@ func (app *InitiaApp) DefaultGenesis() map[string]json.RawMessage {
 // Close closes the underlying baseapp, the oracle service, and the prometheus server if required.
 // This method blocks on the closure of both the prometheus server, and the oracle-service
 func (app *InitiaApp) Close() error {
+	if mempool, ok := app.Mempool().(interface{ StopCleaningWorker() }); ok {
+		mempool.StopCleaningWorker()
+	}
+
 	if err := app.BaseApp.Close(); err != nil {
 		return err
 	}

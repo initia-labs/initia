@@ -69,6 +69,8 @@ type PriorityMempool struct {
 	listeners        []TxEventListener
 	tiers            []tierMatcher
 	tierDistribution map[string]uint64
+	cleaningStopCh   chan struct{}
+	cleaningDoneCh   chan struct{}
 }
 
 // NewPriorityMempool creates a new PriorityMempool with the provided limits.
@@ -97,12 +99,52 @@ const DefaultMempoolCleaningInterval = time.Second * 5
 // stale transactions.
 func (p *PriorityMempool) StartCleaningWorker(baseApp BaseApp, ak AccountKeeper, interval time.Duration) {
 	p.ak = ak
+	if interval <= 0 {
+		interval = DefaultMempoolCleaningInterval
+	}
+	p.mtx.Lock()
+	if p.cleaningStopCh != nil {
+		p.mtx.Unlock()
+		return
+	}
+	p.cleaningStopCh = make(chan struct{})
+	p.cleaningDoneCh = make(chan struct{})
+	stopCh := p.cleaningStopCh
+	doneCh := p.cleaningDoneCh
+	p.mtx.Unlock()
+
 	go func() {
+		defer close(doneCh)
 		timer := time.NewTicker(interval)
-		for range timer.C {
-			p.cleanUpEntries(baseApp, ak)
+		defer timer.Stop()
+		for {
+			select {
+			case <-timer.C:
+				p.cleanUpEntries(baseApp, ak)
+			case <-stopCh:
+				return
+			}
 		}
 	}()
+}
+
+// StopCleaningWorker signals the background cleaning worker to exit.
+func (p *PriorityMempool) StopCleaningWorker() {
+	p.mtx.Lock()
+	stopCh := p.cleaningStopCh
+	doneCh := p.cleaningDoneCh
+	p.cleaningStopCh = nil
+	p.cleaningDoneCh = nil
+	p.mtx.Unlock()
+
+	if stopCh == nil {
+		return
+	}
+
+	close(stopCh)
+	if doneCh != nil {
+		<-doneCh
+	}
 }
 
 // safeGetContext tries to get a non-panicking context from the BaseApp.

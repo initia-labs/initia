@@ -57,6 +57,9 @@ func FirstSignature(tx sdk.Tx) (sdk.AccAddress, uint64, error) {
 	if len(sigs) == 0 {
 		return nil, 0, fmt.Errorf("transaction must have at least one signer")
 	}
+	if sigs[0].PubKey == nil {
+		return nil, 0, fmt.Errorf("first signature pubkey is nil")
+	}
 
 	addr := sdk.AccAddress(sigs[0].PubKey.Address())
 	return addr, sigs[0].Sequence, nil

@@ -51,7 +51,7 @@ func (h *ProposalHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 		// In the case where there is a panic, we recover here and return an empty proposal.
 		defer func() {
 			if rec := recover(); rec != nil {
-				h.logger.Error("failed to prepare proposal", "err", err)
+				h.logger.Error("failed to prepare proposal", "err", rec)
 
 				// TODO: Should we attempt to return a empty proposal here with empty proposal info?
 				resp = &abci.ResponsePrepareProposal{Txs: make([][]byte, 0)}

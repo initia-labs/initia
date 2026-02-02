@@ -44,7 +44,7 @@ func NewCheckTxHandler(
 func (h CheckTxHandler) CheckTx(req *cometabci.RequestCheckTx) (resp *cometabci.ResponseCheckTx, err error) {
 	defer func() {
 		if rec := recover(); rec != nil {
-			h.logger.Error("failed to check tx", "err", err)
+			h.logger.Error("failed to check tx", "err", rec)
 
 			resp = sdkerrors.ResponseCheckTxWithEvents(
 				fmt.Errorf("failed to check tx: %v", rec),
@@ -53,7 +53,7 @@ func (h CheckTxHandler) CheckTx(req *cometabci.RequestCheckTx) (resp *cometabci.
 				nil,
 				false,
 			)
-			err = fmt.Errorf("failed to check tx: %v", rec)
+			err = nil
 		}
 
 	}()
