@@ -9,7 +9,7 @@ ARG COMMIT
 ARG BUILD_TARGET=build
 
 # See https://github.com/initia-labs/movevm/releases
-ENV LIBMOVEVM_VERSION=v1.2.0-alpha.0
+ENV LIBMOVEVM_VERSION=v1.2.0
 ENV MIMALLOC_VERSION=v2.2.2
 
 # Install necessary packages
