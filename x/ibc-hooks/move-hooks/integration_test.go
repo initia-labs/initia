@@ -10,7 +10,6 @@ import (
 
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
-	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
 
 	ibctesting "github.com/initia-labs/initia/x/ibc/testing"
 	movetypes "github.com/initia-labs/initia/x/move/types"
@@ -80,42 +79,6 @@ func (suite *TestSuite) transfer(
 	suite.Require().NoError(err)
 
 	return packet
-}
-
-func (suite *TestSuite) receive(
-	fromEndpoint, toEndpoint *ibctesting.Endpoint,
-	packet channeltypes.Packet,
-) {
-
-	var data transfertypes.FungibleTokenPacketData
-	err := suite.chainA.Codec.UnmarshalJSON(packet.GetData(), &data)
-	suite.Require().NoError(err)
-
-	// get proof of packet commitment from chainA
-	err = toEndpoint.UpdateClient()
-	suite.Require().NoError(err)
-
-	packetKey := host.PacketCommitmentKey(packet.GetSourcePort(), packet.GetSourceChannel(), packet.GetSequence())
-	proof, proofHeight := fromEndpoint.QueryProof(packetKey)
-
-	recvMsg := channeltypes.NewMsgRecvPacket(
-		packet, proof, proofHeight, toEndpoint.Chain.SenderAccount.GetAddress().String())
-	_, err = toEndpoint.Chain.SendMsgs(recvMsg)
-	suite.Require().NoError(err) // message committed
-}
-
-func (suite *TestSuite) ack(
-	fromEndpoint, toEndpoint *ibctesting.Endpoint,
-	packet channeltypes.Packet,
-	acknowledgement []byte,
-) {
-	var data transfertypes.FungibleTokenPacketData
-	err := suite.chainA.Codec.UnmarshalJSON(packet.GetData(), &data)
-	suite.Require().NoError(err)
-
-	err = fromEndpoint.UpdateClient()
-	suite.Require().NoError(err)
-
 }
 
 func (suite *TestSuite) getBalance(chain *ibctesting.TestChain, addr sdk.AccAddress, denom string) sdk.Coin {
