@@ -133,8 +133,8 @@ func TestPriorityMempoolSelectOrdersByTierAndTracksDistribution(t *testing.T) {
 	if len(order) != 2 {
 		t.Fatalf("expected two entries, got %d", len(order))
 	}
-	if order[0] == order[1] {
-		t.Fatalf("expected each tier once, got %v", order)
+	if order[0] != "high" || order[1] != "low" {
+		t.Fatalf("expected tier order [high low], got %v", order)
 	}
 
 	dist := mp.GetTxDistribution()
