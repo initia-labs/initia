@@ -240,8 +240,7 @@ func (h *ProposalHandler) ProcessProposalHandler() sdk.ProcessProposalHandler {
 				return &abci.ResponseProcessProposal{Status: abci.ResponseProcessProposal_REJECT}, fmt.Errorf("tx does not implement FeeTx")
 			}
 
-			txBz := req.Txs[i]
-			size := int64(len(txBz))
+			size := int64(len(txBytes))
 			if maxBlockSize > 0 && totalTxBytes+size > maxBlockSize {
 				h.logger.Error(
 					"failed to process proposal; tx bytes above the maximum allowed",

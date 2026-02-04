@@ -482,7 +482,7 @@ func (app *InitiaApp) RegisterTxService(clientCtx client.Context) {
 	authtx.RegisterTxService(app.GRPCQueryRouter(), clientCtx, app.Simulate, app.interfaceRegistry)
 	initiatx.RegisterQueryService(app.GRPCQueryRouter(), clientCtx, app.DynamicFeeKeeper)
 
-	// Register the Block SDK mempool transaction service.
+	// Register the abcipp mempool transaction service.
 	mempool, ok := app.Mempool().(abcipp.Mempool)
 	if !ok {
 		panic("mempool is not a abcipp.Mempool")
