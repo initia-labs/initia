@@ -83,7 +83,7 @@ func NewPriorityMempool(cfg PriorityMempoolConfig, txEncoder sdk.TxEncoder) *Pri
 	return &PriorityMempool{
 		cfg:              cfg,
 		ak:               nil,
-		priorityIndex:    skiplist.New(skiplist.LessThanFunc(compareEntries)),
+		priorityIndex:    skiplist.New(skiplist.GreaterThanFunc(compareEntries)),
 		entries:          make(map[txKey]*txEntry),
 		userBuckets:      make(map[string]*userBucket),
 		txEncoder:        txEncoder,
@@ -602,6 +602,7 @@ func compareEntries(a, b any) int {
 	left := a.(*txEntry)
 	right := b.(*txEntry)
 
+	// lower tier wins
 	if left.tier != right.tier {
 		if left.tier < right.tier {
 			return -1
@@ -609,6 +610,7 @@ func compareEntries(a, b any) int {
 		return 1
 	}
 
+	// higher priority value wins
 	if left.priority != right.priority {
 		if left.priority > right.priority {
 			return -1
@@ -616,8 +618,9 @@ func compareEntries(a, b any) int {
 		return 1
 	}
 
+	// maintain FIFO order for same priority
 	if left.order != right.order {
-		if left.order > right.order {
+		if left.order < right.order {
 			return -1
 		}
 		return 1

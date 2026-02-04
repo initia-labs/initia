@@ -241,6 +241,93 @@ func TestPriorityMempoolCleanUpAnteErrors(t *testing.T) {
 	}
 }
 
+func TestPriorityMempoolPreservesInsertionOrder(t *testing.T) {
+	mp := newTestPriorityMempool(t, nil)
+	sdkCtx := testSDKContext()
+	ctx := sdk.WrapSDKContext(sdkCtx)
+
+	tx1 := newTestTx(testAddress(1), 1, 1000, "default")
+	tx2 := newTestTx(testAddress(2), 1, 1000, "default")
+
+	if err := mp.Insert(ctx, tx1); err != nil {
+		t.Fatalf("insert first tx: %v", err)
+	}
+	if err := mp.Insert(ctx, tx2); err != nil {
+		t.Fatalf("insert second tx: %v", err)
+	}
+
+	var order []sdk.AccAddress
+	for it := mp.Select(context.Background(), nil); it != nil; it = it.Next() {
+		tt, ok := it.Tx().(*testTx)
+		if !ok {
+			t.Fatalf("unexpected tx type %T", it.Tx())
+		}
+		order = append(order, tt.sender)
+	}
+
+	if len(order) != 2 {
+		t.Fatalf("expected two entries, got %d", len(order))
+	}
+	if !order[0].Equals(tx1.sender) || !order[1].Equals(tx2.sender) {
+		t.Fatalf("expected FIFO insertion order, got %v", order)
+	}
+}
+
+func TestPriorityMempoolOrdersByTierPriorityAndOrder(t *testing.T) {
+	tiers := []Tier{
+		testTierMatcher("high"),
+		testTierMatcher("low"),
+	}
+	mp := newTestPriorityMempool(t, tiers)
+	sdkCtx := testSDKContext()
+
+	ctxPriority5 := sdk.WrapSDKContext(sdkCtx.WithPriority(5))
+	ctxPriority10 := sdk.WrapSDKContext(sdkCtx.WithPriority(10))
+	ctxPriority100 := sdk.WrapSDKContext(sdkCtx.WithPriority(100))
+
+	highLowPriority1 := newTestTx(testAddress(1), 1, 1000, "high")
+	highHighPriority := newTestTx(testAddress(2), 1, 1000, "high")
+	highLowPriority2 := newTestTx(testAddress(3), 1, 1000, "high")
+	lowHighPriority := newTestTx(testAddress(4), 1, 1000, "low")
+
+	if err := mp.Insert(ctxPriority100, lowHighPriority); err != nil {
+		t.Fatalf("insert low tier high priority: %v", err)
+	}
+	if err := mp.Insert(ctxPriority5, highLowPriority1); err != nil {
+		t.Fatalf("insert high tier low priority #1: %v", err)
+	}
+	if err := mp.Insert(ctxPriority10, highHighPriority); err != nil {
+		t.Fatalf("insert high tier high priority: %v", err)
+	}
+	if err := mp.Insert(ctxPriority5, highLowPriority2); err != nil {
+		t.Fatalf("insert high tier low priority #2: %v", err)
+	}
+
+	var order []sdk.AccAddress
+	for it := mp.Select(context.Background(), nil); it != nil; it = it.Next() {
+		tt, ok := it.Tx().(*testTx)
+		if !ok {
+			t.Fatalf("unexpected tx type %T", it.Tx())
+		}
+		order = append(order, tt.sender)
+	}
+
+	expected := []sdk.AccAddress{
+		highHighPriority.sender,
+		highLowPriority1.sender,
+		highLowPriority2.sender,
+		lowHighPriority.sender,
+	}
+	if len(order) != len(expected) {
+		t.Fatalf("expected %d entries, got %d", len(expected), len(order))
+	}
+	for idx, sender := range expected {
+		if !order[idx].Equals(sender) {
+			t.Fatalf("unexpected order at %d: got %v expected %v", idx, order[idx], sender)
+		}
+	}
+}
+
 type mockAccountKeeper struct {
 	sequences map[string]uint64
 }

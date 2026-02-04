@@ -89,7 +89,7 @@ func (h *ProposalHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 			}
 
 			// If the transaction is too large, we skip it.
-			if updatedSize := totalSize + txInfo.Size; updatedSize > maxBlockSize {
+			if updatedSize := totalSize + txInfo.Size; maxBlockSize > 0 && updatedSize > maxBlockSize {
 				h.logger.Debug(
 					"failed to select tx for block limit; tx bytes above the maximum allowed",
 					"tx_size", txInfo.Size,
@@ -109,7 +109,7 @@ func (h *ProposalHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 			}
 
 			// If the gas limit of the transaction is too large, we skip it.
-			if updatedGas := totalGas + txInfo.GasLimit; updatedGas > maxGasLimit {
+			if updatedGas := totalGas + txInfo.GasLimit; maxGasLimit > 0 && updatedGas > maxGasLimit {
 				h.logger.Debug(
 					"failed to select tx for block limit; gas limit above the maximum allowed",
 					"tx_gas", txInfo.GasLimit,
@@ -219,7 +219,7 @@ func (h *ProposalHandler) ProcessProposalHandler() sdk.ProcessProposalHandler {
 			txBytes := req.Txs[i]
 			if feeTx, ok := tx.(sdk.FeeTx); ok {
 				gas := feeTx.GetGas()
-				if totalGas+gas > maxGasLimit {
+				if maxGasLimit > 0 && totalGas+gas > maxGasLimit {
 					h.logger.Error(
 						"failed to process proposal; gas limit above the maximum allowed",
 						"tx_gas", gas,
@@ -242,7 +242,7 @@ func (h *ProposalHandler) ProcessProposalHandler() sdk.ProcessProposalHandler {
 
 			txBz := req.Txs[i]
 			size := int64(len(txBz))
-			if totalTxBytes+size > maxBlockSize {
+			if maxBlockSize > 0 && totalTxBytes+size > maxBlockSize {
 				h.logger.Error(
 					"failed to process proposal; tx bytes above the maximum allowed",
 					"tx_size", size,
