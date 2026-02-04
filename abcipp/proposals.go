@@ -66,7 +66,7 @@ func (h *ProposalHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 		)
 
 		// Get the max gas limit and max block size for the proposal.
-		maxGasLimit := uint64(ctx.ConsensusParams().Block.MaxGas) //nolint: gosec
+		maxGasLimit := ctx.ConsensusParams().Block.MaxGas
 		maxBlockSize := ctx.ConsensusParams().Block.MaxBytes
 
 		// Fill the proposal with transactions from each lane.
@@ -109,7 +109,7 @@ func (h *ProposalHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 			}
 
 			// If the gas limit of the transaction is too large, we skip it.
-			if updatedGas := totalGas + txInfo.GasLimit; maxGasLimit > 0 && updatedGas > maxGasLimit {
+			if updatedGas := totalGas + txInfo.GasLimit; maxGasLimit > 0 && updatedGas > uint64(maxGasLimit) {
 				h.logger.Debug(
 					"failed to select tx for block limit; gas limit above the maximum allowed",
 					"tx_gas", txInfo.GasLimit,
@@ -121,7 +121,7 @@ func (h *ProposalHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 					"tx_hash", TxHash(txInfo.TxBytes),
 				)
 
-				if txInfo.GasLimit > maxGasLimit {
+				if txInfo.GasLimit > uint64(maxGasLimit) { //nolint:gosec
 					txsToRemove = append(txsToRemove, tx)
 				}
 
