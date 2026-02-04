@@ -54,9 +54,10 @@ import (
 
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 
+	"github.com/initia-labs/initia/abcipp"
 	"github.com/initia-labs/initia/app/keepers"
 	"github.com/initia-labs/initia/app/params"
-	upgrades_v1_3_0 "github.com/initia-labs/initia/app/upgrades/v1_3_0"
+	upgrades_v1_4_0 "github.com/initia-labs/initia/app/upgrades/v1_4_0"
 	cryptocodec "github.com/initia-labs/initia/crypto/codec"
 	initiatx "github.com/initia-labs/initia/tx"
 	moveconfig "github.com/initia-labs/initia/x/move/config"
@@ -65,12 +66,6 @@ import (
 
 	// import ibc module for proto init
 	_ "github.com/initia-labs/initia/x/ibc"
-
-	// block-sdk dependencies
-
-	blockchecktx "github.com/skip-mev/block-sdk/v2/abci/checktx"
-	"github.com/skip-mev/block-sdk/v2/block"
-	blockservice "github.com/skip-mev/block-sdk/v2/block/service"
 
 	// connect oracle dependencies
 
@@ -126,7 +121,7 @@ type InitiaApp struct {
 	configurator module.Configurator
 
 	// Override of BaseApp's CheckTx
-	checkTxHandler blockchecktx.CheckTx
+	checkTxHandler abcipp.CheckTx
 }
 
 // NewInitiaApp returns a reference to an initialized Initia.
@@ -252,7 +247,7 @@ func NewInitiaApp(
 	// The cosmos upgrade handler attempts to create ${HOME}/.initia/data to check for upgrade info,
 	// but this isn't required during initial encoding config setup.
 	if loadLatest {
-		upgrades_v1_3_0.RegisterUpgradeHandlers(app)
+		upgrades_v1_4_0.RegisterUpgradeHandlers(app)
 	}
 
 	autocliv1.RegisterQueryServer(app.GRPCQueryRouter(), runtimeservices.NewAutoCLIQueryService(app.ModuleManager.Modules))
@@ -279,7 +274,12 @@ func NewInitiaApp(
 
 	// setup BlockSDK
 
-	mempool, anteHandler, checkTx, prepareProposalHandler, processProposalHandler, err := setupBlockSDK(app, mempoolMaxTxs)
+	// mempool, anteHandler, checkTx, prepareProposalHandler, processProposalHandler, err := setupBlockSDK(app, mempoolMaxTxs)
+	// if err != nil {
+	// 	tmos.Exit(err.Error())
+	// }
+
+	mempool, anteHandler, prepareProposalHandler, processProposalHandler, checkTx, err := app.setupABCIPP(mempoolMaxTxs)
 	if err != nil {
 		tmos.Exit(err.Error())
 	}
@@ -343,7 +343,7 @@ func (app *InitiaApp) CheckTx(req *abci.RequestCheckTx) (*abci.ResponseCheckTx, 
 }
 
 // SetCheckTx sets the checkTxHandler for the app.
-func (app *InitiaApp) SetCheckTx(handler blockchecktx.CheckTx) {
+func (app *InitiaApp) SetCheckTx(handler abcipp.CheckTx) {
 	app.checkTxHandler = handler
 }
 
@@ -458,8 +458,8 @@ func (app *InitiaApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.API
 	// Register node gRPC service for grpc-gateway.
 	nodeservice.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 
-	// Register the Block SDK mempool API routes.
-	blockservice.RegisterGRPCGatewayRoutes(apiSvr.ClientCtx, apiSvr.GRPCGatewayRouter)
+	// Register the ABCI++ API routes.
+	abcipp.RegisterGRPCGatewayRoutes(apiSvr.ClientCtx, apiSvr.GRPCGatewayRouter)
 
 	// Register grpc-gateway routes for all modules.
 	app.BasicModuleManager.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
@@ -482,13 +482,13 @@ func (app *InitiaApp) RegisterTxService(clientCtx client.Context) {
 	authtx.RegisterTxService(app.GRPCQueryRouter(), clientCtx, app.Simulate, app.interfaceRegistry)
 	initiatx.RegisterQueryService(app.GRPCQueryRouter(), clientCtx, app.DynamicFeeKeeper)
 
-	// Register the Block SDK mempool transaction service.
-	mempool, ok := app.Mempool().(block.Mempool)
+	// Register the abcipp mempool transaction service.
+	mempool, ok := app.Mempool().(abcipp.Mempool)
 	if !ok {
-		panic("mempool is not a block.Mempool")
+		panic("mempool is not a abcipp.Mempool")
 	}
 
-	blockservice.RegisterMempoolService(app.GRPCQueryRouter(), mempool)
+	abcipp.RegisterQueryServer(app.GRPCQueryRouter(), mempool)
 }
 
 // RegisterTendermintService implements the Application.RegisterTendermintService method.
@@ -542,6 +542,10 @@ func (app *InitiaApp) DefaultGenesis() map[string]json.RawMessage {
 // Close closes the underlying baseapp, the oracle service, and the prometheus server if required.
 // This method blocks on the closure of both the prometheus server, and the oracle-service
 func (app *InitiaApp) Close() error {
+	if mempool, ok := app.Mempool().(interface{ StopCleaningWorker() }); ok {
+		mempool.StopCleaningWorker()
+	}
+
 	if err := app.BaseApp.Close(); err != nil {
 		return err
 	}
