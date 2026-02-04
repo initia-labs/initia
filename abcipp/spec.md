@@ -7,17 +7,17 @@ The `abcipp` package wires up the ABCI++ surfaces that Initia needs: a priority-
 ### Mempool interface extensions
 
 * `Mempool` builds on `sdkmempool.Mempool` by exposing callers to mempool-specific metadata:
-  * `Contains` and `Lookup` support existence and sender/nonce lookups without leaking internals.
-  * `GetTxDistribution` returns a tier name→count map so telemetry can track whether low/high priority lanes are flowing.
+  * `Contains` and `Lookup` support existence and sender/nonce lookups without exposing internals.
+  * `GetTxDistribution` returns a tier name→count map so telemetry can track whether low- and high-priority lanes are flowing.
   * `GetTxInfo` reports the `TxInfo` struct (sender, sequence, size, gas limit, bytes, tier) used during proposal creation.
-  * `NextExpectedSequence` surfaces the next nonce that would be accepted for a sender, which blocks can use to maintain nonce ordering.
+  * `NextExpectedSequence` surfaces the next nonce that would be accepted for a sender as inferred from pending entries.
 * `AccountKeeper` and `BaseApp` provide the minimal hooks the mempool needs for cleanup (`GetSequence`) and for simulating transactions during ante checks (`GetContextForSimulate`).
 
 ## Priority mempool architecture
 
 1. **Configuration**
    * `PriorityMempoolConfig` governs the upper transaction limit (`MaxTx`), the ordered `Tiers` to prefer, and the `AnteHandler` used to revalidate cached transactions.
-   * `Tier`/`TierMatcher` pairs are canonicalized by `buildTierMatchers`, which trims empty names and always produces a fallback `default` tier.
+   * `Tier`/`TierMatcher` pairs are canonicalized by `buildTierMatchers`, which trims empty names, drops nil matchers, and always produces a fallback `default` tier.
 
 2. **Data model**
    * Entries are stored in three structures: a skiplist rooted at `priorityIndex` (ordered by tier, priority, insertion order, sender, nonce), a map keyed by `(sender, nonce)` for fast lookups, and per-sender `userBucket`s that track contiguous nonce ranges and provide hints for cleaning.
@@ -26,7 +26,8 @@ The `abcipp` package wires up the ABCI++ surfaces that Initia needs: a priority-
 
 3. **Admission & eviction**
    * `Insert` infers the tx key from `FirstSignature`, encodes the tx, extracts gas from `FeeTx`, matches the tier, and optionally enforces nonce order via `expectedNextSequenceLocked`.
-   * Duplicate or lower-priority entries replace existing ones; `canAccept` enforces the `MaxTx` cap by calling `evictLower`, and it rejects transactions that exceed the consensus block gas/byte limits.
+   * If a duplicate `(sender, nonce)` already exists, a higher-priority replacement evicts the old entry; lower-priority replacements are ignored.
+   * `canAccept` enforces the `MaxTx` cap by calling `evictLower`, and it rejects transactions that exceed the consensus block gas/byte limits.
    * Evicted transactions trigger `TxEventListener.OnTxRemoved`, while successful inserts trigger `OnTxInserted`.
    * `Remove`, `Contains`, `CountTx`, `Lookup`, `GetTxInfo`, and `NextExpectedSequence` all operate under the same mutex to keep the skiplist, map, and buckets consistent.
 
@@ -45,14 +46,14 @@ The `abcipp` package wires up the ABCI++ surfaces that Initia needs: a priority-
 * `CheckTxHandler` wraps the application's `CheckTx` logic to ensure the application-side mempool stays aligned with the CometBFT-side cache.
 * During re-checks (`RequestCheckTx.Type == CheckTxType_Recheck`), the handler confirms the tx still exists in the mempool; a missing entry yields an error that forces CometBFT to drop the tx.
 * After executing `baseApp.CheckTx`, any re-check failure also removes the tx from the mempool so CometBFT and the application never diverge.
-* The handler is constructed with the logger, `BaseApp`, a concrete `Mempool`, a `txDecoder`, the `CheckTx` function, and the `AnteHandler`'s fee checker for future extensibility.
+* The handler is constructed with the logger, `BaseApp`, a concrete `Mempool`, a `txDecoder`, the `CheckTx` function, and the fee checker (currently unused in the handler but kept for parity with the app wiring).
 
 ## Proposal handling
 
 * `ProposalHandler` bundles ABCI++ `PrepareProposal` and `ProcessProposal` logic. Both handlers mirror validation to ensure every validator reaches the same block-body decision:
   * `PrepareProposal` runs on the proposer, walks the mempool iterator in priority order, and greedily packs tx bytes/gas until the block limits are reached.
-  * `GetTxInfo` is used to fetch size/gas metadata, and oversized transactions (individually violating block limits) are dropped from the mempool.
-  * Every transaction is re-run through the `AnteHandler` (with `CacheContext`) before inclusion; failures or panics cause removal from the mempool.
+  * `GetTxInfo` is used to fetch size/gas metadata. If a tx individually exceeds block max bytes/gas it is removed from the mempool; if it only exceeds remaining capacity, it is skipped for the proposal.
+  * Every transaction is re-run through the `AnteHandler` (with `CacheContext`) before inclusion; failures cause removal from the mempool.
   * Logs capture the mempool distribution before/after proposal creation to aid observability.
 * `ProcessProposal` runs on the non-proposing validators, duplicating the same limits and ante checks to determine whether the incoming proposal is acceptable:
   * It decodes the proposal transactions via `GetDecodedTxs`, tracks cumulative gas/bytes, rejects proposals that breach limits, and revalidates each tx with the `AnteHandler`.

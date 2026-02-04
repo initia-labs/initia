@@ -121,8 +121,16 @@ show_logs() {
     *) echo "Unknown node: $node"; return 1 ;;
   esac
 
-  echo "Tailing $log_file (Ctrl+C to go back)"
-  tail -f "$log_file"
+  echo "Tailing $log_file (press 'q' or Esc to go back)"
+  tail -f "$log_file" &
+  local tail_pid=$!
+  while IFS= read -rsn1 key; do
+    if [[ $key == $'q' || $key == $'\e' ]]; then
+      break
+    fi
+  done
+  kill "$tail_pid" 2>/dev/null
+  wait "$tail_pid" 2>/dev/null
 }
 
 select_account() {

@@ -208,7 +208,7 @@ func (h *ProposalHandler) ProcessProposalHandler() sdk.ProcessProposalHandler {
 		}
 
 		// Get the max gas limit and max block size for the proposal.
-		maxGasLimit := uint64(ctx.ConsensusParams().Block.MaxGas) //nolint: gosec
+		maxGasLimit := ctx.ConsensusParams().Block.MaxGas
 		maxBlockSize := ctx.ConsensusParams().Block.MaxBytes
 
 		// Verify the transaction.
@@ -219,7 +219,7 @@ func (h *ProposalHandler) ProcessProposalHandler() sdk.ProcessProposalHandler {
 			txBytes := req.Txs[i]
 			if feeTx, ok := tx.(sdk.FeeTx); ok {
 				gas := feeTx.GetGas()
-				if maxGasLimit > 0 && totalGas+gas > maxGasLimit {
+				if maxGasLimit > 0 && totalGas+gas > uint64(maxGasLimit) {
 					h.logger.Error(
 						"failed to process proposal; gas limit above the maximum allowed",
 						"tx_gas", gas,
