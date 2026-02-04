@@ -1,210 +1,14 @@
 package abcipp
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
-	"encoding/json"
-	"fmt"
 	"sync"
 	"testing"
 	"time"
 
 	"cosmossdk.io/log"
-	"cosmossdk.io/math"
-	"cosmossdk.io/store"
-	"cosmossdk.io/store/metrics"
 	abci "github.com/cometbft/cometbft/abci/types"
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
-	dbm "github.com/cosmos/cosmos-db"
-	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
-	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdksigning "github.com/cosmos/cosmos-sdk/types/tx/signing"
-	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
-	protov2 "google.golang.org/protobuf/proto"
 )
-
-type testTx struct {
-	sender   sdk.AccAddress
-	sequence uint64
-	gas      uint64
-	tier     string
-	sig      sdksigning.SignatureV2
-}
-
-var _ authsigning.SigVerifiableTx = (*testTx)(nil)
-
-func newTestTx(sender sdk.AccAddress, sequence uint64, gas uint64, tier string) *testTx {
-	priv := secp256k1.GenPrivKey()
-	sig := sdksigning.SignatureV2{
-		PubKey: priv.PubKey(),
-		Data: &sdksigning.SingleSignatureData{
-			SignMode:  sdksigning.SignMode_SIGN_MODE_DIRECT,
-			Signature: []byte{0x1},
-		},
-		Sequence: sequence,
-	}
-	return &testTx{
-		sender:   sender,
-		sequence: sequence,
-		gas:      gas,
-		tier:     tier,
-		sig:      sig,
-	}
-}
-
-func newTestTxWithPriv(priv cryptotypes.PrivKey, sequence uint64, gas uint64, tier string) *testTx {
-	return &testTx{
-		sender:   sdk.AccAddress(priv.PubKey().Address()),
-		sequence: sequence,
-		gas:      gas,
-		tier:     tier,
-		sig: sdksigning.SignatureV2{
-			PubKey: priv.PubKey(),
-			Data: &sdksigning.SingleSignatureData{
-				SignMode:  sdksigning.SignMode_SIGN_MODE_DIRECT,
-				Signature: []byte{0x1},
-			},
-			Sequence: sequence,
-		},
-	}
-}
-
-func (tx *testTx) GetMsgs() []sdk.Msg {
-	return nil
-}
-
-func (tx *testTx) GetMsgsV2() ([]protov2.Message, error) {
-	return nil, nil
-}
-
-func (tx *testTx) ValidateBasic() error {
-	return nil
-}
-
-func (tx *testTx) GetSigners() ([][]byte, error) {
-	return [][]byte{tx.sender.Bytes()}, nil
-}
-
-func (tx *testTx) GetPubKeys() ([]cryptotypes.PubKey, error) {
-	return []cryptotypes.PubKey{tx.sig.PubKey}, nil
-}
-
-func (tx *testTx) GetSignaturesV2() ([]sdksigning.SignatureV2, error) {
-	return []sdksigning.SignatureV2{{
-		PubKey:   tx.sig.PubKey,
-		Data:     tx.sig.Data,
-		Sequence: tx.sequence,
-	}}, nil
-}
-
-func (tx *testTx) SetSignaturesV2(signatures []sdksigning.SignatureV2) error {
-	if len(signatures) == 0 {
-		return fmt.Errorf("no signatures provided")
-	}
-	tx.sig = signatures[0]
-	return nil
-}
-
-func (tx *testTx) GetFee() sdk.Coins {
-	return sdk.NewCoins(sdk.NewCoin("stake", math.NewInt(1)))
-}
-
-func (tx *testTx) GetGas() uint64 {
-	return tx.gas
-}
-
-func (tx *testTx) FeePayer() []byte {
-	return tx.sender.Bytes()
-}
-
-func (tx *testTx) FeeGranter() []byte {
-	return nil
-}
-
-func (tx *testTx) GetMemo() string {
-	return ""
-}
-
-func (tx *testTx) GetTimeoutHeight() uint64 {
-	return 0
-}
-
-type encodedTestTx struct {
-	Sender   string `json:"sender"`
-	Gas      uint64 `json:"gas"`
-	Sequence uint64 `json:"sequence"`
-	Tier     string `json:"tier"`
-}
-
-func testTxEncoder(tx sdk.Tx) ([]byte, error) {
-	tt, ok := tx.(*testTx)
-	if !ok {
-		return nil, fmt.Errorf("unexpected tx type %T", tx)
-	}
-	enc := encodedTestTx{
-		Sender:   hex.EncodeToString(tt.sender.Bytes()),
-		Gas:      tt.gas,
-		Sequence: tt.sequence,
-		Tier:     tt.tier,
-	}
-	return json.Marshal(enc)
-}
-
-func testTxDecoder(bz []byte) (sdk.Tx, error) {
-	var enc encodedTestTx
-	if err := json.Unmarshal(bz, &enc); err != nil {
-		return nil, err
-	}
-	raw, err := hex.DecodeString(enc.Sender)
-	if err != nil {
-		return nil, err
-	}
-	sender := sdk.AccAddress(raw)
-	return newTestTx(sender, enc.Sequence, enc.Gas, enc.Tier), nil
-}
-
-func testSDKContext() sdk.Context {
-	db := dbm.NewMemDB()
-	cms := store.NewCommitMultiStore(db, log.NewNopLogger(), metrics.NewNoOpMetrics())
-	if err := cms.LoadLatestVersion(); err != nil {
-		panic(err)
-	}
-
-	return sdk.NewContext(cms, tmproto.Header{}, false, log.NewNopLogger()).
-		WithConsensusParams(tmproto.ConsensusParams{
-			Block: &tmproto.BlockParams{
-				MaxBytes: 1 << 20,
-				MaxGas:   1 << 20,
-			},
-		})
-}
-
-func testAddress(id int) sdk.AccAddress {
-	sum := sha256.Sum256([]byte(fmt.Sprintf("addr-%d", id)))
-	return sdk.AccAddress(sum[:20])
-}
-
-func testTierMatcher(name string) Tier {
-	return Tier{
-		Name: name,
-		Matcher: func(_ sdk.Context, tx sdk.Tx) bool {
-			tt, ok := tx.(*testTx)
-			return ok && tt.tier == name
-		},
-	}
-}
-
-func newTestPriorityMempool(t *testing.T, tiers []Tier) *PriorityMempool {
-	t.Helper()
-	if len(tiers) == 0 {
-		tiers = []Tier{{Name: "default", Matcher: func(sdk.Context, sdk.Tx) bool { return true }}}
-	}
-	return NewPriorityMempool(PriorityMempoolConfig{
-		MaxTx: 1000,
-		Tiers: tiers,
-	}, testTxEncoder)
-}
 
 func TestPriorityMempoolConcurrentTierDistribution(t *testing.T) {
 	t.Parallel()
@@ -313,5 +117,266 @@ func TestProposalHandlerWithConcurrentMempool(t *testing.T) {
 	}
 	if _, err := handler.ProcessProposalHandler()(sdkCtx, processReq); err != nil {
 		t.Fatalf("process proposal: %v", err)
+	}
+}
+
+func TestPrepareProposalRemovesTxWhenConsensusParamsShrink(t *testing.T) {
+	cases := []struct {
+		name          string
+		maxBytes      int64
+		maxGas        int64
+		txGas         uint64
+		expectRemoved string
+	}{
+		{
+			name:          "gas-shrink",
+			maxBytes:      1 << 20,
+			maxGas:        50,
+			txGas:         80,
+			expectRemoved: "expected tx to be removed after gas limit shrink",
+		},
+		{
+			name:          "bytes-shrink",
+			maxBytes:      0, // filled after encoding
+			maxGas:        1 << 20,
+			txGas:         1,
+			expectRemoved: "expected tx to be removed after max bytes shrink",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			mp := newTestPriorityMempool(t, nil)
+
+			tx := newTestTx(testAddress(1), 1, tc.txGas, "default")
+			txBytes, err := testTxEncoder(tx)
+			if err != nil {
+				t.Fatalf("encode tx: %v", err)
+			}
+
+			insertMaxBytes := tc.maxBytes
+			if tc.name == "bytes-shrink" {
+				insertMaxBytes = int64(len(txBytes)) + 10
+				tc.maxBytes = int64(len(txBytes)) - 1
+			}
+
+			highLimitCtx := testSDKContextWithParams(insertMaxBytes, 1<<20)
+			insertCtx := sdk.WrapSDKContext(highLimitCtx)
+			if err := mp.Insert(insertCtx, tx); err != nil {
+				t.Fatalf("insert: %v", err)
+			}
+
+			ante := func(ctx sdk.Context, tx sdk.Tx, _ bool) (sdk.Context, error) {
+				return ctx, nil
+			}
+			handler := NewProposalHandler(log.NewNopLogger(), testTxDecoder, testTxEncoder, mp, ante)
+
+			lowLimitCtx := testSDKContextWithParams(tc.maxBytes, tc.maxGas)
+			req := &abci.RequestPrepareProposal{
+				Height:     2,
+				MaxTxBytes: 1 << 20,
+			}
+			resp, err := handler.PrepareProposalHandler()(lowLimitCtx, req)
+			if err != nil {
+				t.Fatalf("prepare proposal: %v", err)
+			}
+			if len(resp.Txs) != 0 {
+				t.Fatalf("expected no txs included, got %d", len(resp.Txs))
+			}
+			if mp.Contains(tx) {
+				t.Fatalf("%s", tc.expectRemoved)
+			}
+		})
+	}
+}
+
+func TestProcessProposalRejectsWhenConsensusParamsShrink(t *testing.T) {
+	cases := []struct {
+		name     string
+		maxBytes int64
+		maxGas   int64
+		txGas    uint64
+	}{
+		{
+			name:     "gas-shrink",
+			maxBytes: 1 << 20,
+			maxGas:   50,
+			txGas:    80,
+		},
+		{
+			name:     "bytes-shrink",
+			maxBytes: 0, // filled after encoding
+			maxGas:   1 << 20,
+			txGas:    1,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			mp := newTestPriorityMempool(t, nil)
+			ante := func(ctx sdk.Context, tx sdk.Tx, _ bool) (sdk.Context, error) {
+				return ctx, nil
+			}
+			handler := NewProposalHandler(log.NewNopLogger(), testTxDecoder, testTxEncoder, mp, ante)
+
+			tx := newTestTx(testAddress(2), 1, tc.txGas, "default")
+			txBytes, err := testTxEncoder(tx)
+			if err != nil {
+				t.Fatalf("encode tx: %v", err)
+			}
+
+			if tc.name == "bytes-shrink" {
+				tc.maxBytes = int64(len(txBytes)) - 1
+			}
+
+			lowLimitCtx := testSDKContextWithParams(tc.maxBytes, tc.maxGas)
+			req := &abci.RequestProcessProposal{
+				Height: 2,
+				Txs:    [][]byte{txBytes},
+			}
+
+			_, err = handler.ProcessProposalHandler()(lowLimitCtx, req)
+			if err == nil {
+				t.Fatalf("expected process proposal to error after params shrink")
+			}
+		})
+	}
+}
+
+func TestPrepareProposalSkipsTxThatWouldOverflowButKeepsLaterTx(t *testing.T) {
+	mp := newTestPriorityMempool(t, nil)
+	ctx := testSDKContextWithParams(1<<20, 10)
+	wrappedCtx := sdk.WrapSDKContext(ctx)
+
+	tx1 := newTestTx(testAddress(1), 1, 6, "default")
+	tx2 := newTestTx(testAddress(2), 1, 6, "default")
+	tx3 := newTestTx(testAddress(3), 1, 4, "default")
+
+	if err := mp.Insert(wrappedCtx, tx1); err != nil {
+		t.Fatalf("insert tx1: %v", err)
+	}
+	if err := mp.Insert(wrappedCtx, tx2); err != nil {
+		t.Fatalf("insert tx2: %v", err)
+	}
+	if err := mp.Insert(wrappedCtx, tx3); err != nil {
+		t.Fatalf("insert tx3: %v", err)
+	}
+
+	ante := func(ctx sdk.Context, tx sdk.Tx, _ bool) (sdk.Context, error) {
+		return ctx, nil
+	}
+	handler := NewProposalHandler(log.NewNopLogger(), testTxDecoder, testTxEncoder, mp, ante)
+
+	req := &abci.RequestPrepareProposal{
+		Height:     2,
+		MaxTxBytes: 1 << 20,
+	}
+	resp, err := handler.PrepareProposalHandler()(ctx, req)
+	if err != nil {
+		t.Fatalf("prepare proposal: %v", err)
+	}
+
+	if len(resp.Txs) != 2 {
+		t.Fatalf("expected 2 txs included, got %d", len(resp.Txs))
+	}
+
+	decoded, err := GetDecodedTxs(testTxDecoder, resp.Txs)
+	if err != nil {
+		t.Fatalf("decode txs: %v", err)
+	}
+	got := make([]sdk.AccAddress, 0, len(decoded))
+	for _, tx := range decoded {
+		tt, ok := tx.(*testTx)
+		if !ok {
+			t.Fatalf("unexpected tx type %T", tx)
+		}
+		got = append(got, tt.sender)
+	}
+
+	if len(got) != 2 || !got[0].Equals(tx1.sender) || !got[1].Equals(tx3.sender) {
+		t.Fatalf("expected tx1 then tx3, got %v", got)
+	}
+	if !mp.Contains(tx2) {
+		t.Fatalf("expected tx2 to remain in mempool after being skipped")
+	}
+}
+
+func TestPrepareProposalSkipsTxWhenMaxBytesWouldOverflow(t *testing.T) {
+	mp := newTestPriorityMempool(t, nil)
+
+	tx1 := newTestTx(testAddress(21), 1, 1, "a")
+	tx2 := newTestTx(testAddress(22), 1, 1, "this-tier-is-much-longer")
+	tx3 := newTestTx(testAddress(23), 1, 1, "b")
+
+	tx1Bytes, err := testTxEncoder(tx1)
+	if err != nil {
+		t.Fatalf("encode tx1: %v", err)
+	}
+	tx2Bytes, err := testTxEncoder(tx2)
+	if err != nil {
+		t.Fatalf("encode tx2: %v", err)
+	}
+	tx3Bytes, err := testTxEncoder(tx3)
+	if err != nil {
+		t.Fatalf("encode tx3: %v", err)
+	}
+
+	maxBytes := int64(len(tx1Bytes)) + int64(len(tx3Bytes))
+	if int64(len(tx1Bytes))+int64(len(tx2Bytes)) <= maxBytes {
+		t.Fatalf("expected tx1+tx2 to overflow max bytes (sizes: tx1=%d tx2=%d tx3=%d max=%d)", len(tx1Bytes), len(tx2Bytes), len(tx3Bytes), maxBytes)
+	}
+	if int64(len(tx2Bytes)) > maxBytes {
+		t.Fatalf("expected tx2 to fit individually under max bytes (tx2=%d max=%d)", len(tx2Bytes), maxBytes)
+	}
+
+	ctx := testSDKContextWithParams(maxBytes, 1<<20)
+	insertCtx := sdk.WrapSDKContext(testSDKContextWithParams(maxBytes+100, 1<<20))
+
+	if err := mp.Insert(insertCtx, tx1); err != nil {
+		t.Fatalf("insert tx1: %v", err)
+	}
+	if err := mp.Insert(insertCtx, tx2); err != nil {
+		t.Fatalf("insert tx2: %v", err)
+	}
+	if err := mp.Insert(insertCtx, tx3); err != nil {
+		t.Fatalf("insert tx3: %v", err)
+	}
+
+	ante := func(ctx sdk.Context, tx sdk.Tx, _ bool) (sdk.Context, error) {
+		return ctx, nil
+	}
+	handler := NewProposalHandler(log.NewNopLogger(), testTxDecoder, testTxEncoder, mp, ante)
+
+	req := &abci.RequestPrepareProposal{
+		Height:     2,
+		MaxTxBytes: 1 << 20,
+	}
+	resp, err := handler.PrepareProposalHandler()(ctx, req)
+	if err != nil {
+		t.Fatalf("prepare proposal: %v", err)
+	}
+
+	if len(resp.Txs) != 2 {
+		t.Fatalf("expected 2 txs included, got %d", len(resp.Txs))
+	}
+
+	decoded, err := GetDecodedTxs(testTxDecoder, resp.Txs)
+	if err != nil {
+		t.Fatalf("decode txs: %v", err)
+	}
+	got := make([]sdk.AccAddress, 0, len(decoded))
+	for _, tx := range decoded {
+		tt, ok := tx.(*testTx)
+		if !ok {
+			t.Fatalf("unexpected tx type %T", tx)
+		}
+		got = append(got, tt.sender)
+	}
+
+	if len(got) != 2 || !got[0].Equals(tx1.sender) || !got[1].Equals(tx3.sender) {
+		t.Fatalf("expected tx1 then tx3, got %v", got)
+	}
+	if !mp.Contains(tx2) {
+		t.Fatalf("expected tx2 to remain in mempool after being skipped")
 	}
 }
