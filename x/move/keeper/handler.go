@@ -7,8 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	"sort"
-	"strconv"
 	"strings"
 	"unsafe"
 
@@ -316,7 +314,7 @@ func (k Keeper) handleExecuteResponse(
 	execRes vmtypes.ExecutionResult,
 ) error {
 	// Emit contract events
-	emitContractEvents(ctx, execRes.Events)
+	types.EmitContractEvents(ctx, execRes.Events)
 
 	// Create cosmos accounts
 	for _, acc := range execRes.NewAccounts {
@@ -629,47 +627,4 @@ func (k Keeper) computeGasForRuntime(ctx context.Context, gasMeter storetypes.Ga
 	}
 
 	return gasForRuntime
-}
-
-// emitContractEvents processes a single contract event from execution results and emits it to the context's EventManager.
-// It tries to parse the event's JSON data and append all key-value pairs as event attributes.
-// If parsing fails, the raw event data is emitted as a single attribute.
-func emitContractEvents(ctx sdk.Context, events []vmtypes.JsonEvent) {
-	for _, event := range events {
-		typeTag := event.TypeTag
-
-		attributes := []sdk.Attribute{
-			sdk.NewAttribute(types.AttributeKeyTypeTag, typeTag),
-			sdk.NewAttribute(types.AttributeKeyData, event.EventData),
-		}
-
-		var dataEvent map[string]any
-		if err := json.Unmarshal([]byte(event.EventData), &dataEvent); err == nil {
-			keys := make([]string, 0, len(dataEvent))
-			for k := range dataEvent {
-				keys = append(keys, k)
-			}
-			sort.Strings(keys)
-
-			for _, k := range keys {
-				v := dataEvent[k]
-				var strVal string
-				switch val := v.(type) {
-				case string:
-					strVal = val
-				case float64:
-					strVal = strconv.FormatFloat(val, 'f', -1, 64)
-				case bool:
-					strVal = strconv.FormatBool(val)
-				case int:
-					strVal = strconv.Itoa(val)
-				default:
-					strVal = fmt.Sprintf("%v", val)
-				}
-				attributes = append(attributes, sdk.NewAttribute(k, strVal))
-			}
-		}
-
-		ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventTypeMove, attributes...))
-	}
 }

@@ -3,6 +3,17 @@ module std::Counter {
         value: u64
     }
 
+    enum Shape has copy, drop{
+        Circle { radius: u64 },
+        Square { side: u64 },
+        Triangle { base: u64, height: u64 },
+    }
+
+    #[event]
+    struct TestEvent has drop {
+        shape: Shape,
+    }
+
     fun init_module(chain: &signer) {
         move_to(chain, Count {
             value: 0,
@@ -12,6 +23,8 @@ module std::Counter {
     public entry fun increase() acquires Count {
         let count = borrow_global_mut<Count>(@initia_std);
         count.value = count.value + 1;
+
+        std::event::emit(TestEvent{shape: Shape::Circle{radius: count.value} });
     }
 
     public entry fun ibc_ack(

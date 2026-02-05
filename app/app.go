@@ -278,7 +278,6 @@ func NewInitiaApp(
 	app.RegisterMessageRouterContextDecorator()
 
 	// setup BlockSDK
-
 	mempool, anteHandler, checkTx, prepareProposalHandler, processProposalHandler, err := setupBlockSDK(app, mempoolMaxTxs)
 	if err != nil {
 		tmos.Exit(err.Error())
