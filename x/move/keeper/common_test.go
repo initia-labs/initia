@@ -499,6 +499,7 @@ var submsgModule []byte
 var dispatchableTokenModule []byte
 var invalidDispatchableTokenModule []byte
 var publicKeyAuthenticator []byte
+var counterModule []byte
 
 func init() {
 	basicCoinModule = ReadMoveFile("BasicCoin")
@@ -512,6 +513,7 @@ func init() {
 	invalidDispatchableTokenModule = ReadMoveFile("test_invalid_dispatchable_token")
 	publicKeyAuthenticator = ReadMoveFile("public_key_authenticator")
 	basicCoinMintScript = ReadScriptFile("main")
+	counterModule = ReadMoveFile("Counter")
 }
 
 func ReadMoveFile(filename string) []byte {
