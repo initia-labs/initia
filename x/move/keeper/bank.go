@@ -769,7 +769,9 @@ func (k MoveBankKeeper) assertDispatchableFungibleAssetAllowed(ctx context.Conte
 
 	// Skip in CheckTx/ReCheckTx because IBC ante runs recv/ack/timeout messages during CheckTx
 	// without msg context decorators.
-	if sdkCtx := sdk.UnwrapSDKContext(ctx); sdkCtx.IsCheckTx() || sdkCtx.IsReCheckTx() {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	switch sdkCtx.ExecMode() {
+	case sdk.ExecModeCheck, sdk.ExecModeReCheck:
 		return nil
 	}
 
