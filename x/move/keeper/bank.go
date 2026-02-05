@@ -767,6 +767,11 @@ func (k MoveBankKeeper) assertDispatchableFungibleAssetAllowed(ctx context.Conte
 		return nil
 	}
 
+	// skip at check tx because ibc executing recv/ack/timeout messages in check tx in ante
+	if sdkCtx := sdk.UnwrapSDKContext(ctx); sdkCtx.IsCheckTx() || sdkCtx.IsReCheckTx() {
+		return nil
+	}
+
 	// check context value of allow dispatchable
 	value := ctx.Value(types.AllowDispatchableContextKey)
 	if value == nil || !value.(bool) {
