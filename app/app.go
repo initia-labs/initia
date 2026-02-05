@@ -23,6 +23,7 @@ import (
 	abci "github.com/cometbft/cometbft/abci/types"
 	tmjson "github.com/cometbft/cometbft/libs/json"
 	tmos "github.com/cometbft/cometbft/libs/os"
+	cmtmempool "github.com/cometbft/cometbft/mempool"
 
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/gogoproto/proto"
@@ -558,6 +559,16 @@ func (app *InitiaApp) Close() error {
 	}
 
 	return nil
+}
+
+// ConnectMempoolEvents overrides BaseApp's implementation
+func (app *InitiaApp) ConnectMempoolEvents(eventCh chan cmtmempool.AppMempoolEvent) {
+	if pm, ok := app.Mempool().(*abcipp.PriorityMempool); ok {
+		pm.RegisterEventListener(&cometEventBridge{
+			txEncoder: app.TxEncode,
+			eventCh:   eventCh,
+		})
+	}
 }
 
 // StartOracleClient starts the oracle client
