@@ -42,9 +42,9 @@ const (
 	AttributeKeyReason  = "reason"
 )
 
-// EmitContractEvents processes a single contract event from execution results and emits it to the context's EventManager.
-// It tries to parse the event's JSON data and append all key-value pairs as event attributes.
-// If parsing fails, the raw event data is emitted as a single attribute.
+// EmitContractEvents processes contract events from execution results and emits them to the context's EventManager.
+// It tries to parse the event's JSON data and appends only scalar key-value pairs as event attributes.
+// If parsing fails, the raw event data is emitted as the sole data attribute.
 func EmitContractEvents(ctx sdk.Context, events []vmtypes.JsonEvent) {
 	for _, event := range events {
 		typeTag := event.TypeTag
