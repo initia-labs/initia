@@ -402,6 +402,7 @@ func Test_InvalidDispatchableToken(t *testing.T) {
 	require.Equal(t, sdkmath.ZeroInt(), balance)
 
 	// send token without allow dispatchable context
+	ctx = ctx.WithExecMode(sdk.ExecModeSimulate)
 	err = moveBankKeeper.SendCoin(ctx, deployer[:], deployer[:], denom, sdkmath.NewInt(1000000))
 	require.Error(t, err)
 
