@@ -37,12 +37,13 @@ func NewValidatorSlashEvent(validatorPeriod uint64, fractions sdk.DecCoins) Vali
 }
 
 func (vs ValidatorSlashEvents) String() string {
-	out := "Validator Slash Events:\n"
+	var out strings.Builder
+	out.WriteString("Validator Slash Events:\n")
 	for i, sl := range vs.ValidatorSlashEvents {
-		out += fmt.Sprintf(`  Slash %d:
+		out.WriteString(fmt.Sprintf(`  Slash %d:
     Period:    %d
     Fractions: %s
-`, i, sl.ValidatorPeriod, sl.Fractions)
+`, i, sl.ValidatorPeriod, sl.Fractions))
 	}
-	return strings.TrimSpace(out)
+	return strings.TrimSpace(out.String())
 }

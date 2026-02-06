@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"strings"
 
 	"cosmossdk.io/collections"
 	"github.com/initia-labs/initia/x/mstaking/types"
@@ -143,7 +144,7 @@ func NonNegativePowerInvariant(k Keeper) sdk.Invariant {
 func PositiveDelegationInvariant(k Keeper) sdk.Invariant {
 	return func(ctx sdk.Context) (string, bool) {
 		var (
-			msg   string
+			msg   strings.Builder
 			count int
 		)
 
@@ -156,20 +157,20 @@ func PositiveDelegationInvariant(k Keeper) sdk.Invariant {
 			if delegation.Shares.IsAnyNegative() {
 				count++
 
-				msg += fmt.Sprintf("\tdelegation with negative shares: %+v\n", delegation)
+				msg.WriteString(fmt.Sprintf("\tdelegation with negative shares: %+v\n", delegation))
 			}
 
 			if delegation.Shares.IsZero() {
 				count++
 
-				msg += fmt.Sprintf("\tdelegation with zero shares: %+v\n", delegation)
+				msg.WriteString(fmt.Sprintf("\tdelegation with zero shares: %+v\n", delegation))
 			}
 		}
 
 		broken := count != 0
 
 		return sdk.FormatInvariant(types.ModuleName, "positive delegations", fmt.Sprintf(
-			"%d invalid delegations found\n%s", count, msg)), broken
+			"%d invalid delegations found\n%s", count, msg.String())), broken
 	}
 }
 
@@ -179,7 +180,7 @@ func PositiveDelegationInvariant(k Keeper) sdk.Invariant {
 func DelegatorSharesInvariant(k Keeper) sdk.Invariant {
 	return func(ctx sdk.Context) (string, bool) {
 		var (
-			msg    string
+			msg    strings.Builder
 			broken bool
 		)
 
@@ -212,12 +213,12 @@ func DelegatorSharesInvariant(k Keeper) sdk.Invariant {
 			calculatedValTotalDelShares := validatorsDelegationShares[validator.GetOperator()]
 			if !calculatedValTotalDelShares.Equal(expValTotalDelShares) {
 				broken = true
-				msg += fmt.Sprintf("broken delegator shares invariance:\n"+
+				msg.WriteString(fmt.Sprintf("broken delegator shares invariance:\n"+
 					"\tvalidator.DelegatorShares: %v\n"+
-					"\tsum of Delegator.Shares: %v\n", expValTotalDelShares, calculatedValTotalDelShares)
+					"\tsum of Delegator.Shares: %v\n", expValTotalDelShares, calculatedValTotalDelShares))
 			}
 		}
 
-		return sdk.FormatInvariant(types.ModuleName, "delegator shares", msg), broken
+		return sdk.FormatInvariant(types.ModuleName, "delegator shares", msg.String()), broken
 	}
 }
