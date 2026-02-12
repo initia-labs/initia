@@ -23,6 +23,7 @@ import (
 	abci "github.com/cometbft/cometbft/abci/types"
 	tmjson "github.com/cometbft/cometbft/libs/json"
 	tmos "github.com/cometbft/cometbft/libs/os"
+	cmtmempool "github.com/cometbft/cometbft/mempool"
 
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/gogoproto/proto"
@@ -281,6 +282,13 @@ func NewInitiaApp(
 	app.SetAnteHandler(anteHandler)
 	app.SetCheckTx(checkTx)
 
+	// wire PrepareCheckStater to promote queued txs after each block commit
+	if pm, ok := mempool.(*abcipp.QueuedMempool); ok {
+		app.SetPrepareCheckStater(func(ctx sdk.Context) {
+			pm.PromoteQueued(ctx)
+		})
+	}
+
 	// setup connect
 
 	oracleClient, prepareProposalHandler, processProposalHandler, preBlocker, extendedVoteHandler, verifyVoteExtensionHandler, err := setupConnect(
@@ -342,6 +350,13 @@ func (app *InitiaApp) SetCheckTx(handler abcipp.CheckTx) {
 
 func (app *InitiaApp) SetOracleClient(oracleClient oracleclient.OracleClient) {
 	app.oracleClient = oracleClient
+}
+
+// ConnectMempoolEvents wires cometbft ProxyMempool event channel to the app mempool.
+func (app *InitiaApp) ConnectMempoolEvents(eventCh chan cmtmempool.AppMempoolEvent) {
+	if qm, ok := app.Mempool().(*abcipp.QueuedMempool); ok {
+		qm.SetEventCh(eventCh)
+	}
 }
 
 func (app *InitiaApp) setPostHandler() {

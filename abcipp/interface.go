@@ -24,9 +24,6 @@ type Mempool interface {
 
 	// GetTxInfo returns information about a transaction in the mempool.
 	GetTxInfo(ctx sdk.Context, tx sdk.Tx) (TxInfo, error)
-
-	// NextExpectedSequence returns the next expected sequence for a sender
-	NextExpectedSequence(ctx sdk.Context, sender string) (uint64, bool, error)
 }
 
 type AccountKeeper interface {

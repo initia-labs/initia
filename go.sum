@@ -728,10 +728,10 @@ github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLf
 github.com/influxdata/influxdb1-client v0.0.0-20191209144304-8bf82d3c094d/go.mod h1:qj24IKcXYK6Iy9ceXlo3Tc+vtHo9lIhSX5JddghvEPo=
 github.com/initia-labs/OPinit v1.2.3 h1:rRSFk7rs0iWnQu3yh8tWhyVyFhRfXVSCeNFnb1oCCq0=
 github.com/initia-labs/OPinit v1.2.3/go.mod h1:28v9Z4Mn6UN0I4/I3nBlGy/8ufio7qO00RDg7C8s06o=
-github.com/initia-labs/OPinit/api v1.2.0 h1:puw1ppyQgg9oFYv2KrKva/eMwNUKfyLK077/erdKZ28=
-github.com/initia-labs/OPinit/api v1.2.0/go.mod h1:Qz11o6zlTtJe495JO7FhEyLhJLPit0rEuLN4pweKL24=
-github.com/initia-labs/cometbft v0.38.21-initia.0 h1:+qUrg7E9y7ZGUa3KWhWioOHIZJ1duht599ggCQOBPjI=
-github.com/initia-labs/cometbft v0.38.21-initia.0/go.mod h1:CQ/VkJXRdaWxDLyKT+JYAWV0m215oRFtymtIr7skA6o=
+github.com/initia-labs/OPinit/api v1.2.1-0.20260107071306-7207b34866b7 h1:ZyGE+EIgWIfRgVUzb4IfClBx6jALaAzlHYCu+JtSW0U=
+github.com/initia-labs/OPinit/api v1.2.1-0.20260107071306-7207b34866b7/go.mod h1:sWDfvmcxd7KD59ukB/Wz0BSpyimyptDEzz1Epe/ET+Y=
+github.com/initia-labs/cometbft v0.38.21-initia.0.0.20260212065829-6acaeedc3b02 h1:Yw04UXhoEdnOSbSifFH0cThMu8X9i59vU3rHIizkLRM=
+github.com/initia-labs/cometbft v0.38.21-initia.0.0.20260212065829-6acaeedc3b02/go.mod h1:CQ/VkJXRdaWxDLyKT+JYAWV0m215oRFtymtIr7skA6o=
 github.com/initia-labs/connect/v2 v2.3.1 h1:Y32LCwUHDBgUzzQHqPBJeWeItYoNu2oYD57JKbZCtjw=
 github.com/initia-labs/connect/v2 v2.3.1/go.mod h1:35hM7xSgI0h3GMUTgspzKY8Ff2yCXNGNwmAdjqo3z8s=
 github.com/initia-labs/cosmos-sdk v0.50.15-initia.0 h1:cgKCqzXBm8md5Q5C9VAyIGCheHhNcOGK/BwpFbett2g=
@@ -740,10 +740,10 @@ github.com/initia-labs/forwarding/simapp v1.0.0 h1:MNHLACO0053BAMO3+Ra2ZTlTTB5Wi
 github.com/initia-labs/forwarding/simapp v1.0.0/go.mod h1:MOIDS73NjoIvTZ3OxUmJXY+Ry7xxXumrXPVZrAeJOhY=
 github.com/initia-labs/forwarding/v2 v2.0.3-initia.3 h1:Uu1VqRsSwX7rgS2A4M3Snzyzk9mJRq2v/ZD4xKHTJkM=
 github.com/initia-labs/forwarding/v2 v2.0.3-initia.3/go.mod h1:N3OzYf14ton71zCxomBmpR7tOxZ2dKwhsMxUmtuJuVQ=
-github.com/initia-labs/movevm v1.2.0 h1:IbpipjRIZe851FJZZzP3RGIqrOCcNsI6bDF9VC0K0do=
-github.com/initia-labs/movevm v1.2.0/go.mod h1:sj/kXD7mUQASqogPTjqltIr4Uid3xxnlcbfiFvvqeXA=
 github.com/initia-labs/iavl v1.2.6-initia.1 h1:4vf9eiccLkob2eiM8YAM8Gf/UBniEFUKpvncM/hVoO8=
 github.com/initia-labs/iavl v1.2.6-initia.1/go.mod h1:GiM43q0pB+uG53mLxLDzimxM9l/5N9UuSY3/D0huuVw=
+github.com/initia-labs/movevm v1.2.0 h1:IbpipjRIZe851FJZZzP3RGIqrOCcNsI6bDF9VC0K0do=
+github.com/initia-labs/movevm v1.2.0/go.mod h1:sj/kXD7mUQASqogPTjqltIr4Uid3xxnlcbfiFvvqeXA=
 github.com/jhump/protoreflect v1.15.3 h1:6SFRuqU45u9hIZPJAoZ8c28T3nK64BNdp9w6jFonzls=
 github.com/jhump/protoreflect v1.15.3/go.mod h1:4ORHmSBmlCW8fh3xHmJMGyul1zNqZK4Elxc8qKP+p1k=
 github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af/go.mod h1:Nht3zPeWKUH0NzdCt2Blrr5ys8VGpn0CEB0cQHVjt7k=

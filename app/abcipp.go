@@ -52,34 +52,44 @@ func (app *InitiaApp) setupABCIPP(mempoolMaxTxs int) (
 		return feeTx.GetFee(), 1 /* FIFO */, nil
 	}
 
-	anteHandler, err := appante.NewAnteHandler(
-		appante.HandlerOptions{
-			HandlerOptions: cosmosante.HandlerOptions{
-				AccountKeeper:   app.AccountKeeper,
-				BankKeeper:      app.BankKeeper,
-				FeegrantKeeper:  app.FeeGrantKeeper,
-				SignModeHandler: app.txConfig.SignModeHandler(),
-				TxFeeChecker:    feeCheckerWrapper,
-			},
-			Codec:     app.appCodec,
-			TxEncoder: app.txConfig.TxEncoder(),
-
-			IBCkeeper:                app.IBCKeeper,
-			DynamicFeeKeeper:         dynamicfeekeeper.NewAnteKeeper(app.DynamicFeeKeeper),
-			AccountAbstractionKeeper: app.MoveKeeper,
+	handlerOpts := appante.HandlerOptions{
+		HandlerOptions: cosmosante.HandlerOptions{
+			AccountKeeper:   app.AccountKeeper,
+			BankKeeper:      app.BankKeeper,
+			FeegrantKeeper:  app.FeeGrantKeeper,
+			SignModeHandler: app.txConfig.SignModeHandler(),
+			TxFeeChecker:    feeCheckerWrapper,
 		},
-	)
+		Codec:     app.appCodec,
+		TxEncoder: app.txConfig.TxEncoder(),
+
+		IBCkeeper:                app.IBCKeeper,
+		DynamicFeeKeeper:         dynamicfeekeeper.NewAnteKeeper(app.DynamicFeeKeeper),
+		AccountAbstractionKeeper: app.MoveKeeper,
+	}
+
+	fullHandler, err := appante.NewAnteHandler(handlerOpts)
 	if err != nil {
 		return nil, nil, nil, nil, nil, err
 	}
 
-	mempool := abcipp.NewPriorityMempool(
+	minimalHandler, err := appante.NewMinimalAnteHandler(handlerOpts)
+	if err != nil {
+		return nil, nil, nil, nil, nil, err
+	}
+
+	anteHandler := appante.NewDualAnteHandler(minimalHandler, fullHandler)
+
+	priorityPool := abcipp.NewPriorityMempool(
 		abcipp.PriorityMempoolConfig{
 			MaxTx:       mempoolMaxTxs,
-			AnteHandler: anteHandler,
+			AnteHandler: fullHandler,     // cleaning worker uses full handler
 			Tiers:       []abcipp.Tier{}, // no tiers on L1
 		}, app.TxEncode,
 	)
+
+	mempool := abcipp.NewQueuedMempool(priorityPool, app.TxEncode)
+	mempool.SetAccountKeeper(app.AccountKeeper)
 
 	// start mempool cleaning worker
 	mempool.StartCleaningWorker(app.BaseApp, app.AccountKeeper, abcipp.DefaultMempoolCleaningInterval)
@@ -89,7 +99,7 @@ func (app *InitiaApp) setupABCIPP(mempoolMaxTxs int) (
 		app.txConfig.TxDecoder(),
 		app.txConfig.TxEncoder(),
 		mempool,
-		anteHandler,
+		fullHandler, // proposal handler uses full handler
 	)
 
 	checkTxHandler := abcipp.NewCheckTxHandler(

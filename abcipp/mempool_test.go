@@ -19,35 +19,37 @@ import (
 )
 
 func TestPriorityMempoolRejectsOutOfOrderSequences(t *testing.T) {
-	keeper := newMockAccountKeeper()
-	priv := secp256k1.GenPrivKey()
-	sender := sdk.AccAddress(priv.PubKey().Address())
-	keeper.SetSequence(sender, 5)
-
-	mp := NewPriorityMempool(PriorityMempoolConfig{
-		MaxTx: 10,
-	}, testTxEncoder)
-
+	mp := newTestPriorityMempool(t, nil)
 	sdkCtx := testSDKContext()
-	if _, _, err := mp.NextExpectedSequence(sdkCtx, sender.String()); err != nil {
-		t.Fatalf("expected to fetch initial account sequence: %v", err)
-	}
 	ctx := sdk.WrapSDKContext(sdkCtx)
 
+	priv := secp256k1.GenPrivKey()
+
+	// Insert seq 5, accepted
 	if err := mp.Insert(ctx, newTestTxWithPriv(priv, 5, 1000, "default")); err != nil {
 		t.Fatalf("failed to insert initial tx: %v", err)
 	}
 
-	if err := mp.Insert(ctx, newTestTxWithPriv(priv, 7, 1000, "default")); err == nil {
-		t.Fatalf("expected sequence gap to be rejected")
+	// Insert seq 7, also accepted (PriorityMempool does not enforce ordering)
+	if err := mp.Insert(ctx, newTestTxWithPriv(priv, 7, 1000, "default")); err != nil {
+		t.Fatalf("failed to insert out-of-order tx: %v", err)
 	}
 
-	if err := mp.Insert(ctx, newTestTxWithPriv(priv, 6, 1000, "default")); err != nil {
-		t.Fatalf("failed to insert sequential tx: %v", err)
+	if mp.CountTx() != 2 {
+		t.Fatalf("expected 2 entries, got %d", mp.CountTx())
+	}
+
+	// Both should appear in Select
+	count := 0
+	for it := mp.Select(context.Background(), nil); it != nil; it = it.Next() {
+		count++
+	}
+	if count != 2 {
+		t.Fatalf("expected 2 entries in Select, got %d", count)
 	}
 }
 
-func TestPriorityMempoolNextExpectedSequenceLifecycle(t *testing.T) {
+func TestPriorityMempoolLifecycle(t *testing.T) {
 	mp := newTestPriorityMempool(t, nil)
 	sdkCtx := testSDKContext()
 	ctx := sdk.WrapSDKContext(sdkCtx)
@@ -55,20 +57,8 @@ func TestPriorityMempoolNextExpectedSequenceLifecycle(t *testing.T) {
 	priv := secp256k1.GenPrivKey()
 	tx := newTestTxWithPriv(priv, 5, 1000, "default")
 
-	if _, ok, err := mp.NextExpectedSequence(sdkCtx, tx.sender.String()); err != nil {
-		t.Fatalf("fetch initial sequence: %v", err)
-	} else if ok {
-		t.Fatalf("expected no entry for sender before insert")
-	}
-
 	if err := mp.Insert(ctx, tx); err != nil {
 		t.Fatalf("insert tx: %v", err)
-	}
-
-	if seq, ok, err := mp.NextExpectedSequence(sdkCtx, tx.sender.String()); err != nil {
-		t.Fatalf("fetch expected sequence: %v", err)
-	} else if !ok || seq != 6 {
-		t.Fatalf("expected next sequence 6, got %d (ok=%t)", seq, ok)
 	}
 
 	if !mp.Contains(tx) {
@@ -89,12 +79,6 @@ func TestPriorityMempoolNextExpectedSequenceLifecycle(t *testing.T) {
 
 	if err := mp.Remove(tx); err != nil {
 		t.Fatalf("remove tx: %v", err)
-	}
-
-	if _, ok, err := mp.NextExpectedSequence(sdkCtx, tx.sender.String()); err != nil {
-		t.Fatalf("fetch after removal: %v", err)
-	} else if ok {
-		t.Fatalf("expected sender to reset after removal")
 	}
 
 	if _, err := mp.GetTxInfo(sdkCtx, tx); err != sdkmempool.ErrTxNotFound {
@@ -171,12 +155,6 @@ func TestPriorityMempoolCleanUpEntries(t *testing.T) {
 
 	if mp.Contains(tx1) || mp.Contains(tx2) {
 		t.Fatalf("stale entries should be gone")
-	}
-
-	if _, ok, err := mp.NextExpectedSequence(sdkCtx, tx1.sender.String()); err != nil {
-		t.Fatalf("fetch after cleanup: %v", err)
-	} else if ok {
-		t.Fatalf("expected sender reset after cleanup")
 	}
 }
 

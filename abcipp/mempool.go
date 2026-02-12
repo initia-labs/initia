@@ -60,7 +60,6 @@ type txKey struct {
 type PriorityMempool struct {
 	mtx              sync.Mutex
 	cfg              PriorityMempoolConfig
-	ak               AccountKeeper
 	txEncoder        sdk.TxEncoder
 	priorityIndex    *skiplist.SkipList
 	entries          map[txKey]*txEntry
@@ -82,7 +81,6 @@ func NewPriorityMempool(cfg PriorityMempoolConfig, txEncoder sdk.TxEncoder) *Pri
 	dist := initTierDistribution(tiers)
 	return &PriorityMempool{
 		cfg:              cfg,
-		ak:               nil,
 		priorityIndex:    skiplist.New(skiplist.GreaterThanFunc(compareEntries)),
 		entries:          make(map[txKey]*txEntry),
 		userBuckets:      make(map[string]*userBucket),
@@ -98,7 +96,6 @@ const DefaultMempoolCleaningInterval = time.Second * 5
 // StartCleaningWorker starts a background worker that periodically cleans up
 // stale transactions.
 func (p *PriorityMempool) StartCleaningWorker(baseApp BaseApp, ak AccountKeeper, interval time.Duration) {
-	p.ak = ak
 	if interval <= 0 {
 		interval = DefaultMempoolCleaningInterval
 	}
@@ -302,7 +299,6 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 	p.mtx.Lock()
 	listeners := copyListeners(p.listeners)
 	var removed []*txEntry
-	isNewEntry := true
 
 	if existing, ok := p.entries[entry.key]; ok {
 		if entry.priority < existing.priority {
@@ -310,17 +306,6 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 			return nil
 		}
 		removed = append(removed, p.removeEntry(existing))
-		isNewEntry = false
-	}
-
-	if isNewEntry {
-		if expectedSeq, enforce, err := p.expectedNextSequenceLocked(sdkCtx, entry.key.sender); err != nil {
-			p.mtx.Unlock()
-			return err
-		} else if enforce && entry.sequence != expectedSeq {
-			p.mtx.Unlock()
-			return fmt.Errorf("tx sequence %d is out of order for sender %s (expected %d)", entry.sequence, entry.key.sender, expectedSeq)
-		}
 	}
 
 	ok, evicted := p.canAccept(sdkCtx, entry.tier, entry.priority, entry.size, entry.gas)
@@ -417,11 +402,13 @@ func (p *PriorityMempool) GetTxInfo(ctx sdk.Context, tx sdk.Tx) (TxInfo, error) 
 	}, nil
 }
 
-// NextExpectedSequence returns the next expected sequence for a sender.
-func (p *PriorityMempool) NextExpectedSequence(ctx sdk.Context, sender string) (uint64, bool, error) {
+// HasSenderEntries returns true if the pool contains any entries for the given sender.
+func (p *PriorityMempool) HasSenderEntries(sender string) bool {
 	p.mtx.Lock()
 	defer p.mtx.Unlock()
-	return p.expectedNextSequenceLocked(ctx, sender)
+
+	_, ok := p.userBuckets[sender]
+	return ok
 }
 
 type txEntry struct {
@@ -553,16 +540,6 @@ func (b *userBucket) collectInvalid(ctx sdk.Context, anteHandler sdk.AnteHandler
 	}
 
 	return invalidEntries
-}
-
-// nextSequence returns the next expected sequence from this bucket.
-func (b *userBucket) nextSequence() (uint64, bool) {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	if b.next == 0 {
-		return 0, false
-	}
-	return b.next, true
 }
 
 func (p *PriorityMempool) snapshotBuckets() map[string]*userBucket {
@@ -733,16 +710,6 @@ func (p *PriorityMempool) canAccept(ctx sdk.Context, tier int, priority int64, s
 	}
 
 	return true, removed
-}
-
-// expectedNextSequenceLocked reads the next expected sequence for sender; caller must hold the lock.
-func (p *PriorityMempool) expectedNextSequenceLocked(ctx sdk.Context, sender string) (uint64, bool, error) {
-	bucket, ok := p.userBuckets[sender]
-	if !ok {
-		return 0, false, nil
-	}
-	next, ok := bucket.nextSequence()
-	return next, ok, nil
 }
 
 // evictLower removes the lowest-priority entry that is worse than the provided tier/priority.
