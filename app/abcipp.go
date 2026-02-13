@@ -80,15 +80,13 @@ func (app *InitiaApp) setupABCIPP(mempoolMaxTxs int) (
 
 	anteHandler := appante.NewDualAnteHandler(minimalHandler, fullHandler)
 
-	priorityPool := abcipp.NewPriorityMempool(
+	mempool := abcipp.NewPriorityMempool(
 		abcipp.PriorityMempoolConfig{
 			MaxTx:       mempoolMaxTxs,
 			AnteHandler: fullHandler,     // cleaning worker uses full handler
 			Tiers:       []abcipp.Tier{}, // no tiers on L1
 		}, app.TxEncode,
 	)
-
-	mempool := abcipp.NewQueuedMempool(priorityPool, app.TxEncode)
 	mempool.SetAccountKeeper(app.AccountKeeper)
 
 	// start mempool cleaning worker
