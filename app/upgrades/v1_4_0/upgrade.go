@@ -3,6 +3,7 @@ package v1_4_0
 import (
 	"context"
 
+	"cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -98,6 +99,13 @@ func updateTotalEscrowAmount(ctx context.Context, app upgrades.InitiaApp) error 
 	})
 	if err != nil {
 		return err
+	}
+
+	// Zero out stale escrow entries for denoms no longer escrowed on any transfer channel.
+	for _, coin := range app.GetTransferKeeper().GetAllTotalEscrowed(sdkCtx) {
+		if totalEscrows.AmountOf(coin.Denom).IsZero() {
+			app.GetTransferKeeper().SetTotalEscrowForDenom(sdkCtx, sdk.NewCoin(coin.Denom, math.ZeroInt()))
+		}
 	}
 
 	for _, coin := range totalEscrows {
