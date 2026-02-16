@@ -91,11 +91,9 @@ func updateTotalEscrowAmount(ctx context.Context, app upgrades.InitiaApp) error 
 			totalEscrows = totalEscrows.Add(c)
 			return false, nil
 		})
-		if err != nil {
-			return true
-		}
 
-		return false
+		// if error occurs during iteration, break the loop and return the error
+		return err != nil
 	})
 	if err != nil {
 		return err
