@@ -8,6 +8,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
+	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+
 	"github.com/initia-labs/initia/app/upgrades"
 	movetypes "github.com/initia-labs/initia/x/move/types"
 
@@ -35,6 +38,11 @@ func RegisterUpgradeHandlers(app upgrades.InitiaApp) {
 	app.GetUpgradeKeeper().SetUpgradeHandler(
 		upgradeName,
 		func(ctx context.Context, _ upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
+			if err := updateTotalEscrowAmount(ctx, app); err != nil {
+				return nil, err
+			}
+
+			// update modules
 			moduleBytesArray, err := vmprecom.ReadStdlib()
 			if err != nil {
 				return nil, err
@@ -64,4 +72,37 @@ func RegisterUpgradeHandlers(app upgrades.InitiaApp) {
 			return vm, nil
 		},
 	)
+}
+
+func updateTotalEscrowAmount(ctx context.Context, app upgrades.InitiaApp) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	totalEscrows := sdk.NewCoins()
+
+	// update total escrow amount by iterating all ibc channels
+	var err error
+	app.GetIBCKeeper().ChannelKeeper.IterateChannels(sdkCtx, func(channel channeltypes.IdentifiedChannel) bool {
+		if channel.PortId != transfertypes.PortID {
+			return false
+		}
+
+		escrowAddr := transfertypes.GetEscrowAddress(channel.PortId, channel.ChannelId)
+		err = app.GetMoveKeeper().MoveBankKeeper().IterateAccountBalances(ctx, escrowAddr, func(c sdk.Coin) (bool, error) {
+			totalEscrows = totalEscrows.Add(c)
+			return false, nil
+		})
+		if err != nil {
+			return true
+		}
+
+		return false
+	})
+	if err != nil {
+		return err
+	}
+
+	for _, coin := range totalEscrows {
+		app.GetTransferKeeper().SetTotalEscrowForDenom(sdkCtx, coin)
+	}
+
+	return nil
 }
