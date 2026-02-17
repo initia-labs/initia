@@ -11,6 +11,7 @@ import (
 	"cosmossdk.io/x/tx/signing/direct"
 	cmtmempool "github.com/cometbft/cometbft/mempool"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
+	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	sdkmempool "github.com/cosmos/cosmos-sdk/types/mempool"
@@ -799,14 +800,14 @@ func TestQueuedMempoolNextExpectedSequence(t *testing.T) {
 	ctx := sdk.WrapSDKContext(sdkCtx)
 
 	// Unknown sender returns false
-	_, ok, err := mp.NextExpectedSequence(sdkCtx, sender.String())
+	_, ok, err := mp.NextExpectedSequence(sender.String())
 	require.NoError(t, err)
 	require.False(t, ok)
 
 	// Insert seq 0 and activeNext becomes 1
 	require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(priv, 0, 1000, "default")))
 
-	next, ok, err := mp.NextExpectedSequence(sdkCtx, sender.String())
+	next, ok, err := mp.NextExpectedSequence(sender.String())
 	require.NoError(t, err)
 	require.True(t, ok)
 	require.Equal(t, uint64(1), next)
@@ -814,7 +815,7 @@ func TestQueuedMempoolNextExpectedSequence(t *testing.T) {
 	// Insert seq 1 and activeNext becomes 2
 	require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(priv, 1, 1000, "default")))
 
-	next, ok, err = mp.NextExpectedSequence(sdkCtx, sender.String())
+	next, ok, err = mp.NextExpectedSequence(sender.String())
 	require.NoError(t, err)
 	require.True(t, ok)
 	require.Equal(t, uint64(2), next)
@@ -928,7 +929,7 @@ func TestQueuedMempoolPromoteQueuedActiveOnlySenders(t *testing.T) {
 	require.Equal(t, 3, activeCount, "A(seq0) + B(seq0) + B(seq2 promoted)")
 
 	// activeNext should be refreshed from the pool state
-	next, ok, _ := mp.NextExpectedSequence(sdkCtx, senderA.String())
+	next, ok, _ := mp.NextExpectedSequence(senderA.String())
 	require.True(t, ok)
 	require.Equal(t, uint64(1), next)
 
@@ -939,7 +940,7 @@ func TestQueuedMempoolPromoteQueuedActiveOnlySenders(t *testing.T) {
 	// PromoteQueued. A has no pool entries and no queued, should be cleaned up
 	mp.PromoteQueued(sdkCtx)
 
-	_, ok, _ = mp.NextExpectedSequence(sdkCtx, senderA.String())
+	_, ok, _ = mp.NextExpectedSequence(senderA.String())
 	require.False(t, ok, "A should be cleaned from activeNext after pool cleanup")
 
 	// A can now reinsert (fresh lookup from store)
@@ -1009,6 +1010,63 @@ func TestQueuedMempoolLookupQueued(t *testing.T) {
 	// Lookup non-existent
 	_, ok = mp.Lookup(sender.String(), 99)
 	require.False(t, ok)
+}
+
+// BenchmarkPromoteQueued benchmarks PromoteQueued with 100 users each having 10 txs (1000 total).
+// nonces 1-9 are inserted first (queued), then nonce 0 fills the gap (active and auto promote chain)
+func BenchmarkPromoteQueued(b *testing.B) {
+	sdkCtx := testSDKContext()
+	ctx := sdk.WrapSDKContext(sdkCtx)
+
+	const numUsers = 100
+	const txsPerUser = 10
+
+	privs := make([]cryptotypes.PrivKey, numUsers)
+	for i := 0; i < numUsers; i++ {
+		privs[i] = secp256k1.GenPrivKey()
+	}
+
+	txs := make([][]sdk.Tx, numUsers)
+	for i := 0; i < numUsers; i++ {
+		txs[i] = make([]sdk.Tx, txsPerUser)
+		for seq := uint64(0); seq < txsPerUser; seq++ {
+			txs[i][seq] = newTestTxWithPriv(privs[i], seq, 1000, "default")
+		}
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		b.StopTimer()
+
+		keeper := newMockAccountKeeper()
+		mp := NewPriorityMempool(PriorityMempoolConfig{
+			MaxTx:              numUsers * txsPerUser,
+			MaxQueuedPerSender: txsPerUser,
+			MaxQueuedTotal:     numUsers * txsPerUser,
+		}, testTxEncoder)
+		mp.SetAccountKeeper(keeper)
+
+		for j := 0; j < numUsers; j++ {
+			sender := sdk.AccAddress(privs[j].PubKey().Address())
+			keeper.SetSequence(sender, 0)
+		}
+
+		for j := 0; j < numUsers; j++ {
+			for seq := uint64(1); seq < txsPerUser; seq++ {
+				if err := mp.Insert(ctx, txs[j][seq]); err != nil {
+					b.Fatalf("insert failed user=%d seq=%d: %v", j, seq, err)
+				}
+			}
+		}
+
+		for j := 0; j < numUsers; j++ {
+			sender := sdk.AccAddress(privs[j].PubKey().Address())
+			keeper.SetSequence(sender, txsPerUser)
+		}
+
+		b.StartTimer()
+		mp.PromoteQueued(ctx)
+	}
 }
 
 type mockAccountKeeper struct {

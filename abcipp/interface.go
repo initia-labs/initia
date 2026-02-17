@@ -26,17 +26,20 @@ type Mempool interface {
 	GetTxInfo(ctx sdk.Context, tx sdk.Tx) (TxInfo, error)
 
 	// NextExpectedSequence returns the next expected sequence for a sender
-	NextExpectedSequence(ctx sdk.Context, sender string) (uint64, bool, error)
+	NextExpectedSequence(sender string) (uint64, bool, error)
 
 	// IteratePendingTxs iterates over active pool entries, calling fn for each. Stops early if fn returns false.
 	IteratePendingTxs(fn func(sender string, nonce uint64, tx sdk.Tx) bool)
 
 	// IterateQueuedTxs iterates over queued pool entries, calling fn for each. Stops early if fn returns false.
 	IterateQueuedTxs(fn func(sender string, nonce uint64, tx sdk.Tx) bool)
+}
 
-	// SelectTxInfos returns a priority-ordered snapshot of active pool entries
-	// with their info, taken atomically under a single lock.
-	SelectTxInfos(ctx sdk.Context) []TxInfoEntry
+// TxInfoIterator extends sdkmempool.Iterator with TxInfo access.
+// The iterator returned by PriorityMempool.Select implements this interface.
+type TxInfoIterator interface {
+	sdkmempool.Iterator
+	TxInfo() TxInfo
 }
 
 type AccountKeeper interface {

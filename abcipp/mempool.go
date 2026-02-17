@@ -258,10 +258,15 @@ func (p *PriorityMempool) cleanUpEntries(bApp BaseApp, ak AccountKeeper) {
 		for _, entry := range state.active {
 			entries = append(entries, entry)
 		}
-		sort.Slice(entries, func(i, j int) bool { return entries[i].sequence < entries[j].sequence })
 		snapshots = append(snapshots, senderSnapshot{sender: sender, entries: entries})
 	}
 	p.mtx.RUnlock()
+
+	for idx := range snapshots {
+		sort.Slice(snapshots[idx].entries, func(a, b int) bool {
+			return snapshots[idx].entries[a].sequence < snapshots[idx].entries[b].sequence
+		})
+	}
 
 	var removed []*txEntry
 	for _, snap := range snapshots {
@@ -313,7 +318,7 @@ func (p *PriorityMempool) cleanUpEntries(bApp BaseApp, ak AccountKeeper) {
 	var finalRemoved []*txEntry
 	for _, entry := range removed {
 		if existing, ok := p.entries[entry.key]; ok {
-			finalRemoved = append(finalRemoved, p.removeEntry(existing))
+			finalRemoved = append(finalRemoved, p.removeEntryLocked(existing))
 		}
 	}
 	p.mtx.Unlock()
@@ -400,7 +405,6 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 		seq, seqOk := p.fetchSequence(sdkCtx, key.sender)
 		p.mtx.Lock()
 
-		ss = p.getOrCreateSenderLocked(key.sender)
 		if !ss.hasActiveNext && seqOk {
 			ss.activeNext = seq
 			ss.hasActiveNext = true
@@ -449,12 +453,10 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 		}
 
 		var removed []*txEntry
-		if existing, ok := p.entries[entry.key]; ok {
-			if entry.priority < existing.priority {
-				p.mtx.Unlock()
-				return nil
-			}
-			removed = append(removed, p.removeEntry(existing))
+		existing, hasExisting := p.entries[entry.key]
+		if hasExisting && entry.priority < existing.priority {
+			p.mtx.Unlock()
+			return nil
 		}
 
 		ok, evicted := p.canAccept(sdkCtx, entry.tier, entry.priority, entry.size, entry.gas)
@@ -465,7 +467,14 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 			return sdkmempool.ErrMempoolTxMaxCapacity
 		}
 
-		p.addEntry(entry)
+		// remove existing only after canAccept confirms we can accept the new entry
+		if hasExisting {
+			if _, stillExists := p.entries[existing.key]; stillExists {
+				removed = append(removed, p.removeEntryLocked(existing))
+			}
+		}
+
+		p.addEntryLocked(entry)
 
 		// advance activeNext and promote continuous queued entries
 		var promoted []*txEntry
@@ -479,7 +488,7 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 				accepted, ev := p.canAccept(peCtx, pe.tier, pe.priority, pe.size, pe.gas)
 				removed = append(removed, ev...)
 				if accepted {
-					p.addEntry(pe)
+					p.addEntryLocked(pe)
 					promoted = append(promoted, pe)
 				}
 			}
@@ -507,7 +516,7 @@ func (p *PriorityMempool) Remove(tx sdk.Tx) error {
 	p.mtx.Lock()
 	// try active pool first
 	if entry, ok := p.entries[key]; ok {
-		removed := p.removeEntry(entry)
+		removed := p.removeEntryLocked(entry)
 		p.mtx.Unlock()
 		p.pushEvent(cmtmempool.EventTxRemoved, removed.bytes)
 		return nil
@@ -531,16 +540,27 @@ func (p *PriorityMempool) Remove(tx sdk.Tx) error {
 }
 
 // Select returns an iterator over the active priority-ordered entries.
-func (p *PriorityMempool) Select(ctx context.Context, _ [][]byte) sdkmempool.Iterator {
+func (p *PriorityMempool) Select(_ context.Context, _ [][]byte) sdkmempool.Iterator {
 	p.mtx.RLock()
 	if p.priorityIndex.Len() == 0 {
 		p.mtx.RUnlock()
 		return nil
 	}
 
-	entries := make([]*txEntry, 0, p.priorityIndex.Len())
+	entries := make([]TxInfoEntry, 0, p.priorityIndex.Len())
 	for node := p.priorityIndex.Front(); node != nil; node = node.Next() {
-		entries = append(entries, node.Value.(*txEntry))
+		e := node.Value.(*txEntry)
+		entries = append(entries, TxInfoEntry{
+			Tx: e.tx,
+			Info: TxInfo{
+				Sender:   e.key.sender,
+				Sequence: e.sequence,
+				Size:     e.size,
+				GasLimit: e.gas,
+				TxBytes:  e.bytes,
+				Tier:     p.tierName(e.tier),
+			},
+		})
 	}
 	p.mtx.RUnlock()
 
@@ -548,31 +568,6 @@ func (p *PriorityMempool) Select(ctx context.Context, _ [][]byte) sdkmempool.Ite
 		entries: entries,
 		idx:     0,
 	}
-}
-
-// SelectTxInfos returns a priority-ordered snapshot of active pool entries
-// with their info, taken atomically under a single lock.
-func (p *PriorityMempool) SelectTxInfos(_ sdk.Context) []TxInfoEntry {
-	p.mtx.RLock()
-	defer p.mtx.RUnlock()
-
-	result := make([]TxInfoEntry, 0, p.priorityIndex.Len())
-	for node := p.priorityIndex.Front(); node != nil; node = node.Next() {
-		entry := node.Value.(*txEntry)
-		result = append(result, TxInfoEntry{
-			Tx: entry.tx,
-			Info: TxInfo{
-				Sender:   entry.key.sender,
-				Sequence: entry.sequence,
-				Size:     entry.size,
-				GasLimit: entry.gas,
-				TxBytes:  entry.bytes,
-				Tier:     p.tierName(entry.tier),
-			},
-		})
-	}
-
-	return result
 }
 
 // Lookup returns the transaction hash for the given sender and nonce.
@@ -631,7 +626,7 @@ func (p *PriorityMempool) GetTxInfo(ctx sdk.Context, tx sdk.Tx) (TxInfo, error) 
 }
 
 // NextExpectedSequence returns the activeNext for a sender.
-func (p *PriorityMempool) NextExpectedSequence(_ sdk.Context, sender string) (uint64, bool, error) {
+func (p *PriorityMempool) NextExpectedSequence(sender string) (uint64, bool, error) {
 	p.mtx.RLock()
 	s := p.senders[sender]
 	if s == nil || !s.hasActiveNext {
@@ -644,30 +639,64 @@ func (p *PriorityMempool) NextExpectedSequence(_ sdk.Context, sender string) (ui
 	return next, true, nil
 }
 
-// IteratePendingTxs iterates over active pool entries, calling fn for each. Stops early if fn returns false.
+// IteratePendingTxs iterates over sorted active pool entries, calling fn for each. Stops early if fn returns false.
 func (p *PriorityMempool) IteratePendingTxs(fn func(sender string, nonce uint64, tx sdk.Tx) bool) {
-	p.mtx.RLock()
-	defer p.mtx.RUnlock()
+	type item struct {
+		sender string
+		nonce  uint64
+		tx     sdk.Tx
+	}
 
+	p.mtx.RLock()
+	var items []item
 	for sender, ss := range p.senders {
 		for nonce, entry := range ss.active {
-			if !fn(sender, nonce, entry.tx) {
-				return
-			}
+			items = append(items, item{sender, nonce, entry.tx})
+		}
+	}
+	p.mtx.RUnlock()
+
+	sort.Slice(items, func(i, j int) bool {
+		if items[i].sender != items[j].sender {
+			return items[i].sender < items[j].sender
+		}
+		return items[i].nonce < items[j].nonce
+	})
+
+	for _, it := range items {
+		if !fn(it.sender, it.nonce, it.tx) {
+			return
 		}
 	}
 }
 
-// IterateQueuedTxs iterates over queued pool entries, calling fn for each. Stops early if fn returns false.
+// IterateQueuedTxs iterates over sorted queued pool entries, calling fn for each. Stops early if fn returns false.
 func (p *PriorityMempool) IterateQueuedTxs(fn func(sender string, nonce uint64, tx sdk.Tx) bool) {
-	p.mtx.RLock()
-	defer p.mtx.RUnlock()
+	type item struct {
+		sender string
+		nonce  uint64
+		tx     sdk.Tx
+	}
 
+	p.mtx.RLock()
+	var items []item
 	for sender, ss := range p.senders {
 		for nonce, entry := range ss.queued {
-			if !fn(sender, nonce, entry.tx) {
-				return
-			}
+			items = append(items, item{sender, nonce, entry.tx})
+		}
+	}
+	p.mtx.RUnlock()
+
+	sort.Slice(items, func(i, j int) bool {
+		if items[i].sender != items[j].sender {
+			return items[i].sender < items[j].sender
+		}
+		return items[i].nonce < items[j].nonce
+	})
+
+	for _, it := range items {
+		if !fn(it.sender, it.nonce, it.tx) {
+			return
 		}
 	}
 }
@@ -743,7 +772,7 @@ func (p *PriorityMempool) PromoteQueued(ctx context.Context) {
 			accepted, ev := p.canAccept(peCtx, pe.tier, pe.priority, pe.size, pe.gas)
 			removed = append(removed, ev...)
 			if accepted {
-				p.addEntry(pe)
+				p.addEntryLocked(pe)
 				promoted = append(promoted, pe)
 			}
 		}
@@ -898,7 +927,7 @@ type txEntry struct {
 
 // priorityIterator walks entries in the order determined by the priority index.
 type priorityIterator struct {
-	entries []*txEntry
+	entries []TxInfoEntry
 	idx     int
 }
 
@@ -916,7 +945,15 @@ func (it *priorityIterator) Tx() sdk.Tx {
 	if it.idx >= len(it.entries) || it.idx < 0 {
 		return nil
 	}
-	return it.entries[it.idx].tx
+	return it.entries[it.idx].Tx
+}
+
+// TxInfo returns the metadata for the entry currently pointed to by the iterator.
+func (it *priorityIterator) TxInfo() TxInfo {
+	if it.idx >= len(it.entries) || it.idx < 0 {
+		return TxInfo{}
+	}
+	return it.entries[it.idx].Info
 }
 
 // compareEntries orders txEntries by tier, priority, order, sender, and nonce.
@@ -1069,7 +1106,7 @@ func (p *PriorityMempool) evictLower(tier int, priority int64) *txEntry {
 		return nil
 	}
 
-	return p.removeEntry(entry)
+	return p.removeEntryLocked(entry)
 }
 
 // isBetterThan determines whether a new entry should outrank an existing one.
@@ -1080,8 +1117,8 @@ func (p *PriorityMempool) isBetterThan(entry *txEntry, tier int, priority int64)
 	return priority > entry.priority
 }
 
-// addEntry inserts the tx entry into the priority index and updates sender/tier bookkeeping.
-func (p *PriorityMempool) addEntry(entry *txEntry) {
+// addEntryLocked inserts the tx entry into the priority index and updates sender/tier bookkeeping.
+func (p *PriorityMempool) addEntryLocked(entry *txEntry) {
 	p.priorityIndex.Set(entry, entry)
 	p.entries[entry.key] = entry
 	p.getOrCreateSenderLocked(entry.key.sender).active[entry.key.nonce] = entry
@@ -1091,8 +1128,8 @@ func (p *PriorityMempool) addEntry(entry *txEntry) {
 	}
 }
 
-// removeEntry evicts an entry from the priority index and adjusts sender/tier counts.
-func (p *PriorityMempool) removeEntry(entry *txEntry) *txEntry {
+// removeEntryLocked evicts an entry from the priority index and adjusts sender/tier counts.
+func (p *PriorityMempool) removeEntryLocked(entry *txEntry) *txEntry {
 	if entry == nil {
 		return nil
 	}

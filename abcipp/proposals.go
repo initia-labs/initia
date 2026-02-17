@@ -69,7 +69,6 @@ func (h *ProposalHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 		maxGasLimit := ctx.ConsensusParams().Block.MaxGas
 		maxBlockSize := ctx.ConsensusParams().Block.MaxBytes
 
-		entries := h.mempool.SelectTxInfos(ctx)
 		var (
 			totalSize    int64
 			totalGas     uint64
@@ -77,8 +76,9 @@ func (h *ProposalHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 			txsToRemove  []TxInfoEntry
 		)
 
-		for _, entry := range entries {
-			txInfo := entry.Info
+		for iter := h.mempool.Select(ctx, nil); iter != nil; iter = iter.Next() {
+			tx := iter.Tx()
+			txInfo := iter.(TxInfoIterator).TxInfo()
 
 			// If the transaction is too large, we skip it.
 			if updatedSize := totalSize + txInfo.Size; maxBlockSize > 0 && updatedSize > maxBlockSize {
@@ -94,7 +94,7 @@ func (h *ProposalHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 				)
 
 				if txInfo.Size > maxBlockSize {
-					txsToRemove = append(txsToRemove, entry)
+					txsToRemove = append(txsToRemove, TxInfoEntry{Tx: tx, Info: txInfo})
 				}
 
 				continue
@@ -114,7 +114,7 @@ func (h *ProposalHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 				)
 
 				if txInfo.GasLimit > uint64(maxGasLimit) { //nolint:gosec
-					txsToRemove = append(txsToRemove, entry)
+					txsToRemove = append(txsToRemove, TxInfoEntry{Tx: tx, Info: txInfo})
 				}
 
 				continue
@@ -122,7 +122,7 @@ func (h *ProposalHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 
 			// Verify the transaction.
 			catchCtx, write := ctx.CacheContext()
-			if _, err := h.anteHandler(catchCtx, entry.Tx, false); err != nil {
+			if _, err := h.anteHandler(catchCtx, tx, false); err != nil {
 				h.logger.Info(
 					"failed to verify tx",
 					"err", err,
@@ -132,7 +132,7 @@ func (h *ProposalHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 					"tx_hash", TxHash(txInfo.TxBytes),
 				)
 
-				txsToRemove = append(txsToRemove, entry)
+				txsToRemove = append(txsToRemove, TxInfoEntry{Tx: tx, Info: txInfo})
 				continue
 			}
 
