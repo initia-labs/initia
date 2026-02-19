@@ -850,6 +850,47 @@ func TestQueuedMempoolSameNonceReplacement(t *testing.T) {
 	require.Equal(t, 2, mp.CountTx())
 }
 
+func TestQueuedMempoolSameNonceReplacementAtCapacityDoesNotEvictOther(t *testing.T) {
+	privA := secp256k1.GenPrivKey()
+	privB := secp256k1.GenPrivKey()
+	senderA := sdk.AccAddress(privA.PubKey().Address())
+	senderB := sdk.AccAddress(privB.PubKey().Address())
+
+	mp := NewPriorityMempool(PriorityMempoolConfig{
+		MaxTx: 2,
+	}, testTxEncoder)
+
+	// Fill pool with two active txs.
+	ctxA := sdk.WrapSDKContext(testSDKContext().WithPriority(100))
+	txA := newTestTxWithPriv(privA, 0, 1000, "default")
+	require.NoError(t, mp.Insert(ctxA, txA))
+
+	ctxB := sdk.WrapSDKContext(testSDKContext().WithPriority(10))
+	txB := newTestTxWithPriv(privB, 0, 1000, "default")
+	require.NoError(t, mp.Insert(ctxB, txB))
+	require.Equal(t, 2, mp.CountTx())
+
+	// Replace A with higher priority while pool is at capacity.
+	ctxA2 := sdk.WrapSDKContext(testSDKContext().WithPriority(200))
+	txA2 := newTestTxWithPriv(privA, 0, 2000, "default")
+	require.NoError(t, mp.Insert(ctxA2, txA2))
+
+	// Replacement should not evict unrelated txB.
+	require.Equal(t, 2, mp.CountTx())
+
+	hashA, ok := mp.Lookup(senderA.String(), 0)
+	require.True(t, ok)
+	bzA2, err := testTxEncoder(txA2)
+	require.NoError(t, err)
+	require.Equal(t, TxHash(bzA2), hashA)
+
+	hashB, ok := mp.Lookup(senderB.String(), 0)
+	require.True(t, ok)
+	bzB, err := testTxEncoder(txB)
+	require.NoError(t, err)
+	require.Equal(t, TxHash(bzB), hashB)
+}
+
 func TestQueuedMempoolEventDispatch(t *testing.T) {
 	keeper := newMockAccountKeeper()
 	priv := secp256k1.GenPrivKey()

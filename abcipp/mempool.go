@@ -318,7 +318,8 @@ func (p *PriorityMempool) cleanUpEntries(bApp BaseApp, ak AccountKeeper) {
 	var finalRemoved []*txEntry
 	for _, entry := range removed {
 		if existing, ok := p.entries[entry.key]; ok {
-			finalRemoved = append(finalRemoved, p.removeEntryLocked(existing))
+			p.removeEntryLocked(existing)
+			finalRemoved = append(finalRemoved, existing)
 		}
 	}
 	p.mtx.Unlock()
@@ -453,25 +454,27 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 		}
 
 		var removed []*txEntry
+
+		// check if entry already exists in active pool
 		existing, hasExisting := p.entries[entry.key]
-		if hasExisting && entry.priority < existing.priority {
-			p.mtx.Unlock()
-			return nil
+		if hasExisting {
+			if entry.priority < existing.priority {
+				p.mtx.Unlock()
+				return nil
+			}
 		}
 
-		ok, evicted := p.canAccept(sdkCtx, entry.tier, entry.priority, entry.size, entry.gas)
-		removed = append(removed, evicted...)
-		if !ok {
+		if ok, ev := p.canAcceptLocked(sdkCtx, entry.tier, entry.priority, entry.size, entry.gas, existing); ok {
+			if hasExisting {
+				p.removeEntryLocked(existing)
+				removed = append(removed, existing)
+			}
+			p.removeEntriesLocked(ev...)
+			removed = append(removed, ev...)
+		} else {
 			p.mtx.Unlock()
 			p.pushRemovedEvents(removed)
 			return sdkmempool.ErrMempoolTxMaxCapacity
-		}
-
-		// remove existing only after canAccept confirms we can accept the new entry
-		if hasExisting {
-			if _, stillExists := p.entries[existing.key]; stillExists {
-				removed = append(removed, p.removeEntryLocked(existing))
-			}
 		}
 
 		p.addEntryLocked(entry)
@@ -485,9 +488,9 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 				pe.order = p.nextOrder()
 				peCtx := sdkCtx.WithTxBytes(pe.bytes)
 				pe.tier = p.selectTier(peCtx, pe.tx)
-				accepted, ev := p.canAccept(peCtx, pe.tier, pe.priority, pe.size, pe.gas)
-				removed = append(removed, ev...)
-				if accepted {
+				if accepted, ev := p.canAcceptLocked(peCtx, pe.tier, pe.priority, pe.size, pe.gas, nil); accepted {
+					p.removeEntriesLocked(ev...)
+					removed = append(removed, ev...)
 					p.addEntryLocked(pe)
 					promoted = append(promoted, pe)
 				}
@@ -516,9 +519,9 @@ func (p *PriorityMempool) Remove(tx sdk.Tx) error {
 	p.mtx.Lock()
 	// try active pool first
 	if entry, ok := p.entries[key]; ok {
-		removed := p.removeEntryLocked(entry)
+		p.removeEntryLocked(entry)
 		p.mtx.Unlock()
-		p.pushEvent(cmtmempool.EventTxRemoved, removed.bytes)
+		p.pushEvent(cmtmempool.EventTxRemoved, entry.bytes)
 		return nil
 	}
 
@@ -769,9 +772,9 @@ func (p *PriorityMempool) PromoteQueued(ctx context.Context) {
 			pe.order = p.nextOrder()
 			peCtx := sdkCtx.WithTxBytes(pe.bytes)
 			pe.tier = p.selectTier(peCtx, pe.tx)
-			accepted, ev := p.canAccept(peCtx, pe.tier, pe.priority, pe.size, pe.gas)
-			removed = append(removed, ev...)
-			if accepted {
+			if accepted, ev := p.canAcceptLocked(peCtx, pe.tier, pe.priority, pe.size, pe.gas, nil); accepted {
+				p.removeEntriesLocked(ev...)
+				removed = append(removed, ev...)
 				p.addEntryLocked(pe)
 				promoted = append(promoted, pe)
 			}
@@ -810,6 +813,8 @@ func (p *PriorityMempool) fetchSequence(ctx sdk.Context, sender string) (uint64,
 
 	seq, err := p.ak.GetSequence(ctx, addr)
 	if err != nil {
+		// AccountKeeper.GetSequence returns an error only when the account does not
+		// exist yet. Treat that as sequence 0 and mark the lookup as usable.
 		return 0, true
 	}
 
@@ -1066,47 +1071,54 @@ func initTierDistribution(tiers []tierMatcher) map[string]uint64 {
 	return dist
 }
 
-// canAccept checks whether a tx can remain in the pool given the configured limits and evicts as needed.
-func (p *PriorityMempool) canAccept(ctx sdk.Context, tier int, priority int64, size int64, gas uint64) (bool, []*txEntry) {
-	var removed []*txEntry
+// canAcceptLocked checks whether a tx can be accepted and returns the list of
+// entries that should be evicted to make room. It does not mutate pool state.
+// If exclude is non-nil, capacity planning treats it as already absent.
+func (p *PriorityMempool) canAcceptLocked(ctx sdk.Context, tier int, priority int64, size int64, gas uint64, exclude *txEntry) (bool, []*txEntry) {
+	var evictList []*txEntry
 
-	if p.cfg.MaxTx > 0 {
-		for len(p.entries) >= p.cfg.MaxTx {
-			evicted := p.evictLower(tier, priority)
-			if evicted == nil {
-				return false, removed
-			}
-			removed = append(removed, evicted)
-		}
-	}
-
+	// First enforce per-tx hard limits. If the candidate can never fit into a
+	// block, reject it without evicting existing mempool entries.
 	blockParams := ctx.ConsensusParams().Block
 	blockMaxBytes := blockParams.MaxBytes
 	if blockMaxBytes > 0 && size > blockMaxBytes {
-		return false, removed
+		return false, evictList
 	}
 
 	blockMaxGas := blockParams.MaxGas
 	if blockMaxGas > 0 && gas > uint64(blockMaxGas) {
-		return false, removed
+		return false, evictList
 	}
 
-	return true, removed
-}
+	// Capacity eviction comes after hard checks so we only evict when the new tx
+	// is otherwise admissible.
+	if p.cfg.MaxTx > 0 {
+		targetLen := p.cfg.MaxTx - 1 // one slot needed for candidate tx
+		curLen := len(p.entries)
+		if exclude != nil {
+			if _, ok := p.entries[exclude.key]; ok {
+				curLen--
+			}
+		}
+		for node := p.priorityIndex.Back(); curLen > targetLen; node = node.Prev() {
+			if node == nil {
+				return false, evictList
+			}
 
-// evictLower removes the lowest-priority entry that is worse than the provided tier/priority.
-func (p *PriorityMempool) evictLower(tier int, priority int64) *txEntry {
-	back := p.priorityIndex.Back()
-	if back == nil {
-		return nil
+			entry := node.Value.(*txEntry)
+			if exclude != nil && entry.key == exclude.key {
+				continue
+			}
+			if !p.isBetterThan(entry, tier, priority) {
+				return false, evictList
+			}
+
+			evictList = append(evictList, entry)
+			curLen--
+		}
 	}
 
-	entry := back.Value.(*txEntry)
-	if !p.isBetterThan(entry, tier, priority) {
-		return nil
-	}
-
-	return p.removeEntryLocked(entry)
+	return true, evictList
 }
 
 // isBetterThan determines whether a new entry should outrank an existing one.
@@ -1128,10 +1140,17 @@ func (p *PriorityMempool) addEntryLocked(entry *txEntry) {
 	}
 }
 
+// removeEntriesLocked removes multiple entries and returns the removed entries for event dispatch.
+func (p *PriorityMempool) removeEntriesLocked(entries ...*txEntry) {
+	for _, entry := range entries {
+		p.removeEntryLocked(entry)
+	}
+}
+
 // removeEntryLocked evicts an entry from the priority index and adjusts sender/tier counts.
-func (p *PriorityMempool) removeEntryLocked(entry *txEntry) *txEntry {
+func (p *PriorityMempool) removeEntryLocked(entry *txEntry) {
 	if entry == nil {
-		return nil
+		return
 	}
 
 	p.priorityIndex.Remove(entry)
@@ -1145,17 +1164,6 @@ func (p *PriorityMempool) removeEntryLocked(entry *txEntry) *txEntry {
 			p.tierDistribution[name] = count - 1
 		}
 	}
-
-	return entry
-}
-
-// txBytesAndSize encodes the tx and returns its bytes with length.
-func (p *PriorityMempool) txBytesAndSize(tx sdk.Tx) ([]byte, int64, error) {
-	bz, err := p.txEncoder(tx)
-	if err != nil {
-		return nil, 0, err
-	}
-	return bz, int64(len(bz)), nil
 }
 
 // txKeyFromTx extracts the sender address and nonce that uniquely identifies the tx.
