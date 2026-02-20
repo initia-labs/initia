@@ -2320,6 +2320,51 @@ func TestInsertActiveClearsRequeuedSameNonceFromQueued(t *testing.T) {
 	require.Equal(t, 5, mp.CountTx(), "A:2 should move from queued to active without duplicate accounting")
 }
 
+func TestInsertActiveRejectPreservesQueuedEntry(t *testing.T) {
+	keeper := newMockAccountKeeper()
+	sdkCtx := testSDKContext()
+
+	// MaxTx=2
+	mp := NewPriorityMempool(PriorityMempoolConfig{MaxTx: 2}, testTxEncoder)
+	mp.SetAccountKeeper(keeper)
+
+	privA := secp256k1.GenPrivKey()
+	privB := secp256k1.GenPrivKey()
+	senderA := sdk.AccAddress(privA.PubKey().Address())
+	senderB := sdk.AccAddress(privB.PubKey().Address())
+	keeper.SetSequence(senderA, 0)
+	keeper.SetSequence(senderB, 0)
+
+	// first A inserts nonce0 (active, priority 50) + A inserts nonce2 (queued, priority 10)
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(50)), newTestTxWithPriv(privA, 0, 1000, "default")))
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(10)), newTestTxWithPriv(privA, 2, 1000, "default")))
+	// then B inserts nonce0 (active, priority 200) fills the pool.
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(200)), newTestTxWithPriv(privB, 0, 1000, "default")))
+
+	require.Equal(t, 3, mp.CountTx()) // 2 active + 1 queued
+
+	// advancing on-chain seq so PromoteQueued attempts to promote A nonce2.
+	// but promotion fails because the active pool is full and A nonce2 (priority 10)
+	// can't evict anyone. requeueEntriesLocked puts it back, activeNext rolls to 2.
+	keeper.SetSequence(senderA, 2)
+	mp.PromoteQueued(sdkCtx)
+
+	// sanity check, A nonce2 should still be queued after failed promotion
+	_, ok := mp.Lookup(senderA.String(), 2)
+	require.True(t, ok, "nonce 2 must still exist after failed promotion")
+	countBefore := mp.CountTx()
+
+	// now try inserting A nonce2 with priority 20, which is higher than the queued entry (10) but
+	// lower than all active entries (50, 200). canAcceptLocked should reject.
+	err := mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(20)), newTestTxWithPriv(privA, 2, 2000, "default"))
+	require.ErrorIs(t, err, sdkmempool.ErrMempoolTxMaxCapacity)
+
+	// the original queued entry must survive the failed insert.
+	_, ok = mp.Lookup(senderA.String(), 2)
+	require.True(t, ok, "queued entry at nonce 2 must not be lost when active insert is rejected")
+	require.Equal(t, countBefore, mp.CountTx(), "CountTx must not change on rejected insert")
+}
+
 func TestReactorInvariant_PromotionCapacityRequeue(t *testing.T) {
 	keeper := newMockAccountKeeper()
 	sdkCtx := testSDKContext()

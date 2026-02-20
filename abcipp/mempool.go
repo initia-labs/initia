@@ -498,7 +498,7 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 
 		var removed []*txEntry
 
-		// check if entry already exists in active pool
+		// check if entry already exists in the active pool
 		existing, hasExisting := p.entries[entry.key]
 		if hasExisting {
 			if entry.priority < existing.priority {
@@ -506,19 +506,24 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 				return nil
 			}
 		}
-		// If a queued tx exists for the same nonce, treat this as same-nonce
-		// replacement before inserting into active to avoid queued+active duplicates.
+		// If a queued tx exists for the same nonce, check priority but defer
+		// deletion until after canAcceptLocked confirms capacity, so the
+		// queued entry is preserved when the active insert is rejected.
+		var queuedToRemove *txEntry
 		if queued, exists := ss.queued[key.nonce]; exists {
 			if !hasExisting && entry.priority <= queued.priority {
 				p.mtx.Unlock()
 				return nil
 			}
-			delete(ss.queued, key.nonce)
-			p.queuedCount.Add(-1)
-			removed = append(removed, queued)
+			queuedToRemove = queued
 		}
 
 		if ok, ev := p.canAcceptLocked(sdkCtx, entry.tier, entry.priority, entry.size, entry.gas, existing); ok {
+			if queuedToRemove != nil {
+				delete(ss.queued, key.nonce)
+				p.queuedCount.Add(-1)
+				removed = append(removed, queuedToRemove)
+			}
 			if hasExisting {
 				p.removeEntryLocked(existing)
 				removed = append(removed, existing)
@@ -526,7 +531,6 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 			p.removeEntriesLocked(ev...)
 			removed = append(removed, ev...)
 		} else {
-			p.enqueueRemovedEvents(removed)
 			p.mtx.Unlock()
 			return sdkmempool.ErrMempoolTxMaxCapacity
 		}
