@@ -406,6 +406,9 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 		seq, seqOk := p.fetchSequence(sdkCtx, key.sender)
 		p.mtx.Lock()
 
+		// refetch sender state in case it was removed while we were unlocked
+		ss = p.getOrCreateSenderLocked(key.sender)
+
 		if !ss.hasActiveNext && seqOk {
 			ss.activeNext = seq
 			ss.hasActiveNext = true
