@@ -283,7 +283,7 @@ func NewInitiaApp(
 	app.SetCheckTx(checkTx)
 
 	// wire PrepareCheckStater to promote queued txs after each block commit
-	if pm, ok := mempool.(*abcipp.QueuedMempool); ok {
+	if pm, ok := mempool.(*abcipp.PriorityMempool); ok {
 		app.SetPrepareCheckStater(func(ctx sdk.Context) {
 			pm.PromoteQueued(ctx)
 		})
@@ -354,8 +354,8 @@ func (app *InitiaApp) SetOracleClient(oracleClient oracleclient.OracleClient) {
 
 // ConnectMempoolEvents wires cometbft ProxyMempool event channel to the app mempool.
 func (app *InitiaApp) ConnectMempoolEvents(eventCh chan cmtmempool.AppMempoolEvent) {
-	if qm, ok := app.Mempool().(*abcipp.QueuedMempool); ok {
-		qm.SetEventCh(eventCh)
+	if pm, ok := app.Mempool().(*abcipp.PriorityMempool); ok {
+		pm.SetEventCh(eventCh)
 	}
 }
 

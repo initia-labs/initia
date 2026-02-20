@@ -1,6 +1,7 @@
 package app
 
 import (
+	"cosmossdk.io/log"
 	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
@@ -11,15 +12,21 @@ import (
 
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/keeper"
+	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 
-	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
+	ophostkeeper "github.com/initia-labs/OPinit/x/ophost/keeper"
 	ibctestingtypes "github.com/initia-labs/initia/x/ibc/testing/types"
 	icaauthkeeper "github.com/initia-labs/initia/x/intertx/keeper"
 	movekeeper "github.com/initia-labs/initia/x/move/keeper"
 
 	marketmapkeeper "github.com/skip-mev/connect/v2/x/marketmap/keeper"
 )
+
+// GetLogger returns the logger for the app.
+func (app *InitiaApp) GetLogger() log.Logger {
+	return app.Logger()
+}
 
 // GetBaseApp returns the base app for the app.
 func (app *InitiaApp) GetBaseApp() *baseapp.BaseApp {
@@ -91,6 +98,11 @@ func (app *InitiaApp) CheckStateContextGetter() func() sdk.Context {
 // GetTransferKeeper returns the IBC transfer keeper for the app.
 func (app *InitiaApp) GetTransferKeeper() *ibctransferkeeper.Keeper {
 	return app.TransferKeeper
+}
+
+// GetOPHostKeeper returns the ophost keeper for the app.
+func (app *InitiaApp) GetOPHostKeeper() *ophostkeeper.Keeper {
+	return app.OPHostKeeper
 }
 
 // GetMarketMapKeeper returns the marketmap keeper for the app.

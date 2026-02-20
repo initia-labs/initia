@@ -9,8 +9,8 @@ managed:
       - buf.build/cosmos/cosmos-proto
     override:
       buf.build/cosmos/cosmos-sdk: cosmossdk.io/api
-      buf.build/cosmos/ibc: github.com/initia-labs/initia/api
-      buf.build/cosmos/ics23: github.com/initia-labs/initia/api
+      buf.build/cosmos/ibc: github.com/initia-labs/OPinit/api
+      buf.build/cosmos/ics23: github.com/initia-labs/OPinit/api
 plugins:
   - name: go-pulsar
     out: ../api

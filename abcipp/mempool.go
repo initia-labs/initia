@@ -4,12 +4,14 @@ import (
 	"context"
 	"fmt"
 	"maps"
-	"math"
+	"sort"
 	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
 
+	cmtmempool "github.com/cometbft/cometbft/mempool"
+	cmttypes "github.com/cometbft/cometbft/types"
 	"github.com/huandu/skiplist"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -21,8 +23,10 @@ var _ Mempool = (*PriorityMempool)(nil)
 // PriorityMempoolConfig configures the limits enforced by the priority mempool.
 // A MaxTx value less than or equal to zero is treated as "unlimited."
 type PriorityMempoolConfig struct {
-	MaxTx int // total transaction limit
-	Tiers []Tier
+	MaxTx              int // total active transaction limit
+	MaxQueuedPerSender int // per sender queued tx limit (0 = default)
+	MaxQueuedTotal     int // total queued tx limit (0 = default)
+	Tiers              []Tier
 
 	// AnteHandler to filter out invalid transactions from the mempool
 	AnteHandler sdk.AnteHandler
@@ -35,41 +39,57 @@ type Tier struct {
 	Matcher TierMatcher
 }
 
-// TxEventListener can be registered to observe when transactions enter or leave
-// the mempool.
-type TxEventListener interface {
-	OnTxInserted(tx sdk.Tx)
-	OnTxRemoved(tx sdk.Tx)
-}
-
 type txKey struct {
 	sender string
 	nonce  uint64
 }
 
+const (
+	// DefaultMaxQueuedPerSender is the default per-sender queued tx limit.
+	DefaultMaxQueuedPerSender = 16
+	// DefaultMaxQueuedTotal is the default total queued tx limit.
+	DefaultMaxQueuedTotal = 1000
+
+	// queuedTier marks entries in the queued pool.
+	queuedTier = -1
+)
+
+// senderState tracks all sender mempool state, active entries in the priority
+// index, queued future nonce entries, and the next expected insertion nonce.
+type senderState struct {
+	activeNext    uint64
+	hasActiveNext bool
+	active        map[uint64]*txEntry
+	queued        map[uint64]*txEntry
+}
+
+func (s *senderState) isEmpty() bool {
+	return len(s.active) == 0 && len(s.queued) == 0
+}
+
 // PriorityMempool is a transaction pool that keeps high-priority submissions
 // flowing with low latency while still making progress on lower-priority ones.
-// Transactions are tracked per user and ordered by priority so we can keep
-// concurrency high, favor priority levels, and efficiently drop all pending
-// messages from a user when a block is committed.
-//
-// The mempool caps total transactions and bytes, ordering the retained entries
-// by priority across all users so higher-quality traffic stays ahead. The
-// limits guard against memory exhaustion attacks while still letting us batch
-// transactions efficiently.
+// It supports queued tx routing with active (next in sequence) txs are inserted into
+// the priority index for consensus ordering, while future nonce txs are held in
+// a queued pool until their predecessors arrive or the on-chain sequence catches up.
 type PriorityMempool struct {
-	mtx              sync.Mutex
+	mtx              sync.RWMutex
 	cfg              PriorityMempoolConfig
 	txEncoder        sdk.TxEncoder
 	priorityIndex    *skiplist.SkipList
 	entries          map[txKey]*txEntry
-	userBuckets      map[string]*userBucket
+	senders          map[string]*senderState
 	orderSeq         int64
-	listeners        []TxEventListener
 	tiers            []tierMatcher
 	tierDistribution map[string]uint64
 	cleaningStopCh   chan struct{}
 	cleaningDoneCh   chan struct{}
+
+	ak                 AccountKeeper
+	queuedCount        atomic.Int64
+	maxQueuedPerSender int
+	maxQueuedTotal     int
+	eventCh            atomic.Pointer[chan<- cmtmempool.AppMempoolEvent]
 }
 
 // NewPriorityMempool creates a new PriorityMempool with the provided limits.
@@ -79,15 +99,71 @@ func NewPriorityMempool(cfg PriorityMempoolConfig, txEncoder sdk.TxEncoder) *Pri
 	}
 	tiers := buildTierMatchers(cfg)
 	dist := initTierDistribution(tiers)
-	return &PriorityMempool{
-		cfg:              cfg,
-		priorityIndex:    skiplist.New(skiplist.GreaterThanFunc(compareEntries)),
-		entries:          make(map[txKey]*txEntry),
-		userBuckets:      make(map[string]*userBucket),
-		txEncoder:        txEncoder,
-		tiers:            tiers,
-		tierDistribution: dist,
+
+	maxQPS := cfg.MaxQueuedPerSender
+	if maxQPS <= 0 {
+		maxQPS = DefaultMaxQueuedPerSender
 	}
+	maxQT := cfg.MaxQueuedTotal
+	if maxQT <= 0 {
+		maxQT = DefaultMaxQueuedTotal
+	}
+
+	return &PriorityMempool{
+		cfg:                cfg,
+		priorityIndex:      skiplist.New(skiplist.GreaterThanFunc(compareEntries)),
+		entries:            make(map[txKey]*txEntry),
+		senders:            make(map[string]*senderState),
+		txEncoder:          txEncoder,
+		tiers:              tiers,
+		tierDistribution:   dist,
+		maxQueuedPerSender: maxQPS,
+		maxQueuedTotal:     maxQT,
+	}
+}
+
+// SetAccountKeeper sets the account keeper used for querying on-chain sequences.
+func (p *PriorityMempool) SetAccountKeeper(ak AccountKeeper) {
+	p.mtx.Lock()
+	defer p.mtx.Unlock()
+
+	p.ak = ak
+}
+
+// SetEventCh stores the cometbft event channel for event dispatch.
+func (p *PriorityMempool) SetEventCh(ch chan<- cmtmempool.AppMempoolEvent) {
+	p.eventCh.Store(&ch)
+}
+
+// SetMaxQueuedPerSender overrides the default per-sender queued tx limit.
+func (p *PriorityMempool) SetMaxQueuedPerSender(n int) {
+	p.mtx.Lock()
+	defer p.mtx.Unlock()
+
+	p.maxQueuedPerSender = n
+}
+
+// SetMaxQueuedTotal overrides the default total queued tx limit.
+func (p *PriorityMempool) SetMaxQueuedTotal(n int) {
+	p.mtx.Lock()
+	defer p.mtx.Unlock()
+
+	p.maxQueuedTotal = n
+}
+
+// getOrCreateSenderLocked returns the senderState for the given sender, creating one if needed.
+// the caller must hold p.mtx.
+func (p *PriorityMempool) getOrCreateSenderLocked(sender string) *senderState {
+	s, ok := p.senders[sender]
+	if !ok {
+		s = &senderState{
+			active: make(map[uint64]*txEntry),
+			queued: make(map[uint64]*txEntry),
+		}
+		p.senders[sender] = s
+	}
+
+	return s
 }
 
 // DefaultMempoolCleaningInterval is the default interval for the mempool cleaning worker.
@@ -167,14 +243,34 @@ func (p *PriorityMempool) cleanUpEntries(bApp BaseApp, ak AccountKeeper) {
 		return
 	}
 
-	buckets := p.snapshotBuckets()
-	var removed []*txEntry
-	for sender, bucket := range buckets {
-		startSeq, ok := bucket.snapshotStart()
-		if !ok {
+	type senderSnapshot struct {
+		sender  string
+		entries []*txEntry
+	}
+
+	p.mtx.RLock()
+	snapshots := make([]senderSnapshot, 0, len(p.senders))
+	for sender, state := range p.senders {
+		if len(state.active) == 0 {
 			continue
 		}
-		accountAddr, err := sdk.AccAddressFromBech32(sender)
+		entries := make([]*txEntry, 0, len(state.active))
+		for _, entry := range state.active {
+			entries = append(entries, entry)
+		}
+		snapshots = append(snapshots, senderSnapshot{sender: sender, entries: entries})
+	}
+	p.mtx.RUnlock()
+
+	for idx := range snapshots {
+		sort.Slice(snapshots[idx].entries, func(a, b int) bool {
+			return snapshots[idx].entries[a].sequence < snapshots[idx].entries[b].sequence
+		})
+	}
+
+	var removed []*txEntry
+	for _, snap := range snapshots {
+		accountAddr, err := sdk.AccAddressFromBech32(snap.sender)
 		if err != nil {
 			continue
 		}
@@ -183,14 +279,35 @@ func (p *PriorityMempool) cleanUpEntries(bApp BaseApp, ak AccountKeeper) {
 			continue
 		}
 
-		// remove stale entries below on-chain sequence
-		if accountSeq > startSeq {
-			removed = append(removed, bucket.collectStale(accountSeq)...)
-			startSeq = accountSeq
+		// collect stale entries below on-chain sequence
+		validStart := 0
+		for i, entry := range snap.entries {
+			if entry.sequence < accountSeq {
+				removed = append(removed, entry)
+			} else {
+				validStart = i
+				break
+			}
+			validStart = i + 1
 		}
 
-		// remove invalid entries starting from current on-chain sequence
-		removed = append(removed, bucket.collectInvalid(sdkCtx, p.cfg.AnteHandler, startSeq)...)
+		// collect invalid entries by running ante handler in nonce order
+		if p.cfg.AnteHandler != nil {
+			failed := false
+			for _, entry := range snap.entries[validStart:] {
+				if failed {
+					removed = append(removed, entry)
+					continue
+				}
+				cacheCtx, write := sdkCtx.WithTxBytes(entry.bytes).WithIsReCheckTx(true).CacheContext()
+				if _, err := p.cfg.AnteHandler(cacheCtx, entry.tx, false); err != nil {
+					failed = true
+					removed = append(removed, entry)
+					continue
+				}
+				write()
+			}
+		}
 	}
 
 	if len(removed) == 0 {
@@ -198,71 +315,64 @@ func (p *PriorityMempool) cleanUpEntries(bApp BaseApp, ak AccountKeeper) {
 	}
 
 	p.mtx.Lock()
-	listeners := copyListeners(p.listeners)
 	var finalRemoved []*txEntry
 	for _, entry := range removed {
 		if existing, ok := p.entries[entry.key]; ok {
-			finalRemoved = append(finalRemoved, p.removeEntry(existing))
+			p.removeEntryLocked(existing)
+			finalRemoved = append(finalRemoved, existing)
 		}
 	}
 	p.mtx.Unlock()
 
-	p.dispatchRemoved(listeners, finalRemoved)
-}
-
-// RegisterEventListener registers an observer that will be notified whenever
-// transactions are inserted or removed from the pool.
-func (p *PriorityMempool) RegisterEventListener(listener TxEventListener) {
-	if listener == nil {
-		return
+	for _, entry := range finalRemoved {
+		p.pushEvent(cmtmempool.EventTxRemoved, entry.bytes)
 	}
-
-	p.mtx.Lock()
-	defer p.mtx.Unlock()
-	p.listeners = append(p.listeners, listener)
 }
 
-// copyListeners produces a shallow snapshot of listeners so we can iterate without holding the lock.
-func copyListeners(list []TxEventListener) []TxEventListener {
-	if len(list) == 0 {
-		return nil
-	}
-	copied := make([]TxEventListener, len(list))
-	copy(copied, list)
-	return copied
-}
-
-// Contains implements Mempool.
+// Contains returns true if the transaction is in the active or queued pool.
 func (p *PriorityMempool) Contains(tx sdk.Tx) bool {
 	key, err := txKeyFromTx(tx)
 	if err != nil {
 		return false
 	}
 
-	p.mtx.Lock()
-	defer p.mtx.Unlock()
-	_, ok := p.entries[key]
-	return ok
+	p.mtx.RLock()
+	defer p.mtx.RUnlock()
+
+	if _, ok := p.entries[key]; ok {
+		return true
+	}
+	if s := p.senders[key.sender]; s != nil {
+		_, exists := s.queued[key.nonce]
+		return exists
+	}
+
+	return false
 }
 
-// CountTx implements Mempool.
+// CountTx returns the total number of active and queued transactions.
 func (p *PriorityMempool) CountTx() int {
-	p.mtx.Lock()
-	defer p.mtx.Unlock()
-	return len(p.entries)
+	p.mtx.RLock()
+	defer p.mtx.RUnlock()
+
+	return len(p.entries) + int(p.queuedCount.Load())
 }
 
 // GetTxDistribution returns the number of transactions per configured tier.
 func (p *PriorityMempool) GetTxDistribution() map[string]uint64 {
-	p.mtx.Lock()
-	defer p.mtx.Unlock()
+	p.mtx.RLock()
+	defer p.mtx.RUnlock()
 
-	out := make(map[string]uint64, len(p.tierDistribution))
+	out := make(map[string]uint64, len(p.tierDistribution)+1)
 	maps.Copy(out, p.tierDistribution)
+	if n := p.queuedCount.Load(); n > 0 {
+		out["queued"] = uint64(n)
+	}
+
 	return out
 }
 
-// Insert implements Mempool.
+// Insert routes the tx to the active priority index or queued pool based on nonce.
 func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	priority := sdkCtx.Priority()
@@ -272,10 +382,15 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 		return err
 	}
 
-	bz, size, err := p.txBytesAndSize(tx)
-	if err != nil {
-		return err
+	bz := sdkCtx.TxBytes()
+	if len(bz) == 0 {
+		var err error
+		bz, err = p.txEncoder(tx)
+		if err != nil {
+			return err
+		}
 	}
+	size := int64(len(bz))
 
 	var gas uint64
 	if feeTx, ok := tx.(sdk.FeeTx); ok {
@@ -284,47 +399,117 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 		return fmt.Errorf("tx does not implement FeeTx")
 	}
 
-	entry := &txEntry{
-		tx:       tx,
-		priority: priority,
-		size:     size,
-		key:      key,
-		sequence: key.nonce,
-		order:    p.nextOrder(),
-		tier:     p.selectTier(sdkCtx, tx),
-		gas:      gas,
-		bytes:    bz,
+	p.mtx.Lock()
+	ss := p.getOrCreateSenderLocked(key.sender)
+	if !ss.hasActiveNext && p.ak != nil {
+		p.mtx.Unlock()
+		seq, seqOk := p.fetchSequence(sdkCtx, key.sender)
+		p.mtx.Lock()
+
+		if !ss.hasActiveNext && seqOk {
+			ss.activeNext = seq
+			ss.hasActiveNext = true
+		}
 	}
 
-	p.mtx.Lock()
-	listeners := copyListeners(p.listeners)
-	var removed []*txEntry
+	switch {
+	case ss.hasActiveNext && key.nonce < ss.activeNext:
+		p.mtx.Unlock()
+		return fmt.Errorf("tx nonce %d is stale for sender %s (expected >= %d)", key.nonce, key.sender, ss.activeNext)
 
-	if existing, ok := p.entries[entry.key]; ok {
-		if entry.priority < existing.priority {
+	case ss.hasActiveNext && key.nonce > ss.activeNext:
+		entry := &txEntry{
+			tx:       tx,
+			priority: priority,
+			size:     size,
+			key:      key,
+			sequence: key.nonce,
+			tier:     queuedTier,
+			gas:      gas,
+			bytes:    bz,
+		}
+		inserted, evicted := p.insertQueuedLocked(ss, key, entry)
+		if !inserted {
 			p.mtx.Unlock()
 			return nil
 		}
-		removed = append(removed, p.removeEntry(existing))
-	}
-
-	ok, evicted := p.canAccept(sdkCtx, entry.tier, entry.priority, entry.size, entry.gas)
-	removed = append(removed, evicted...)
-	if !ok {
 		p.mtx.Unlock()
-		p.dispatchRemoved(listeners, removed)
-		return sdkmempool.ErrMempoolTxMaxCapacity
+
+		if evicted != nil {
+			p.pushEvent(cmtmempool.EventTxRemoved, evicted.bytes)
+		}
+		return nil
+
+	default:
+		entry := &txEntry{
+			tx:       tx,
+			priority: priority,
+			size:     size,
+			key:      key,
+			sequence: key.nonce,
+			order:    p.nextOrder(),
+			tier:     p.selectTier(sdkCtx, tx),
+			gas:      gas,
+			bytes:    bz,
+		}
+
+		var removed []*txEntry
+
+		// check if entry already exists in active pool
+		existing, hasExisting := p.entries[entry.key]
+		if hasExisting {
+			if entry.priority < existing.priority {
+				p.mtx.Unlock()
+				return nil
+			}
+		}
+
+		if ok, ev := p.canAcceptLocked(sdkCtx, entry.tier, entry.priority, entry.size, entry.gas, existing); ok {
+			if hasExisting {
+				p.removeEntryLocked(existing)
+				removed = append(removed, existing)
+			}
+			p.removeEntriesLocked(ev...)
+			removed = append(removed, ev...)
+		} else {
+			p.mtx.Unlock()
+			p.pushRemovedEvents(removed)
+			return sdkmempool.ErrMempoolTxMaxCapacity
+		}
+
+		p.addEntryLocked(entry)
+
+		// advance activeNext and promote continuous queued entries
+		var promoted []*txEntry
+		if ss.hasActiveNext {
+			ss.activeNext = max(ss.activeNext, key.nonce+1)
+			toPromote := p.collectPromotableLocked(ss)
+			for _, pe := range toPromote {
+				pe.order = p.nextOrder()
+				peCtx := sdkCtx.WithTxBytes(pe.bytes)
+				pe.tier = p.selectTier(peCtx, pe.tx)
+				if accepted, ev := p.canAcceptLocked(peCtx, pe.tier, pe.priority, pe.size, pe.gas, nil); accepted {
+					p.removeEntriesLocked(ev...)
+					removed = append(removed, ev...)
+					p.addEntryLocked(pe)
+					promoted = append(promoted, pe)
+				}
+			}
+		}
+
+		p.mtx.Unlock()
+
+		p.pushRemovedEvents(removed)
+		p.pushEvent(cmtmempool.EventTxInserted, entry.bytes)
+		for _, pe := range promoted {
+			p.pushEvent(cmtmempool.EventTxInserted, pe.bytes)
+		}
+
+		return nil
 	}
-
-	p.addEntry(entry)
-	p.mtx.Unlock()
-
-	p.dispatchRemoved(listeners, removed)
-	p.dispatchInserted(listeners, entry.tx)
-	return nil
 }
 
-// Remove implements Mempool.
+// Remove removes the tx from the active pool or queued pool.
 func (p *PriorityMempool) Remove(tx sdk.Tx) error {
 	key, err := txKeyFromTx(tx)
 	if err != nil {
@@ -332,33 +517,55 @@ func (p *PriorityMempool) Remove(tx sdk.Tx) error {
 	}
 
 	p.mtx.Lock()
-	listeners := copyListeners(p.listeners)
-	entry, ok := p.entries[key]
-	if !ok {
+	// try active pool first
+	if entry, ok := p.entries[key]; ok {
+		p.removeEntryLocked(entry)
 		p.mtx.Unlock()
-		return sdkmempool.ErrTxNotFound
-	}
-
-	removed := p.removeEntry(entry)
-	p.mtx.Unlock()
-
-	p.dispatchRemoved(listeners, []*txEntry{removed})
-	return nil
-}
-
-// Select implements Mempool.
-func (p *PriorityMempool) Select(ctx context.Context, _ [][]byte) sdkmempool.Iterator {
-	p.mtx.Lock()
-	if p.priorityIndex.Len() == 0 {
-		p.mtx.Unlock()
+		p.pushEvent(cmtmempool.EventTxRemoved, entry.bytes)
 		return nil
 	}
 
-	entries := make([]*txEntry, 0, p.priorityIndex.Len())
-	for node := p.priorityIndex.Front(); node != nil; node = node.Next() {
-		entries = append(entries, node.Value.(*txEntry))
+	// try queued pool
+	if s := p.senders[key.sender]; s != nil {
+		if entry, exists := s.queued[key.nonce]; exists {
+			delete(s.queued, key.nonce)
+			p.queuedCount.Add(-1)
+			p.cleanupSenderLocked(key.sender)
+			removedBytes := entry.bytes
+			p.mtx.Unlock()
+			p.pushEvent(cmtmempool.EventTxRemoved, removedBytes)
+			return nil
+		}
 	}
 	p.mtx.Unlock()
+
+	return sdkmempool.ErrTxNotFound
+}
+
+// Select returns an iterator over the active priority-ordered entries.
+func (p *PriorityMempool) Select(_ context.Context, _ [][]byte) sdkmempool.Iterator {
+	p.mtx.RLock()
+	if p.priorityIndex.Len() == 0 {
+		p.mtx.RUnlock()
+		return nil
+	}
+
+	entries := make([]TxInfoEntry, 0, p.priorityIndex.Len())
+	for node := p.priorityIndex.Front(); node != nil; node = node.Next() {
+		e := node.Value.(*txEntry)
+		entries = append(entries, TxInfoEntry{
+			Tx: e.tx,
+			Info: TxInfo{
+				Sender:   e.key.sender,
+				Sequence: e.sequence,
+				Size:     e.size,
+				GasLimit: e.gas,
+				TxBytes:  e.bytes,
+				Tier:     p.tierName(e.tier),
+			},
+		})
+	}
+	p.mtx.RUnlock()
 
 	return &priorityIterator{
 		entries: entries,
@@ -369,46 +576,346 @@ func (p *PriorityMempool) Select(ctx context.Context, _ [][]byte) sdkmempool.Ite
 // Lookup returns the transaction hash for the given sender and nonce.
 func (p *PriorityMempool) Lookup(sender string, nonce uint64) (string, bool) {
 	key := txKey{sender: sender, nonce: nonce}
-	p.mtx.Lock()
-	defer p.mtx.Unlock()
-	entry, ok := p.entries[key]
-	if !ok {
-		return "", false
+	p.mtx.RLock()
+	defer p.mtx.RUnlock()
+
+	if entry, ok := p.entries[key]; ok {
+		return TxHash(entry.bytes), true
 	}
-	return TxHash(entry.bytes), true
+	if s := p.senders[sender]; s != nil {
+		if entry, exists := s.queued[nonce]; exists {
+			return TxHash(entry.bytes), true
+		}
+	}
+
+	return "", false
 }
 
-// GetTxInfo implements Mempool.
+// GetTxInfo returns information about a transaction.
 func (p *PriorityMempool) GetTxInfo(ctx sdk.Context, tx sdk.Tx) (TxInfo, error) {
 	key, err := txKeyFromTx(tx)
 	if err != nil {
 		return TxInfo{}, err
 	}
 
-	p.mtx.Lock()
-	defer p.mtx.Unlock()
-	entry, ok := p.entries[key]
-	if !ok {
-		return TxInfo{}, sdkmempool.ErrTxNotFound
+	p.mtx.RLock()
+	defer p.mtx.RUnlock()
+
+	if entry, ok := p.entries[key]; ok {
+		return TxInfo{
+			Size:     entry.size,
+			GasLimit: entry.gas,
+			Sender:   entry.key.sender,
+			Sequence: entry.sequence,
+			TxBytes:  entry.bytes,
+			Tier:     p.tierName(entry.tier),
+		}, nil
 	}
-	tierName := p.tierName(entry.tier)
-	return TxInfo{
-		Size:     entry.size,
-		GasLimit: entry.gas,
-		Sender:   entry.key.sender,
-		Sequence: entry.sequence,
-		TxBytes:  entry.bytes,
-		Tier:     tierName,
-	}, nil
+
+	if s := p.senders[key.sender]; s != nil {
+		if entry, exists := s.queued[key.nonce]; exists {
+			return TxInfo{
+				Size:     entry.size,
+				GasLimit: entry.gas,
+				Sender:   entry.key.sender,
+				Sequence: entry.sequence,
+				TxBytes:  entry.bytes,
+				Tier:     "queued",
+			}, nil
+		}
+	}
+
+	return TxInfo{}, sdkmempool.ErrTxNotFound
 }
 
-// HasSenderEntries returns true if the pool contains any entries for the given sender.
-func (p *PriorityMempool) HasSenderEntries(sender string) bool {
-	p.mtx.Lock()
-	defer p.mtx.Unlock()
+// NextExpectedSequence returns the activeNext for a sender.
+func (p *PriorityMempool) NextExpectedSequence(sender string) (uint64, bool, error) {
+	p.mtx.RLock()
+	s := p.senders[sender]
+	if s == nil || !s.hasActiveNext {
+		p.mtx.RUnlock()
+		return 0, false, nil
+	}
+	next := s.activeNext
+	p.mtx.RUnlock()
 
-	_, ok := p.userBuckets[sender]
-	return ok
+	return next, true, nil
+}
+
+// IteratePendingTxs iterates over sorted active pool entries, calling fn for each. Stops early if fn returns false.
+func (p *PriorityMempool) IteratePendingTxs(fn func(sender string, nonce uint64, tx sdk.Tx) bool) {
+	type item struct {
+		sender string
+		nonce  uint64
+		tx     sdk.Tx
+	}
+
+	p.mtx.RLock()
+	var items []item
+	for sender, ss := range p.senders {
+		for nonce, entry := range ss.active {
+			items = append(items, item{sender, nonce, entry.tx})
+		}
+	}
+	p.mtx.RUnlock()
+
+	sort.Slice(items, func(i, j int) bool {
+		if items[i].sender != items[j].sender {
+			return items[i].sender < items[j].sender
+		}
+		return items[i].nonce < items[j].nonce
+	})
+
+	for _, it := range items {
+		if !fn(it.sender, it.nonce, it.tx) {
+			return
+		}
+	}
+}
+
+// IterateQueuedTxs iterates over sorted queued pool entries, calling fn for each. Stops early if fn returns false.
+func (p *PriorityMempool) IterateQueuedTxs(fn func(sender string, nonce uint64, tx sdk.Tx) bool) {
+	type item struct {
+		sender string
+		nonce  uint64
+		tx     sdk.Tx
+	}
+
+	p.mtx.RLock()
+	var items []item
+	for sender, ss := range p.senders {
+		for nonce, entry := range ss.queued {
+			items = append(items, item{sender, nonce, entry.tx})
+		}
+	}
+	p.mtx.RUnlock()
+
+	sort.Slice(items, func(i, j int) bool {
+		if items[i].sender != items[j].sender {
+			return items[i].sender < items[j].sender
+		}
+		return items[i].nonce < items[j].nonce
+	})
+
+	for _, it := range items {
+		if !fn(it.sender, it.nonce, it.tx) {
+			return
+		}
+	}
+}
+
+// PromoteQueued evicts stale queued entries, promotes sequential queued entries,
+// and refreshes activeNext for all tracked senders.
+func (p *PriorityMempool) PromoteQueued(ctx context.Context) {
+	if p.ak == nil {
+		return
+	}
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	// snapshot senders, partitioned by whether they have queued entries
+	p.mtx.Lock()
+	var queuedSenders, activeOnlySenders []string
+	for sender, ss := range p.senders {
+		if !ss.hasActiveNext {
+			continue
+		}
+		if len(ss.queued) > 0 {
+			queuedSenders = append(queuedSenders, sender)
+		} else {
+			activeOnlySenders = append(activeOnlySenders, sender)
+		}
+	}
+	p.mtx.Unlock()
+
+	if len(queuedSenders) == 0 && len(activeOnlySenders) == 0 {
+		return
+	}
+
+	// fetch on-chain sequences outside the lock
+	type seqResult struct {
+		onChainSeq uint64
+	}
+	seqs := make(map[string]*seqResult, len(queuedSenders))
+	for _, sender := range queuedSenders {
+		seq, ok := p.fetchSequence(sdkCtx, sender)
+		if !ok {
+			continue
+		}
+		seqs[sender] = &seqResult{onChainSeq: seq}
+	}
+
+	// process under lock
+	p.mtx.Lock()
+	var staleEntries, promoted []*txEntry
+	var removed []*txEntry
+
+	for sender, sr := range seqs {
+		ss := p.senders[sender]
+		if ss == nil {
+			continue
+		}
+		newActive := max(sr.onChainSeq, ss.activeNext)
+
+		// evict stale queued entries
+		for nonce, entry := range ss.queued {
+			if nonce < sr.onChainSeq {
+				staleEntries = append(staleEntries, entry)
+				delete(ss.queued, nonce)
+				p.queuedCount.Add(-1)
+			}
+		}
+
+		// advance activeNext, collect and promote
+		ss.activeNext = newActive
+		toPromote := p.collectPromotableLocked(ss)
+		for _, pe := range toPromote {
+			pe.order = p.nextOrder()
+			peCtx := sdkCtx.WithTxBytes(pe.bytes)
+			pe.tier = p.selectTier(peCtx, pe.tx)
+			if accepted, ev := p.canAcceptLocked(peCtx, pe.tier, pe.priority, pe.size, pe.gas, nil); accepted {
+				p.removeEntriesLocked(ev...)
+				removed = append(removed, ev...)
+				p.addEntryLocked(pe)
+				promoted = append(promoted, pe)
+			}
+		}
+
+		// cleanup sender if fully drained
+		if len(ss.queued) == 0 && (sr.onChainSeq >= ss.activeNext || len(ss.active) == 0) {
+			p.cleanupSenderLocked(sender)
+		}
+	}
+
+	// active only senders, clean up if no pool entries remain
+	for _, sender := range activeOnlySenders {
+		if ss := p.senders[sender]; ss != nil && len(ss.active) == 0 {
+			p.cleanupSenderLocked(sender)
+		}
+	}
+
+	p.mtx.Unlock()
+
+	for _, entry := range staleEntries {
+		p.pushEvent(cmtmempool.EventTxRemoved, entry.bytes)
+	}
+	p.pushRemovedEvents(removed)
+	for _, entry := range promoted {
+		p.pushEvent(cmtmempool.EventTxInserted, entry.bytes)
+	}
+}
+
+// fetchSequence queries the on-chain sequence for a sender.
+func (p *PriorityMempool) fetchSequence(ctx sdk.Context, sender string) (uint64, bool) {
+	addr, err := sdk.AccAddressFromBech32(sender)
+	if err != nil {
+		return 0, false
+	}
+
+	seq, err := p.ak.GetSequence(ctx, addr)
+	if err != nil {
+		// AccountKeeper.GetSequence returns an error only when the account does not
+		// exist yet. Treat that as sequence 0 and mark the lookup as usable.
+		return 0, true
+	}
+
+	return seq, true
+}
+
+// insertQueuedLocked adds or replaces a tx in the queued pool. When the per sender
+// limit is hit, the entry with the highest nonce is evicted (unless the new tx has
+// the highest nonce, in which case it is rejected). the caller must hold p.mtx.
+func (p *PriorityMempool) insertQueuedLocked(ss *senderState, key txKey, entry *txEntry) (bool, *txEntry) {
+	// same nonce replacement, only if higher priority
+	if existing, exists := ss.queued[key.nonce]; exists {
+		if entry.priority <= existing.priority {
+			return false, nil
+		}
+		ss.queued[key.nonce] = entry
+		return true, existing
+	}
+
+	// per sender eviction, swap highest nonce for a lower one
+	var evicted *txEntry
+	if p.maxQueuedPerSender > 0 && len(ss.queued) >= p.maxQueuedPerSender {
+		highestNonce := uint64(0)
+		for n := range ss.queued {
+			if n > highestNonce {
+				highestNonce = n
+			}
+		}
+		if key.nonce >= highestNonce {
+			return false, nil
+		}
+		evicted = ss.queued[highestNonce]
+		delete(ss.queued, highestNonce)
+		p.queuedCount.Add(-1)
+	} else if p.maxQueuedTotal > 0 && int(p.queuedCount.Load()) >= p.maxQueuedTotal {
+		return false, nil
+	}
+
+	ss.queued[key.nonce] = entry
+	p.queuedCount.Add(1)
+
+	return true, evicted
+}
+
+// collectPromotableLocked removes queued txs with continuous nonces starting from
+// activeNext and returns them for promotion. the caller must hold p.mtx.
+func (p *PriorityMempool) collectPromotableLocked(ss *senderState) []*txEntry {
+	if len(ss.queued) == 0 {
+		return nil
+	}
+
+	var entries []*txEntry
+	next := ss.activeNext
+	for {
+		entry, exists := ss.queued[next]
+		if !exists {
+			break
+		}
+		entries = append(entries, entry)
+		delete(ss.queued, next)
+		p.queuedCount.Add(-1)
+		next++
+	}
+
+	if len(entries) > 0 {
+		ss.activeNext = next
+	}
+
+	return entries
+}
+
+// cleanupSenderLocked removes the sender state if fully empty. the caller must hold p.mtx.
+func (p *PriorityMempool) cleanupSenderLocked(sender string) {
+	if ss := p.senders[sender]; ss != nil && ss.isEmpty() {
+		delete(p.senders, sender)
+	}
+}
+
+// pushEvent sends an event to the cometbft event channel.
+func (p *PriorityMempool) pushEvent(eventType cmtmempool.AppMempoolEventType, txBytes []byte) {
+	chPtr := p.eventCh.Load()
+	if chPtr == nil {
+		return
+	}
+
+	cmtTx := cmttypes.Tx(txBytes)
+	select {
+	case *chPtr <- cmtmempool.AppMempoolEvent{
+		Type:  eventType,
+		TxKey: cmtTx.Key(),
+		Tx:    cmtTx,
+	}:
+	default:
+	}
+}
+
+// pushRemovedEvents sends EventTxRemoved for each entry.
+func (p *PriorityMempool) pushRemovedEvents(entries []*txEntry) {
+	for _, entry := range entries {
+		p.pushEvent(cmtmempool.EventTxRemoved, entry.bytes)
+	}
 }
 
 type txEntry struct {
@@ -423,137 +930,9 @@ type txEntry struct {
 	bytes    []byte
 }
 
-const emptySeq = math.MaxUint64
-
-type userBucket struct {
-	mu      sync.Mutex
-	entries map[uint64]*txEntry
-	start   uint64
-	next    uint64
-}
-
-// newUserBucket creates an empty bucket for a single sender.
-func newUserBucket() *userBucket {
-	return &userBucket{
-		entries: make(map[uint64]*txEntry),
-		start:   emptySeq,
-	}
-}
-
-// add records a tx entry in the bucket and updates bounds.
-func (b *userBucket) add(entry *txEntry) {
-	if entry.sequence < b.start {
-		b.start = entry.sequence
-	}
-	if entry.sequence+1 > b.next {
-		b.next = entry.sequence + 1
-	}
-	b.entries[entry.sequence] = entry
-}
-
-// remove deletes an entry from the bucket and keeps start/next consistent.
-func (b *userBucket) remove(sequence uint64) {
-	delete(b.entries, sequence)
-	if len(b.entries) == 0 {
-		b.start = emptySeq
-		b.next = 0
-		return
-	}
-	b.recomputeBounds()
-}
-
-// recomputeBounds recalculates the min/max sequence in the bucket.
-func (b *userBucket) recomputeBounds() {
-	minSeq := uint64(math.MaxUint64)
-	maxSeq := uint64(0)
-	for seq := range b.entries {
-		if seq < minSeq {
-			minSeq = seq
-		}
-		if seq > maxSeq {
-			maxSeq = seq
-		}
-	}
-	b.start = minSeq
-	b.next = maxSeq + 1
-}
-
-// snapshotStart returns the current start sequence or false if empty.
-func (b *userBucket) snapshotStart() (uint64, bool) {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	if b.start == emptySeq {
-		return 0, false
-	}
-	return b.start, true
-}
-
-// collectStale gathers entries whose sequence is below the provided threshold.
-func (b *userBucket) collectStale(upto uint64) []*txEntry {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	if b.start == emptySeq || b.start >= upto {
-		return nil
-	}
-
-	var entries []*txEntry
-	for seq := b.start; seq < upto; seq++ {
-		if entry, ok := b.entries[seq]; ok {
-			entries = append(entries, entry)
-		}
-	}
-	return entries
-}
-
-// collectInvalid gathers entries that fail anteHandler checks starting from start.
-func (b *userBucket) collectInvalid(ctx sdk.Context, anteHandler sdk.AnteHandler, start uint64) []*txEntry {
-	if anteHandler == nil {
-		return nil
-	}
-
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	if b.next == 0 {
-		return nil
-	}
-
-	// if we find first invalid entry, trash all next entries to the end
-	failed := false
-	var invalidEntries []*txEntry
-	for seq := start; seq < b.next; seq++ {
-		if entry, ok := b.entries[seq]; ok {
-			if failed {
-				invalidEntries = append(invalidEntries, entry)
-				continue
-			}
-
-			sdkCtx, write := ctx.WithTxBytes(entry.bytes).WithIsReCheckTx(true).CacheContext()
-			if _, err := anteHandler(sdkCtx, entry.tx, false); err != nil {
-				failed = true
-				invalidEntries = append(invalidEntries, entry)
-				continue
-			}
-
-			write()
-		}
-	}
-
-	return invalidEntries
-}
-
-func (p *PriorityMempool) snapshotBuckets() map[string]*userBucket {
-	p.mtx.Lock()
-	defer p.mtx.Unlock()
-
-	targets := make(map[string]*userBucket, len(p.userBuckets))
-	maps.Copy(targets, p.userBuckets)
-	return targets
-}
-
 // priorityIterator walks entries in the order determined by the priority index.
 type priorityIterator struct {
-	entries []*txEntry
+	entries []TxInfoEntry
 	idx     int
 }
 
@@ -571,7 +950,15 @@ func (it *priorityIterator) Tx() sdk.Tx {
 	if it.idx >= len(it.entries) || it.idx < 0 {
 		return nil
 	}
-	return it.entries[it.idx].tx
+	return it.entries[it.idx].Tx
+}
+
+// TxInfo returns the metadata for the entry currently pointed to by the iterator.
+func (it *priorityIterator) TxInfo() TxInfo {
+	if it.idx >= len(it.entries) || it.idx < 0 {
+		return TxInfo{}
+	}
+	return it.entries[it.idx].Info
 }
 
 // compareEntries orders txEntries by tier, priority, order, sender, and nonce.
@@ -684,47 +1071,54 @@ func initTierDistribution(tiers []tierMatcher) map[string]uint64 {
 	return dist
 }
 
-// canAccept checks whether a tx can remain in the pool given the configured limits and evicts as needed.
-func (p *PriorityMempool) canAccept(ctx sdk.Context, tier int, priority int64, size int64, gas uint64) (bool, []*txEntry) {
-	var removed []*txEntry
+// canAcceptLocked checks whether a tx can be accepted and returns the list of
+// entries that should be evicted to make room. It does not mutate pool state.
+// If exclude is non-nil, capacity planning treats it as already absent.
+func (p *PriorityMempool) canAcceptLocked(ctx sdk.Context, tier int, priority int64, size int64, gas uint64, exclude *txEntry) (bool, []*txEntry) {
+	var evictList []*txEntry
 
-	if p.cfg.MaxTx > 0 {
-		for len(p.entries) >= p.cfg.MaxTx {
-			evicted := p.evictLower(tier, priority)
-			if evicted == nil {
-				return false, removed
-			}
-			removed = append(removed, evicted)
-		}
-	}
-
+	// First enforce per-tx hard limits. If the candidate can never fit into a
+	// block, reject it without evicting existing mempool entries.
 	blockParams := ctx.ConsensusParams().Block
 	blockMaxBytes := blockParams.MaxBytes
 	if blockMaxBytes > 0 && size > blockMaxBytes {
-		return false, removed
+		return false, evictList
 	}
 
 	blockMaxGas := blockParams.MaxGas
 	if blockMaxGas > 0 && gas > uint64(blockMaxGas) {
-		return false, removed
+		return false, evictList
 	}
 
-	return true, removed
-}
+	// Capacity eviction comes after hard checks so we only evict when the new tx
+	// is otherwise admissible.
+	if p.cfg.MaxTx > 0 {
+		targetLen := p.cfg.MaxTx - 1 // one slot needed for candidate tx
+		curLen := len(p.entries)
+		if exclude != nil {
+			if _, ok := p.entries[exclude.key]; ok {
+				curLen--
+			}
+		}
+		for node := p.priorityIndex.Back(); curLen > targetLen; node = node.Prev() {
+			if node == nil {
+				return false, evictList
+			}
 
-// evictLower removes the lowest-priority entry that is worse than the provided tier/priority.
-func (p *PriorityMempool) evictLower(tier int, priority int64) *txEntry {
-	back := p.priorityIndex.Back()
-	if back == nil {
-		return nil
+			entry := node.Value.(*txEntry)
+			if exclude != nil && entry.key == exclude.key {
+				continue
+			}
+			if !p.isBetterThan(entry, tier, priority) {
+				return false, evictList
+			}
+
+			evictList = append(evictList, entry)
+			curLen--
+		}
 	}
 
-	entry := back.Value.(*txEntry)
-	if !p.isBetterThan(entry, tier, priority) {
-		return nil
-	}
-
-	return p.removeEntry(entry)
+	return true, evictList
 }
 
 // isBetterThan determines whether a new entry should outrank an existing one.
@@ -735,85 +1129,41 @@ func (p *PriorityMempool) isBetterThan(entry *txEntry, tier int, priority int64)
 	return priority > entry.priority
 }
 
-// addEntry inserts the tx entry into all indexes and updates per-sender/tier bookkeeping.
-func (p *PriorityMempool) addEntry(entry *txEntry) {
+// addEntryLocked inserts the tx entry into the priority index and updates sender/tier bookkeeping.
+func (p *PriorityMempool) addEntryLocked(entry *txEntry) {
 	p.priorityIndex.Set(entry, entry)
 	p.entries[entry.key] = entry
-
-	bucket, ok := p.userBuckets[entry.key.sender]
-	if !ok {
-		bucket = newUserBucket()
-		p.userBuckets[entry.key.sender] = bucket
-	}
-
-	bucket.mu.Lock()
-	bucket.add(entry)
-	bucket.mu.Unlock()
+	p.getOrCreateSenderLocked(entry.key.sender).active[entry.key.nonce] = entry
 
 	if name := p.tierName(entry.tier); name != "" {
 		p.tierDistribution[name]++
 	}
 }
 
-// removeEntry evicts an entry from every structure and adjusts tier counts.
-func (p *PriorityMempool) removeEntry(entry *txEntry) *txEntry {
-	if entry == nil {
-		return nil
+// removeEntriesLocked removes multiple entries and returns the removed entries for event dispatch.
+func (p *PriorityMempool) removeEntriesLocked(entries ...*txEntry) {
+	for _, entry := range entries {
+		p.removeEntryLocked(entry)
 	}
+}
 
-	if bucket, ok := p.userBuckets[entry.key.sender]; ok {
-		bucket.mu.Lock()
-		bucket.remove(entry.sequence)
-		empty := len(bucket.entries) == 0
-		bucket.mu.Unlock()
-		if empty {
-			delete(p.userBuckets, entry.key.sender)
-		}
+// removeEntryLocked evicts an entry from the priority index and adjusts sender/tier counts.
+func (p *PriorityMempool) removeEntryLocked(entry *txEntry) {
+	if entry == nil {
+		return
 	}
 
 	p.priorityIndex.Remove(entry)
 	delete(p.entries, entry.key)
+	if s := p.senders[entry.key.sender]; s != nil {
+		delete(s.active, entry.key.nonce)
+	}
 
 	if name := p.tierName(entry.tier); name != "" {
 		if count, ok := p.tierDistribution[name]; ok && count > 0 {
 			p.tierDistribution[name] = count - 1
 		}
 	}
-
-	return entry
-}
-
-// dispatchInserted notifies listeners about a newly accepted transaction.
-func (p *PriorityMempool) dispatchInserted(listeners []TxEventListener, tx sdk.Tx) {
-	if len(listeners) == 0 {
-		return
-	}
-
-	for _, l := range listeners {
-		l.OnTxInserted(tx)
-	}
-}
-
-// dispatchRemoved notifies listeners about transactions that left the pool.
-func (p *PriorityMempool) dispatchRemoved(listeners []TxEventListener, entries []*txEntry) {
-	if len(listeners) == 0 || len(entries) == 0 {
-		return
-	}
-
-	for _, entry := range entries {
-		for _, l := range listeners {
-			l.OnTxRemoved(entry.tx)
-		}
-	}
-}
-
-// txBytesAndSize encodes the tx and returns its bytes with length.
-func (p *PriorityMempool) txBytesAndSize(tx sdk.Tx) ([]byte, int64, error) {
-	bz, err := p.txEncoder(tx)
-	if err != nil {
-		return nil, 0, err
-	}
-	return bz, int64(len(bz)), nil
 }
 
 // txKeyFromTx extracts the sender address and nonce that uniquely identifies the tx.
