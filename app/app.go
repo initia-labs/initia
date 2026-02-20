@@ -550,8 +550,8 @@ func (app *InitiaApp) DefaultGenesis() map[string]json.RawMessage {
 // Close closes the underlying baseapp, the oracle service, and the prometheus server if required.
 // This method blocks on the closure of both the prometheus server, and the oracle-service
 func (app *InitiaApp) Close() error {
-	if mempool, ok := app.Mempool().(interface{ StopCleaningWorker() }); ok {
-		mempool.StopCleaningWorker()
+	if mempool, ok := app.Mempool().(interface{ Stop() }); ok {
+		mempool.Stop()
 	}
 
 	if err := app.BaseApp.Close(); err != nil {

@@ -131,6 +131,12 @@ func NewPriorityMempool(cfg PriorityMempoolConfig, txEncoder sdk.TxEncoder) *Pri
 	return p
 }
 
+// Stop signals all background workers to exit and waits for them to finish.
+func (p *PriorityMempool) Stop() {
+	p.StopCleaningWorker()
+	p.StopEventDispatch()
+}
+
 // SetAccountKeeper sets the account keeper used for querying on-chain sequences.
 func (p *PriorityMempool) SetAccountKeeper(ak AccountKeeper) {
 	p.mtx.Lock()
@@ -143,21 +149,36 @@ func (p *PriorityMempool) SetAccountKeeper(ak AccountKeeper) {
 func (p *PriorityMempool) SetEventCh(ch chan<- cmtmempool.AppMempoolEvent) {
 	p.eventCh.Store(&ch)
 	p.eventDispatchOnce.Do(func() {
-		p.eventStopCh = make(chan struct{})
-		p.eventDoneCh = make(chan struct{})
-		go p.eventDispatchLoop()
+		p.eventMtx.Lock()
+		stopCh := make(chan struct{})
+		doneCh := make(chan struct{})
+		p.eventStopCh = stopCh
+		p.eventDoneCh = doneCh
+		p.eventMtx.Unlock()
+
+		go p.eventDispatchLoop(stopCh, doneCh)
 	})
 }
 
 // StopEventDispatch signals the event dispatch goroutine to exit and waits
 // for it to finish. Safe to call even if the dispatch loop was never started.
 func (p *PriorityMempool) StopEventDispatch() {
-	if p.eventStopCh == nil {
+	p.eventMtx.Lock()
+	stopCh := p.eventStopCh
+	doneCh := p.eventDoneCh
+	p.eventStopCh = nil
+	p.eventDoneCh = nil
+	p.eventMtx.Unlock()
+
+	if stopCh == nil {
 		return
 	}
-	close(p.eventStopCh)
+
+	close(stopCh)
 	p.eventCond.Signal() // wake goroutine if blocked on empty queue
-	<-p.eventDoneCh
+	if doneCh != nil {
+		<-doneCh
+	}
 }
 
 // SetMaxQueuedPerSender overrides the default per-sender queued tx limit.
@@ -971,15 +992,15 @@ func (p *PriorityMempool) enqueueRemovedEvents(entries []*txEntry) {
 }
 
 // eventDispatchLoop forwards events from the internal queue to cometbft.
-func (p *PriorityMempool) eventDispatchLoop() {
-	defer close(p.eventDoneCh)
+func (p *PriorityMempool) eventDispatchLoop(stopCh <-chan struct{}, doneCh chan<- struct{}) {
+	defer close(doneCh)
 
 	for {
 		p.eventMtx.Lock()
 		for len(p.eventQueue) == 0 {
 			// check for stop signal before waiting
 			select {
-			case <-p.eventStopCh:
+			case <-stopCh:
 				p.eventMtx.Unlock()
 				return
 			default:
@@ -998,7 +1019,7 @@ func (p *PriorityMempool) eventDispatchLoop() {
 
 		select {
 		case *chPtr <- ev:
-		case <-p.eventStopCh:
+		case <-stopCh:
 			return
 		}
 	}

@@ -1160,6 +1160,33 @@ func TestEventNoDropUnderBackPressure(t *testing.T) {
 	require.Equal(t, replacements, removed, "one removed per successful replacement")
 }
 
+func TestStopEventDispatch_IdempotentWithoutStart(t *testing.T) {
+	mp := newTestPriorityMempool(t, nil)
+	require.NotPanics(t, func() {
+		mp.StopEventDispatch()
+		mp.StopEventDispatch()
+	})
+}
+
+func TestStopEventDispatch_IdempotentAfterStart(t *testing.T) {
+	mp := newTestPriorityMempool(t, nil)
+	eventCh := make(chan cmtmempool.AppMempoolEvent, 1)
+	mp.SetEventCh(eventCh)
+
+	done := make(chan struct{})
+	go func() {
+		mp.StopEventDispatch()
+		mp.StopEventDispatch()
+		close(done)
+	}()
+
+	select {
+	case <-done:
+	case <-time.After(2 * time.Second):
+		t.Fatal("timed out waiting for idempotent StopEventDispatch")
+	}
+}
+
 func TestEventActiveInsertAndRemove(t *testing.T) {
 	keeper := newMockAccountKeeper()
 	priv := secp256k1.GenPrivKey()
