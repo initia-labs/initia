@@ -485,6 +485,17 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 				return nil
 			}
 		}
+		// If a queued tx exists for the same nonce, treat this as same-nonce
+		// replacement before inserting into active to avoid queued+active duplicates.
+		if queued, exists := ss.queued[key.nonce]; exists {
+			if !hasExisting && entry.priority <= queued.priority {
+				p.mtx.Unlock()
+				return nil
+			}
+			delete(ss.queued, key.nonce)
+			p.queuedCount.Add(-1)
+			removed = append(removed, queued)
+		}
 
 		if ok, ev := p.canAcceptLocked(sdkCtx, entry.tier, entry.priority, entry.size, entry.gas, existing); ok {
 			if hasExisting {

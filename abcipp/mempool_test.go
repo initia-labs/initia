@@ -2246,6 +2246,53 @@ func TestInsertGapFillRequeuesOnCapacityExhaustion(t *testing.T) {
 	require.Equal(t, uint64(2), next, "activeNext should roll back to first failed promotion nonce")
 }
 
+func TestInsertActiveClearsRequeuedSameNonceFromQueued(t *testing.T) {
+	keeper := newMockAccountKeeper()
+	sdkCtx := testSDKContext()
+
+	// MaxTx=3 to force promotion failure and requeue.
+	mp := NewPriorityMempool(PriorityMempoolConfig{MaxTx: 3}, testTxEncoder)
+	mp.SetAccountKeeper(keeper)
+
+	privA := secp256k1.GenPrivKey()
+	privB := secp256k1.GenPrivKey()
+	privC := secp256k1.GenPrivKey()
+	senderA := sdk.AccAddress(privA.PubKey().Address())
+	senderB := sdk.AccAddress(privB.PubKey().Address())
+	senderC := sdk.AccAddress(privC.PubKey().Address())
+	keeper.SetSequence(senderA, 0)
+	keeper.SetSequence(senderB, 0)
+	keeper.SetSequence(senderC, 0)
+
+	// A: active 0 + queued 2,3,4.
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(50)), newTestTxWithPriv(privA, 0, 1000, "default")))
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(10)), newTestTxWithPriv(privA, 2, 1000, "default")))
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(10)), newTestTxWithPriv(privA, 3, 1000, "default")))
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(10)), newTestTxWithPriv(privA, 4, 1000, "default")))
+	// Fill active capacity with stronger txs from other senders.
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(200)), newTestTxWithPriv(privB, 0, 1000, "default")))
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(200)), newTestTxWithPriv(privC, 0, 1000, "default")))
+	require.Equal(t, 6, mp.CountTx())
+
+	// Force promotion attempt to fail and requeue A:2,3,4 with activeNext=2.
+	keeper.SetSequence(senderA, 2)
+	mp.PromoteQueued(sdkCtx)
+
+	// Insert A:2 as active; it should not remain in queued.
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(300)), newTestTxWithPriv(privA, 2, 1000, "default")))
+
+	queuedNonces := map[uint64]struct{}{}
+	mp.IterateQueuedTxs(func(sender string, nonce uint64, _ sdk.Tx) bool {
+		if sender == senderA.String() {
+			queuedNonces[nonce] = struct{}{}
+		}
+		return true
+	})
+	_, stillQueued := queuedNonces[2]
+	require.False(t, stillQueued, "nonce 2 should not remain queued after active insert")
+	require.Equal(t, 5, mp.CountTx(), "A:2 should move from queued to active without duplicate accounting")
+}
+
 func TestReactorInvariant_PromotionCapacityRequeue(t *testing.T) {
 	keeper := newMockAccountKeeper()
 	sdkCtx := testSDKContext()
