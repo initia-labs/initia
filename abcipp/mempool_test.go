@@ -3,7 +3,9 @@ package abcipp
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"fmt"
+	"sync"
 	"testing"
 
 	"cosmossdk.io/core/address"
@@ -1022,6 +1024,1052 @@ func TestQueuedMempoolPromoteQueuedEvictsStale(t *testing.T) {
 	// Verify seq 5 is still queued
 	_, ok := mp.Lookup(sender.String(), 5)
 	require.True(t, ok, "seq 5 should still be queued")
+}
+
+// collectEvents returns typed slices of tx bytes.
+func collectEvents(ch <-chan cmtmempool.AppMempoolEvent) (inserted, removed [][]byte) {
+	for {
+		select {
+		case ev := <-ch:
+			switch ev.Type {
+			case cmtmempool.EventTxInserted:
+				inserted = append(inserted, ev.Tx)
+			case cmtmempool.EventTxRemoved:
+				removed = append(removed, ev.Tx)
+			default:
+				panic("unhandled default case")
+			}
+		default:
+			return
+		}
+	}
+}
+
+func encodeTx(t *testing.T, tx sdk.Tx) []byte {
+	t.Helper()
+	bz, err := testTxEncoder(tx)
+	require.NoError(t, err)
+	return bz
+}
+
+func TestEventActiveInsertAndRemove(t *testing.T) {
+	keeper := newMockAccountKeeper()
+	priv := secp256k1.GenPrivKey()
+	sender := sdk.AccAddress(priv.PubKey().Address())
+	keeper.SetSequence(sender, 0)
+
+	mp, _ := newTestMempoolWithKeeper(t, keeper)
+	eventCh := make(chan cmtmempool.AppMempoolEvent, 100)
+	mp.SetEventCh(eventCh)
+	sdkCtx := testSDKContext()
+	ctx := sdk.WrapSDKContext(sdkCtx)
+
+	tx0 := newTestTxWithPriv(priv, 0, 1000, "default")
+	require.NoError(t, mp.Insert(ctx, tx0))
+
+	ins, rem := collectEvents(eventCh)
+	require.Len(t, ins, 1, "active insert => 1 EventTxInserted")
+	require.Len(t, rem, 0)
+	require.Equal(t, encodeTx(t, tx0), ins[0])
+
+	// remove active tx
+	require.NoError(t, mp.Remove(tx0))
+	ins, rem = collectEvents(eventCh)
+	require.Len(t, ins, 0)
+	require.Len(t, rem, 1, "active remove => 1 EventTxRemoved")
+	require.Equal(t, encodeTx(t, tx0), rem[0])
+}
+
+func TestEventQueuedInsertNoEvent(t *testing.T) {
+	keeper := newMockAccountKeeper()
+	priv := secp256k1.GenPrivKey()
+	sender := sdk.AccAddress(priv.PubKey().Address())
+	keeper.SetSequence(sender, 0)
+
+	mp, _ := newTestMempoolWithKeeper(t, keeper)
+	eventCh := make(chan cmtmempool.AppMempoolEvent, 100)
+	mp.SetEventCh(eventCh)
+	sdkCtx := testSDKContext()
+	ctx := sdk.WrapSDKContext(sdkCtx)
+
+	// insert active seq 0
+	require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(priv, 0, 1000, "default")))
+	drainEvents(eventCh) // clear
+
+	// insert seq 5. should be queued
+	require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(priv, 5, 1000, "default")))
+	ins, rem := collectEvents(eventCh)
+	require.Len(t, ins, 0, "queued insert should NOT fire EventTxInserted")
+	require.Len(t, rem, 0, "queued insert should NOT fire EventTxRemoved")
+}
+
+func TestEventQueuedRemove(t *testing.T) {
+	keeper := newMockAccountKeeper()
+	priv := secp256k1.GenPrivKey()
+	sender := sdk.AccAddress(priv.PubKey().Address())
+	keeper.SetSequence(sender, 0)
+
+	mp, _ := newTestMempoolWithKeeper(t, keeper)
+	eventCh := make(chan cmtmempool.AppMempoolEvent, 100)
+	mp.SetEventCh(eventCh)
+	sdkCtx := testSDKContext()
+	ctx := sdk.WrapSDKContext(sdkCtx)
+
+	require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(priv, 0, 1000, "default")))
+	tx5 := newTestTxWithPriv(priv, 5, 1000, "default")
+	require.NoError(t, mp.Insert(ctx, tx5))
+	drainEvents(eventCh)
+
+	require.NoError(t, mp.Remove(tx5))
+	ins, rem := collectEvents(eventCh)
+	require.Len(t, ins, 0)
+	require.Len(t, rem, 1, "queued remove => EventTxRemoved")
+}
+
+func TestEventSameNonceQueuedReplacement(t *testing.T) {
+	keeper := newMockAccountKeeper()
+	priv := secp256k1.GenPrivKey()
+	sender := sdk.AccAddress(priv.PubKey().Address())
+	keeper.SetSequence(sender, 0)
+
+	mp, _ := newTestMempoolWithKeeper(t, keeper)
+	eventCh := make(chan cmtmempool.AppMempoolEvent, 100)
+	mp.SetEventCh(eventCh)
+	sdkCtx := testSDKContext()
+
+	// seq 0 active
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx), newTestTxWithPriv(priv, 0, 1000, "default")))
+	// seq 5 queued with priority 10
+	tx5a := newTestTxWithPriv(priv, 5, 1000, "default")
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(10)), tx5a))
+	drainEvents(eventCh)
+
+	// replace queued seq 5 with higher priority 100
+	tx5b := newTestTxWithPriv(priv, 5, 2000, "default")
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(100)), tx5b))
+
+	ins, rem := collectEvents(eventCh)
+	// queued replacement: evicted old fires EventTxRemoved, no insert event (still queued)
+	require.Len(t, rem, 1, "queued replacement should fire EventTxRemoved for old entry")
+	require.Equal(t, encodeTx(t, tx5a), rem[0])
+	require.Len(t, ins, 0, "queued replacement should not fire EventTxInserted")
+}
+
+func TestEventQueuedPerSenderEviction(t *testing.T) {
+	keeper := newMockAccountKeeper()
+	priv := secp256k1.GenPrivKey()
+	sender := sdk.AccAddress(priv.PubKey().Address())
+	keeper.SetSequence(sender, 0)
+
+	mp, _ := newTestMempoolWithKeeper(t, keeper)
+	mp.SetMaxQueuedPerSender(2)
+	eventCh := make(chan cmtmempool.AppMempoolEvent, 100)
+	mp.SetEventCh(eventCh)
+	sdkCtx := testSDKContext()
+	ctx := sdk.WrapSDKContext(sdkCtx)
+
+	// seq 0 active
+	require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(priv, 0, 1000, "default")))
+	// queue seq 5, 6 (filling sender limit of 2)
+	require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(priv, 5, 1000, "default")))
+	tx6 := newTestTxWithPriv(priv, 6, 1000, "default")
+	require.NoError(t, mp.Insert(ctx, tx6))
+	drainEvents(eventCh)
+
+	// insert seq 3, lower than highest queued (6), should evict 6
+	require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(priv, 3, 1000, "default")))
+
+	ins, rem := collectEvents(eventCh)
+	require.Len(t, rem, 1, "per-sender eviction should fire EventTxRemoved for highest-nonce evicted tx")
+	require.Equal(t, encodeTx(t, tx6), rem[0])
+	require.Len(t, ins, 0, "per-sender eviction inserts to queue, no EventTxInserted")
+}
+
+func TestEventQueuedPerSenderRejectHighestNonce(t *testing.T) {
+	keeper := newMockAccountKeeper()
+	priv := secp256k1.GenPrivKey()
+	sender := sdk.AccAddress(priv.PubKey().Address())
+	keeper.SetSequence(sender, 0)
+
+	mp, _ := newTestMempoolWithKeeper(t, keeper)
+	mp.SetMaxQueuedPerSender(2)
+	eventCh := make(chan cmtmempool.AppMempoolEvent, 100)
+	mp.SetEventCh(eventCh)
+	sdkCtx := testSDKContext()
+	ctx := sdk.WrapSDKContext(sdkCtx)
+
+	require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(priv, 0, 1000, "default")))
+	require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(priv, 5, 1000, "default")))
+	require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(priv, 6, 1000, "default")))
+	drainEvents(eventCh)
+
+	// seq 10 >= highest queued (6), silently rejected. no events
+	require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(priv, 10, 1000, "default")))
+
+	ins, rem := collectEvents(eventCh)
+	require.Len(t, ins, 0)
+	require.Len(t, rem, 0, "rejected queued insert should not fire any events")
+}
+
+func TestEventCapacityEvictionOnInsert(t *testing.T) {
+	keeper := newMockAccountKeeper()
+	sdkCtx := testSDKContext()
+
+	// create mempool with MaxTx=2
+	mp := NewPriorityMempool(PriorityMempoolConfig{MaxTx: 2}, testTxEncoder)
+	mp.SetAccountKeeper(keeper)
+	eventCh := make(chan cmtmempool.AppMempoolEvent, 100)
+	mp.SetEventCh(eventCh)
+
+	privA := secp256k1.GenPrivKey()
+	privB := secp256k1.GenPrivKey()
+	privC := secp256k1.GenPrivKey()
+	keeper.SetSequence(sdk.AccAddress(privA.PubKey().Address()), 0)
+	keeper.SetSequence(sdk.AccAddress(privB.PubKey().Address()), 0)
+	keeper.SetSequence(sdk.AccAddress(privC.PubKey().Address()), 0)
+
+	// fill pool, A(pri=10), B(pri=5)
+	txA := newTestTxWithPriv(privA, 0, 1000, "default")
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(10)), txA))
+	txB := newTestTxWithPriv(privB, 0, 1000, "default")
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(5)), txB))
+	drainEvents(eventCh)
+
+	// insert C with priority 20, should evict B, the lowest priority
+	txC := newTestTxWithPriv(privC, 0, 1000, "default")
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(20)), txC))
+
+	ins, rem := collectEvents(eventCh)
+	require.Len(t, rem, 1, "capacity eviction should fire EventTxRemoved for evicted tx")
+	require.Equal(t, encodeTx(t, txB), rem[0])
+	require.Len(t, ins, 1, "new tx should fire EventTxInserted")
+	require.Equal(t, encodeTx(t, txC), ins[0])
+}
+
+func TestEventCapacityEvictionReject(t *testing.T) {
+	keeper := newMockAccountKeeper()
+	sdkCtx := testSDKContext()
+
+	mp := NewPriorityMempool(PriorityMempoolConfig{MaxTx: 2}, testTxEncoder)
+	mp.SetAccountKeeper(keeper)
+	eventCh := make(chan cmtmempool.AppMempoolEvent, 100)
+	mp.SetEventCh(eventCh)
+
+	privA := secp256k1.GenPrivKey()
+	privB := secp256k1.GenPrivKey()
+	privC := secp256k1.GenPrivKey()
+	keeper.SetSequence(sdk.AccAddress(privA.PubKey().Address()), 0)
+	keeper.SetSequence(sdk.AccAddress(privB.PubKey().Address()), 0)
+	keeper.SetSequence(sdk.AccAddress(privC.PubKey().Address()), 0)
+
+	// filling pool. A(pri=10), B(pri=5)
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(10)), newTestTxWithPriv(privA, 0, 1000, "default")))
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(5)), newTestTxWithPriv(privB, 0, 1000, "default")))
+	drainEvents(eventCh)
+
+	// inserting C with priority 1, lower than all. should be rejected
+	err := mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(1)), newTestTxWithPriv(privC, 0, 1000, "default"))
+	require.Error(t, err)
+
+	ins, rem := collectEvents(eventCh)
+	require.Len(t, ins, 0, "rejected insert should not fire EventTxInserted")
+	require.Len(t, rem, 0, "rejected insert should not fire EventTxRemoved")
+}
+
+func TestEventGapFillPromotion(t *testing.T) {
+	keeper := newMockAccountKeeper()
+	priv := secp256k1.GenPrivKey()
+	sender := sdk.AccAddress(priv.PubKey().Address())
+	keeper.SetSequence(sender, 0)
+
+	mp, _ := newTestMempoolWithKeeper(t, keeper)
+	eventCh := make(chan cmtmempool.AppMempoolEvent, 100)
+	mp.SetEventCh(eventCh)
+	sdkCtx := testSDKContext()
+	ctx := sdk.WrapSDKContext(sdkCtx)
+
+	// seq 0 active, seq 2, 3 queued (gap at 1)
+	tx0 := newTestTxWithPriv(priv, 0, 1000, "default")
+	require.NoError(t, mp.Insert(ctx, tx0))
+	tx2 := newTestTxWithPriv(priv, 2, 1000, "default")
+	require.NoError(t, mp.Insert(ctx, tx2))
+	tx3 := newTestTxWithPriv(priv, 3, 1000, "default")
+	require.NoError(t, mp.Insert(ctx, tx3))
+	drainEvents(eventCh)
+
+	// Fill gap with seq 1. should promote seq 2 and 3
+	tx1 := newTestTxWithPriv(priv, 1, 1000, "default")
+	require.NoError(t, mp.Insert(ctx, tx1))
+
+	ins, rem := collectEvents(eventCh)
+	require.Len(t, rem, 0)
+
+	// seq 1 inserted + seq 2 promoted + seq 3 promoted = 3 EventTxInserted
+	require.Len(t, ins, 3, "gap-fill should fire EventTxInserted for seq 1 + promoted seq 2 + promoted seq 3")
+}
+
+func TestEventPromoteQueuedStaleEviction(t *testing.T) {
+	keeper := newMockAccountKeeper()
+	priv := secp256k1.GenPrivKey()
+	sender := sdk.AccAddress(priv.PubKey().Address())
+	keeper.SetSequence(sender, 0)
+
+	mp, _ := newTestMempoolWithKeeper(t, keeper)
+	eventCh := make(chan cmtmempool.AppMempoolEvent, 100)
+	mp.SetEventCh(eventCh)
+	sdkCtx := testSDKContext()
+	ctx := sdk.WrapSDKContext(sdkCtx)
+
+	// seq 0 active, seq 2, 3, 5 queued
+	require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(priv, 0, 1000, "default")))
+	tx2 := newTestTxWithPriv(priv, 2, 1000, "default")
+	require.NoError(t, mp.Insert(ctx, tx2))
+	tx3 := newTestTxWithPriv(priv, 3, 1000, "default")
+	require.NoError(t, mp.Insert(ctx, tx3))
+	require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(priv, 5, 1000, "default")))
+	drainEvents(eventCh)
+
+	// on-chain advances past 2 and 3 (to 4)
+	keeper.SetSequence(sender, 4)
+	mp.PromoteQueued(sdkCtx)
+
+	ins, rem := collectEvents(eventCh)
+	// seq 2 and 3 stale => 2 EventTxRemoved
+	require.Len(t, rem, 2, "PromoteQueued should fire EventTxRemoved for stale queued txs")
+	// seq 5 still has gap (need 4) => no promotion
+	require.Len(t, ins, 0, "no promotion because gap remains at seq 4")
+}
+
+func TestEventPromoteQueuedPromotionAndCapacityEviction(t *testing.T) {
+	keeper := newMockAccountKeeper()
+	sdkCtx := testSDKContext()
+
+	// MaxTx=3
+	mp := NewPriorityMempool(PriorityMempoolConfig{MaxTx: 3}, testTxEncoder)
+	mp.SetAccountKeeper(keeper)
+	eventCh := make(chan cmtmempool.AppMempoolEvent, 100)
+	mp.SetEventCh(eventCh)
+
+	privA := secp256k1.GenPrivKey()
+	privB := secp256k1.GenPrivKey()
+	senderA := sdk.AccAddress(privA.PubKey().Address())
+	senderB := sdk.AccAddress(privB.PubKey().Address())
+	keeper.SetSequence(senderA, 0)
+	keeper.SetSequence(senderB, 0)
+
+	// A seq 0 (active, pri=100), queued seq 2 (pri=50)
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(100)), newTestTxWithPriv(privA, 0, 1000, "default")))
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(50)), newTestTxWithPriv(privA, 2, 1000, "default")))
+
+	// B seq 0 (active, pri=1), seq 1 (active, pri=1)
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(1)), newTestTxWithPriv(privB, 0, 1000, "default")))
+	// pool is now full at 3 active entries (A:0, B:0 + need to fit B:1)
+	// Actually, A:0 and B:0 = 2 active + A:2 is queued. Let's add another active.
+	drainEvents(eventCh)
+
+	// on-chain for A advances to 2 so should promote
+	keeper.SetSequence(senderA, 2)
+	mp.PromoteQueued(sdkCtx)
+
+	ins, rem := collectEvents(eventCh)
+
+	// seq 2 gets promoted into the active pool. the pool was at 2 active (A=0, B=0) with MaxTx=3, so no eviction needed.
+	require.Len(t, ins, 1, "PromoteQueued should fire EventTxInserted for promoted tx")
+	require.Len(t, rem, 0, "no eviction needed when pool has capacity")
+}
+
+func TestEventPromoteQueuedCapacityEvictsLowPriority(t *testing.T) {
+	keeper := newMockAccountKeeper()
+	sdkCtx := testSDKContext()
+
+	// MaxTx=2 so promotion must evict
+	mp := NewPriorityMempool(PriorityMempoolConfig{MaxTx: 2}, testTxEncoder)
+	mp.SetAccountKeeper(keeper)
+	eventCh := make(chan cmtmempool.AppMempoolEvent, 100)
+	mp.SetEventCh(eventCh)
+
+	privA := secp256k1.GenPrivKey()
+	privB := secp256k1.GenPrivKey()
+	senderA := sdk.AccAddress(privA.PubKey().Address())
+	senderB := sdk.AccAddress(privB.PubKey().Address())
+	keeper.SetSequence(senderA, 0)
+	keeper.SetSequence(senderB, 0)
+
+	// A seq 0 active (pri=100), seq 2 queued (pri=50)
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(100)), newTestTxWithPriv(privA, 0, 1000, "default")))
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(50)), newTestTxWithPriv(privA, 2, 1000, "default")))
+
+	// B seq 0 active (pri=1), the lowest priority
+	txB := newTestTxWithPriv(privB, 0, 1000, "default")
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(1)), txB))
+	require.Equal(t, 2, mp.CountTx()-1) // 2 active + 1 queued => CountTx=3
+	drainEvents(eventCh)
+
+	// on-chain for A advances to 2, so A seq 2 should promote, evicting B seq 0
+	keeper.SetSequence(senderA, 2)
+	mp.PromoteQueued(sdkCtx)
+
+	ins, rem := collectEvents(eventCh)
+	require.GreaterOrEqual(t, len(ins), 1, "promoted tx should fire EventTxInserted")
+	require.GreaterOrEqual(t, len(rem), 1, "capacity eviction during promotion should fire EventTxRemoved")
+}
+
+func TestEventCleanUpEntriesRemoval(t *testing.T) {
+	keeper := newMockAccountKeeper()
+	priv := secp256k1.GenPrivKey()
+	sender := sdk.AccAddress(priv.PubKey().Address())
+	keeper.SetSequence(sender, 0)
+
+	mp, _ := newTestMempoolWithKeeper(t, keeper)
+	eventCh := make(chan cmtmempool.AppMempoolEvent, 100)
+	mp.SetEventCh(eventCh)
+	sdkCtx := testSDKContext()
+	ctx := sdk.WrapSDKContext(sdkCtx)
+
+	tx0 := newTestTxWithPriv(priv, 0, 1000, "default")
+	tx1 := newTestTxWithPriv(priv, 1, 1000, "default")
+	require.NoError(t, mp.Insert(ctx, tx0))
+	require.NoError(t, mp.Insert(ctx, tx1))
+	drainEvents(eventCh)
+
+	// advancing on-chain sequence past both txs
+	keeper.SetSequence(sender, 5)
+	baseApp := testBaseApp{ctx: sdkCtx}
+	mp.cleanUpEntries(baseApp, keeper)
+
+	ins, rem := collectEvents(eventCh)
+	require.Len(t, ins, 0)
+	require.Len(t, rem, 2, "cleanUpEntries should fire EventTxRemoved for each stale entry")
+}
+
+func TestEventMultipleSendersInsertRemove(t *testing.T) {
+	keeper := newMockAccountKeeper()
+	sdkCtx := testSDKContext()
+
+	mp, _ := newTestMempoolWithKeeper(t, keeper)
+	eventCh := make(chan cmtmempool.AppMempoolEvent, 100)
+	mp.SetEventCh(eventCh)
+
+	const numSenders = 5
+	privs := make([]*secp256k1.PrivKey, numSenders)
+	for i := range privs {
+		privs[i] = secp256k1.GenPrivKey()
+		keeper.SetSequence(sdk.AccAddress(privs[i].PubKey().Address()), 0)
+	}
+
+	// each sender inserts seq 0 (active) and seq 2 (queued)
+	txs := make([][]*testTx, numSenders)
+	for i := 0; i < numSenders; i++ {
+		ctx := sdk.WrapSDKContext(sdkCtx)
+		tx0 := newTestTxWithPriv(privs[i], 0, 1000, "default")
+		tx2 := newTestTxWithPriv(privs[i], 2, 1000, "default")
+		require.NoError(t, mp.Insert(ctx, tx0))
+		require.NoError(t, mp.Insert(ctx, tx2))
+		txs[i] = []*testTx{tx0, tx2}
+	}
+
+	ins, rem := collectEvents(eventCh)
+	require.Len(t, ins, numSenders, "each sender's active insert should fire EventTxInserted")
+	require.Len(t, rem, 0, "queued inserts should not fire events")
+
+	// filling gaps for all senders (insert seq 1 => promotes seq 2)
+	for i := 0; i < numSenders; i++ {
+		ctx := sdk.WrapSDKContext(sdkCtx)
+		tx1 := newTestTxWithPriv(privs[i], 1, 1000, "default")
+		require.NoError(t, mp.Insert(ctx, tx1))
+	}
+
+	ins, rem = collectEvents(eventCh)
+	// each sender has 1 insert (seq 1) + 1 promoted (seq 2) = 2 per sender
+	require.Len(t, ins, numSenders*2, "gap-fill for %d senders should fire %d EventTxInserted", numSenders, numSenders*2)
+	require.Len(t, rem, 0)
+}
+
+func TestEventConcurrentInsertsSameNonce(t *testing.T) {
+	keeper := newMockAccountKeeper()
+	priv := secp256k1.GenPrivKey()
+	sender := sdk.AccAddress(priv.PubKey().Address())
+	keeper.SetSequence(sender, 0)
+
+	mp, _ := newTestMempoolWithKeeper(t, keeper)
+	eventCh := make(chan cmtmempool.AppMempoolEvent, 1000)
+	mp.SetEventCh(eventCh)
+	sdkCtx := testSDKContext()
+
+	const goroutines = 10
+	done := make(chan struct{})
+
+	// all goroutines here are racing to insert seq 0 with increasing priority
+	for i := 0; i < goroutines; i++ {
+		go func(priority int64) {
+			ctx := sdk.WrapSDKContext(sdkCtx.WithPriority(priority))
+			tx := newTestTxWithPriv(priv, 0, 1000, "default")
+			_ = mp.Insert(ctx, tx)
+			done <- struct{}{}
+		}(int64(i + 1))
+	}
+	for i := 0; i < goroutines; i++ {
+		<-done
+	}
+
+	ins, rem := collectEvents(eventCh)
+	// exactly 1 tx should be in the pool
+	require.Equal(t, 1, mp.CountTx(), "only one tx should survive concurrent same-nonce inserts")
+
+	// the first insertion fires EventTxInserted. the following successful replacements fire
+	// EventTxRemoved + EventTxInserted. failed replacements fire nothing.
+	// inserted >= 1 (at least the first one)
+	require.GreaterOrEqual(t, len(ins), 1, "at least one EventTxInserted for first insert")
+
+	// now every replacement adds 1 removed + 1 inserted, so inserted == removed + 1
+	require.Equal(t, len(ins), len(rem)+1,
+		"inserted events should equal removed events + 1 (initial insert)")
+}
+
+func TestEventConcurrentInsertsVariousNoncesMultipleSenders(t *testing.T) {
+	keeper := newMockAccountKeeper()
+	sdkCtx := testSDKContext()
+
+	mp, _ := newTestMempoolWithKeeper(t, keeper)
+	eventCh := make(chan cmtmempool.AppMempoolEvent, 10000)
+	mp.SetEventCh(eventCh)
+
+	const numSenders = 5
+	const txsPerSender = 5
+
+	privs := make([]*secp256k1.PrivKey, numSenders)
+	for i := range privs {
+		privs[i] = secp256k1.GenPrivKey()
+		keeper.SetSequence(sdk.AccAddress(privs[i].PubKey().Address()), 0)
+	}
+
+	done := make(chan struct{})
+	totalGoroutines := numSenders * txsPerSender
+
+	// each sender inserts seq 0..4 concurrently from different goroutines
+	for i := 0; i < numSenders; i++ {
+		for seq := uint64(0); seq < txsPerSender; seq++ {
+			go func(priv *secp256k1.PrivKey, s uint64) {
+				ctx := sdk.WrapSDKContext(sdkCtx.WithPriority(int64(s + 1)))
+				tx := newTestTxWithPriv(priv, s, 1000, "default")
+				_ = mp.Insert(ctx, tx)
+				done <- struct{}{}
+			}(privs[i], seq)
+		}
+	}
+
+	for i := 0; i < totalGoroutines; i++ {
+		<-done
+	}
+
+	ins, rem := collectEvents(eventCh)
+
+	// all txs should be in the pool, since each sender has unique nonces
+	require.Equal(t, numSenders*txsPerSender, mp.CountTx(),
+		"all txs should be in pool (no duplicates across senders)")
+
+	// also no replacements since each sender has unique nonces, so no removes
+	require.Len(t, rem, 0, "no replacements expected across different senders with unique nonces")
+
+	// counting inserted events. active inserts fire events, queued do not.
+	// due to concurrency, the exact split between active and queued depends on timing.
+	require.GreaterOrEqual(t, len(ins), numSenders,
+		"at least one EventTxInserted per sender (for seq 0)")
+	require.LessOrEqual(t, len(ins), numSenders*txsPerSender,
+		"at most all txs fire EventTxInserted")
+}
+
+func TestEventPromoteQueuedMultipleSenders(t *testing.T) {
+	keeper := newMockAccountKeeper()
+	sdkCtx := testSDKContext()
+
+	mp, _ := newTestMempoolWithKeeper(t, keeper)
+	eventCh := make(chan cmtmempool.AppMempoolEvent, 100)
+	mp.SetEventCh(eventCh)
+
+	const numSenders = 3
+	privs := make([]*secp256k1.PrivKey, numSenders)
+	senders := make([]sdk.AccAddress, numSenders)
+	for i := range privs {
+		privs[i] = secp256k1.GenPrivKey()
+		senders[i] = sdk.AccAddress(privs[i].PubKey().Address())
+		keeper.SetSequence(senders[i], 0)
+	}
+
+	ctx := sdk.WrapSDKContext(sdkCtx)
+
+	// each sender has seq 0 (active), seq 2, 3 (queued, gap at 1)
+	for i := 0; i < numSenders; i++ {
+		require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(privs[i], 0, 1000, "default")))
+		require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(privs[i], 2, 1000, "default")))
+		require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(privs[i], 3, 1000, "default")))
+	}
+	drainEvents(eventCh)
+
+	// advancing all senders on-chain to 2 so seq 2 and 3 get promoted
+	for i := 0; i < numSenders; i++ {
+		keeper.SetSequence(senders[i], 2)
+	}
+	mp.PromoteQueued(sdkCtx)
+
+	ins, rem := collectEvents(eventCh)
+
+	// each sender has seq 2 promoted + seq 3 promoted = 2 EventTxInserted
+	require.Equal(t, numSenders*2, len(ins), "each sender should get 2 promoted txs")
+	require.Len(t, rem, 0, "no stale txs to remove")
+}
+
+type txKeyType = [sha256.Size]byte
+
+// reactorSim simulates the cometbft reactor's insertedTxs tracking.
+// it should be cumulative, calling drain() repeatedly to process new events.
+type reactorSim struct {
+	ch          <-chan cmtmempool.AppMempoolEvent
+	insertedTxs map[txKeyType]bool
+	hasValidTxs bool
+}
+
+func newReactorSim(ch <-chan cmtmempool.AppMempoolEvent) *reactorSim {
+	return &reactorSim{
+		ch:          ch,
+		insertedTxs: make(map[txKeyType]bool),
+	}
+}
+
+// drain processes all buffered events and updates the cumulative state.
+func (r *reactorSim) drain() {
+	for {
+		select {
+		case ev := <-r.ch:
+			switch ev.Type {
+			case cmtmempool.EventTxInserted:
+				r.insertedTxs[ev.TxKey] = true
+				r.hasValidTxs = true
+			case cmtmempool.EventTxRemoved:
+				delete(r.insertedTxs, ev.TxKey)
+				if len(r.insertedTxs) == 0 {
+					r.hasValidTxs = false
+				}
+			}
+		default:
+			return
+		}
+	}
+}
+
+// activeCount returns the number of active pool entries via Select iterator.
+func activeCount(mp *PriorityMempool) int {
+	n := 0
+	for it := mp.Select(context.Background(), nil); it != nil; it = it.Next() {
+		n++
+	}
+	return n
+}
+
+func TestReactorInvariant_InsertRemoveLifecycle(t *testing.T) {
+	keeper := newMockAccountKeeper()
+	priv := secp256k1.GenPrivKey()
+	sender := sdk.AccAddress(priv.PubKey().Address())
+	keeper.SetSequence(sender, 0)
+
+	mp, _ := newTestMempoolWithKeeper(t, keeper)
+	eventCh := make(chan cmtmempool.AppMempoolEvent, 100)
+	mp.SetEventCh(eventCh)
+	reactor := newReactorSim(eventCh)
+	sdkCtx := testSDKContext()
+	ctx := sdk.WrapSDKContext(sdkCtx)
+
+	// inserting seq 0, 1, 2 (all active)
+	tx0 := newTestTxWithPriv(priv, 0, 1000, "default")
+	tx1 := newTestTxWithPriv(priv, 1, 1000, "default")
+	tx2 := newTestTxWithPriv(priv, 2, 1000, "default")
+	require.NoError(t, mp.Insert(ctx, tx0))
+	require.NoError(t, mp.Insert(ctx, tx1))
+	require.NoError(t, mp.Insert(ctx, tx2))
+
+	reactor.drain()
+	require.Equal(t, 3, len(reactor.insertedTxs), "reactor should track 3 active txs")
+	require.Equal(t, activeCount(mp), len(reactor.insertedTxs), "reactor map size should match active pool")
+	require.True(t, reactor.hasValidTxs, "hasValidTxs should be true")
+
+	// remove tx1
+	require.NoError(t, mp.Remove(tx1))
+	reactor.drain()
+	require.Equal(t, 2, len(reactor.insertedTxs))
+	require.Equal(t, activeCount(mp), len(reactor.insertedTxs))
+	require.True(t, reactor.hasValidTxs)
+
+	// now remove the remaining
+	require.NoError(t, mp.Remove(tx0))
+	require.NoError(t, mp.Remove(tx2))
+	reactor.drain()
+	require.Equal(t, 0, len(reactor.insertedTxs))
+	require.Equal(t, activeCount(mp), len(reactor.insertedTxs))
+	require.False(t, reactor.hasValidTxs, "hasValidTxs should be false when all txs removed")
+}
+
+func TestReactorInvariant_QueuedPromotionAndStaleEviction(t *testing.T) {
+	keeper := newMockAccountKeeper()
+	sdkCtx := testSDKContext()
+
+	const numSenders = 3
+	privs := make([]*secp256k1.PrivKey, numSenders)
+	senders := make([]sdk.AccAddress, numSenders)
+	for i := range privs {
+		privs[i] = secp256k1.GenPrivKey()
+		senders[i] = sdk.AccAddress(privs[i].PubKey().Address())
+		keeper.SetSequence(senders[i], 0)
+	}
+
+	mp, _ := newTestMempoolWithKeeper(t, keeper)
+	eventCh := make(chan cmtmempool.AppMempoolEvent, 1000)
+	mp.SetEventCh(eventCh)
+	reactor := newReactorSim(eventCh)
+	ctx := sdk.WrapSDKContext(sdkCtx)
+
+	// each sender has seq 0 (active), seq 2, 3, 5 (queued)
+	for i := 0; i < numSenders; i++ {
+		require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(privs[i], 0, 1000, "default")))
+		require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(privs[i], 2, 1000, "default")))
+		require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(privs[i], 3, 1000, "default")))
+		require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(privs[i], 5, 1000, "default")))
+	}
+
+	reactor.drain()
+	require.Equal(t, numSenders, len(reactor.insertedTxs), "only seq 0 per sender should be active")
+	require.Equal(t, activeCount(mp), len(reactor.insertedTxs))
+	require.True(t, reactor.hasValidTxs)
+
+	// advancing on-chain to 4. so seq 2, 3 become stale, seq 5 still has gap
+	for i := 0; i < numSenders; i++ {
+		keeper.SetSequence(senders[i], 4)
+	}
+	mp.PromoteQueued(sdkCtx)
+
+	reactor.drain()
+	require.Equal(t, activeCount(mp), len(reactor.insertedTxs),
+		"reactor map should match active pool after stale eviction")
+	require.True(t, reactor.hasValidTxs, "seq 0 still active, hasValidTxs should be true")
+
+	// advancing on-chain to 5. now seq 5 becomes promotable
+	for i := 0; i < numSenders; i++ {
+		keeper.SetSequence(senders[i], 5)
+	}
+	mp.PromoteQueued(sdkCtx)
+
+	reactor.drain()
+	require.Equal(t, activeCount(mp), len(reactor.insertedTxs),
+		"reactor map should match active pool after promotion")
+	require.True(t, reactor.hasValidTxs)
+}
+
+func TestReactorInvariant_GapFillChainPromotion(t *testing.T) {
+	keeper := newMockAccountKeeper()
+	priv := secp256k1.GenPrivKey()
+	sender := sdk.AccAddress(priv.PubKey().Address())
+	keeper.SetSequence(sender, 0)
+
+	mp, _ := newTestMempoolWithKeeper(t, keeper)
+	eventCh := make(chan cmtmempool.AppMempoolEvent, 100)
+	mp.SetEventCh(eventCh)
+	reactor := newReactorSim(eventCh)
+	sdkCtx := testSDKContext()
+	ctx := sdk.WrapSDKContext(sdkCtx)
+
+	// seq 0 active, seq 2, 3, 4 queued (gap at 1)
+	require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(priv, 0, 1000, "default")))
+	require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(priv, 2, 1000, "default")))
+	require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(priv, 3, 1000, "default")))
+	require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(priv, 4, 1000, "default")))
+
+	reactor.drain()
+	require.Equal(t, 1, len(reactor.insertedTxs), "only seq 0 active before gap fill")
+
+	// filling the gap with seq 1, promotes 2, 3, 4
+	require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(priv, 1, 1000, "default")))
+
+	reactor.drain()
+	require.Equal(t, 5, activeCount(mp))
+	require.Equal(t, activeCount(mp), len(reactor.insertedTxs),
+		"reactor should track all 5 active txs after chain promotion")
+	require.True(t, reactor.hasValidTxs)
+}
+
+func TestReactorInvariant_CapacityEviction(t *testing.T) {
+	keeper := newMockAccountKeeper()
+	sdkCtx := testSDKContext()
+
+	mp := NewPriorityMempool(PriorityMempoolConfig{MaxTx: 3}, testTxEncoder)
+	mp.SetAccountKeeper(keeper)
+	eventCh := make(chan cmtmempool.AppMempoolEvent, 100)
+	mp.SetEventCh(eventCh)
+	reactor := newReactorSim(eventCh)
+
+	privs := make([]*secp256k1.PrivKey, 4)
+	for i := range privs {
+		privs[i] = secp256k1.GenPrivKey()
+		keeper.SetSequence(sdk.AccAddress(privs[i].PubKey().Address()), 0)
+	}
+
+	// filling the pool with 3 txs at priorities 10, 20, 30
+	for i := 0; i < 3; i++ {
+		ctx := sdk.WrapSDKContext(sdkCtx.WithPriority(int64((i + 1) * 10)))
+		require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(privs[i], 0, 1000, "default")))
+	}
+	reactor.drain()
+	require.Equal(t, 3, len(reactor.insertedTxs))
+
+	// inserting the 4th with priority 50, should evict the lowest (priority 10)
+	ctx := sdk.WrapSDKContext(sdkCtx.WithPriority(50))
+	require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(privs[3], 0, 1000, "default")))
+
+	reactor.drain()
+	require.Equal(t, 3, len(reactor.insertedTxs), "pool should still have 3 after eviction+insert")
+	require.Equal(t, activeCount(mp), len(reactor.insertedTxs))
+	require.True(t, reactor.hasValidTxs)
+}
+
+func TestReactorInvariant_CleanUpEntries(t *testing.T) {
+	keeper := newMockAccountKeeper()
+	priv := secp256k1.GenPrivKey()
+	sender := sdk.AccAddress(priv.PubKey().Address())
+	keeper.SetSequence(sender, 0)
+
+	mp, _ := newTestMempoolWithKeeper(t, keeper)
+	eventCh := make(chan cmtmempool.AppMempoolEvent, 100)
+	mp.SetEventCh(eventCh)
+	reactor := newReactorSim(eventCh)
+	sdkCtx := testSDKContext()
+	ctx := sdk.WrapSDKContext(sdkCtx)
+
+	require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(priv, 0, 1000, "default")))
+	require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(priv, 1, 1000, "default")))
+	require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(priv, 2, 1000, "default")))
+
+	reactor.drain()
+	require.Equal(t, 3, len(reactor.insertedTxs))
+
+	// advancing on-chain seq past all, cleanup should remove all
+	keeper.SetSequence(sender, 10)
+	baseApp := testBaseApp{ctx: sdkCtx}
+	mp.cleanUpEntries(baseApp, keeper)
+
+	reactor.drain()
+	require.Equal(t, 0, len(reactor.insertedTxs), "all txs cleaned up")
+	require.Equal(t, activeCount(mp), len(reactor.insertedTxs))
+	require.False(t, reactor.hasValidTxs, "hasValidTxs should be false when all txs removed via cleanup")
+}
+
+func TestReactorInvariant_ConcurrentMultiSenderWorkload(t *testing.T) {
+	keeper := newMockAccountKeeper()
+	sdkCtx := testSDKContext()
+
+	mp, _ := newTestMempoolWithKeeper(t, keeper)
+	eventCh := make(chan cmtmempool.AppMempoolEvent, 10000)
+	mp.SetEventCh(eventCh)
+	reactor := newReactorSim(eventCh)
+
+	const numSenders = 10
+	const seqsPerSender = 5
+
+	privs := make([]*secp256k1.PrivKey, numSenders)
+	for i := range privs {
+		privs[i] = secp256k1.GenPrivKey()
+		keeper.SetSequence(sdk.AccAddress(privs[i].PubKey().Address()), 0)
+	}
+
+	// concurrent inserts. with each sender inserts seq 0..4
+	var wg sync.WaitGroup
+	wg.Add(numSenders * seqsPerSender)
+	for i := 0; i < numSenders; i++ {
+		for seq := uint64(0); seq < seqsPerSender; seq++ {
+			go func(priv *secp256k1.PrivKey, s uint64) {
+				defer wg.Done()
+				ctx := sdk.WrapSDKContext(sdkCtx.WithPriority(int64(s + 1)))
+				_ = mp.Insert(ctx, newTestTxWithPriv(priv, s, 1000, "default"))
+			}(privs[i], seq)
+		}
+	}
+	wg.Wait()
+
+	reactor.drain()
+	active := activeCount(mp)
+	require.Equal(t, active, len(reactor.insertedTxs),
+		"reactor insertedTxs count must match active pool after concurrent inserts")
+	if active > 0 {
+		require.True(t, reactor.hasValidTxs)
+	}
+
+	// PromoteQueued should fix any remaining queued txs
+	for i := 0; i < numSenders; i++ {
+		keeper.SetSequence(sdk.AccAddress(privs[i].PubKey().Address()), seqsPerSender)
+	}
+	mp.PromoteQueued(sdkCtx)
+
+	reactor.drain()
+	active = activeCount(mp)
+	require.Equal(t, active, len(reactor.insertedTxs),
+		"reactor insertedTxs count must match active pool after PromoteQueued")
+	require.Equal(t, numSenders*seqsPerSender, active,
+		"all txs should be active after PromoteQueued")
+	require.True(t, reactor.hasValidTxs)
+
+	// removing all txs one by one
+	for i := 0; i < numSenders; i++ {
+		for seq := uint64(0); seq < seqsPerSender; seq++ {
+			tx := newTestTxWithPriv(privs[i], seq, 1000, "default")
+			_ = mp.Remove(tx)
+		}
+	}
+
+	reactor.drain()
+	require.Equal(t, 0, len(reactor.insertedTxs), "all txs removed")
+	require.Equal(t, activeCount(mp), len(reactor.insertedTxs))
+	require.False(t, reactor.hasValidTxs, "hasValidTxs must be false when pool is empty")
+}
+
+// Nonce gap prevention tests
+func TestPromoteQueuedRequeuesOnCapacityExhaustion(t *testing.T) {
+	keeper := newMockAccountKeeper()
+	sdkCtx := testSDKContext()
+
+	// MaxTx=3
+	mp := NewPriorityMempool(PriorityMempoolConfig{MaxTx: 3}, testTxEncoder)
+	mp.SetAccountKeeper(keeper)
+
+	privA := secp256k1.GenPrivKey()
+	privB := secp256k1.GenPrivKey()
+	privC := secp256k1.GenPrivKey()
+	senderA := sdk.AccAddress(privA.PubKey().Address())
+	senderB := sdk.AccAddress(privB.PubKey().Address())
+	senderC := sdk.AccAddress(privC.PubKey().Address())
+	keeper.SetSequence(senderA, 0)
+	keeper.SetSequence(senderB, 0)
+	keeper.SetSequence(senderC, 0)
+
+	// A seq 0 active (pri=50), queued seq 2, 3, 4 (pri=10)
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(50)), newTestTxWithPriv(privA, 0, 1000, "default")))
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(10)), newTestTxWithPriv(privA, 2, 1000, "default")))
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(10)), newTestTxWithPriv(privA, 3, 1000, "default")))
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(10)), newTestTxWithPriv(privA, 4, 1000, "default")))
+
+	// B seq 0 active (pri=200)
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(200)), newTestTxWithPriv(privB, 0, 1000, "default")))
+	// C seq 0 active (pri=200)
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(200)), newTestTxWithPriv(privC, 0, 1000, "default")))
+
+	// pool has active 3 (A=0, B=0, C=0) at capacity. A has queued 2, 3, 4
+	require.Equal(t, 6, mp.CountTx())
+
+	// advancing A on-chain to 2 so seq 2, 3, 4 become promotable
+	keeper.SetSequence(senderA, 2)
+	mp.PromoteQueued(sdkCtx)
+
+	// A=2 (pri=10) since we can't evict B=0 or C=0 (both pri=200), so promotion fails. all three are requeued not lost.
+	_, ok2 := mp.Lookup(senderA.String(), 2)
+	_, ok3 := mp.Lookup(senderA.String(), 3)
+	_, ok4 := mp.Lookup(senderA.String(), 4)
+	require.True(t, ok2, "seq 2 should be re-queued after failed promotion, not lost")
+	require.True(t, ok3, "seq 3 should be re-queued after failed promotion, not lost")
+	require.True(t, ok4, "seq 4 should be re-queued after failed promotion, not lost")
+
+	// activeNext should be rolled back to 2
+	next, ok, _ := mp.NextExpectedSequence(senderA.String())
+	require.True(t, ok)
+	require.Equal(t, uint64(2), next, "activeNext should roll back to first failed promotion nonce")
+
+	// nothing was lost
+	require.Equal(t, 6, mp.CountTx(), "no entries should be lost")
+}
+
+func TestInsertGapFillRequeuesOnCapacityExhaustion(t *testing.T) {
+	keeper := newMockAccountKeeper()
+	sdkCtx := testSDKContext()
+
+	// MaxTx=3. here we have A=0 and B=0 filling 2 slots. A=1 gap fill uses the 3rd slot, ultimately A=2 can't fit
+	mp := NewPriorityMempool(PriorityMempoolConfig{MaxTx: 3}, testTxEncoder)
+	mp.SetAccountKeeper(keeper)
+
+	privA := secp256k1.GenPrivKey()
+	privB := secp256k1.GenPrivKey()
+	senderA := sdk.AccAddress(privA.PubKey().Address())
+	senderB := sdk.AccAddress(privB.PubKey().Address())
+	keeper.SetSequence(senderA, 0)
+	keeper.SetSequence(senderB, 0)
+
+	// B seq 0 active (pri=200)
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(200)), newTestTxWithPriv(privB, 0, 1000, "default")))
+
+	// A= seq 0 active (pri=100), seq 2, 3 queued (pri=10)
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(100)), newTestTxWithPriv(privA, 0, 1000, "default")))
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(10)), newTestTxWithPriv(privA, 2, 1000, "default")))
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(10)), newTestTxWithPriv(privA, 3, 1000, "default")))
+
+	// the pool now has active 2 (A:0, B:0). A has queued 2, 3. only 1 slot free remaining.
+
+	// inserting A=1 (gap fill, pri=100). A=1 gets the last slot.
+	// then A=2 tries to promote here, but since the pool is full, and we can't evict B=0 (pri=200).
+	// expecting a requeued, no nonce gap.
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(100)), newTestTxWithPriv(privA, 1, 1000, "default")))
+
+	// verify no entries were lost
+	_, ok2 := mp.Lookup(senderA.String(), 2)
+	_, ok3 := mp.Lookup(senderA.String(), 3)
+	require.True(t, ok2, "seq 2 should still exist (re-queued after capacity exhaustion)")
+	require.True(t, ok3, "seq 3 should still exist (re-queued after capacity exhaustion)")
+
+	// total should be A=0, A=1, B=0 active + A=2, A=3. final queued = 5
+	require.Equal(t, 5, mp.CountTx(), "no entries should be lost due to capacity")
+
+	// activeNext should be at 2 (first requeued nonce)
+	next, ok, _ := mp.NextExpectedSequence(senderA.String())
+	require.True(t, ok)
+	require.Equal(t, uint64(2), next, "activeNext should roll back to first failed promotion nonce")
+}
+
+func TestReactorInvariant_PromotionCapacityRequeue(t *testing.T) {
+	keeper := newMockAccountKeeper()
+	sdkCtx := testSDKContext()
+
+	// MaxTx=2
+	mp := NewPriorityMempool(PriorityMempoolConfig{MaxTx: 2}, testTxEncoder)
+	mp.SetAccountKeeper(keeper)
+	eventCh := make(chan cmtmempool.AppMempoolEvent, 100)
+	mp.SetEventCh(eventCh)
+	reactor := newReactorSim(eventCh)
+
+	privA := secp256k1.GenPrivKey()
+	privB := secp256k1.GenPrivKey()
+	senderA := sdk.AccAddress(privA.PubKey().Address())
+	senderB := sdk.AccAddress(privB.PubKey().Address())
+	keeper.SetSequence(senderA, 0)
+	keeper.SetSequence(senderB, 0)
+
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(100)), newTestTxWithPriv(privA, 0, 1000, "default")))
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(50)), newTestTxWithPriv(privA, 2, 1000, "default")))
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(50)), newTestTxWithPriv(privA, 3, 1000, "default")))
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(200)), newTestTxWithPriv(privB, 0, 1000, "default")))
+
+	reactor.drain()
+	require.Equal(t, activeCount(mp), len(reactor.insertedTxs),
+		"reactor should match active pool before promotion attempt")
+
+	// attempt promotion that will fail due to capacity
+	keeper.SetSequence(senderA, 2)
+	mp.PromoteQueued(sdkCtx)
+
+	reactor.drain()
+	require.Equal(t, activeCount(mp), len(reactor.insertedTxs),
+		"reactor should still match active pool after failed promotion + requeue")
+	require.True(t, reactor.hasValidTxs, "active txs still exist")
+
+	// now free capacity and promote
+	require.NoError(t, mp.Remove(newTestTxWithPriv(privB, 0, 1000, "default")))
+	mp.PromoteQueued(sdkCtx)
+
+	reactor.drain()
+	require.Equal(t, activeCount(mp), len(reactor.insertedTxs),
+		"reactor should match after successful promotion")
 }
 
 func TestQueuedMempoolLookupQueued(t *testing.T) {
