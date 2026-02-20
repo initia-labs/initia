@@ -95,6 +95,8 @@ type PriorityMempool struct {
 	eventMtx          sync.Mutex
 	eventCond         *sync.Cond
 	eventQueue        []cmtmempool.AppMempoolEvent
+	eventStopCh       chan struct{}
+	eventDoneCh       chan struct{}
 }
 
 // NewPriorityMempool creates a new PriorityMempool with the provided limits.
@@ -141,8 +143,21 @@ func (p *PriorityMempool) SetAccountKeeper(ak AccountKeeper) {
 func (p *PriorityMempool) SetEventCh(ch chan<- cmtmempool.AppMempoolEvent) {
 	p.eventCh.Store(&ch)
 	p.eventDispatchOnce.Do(func() {
+		p.eventStopCh = make(chan struct{})
+		p.eventDoneCh = make(chan struct{})
 		go p.eventDispatchLoop()
 	})
+}
+
+// StopEventDispatch signals the event dispatch goroutine to exit and waits
+// for it to finish. Safe to call even if the dispatch loop was never started.
+func (p *PriorityMempool) StopEventDispatch() {
+	if p.eventStopCh == nil {
+		return
+	}
+	close(p.eventStopCh)
+	p.eventCond.Signal() // wake goroutine if blocked on empty queue
+	<-p.eventDoneCh
 }
 
 // SetMaxQueuedPerSender overrides the default per-sender queued tx limit.
@@ -946,9 +961,18 @@ func (p *PriorityMempool) enqueueRemovedEvents(entries []*txEntry) {
 
 // eventDispatchLoop forwards events from the internal queue to cometbft.
 func (p *PriorityMempool) eventDispatchLoop() {
+	defer close(p.eventDoneCh)
+
 	for {
 		p.eventMtx.Lock()
 		for len(p.eventQueue) == 0 {
+			// check for stop signal before waiting
+			select {
+			case <-p.eventStopCh:
+				p.eventMtx.Unlock()
+				return
+			default:
+			}
 			p.eventCond.Wait()
 		}
 		ev := p.eventQueue[0]
@@ -961,7 +985,11 @@ func (p *PriorityMempool) eventDispatchLoop() {
 			continue
 		}
 
-		*chPtr <- ev
+		select {
+		case *chPtr <- ev:
+		case <-p.eventStopCh:
+			return
+		}
 	}
 }
 
