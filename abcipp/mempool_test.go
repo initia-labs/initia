@@ -5,13 +5,16 @@ import (
 	"context"
 	"crypto/sha256"
 	"fmt"
+	"math/rand"
 	"sync"
 	"testing"
+	"time"
 
 	"cosmossdk.io/core/address"
 	txsigning "cosmossdk.io/x/tx/signing"
 	"cosmossdk.io/x/tx/signing/direct"
 	cmtmempool "github.com/cometbft/cometbft/mempool"
+	cmttypes "github.com/cometbft/cometbft/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -306,6 +309,14 @@ func TestPriorityMempoolOrdersByTierPriorityAndOrder(t *testing.T) {
 
 // drainEvents reads all buffered events from the channel and returns counts.
 func drainEvents(ch <-chan cmtmempool.AppMempoolEvent) (inserted, removed int) {
+	const idleWindow = 2 * time.Millisecond
+	const maxWait = 500 * time.Millisecond
+
+	idle := time.NewTimer(idleWindow)
+	defer idle.Stop()
+	deadline := time.NewTimer(maxWait)
+	defer deadline.Stop()
+
 	for {
 		select {
 		case ev := <-ch:
@@ -315,7 +326,16 @@ func drainEvents(ch <-chan cmtmempool.AppMempoolEvent) (inserted, removed int) {
 			case cmtmempool.EventTxRemoved:
 				removed++
 			}
-		default:
+			if !idle.Stop() {
+				select {
+				case <-idle.C:
+				default:
+				}
+			}
+			idle.Reset(idleWindow)
+		case <-idle.C:
+			return
+		case <-deadline.C:
 			return
 		}
 	}
@@ -1028,6 +1048,14 @@ func TestQueuedMempoolPromoteQueuedEvictsStale(t *testing.T) {
 
 // collectEvents returns typed slices of tx bytes.
 func collectEvents(ch <-chan cmtmempool.AppMempoolEvent) (inserted, removed [][]byte) {
+	const idleWindow = 2 * time.Millisecond
+	const maxWait = 500 * time.Millisecond
+
+	idle := time.NewTimer(idleWindow)
+	defer idle.Stop()
+	deadline := time.NewTimer(maxWait)
+	defer deadline.Stop()
+
 	for {
 		select {
 		case ev := <-ch:
@@ -1039,10 +1067,38 @@ func collectEvents(ch <-chan cmtmempool.AppMempoolEvent) (inserted, removed [][]
 			default:
 				panic("unhandled default case")
 			}
-		default:
+			if !idle.Stop() {
+				select {
+				case <-idle.C:
+				default:
+				}
+			}
+			idle.Reset(idleWindow)
+		case <-idle.C:
+			return
+		case <-deadline.C:
 			return
 		}
 	}
+}
+
+func collectNEvents(t *testing.T, ch <-chan cmtmempool.AppMempoolEvent, n int, timeout time.Duration) []cmtmempool.AppMempoolEvent {
+	t.Helper()
+
+	events := make([]cmtmempool.AppMempoolEvent, 0, n)
+	timer := time.NewTimer(timeout)
+	defer timer.Stop()
+
+	for len(events) < n {
+		select {
+		case ev := <-ch:
+			events = append(events, ev)
+		case <-timer.C:
+			t.Fatalf("timed out waiting for %d events, got %d", n, len(events))
+		}
+	}
+
+	return events
 }
 
 func encodeTx(t *testing.T, tx sdk.Tx) []byte {
@@ -1050,6 +1106,58 @@ func encodeTx(t *testing.T, tx sdk.Tx) []byte {
 	bz, err := testTxEncoder(tx)
 	require.NoError(t, err)
 	return bz
+}
+
+func TestEventOrderSameNonceReplacement(t *testing.T) {
+	priv := secp256k1.GenPrivKey()
+
+	mp := newTestPriorityMempool(t, nil)
+	eventCh := make(chan cmtmempool.AppMempoolEvent, 1)
+	mp.SetEventCh(eventCh)
+	sdkCtx := testSDKContext()
+
+	tx0 := newTestTxWithPriv(priv, 0, 1000, "default")
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(10)), tx0))
+
+	tx1 := newTestTxWithPriv(priv, 0, 2000, "default")
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(20)), tx1))
+
+	events := collectNEvents(t, eventCh, 3, 2*time.Second)
+	require.Equal(t, cmtmempool.EventTxInserted, events[0].Type, "first event should be initial insert")
+	require.Equal(t, cmtmempool.EventTxRemoved, events[1].Type, "replacement must remove old tx first")
+	require.Equal(t, cmtmempool.EventTxInserted, events[2].Type, "replacement must insert new tx after removal")
+}
+
+func TestEventNoDropUnderBackPressure(t *testing.T) {
+	priv := secp256k1.GenPrivKey()
+
+	mp := newTestPriorityMempool(t, nil)
+	// tiny channel to force backpressure on comet side
+	eventCh := make(chan cmtmempool.AppMempoolEvent, 1)
+	mp.SetEventCh(eventCh)
+	sdkCtx := testSDKContext()
+
+	const replacements = 100
+
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(1)), newTestTxWithPriv(priv, 0, 1000, "default")))
+	for i := range replacements {
+		tx := newTestTxWithPriv(priv, 0, uint64(2000+i), "default")
+		require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(int64(i+2))), tx))
+	}
+
+	events := collectNEvents(t, eventCh, 1+replacements*2, 5*time.Second)
+	var inserted, removed int
+	for _, ev := range events {
+		switch ev.Type {
+		case cmtmempool.EventTxInserted:
+			inserted++
+		case cmtmempool.EventTxRemoved:
+			removed++
+		}
+	}
+
+	require.Equal(t, replacements+1, inserted, "initial insert + one insert per successful replacement")
+	require.Equal(t, replacements, removed, "one removed per successful replacement")
 }
 
 func TestEventActiveInsertAndRemove(t *testing.T) {
@@ -1638,6 +1746,14 @@ func newReactorSim(ch <-chan cmtmempool.AppMempoolEvent) *reactorSim {
 
 // drain processes all buffered events and updates the cumulative state.
 func (r *reactorSim) drain() {
+	const idleWindow = 2 * time.Millisecond
+	const maxWait = 500 * time.Millisecond
+
+	idle := time.NewTimer(idleWindow)
+	defer idle.Stop()
+	deadline := time.NewTimer(maxWait)
+	defer deadline.Stop()
+
 	for {
 		select {
 		case ev := <-r.ch:
@@ -1651,7 +1767,16 @@ func (r *reactorSim) drain() {
 					r.hasValidTxs = false
 				}
 			}
-		default:
+			if !idle.Stop() {
+				select {
+				case <-idle.C:
+				default:
+				}
+			}
+			idle.Reset(idleWindow)
+		case <-idle.C:
+			return
+		case <-deadline.C:
 			return
 		}
 	}
@@ -1664,6 +1789,45 @@ func activeCount(mp *PriorityMempool) int {
 		n++
 	}
 	return n
+}
+
+func activeKeySet(mp *PriorityMempool) map[txKeyType]bool {
+	out := make(map[txKeyType]bool)
+	for it := mp.Select(context.Background(), nil); it != nil; it = it.Next() {
+		tx := it.Tx()
+		if tx == nil {
+			continue
+		}
+		bz, err := testTxEncoder(tx)
+		if err != nil {
+			continue
+		}
+		key := cmttypes.Tx(bz).Key()
+		out[key] = true
+	}
+	return out
+}
+
+func reactorMatchesActiveSet(mp *PriorityMempool, reactor *reactorSim) bool {
+	reactor.drain()
+	active := activeKeySet(mp)
+	if len(active) != len(reactor.insertedTxs) {
+		return false
+	}
+
+	for k := range active {
+		if !reactor.insertedTxs[k] {
+			return false
+		}
+	}
+
+	for k := range reactor.insertedTxs {
+		if !active[k] {
+			return false
+		}
+	}
+
+	return reactor.hasValidTxs == (len(active) > 0)
 }
 
 func TestReactorInvariant_InsertRemoveLifecycle(t *testing.T) {
@@ -1926,6 +2090,61 @@ func TestReactorInvariant_ConcurrentMultiSenderWorkload(t *testing.T) {
 	require.Equal(t, 0, len(reactor.insertedTxs), "all txs removed")
 	require.Equal(t, activeCount(mp), len(reactor.insertedTxs))
 	require.False(t, reactor.hasValidTxs, "hasValidTxs must be false when pool is empty")
+}
+
+func TestReactorInvariant_ConcurrentRandomizedStress(t *testing.T) {
+	sdkCtx := testSDKContext()
+	ctxWithPriority := func(priority int64) context.Context {
+		return sdk.WrapSDKContext(sdkCtx.WithPriority(priority))
+	}
+
+	const (
+		rounds         = 5
+		numSenders     = 20
+		workers        = 32
+		opsPerWorker   = 300
+		maxNonce       = 6
+		insertRatioPct = 70
+	)
+
+	for round := range rounds {
+		mp := newTestPriorityMempool(t, nil)
+		eventCh := make(chan cmtmempool.AppMempoolEvent, 1) // force heavy backpressure
+		mp.SetEventCh(eventCh)
+		reactor := newReactorSim(eventCh)
+
+		privs := make([]*secp256k1.PrivKey, numSenders)
+		for i := range privs {
+			privs[i] = secp256k1.GenPrivKey()
+		}
+
+		var wg sync.WaitGroup
+		wg.Add(workers)
+		for w := range workers {
+			seed := int64(round*10_000 + w + 1)
+			go func(seed int64) {
+				defer wg.Done()
+				rng := rand.New(rand.NewSource(seed))
+				for range opsPerWorker {
+					senderIdx := rng.Intn(numSenders)
+					nonce := uint64(rng.Intn(maxNonce))
+					priority := int64(rng.Intn(10_000) + 1)
+					tx := newTestTxWithPriv(privs[senderIdx], nonce, uint64(1000+nonce), "default")
+
+					if rng.Intn(100) < insertRatioPct {
+						_ = mp.Insert(ctxWithPriority(priority), tx)
+					} else {
+						_ = mp.Remove(tx)
+					}
+				}
+			}(seed)
+		}
+		wg.Wait()
+
+		require.Eventually(t, func() bool { return reactorMatchesActiveSet(mp, reactor) },
+			5*time.Second, 10*time.Millisecond,
+			"round %d: reactor state must converge to active pool state", round)
+	}
 }
 
 // Nonce gap prevention tests

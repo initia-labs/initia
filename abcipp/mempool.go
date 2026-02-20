@@ -89,7 +89,12 @@ type PriorityMempool struct {
 	queuedCount        atomic.Int64
 	maxQueuedPerSender int
 	maxQueuedTotal     int
-	eventCh            atomic.Pointer[chan<- cmtmempool.AppMempoolEvent]
+
+	eventCh           atomic.Pointer[chan<- cmtmempool.AppMempoolEvent]
+	eventDispatchOnce sync.Once
+	eventMtx          sync.Mutex
+	eventCond         *sync.Cond
+	eventQueue        []cmtmempool.AppMempoolEvent
 }
 
 // NewPriorityMempool creates a new PriorityMempool with the provided limits.
@@ -109,7 +114,7 @@ func NewPriorityMempool(cfg PriorityMempoolConfig, txEncoder sdk.TxEncoder) *Pri
 		maxQT = DefaultMaxQueuedTotal
 	}
 
-	return &PriorityMempool{
+	p := &PriorityMempool{
 		cfg:                cfg,
 		priorityIndex:      skiplist.New(skiplist.GreaterThanFunc(compareEntries)),
 		entries:            make(map[txKey]*txEntry),
@@ -120,6 +125,8 @@ func NewPriorityMempool(cfg PriorityMempoolConfig, txEncoder sdk.TxEncoder) *Pri
 		maxQueuedPerSender: maxQPS,
 		maxQueuedTotal:     maxQT,
 	}
+	p.eventCond = sync.NewCond(&p.eventMtx)
+	return p
 }
 
 // SetAccountKeeper sets the account keeper used for querying on-chain sequences.
@@ -133,6 +140,9 @@ func (p *PriorityMempool) SetAccountKeeper(ak AccountKeeper) {
 // SetEventCh stores the cometbft event channel for event dispatch.
 func (p *PriorityMempool) SetEventCh(ch chan<- cmtmempool.AppMempoolEvent) {
 	p.eventCh.Store(&ch)
+	p.eventDispatchOnce.Do(func() {
+		go p.eventDispatchLoop()
+	})
 }
 
 // SetMaxQueuedPerSender overrides the default per-sender queued tx limit.
@@ -315,18 +325,13 @@ func (p *PriorityMempool) cleanUpEntries(bApp BaseApp, ak AccountKeeper) {
 	}
 
 	p.mtx.Lock()
-	var finalRemoved []*txEntry
 	for _, entry := range removed {
 		if existing, ok := p.entries[entry.key]; ok {
 			p.removeEntryLocked(existing)
-			finalRemoved = append(finalRemoved, existing)
+			p.enqueueEvent(cmtmempool.EventTxRemoved, existing.bytes)
 		}
 	}
 	p.mtx.Unlock()
-
-	for _, entry := range finalRemoved {
-		p.pushEvent(cmtmempool.EventTxRemoved, entry.bytes)
-	}
 }
 
 // Contains returns true if the transaction is in the active or queued pool.
@@ -436,11 +441,10 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 			p.mtx.Unlock()
 			return nil
 		}
-		p.mtx.Unlock()
-
 		if evicted != nil {
-			p.pushEvent(cmtmempool.EventTxRemoved, evicted.bytes)
+			p.enqueueEvent(cmtmempool.EventTxRemoved, evicted.bytes)
 		}
+		p.mtx.Unlock()
 		return nil
 
 	default:
@@ -475,8 +479,8 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 			p.removeEntriesLocked(ev...)
 			removed = append(removed, ev...)
 		} else {
+			p.enqueueRemovedEvents(removed)
 			p.mtx.Unlock()
-			p.pushRemovedEvents(removed)
 			return sdkmempool.ErrMempoolTxMaxCapacity
 		}
 
@@ -504,13 +508,12 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 			}
 		}
 
-		p.mtx.Unlock()
-
-		p.pushRemovedEvents(removed)
-		p.pushEvent(cmtmempool.EventTxInserted, entry.bytes)
+		p.enqueueRemovedEvents(removed)
+		p.enqueueEvent(cmtmempool.EventTxInserted, entry.bytes)
 		for _, pe := range promoted {
-			p.pushEvent(cmtmempool.EventTxInserted, pe.bytes)
+			p.enqueueEvent(cmtmempool.EventTxInserted, pe.bytes)
 		}
+		p.mtx.Unlock()
 
 		return nil
 	}
@@ -527,8 +530,8 @@ func (p *PriorityMempool) Remove(tx sdk.Tx) error {
 	// try active pool first
 	if entry, ok := p.entries[key]; ok {
 		p.removeEntryLocked(entry)
+		p.enqueueEvent(cmtmempool.EventTxRemoved, entry.bytes)
 		p.mtx.Unlock()
-		p.pushEvent(cmtmempool.EventTxRemoved, entry.bytes)
 		return nil
 	}
 
@@ -538,9 +541,8 @@ func (p *PriorityMempool) Remove(tx sdk.Tx) error {
 			delete(s.queued, key.nonce)
 			p.queuedCount.Add(-1)
 			p.cleanupSenderLocked(key.sender)
-			removedBytes := entry.bytes
+			p.enqueueEvent(cmtmempool.EventTxRemoved, entry.bytes)
 			p.mtx.Unlock()
-			p.pushEvent(cmtmempool.EventTxRemoved, removedBytes)
 			return nil
 		}
 	}
@@ -804,15 +806,14 @@ func (p *PriorityMempool) PromoteQueued(ctx context.Context) {
 		}
 	}
 
-	p.mtx.Unlock()
-
 	for _, entry := range staleEntries {
-		p.pushEvent(cmtmempool.EventTxRemoved, entry.bytes)
+		p.enqueueEvent(cmtmempool.EventTxRemoved, entry.bytes)
 	}
-	p.pushRemovedEvents(removed)
+	p.enqueueRemovedEvents(removed)
 	for _, entry := range promoted {
-		p.pushEvent(cmtmempool.EventTxInserted, entry.bytes)
+		p.enqueueEvent(cmtmempool.EventTxInserted, entry.bytes)
 	}
+	p.mtx.Unlock()
 }
 
 // fetchSequence queries the on-chain sequence for a sender.
@@ -920,28 +921,47 @@ func (p *PriorityMempool) cleanupSenderLocked(sender string) {
 	}
 }
 
-// pushEvent sends an event to the cometbft event channel.
-func (p *PriorityMempool) pushEvent(eventType cmtmempool.AppMempoolEventType, txBytes []byte) {
-	chPtr := p.eventCh.Load()
-	if chPtr == nil {
+// enqueueEvent appends an event to the internal FIFO dispatcher queue.
+func (p *PriorityMempool) enqueueEvent(eventType cmtmempool.AppMempoolEventType, txBytes []byte) {
+	if p.eventCh.Load() == nil {
 		return
 	}
-
 	cmtTx := cmttypes.Tx(txBytes)
-	select {
-	case *chPtr <- cmtmempool.AppMempoolEvent{
+	p.eventMtx.Lock()
+	p.eventQueue = append(p.eventQueue, cmtmempool.AppMempoolEvent{
 		Type:  eventType,
 		TxKey: cmtTx.Key(),
 		Tx:    cmtTx,
-	}:
-	default:
+	})
+	p.eventCond.Signal()
+	p.eventMtx.Unlock()
+}
+
+// enqueueRemovedEvents appends EventTxRemoved for each entry.
+func (p *PriorityMempool) enqueueRemovedEvents(entries []*txEntry) {
+	for _, entry := range entries {
+		p.enqueueEvent(cmtmempool.EventTxRemoved, entry.bytes)
 	}
 }
 
-// pushRemovedEvents sends EventTxRemoved for each entry.
-func (p *PriorityMempool) pushRemovedEvents(entries []*txEntry) {
-	for _, entry := range entries {
-		p.pushEvent(cmtmempool.EventTxRemoved, entry.bytes)
+// eventDispatchLoop forwards events from the internal queue to cometbft.
+func (p *PriorityMempool) eventDispatchLoop() {
+	for {
+		p.eventMtx.Lock()
+		for len(p.eventQueue) == 0 {
+			p.eventCond.Wait()
+		}
+		ev := p.eventQueue[0]
+		p.eventQueue[0] = cmtmempool.AppMempoolEvent{}
+		p.eventQueue = p.eventQueue[1:]
+		chPtr := p.eventCh.Load()
+		p.eventMtx.Unlock()
+
+		if chPtr == nil {
+			continue
+		}
+
+		*chPtr <- ev
 	}
 }
 
