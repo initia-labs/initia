@@ -487,7 +487,7 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 		if ss.hasActiveNext {
 			ss.activeNext = max(ss.activeNext, key.nonce+1)
 			toPromote := p.collectPromotableLocked(ss)
-			for _, pe := range toPromote {
+			for idx, pe := range toPromote {
 				pe.order = p.nextOrder()
 				peCtx := sdkCtx.WithTxBytes(pe.bytes)
 				pe.tier = p.selectTier(peCtx, pe.tx)
@@ -496,6 +496,10 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 					removed = append(removed, ev...)
 					p.addEntryLocked(pe)
 					promoted = append(promoted, pe)
+				} else {
+					// we must requeue the failed entry and all remaining entries to prevent nonce gaps
+					p.requeueEntriesLocked(ss, toPromote[idx:])
+					break
 				}
 			}
 		}
@@ -771,7 +775,7 @@ func (p *PriorityMempool) PromoteQueued(ctx context.Context) {
 		// advance activeNext, collect and promote
 		ss.activeNext = newActive
 		toPromote := p.collectPromotableLocked(ss)
-		for _, pe := range toPromote {
+		for idx, pe := range toPromote {
 			pe.order = p.nextOrder()
 			peCtx := sdkCtx.WithTxBytes(pe.bytes)
 			pe.tier = p.selectTier(peCtx, pe.tx)
@@ -780,6 +784,10 @@ func (p *PriorityMempool) PromoteQueued(ctx context.Context) {
 				removed = append(removed, ev...)
 				p.addEntryLocked(pe)
 				promoted = append(promoted, pe)
+			} else {
+				// we must requeue the failed entry and all remaining entries to prevent nonce gaps
+				p.requeueEntriesLocked(ss, toPromote[idx:])
+				break
 			}
 		}
 
@@ -887,6 +895,22 @@ func (p *PriorityMempool) collectPromotableLocked(ss *senderState) []*txEntry {
 	}
 
 	return entries
+}
+
+// requeueEntriesLocked puts entries back into the sender's queued pool and
+// rolls back activeNext to the first requeued nonce.
+// should be used when capacity is exhausted during promotion to avoid
+// losing transactions and creating nonce gaps. the caller must hold p.mtx.
+func (p *PriorityMempool) requeueEntriesLocked(ss *senderState, entries []*txEntry) {
+	if len(entries) == 0 {
+		return
+	}
+
+	ss.activeNext = entries[0].key.nonce
+	for _, entry := range entries {
+		ss.queued[entry.key.nonce] = entry
+		p.queuedCount.Add(1)
+	}
 }
 
 // cleanupSenderLocked removes the sender state if fully empty. the caller must hold p.mtx.
