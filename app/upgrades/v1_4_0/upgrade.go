@@ -12,13 +12,14 @@ import (
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
-	ophosttypes "github.com/initia-labs/OPinit/x/ophost/types"
 	"github.com/initia-labs/initia/app/upgrades"
 	movetypes "github.com/initia-labs/initia/x/move/types"
 
 	vmapi "github.com/initia-labs/movevm/api"
 	vmprecom "github.com/initia-labs/movevm/precompile"
 	vmtypes "github.com/initia-labs/movevm/types"
+
+	ophosttypes "github.com/initia-labs/OPinit/x/ophost/types"
 )
 
 const upgradeName = "v1.4.0"
