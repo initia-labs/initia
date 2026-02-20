@@ -685,6 +685,7 @@ func NewAppKeeper(
 		appKeepers.IBCKeeper.PortKeeper,
 		appKeepers.ScopedOPHostKeeper,
 		appKeepers.OracleKeeper,
+		appKeepers.TransferKeeper,
 		ophosttypes.NewBridgeHooks(ophosttypeshook.NewBridgeHook(appKeepers.IBCKeeper.ChannelKeeper, appKeepers.IBCPermKeeper, ac)),
 		authorityAddr,
 		vc,
