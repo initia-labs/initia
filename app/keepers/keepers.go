@@ -11,6 +11,7 @@ import (
 	feegrantkeeper "cosmossdk.io/x/feegrant/keeper"
 	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
+	"github.com/initia-labs/OPinit/x/ophost"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -155,6 +156,7 @@ type AppKeepers struct {
 	ScopedICAHostKeeper       capabilitykeeper.ScopedKeeper
 	ScopedICAControllerKeeper capabilitykeeper.ScopedKeeper
 	ScopedICAAuthKeeper       capabilitykeeper.ScopedKeeper
+	ScopedOPHostKeeper        capabilitykeeper.ScopedKeeper
 }
 
 func NewAppKeeper(
@@ -206,6 +208,7 @@ func NewAppKeeper(
 	appKeepers.ScopedICAHostKeeper = appKeepers.CapabilityKeeper.ScopeToModule(icahosttypes.SubModuleName)
 	appKeepers.ScopedICAControllerKeeper = appKeepers.CapabilityKeeper.ScopeToModule(icacontrollertypes.SubModuleName)
 	appKeepers.ScopedICAAuthKeeper = appKeepers.CapabilityKeeper.ScopeToModule(icaauthtypes.ModuleName)
+	appKeepers.ScopedOPHostKeeper = appKeepers.CapabilityKeeper.ScopeToModule(ophosttypes.ModuleName)
 
 	// Applications that wish to enforce statically created ScopedKeepers should call `Seal` after creating
 	// their scoped modules in `NewApp` with `ScopeToModule`
@@ -637,19 +640,6 @@ func NewAppKeeper(
 	}
 
 	//////////////////////////////
-	// IBC router Configuration //
-	//////////////////////////////
-
-	// Create static IBC router, add transfer route, then set and seal it
-	ibcRouter := porttypes.NewRouter()
-	ibcRouter.AddRoute(ibctransfertypes.ModuleName, transferStack).
-		AddRoute(icahosttypes.SubModuleName, icaHostStack).
-		AddRoute(icacontrollertypes.SubModuleName, icaControllerStack).
-		AddRoute(icaauthtypes.ModuleName, icaControllerStack).
-		AddRoute(ibcnfttransfertypes.ModuleName, nftTransferStack)
-	appKeepers.IBCKeeper.SetRouter(ibcRouter)
-
-	//////////////////////////////
 	// MoveKeeper Configuration //
 	//////////////////////////////
 	queryWhitelist := appKeepers.makeQueryWhitelist()
@@ -691,9 +681,37 @@ func NewAppKeeper(
 		appKeepers.AccountKeeper,
 		appKeepers.BankKeeper,
 		appKeepers.DistrKeeper,
+		appKeepers.IBCKeeper.ChannelKeeper,
+		appKeepers.IBCKeeper.PortKeeper,
+		appKeepers.ScopedOPHostKeeper,
+		appKeepers.OracleKeeper,
 		ophosttypes.NewBridgeHooks(ophosttypeshook.NewBridgeHook(appKeepers.IBCKeeper.ChannelKeeper, appKeepers.IBCPermKeeper, ac)),
 		authorityAddr,
+		vc,
 	)
+
+	///////////////////////////
+	// OPHost configuration //
+	///////////////////////////
+
+	ophostStack := ibcfee.NewIBCMiddleware(
+		ophost.NewIBCModule(*appKeepers.OPHostKeeper),
+		*appKeepers.IBCFeeKeeper,
+	)
+
+	//////////////////////////////
+	// IBC router Configuration //
+	//////////////////////////////
+
+	// create a static IBC router, add a transfer route, then set and seal it
+	ibcRouter := porttypes.NewRouter()
+	ibcRouter.AddRoute(ibctransfertypes.ModuleName, transferStack).
+		AddRoute(icahosttypes.SubModuleName, icaHostStack).
+		AddRoute(icacontrollertypes.SubModuleName, icaControllerStack).
+		AddRoute(icaauthtypes.ModuleName, icaControllerStack).
+		AddRoute(ibcnfttransfertypes.ModuleName, nftTransferStack).
+		AddRoute(ophosttypes.ModuleName, ophostStack)
+	appKeepers.IBCKeeper.SetRouter(ibcRouter)
 
 	govConfig := govtypes.DefaultConfig()
 	appKeepers.GovKeeper = govkeeper.NewKeeper(

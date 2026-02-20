@@ -213,6 +213,7 @@ func orderEndBlockers() []string {
 		forwardingtypes.ModuleName,
 		ratelimittypes.ModuleName,
 		dynamicfeetypes.ModuleName,
+		ophosttypes.ModuleName,
 	}
 }
 

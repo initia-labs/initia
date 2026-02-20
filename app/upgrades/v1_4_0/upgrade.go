@@ -8,6 +8,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
+	ophosttypes "github.com/initia-labs/OPinit/x/ophost/types"
 	"github.com/initia-labs/initia/app/upgrades"
 	movetypes "github.com/initia-labs/initia/x/move/types"
 
@@ -59,6 +60,13 @@ func RegisterUpgradeHandlers(app upgrades.InitiaApp) {
 			err = app.GetMoveKeeper().PublishModuleBundle(ctx, vmtypes.StdAddress, vmtypes.NewModuleBundle(modules...), movetypes.UpgradePolicy_COMPATIBLE)
 			if err != nil {
 				return nil, err
+			}
+
+			// bind the opinit IBC port for ophost module
+			if !app.GetOPHostKeeper().IsBound(ctx, ophosttypes.PortID) {
+				if err := app.GetOPHostKeeper().BindPort(ctx, ophosttypes.PortID); err != nil {
+					return nil, err
+				}
 			}
 
 			return vm, nil

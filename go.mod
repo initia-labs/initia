@@ -40,7 +40,8 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/hashicorp/go-metrics v0.5.3
 	github.com/huandu/skiplist v1.2.0
-	github.com/initia-labs/OPinit v1.2.3
+	github.com/initia-labs/OPinit v1.3.0-alpha.0
+	github.com/initia-labs/OPinit/api v1.2.1-0.20260107071306-7207b34866b7
 	github.com/initia-labs/initia/api v1.3.0
 	// we also need to update `LIBMOVEVM_VERSION` of Dockerfile#11
 	github.com/initia-labs/movevm v1.2.0
@@ -156,7 +157,6 @@ require (
 	github.com/iancoleman/strcase v0.3.0 // indirect
 	github.com/improbable-eng/grpc-web v0.15.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/initia-labs/OPinit/api v1.2.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/jmhodges/levigo v1.0.0 // indirect
 	github.com/klauspost/compress v1.17.11 // indirect
@@ -261,14 +261,9 @@ replace (
 // iavl
 // - https://github.com/initia-labs/iavl/commit/1a8bbb22bb7defa7108dbd07b2f4a4f80f37d060
 replace (
-	// TODO: Replace this with proper tag once https://github.com/initia-labs/cometbft/pull/77 is merged
-	github.com/cometbft/cometbft => github.com/initia-labs/cometbft v0.38.21-initia.0.0.20260212065829-6acaeedc3b02
-
+	github.com/cometbft/cometbft => github.com/initia-labs/cometbft v0.38.21-initia.1
 	github.com/cosmos/cosmos-sdk => github.com/initia-labs/cosmos-sdk v0.50.15-initia.0
 	github.com/cosmos/iavl => github.com/initia-labs/iavl v1.2.6-initia.1
-
-	// TODO: New CometBFT requires this. Replace this with proper tag once we have OPinit stable release
-	github.com/initia-labs/OPinit/api => github.com/initia-labs/OPinit/api v1.2.1-0.20260107071306-7207b34866b7
 
 	github.com/noble-assets/forwarding/simapp => github.com/initia-labs/forwarding/simapp v1.0.0
 	github.com/noble-assets/forwarding/v2 => github.com/initia-labs/forwarding/v2 v2.0.3-initia.3
