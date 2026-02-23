@@ -90,13 +90,12 @@ type PriorityMempool struct {
 	maxQueuedPerSender int
 	maxQueuedTotal     int
 
-	eventCh           atomic.Pointer[chan<- cmtmempool.AppMempoolEvent]
-	eventDispatchOnce sync.Once
-	eventMtx          sync.Mutex
-	eventCond         *sync.Cond
-	eventQueue        []cmtmempool.AppMempoolEvent
-	eventStopCh       chan struct{}
-	eventDoneCh       chan struct{}
+	eventCh     atomic.Pointer[chan<- cmtmempool.AppMempoolEvent]
+	eventMu     sync.Mutex
+	eventQueue  []cmtmempool.AppMempoolEvent
+	eventNotify chan struct{}
+	eventStop   chan struct{}
+	eventDone   chan struct{}
 }
 
 // NewPriorityMempool creates a new PriorityMempool with the provided limits.
@@ -126,8 +125,11 @@ func NewPriorityMempool(cfg PriorityMempoolConfig, txEncoder sdk.TxEncoder) *Pri
 		tierDistribution:   dist,
 		maxQueuedPerSender: maxQPS,
 		maxQueuedTotal:     maxQT,
+		eventNotify:        make(chan struct{}, 1),
+		eventStop:          make(chan struct{}),
+		eventDone:          make(chan struct{}),
 	}
-	p.eventCond = sync.NewCond(&p.eventMtx)
+	go p.eventDispatchLoop()
 	return p
 }
 
@@ -148,37 +150,23 @@ func (p *PriorityMempool) SetAccountKeeper(ak AccountKeeper) {
 // SetEventCh stores the cometbft event channel for event dispatch.
 func (p *PriorityMempool) SetEventCh(ch chan<- cmtmempool.AppMempoolEvent) {
 	p.eventCh.Store(&ch)
-	p.eventDispatchOnce.Do(func() {
-		p.eventMtx.Lock()
-		stopCh := make(chan struct{})
-		doneCh := make(chan struct{})
-		p.eventStopCh = stopCh
-		p.eventDoneCh = doneCh
-		p.eventMtx.Unlock()
-
-		go p.eventDispatchLoop(stopCh, doneCh)
-	})
+	// wake the dispatch loop in case events were queued before the channel was set
+	select {
+	case p.eventNotify <- struct{}{}:
+	default:
+	}
 }
 
 // StopEventDispatch signals the event dispatch goroutine to exit and waits
-// for it to finish. Safe to call even if the dispatch loop was never started.
+// for it to finish.
 func (p *PriorityMempool) StopEventDispatch() {
-	p.eventMtx.Lock()
-	stopCh := p.eventStopCh
-	doneCh := p.eventDoneCh
-	p.eventStopCh = nil
-	p.eventDoneCh = nil
-	p.eventMtx.Unlock()
-
-	if stopCh == nil {
-		return
+	select {
+	case <-p.eventStop:
+		return // already stopped
+	default:
+		close(p.eventStop)
 	}
-
-	close(stopCh)
-	p.eventCond.Signal() // wake goroutine if blocked on empty queue
-	if doneCh != nil {
-		<-doneCh
-	}
+	<-p.eventDone
 }
 
 // SetMaxQueuedPerSender overrides the default per-sender queued tx limit.
@@ -443,8 +431,9 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 	p.mtx.Lock()
 	ss := p.getOrCreateSenderLocked(key.sender)
 	if !ss.hasActiveNext && p.ak != nil {
+		ak := p.ak
 		p.mtx.Unlock()
-		seq, seqOk := p.fetchSequence(sdkCtx, key.sender)
+		seq, seqOk := fetchSequence(sdkCtx, ak, key.sender)
 		p.mtx.Lock()
 
 		// refetch sender state in case it was removed while we were unlocked
@@ -767,13 +756,16 @@ func (p *PriorityMempool) IterateQueuedTxs(fn func(sender string, nonce uint64, 
 // PromoteQueued evicts stale queued entries, promotes sequential queued entries,
 // and refreshes activeNext for all tracked senders.
 func (p *PriorityMempool) PromoteQueued(ctx context.Context) {
-	if p.ak == nil {
-		return
-	}
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	// snapshot senders, partitioned by whether they have queued entries
 	p.mtx.Lock()
+	if p.ak == nil {
+		p.mtx.Unlock()
+		return
+	}
+	ak := p.ak
+
 	var queuedSenders, activeOnlySenders []string
 	for sender, ss := range p.senders {
 		if !ss.hasActiveNext {
@@ -797,7 +789,7 @@ func (p *PriorityMempool) PromoteQueued(ctx context.Context) {
 	}
 	seqs := make(map[string]*seqResult, len(queuedSenders))
 	for _, sender := range queuedSenders {
-		seq, ok := p.fetchSequence(sdkCtx, sender)
+		seq, ok := fetchSequence(sdkCtx, ak, sender)
 		if !ok {
 			continue
 		}
@@ -865,23 +857,6 @@ func (p *PriorityMempool) PromoteQueued(ctx context.Context) {
 		p.enqueueEvent(cmtmempool.EventTxInserted, entry.bytes)
 	}
 	p.mtx.Unlock()
-}
-
-// fetchSequence queries the on-chain sequence for a sender.
-func (p *PriorityMempool) fetchSequence(ctx sdk.Context, sender string) (uint64, bool) {
-	addr, err := sdk.AccAddressFromBech32(sender)
-	if err != nil {
-		return 0, false
-	}
-
-	seq, err := p.ak.GetSequence(ctx, addr)
-	if err != nil {
-		// AccountKeeper.GetSequence returns an error only when the account does not
-		// exist yet. Treat that as sequence 0 and mark the lookup as usable.
-		return 0, true
-	}
-
-	return seq, true
 }
 
 // insertQueuedLocked adds or replaces a tx in the queued pool. When the per sender
@@ -978,14 +953,25 @@ func (p *PriorityMempool) enqueueEvent(eventType cmtmempool.AppMempoolEventType,
 		return
 	}
 	cmtTx := cmttypes.Tx(txBytes)
-	p.eventMtx.Lock()
-	p.eventQueue = append(p.eventQueue, cmtmempool.AppMempoolEvent{
+	ev := cmtmempool.AppMempoolEvent{
 		Type:  eventType,
 		TxKey: cmtTx.Key(),
 		Tx:    cmtTx,
-	})
-	p.eventCond.Signal()
-	p.eventMtx.Unlock()
+	}
+	p.eventMu.Lock()
+	select {
+	case <-p.eventStop:
+		p.eventMu.Unlock()
+		return
+	default:
+	}
+	p.eventQueue = append(p.eventQueue, ev)
+	p.eventMu.Unlock()
+
+	select {
+	case p.eventNotify <- struct{}{}:
+	default:
+	}
 }
 
 // enqueueRemovedEvents appends EventTxRemoved for each entry.
@@ -996,35 +982,37 @@ func (p *PriorityMempool) enqueueRemovedEvents(entries []*txEntry) {
 }
 
 // eventDispatchLoop forwards events from the internal queue to cometbft.
-func (p *PriorityMempool) eventDispatchLoop(stopCh <-chan struct{}, doneCh chan<- struct{}) {
-	defer close(doneCh)
+func (p *PriorityMempool) eventDispatchLoop() {
+	defer close(p.eventDone)
 
 	for {
-		p.eventMtx.Lock()
-		for len(p.eventQueue) == 0 {
-			// check for stop signal before waiting
-			select {
-			case <-stopCh:
-				p.eventMtx.Unlock()
-				return
-			default:
-			}
-			p.eventCond.Wait()
+		select {
+		case <-p.eventStop:
+			return
+		case <-p.eventNotify:
 		}
-		ev := p.eventQueue[0]
-		p.eventQueue[0] = cmtmempool.AppMempoolEvent{}
-		p.eventQueue = p.eventQueue[1:]
-		chPtr := p.eventCh.Load()
-		p.eventMtx.Unlock()
 
+		chPtr := p.eventCh.Load()
 		if chPtr == nil {
 			continue
 		}
 
-		select {
-		case *chPtr <- ev:
-		case <-stopCh:
-			return
+		for {
+			p.eventMu.Lock()
+			if len(p.eventQueue) == 0 {
+				p.eventMu.Unlock()
+				break
+			}
+			ev := p.eventQueue[0]
+			p.eventQueue[0] = cmtmempool.AppMempoolEvent{}
+			p.eventQueue = p.eventQueue[1:]
+			p.eventMu.Unlock()
+
+			select {
+			case *chPtr <- ev:
+			case <-p.eventStop:
+				return
+			}
 		}
 	}
 }
