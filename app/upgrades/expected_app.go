@@ -13,6 +13,8 @@ import (
 
 	movekeeper "github.com/initia-labs/initia/x/move/keeper"
 
+	ophostkeeper "github.com/initia-labs/OPinit/x/ophost/keeper"
+
 	marketmapkeeper "github.com/skip-mev/connect/v2/x/marketmap/keeper"
 )
 
@@ -20,6 +22,7 @@ type InitiaApp interface {
 	GetAccountKeeper() *authkeeper.AccountKeeper
 	GetMoveKeeper() *movekeeper.Keeper
 	GetUpgradeKeeper() *upgradekeeper.Keeper
+	GetOPHostKeeper() *ophostkeeper.Keeper
 	GetMarketMapKeeper() *marketmapkeeper.Keeper
 	GetTransferKeeper() *transferkeeper.Keeper
 	GetIBCKeeper() *ibckeeper.Keeper

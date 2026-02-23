@@ -69,24 +69,16 @@ func (h *ProposalHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 		maxGasLimit := ctx.ConsensusParams().Block.MaxGas
 		maxBlockSize := ctx.ConsensusParams().Block.MaxBytes
 
-		// Fill the proposal with transactions from each lane.
 		var (
 			totalSize    int64
 			totalGas     uint64
 			txsToInclude [][]byte
-			txsToRemove  []sdk.Tx
+			txsToRemove  []TxInfoEntry
 		)
 
-		for iterator := h.mempool.Select(ctx, nil); iterator != nil; iterator = iterator.Next() {
-			tx := iterator.Tx()
-
-			txInfo, err := h.mempool.GetTxInfo(ctx, tx)
-			if err != nil {
-				h.logger.Info("failed to get hash of tx", "err", err)
-
-				txsToRemove = append(txsToRemove, tx)
-				continue
-			}
+		for iter := h.mempool.Select(ctx, nil); iter != nil; iter = iter.Next() {
+			tx := iter.Tx()
+			txInfo := iter.(TxInfoIterator).TxInfo()
 
 			// If the transaction is too large, we skip it.
 			if updatedSize := totalSize + txInfo.Size; maxBlockSize > 0 && updatedSize > maxBlockSize {
@@ -102,7 +94,7 @@ func (h *ProposalHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 				)
 
 				if txInfo.Size > maxBlockSize {
-					txsToRemove = append(txsToRemove, tx)
+					txsToRemove = append(txsToRemove, TxInfoEntry{Tx: tx, Info: txInfo})
 				}
 
 				continue
@@ -122,7 +114,7 @@ func (h *ProposalHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 				)
 
 				if txInfo.GasLimit > uint64(maxGasLimit) { //nolint:gosec
-					txsToRemove = append(txsToRemove, tx)
+					txsToRemove = append(txsToRemove, TxInfoEntry{Tx: tx, Info: txInfo})
 				}
 
 				continue
@@ -140,7 +132,7 @@ func (h *ProposalHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 					"tx_hash", TxHash(txInfo.TxBytes),
 				)
 
-				txsToRemove = append(txsToRemove, tx)
+				txsToRemove = append(txsToRemove, TxInfoEntry{Tx: tx, Info: txInfo})
 				continue
 			}
 
@@ -151,11 +143,15 @@ func (h *ProposalHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 			txsToInclude = append(txsToInclude, txInfo.TxBytes)
 		}
 
-		// remove the invalid transactions from the mempool.
-		for _, tx := range txsToRemove {
-			err := h.mempool.Remove(tx)
-			if err != nil {
-				h.logger.Error("failed to remove tx from mempool", "err", err)
+		// remove invalid txs, but only if they haven't been replaced since
+		// the snapshot was taken. a concurrent Insert could have swapped the
+		// entry at (sender, nonce) with a valid higher-priority replacement.
+		for _, entry := range txsToRemove {
+			snapshotHash := TxHash(entry.Info.TxBytes)
+			if currentHash, ok := h.mempool.Lookup(entry.Info.Sender, entry.Info.Sequence); ok && currentHash == snapshotHash {
+				if err := h.mempool.Remove(entry.Tx); err != nil {
+					h.logger.Error("failed to remove tx from mempool", "err", err)
+				}
 			}
 		}
 

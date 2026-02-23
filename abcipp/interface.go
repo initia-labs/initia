@@ -26,7 +26,20 @@ type Mempool interface {
 	GetTxInfo(ctx sdk.Context, tx sdk.Tx) (TxInfo, error)
 
 	// NextExpectedSequence returns the next expected sequence for a sender
-	NextExpectedSequence(ctx sdk.Context, sender string) (uint64, bool, error)
+	NextExpectedSequence(sender string) (uint64, bool, error)
+
+	// IteratePendingTxs iterates over active pool entries, calling fn for each. Stops early if fn returns false.
+	IteratePendingTxs(fn func(sender string, nonce uint64, tx sdk.Tx) bool)
+
+	// IterateQueuedTxs iterates over queued pool entries, calling fn for each. Stops early if fn returns false.
+	IterateQueuedTxs(fn func(sender string, nonce uint64, tx sdk.Tx) bool)
+}
+
+// TxInfoIterator extends sdkmempool.Iterator with TxInfo access.
+// The iterator returned by PriorityMempool.Select implements this interface.
+type TxInfoIterator interface {
+	sdkmempool.Iterator
+	TxInfo() TxInfo
 }
 
 type AccountKeeper interface {
@@ -41,6 +54,12 @@ type TxInfo struct {
 	GasLimit uint64
 	Tier     string
 	TxBytes  []byte
+}
+
+// TxInfoEntry bundles a transaction with its mempool info.
+type TxInfoEntry struct {
+	Tx   sdk.Tx
+	Info TxInfo
 }
 
 // CheckTx is baseapp's CheckTx method that checks the validity of a transaction.

@@ -18,6 +18,8 @@ import (
 	vmapi "github.com/initia-labs/movevm/api"
 	vmprecom "github.com/initia-labs/movevm/precompile"
 	vmtypes "github.com/initia-labs/movevm/types"
+
+	ophosttypes "github.com/initia-labs/OPinit/x/ophost/types"
 )
 
 const upgradeName = "v1.4.0"
@@ -68,6 +70,13 @@ func RegisterUpgradeHandlers(app upgrades.InitiaApp) {
 			err = app.GetMoveKeeper().PublishModuleBundle(ctx, vmtypes.StdAddress, vmtypes.NewModuleBundle(modules...), movetypes.UpgradePolicy_COMPATIBLE)
 			if err != nil {
 				return nil, err
+			}
+
+			// bind the opinit IBC port for ophost module
+			if !app.GetOPHostKeeper().IsBound(ctx, ophosttypes.PortID) {
+				if err := app.GetOPHostKeeper().BindPort(ctx, ophosttypes.PortID); err != nil {
+					return nil, err
+				}
 			}
 
 			return vm, nil

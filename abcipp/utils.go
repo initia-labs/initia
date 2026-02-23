@@ -64,3 +64,20 @@ func FirstSignature(tx sdk.Tx) (sdk.AccAddress, uint64, error) {
 	addr := sdk.AccAddress(sigs[0].PubKey.Address())
 	return addr, sigs[0].Sequence, nil
 }
+
+// fetchSequence queries the on-chain sequence for a sender.
+func fetchSequence(ctx sdk.Context, ak AccountKeeper, sender string) (uint64, bool) {
+	addr, err := sdk.AccAddressFromBech32(sender)
+	if err != nil {
+		return 0, false
+	}
+
+	seq, err := ak.GetSequence(ctx, addr)
+	if err != nil {
+		// AccountKeeper.GetSequence returns an error only when the account does not
+		// exist yet. Treat that as sequence 0 and mark the lookup as usable.
+		return 0, true
+	}
+
+	return seq, true
+}

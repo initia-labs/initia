@@ -19,6 +19,8 @@ import (
 	icaauthkeeper "github.com/initia-labs/initia/x/intertx/keeper"
 	movekeeper "github.com/initia-labs/initia/x/move/keeper"
 
+	ophostkeeper "github.com/initia-labs/OPinit/x/ophost/keeper"
+
 	marketmapkeeper "github.com/skip-mev/connect/v2/x/marketmap/keeper"
 )
 
@@ -97,6 +99,11 @@ func (app *InitiaApp) CheckStateContextGetter() func() sdk.Context {
 // GetTransferKeeper returns the IBC transfer keeper for the app.
 func (app *InitiaApp) GetTransferKeeper() *ibctransferkeeper.Keeper {
 	return app.TransferKeeper
+}
+
+// GetOPHostKeeper returns the ophost keeper for the app.
+func (app *InitiaApp) GetOPHostKeeper() *ophostkeeper.Keeper {
+	return app.OPHostKeeper
 }
 
 // GetMarketMapKeeper returns the marketmap keeper for the app.
