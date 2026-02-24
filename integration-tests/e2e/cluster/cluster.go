@@ -821,6 +821,7 @@ func (c *Cluster) startNode(ctx context.Context, n *Node) error {
 		return err
 	}
 
+	//nolint:gosec // c.bin is a test-controlled binary path from ClusterOptions or local build output.
 	cmd := exec.CommandContext(ctx, c.bin, "start", "--home", n.Home)
 	cmd.Stdout = f
 	cmd.Stderr = f
@@ -934,25 +935,13 @@ func (c *Cluster) keyAddress(ctx context.Context, name string) (string, error) {
 }
 
 func (c *Cluster) exec(ctx context.Context, args ...string) ([]byte, error) {
+	//nolint:gosec // c.bin is a test-controlled binary path from ClusterOptions or local build output.
 	cmd := exec.CommandContext(ctx, c.bin, args...)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return nil, fmt.Errorf("%s %s failed: %w\n%s", c.bin, strings.Join(args, " "), err, string(out))
 	}
 	return out, nil
-}
-
-func (c *Cluster) keyringDirSummary() string {
-	keyringDir := filepath.Join(c.nodes[0].Home, "keyring-test")
-	entries, err := os.ReadDir(keyringDir)
-	if err != nil {
-		return fmt.Sprintf("keyring dir check failed (%s): %v", keyringDir, err)
-	}
-	names := make([]string, 0, len(entries))
-	for _, e := range entries {
-		names = append(names, e.Name())
-	}
-	return fmt.Sprintf("keyring dir=%s entries=%v", keyringDir, names)
 }
 
 func buildInitiad(ctx context.Context, repoRoot, outPath string) error {
@@ -990,7 +979,7 @@ func copyFile(src, dst string) error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(dst, bz, 0o644)
+	return os.WriteFile(dst, bz, 0o600)
 }
 
 func parseTxResultFromOutput(out []byte) (TxResult, error) {

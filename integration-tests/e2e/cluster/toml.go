@@ -40,5 +40,5 @@ func setTOMLValue(path, section, key, value string) error {
 		return fmt.Errorf("failed to set %s.%s in %s", section, key, path)
 	}
 
-	return os.WriteFile(path, []byte(strings.Join(lines, "\n")), 0o644)
+	return os.WriteFile(path, []byte(strings.Join(lines, "\n")), 0o600)
 }

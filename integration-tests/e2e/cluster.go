@@ -14,7 +14,7 @@ type AccountMeta = e2ecluster.AccountMeta
 type TxResult = e2ecluster.TxResult
 type Cluster = e2ecluster.Cluster
 
-const maxNodeCount = e2ecluster.MaxNodeCount
+const MaxNodeCount = e2ecluster.MaxNodeCount
 
 func NewCluster(ctx context.Context, t *testing.T, opts ClusterOptions) (*Cluster, error) {
 	return e2ecluster.NewCluster(ctx, t, opts)
