@@ -127,6 +127,7 @@ func NewCluster(ctx context.Context, t *testing.T, opts ClusterOptions) (*Cluste
 func (c *Cluster) Start(ctx context.Context) error {
 	for _, n := range c.nodes {
 		if err := c.startNode(ctx, n); err != nil {
+			c.Close()
 			return err
 		}
 	}
