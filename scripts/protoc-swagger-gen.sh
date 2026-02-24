@@ -7,12 +7,15 @@ COSMOS_URL=github.com/cosmos/cosmos-sdk
 IBC_URL=github.com/cosmos/ibc-go
 IBC_V=v8
 IBC_APP_URL=github.com/cosmos/ibc-apps
+IBC_RATE_LIMITING_PATH=modules/rate-limiting
+IBC_RATE_LIMITING_URL=$IBC_APP_URL/$IBC_RATE_LIMITING_PATH
 OPINIT_URL=github.com/initia-labs/OPinit
 CONNECT_URL=github.com/skip-mev/connect
 CONNECT_V=v2
 
 COSMOS_SDK_VERSION=$(cat ./go.mod | grep "$COSMOS_URL v" | sed -n -e "s/^.* //p")
 IBC_VERSION=$(cat ./go.mod | grep "$IBC_URL/$IBC_V v" | sed -n -e "s/^.* //p")
+IBC_RATE_LIMITING_VERSION=$(cat ./go.mod | grep "$IBC_RATE_LIMITING_URL/$IBC_V v" | sed -n -e "s/^.* //p")
 OPINIT_VERSION=$(cat ./go.mod | grep "$OPINIT_URL v" | sed -n -e "s/^.* //p")
 CONNECT_VERSION=$(cat ./go.mod | grep "$CONNECT_URL/$CONNECT_V v" | sed -n -e "s/^.* //p")
 
@@ -20,6 +23,7 @@ mkdir -p ./third_party
 cd third_party
 git clone -b $COSMOS_SDK_VERSION https://$COSMOS_URL
 git clone -b $IBC_VERSION https://$IBC_URL
+git clone -b $IBC_RATE_LIMITING_PATH/$IBC_RATE_LIMITING_VERSION https://$IBC_APP_URL ibc-rate-limiting
 git clone -b $OPINIT_VERSION https://$OPINIT_URL
 git clone -b $CONNECT_VERSION https://$CONNECT_URL
 cd ..
@@ -32,6 +36,7 @@ proto_dirs=$(find \
   ./ibc \
   ../third_party/cosmos-sdk/proto/cosmos \
   ../third_party/ibc-go/proto/ibc \
+  ../third_party/ibc-rate-limiting/modules/rate-limiting/proto/ratelimit \
   ../third_party/OPinit/proto \
   ../third_party/connect/proto \
   -path -prune -o -name '*.proto' -print0 | xargs -0 -n1 dirname | sort | uniq)

@@ -15475,6 +15475,576 @@ paths:
           type: string
       tags:
         - Query
+  /Stride-Labs/ibc-rate-limiting/ratelimit/blacklisted_denoms:
+    get:
+      summary: Queries all blacklisted denoms
+      operationId: AllBlacklistedDenoms
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              denoms:
+                type: array
+                items:
+                  type: string
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      tags:
+        - Query
+  /Stride-Labs/ibc-rate-limiting/ratelimit/ratelimit/{channel_id}/by_denom:
+    get:
+      summary: |-
+        Queries a specific rate limit by channel ID and denom
+        Ex:
+         - /ratelimit/{channel_id}/by_denom?denom={denom}
+      operationId: RateLimit
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              rate_limit:
+                type: object
+                properties:
+                  path:
+                    type: object
+                    properties:
+                      denom:
+                        type: string
+                      channel_id:
+                        type: string
+                    title: >-
+                      Path holds the denom and channelID that define the rate
+                      limited route
+                  quota:
+                    type: object
+                    properties:
+                      max_percent_send:
+                        type: string
+                        title: >-
+                          MaxPercentSend defines the threshold for outflows
+
+                          The threshold is defined as a percentage (e.g. 10
+                          indicates 10%)
+                      max_percent_recv:
+                        type: string
+                        title: >-
+                          MaxPercentSend defines the threshold for inflows
+
+                          The threshold is defined as a percentage (e.g. 10
+                          indicates 10%)
+                      duration_hours:
+                        type: string
+                        format: uint64
+                        title: >-
+                          DurationHours specifies the number of hours before the
+                          rate limit
+
+                          is reset (e.g. 24 indicates that the rate limit is
+                          reset each day)
+                    title: >-
+                      Quota defines the rate limit thresholds for transfer
+                      packets
+                  flow:
+                    type: object
+                    properties:
+                      inflow:
+                        type: string
+                        title: >-
+                          Inflow defines the total amount of inbound transfers
+                          for the given
+
+                          rate limit in the current window
+                      outflow:
+                        type: string
+                        title: >-
+                          Outflow defines the total amount of outbound transfers
+                          for the given
+
+                          rate limit in the current window
+                      channel_value:
+                        type: string
+                        title: >-
+                          ChannelValue stores the total supply of the denom at
+                          the start of
+
+                          the rate limit. This is used as the denominator when
+                          checking
+
+                          the rate limit threshold
+
+                          The ChannelValue is fixed for the duration of the rate
+                          limit window
+                title: >-
+                  RateLimit stores all the context about a given rate limit,
+                  including
+
+                  the relevant denom and channel, rate limit thresholds, and
+                  current
+
+                  progress towards the limits
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: channel_id
+          in: path
+          required: true
+          type: string
+        - name: denom
+          in: query
+          required: false
+          type: string
+      tags:
+        - Query
+  /Stride-Labs/ibc-rate-limiting/ratelimit/ratelimits:
+    get:
+      summary: Queries all rate limits
+      operationId: AllRateLimits
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              rate_limits:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    path:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        channel_id:
+                          type: string
+                      title: >-
+                        Path holds the denom and channelID that define the rate
+                        limited route
+                    quota:
+                      type: object
+                      properties:
+                        max_percent_send:
+                          type: string
+                          title: >-
+                            MaxPercentSend defines the threshold for outflows
+
+                            The threshold is defined as a percentage (e.g. 10
+                            indicates 10%)
+                        max_percent_recv:
+                          type: string
+                          title: >-
+                            MaxPercentSend defines the threshold for inflows
+
+                            The threshold is defined as a percentage (e.g. 10
+                            indicates 10%)
+                        duration_hours:
+                          type: string
+                          format: uint64
+                          title: >-
+                            DurationHours specifies the number of hours before
+                            the rate limit
+
+                            is reset (e.g. 24 indicates that the rate limit is
+                            reset each day)
+                      title: >-
+                        Quota defines the rate limit thresholds for transfer
+                        packets
+                    flow:
+                      type: object
+                      properties:
+                        inflow:
+                          type: string
+                          title: >-
+                            Inflow defines the total amount of inbound transfers
+                            for the given
+
+                            rate limit in the current window
+                        outflow:
+                          type: string
+                          title: >-
+                            Outflow defines the total amount of outbound
+                            transfers for the given
+
+                            rate limit in the current window
+                        channel_value:
+                          type: string
+                          title: >-
+                            ChannelValue stores the total supply of the denom at
+                            the start of
+
+                            the rate limit. This is used as the denominator when
+                            checking
+
+                            the rate limit threshold
+
+                            The ChannelValue is fixed for the duration of the
+                            rate limit window
+                  title: >-
+                    RateLimit stores all the context about a given rate limit,
+                    including
+
+                    the relevant denom and channel, rate limit thresholds, and
+                    current
+
+                    progress towards the limits
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      tags:
+        - Query
+  /Stride-Labs/ibc-rate-limiting/ratelimit/ratelimits/{chain_id}:
+    get:
+      summary: Queries all the rate limits for a given chain
+      operationId: RateLimitsByChainId
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              rate_limits:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    path:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        channel_id:
+                          type: string
+                      title: >-
+                        Path holds the denom and channelID that define the rate
+                        limited route
+                    quota:
+                      type: object
+                      properties:
+                        max_percent_send:
+                          type: string
+                          title: >-
+                            MaxPercentSend defines the threshold for outflows
+
+                            The threshold is defined as a percentage (e.g. 10
+                            indicates 10%)
+                        max_percent_recv:
+                          type: string
+                          title: >-
+                            MaxPercentSend defines the threshold for inflows
+
+                            The threshold is defined as a percentage (e.g. 10
+                            indicates 10%)
+                        duration_hours:
+                          type: string
+                          format: uint64
+                          title: >-
+                            DurationHours specifies the number of hours before
+                            the rate limit
+
+                            is reset (e.g. 24 indicates that the rate limit is
+                            reset each day)
+                      title: >-
+                        Quota defines the rate limit thresholds for transfer
+                        packets
+                    flow:
+                      type: object
+                      properties:
+                        inflow:
+                          type: string
+                          title: >-
+                            Inflow defines the total amount of inbound transfers
+                            for the given
+
+                            rate limit in the current window
+                        outflow:
+                          type: string
+                          title: >-
+                            Outflow defines the total amount of outbound
+                            transfers for the given
+
+                            rate limit in the current window
+                        channel_value:
+                          type: string
+                          title: >-
+                            ChannelValue stores the total supply of the denom at
+                            the start of
+
+                            the rate limit. This is used as the denominator when
+                            checking
+
+                            the rate limit threshold
+
+                            The ChannelValue is fixed for the duration of the
+                            rate limit window
+                  title: >-
+                    RateLimit stores all the context about a given rate limit,
+                    including
+
+                    the relevant denom and channel, rate limit thresholds, and
+                    current
+
+                    progress towards the limits
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: chain_id
+          in: path
+          required: true
+          type: string
+      tags:
+        - Query
+  /Stride-Labs/ibc-rate-limiting/ratelimit/ratelimits/{channel_id}:
+    get:
+      summary: Queries all the rate limits for a given channel ID
+      operationId: RateLimitsByChannelId
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              rate_limits:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    path:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        channel_id:
+                          type: string
+                      title: >-
+                        Path holds the denom and channelID that define the rate
+                        limited route
+                    quota:
+                      type: object
+                      properties:
+                        max_percent_send:
+                          type: string
+                          title: >-
+                            MaxPercentSend defines the threshold for outflows
+
+                            The threshold is defined as a percentage (e.g. 10
+                            indicates 10%)
+                        max_percent_recv:
+                          type: string
+                          title: >-
+                            MaxPercentSend defines the threshold for inflows
+
+                            The threshold is defined as a percentage (e.g. 10
+                            indicates 10%)
+                        duration_hours:
+                          type: string
+                          format: uint64
+                          title: >-
+                            DurationHours specifies the number of hours before
+                            the rate limit
+
+                            is reset (e.g. 24 indicates that the rate limit is
+                            reset each day)
+                      title: >-
+                        Quota defines the rate limit thresholds for transfer
+                        packets
+                    flow:
+                      type: object
+                      properties:
+                        inflow:
+                          type: string
+                          title: >-
+                            Inflow defines the total amount of inbound transfers
+                            for the given
+
+                            rate limit in the current window
+                        outflow:
+                          type: string
+                          title: >-
+                            Outflow defines the total amount of outbound
+                            transfers for the given
+
+                            rate limit in the current window
+                        channel_value:
+                          type: string
+                          title: >-
+                            ChannelValue stores the total supply of the denom at
+                            the start of
+
+                            the rate limit. This is used as the denominator when
+                            checking
+
+                            the rate limit threshold
+
+                            The ChannelValue is fixed for the duration of the
+                            rate limit window
+                  title: >-
+                    RateLimit stores all the context about a given rate limit,
+                    including
+
+                    the relevant denom and channel, rate limit thresholds, and
+                    current
+
+                    progress towards the limits
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      parameters:
+        - name: channel_id
+          in: path
+          required: true
+          type: string
+      tags:
+        - Query
+  /Stride-Labs/ibc-rate-limiting/ratelimit/whitelisted_addresses:
+    get:
+      summary: Queries all whitelisted address pairs
+      operationId: AllWhitelistedAddresses
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              address_pairs:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    sender:
+                      type: string
+                    receiver:
+                      type: string
+                  title: >-
+                    WhitelistedAddressPair represents a sender-receiver combo
+                    that is
+
+                    not subject to rate limit restrictions
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type_url:
+                      type: string
+                    value:
+                      type: string
+                      format: byte
+      tags:
+        - Query
 definitions:
   cosmos.base.query.v1beta1.PageRequest:
     type: object
@@ -22017,3 +22587,457 @@ definitions:
     description: >-
       QueryChannelStatesResponse is the response type for the
       Query/ChannelStates RPC method.
+  ratelimit.v1.Flow:
+    type: object
+    properties:
+      inflow:
+        type: string
+        title: |-
+          Inflow defines the total amount of inbound transfers for the given
+          rate limit in the current window
+      outflow:
+        type: string
+        title: |-
+          Outflow defines the total amount of outbound transfers for the given
+          rate limit in the current window
+      channel_value:
+        type: string
+        title: |-
+          ChannelValue stores the total supply of the denom at the start of
+          the rate limit. This is used as the denominator when checking
+          the rate limit threshold
+          The ChannelValue is fixed for the duration of the rate limit window
+  ratelimit.v1.Path:
+    type: object
+    properties:
+      denom:
+        type: string
+      channel_id:
+        type: string
+    title: Path holds the denom and channelID that define the rate limited route
+  ratelimit.v1.QueryAllBlacklistedDenomsResponse:
+    type: object
+    properties:
+      denoms:
+        type: array
+        items:
+          type: string
+  ratelimit.v1.QueryAllRateLimitsResponse:
+    type: object
+    properties:
+      rate_limits:
+        type: array
+        items:
+          type: object
+          properties:
+            path:
+              type: object
+              properties:
+                denom:
+                  type: string
+                channel_id:
+                  type: string
+              title: >-
+                Path holds the denom and channelID that define the rate limited
+                route
+            quota:
+              type: object
+              properties:
+                max_percent_send:
+                  type: string
+                  title: >-
+                    MaxPercentSend defines the threshold for outflows
+
+                    The threshold is defined as a percentage (e.g. 10 indicates
+                    10%)
+                max_percent_recv:
+                  type: string
+                  title: >-
+                    MaxPercentSend defines the threshold for inflows
+
+                    The threshold is defined as a percentage (e.g. 10 indicates
+                    10%)
+                duration_hours:
+                  type: string
+                  format: uint64
+                  title: >-
+                    DurationHours specifies the number of hours before the rate
+                    limit
+
+                    is reset (e.g. 24 indicates that the rate limit is reset
+                    each day)
+              title: Quota defines the rate limit thresholds for transfer packets
+            flow:
+              type: object
+              properties:
+                inflow:
+                  type: string
+                  title: >-
+                    Inflow defines the total amount of inbound transfers for the
+                    given
+
+                    rate limit in the current window
+                outflow:
+                  type: string
+                  title: >-
+                    Outflow defines the total amount of outbound transfers for
+                    the given
+
+                    rate limit in the current window
+                channel_value:
+                  type: string
+                  title: >-
+                    ChannelValue stores the total supply of the denom at the
+                    start of
+
+                    the rate limit. This is used as the denominator when
+                    checking
+
+                    the rate limit threshold
+
+                    The ChannelValue is fixed for the duration of the rate limit
+                    window
+          title: |-
+            RateLimit stores all the context about a given rate limit, including
+            the relevant denom and channel, rate limit thresholds, and current
+            progress towards the limits
+  ratelimit.v1.QueryAllWhitelistedAddressesResponse:
+    type: object
+    properties:
+      address_pairs:
+        type: array
+        items:
+          type: object
+          properties:
+            sender:
+              type: string
+            receiver:
+              type: string
+          title: |-
+            WhitelistedAddressPair represents a sender-receiver combo that is
+            not subject to rate limit restrictions
+  ratelimit.v1.QueryRateLimitResponse:
+    type: object
+    properties:
+      rate_limit:
+        type: object
+        properties:
+          path:
+            type: object
+            properties:
+              denom:
+                type: string
+              channel_id:
+                type: string
+            title: >-
+              Path holds the denom and channelID that define the rate limited
+              route
+          quota:
+            type: object
+            properties:
+              max_percent_send:
+                type: string
+                title: >-
+                  MaxPercentSend defines the threshold for outflows
+
+                  The threshold is defined as a percentage (e.g. 10 indicates
+                  10%)
+              max_percent_recv:
+                type: string
+                title: >-
+                  MaxPercentSend defines the threshold for inflows
+
+                  The threshold is defined as a percentage (e.g. 10 indicates
+                  10%)
+              duration_hours:
+                type: string
+                format: uint64
+                title: >-
+                  DurationHours specifies the number of hours before the rate
+                  limit
+
+                  is reset (e.g. 24 indicates that the rate limit is reset each
+                  day)
+            title: Quota defines the rate limit thresholds for transfer packets
+          flow:
+            type: object
+            properties:
+              inflow:
+                type: string
+                title: >-
+                  Inflow defines the total amount of inbound transfers for the
+                  given
+
+                  rate limit in the current window
+              outflow:
+                type: string
+                title: >-
+                  Outflow defines the total amount of outbound transfers for the
+                  given
+
+                  rate limit in the current window
+              channel_value:
+                type: string
+                title: >-
+                  ChannelValue stores the total supply of the denom at the start
+                  of
+
+                  the rate limit. This is used as the denominator when checking
+
+                  the rate limit threshold
+
+                  The ChannelValue is fixed for the duration of the rate limit
+                  window
+        title: |-
+          RateLimit stores all the context about a given rate limit, including
+          the relevant denom and channel, rate limit thresholds, and current
+          progress towards the limits
+  ratelimit.v1.QueryRateLimitsByChainIdResponse:
+    type: object
+    properties:
+      rate_limits:
+        type: array
+        items:
+          type: object
+          properties:
+            path:
+              type: object
+              properties:
+                denom:
+                  type: string
+                channel_id:
+                  type: string
+              title: >-
+                Path holds the denom and channelID that define the rate limited
+                route
+            quota:
+              type: object
+              properties:
+                max_percent_send:
+                  type: string
+                  title: >-
+                    MaxPercentSend defines the threshold for outflows
+
+                    The threshold is defined as a percentage (e.g. 10 indicates
+                    10%)
+                max_percent_recv:
+                  type: string
+                  title: >-
+                    MaxPercentSend defines the threshold for inflows
+
+                    The threshold is defined as a percentage (e.g. 10 indicates
+                    10%)
+                duration_hours:
+                  type: string
+                  format: uint64
+                  title: >-
+                    DurationHours specifies the number of hours before the rate
+                    limit
+
+                    is reset (e.g. 24 indicates that the rate limit is reset
+                    each day)
+              title: Quota defines the rate limit thresholds for transfer packets
+            flow:
+              type: object
+              properties:
+                inflow:
+                  type: string
+                  title: >-
+                    Inflow defines the total amount of inbound transfers for the
+                    given
+
+                    rate limit in the current window
+                outflow:
+                  type: string
+                  title: >-
+                    Outflow defines the total amount of outbound transfers for
+                    the given
+
+                    rate limit in the current window
+                channel_value:
+                  type: string
+                  title: >-
+                    ChannelValue stores the total supply of the denom at the
+                    start of
+
+                    the rate limit. This is used as the denominator when
+                    checking
+
+                    the rate limit threshold
+
+                    The ChannelValue is fixed for the duration of the rate limit
+                    window
+          title: |-
+            RateLimit stores all the context about a given rate limit, including
+            the relevant denom and channel, rate limit thresholds, and current
+            progress towards the limits
+  ratelimit.v1.QueryRateLimitsByChannelIdResponse:
+    type: object
+    properties:
+      rate_limits:
+        type: array
+        items:
+          type: object
+          properties:
+            path:
+              type: object
+              properties:
+                denom:
+                  type: string
+                channel_id:
+                  type: string
+              title: >-
+                Path holds the denom and channelID that define the rate limited
+                route
+            quota:
+              type: object
+              properties:
+                max_percent_send:
+                  type: string
+                  title: >-
+                    MaxPercentSend defines the threshold for outflows
+
+                    The threshold is defined as a percentage (e.g. 10 indicates
+                    10%)
+                max_percent_recv:
+                  type: string
+                  title: >-
+                    MaxPercentSend defines the threshold for inflows
+
+                    The threshold is defined as a percentage (e.g. 10 indicates
+                    10%)
+                duration_hours:
+                  type: string
+                  format: uint64
+                  title: >-
+                    DurationHours specifies the number of hours before the rate
+                    limit
+
+                    is reset (e.g. 24 indicates that the rate limit is reset
+                    each day)
+              title: Quota defines the rate limit thresholds for transfer packets
+            flow:
+              type: object
+              properties:
+                inflow:
+                  type: string
+                  title: >-
+                    Inflow defines the total amount of inbound transfers for the
+                    given
+
+                    rate limit in the current window
+                outflow:
+                  type: string
+                  title: >-
+                    Outflow defines the total amount of outbound transfers for
+                    the given
+
+                    rate limit in the current window
+                channel_value:
+                  type: string
+                  title: >-
+                    ChannelValue stores the total supply of the denom at the
+                    start of
+
+                    the rate limit. This is used as the denominator when
+                    checking
+
+                    the rate limit threshold
+
+                    The ChannelValue is fixed for the duration of the rate limit
+                    window
+          title: |-
+            RateLimit stores all the context about a given rate limit, including
+            the relevant denom and channel, rate limit thresholds, and current
+            progress towards the limits
+  ratelimit.v1.Quota:
+    type: object
+    properties:
+      max_percent_send:
+        type: string
+        title: |-
+          MaxPercentSend defines the threshold for outflows
+          The threshold is defined as a percentage (e.g. 10 indicates 10%)
+      max_percent_recv:
+        type: string
+        title: |-
+          MaxPercentSend defines the threshold for inflows
+          The threshold is defined as a percentage (e.g. 10 indicates 10%)
+      duration_hours:
+        type: string
+        format: uint64
+        title: |-
+          DurationHours specifies the number of hours before the rate limit
+          is reset (e.g. 24 indicates that the rate limit is reset each day)
+    title: Quota defines the rate limit thresholds for transfer packets
+  ratelimit.v1.RateLimit:
+    type: object
+    properties:
+      path:
+        type: object
+        properties:
+          denom:
+            type: string
+          channel_id:
+            type: string
+        title: Path holds the denom and channelID that define the rate limited route
+      quota:
+        type: object
+        properties:
+          max_percent_send:
+            type: string
+            title: |-
+              MaxPercentSend defines the threshold for outflows
+              The threshold is defined as a percentage (e.g. 10 indicates 10%)
+          max_percent_recv:
+            type: string
+            title: |-
+              MaxPercentSend defines the threshold for inflows
+              The threshold is defined as a percentage (e.g. 10 indicates 10%)
+          duration_hours:
+            type: string
+            format: uint64
+            title: |-
+              DurationHours specifies the number of hours before the rate limit
+              is reset (e.g. 24 indicates that the rate limit is reset each day)
+        title: Quota defines the rate limit thresholds for transfer packets
+      flow:
+        type: object
+        properties:
+          inflow:
+            type: string
+            title: |-
+              Inflow defines the total amount of inbound transfers for the given
+              rate limit in the current window
+          outflow:
+            type: string
+            title: >-
+              Outflow defines the total amount of outbound transfers for the
+              given
+
+              rate limit in the current window
+          channel_value:
+            type: string
+            title: >-
+              ChannelValue stores the total supply of the denom at the start of
+
+              the rate limit. This is used as the denominator when checking
+
+              the rate limit threshold
+
+              The ChannelValue is fixed for the duration of the rate limit
+              window
+    title: |-
+      RateLimit stores all the context about a given rate limit, including
+      the relevant denom and channel, rate limit thresholds, and current
+      progress towards the limits
+  ratelimit.v1.WhitelistedAddressPair:
+    type: object
+    properties:
+      sender:
+        type: string
+      receiver:
+        type: string
+    title: |-
+      WhitelistedAddressPair represents a sender-receiver combo that is
+      not subject to rate limit restrictions
