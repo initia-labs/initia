@@ -79,6 +79,7 @@ ifeq (rocksdb,$(findstring rocksdb,$(COSMOS_BUILD_OPTIONS)))
       ifneq (,$(ROCKSDB_PREFIX))
         CGO_CFLAGS ?= -I$(ROCKSDB_PREFIX)/include
         CGO_LDFLAGS ?= -L$(ROCKSDB_PREFIX)/lib
+        export CGO_CFLAGS CGO_LDFLAGS
       else
         $(warning rocksdb not installed via Homebrew; skipping CGO flags)
       endif
