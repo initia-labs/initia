@@ -35,3 +35,4 @@ ignore:
   - "**/test_utils.go"
   - "**/module.go"
   - "x/ibc/testing"
+  - "integration-tests/"

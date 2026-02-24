@@ -3,10 +3,10 @@ name = "test1"
 version = "0.0.0"
 
 [dependencies]
-InitiaStdlib = { local = "../../../../../movevm/precompile/modules/initia_stdlib"  }
+InitiaStdlib = { git = "https://github.com/initia-labs/move-natives.git", subdir = "initia_stdlib", rev = "v1.2.0"  }
 
 [addresses]
 initia_std = "0x1"
 std = "0x1"
-TestAccount = "0x2"
 cafe = "0xcafe"
+TestAccount = "_"

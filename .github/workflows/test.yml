@@ -69,3 +69,29 @@ jobs:
         if: ${{ env.GIT_DIFF != '' }}
         env:
           GIT_DIFF: ${{ env.GIT_DIFF }}
+
+  test-e2e:
+    name: Run e2e tests
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/setup-go@v3
+        with:
+          go-version: 1.24
+      - name: Install openssl
+        run: sudo apt-get install libssl-dev
+      - uses: actions/checkout@v5
+      - uses: technote-space/get-diff-action@v4
+        with:
+          PATTERNS: |
+            **/**.go
+            **/**.mv
+            **/**.move
+            go.mod
+            go.sum
+            Makefile
+      - name: run e2e tests
+        run: make test-e2e
+        if: ${{ env.GIT_DIFF != '' }}
+        env:
+          GIT_DIFF: ${{ env.GIT_DIFF }}
