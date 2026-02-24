@@ -6,7 +6,7 @@ then
     exit
 fi
 
-initiad move build --language-version=2.1
+initiad move build  --named-addresses 'TestAccount=0x2'
 rm -rf ../binaries
 mkdir ../binaries
 
