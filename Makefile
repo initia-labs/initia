@@ -54,7 +54,7 @@ ifeq (cleveldb,$(findstring cleveldb,$(COSMOS_BUILD_OPTIONS)))
   build_tags += gcc
 endif
 ifeq (rocksdb,$(findstring rocksdb,$(COSMOS_BUILD_OPTIONS)))
-  build_tags += rocksdb
+  build_tags += rocksdb grocksdb_clean_link
 endif
 ifeq (boltdb,$(findstring boltdb,$(COSMOS_BUILD_OPTIONS)))
   build_tags += boltdb
@@ -92,6 +92,20 @@ ifeq (rocksdb,$(findstring rocksdb,$(COSMOS_BUILD_OPTIONS)))
   $(info ################################################################)
   CGO_ENABLED=1
   ldflags += -X github.com/cosmos/cosmos-sdk/types.DBBackend=rocksdb
+  # auto-detect brew rocksdb on macOS
+  ifeq ($(shell uname -s),Darwin)
+    ifneq (,$(shell command -v brew 2>/dev/null))
+      ROCKSDB_PREFIX := $(shell brew --prefix rocksdb 2>/dev/null)
+      ifneq (,$(ROCKSDB_PREFIX))
+        export CGO_CFLAGS ?= -I$(ROCKSDB_PREFIX)/include
+        export CGO_LDFLAGS ?= -L$(ROCKSDB_PREFIX)/lib
+      else
+        $(warning rocksdb not installed via brew; skipping CGO flags)
+      endif
+    else
+      $(warning brew not found; skipping rocksdb CGO flags)
+    endif
+  endif
 endif
 # handle boltdb
 ifeq (boltdb,$(findstring boltdb,$(COSMOS_BUILD_OPTIONS)))

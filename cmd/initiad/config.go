@@ -12,13 +12,17 @@ import (
 
 	initiaapp "github.com/initia-labs/initia/app"
 	moveconfig "github.com/initia-labs/initia/x/move/config"
+
+	initiastorecfg "github.com/initia-labs/store/config"
 )
 
 // initiaappConfig initia specify app config
 type initiaappConfig struct {
 	serverconfig.Config
-	MoveConfig moveconfig.MoveConfig  `mapstructure:"move"`
-	Oracle     oracleconfig.AppConfig `mapstructure:"oracle"`
+	MoveConfig moveconfig.MoveConfig          `mapstructure:"move"`
+	Oracle     oracleconfig.AppConfig         `mapstructure:"oracle"`
+	MemIAVL    initiastorecfg.MemIAVLConfig   `mapstructure:"memiavl"`
+	VersionDB  initiastorecfg.VersionDBConfig `mapstructure:"versiondb"`
 }
 
 // initAppConfig helps to override default appConfig template and configs.
@@ -49,12 +53,16 @@ func initAppConfig() (string, interface{}) {
 		Config:     *srvCfg,
 		MoveConfig: moveconfig.DefaultMoveConfig(),
 		Oracle:     oracleconfig.NewDefaultAppConfig(),
+		MemIAVL:    initiastorecfg.DefaultMemIAVLConfig(),
+		VersionDB:  initiastorecfg.DefaultVersionDBConfig(),
 	}
 	appConfig.Oracle.ClientTimeout = 500 * time.Millisecond
 
 	appConfigTemplate := serverconfig.DefaultConfigTemplate +
 		moveconfig.DefaultConfigTemplate +
-		oracleconfig.DefaultConfigTemplate
+		oracleconfig.DefaultConfigTemplate +
+		initiastorecfg.DefaultMemIAVLConfigTemplate +
+		initiastorecfg.DefaultVersionDBConfigTemplate
 
 	return appConfigTemplate, appConfig
 }

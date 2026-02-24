@@ -10,6 +10,7 @@ import (
 	tmcli "github.com/cometbft/cometbft/libs/cli"
 	cmtmempool "github.com/cometbft/cometbft/mempool"
 	"github.com/cometbft/cometbft/rpc/client/local"
+	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"golang.org/x/sync/errgroup"
@@ -39,6 +40,7 @@ import (
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 
 	initiaapp "github.com/initia-labs/initia/app"
+	"github.com/initia-labs/initia/app/keepers"
 	"github.com/initia-labs/initia/app/params"
 	initiacmdflags "github.com/initia-labs/initia/cmd/flags"
 	movecmd "github.com/initia-labs/initia/cmd/move"
@@ -50,6 +52,10 @@ import (
 	oracleconfig "github.com/skip-mev/connect/v2/oracle/config"
 
 	txcli "github.com/initia-labs/initia/tx/cli"
+
+	initiastoreclient "github.com/initia-labs/store/client"
+	initiastoreconfig "github.com/initia-labs/store/config"
+	initiastoreopendb "github.com/initia-labs/store/opendb"
 )
 
 // NewRootCmd creates a new root command for initiad. It is called once in the
@@ -157,7 +163,16 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 			initiaappTemplate, initiaappConfig := initAppConfig()
 			customTMConfig := initTendermintConfig()
 
-			return server.InterceptConfigsPreRunHandler(cmd, initiaappTemplate, initiaappConfig, customTMConfig)
+			err = server.InterceptConfigsPreRunHandler(cmd, initiaappTemplate, initiaappConfig, customTMConfig)
+			if err != nil {
+				return err
+			}
+
+			if serverCtx := cmd.Context().Value(server.ServerContextKey); serverCtx != nil {
+				initiastoreopendb.DBDir = cast.ToString(serverCtx.(*server.Context).Viper.Get("db_dir"))
+			}
+
+			return nil
 		},
 	}
 
@@ -192,9 +207,12 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig, b
 		a.newApp,
 		a.appExport,
 		server.StartCmdOptions{
+			DBOpener: initiastoreopendb.OpenDB,
 			AddFlags: func(startCmd *cobra.Command) {
 				crisis.AddModuleInitFlags(startCmd)
 				initiacmdflags.AddCometBFTFlags(startCmd)
+				initiastoreconfig.AddMemIAVLConfigFlags(startCmd)
+				initiastoreconfig.AddVersionDBConfigFlags(startCmd)
 			},
 			PostSetup: func(svrCtx *server.Context, clientCtx client.Context, ctx context.Context, g *errgroup.Group) error {
 				if lc, ok := clientCtx.Client.(*local.Local); ok {
@@ -234,6 +252,11 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig, b
 
 	// add move commands
 	rootCmd.AddCommand(movecmd.MoveCommand(encodingConfig.InterfaceRegistry.SigningContext().AddressCodec(), false))
+
+	// add store commands (changeset/versiondb)
+	if storeCmd := initiastoreclient.ChangeSetGroupCmd(keepers.KVStoreKeys()); storeCmd != nil {
+		rootCmd.AddCommand(storeCmd)
+	}
 }
 
 func genesisCommand(encodingConfig params.EncodingConfig, basicManager module.BasicManager) *cobra.Command {

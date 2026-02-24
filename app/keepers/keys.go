@@ -46,10 +46,9 @@ import (
 	dynamicfeetypes "github.com/initia-labs/initia/x/dynamic-fee/types"
 )
 
-func (appKeepers *AppKeepers) GenerateKeys() {
-	// Define what keys will be used in the cosmos-sdk key/value store.
-	// Cosmos-SDK modules each have a "key" that allows the application to reference what they've stored on the chain.
-	appKeepers.keys = storetypes.NewKVStoreKeys(
+// KVStoreKeys returns the list of KV store key names used by the application.
+func KVStoreKeys() []string {
+	return []string{
 		authtypes.StoreKey, banktypes.StoreKey, stakingtypes.StoreKey, crisistypes.StoreKey,
 		rewardtypes.StoreKey, distrtypes.StoreKey, slashingtypes.StoreKey,
 		govtypes.StoreKey, group.StoreKey, consensusparamtypes.StoreKey,
@@ -60,7 +59,13 @@ func (appKeepers *AppKeepers) GenerateKeys() {
 		movetypes.StoreKey, ophosttypes.StoreKey, oracletypes.StoreKey,
 		packetforwardtypes.StoreKey, ibchookstypes.StoreKey, forwardingtypes.StoreKey,
 		marketmaptypes.StoreKey, ratelimittypes.StoreKey, dynamicfeetypes.StoreKey,
-	)
+	}
+}
+
+func (appKeepers *AppKeepers) GenerateKeys() {
+	// Define what keys will be used in the cosmos-sdk key/value store.
+	// Cosmos-SDK modules each have a "key" that allows the application to reference what they've stored on the chain.
+	appKeepers.keys = storetypes.NewKVStoreKeys(KVStoreKeys()...)
 
 	// Define transient store keys
 	appKeepers.tkeys = storetypes.NewTransientStoreKeys(forwardingtypes.TransientStoreKey, dynamicfeetypes.TStoreKey, ibchookstypes.TStoreKey)
