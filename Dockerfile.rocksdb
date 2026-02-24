@@ -7,7 +7,7 @@ ARG COMMIT
 ENV LIBMOVEVM_VERSION=v1.2.0
 
 # Install Go build deps
-RUN apt-get update && apt-get install -y git build-essential
+RUN apt-get update && apt-get install -y --no-install-recommends git build-essential && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /code
 COPY . .
@@ -20,15 +20,16 @@ ENV CGO_CFLAGS="-I/usr/local/include"
 RUN VERSION=${VERSION} COMMIT=${COMMIT} LEDGER_ENABLED=false COSMOS_BUILD_OPTIONS=rocksdb make build
 
 # Copy MoveVM shared libs from Go module cache
-RUN cp /go/pkg/mod/github.com/initia-labs/movevm@v*/api/libmovevm.x86_64.so /usr/local/lib/libmovevm.x86_64.so && \
-    cp /go/pkg/mod/github.com/initia-labs/movevm@v*/api/libcompiler.x86_64.so /usr/local/lib/libcompiler.x86_64.so
+RUN cp /go/pkg/mod/github.com/initia-labs/movevm@${LIBMOVEVM_VERSION}/api/libmovevm.x86_64.so /usr/local/lib/libmovevm.x86_64.so && \
+    cp /go/pkg/mod/github.com/initia-labs/movevm@${LIBMOVEVM_VERSION}/api/libcompiler.x86_64.so /usr/local/lib/libcompiler.x86_64.so
 
 FROM debian:bullseye-slim
 
 # Install runtime shared libs
 RUN apt-get update && \
-    apt-get install -y ca-certificates vim curl libsnappy1v5 libzstd1 liblz4-1 libbz2-1.0 libgoogle-perftools-dev && \
-    update-ca-certificates
+    apt-get install -y --no-install-recommends ca-certificates curl libsnappy1v5 libzstd1 liblz4-1 libbz2-1.0 libgoogle-perftools-dev && \
+    update-ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
 
 COPY --from=go-builder /code/build/initiad /usr/local/bin/initiad
 COPY --from=go-builder /usr/local/lib/librocksdb.so /usr/local/lib/
