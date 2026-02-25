@@ -198,6 +198,32 @@ func TestBenchmarkSaturation(t *testing.T) {
 		result.TotalSubmitted, result.TotalIncluded, result.PeakMempoolSize)
 }
 
+// TestBenchmarkWideState runs IAVL vs MemIAVL with 50 accounts to stress the state tree.
+// More unique account leaves usually result in deeper IAVL traversals where MemIAVL should differentiate.
+func TestBenchmarkWideState(t *testing.T) {
+	var results []BenchResult
+
+	t.Run("IAVL", func(t *testing.T) {
+		cfg := MempoolOnlyConfig()
+		cfg.AccountCount = 50
+		cfg.Label = "wide-state/iavl"
+		result := runBenchmark(t, cfg, BurstLoad)
+		results = append(results, result)
+	})
+
+	t.Run("MemIAVL", func(t *testing.T) {
+		cfg := CombinedConfig()
+		cfg.AccountCount = 50
+		cfg.Label = "wide-state/memiavl"
+		result := runBenchmark(t, cfg, BurstLoad)
+		results = append(results, result)
+	})
+
+	if len(results) == 2 {
+		PrintComparisonTable(t, results)
+	}
+}
+
 // TestBenchmarkGossipPropagation submits all txs to node 0 and monitors propagation.
 func TestBenchmarkGossipPropagation(t *testing.T) {
 	cfg := MempoolOnlyConfig()

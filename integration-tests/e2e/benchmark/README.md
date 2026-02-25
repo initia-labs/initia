@@ -95,16 +95,45 @@ cd integration-tests/e2e && \
   go test -v -tags benchmark -run TestBenchmarkFullComparison -timeout 30m -count=1 ./benchmark/
 ```
 
-Runs mempool-only and combined, loads the baseline from JSON, and prints:
-
-```
-Config                    | Variant      |     TPS | vs base |   P50ms | vs base |   P95ms | vs base | Peak Mempool
-clist/iavl                | baseline     |   120.5 |       - |    2500 |       - |    4800 |       - |         1950
-proxy+priority/iavl       | mempool-only |   245.3 | +103.6% |    1823 |  -27.1% |    3412 |  -28.9% |         1847
-proxy+priority/memiavl    | combined     |   312.7 | +159.5% |    1401 |  -44.0% |    2845 |  -40.7% |         1823
-```
+Runs mempool-only and combined, loads the baseline from JSON, and prints.
 
 Positive `vs base` for TPS = improvement. Negative `vs base` for latency = improvement (lower is better).
+
+## Results
+
+3-node cluster (1 val + 2 fullnodes), 10 accounts x 200 txs = 2000 total, burst mode with sequential nonces.
+Baseline binary from the tag `v1.3.1` (CListMempool). All run on the same machine.
+
+```
+Config                    | Variant      |   TPS | vs base |  P50ms | vs base |  P95ms | vs base |  P99ms | vs base | Peak Mempool
+clist/iavl                | baseline     |   5.5 |       - |    493 |       - |   4292 |       - |  11751 |       - |           30
+proxy+priority/iavl       | mempool-only |   9.1 | +65.5%  |    130 | -73.6%  |   1164 | -72.9%  |   1486 | -87.4%  |           26
+proxy+priority/memiavl    | combined     |   9.0 | +63.6%  |    154 | -68.8%  |   1208 | -71.9%  |   1446 | -87.7%  |           28
+```
+
+The mempool changes dominate. ~65% TPS increase and ~73% P50 latency reduction come from ProxyMempool + PriorityMempool alone.
+
+### State-heavy workload (IAVL vs MemIAVL)
+
+An additional test isolates where MemIAVL should differentiate. Compares IAVL and MemIAVL directly
+(both using ProxyMempool + PriorityMempool), no baseline needed.
+
+- **Wide-state**: 50 accounts x 200 txs = 10000 bank sends. Wider state tree means deeper IAVL traversals.
+
+```bash
+cd integration-tests/e2e && \
+  go test -v -tags benchmark -run TestBenchmarkWideState -timeout 30m -count=1 ./benchmark/
+```
+
+3-node cluster, 50 accounts x 200 txs = 10000 total.
+
+```
+Config                    | Variant      |   TPS | P50ms | P95ms | P99ms |  Max ms | Peak Mempool
+wide-state/iavl           | mempool-only |  25.6 |   937 |  8322 | 11665 |   21186 |          297
+wide-state/memiavl        | combined     |  48.6 |   479 |  2079 |  2431 |    2949 |          271
+```
+
+MemIAVL delivers ~90% TPS increase and ~49% P50 latency reduction when the state tree is wide enough to stress IAVL traversals.
 
 ## Test suite
 
@@ -112,12 +141,13 @@ All tests are build-tagged `//go:build benchmark`. Prefix: `TestBenchmark`.
 
 | Test | What it measures | Load pattern | Config |
 |---|---|---|---|
-| `TestBenchmarkBaseline` | Baseline throughput (CListMempool + IAVL) | Burst, sequential nonces | 10 accts x 200 txs |
-| `TestBenchmarkThroughput` | Throughput with mempool-only | Burst, sequential nonces | 10 accts x 200 txs |
-| `TestBenchmarkLatency` | Latency distribution (avg/p50/p95/p99/max) | Burst, sequential nonces | 10 accts x 200 txs |
+| `TestBenchmarkBaseline` | Baseline throughput (CListMempool + IAVL) | Burst bank sends | 10 accts x 200 txs |
+| `TestBenchmarkThroughput` | Throughput with mempool-only | Burst bank sends | 10 accts x 200 txs |
+| `TestBenchmarkLatency` | Latency distribution (avg/p50/p95/p99/max) | Burst bank sends | 10 accts x 200 txs |
 | `TestBenchmarkQueuePromotion` | Out-of-order nonce handling, 100% inclusion | Out-of-order first 3, then sequential | 10 accts x 50 txs |
-| `TestBenchmarkFullComparison` | Three-way comparison with deltas | Burst, sequential nonces | 10 accts x 200 txs |
-| `TestBenchmarkSaturation` | Mempool under pressure | Burst, sequential nonces | 5 accts x 100 txs |
+| `TestBenchmarkFullComparison` | Three-way comparison with deltas | Burst bank sends | 10 accts x 200 txs |
+| `TestBenchmarkWideState` | IAVL vs MemIAVL with wide state tree | Burst bank sends | 50 accts x 200 txs |
+| `TestBenchmarkSaturation` | Mempool under pressure | Burst bank sends | 5 accts x 100 txs |
 | `TestBenchmarkGossipPropagation` | Gossip across nodes | All txs to node 0 | 5 accts x 50 txs |
 
 ## Structure
