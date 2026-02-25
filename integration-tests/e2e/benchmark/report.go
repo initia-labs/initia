@@ -156,3 +156,21 @@ func LoadBaselineResults(dir string) []BenchResult {
 
 	return baselines
 }
+
+// LoadBaselineResultsByLabel loads baseline results matching a specific label.
+// This allows distinguishing between different baseline runs (e.g., "clist/iavl/seq" vs "clist/iavl/burst").
+func LoadBaselineResultsByLabel(dir, label string) []BenchResult {
+	results, err := LoadResults(dir)
+	if err != nil {
+		return nil
+	}
+
+	var matched []BenchResult
+	for _, r := range results {
+		if r.Config.Variant == VariantBaseline && r.Config.Label == label {
+			matched = append(matched, r)
+		}
+	}
+
+	return matched
+}

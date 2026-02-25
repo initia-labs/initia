@@ -625,6 +625,58 @@ func (c *Cluster) MoveExecuteJSONWithSequence(
 	return res
 }
 
+func (c *Cluster) SendMoveExecuteJSONWithGas(
+	ctx context.Context,
+	fromName, moduleAddress, moduleName, functionName string,
+	typeArgs, args []string,
+	accountNumber, sequence, gasLimit uint64,
+	viaNode int,
+) TxResult {
+	node, err := c.getNode(viaNode)
+	if err != nil {
+		return TxResult{Err: err}
+	}
+	typeArgsJSON, err := json.Marshal(typeArgs)
+	if err != nil {
+		return TxResult{Err: err}
+	}
+	moveArgsJSON, err := json.Marshal(args)
+	if err != nil {
+		return TxResult{Err: err}
+	}
+
+	out, err := c.exec(ctx,
+		"tx", "move", "execute-json",
+		moduleAddress,
+		moduleName,
+		functionName,
+		"--type-args", string(typeArgsJSON),
+		"--args", string(moveArgsJSON),
+		"--from", fromName,
+		"--chain-id", c.opts.ChainID,
+		"--node", fmt.Sprintf("http://127.0.0.1:%d", node.Ports.RPC),
+		"--home", c.nodes[0].Home,
+		"--keyring-backend", "test",
+		"--gas-prices", "0.015uinit",
+		"--gas", strconv.FormatUint(gasLimit, 10),
+		"--offline",
+		"--account-number", strconv.FormatUint(accountNumber, 10),
+		"--sequence", strconv.FormatUint(sequence, 10),
+		"--broadcast-mode", "sync",
+		"--yes",
+		"--output", "json",
+	)
+	if err != nil {
+		return TxResult{Err: err}
+	}
+	res, err := parseTxResultFromOutput(out)
+	if err != nil {
+		return TxResult{Err: err}
+	}
+	c.t.Logf("[move-exec-json-gas] from=%s seq=%d gas=%d %s::%s::%s args=%v code=%d txhash=%s", fromName, sequence, gasLimit, moduleAddress, moduleName, functionName, args, res.Code, res.TxHash)
+	return res
+}
+
 func (c *Cluster) MoveEstimateExecuteJSONGasWithSequence(
 	ctx context.Context,
 	fromName, moduleAddress, moduleName, functionName string,

@@ -46,12 +46,10 @@ func setupCluster(t *testing.T, ctx context.Context, cfg BenchConfig) *e2e.Clust
 	return cluster
 }
 
-func runBenchmark(t *testing.T, cfg BenchConfig, loadFn func(ctx context.Context, cluster *e2e.Cluster, cfg BenchConfig, metas map[string]e2e.AccountMeta) LoadResult) BenchResult {
+// runBenchmarkWithCluster runs the benchmark pipeline on a pre-created cluster.
+// This is used when the cluster needs setup before the measured load (e.g., deploying a Move module).
+func runBenchmarkWithCluster(t *testing.T, ctx context.Context, cluster *e2e.Cluster, cfg BenchConfig, loadFn func(ctx context.Context, cluster *e2e.Cluster, cfg BenchConfig, metas map[string]e2e.AccountMeta) LoadResult) BenchResult {
 	t.Helper()
-	ctx := context.Background()
-
-	cluster := setupCluster(t, ctx, cfg)
-	defer cluster.Close()
 
 	// collect initial account metadata
 	metas, err := CollectInitialMetas(ctx, cluster)
@@ -99,41 +97,227 @@ func runBenchmark(t *testing.T, cfg BenchConfig, loadFn func(ctx context.Context
 	return result
 }
 
-// TestBenchmarkBaseline records baseline results using whichever binary is provided.
-// For true CListMempool baseline: checkout the pre-proxy cometbft tag, rebuild initiad,
-// and pass it via E2E_INITIAD_BIN.
-//
-// Usage:
-//
-//	# 1. checkout pre-proxy tag and build
-//	git checkout tags/v1.3.1 && make build
-//	# 2. run baseline benchmark
-//	E2E_INITIAD_BIN=./build/initiad make benchmark-e2e BENCH_RUN=TestBenchmarkBaseline
-func TestBenchmarkBaseline(t *testing.T) {
+func runBenchmark(t *testing.T, cfg BenchConfig, loadFn func(ctx context.Context, cluster *e2e.Cluster, cfg BenchConfig, metas map[string]e2e.AccountMeta) LoadResult) BenchResult {
+	t.Helper()
+	ctx := context.Background()
+
+	cluster := setupCluster(t, ctx, cfg)
+	defer cluster.Close()
+
+	return runBenchmarkWithCluster(t, ctx, cluster, cfg, loadFn)
+}
+
+// setupMoveExecLoad deploys the Counter module and estimates gas once.
+// Returns a LoadFn closure that uses MoveExecBurstLoad.
+func setupMoveExecLoad(t *testing.T, ctx context.Context, cluster *e2e.Cluster) func(ctx context.Context, cluster *e2e.Cluster, cfg BenchConfig, metas map[string]e2e.AccountMeta) LoadResult {
+	t.Helper()
+
+	// 1. build Counter module
+	modulePath, err := cluster.BuildMoveModule(ctx,
+		cluster.RepoPath("x", "move", "keeper", "contracts"),
+		"Counter", nil)
+	require.NoError(t, err)
+	t.Logf("Built Counter module: %s", modulePath)
+
+	// 2. publish via acc1
+	publisherName := cluster.AccountNames()[0]
+	res := cluster.MovePublish(ctx, publisherName, []string{modulePath}, 0)
+	require.NoError(t, res.Err)
+	require.Equal(t, int64(0), res.Code, "publish failed: %s", res.RawLog)
+
+	// 3. wait for inclusion
+	require.NoError(t, cluster.WaitForMempoolEmpty(ctx, 30*time.Second))
+	time.Sleep(3 * time.Second)
+
+	// 4. estimate gas once for increase()
+	publisherAddr, err := cluster.AccountAddress(publisherName)
+	require.NoError(t, err)
+
+	meta, err := cluster.QueryAccountMeta(ctx, 0, publisherAddr)
+	require.NoError(t, err)
+
+	estimatedGas, err := cluster.MoveEstimateExecuteJSONGasWithSequence(
+		ctx,
+		publisherName,
+		publisherAddr,
+		"Counter",
+		"increase",
+		nil, nil,
+		meta.AccountNumber, meta.Sequence,
+		0,
+	)
+	require.NoError(t, err)
+	t.Logf("Estimated gas for Counter::increase: %d", estimatedGas)
+
+	// 5. return MoveExecBurstLoad with captured parameters
+	return MoveExecBurstLoad(publisherAddr, "Counter", "increase", nil, nil, estimatedGas)
+}
+
+// ---------------------------------------------------------------------------
+// Mempool comparison: CList vs. Proxy+Priority
+// ---------------------------------------------------------------------------
+
+// TestBenchmarkBaselineSeq records CList baseline with a sequential load.
+// Build the pre-proxy binary and pass via E2E_INITIAD_BIN.
+func TestBenchmarkBaselineSeq(t *testing.T) {
 	cfg := BaselineConfig()
+	cfg.Label = "clist/iavl/seq"
+	runBenchmark(t, cfg, SequentialLoad)
+}
+
+// TestBenchmarkBaselineBurst records CList baseline with a burst load.
+// Build the pre-proxy binary and pass via E2E_INITIAD_BIN.
+func TestBenchmarkBaselineBurst(t *testing.T) {
+	cfg := BaselineConfig()
+	cfg.Label = "clist/iavl/burst"
 	runBenchmark(t, cfg, BurstLoad)
 }
 
-// TestBenchmarkThroughput measures throughput with burst mode and sequential nonces.
-// Uses the mempool-only variant (ProxyMempool+PriorityMempool + IAVL).
-func TestBenchmarkThroughput(t *testing.T) {
-	cfg := MempoolOnlyConfig()
-	cfg.Label = "throughput/mempool-only"
-	runBenchmark(t, cfg, BurstLoad)
+// TestBenchmarkSeqComparison loads the sequential baseline, then runs
+// Proxy+IAVL and Proxy+MemIAVL with a sequential load for comparison.
+func TestBenchmarkSeqComparison(t *testing.T) {
+	var results []BenchResult
+
+	// load baseline from JSON (label="clist/iavl/seq")
+	baselines := LoadBaselineResultsByLabel(resultsDir(t), "clist/iavl/seq")
+	if len(baselines) > 0 {
+		t.Logf("Loaded baseline result: %s", baselines[0].Config.Label)
+		results = append(results, baselines[0])
+	} else {
+		t.Log("No baseline results found. Run TestBenchmarkBaselineSeq with pre-proxy binary for full comparison.")
+	}
+
+	t.Run("MempoolOnly", func(t *testing.T) {
+		cfg := MempoolOnlyConfig()
+		cfg.Label = "proxy+priority/iavl/seq"
+		result := runBenchmark(t, cfg, SequentialLoad)
+		results = append(results, result)
+	})
+
+	t.Run("Combined", func(t *testing.T) {
+		cfg := CombinedConfig()
+		cfg.Label = "proxy+priority/memiavl/seq"
+		result := runBenchmark(t, cfg, SequentialLoad)
+		results = append(results, result)
+	})
+
+	if len(results) >= 2 {
+		PrintComparisonTable(t, results)
+		PrintImprovementTable(t, results)
+	}
 }
 
-// TestBenchmarkLatency measures latency distribution with burst mode.
-func TestBenchmarkLatency(t *testing.T) {
-	cfg := MempoolOnlyConfig()
-	cfg.Label = "latency/mempool-only"
-	result := runBenchmark(t, cfg, BurstLoad)
+// TestBenchmarkBurstComparison loads the burst baseline, then runs
+// Proxy+IAVL and Proxy+MemIAVL with a burst load for comparison.
+func TestBenchmarkBurstComparison(t *testing.T) {
+	var results []BenchResult
 
-	require.Greater(t, result.TotalIncluded, 0, "no transactions were included")
-	t.Logf("Latency distribution: avg=%.0fms p50=%.0fms p95=%.0fms p99=%.0fms max=%.0fms",
-		result.AvgLatencyMs, result.P50LatencyMs, result.P95LatencyMs, result.P99LatencyMs, result.MaxLatencyMs)
+	// load baseline from JSON (label="clist/iavl/burst")
+	baselines := LoadBaselineResultsByLabel(resultsDir(t), "clist/iavl/burst")
+	if len(baselines) > 0 {
+		t.Logf("Loaded baseline result: %s", baselines[0].Config.Label)
+		results = append(results, baselines[0])
+	} else {
+		t.Log("No baseline results found. Run TestBenchmarkBaselineBurst with pre-proxy binary for full comparison.")
+	}
+
+	t.Run("MempoolOnly", func(t *testing.T) {
+		cfg := MempoolOnlyConfig()
+		cfg.Label = "proxy+priority/iavl/burst"
+		result := runBenchmark(t, cfg, BurstLoad)
+		results = append(results, result)
+	})
+
+	t.Run("Combined", func(t *testing.T) {
+		cfg := CombinedConfig()
+		cfg.Label = "proxy+priority/memiavl/burst"
+		result := runBenchmark(t, cfg, BurstLoad)
+		results = append(results, result)
+	})
+
+	if len(results) >= 2 {
+		PrintComparisonTable(t, results)
+		PrintImprovementTable(t, results)
+	}
 }
 
-// TestBenchmarkQueuePromotion tests out-of-order nonce handling and verifies all txs are included.
+// ---------------------------------------------------------------------------
+// State DB comparison: IAVL vs MemIAVL
+// ---------------------------------------------------------------------------
+
+// TestBenchmarkMemIAVLBankSend compares IAVL vs MemIAVL with bank send workload.
+// Uses 100 accounts x 300 txs to stress the state tree.
+func TestBenchmarkMemIAVLBankSend(t *testing.T) {
+	var results []BenchResult
+
+	t.Run("IAVL", func(t *testing.T) {
+		cfg := MempoolOnlyConfig()
+		cfg.AccountCount = 100
+		cfg.TxPerAccount = 300
+		cfg.Label = "memiavl-compare/iavl/bank-send"
+		result := runBenchmark(t, cfg, BurstLoad)
+		results = append(results, result)
+	})
+
+	t.Run("MemIAVL", func(t *testing.T) {
+		cfg := CombinedConfig()
+		cfg.AccountCount = 100
+		cfg.TxPerAccount = 300
+		cfg.Label = "memiavl-compare/memiavl/bank-send"
+		result := runBenchmark(t, cfg, BurstLoad)
+		results = append(results, result)
+	})
+
+	if len(results) == 2 {
+		PrintComparisonTable(t, results)
+	}
+}
+
+// TestBenchmarkMemIAVLMoveExec compares IAVL vs. MemIAVL with Move exec workload.
+// Deploys the Counter module and runs increase() calls.
+func TestBenchmarkMemIAVLMoveExec(t *testing.T) {
+	var results []BenchResult
+
+	t.Run("IAVL", func(t *testing.T) {
+		cfg := MempoolOnlyConfig()
+		cfg.AccountCount = 100
+		cfg.TxPerAccount = 300
+		cfg.Label = "memiavl-compare/iavl/move-exec"
+
+		ctx := context.Background()
+		cluster := setupCluster(t, ctx, cfg)
+		defer cluster.Close()
+
+		moveLoadFn := setupMoveExecLoad(t, ctx, cluster)
+		result := runBenchmarkWithCluster(t, ctx, cluster, cfg, moveLoadFn)
+		results = append(results, result)
+	})
+
+	t.Run("MemIAVL", func(t *testing.T) {
+		cfg := CombinedConfig()
+		cfg.AccountCount = 100
+		cfg.TxPerAccount = 300
+		cfg.Label = "memiavl-compare/memiavl/move-exec"
+
+		ctx := context.Background()
+		cluster := setupCluster(t, ctx, cfg)
+		defer cluster.Close()
+
+		moveLoadFn := setupMoveExecLoad(t, ctx, cluster)
+		result := runBenchmarkWithCluster(t, ctx, cluster, cfg, moveLoadFn)
+		results = append(results, result)
+	})
+
+	if len(results) == 2 {
+		PrintComparisonTable(t, results)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Capability demos
+// ---------------------------------------------------------------------------
+
+// TestBenchmarkQueuePromotion tests out-of-order nonce handling and verifies 100% inclusion.
 func TestBenchmarkQueuePromotion(t *testing.T) {
 	cfg := MempoolOnlyConfig()
 	cfg.TxPerAccount = 50
@@ -143,87 +327,6 @@ func TestBenchmarkQueuePromotion(t *testing.T) {
 	require.Equal(t, result.TotalSubmitted, result.TotalIncluded,
 		"not all out-of-order transactions were included: submitted=%d included=%d",
 		result.TotalSubmitted, result.TotalIncluded)
-}
-
-// TestBenchmarkFullComparison runs the three-way comparison:
-//
-//  1. mempool-only: ProxyMempool+PriorityMempool + standard IAVL
-//  2. combined:     ProxyMempool+PriorityMempool + MemIAVL
-//  3. baseline:     loaded from prior results if available (run TestBenchmarkBaseline separately
-//     with the pre-proxy binary)
-//
-// This measures the incremental improvement from each optimization layer.
-func TestBenchmarkFullComparison(t *testing.T) {
-	var results []BenchResult
-
-	// Try to load baseline results from a prior run
-	baselineResults := LoadBaselineResults(resultsDir(t))
-	if len(baselineResults) > 0 {
-		t.Logf("Loaded %d baseline result(s) from prior run", len(baselineResults))
-		results = append(results, baselineResults[0])
-	} else {
-		t.Log("No baseline results found. Run TestBenchmarkBaseline with pre-proxy binary for full 3-way comparison.")
-	}
-
-	// Run mempool-only (ProxyMempool+PriorityMempool + IAVL)
-	t.Run("MempoolOnly", func(t *testing.T) {
-		cfg := MempoolOnlyConfig()
-		result := runBenchmark(t, cfg, BurstLoad)
-		results = append(results, result)
-	})
-
-	// Run combined (ProxyMempool+PriorityMempool + MemIAVL)
-	t.Run("Combined", func(t *testing.T) {
-		cfg := CombinedConfig()
-		result := runBenchmark(t, cfg, BurstLoad)
-		results = append(results, result)
-	})
-
-	// Print comparison
-	if len(results) >= 2 {
-		PrintComparisonTable(t, results)
-		PrintImprovementTable(t, results)
-	}
-}
-
-// TestBenchmarkSaturation tests behavior under mempool pressure.
-func TestBenchmarkSaturation(t *testing.T) {
-	cfg := MempoolOnlyConfig()
-	cfg.AccountCount = 5
-	cfg.TxPerAccount = 100
-	cfg.Label = "saturation/mempool-only"
-
-	result := runBenchmark(t, cfg, BurstLoad)
-	t.Logf("Saturation: submitted=%d included=%d peak_mempool=%d",
-		result.TotalSubmitted, result.TotalIncluded, result.PeakMempoolSize)
-}
-
-// TestBenchmarkWideState runs IAVL vs MemIAVL with 50 accounts to stress the state tree.
-// More unique account leaves usually result in deeper IAVL traversals where MemIAVL should differentiate.
-func TestBenchmarkWideState(t *testing.T) {
-	var results []BenchResult
-
-	t.Run("IAVL", func(t *testing.T) {
-		cfg := MempoolOnlyConfig()
-		cfg.AccountCount = 100
-		cfg.TxPerAccount = 300
-		cfg.Label = "wide-state/iavl"
-		result := runBenchmark(t, cfg, BurstLoad)
-		results = append(results, result)
-	})
-
-	t.Run("MemIAVL", func(t *testing.T) {
-		cfg := CombinedConfig()
-		cfg.AccountCount = 100
-		cfg.TxPerAccount = 300
-		cfg.Label = "wide-state/memiavl"
-		result := runBenchmark(t, cfg, BurstLoad)
-		results = append(results, result)
-	})
-
-	if len(results) == 2 {
-		PrintComparisonTable(t, results)
-	}
 }
 
 // TestBenchmarkGossipPropagation submits all txs to node 0 and monitors propagation.
