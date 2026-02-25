@@ -76,8 +76,8 @@ git checkout tags/v1.3.1
 make build
 
 # 2. Run baseline
-E2E_INITIAD_BIN=./build/initiad \
-  cd integration-tests/e2e && \
+cd integration-tests/e2e && \
+  E2E_INITIAD_BIN=../../build/initiad \
   go test -v -tags benchmark -run TestBenchmarkBaseline -timeout 30m -count=1 ./benchmark/
 
 # 3. Return to current branch
@@ -88,7 +88,7 @@ Results land in `benchmark/results/` as JSON.
 
 ## Full three-way comparison
 
-After baseline results exist in `results/`:
+After baseline results exist in `benchmark/results/`:
 
 ```bash
 cd integration-tests/e2e && \

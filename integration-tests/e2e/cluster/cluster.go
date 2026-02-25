@@ -329,10 +329,10 @@ func (c *Cluster) QueryBlock(ctx context.Context, nodeIndex int, height int64) (
 	}
 
 	txHashes := make([]string, 0, len(decoded.Result.Block.Data.Txs))
-	for _, txBase64 := range decoded.Result.Block.Data.Txs {
+	for idx, txBase64 := range decoded.Result.Block.Data.Txs {
 		txBytes, decErr := base64Decode(txBase64)
 		if decErr != nil {
-			continue
+			return BlockResult{}, fmt.Errorf("failed to decode tx at height=%d index=%d: %w", height, idx, decErr)
 		}
 		hash := sha256Hash(txBytes)
 		txHashes = append(txHashes, strings.ToUpper(hash))

@@ -16,6 +16,7 @@ type TxSubmission struct {
 	Sequence   uint64    `json:"sequence"`
 	SubmitTime time.Time `json:"submit_time"`
 	ViaNode    int       `json:"via_node"`
+	Code       int64     `json:"code,omitempty"`
 }
 
 // LoadResult holds the outcome of a load generation run.
@@ -28,6 +29,10 @@ type LoadResult struct {
 
 // BurstLoad submits all transactions concurrently across accounts with sequential nonces.
 func BurstLoad(ctx context.Context, cluster *e2e.Cluster, cfg BenchConfig, metas map[string]e2e.AccountMeta) LoadResult {
+	if cfg.NodeCount <= 0 {
+		panic("BurstLoad: cfg.NodeCount must be > 0")
+	}
+
 	var (
 		mu     sync.Mutex
 		wg     sync.WaitGroup
@@ -44,6 +49,12 @@ func BurstLoad(ctx context.Context, cluster *e2e.Cluster, cfg BenchConfig, metas
 		go func() {
 			defer wg.Done()
 			for i := 0; i < cfg.TxPerAccount; i++ {
+				select {
+				case <-ctx.Done():
+					return
+				default:
+				}
+
 				seq := meta.Sequence + uint64(i)
 				viaNode := i % cfg.NodeCount
 				submitTime := time.Now()
@@ -59,14 +70,13 @@ func BurstLoad(ctx context.Context, cluster *e2e.Cluster, cfg BenchConfig, metas
 					Sequence:   seq,
 					SubmitTime: submitTime,
 					ViaNode:    viaNode,
+					Code:       res.Code,
 				}
 
 				mu.Lock()
 				result.Submissions = append(result.Submissions, sub)
 				if res.Err != nil {
 					result.Errors = append(result.Errors, res.Err)
-				} else if res.Code != 0 {
-					// still record but note the non-zero code
 				}
 				mu.Unlock()
 			}
@@ -80,8 +90,15 @@ func BurstLoad(ctx context.Context, cluster *e2e.Cluster, cfg BenchConfig, metas
 }
 
 // OutOfOrderLoad submits the first 3 txs per account with out-of-order nonces
-// (seq+2, seq+0, seq+1), then the rest sequentially.
+// (seq+2, seq+0, seq+1), then the rest sequentially. TxPerAccount must be >= 3.
 func OutOfOrderLoad(ctx context.Context, cluster *e2e.Cluster, cfg BenchConfig, metas map[string]e2e.AccountMeta) LoadResult {
+	if cfg.NodeCount <= 0 {
+		panic("OutOfOrderLoad: cfg.NodeCount must be > 0")
+	}
+	if cfg.TxPerAccount < 3 {
+		panic("OutOfOrderLoad: TxPerAccount must be >= 3 for out-of-order pattern")
+	}
+
 	var (
 		mu     sync.Mutex
 		wg     sync.WaitGroup
@@ -99,6 +116,12 @@ func OutOfOrderLoad(ctx context.Context, cluster *e2e.Cluster, cfg BenchConfig, 
 			defer wg.Done()
 			seqs := sequencePattern(meta.Sequence, cfg.TxPerAccount)
 			for i, seq := range seqs {
+				select {
+				case <-ctx.Done():
+					return
+				default:
+				}
+
 				viaNode := i % cfg.NodeCount
 				submitTime := time.Now()
 
@@ -113,6 +136,7 @@ func OutOfOrderLoad(ctx context.Context, cluster *e2e.Cluster, cfg BenchConfig, 
 					Sequence:   seq,
 					SubmitTime: submitTime,
 					ViaNode:    viaNode,
+					Code:       res.Code,
 				}
 
 				mu.Lock()
@@ -133,6 +157,10 @@ func OutOfOrderLoad(ctx context.Context, cluster *e2e.Cluster, cfg BenchConfig, 
 
 // SingleNodeLoad submits all transactions to a single specified node.
 func SingleNodeLoad(ctx context.Context, cluster *e2e.Cluster, cfg BenchConfig, metas map[string]e2e.AccountMeta, targetNode int) LoadResult {
+	if targetNode < 0 || targetNode >= cfg.NodeCount {
+		panic("SingleNodeLoad: targetNode out of range")
+	}
+
 	var (
 		mu     sync.Mutex
 		wg     sync.WaitGroup
@@ -149,6 +177,12 @@ func SingleNodeLoad(ctx context.Context, cluster *e2e.Cluster, cfg BenchConfig, 
 		go func() {
 			defer wg.Done()
 			for i := 0; i < cfg.TxPerAccount; i++ {
+				select {
+				case <-ctx.Done():
+					return
+				default:
+				}
+
 				seq := meta.Sequence + uint64(i)
 				submitTime := time.Now()
 
@@ -163,6 +197,7 @@ func SingleNodeLoad(ctx context.Context, cluster *e2e.Cluster, cfg BenchConfig, 
 					Sequence:   seq,
 					SubmitTime: submitTime,
 					ViaNode:    targetNode,
+					Code:       res.Code,
 				}
 
 				mu.Lock()
@@ -182,13 +217,13 @@ func SingleNodeLoad(ctx context.Context, cluster *e2e.Cluster, cfg BenchConfig, 
 }
 
 // sequencePattern generates out-of-order sequences: [base+2, base, base+1, base+3, ...].
+// count must be >= 3 for the out-of-order pattern to work correctly.
 func sequencePattern(base uint64, count int) []uint64 {
+	seqs := []uint64{base + 2, base, base + 1}
 	if count <= 3 {
-		seqs := []uint64{base + 2, base, base + 1}
 		return seqs[:count]
 	}
 
-	seqs := []uint64{base + 2, base, base + 1}
 	for i := 3; i < count; i++ {
 		seqs = append(seqs, base+uint64(i))
 	}
@@ -197,6 +232,8 @@ func sequencePattern(base uint64, count int) []uint64 {
 }
 
 // Warmup sends a small number of transactions to warm up the cluster.
+// Callers MUST refresh account metadata after Warmup returns, because
+// each successful submission advances the on-chain sequence.
 func Warmup(ctx context.Context, cluster *e2e.Cluster, metas map[string]e2e.AccountMeta) {
 	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
 	names := cluster.AccountNames()

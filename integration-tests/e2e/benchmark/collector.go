@@ -154,11 +154,19 @@ func CollectResults(
 		totalDuration = 1
 	}
 
-	// if we have block timestamps, use the span from first to last block with txs
-	if len(blockStats) >= 2 {
-		first := blockStats[0].Time
-		last := blockStats[len(blockStats)-1].Time
-		blockDuration := last.Sub(first).Seconds()
+	// use span from first to last block that actually included benchmark txs
+	var firstTxTime, lastTxTime time.Time
+	for _, bs := range blockStats {
+		if bs.TxCount == 0 {
+			continue
+		}
+		if firstTxTime.IsZero() {
+			firstTxTime = bs.Time
+		}
+		lastTxTime = bs.Time
+	}
+	if !firstTxTime.IsZero() {
+		blockDuration := lastTxTime.Sub(firstTxTime).Seconds()
 		if blockDuration > 0 {
 			totalDuration = blockDuration
 		}

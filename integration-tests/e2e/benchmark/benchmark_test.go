@@ -205,7 +205,8 @@ func TestBenchmarkWideState(t *testing.T) {
 
 	t.Run("IAVL", func(t *testing.T) {
 		cfg := MempoolOnlyConfig()
-		cfg.AccountCount = 50
+		cfg.AccountCount = 100
+		cfg.TxPerAccount = 300
 		cfg.Label = "wide-state/iavl"
 		result := runBenchmark(t, cfg, BurstLoad)
 		results = append(results, result)
@@ -213,7 +214,8 @@ func TestBenchmarkWideState(t *testing.T) {
 
 	t.Run("MemIAVL", func(t *testing.T) {
 		cfg := CombinedConfig()
-		cfg.AccountCount = 50
+		cfg.AccountCount = 100
+		cfg.TxPerAccount = 300
 		cfg.Label = "wide-state/memiavl"
 		result := runBenchmark(t, cfg, BurstLoad)
 		results = append(results, result)
@@ -249,11 +251,8 @@ func TestBenchmarkGossipPropagation(t *testing.T) {
 	startHeight, err := cluster.LatestHeight(ctx, 0)
 	require.NoError(t, err)
 
-	// start mempool pollers for each node
-	pollers := make([]*MempoolPoller, cfg.NodeCount)
-	for i := 0; i < cfg.NodeCount; i++ {
-		pollers[i] = NewMempoolPoller(ctx, cluster, mempoolPollInterval)
-	}
+	// start cluster-wide mempool poller
+	poller := NewMempoolPoller(ctx, cluster, mempoolPollInterval)
 
 	// submit all txs to node 0 only
 	loadResult := SingleNodeLoad(ctx, cluster, cfg, metas, 0)
@@ -263,12 +262,10 @@ func TestBenchmarkGossipPropagation(t *testing.T) {
 	endHeight, err := WaitForAllIncluded(ctx, cluster, mempoolDrainTimeout)
 	require.NoError(t, err)
 
-	for i, p := range pollers {
-		peak := p.Stop()
-		t.Logf("Node %d peak mempool size: %d", i, peak)
-	}
+	peakMempool := poller.Stop()
+	t.Logf("Cluster peak mempool size: %d", peakMempool)
 
-	result, err := CollectResults(ctx, cluster, cfg, loadResult, startHeight, endHeight, 0)
+	result, err := CollectResults(ctx, cluster, cfg, loadResult, startHeight, endHeight, peakMempool)
 	require.NoError(t, err)
 
 	t.Logf("Gossip test: TPS=%.1f, included=%d/%d",
