@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -18,6 +19,7 @@ import (
 	reflectionv1 "cosmossdk.io/api/cosmos/reflection/v1"
 	"cosmossdk.io/core/address"
 	"cosmossdk.io/log"
+	storetypes "cosmossdk.io/store/types"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -73,6 +75,9 @@ import (
 	oracleconfig "github.com/skip-mev/connect/v2/oracle/config"
 	oracleclient "github.com/skip-mev/connect/v2/service/clients/oracle"
 
+	// initia store
+	initiastore "github.com/initia-labs/store"
+
 	// unnamed import of statik for swagger UI support
 	_ "github.com/initia-labs/initia/client/docs/statik"
 )
@@ -114,6 +119,9 @@ type InitiaApp struct {
 	// connect oracle client
 	oracleClient oracleclient.OracleClient
 
+	// query multi store
+	qms storetypes.MultiStore
+
 	// the module manager
 	ModuleManager      *module.Manager
 	BasicModuleManager module.BasicManager
@@ -153,6 +161,9 @@ func NewInitiaApp(
 	legacyAmino := encodingConfig.Amino
 	interfaceRegistry := encodingConfig.InterfaceRegistry
 	txConfig := encodingConfig.TxConfig
+
+	// setup memiavl store, before NewBaseApp so it replaces the default cms
+	baseAppOptions = initiastore.SetupMemIAVL(logger, appOpts, false, baseAppOptions)
 
 	bApp := baseapp.NewBaseApp(AppName, logger, db, encodingConfig.TxConfig.TxDecoder(), baseAppOptions...)
 	bApp.SetCommitMultiStoreTracer(traceStore)
@@ -330,6 +341,16 @@ func NewInitiaApp(
 		if err := app.LoadLatestVersion(); err != nil {
 			tmos.Exit(err.Error())
 		}
+
+		// setup versiondb after loading latest version
+		streamingManager := &storetypes.StreamingManager{
+			ABCIListeners: []storetypes.ABCIListener{},
+			StopNodeOnErr: true,
+		}
+		if err := initiastore.SetupVersionDB(app, streamingManager, appOpts); err != nil {
+			tmos.Exit(err.Error())
+		}
+		app.SetStreamingManager(*streamingManager)
 	}
 
 	return app
@@ -350,6 +371,17 @@ func (app *InitiaApp) SetCheckTx(handler abcipp.CheckTx) {
 
 func (app *InitiaApp) SetOracleClient(oracleClient oracleclient.OracleClient) {
 	app.oracleClient = oracleClient
+}
+
+// SetQueryMultiStore sets the query multi store for the app.
+func (app *InitiaApp) SetQueryMultiStore(ms storetypes.MultiStore) {
+	app.qms = ms
+	app.BaseApp.SetQueryMultiStore(ms)
+}
+
+// GetQueryMultiStore returns the query multi store.
+func (app *InitiaApp) GetQueryMultiStore() storetypes.MultiStore {
+	return app.qms
 }
 
 // ConnectMempoolEvents wires cometbft ProxyMempool event channel to the app mempool.
@@ -554,18 +586,33 @@ func (app *InitiaApp) Close() error {
 		mempool.Stop()
 	}
 
+	var errs []error
+
 	if err := app.BaseApp.Close(); err != nil {
-		return err
+		errs = append(errs, err)
+	}
+
+	// close cms and qms
+	for _, store := range []storetypes.MultiStore{app.CommitMultiStore(), app.qms} {
+		if store == nil {
+			continue
+		}
+
+		if closer, ok := store.(io.Closer); ok {
+			if err := closer.Close(); err != nil {
+				errs = append(errs, err)
+			}
+		}
 	}
 
 	// close the oracle service
 	if app.oracleClient != nil {
 		if err := app.oracleClient.Stop(); err != nil {
-			return err
+			errs = append(errs, err)
 		}
 	}
 
-	return nil
+	return errors.Join(errs...)
 }
 
 // StartOracleClient starts the oracle client

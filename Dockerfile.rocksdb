@@ -1,0 +1,47 @@
+FROM initia/go-rocksdb-builder:0002-debian AS go-builder
+
+ARG VERSION
+ARG COMMIT
+
+# Install Go build deps
+RUN apt-get update && apt-get install -y --no-install-recommends git build-essential && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /code
+COPY . .
+
+# CGO linking flags for RocksDB
+ENV CGO_LDFLAGS="-L/usr/local/lib -lrocksdb -lsnappy -lz -lbz2 -llz4 -lzstd -ltcmalloc"
+ENV CGO_CFLAGS="-I/usr/local/include"
+
+# Build initiad with RocksDB support
+RUN VERSION=${VERSION} COMMIT=${COMMIT} LEDGER_ENABLED=false COSMOS_BUILD_OPTIONS=rocksdb make build
+
+# Copy MoveVM shared libs from Go module cache
+RUN cp /go/pkg/mod/github.com/initia-labs/movevm@v*/api/libmovevm.x86_64.so /usr/local/lib/libmovevm.x86_64.so && \
+    cp /go/pkg/mod/github.com/initia-labs/movevm@v*/api/libcompiler.x86_64.so /usr/local/lib/libcompiler.x86_64.so
+
+FROM debian:bullseye-slim
+
+# Install runtime shared libs
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends ca-certificates curl libsnappy1v5 libzstd1 liblz4-1 libbz2-1.0 libgoogle-perftools-dev && \
+    update-ca-certificates
+
+COPY --from=go-builder /code/build/initiad /usr/local/bin/initiad
+COPY --from=go-builder /usr/local/lib/librocksdb.so /usr/local/lib/
+COPY --from=go-builder /usr/local/lib/libmovevm.x86_64.so /usr/local/lib/
+COPY --from=go-builder /usr/local/lib/libcompiler.x86_64.so /usr/local/lib/
+
+# Update shared lib cache
+RUN ldconfig
+
+# Setup initia user
+WORKDIR /initia
+RUN addgroup initia \
+    && adduser --ingroup initia --disabled-password --home /initia initia
+RUN chown -R initia:initia /initia
+USER initia
+
+EXPOSE 1317 9090 26656 26657
+
+CMD ["/usr/local/bin/initiad", "version"]
