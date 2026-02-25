@@ -2,6 +2,9 @@ package cluster
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -32,6 +35,7 @@ type ClusterOptions struct {
 	BasePort     int
 	PortStride   int
 	BinaryPath   string
+	MemIAVL      bool
 }
 
 type Node struct {
@@ -253,6 +257,91 @@ func (c *Cluster) WaitForMempoolEmpty(ctx context.Context, timeout time.Duration
 
 func (c *Cluster) NodeCount() int {
 	return len(c.nodes)
+}
+
+// NodeRPCPort returns the RPC port for the given node index.
+func (c *Cluster) NodeRPCPort(index int) (int, error) {
+	n, err := c.getNode(index)
+	if err != nil {
+		return 0, err
+	}
+	return n.Ports.RPC, nil
+}
+
+// LatestHeight returns the latest block height from the given node.
+func (c *Cluster) LatestHeight(ctx context.Context, nodeIndex int) (int64, error) {
+	return c.latestHeight(ctx, nodeIndex)
+}
+
+// UnconfirmedTxCount returns the number of unconfirmed transactions in the given node's mempool.
+func (c *Cluster) UnconfirmedTxCount(ctx context.Context, nodeIndex int) (int64, error) {
+	return c.unconfirmedTxCount(ctx, nodeIndex)
+}
+
+// BlockResult holds the data extracted from a block query.
+type BlockResult struct {
+	TxHashes  []string
+	BlockTime time.Time
+}
+
+// QueryBlock queries a specific block by height from the given node and returns tx hashes and block time.
+func (c *Cluster) QueryBlock(ctx context.Context, nodeIndex int, height int64) (BlockResult, error) {
+	n, err := c.getNode(nodeIndex)
+	if err != nil {
+		return BlockResult{}, err
+	}
+
+	url := fmt.Sprintf("http://127.0.0.1:%d/block?height=%d", n.Ports.RPC, height)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return BlockResult{}, err
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return BlockResult{}, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return BlockResult{}, fmt.Errorf("block query status code %d", resp.StatusCode)
+	}
+
+	var decoded struct {
+		Result struct {
+			Block struct {
+				Header struct {
+					Time string `json:"time"`
+				} `json:"header"`
+				Data struct {
+					Txs []string `json:"txs"`
+				} `json:"data"`
+			} `json:"block"`
+		} `json:"result"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&decoded); err != nil {
+		return BlockResult{}, fmt.Errorf("failed to decode block response: %w", err)
+	}
+
+	blockTime, err := time.Parse(time.RFC3339Nano, decoded.Result.Block.Header.Time)
+	if err != nil {
+		return BlockResult{}, fmt.Errorf("failed to parse block time %q: %w", decoded.Result.Block.Header.Time, err)
+	}
+
+	txHashes := make([]string, 0, len(decoded.Result.Block.Data.Txs))
+	for _, txBase64 := range decoded.Result.Block.Data.Txs {
+		txBytes, decErr := base64Decode(txBase64)
+		if decErr != nil {
+			continue
+		}
+		hash := sha256Hash(txBytes)
+		txHashes = append(txHashes, strings.ToUpper(hash))
+	}
+
+	return BlockResult{
+		TxHashes:  txHashes,
+		BlockTime: blockTime,
+	}, nil
 }
 
 func (c *Cluster) AccountNames() []string {
@@ -793,6 +882,12 @@ func (c *Cluster) configureNodes(_ context.Context) error {
 		if err := setTOMLValue(appPath, "grpc", "address", fmt.Sprintf("\"127.0.0.1:%d\"", n.Ports.GRPC)); err != nil {
 			return err
 		}
+
+		if c.opts.MemIAVL {
+			if err := setTOMLValue(appPath, "memiavl", "enable", "true"); err != nil {
+				return err
+			}
+		}
 	}
 
 	for _, n := range c.nodes {
@@ -1071,6 +1166,15 @@ func extractJSONObject(out []byte) ([]byte, error) {
 		return nil, errors.New("json object not found in output")
 	}
 	return []byte(s[start : end+1]), nil
+}
+
+func base64Decode(s string) ([]byte, error) {
+	return base64.StdEncoding.DecodeString(s)
+}
+
+func sha256Hash(data []byte) string {
+	h := sha256.Sum256(data)
+	return hex.EncodeToString(h[:])
 }
 
 func parseEstimatedGas(out []byte) (uint64, error) {
