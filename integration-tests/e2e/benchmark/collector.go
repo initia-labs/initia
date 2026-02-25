@@ -46,6 +46,9 @@ type MempoolPoller struct {
 
 // NewMempoolPoller creates and starts a mempool size poller.
 func NewMempoolPoller(ctx context.Context, cluster *e2e.Cluster, interval time.Duration) *MempoolPoller {
+	if interval <= 0 {
+		interval = 500 * time.Millisecond
+	}
 	pollCtx, cancel := context.WithCancel(ctx)
 	p := &MempoolPoller{
 		cluster:  cluster,
@@ -204,7 +207,11 @@ func WaitForAllIncluded(ctx context.Context, cluster *e2e.Cluster, timeout time.
 		return 0, err
 	}
 	// Wait one more block to ensure finality
-	time.Sleep(3 * time.Second)
+	select {
+	case <-ctx.Done():
+		return 0, ctx.Err()
+	case <-time.After(3 * time.Second):
+	}
 	h, err := cluster.LatestHeight(ctx, 0)
 	if err != nil {
 		return 0, err

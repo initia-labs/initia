@@ -883,10 +883,12 @@ func (c *Cluster) configureNodes(_ context.Context) error {
 			return err
 		}
 
+		memIAVLEnable := "false"
 		if c.opts.MemIAVL {
-			if err := setTOMLValue(appPath, "memiavl", "enable", "true"); err != nil {
-				return err
-			}
+			memIAVLEnable = "true"
+		}
+		if err := setTOMLValue(appPath, "memiavl", "enable", memIAVLEnable); err != nil {
+			return err
 		}
 	}
 
