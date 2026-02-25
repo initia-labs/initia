@@ -24,7 +24,7 @@ func WriteResult(t *testing.T, result BenchResult, dir string) error {
 	}
 
 	t.Logf("Writing benchmark result to %s", path)
-	return os.WriteFile(path, data, 0o644)
+	return os.WriteFile(path, data, 0o600)
 }
 
 // PrintComparisonTable prints a formatted comparison table for multiple results.

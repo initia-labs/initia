@@ -2,7 +2,6 @@ package benchmark
 
 import (
 	"context"
-	"math/rand"
 	"sync"
 	"time"
 
@@ -42,7 +41,6 @@ func BurstLoad(ctx context.Context, cluster *e2e.Cluster, cfg BenchConfig, metas
 	result.StartTime = time.Now()
 
 	for _, name := range cluster.AccountNames() {
-		name := name
 		meta := metas[name]
 
 		wg.Add(1)
@@ -55,7 +53,7 @@ func BurstLoad(ctx context.Context, cluster *e2e.Cluster, cfg BenchConfig, metas
 				default:
 				}
 
-				seq := meta.Sequence + uint64(i)
+				seq := meta.Sequence + uint64(i) //nolint:gosec // i is bounded by TxPerAccount
 				viaNode := i % cfg.NodeCount
 				submitTime := time.Now()
 
@@ -108,7 +106,6 @@ func OutOfOrderLoad(ctx context.Context, cluster *e2e.Cluster, cfg BenchConfig, 
 	result.StartTime = time.Now()
 
 	for _, name := range cluster.AccountNames() {
-		name := name
 		meta := metas[name]
 
 		wg.Add(1)
@@ -170,7 +167,6 @@ func SingleNodeLoad(ctx context.Context, cluster *e2e.Cluster, cfg BenchConfig, 
 	result.StartTime = time.Now()
 
 	for _, name := range cluster.AccountNames() {
-		name := name
 		meta := metas[name]
 
 		wg.Add(1)
@@ -183,7 +179,7 @@ func SingleNodeLoad(ctx context.Context, cluster *e2e.Cluster, cfg BenchConfig, 
 				default:
 				}
 
-				seq := meta.Sequence + uint64(i)
+				seq := meta.Sequence + uint64(i) //nolint:gosec // i is bounded by TxPerAccount
 				submitTime := time.Now()
 
 				res := cluster.SendBankTxWithSequence(
@@ -225,7 +221,7 @@ func sequencePattern(base uint64, count int) []uint64 {
 	}
 
 	for i := 3; i < count; i++ {
-		seqs = append(seqs, base+uint64(i))
+		seqs = append(seqs, base+uint64(i)) //nolint:gosec // i is bounded by count
 	}
 
 	return seqs
@@ -235,12 +231,11 @@ func sequencePattern(base uint64, count int) []uint64 {
 // Callers MUST refresh account metadata after Warmup returns, because
 // each successful submission advances the on-chain sequence.
 func Warmup(ctx context.Context, cluster *e2e.Cluster, metas map[string]e2e.AccountMeta) {
-	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
 	names := cluster.AccountNames()
 	for i := 0; i < 5 && i < len(names); i++ {
 		name := names[i]
 		meta := metas[name]
-		viaNode := rng.Intn(cluster.NodeCount())
+		viaNode := i % cluster.NodeCount()
 		cluster.SendBankTxWithSequence(
 			ctx, name, cluster.ValidatorAddress(), "1uinit",
 			meta.AccountNumber, meta.Sequence, defaultGasLimit, viaNode,
