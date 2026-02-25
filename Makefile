@@ -109,22 +109,6 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=initia \
 		  -X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)" \
 			-X github.com/cometbft/cometbft/version.TMCoreSemVer=$(TM_VERSION)
 
-# DB backend selection
-ifeq (cleveldb,$(findstring cleveldb,$(COSMOS_BUILD_OPTIONS)))
-  ldflags += -X github.com/cosmos/cosmos-sdk/types.DBBackend=cleveldb
-endif
-ifeq (badgerdb,$(findstring badgerdb,$(COSMOS_BUILD_OPTIONS)))
-  ldflags += -X github.com/cosmos/cosmos-sdk/types.DBBackend=badgerdb
-endif
-ifeq (rocksdb,$(findstring rocksdb,$(COSMOS_BUILD_OPTIONS)))
-  CGO_ENABLED=1
-  ldflags += -X github.com/cosmos/cosmos-sdk/types.DBBackend=rocksdb
-endif
-# handle boltdb
-ifeq (boltdb,$(findstring boltdb,$(COSMOS_BUILD_OPTIONS)))
-  ldflags += -X github.com/cosmos/cosmos-sdk/types.DBBackend=boltdb
-endif
-
 ifeq (,$(findstring nostrip,$(COSMOS_BUILD_OPTIONS)))
   ldflags += -w -s
 endif

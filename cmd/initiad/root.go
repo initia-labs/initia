@@ -7,9 +7,6 @@ import (
 	"os"
 	"path"
 
-	tmcli "github.com/cometbft/cometbft/libs/cli"
-	cmtmempool "github.com/cometbft/cometbft/mempool"
-	"github.com/cometbft/cometbft/rpc/client/local"
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -17,6 +14,9 @@ import (
 
 	"cosmossdk.io/log"
 	confixcmd "cosmossdk.io/tools/confix/cmd"
+	tmcli "github.com/cometbft/cometbft/libs/cli"
+	cmtmempool "github.com/cometbft/cometbft/mempool"
+	"github.com/cometbft/cometbft/rpc/client/local"
 
 	dbm "github.com/cosmos/cosmos-db"
 
@@ -160,10 +160,10 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 				return err
 			}
 
-			initiaappTemplate, initiaappConfig := initAppConfig()
+			initiaAppTemplate, initiaAppConfig := initAppConfig()
 			customTMConfig := initTendermintConfig()
 
-			err = server.InterceptConfigsPreRunHandler(cmd, initiaappTemplate, initiaappConfig, customTMConfig)
+			err = server.InterceptConfigsPreRunHandler(cmd, initiaAppTemplate, initiaAppConfig, customTMConfig)
 			if err != nil {
 				return err
 			}
