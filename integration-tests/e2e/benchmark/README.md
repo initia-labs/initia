@@ -72,7 +72,6 @@ cd integration-tests/e2e && \
 
 ```bash
 # 1. Build pre-proxy binary
-git stash
 git checkout tags/v1.3.1
 make build
 
@@ -83,7 +82,6 @@ E2E_INITIAD_BIN=./build/initiad \
 
 # 3. Return to current branch
 git checkout -
-git stash pop
 ```
 
 Results land in `benchmark/results/` as JSON.
