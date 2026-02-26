@@ -100,14 +100,7 @@
       }
     },
     {
-      "url": "./tmp-swagger-gen/cosmos/consensus/v1/query.swagger.json",
-      "operationIds": {
-        "rename": {
-          "Params": "GroupParams",
-          "Proposal": "GroupProposal",
-          "TallyResult": "GroupTallyResult"
-        }
-      }
+      "url": "./tmp-swagger-gen/cosmos/consensus/v1/query.swagger.json"
     }
   ]
 }
