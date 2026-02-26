@@ -490,6 +490,116 @@ func TestQueuedMempoolPromoteQueued(t *testing.T) {
 	}
 }
 
+// TestPromoteQueuedResetsActiveNextAfterDrain verifies that PromoteQueued
+// correctly promotes queued txs when the active pool has been fully drained
+// by block inclusion, but activeNext was advanced past the on-chain sequence.
+//
+// This reproduces a bug where burst submitted txs arrive partially in-order
+// (advancing activeNext) and partially not (going to the queue). When
+// the correct order active txs get included in blocks and removed, activeNext
+// stays at its peak.
+func TestPromoteQueuedResetsActiveNextAfterDrain(t *testing.T) {
+	keeper := newMockAccountKeeper()
+	priv := secp256k1.GenPrivKey()
+	sender := sdk.AccAddress(priv.PubKey().Address())
+	keeper.SetSequence(sender, 0)
+
+	mp, _ := newTestMempoolWithKeeper(t, keeper)
+	sdkCtx := testSDKContext()
+	ctx := sdk.WrapSDKContext(sdkCtx)
+
+	// simulating burst arrival, seq 0, 1, 2 arrive in-order (go to active,
+	// activeNext advances to 3), then seq 5, 6, 7 arrive before seq 3, 4
+	for _, seq := range []uint64{0, 1, 2} {
+		require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(priv, seq, 1000, "default")))
+	}
+	for _, seq := range []uint64{5, 6, 7} {
+		require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(priv, seq, 1000, "default")))
+	}
+
+	// 3 active (seq 0,1,2) + 3 queued (seq 5,6,7)
+	activeCount := 0
+	for it := mp.Select(context.Background(), nil); it != nil; it = it.Next() {
+		activeCount++
+	}
+	require.Equal(t, 3, activeCount, "seq 0,1,2 should be active")
+	require.Equal(t, 6, mp.CountTx(), "3 active + 3 queued = 6 total")
+
+	// Now seq 3 and 4 arrive, they match activeNext (3, then 4), get promoted
+	// to active, and also promote seq 5, 6, 7 from queued via the
+	// continuous nonce chain. activeNext advances to 8.
+	for _, seq := range []uint64{3, 4} {
+		require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(priv, seq, 1000, "default")))
+	}
+
+	// all 8 should now be active
+	activeCount = 0
+	for it := mp.Select(context.Background(), nil); it != nil; it = it.Next() {
+		activeCount++
+	}
+	require.Equal(t, 8, activeCount, "all 8 txs should be active after chain promotion")
+
+	// simulating blocks committing seq 0..4, then seq 5..7 arrive on another
+	// node via gossip later. on that node, the active pool drains first.
+	// we simulate this by removing seq 0..7 (block inclusion) and noting
+	// that activeNext is still 8.
+	for i := uint64(0); i < 8; i++ {
+		// ignore error since Remove returns ErrTxNotFound for already-removed txs
+		mp.Remove(newTestTxWithPriv(priv, i, 1000, "default"))
+	}
+
+	// active pool is empty, activeNext=8
+	activeCount = 0
+	for it := mp.Select(context.Background(), nil); it != nil; it = it.Next() {
+		activeCount++
+	}
+	require.Equal(t, 0, activeCount, "active pool should be empty")
+
+	// advancing keeper sequence to 5, only seq 0..4 committed
+	keeper.SetSequence(sender, 5)
+
+	// now new txs with seq 5, 6, 7 arrive via gossip from another node.
+	// and get rejected by Insert as stale (nonce 5 < activeNext 8).
+	// this is the scenario, the node already saw these txs,
+	// promoted them, they got included/removed, but a slow gossip peer
+	// re-sends them. they simply can't re-enter.
+	//
+	// but the issue is when seq 5,6,7 were never removed from queued
+	// on some other node. let's simulate that by directly adding to the queue.
+	mp.mtx.Lock()
+	ss := mp.getOrCreateSenderLocked(sender.String())
+	for _, seq := range []uint64{5, 6, 7} {
+		tx := newTestTxWithPriv(priv, seq, 1000, "default")
+		bz, _ := mp.txEncoder(tx)
+		entry := &txEntry{
+			tx:       tx,
+			priority: 1000,
+			size:     int64(len(bz)),
+			key:      txKey{sender: sender.String(), nonce: seq},
+			sequence: seq,
+			tier:     queuedTier,
+			bytes:    bz,
+		}
+		ss.queued[seq] = entry
+		mp.queuedCount.Add(1)
+	}
+	mp.mtx.Unlock()
+
+	// state: active=0, queued=3 (seq 5,6,7), activeNext=8, onChainSeq=5
+	require.Equal(t, 3, mp.CountTx(), "should have 3 queued txs")
+
+	// PromoteQueued should detect active is empty, reset activeNext to
+	// onChainSeq (5), then promote seq 5,6,7 from queued to active.
+	mp.PromoteQueued(sdkCtx)
+
+	activeCount = 0
+	for it := mp.Select(context.Background(), nil); it != nil; it = it.Next() {
+		activeCount++
+	}
+	require.Equal(t, 3, activeCount,
+		"PromoteQueued should promote all 3 queued txs (seq 5..7) after active pool drain")
+}
+
 func TestQueuedMempoolSelectOnlyReturnsActive(t *testing.T) {
 	keeper := newMockAccountKeeper()
 	priv := secp256k1.GenPrivKey()

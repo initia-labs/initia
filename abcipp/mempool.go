@@ -808,6 +808,15 @@ func (p *PriorityMempool) PromoteQueued(ctx context.Context) {
 		}
 		newActive := max(sr.onChainSeq, ss.activeNext)
 
+		// when the active pool is fully drained (all active txs were committed)
+		// but queued txs remain, reset activeNext to the on-chain sequence.
+		// without this, activeNext stays at the peak from insertion causing
+		// queued txs with nonces in [onChainSeq, activeNext) to be
+		// permanently stuck, too high to evict as stale, too low for collect to reach.
+		if len(ss.active) == 0 && len(ss.queued) > 0 && sr.onChainSeq < ss.activeNext {
+			newActive = sr.onChainSeq
+		}
+
 		// evict stale queued entries
 		for nonce, entry := range ss.queued {
 			if nonce < sr.onChainSeq {
