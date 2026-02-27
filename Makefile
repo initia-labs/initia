@@ -244,10 +244,13 @@ test-cover:
 test-e2e:
 	@go test ./integration-tests/e2e/... -mod=readonly -timeout 30m -tags='e2e' -count=1
 
+benchmark-e2e:
+	cd integration-tests/e2e && go test -v -tags benchmark -run TestBenchmark -timeout 30m -count=1 ./benchmark/
+
 benchmark:
 	@go test -timeout 20m -mod=readonly -bench=. ./... 
 
-.PHONY: test test-all test-cover test-unit test-race test-e2e benchmark
+.PHONY: test test-all test-cover test-unit test-race test-e2e benchmark benchmark-e2e
 
 ###############################################################################
 ###                                Linting                                  ###
