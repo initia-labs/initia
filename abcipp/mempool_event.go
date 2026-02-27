@@ -17,12 +17,15 @@ func (p *PriorityMempool) SetEventCh(ch chan<- cmtmempool.AppMempoolEvent) {
 
 // StopEventDispatch signals the event dispatcher goroutine and waits for exit.
 func (p *PriorityMempool) StopEventDispatch() {
+	p.eventMu.Lock()
 	select {
 	case <-p.eventStop:
+		p.eventMu.Unlock()
 		return // already stopped
 	default:
 		close(p.eventStop)
 	}
+	p.eventMu.Unlock()
 	<-p.eventDone
 }
 

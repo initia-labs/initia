@@ -28,6 +28,8 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 			return err
 		}
 	}
+	// Keep tier/capacity evaluation context consistent with the encoded tx bytes.
+	sdkCtx = sdkCtx.WithTxBytes(bz)
 	size := int64(len(bz))
 
 	var gas uint64
@@ -111,7 +113,7 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 	// check if entry already exists in the active pool
 	existing, hasExisting := p.entries[entry.key]
 	if hasExisting {
-		if entry.priority < existing.priority {
+		if entry.priority <= existing.priority {
 			p.mtx.Unlock()
 			return nil
 		}

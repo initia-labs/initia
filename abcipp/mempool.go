@@ -163,7 +163,7 @@ func (p *PriorityMempool) getOrCreateSenderLocked(sender string) *senderState {
 }
 
 // PromoteQueued evicts stale queued entries, promotes sequential queued entries,
-// and refreshes sender on-chain sequence for all tracked senders.
+// and refreshes on-chain sequence for senders that currently have queued entries.
 func (p *PriorityMempool) PromoteQueued(ctx context.Context) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 

@@ -112,6 +112,9 @@ func (s *senderState) setQueuedRangeOnRemoveLocked(removedNonce uint64) {
 		s.resetQueuedRangeLocked()
 		return
 	}
+	// Intentional tradeoff: boundary recovery scans between cached min/max and
+	// the next existing nonce. Sender-local queued size is capped, so this stays
+	// bounded while keeping range maintenance simple and map-only.
 	if removedNonce == s.queuedMin {
 		for n := s.queuedMin + 1; ; n++ {
 			if _, ok := s.queued[n]; ok {

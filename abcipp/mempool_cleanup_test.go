@@ -97,7 +97,7 @@ func TestCleaningWorkerCleansStaleAndStops(t *testing.T) {
 
 	// Once chain sequence advances, periodic cleanup should remove both stale txs.
 	keeper.SetSequence(sender, 2)
-	mp.StartCleaningWorker(baseApp, keeper, 5*time.Millisecond)
+	mp.StartCleaningWorker(baseApp, 5*time.Millisecond)
 
 	require.Eventually(t, func() bool {
 		return mp.CountTx() == 0
@@ -110,11 +110,11 @@ func TestCleaningWorkerCleansStaleAndStops(t *testing.T) {
 }
 
 func TestStartCleaningWorkerIsNoopWhenAlreadyRunning(t *testing.T) {
-	mp, keeper, sdkCtx, _ := newTestMempoolWithEvents(t, 32)
+	mp, _, sdkCtx, _ := newTestMempoolWithEvents(t, 32)
 	baseApp := testBaseApp{ctx: sdkCtx}
 
 	// First start with default interval path.
-	mp.StartCleaningWorker(baseApp, keeper, 0)
+	mp.StartCleaningWorker(baseApp, 0)
 
 	mp.mtx.RLock()
 	firstStopCh := mp.cleaningStopCh
@@ -124,7 +124,7 @@ func TestStartCleaningWorkerIsNoopWhenAlreadyRunning(t *testing.T) {
 	require.NotNil(t, firstDoneCh)
 
 	// Second start must be a no-op while worker is already running.
-	mp.StartCleaningWorker(baseApp, keeper, time.Millisecond)
+	mp.StartCleaningWorker(baseApp, time.Millisecond)
 
 	mp.mtx.RLock()
 	secondStopCh := mp.cleaningStopCh

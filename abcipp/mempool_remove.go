@@ -63,6 +63,9 @@ func (p *PriorityMempool) removeQueuedStaleLocked(ss *senderState, onChainSeq ui
 		end = ss.queuedMax
 	}
 
+	// Intentional tradeoff: iterate by nonce range (queuedMin..end) for simple
+	// boundary-based state updates. This is bounded in practice by small queued
+	// limits (notably maxQueuedPerSender), so sender-local cleanup remains cheap.
 	for nonce := ss.queuedMin; nonce <= end; nonce++ {
 		entry, ok := ss.queued[nonce]
 		if !ok {

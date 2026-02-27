@@ -13,7 +13,7 @@ import (
 const DefaultMempoolCleaningInterval = time.Second * 5
 
 // StartCleaningWorker starts a background worker that periodically cleans stale txs.
-func (p *PriorityMempool) StartCleaningWorker(baseApp BaseApp, ak AccountKeeper, interval time.Duration) {
+func (p *PriorityMempool) StartCleaningWorker(baseApp BaseApp, interval time.Duration) {
 	if interval <= 0 {
 		interval = DefaultMempoolCleaningInterval
 	}
@@ -36,7 +36,7 @@ func (p *PriorityMempool) StartCleaningWorker(baseApp BaseApp, ak AccountKeeper,
 		for {
 			select {
 			case <-timer.C:
-				p.cleanUpEntries(baseApp, ak)
+				p.cleanUpEntries(baseApp, p.ak)
 			case <-stopCh:
 				return
 			}
