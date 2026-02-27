@@ -16,6 +16,9 @@ type Mempool interface {
 	// Contains returns true if the transaction is in the mempool.
 	Contains(tx sdk.Tx) bool
 
+	// RemoveWithReason removes a transaction with a reason-specific reconciliation policy.
+	RemoveWithReason(tx sdk.Tx, reason RemovalReason) error
+
 	// Lookup returns the txHash from the mempool if it exists.
 	Lookup(sender string, nonce uint64) (string, bool)
 

@@ -7,6 +7,7 @@ import (
 
 	"cosmossdk.io/log"
 	abci "github.com/cometbft/cometbft/abci/types"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -24,13 +25,14 @@ func TestPriorityMempoolConcurrentTierDistribution(t *testing.T) {
 	start := make(chan struct{})
 	worker := func(id int) {
 		defer wg.Done()
+		priv := secp256k1.GenPrivKey()
 		<-start
 		for j := 0; j < 200; j++ {
 			tier := "high"
 			if j%2 == 1 {
 				tier = "low"
 			}
-			tx := newTestTx(testAddress(id), uint64(id*1000+j), 1000, tier)
+			tx := newTestTxWithPriv(priv, uint64(j), 1000, tier)
 			_ = mp.Insert(ctx, tx)
 		}
 	}
@@ -64,7 +66,7 @@ func TestProposalHandlerWithConcurrentMempool(t *testing.T) {
 		if i%2 == 1 {
 			tier = "low"
 		}
-		tx := newTestTx(testAddress(i), uint64(i), 1000, tier)
+		tx := newTestTx(testAddress(i), 0, 1000, tier)
 		if err := mp.Insert(wrappedCtx, tx); err != nil {
 			t.Fatalf("insert: %v", err)
 		}
@@ -148,7 +150,7 @@ func TestPrepareProposalRemovesTxWhenConsensusParamsShrink(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			mp := newTestPriorityMempool(t, nil)
 
-			tx := newTestTx(testAddress(1), 1, tc.txGas, "default")
+			tx := newTestTx(testAddress(1), 0, tc.txGas, "default")
 			txBytes, err := testTxEncoder(tx)
 			if err != nil {
 				t.Fatalf("encode tx: %v", err)
@@ -248,9 +250,9 @@ func TestPrepareProposalSkipsTxThatWouldOverflowButKeepsLaterTx(t *testing.T) {
 	ctx := testSDKContextWithParams(1<<20, 10)
 	wrappedCtx := sdk.WrapSDKContext(ctx)
 
-	tx1 := newTestTx(testAddress(1), 1, 6, "default")
-	tx2 := newTestTx(testAddress(2), 1, 6, "default")
-	tx3 := newTestTx(testAddress(3), 1, 4, "default")
+	tx1 := newTestTx(testAddress(1), 0, 6, "default")
+	tx2 := newTestTx(testAddress(2), 0, 6, "default")
+	tx3 := newTestTx(testAddress(3), 0, 4, "default")
 
 	if err := mp.Insert(wrappedCtx, tx1); err != nil {
 		t.Fatalf("insert tx1: %v", err)
@@ -304,9 +306,9 @@ func TestPrepareProposalSkipsTxThatWouldOverflowButKeepsLaterTx(t *testing.T) {
 func TestPrepareProposalSkipsTxWhenMaxBytesWouldOverflow(t *testing.T) {
 	mp := newTestPriorityMempool(t, nil)
 
-	tx1 := newTestTx(testAddress(21), 1, 1, "a")
-	tx2 := newTestTx(testAddress(22), 1, 1, "this-tier-is-much-longer")
-	tx3 := newTestTx(testAddress(23), 1, 1, "b")
+	tx1 := newTestTx(testAddress(21), 0, 1, "a")
+	tx2 := newTestTx(testAddress(22), 0, 1, "this-tier-is-much-longer")
+	tx3 := newTestTx(testAddress(23), 0, 1, "b")
 
 	tx1Bytes, err := testTxEncoder(tx1)
 	if err != nil {

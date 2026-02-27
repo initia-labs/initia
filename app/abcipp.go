@@ -85,12 +85,11 @@ func (app *InitiaApp) setupABCIPP(mempoolMaxTxs int) (
 			MaxTx:       mempoolMaxTxs,
 			AnteHandler: fullHandler,     // cleaning worker uses full handler
 			Tiers:       []abcipp.Tier{}, // no tiers on L1
-		}, app.TxEncode,
+		}, app.TxEncode, app.AccountKeeper,
 	)
-	mempool.SetAccountKeeper(app.AccountKeeper)
 
 	// start mempool cleaning worker
-	mempool.StartCleaningWorker(app.BaseApp, app.AccountKeeper, abcipp.DefaultMempoolCleaningInterval)
+	mempool.StartCleaningWorker(app.BaseApp, abcipp.DefaultMempoolCleaningInterval)
 
 	proposalHandler := abcipp.NewProposalHandler(
 		app.Logger(),

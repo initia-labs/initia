@@ -96,7 +96,7 @@ func (h CheckTxHandler) CheckTx(req *cometabci.RequestCheckTx) (resp *cometabci.
 	// the app-side mempool
 	if isInvalidCheckTxExecution(resp, err) && isRecheck && txInMempool {
 		// remove the tx
-		if err := h.mempool.Remove(tx); err != nil {
+		if err := h.mempool.RemoveWithReason(tx, RemovalReasonAnteRejectedInPrepare); err != nil {
 			h.logger.Debug(
 				"failed to remove tx from app-side mempool when purging for re-check failure",
 				"removal-err", err,

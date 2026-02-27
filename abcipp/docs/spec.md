@@ -20,40 +20,68 @@ The `abcipp` package wires up the ABCI++ surfaces that Initia needs: a priority-
 
 2. **Data model**
    * Active entries are stored in a skiplist rooted at `priorityIndex` (ordered by tier, priority, insertion order, sender, nonce) and a global map keyed by `(sender, nonce)` for quick O(1) lookups.
-   * Per sender state is unified in `senderState` structs (held in `senders map[string]*senderState`), with each containing `active` entries (same pointers as the global map), `queued` future-nonce entries, and `activeNext` nonce tracking. This avoids O(n) full scans during cleanup and promotion.
-   * `activeNext` is the next nonce expected for active insertion per sender, initialized lazily from `AccountKeeper.GetSequence` on first contact.
+   * Per sender state is unified in `senderState` structs (held in `senders map[string]*senderState`), with each containing:
+     * `active` entries (same pointers as the global map),
+     * `queued` future-nonce entries,
+     * cached `onChainSeq`,
+     * cached nonce bounds (`activeMin/activeMax`, `queuedMin/queuedMax`).
+   * Sender cursor is derived by `nextExpectedNonce()`:
+     * `onChainSeq` when `active` is empty,
+     * `max(onChainSeq, activeMax+1)` when `active` is non-empty.
    * Each `txEntry` bundles the transaction, priority, sequence, tier index, gas, encoded bytes, and an insertion order to break ties.
    * Tier counts are tracked in `tierDistribution`, keeping per-tier occupancies up to date. `GetTxDistribution` appends a `"queued"` entry when queued txs exist.
+   * Implementation is split by responsibility:
+     * `mempool_sender_state.go`: sender cursor and nonce-range helpers.
+     * `mempool_tier.go`: tier matching and active ordering comparator.
+     * `mempool_insert.go`: insert routing and promotion logic.
+     * `mempool_remove.go`: reason-based remove/demotion/stale logic.
+     * `mempool_query.go`: query and iteration APIs.
+     * `mempool_event.go`: async CometBFT event dispatch.
+     * `mempool_cleanup.go`: background stale/ante cleanup worker.
+     * `mempool_invariant.go`: runtime invariant assertions.
 
 3. **Insert routing**
-   * `Insert` infers the tx key from `FirstSignature`, encodes the tx, extracts gas from `FeeTx`, and routes based on nonce vs `activeNext`:
-     * `nonce < activeNext` -> rejected as stale.
-     * `nonce > activeNext` -> added to the queued pool. When the per-sender limit is hit, the entry with the highest nonce is evicted to prefer lower (closer to promotable) nonces. Same nonce replacement is allowed but requires strictly higher priority.
-     * `nonce == activeNext` -> inserted into the priority index. `activeNext` is then advanced and any continuous queued chain is promoted in the same call.
+   * `Insert` infers the tx key from `FirstSignature`, encodes the tx, extracts gas from `FeeTx`, and routes based on nonce vs `nextExpectedNonce()`:
+     * `nonce < nextExpected` -> rejected as stale unless it is same-nonce replacement of existing active/queued tx.
+     * `nonce > nextExpected` -> added to the queued pool. When the per-sender limit is hit, the entry with the highest nonce is evicted to prefer lower (closer to promotable) nonces. Same nonce replacement is allowed but requires strictly higher priority.
+     * `nonce == nextExpected` -> inserted into the priority index. Continuous queued nonce chain is promoted in the same call when capacity permits.
    * For active entries: if a duplicate `(sender, nonce)` already exists, a higher-priority replacement evicts the old entry; lower-priority replacements are ignored.
-   * `canAccept` enforces the `MaxTx` cap by calling `evictLower`, and it rejects transactions that exceed the consensus block gas/byte limits.
+   * `canAcceptLocked` enforces the `MaxTx` cap by computing an eviction set from the active index and also rejects transactions that exceed consensus block gas/byte limits.
 
 4. **Promotion**
    * `PromoteQueued` runs after each block commit via `PrepareCheckStater`. It partitions tracked senders into those with queued entries (requiring an on-chain sequence fetch) and active only senders (cheap in-memory check).
-   * For queued senders: stale entries (`nonce < onChainSeq`) are evicted, then continuous entries starting from `max(onChainSeq, activeNext)` are collected and added directly to the priority index under the same lock.
-   * For active only senders: if the sender has no remaining pool entries, their `activeNext` tracking is cleaned up.
+   * For queued senders: cached `onChainSeq` is refreshed from `AccountKeeper.GetSequence`, stale entries (`nonce < onChainSeq`) are removed, then continuous entries starting from `nextExpectedNonce()` are collected and promoted.
+   * If promotion fails mid-chain due to capacity, the failed nonce and suffix are requeued to preserve nonce continuity.
+   * For active-only senders: if the sender has no remaining pool entries, sender state is cleaned up.
 
-5. **Event dispatch**
-   * Events are pushed directly to the CometBFT `AppMempoolEvent` channel via `pushEvent`.
-   * Active insertions fire `EventTxInserted`. Removals (active, queued, stale eviction, capacity eviction) fire `EventTxRemoved`. Queued insertions do not fire events since CometBFT handles `EventTxQueued` from CheckTx.
+5. **Removal semantics**
+   * `Remove(tx)` is commit-path removal and delegates to `RemoveWithReason(tx, RemovalReasonCommittedInBlock)`.
+   * `RemoveWithReason` applies reason-specific policy:
+     * `CommittedInBlock`: sets sender `onChainSeq = removedNonce + 1`, then removes stale entries.
+     * `AnteRejectedInPrepare`: removes target entry locally and can demote higher active suffix when needed.
+     * `CapacityEvicted`: uses demotion flow for active suffix where possible.
+   * Sender cleanup runs for non-commit paths when both active and queued sets become empty.
+
+6. **Event dispatch**
+   * Events are enqueued into an internal FIFO (`eventQueue`) and delivered asynchronously by `eventDispatchLoop` to CometBFT `AppMempoolEvent` channel.
+   * Active insertions fire `EventTxInserted`.
+   * Actual deletions (active/queued removal, stale eviction, replacement victims) fire `EventTxRemoved`.
+   * Capacity demotion from active to queued is **not** a deletion and does **not** fire `EventTxRemoved`.
+   * Queued insertions do not fire events since CometBFT handles `EventTxQueued` from CheckTx.
    * `SetEventCh` wires the CometBFT `AppMempoolEvent` channel so the proxy mempool in CometBFT reacts to app-side state changes.
 
-6. **Tier mechanics**
+7. **Tier mechanics**
    * `selectTier` walks the configured matchers to assign the correct tier index for a transaction; `tierName` translates indexes back into configured names for distribution tracking.
 
-7. **Background cleanup**
+8. **Background cleanup**
    * `StartCleaningWorker` launches a ticker (default interval defined by `DefaultMempoolCleaningInterval`) that replays `safeGetContext` through the `BaseApp` simulation context to inspect the latest committed account sequences.
    * `cleanUpEntries` groups active entries by sender on the fly, sorts each group by nonce, then collects stale transactions (sequence behind the on-chain `AccountKeeper` value) and invalid transactions discovered by re-running the `AnteHandler` sequentially per sender.
    * Collected entries are removed atomically, and events are dispatched, keeping the pool in sync with the app state.
 
-8. **Query methods**
-   * `Contains`, `Lookup`, `GetTxInfo`, and `Remove` check the active pool first, falling back to the queued pool.
+9. **Query methods**
+   * `Contains`, `Lookup`, `GetTxInfo`, `Remove`, and `RemoveWithReason` check active pool first, then queued pool.
    * `CountTx` sums the active pool count and `queuedCount`. `Select` returns only active entries.
+   * `IteratePendingTxs` and `IterateQueuedTxs` expose deterministic sender/nonce iteration over active/queued sets.
 
 ## CheckTx alignment
 
