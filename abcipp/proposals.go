@@ -149,7 +149,7 @@ func (h *ProposalHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 		for _, entry := range txsToRemove {
 			snapshotHash := TxHash(entry.Info.TxBytes)
 			if currentHash, ok := h.mempool.Lookup(entry.Info.Sender, entry.Info.Sequence); ok && currentHash == snapshotHash {
-				if err := h.mempool.Remove(entry.Tx); err != nil {
+				if err := h.mempool.RemoveWithReason(entry.Tx, RemovalReasonAnteRejectedInPrepare); err != nil {
 					h.logger.Error("failed to remove tx from mempool", "err", err)
 				}
 			}

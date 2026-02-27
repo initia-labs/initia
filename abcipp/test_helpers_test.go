@@ -207,8 +207,9 @@ func newTestPriorityMempool(t *testing.T, tiers []Tier) *PriorityMempool {
 	if len(tiers) == 0 {
 		tiers = []Tier{{Name: "default", Matcher: func(sdk.Context, sdk.Tx) bool { return true }}}
 	}
-	return NewPriorityMempool(PriorityMempoolConfig{
+	mp := NewPriorityMempool(PriorityMempoolConfig{
 		MaxTx: 1000,
 		Tiers: tiers,
-	}, testTxEncoder)
+	}, testTxEncoder, newMockAccountKeeper())
+	return mp
 }
