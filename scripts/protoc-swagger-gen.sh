@@ -13,11 +13,11 @@ OPINIT_URL=github.com/initia-labs/OPinit
 CONNECT_URL=github.com/skip-mev/connect
 CONNECT_V=v2
 
-COSMOS_SDK_VERSION=$(cat ./go.mod | grep "$COSMOS_URL v" | sed -n -e "s/^.* //p")
-IBC_VERSION=$(cat ./go.mod | grep "$IBC_URL/$IBC_V v" | sed -n -e "s/^.* //p")
-IBC_RATE_LIMITING_VERSION=$(cat ./go.mod | grep "$IBC_RATE_LIMITING_URL/$IBC_V v" | sed -n -e "s/^.* //p")
-OPINIT_VERSION=$(cat ./go.mod | grep "$OPINIT_URL v" | sed -n -e "s/^.* //p")
-CONNECT_VERSION=$(cat ./go.mod | grep "$CONNECT_URL/$CONNECT_V v" | sed -n -e "s/^.* //p")
+COSMOS_SDK_VERSION=$(grep "$COSMOS_URL v" ./go.mod | sed -n -e "s/^.* //p")
+IBC_VERSION=$(grep "$IBC_URL/$IBC_V v" ./go.mod | sed -n -e "s/^.* //p")
+IBC_RATE_LIMITING_VERSION=$(grep "$IBC_RATE_LIMITING_URL v" ./go.mod | sed -n -e "s/^.* //p")
+OPINIT_VERSION=$(grep "$OPINIT_URL v" ./go.mod | sed -n -e "s/^.* //p")
+CONNECT_VERSION=$(grep "$CONNECT_URL/$CONNECT_V v" ./go.mod | sed -n -e "s/^.* //p")
 
 mkdir -p ./third_party
 cd third_party
