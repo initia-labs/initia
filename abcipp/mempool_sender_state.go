@@ -141,3 +141,39 @@ func (s *senderState) setQueuedRangeOnRemoveLocked(removedNonce uint64) {
 		}
 	}
 }
+
+// computeClampedRankLocked computes immutable clamped ordering fields for a tx
+// entering active set, preserving sender-local nonce progression.
+func (s *senderState) computeClampedRankLocked(tier int, priority int64, order int64, nonce uint64) (int64, int64) {
+	clampedPriority := scoreByTierPriority(tier, priority)
+	clampedOrder := order
+
+	if s == nil {
+		return clampedPriority, clampedOrder
+	}
+
+	// Primary clamp: direct predecessor if it exists in current active set.
+	if nonce > 0 {
+		if prev, ok := s.active[nonce-1]; ok && prev != nil {
+			if clampedPriority > prev.clampedPriority ||
+				(clampedPriority == prev.clampedPriority && clampedOrder < prev.clampedOrder) {
+				clampedPriority = prev.clampedPriority
+				clampedOrder = prev.clampedOrder
+			}
+			return clampedPriority, clampedOrder
+		}
+	}
+
+	// Fallback clamp: when appending beyond current active tail.
+	if len(s.active) > 0 && nonce > s.activeMax {
+		if tail, ok := s.active[s.activeMax]; ok && tail != nil {
+			if clampedPriority > tail.clampedPriority ||
+				(clampedPriority == tail.clampedPriority && clampedOrder < tail.clampedOrder) {
+				clampedPriority = tail.clampedPriority
+				clampedOrder = tail.clampedOrder
+			}
+		}
+	}
+
+	return clampedPriority, clampedOrder
+}

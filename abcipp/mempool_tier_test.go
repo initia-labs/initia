@@ -60,35 +60,50 @@ func TestSelectTierAndTierName(t *testing.T) {
 }
 
 func TestCompareEntriesOrdering(t *testing.T) {
-	base := &txEntry{
-		tier:     1,
-		priority: 100,
-		order:    10,
-		key:      txKey{sender: "sender-a", nonce: 3},
+	mk := func(tier int, priority int64, order int64, sender string, nonce uint64) *txEntry {
+		return &txEntry{
+			tier:            tier,
+			priority:        priority,
+			order:           order,
+			key:             txKey{sender: sender, nonce: nonce},
+			clampedPriority: scoreByTierPriority(tier, priority),
+			clampedOrder:    order,
+		}
 	}
 
+	base := mk(1, 100, 10, "sender-a", 3)
+
 	// Lower tier outranks higher tier.
-	higherTier := &txEntry{tier: 2, priority: 999, order: 0, key: txKey{sender: "zzz", nonce: 0}}
+	higherTier := mk(2, 999, 0, "zzz", 0)
 	require.Less(t, compareEntries(base, higherTier), 0)
 
+	// Within same sender and same tier/priority/FIFO rank, nonce ordering decides.
+	sameSenderLowerNonceButLowPriority := mk(1, 1, 999, "sender-a", 2)
+	require.Less(t, compareEntries(base, sameSenderLowerNonceButLowPriority), 0)
+
 	// Within same tier, higher priority outranks lower priority.
-	lowerPriority := &txEntry{tier: 1, priority: 50, order: 0, key: txKey{sender: "zzz", nonce: 0}}
+	lowerPriority := mk(1, 50, 0, "zzz", 0)
 	require.Less(t, compareEntries(base, lowerPriority), 0)
 
 	// Same tier/priority: smaller order (earlier FIFO) outranks.
-	laterOrder := &txEntry{tier: 1, priority: 100, order: 20, key: txKey{sender: "zzz", nonce: 0}}
+	laterOrder := mk(1, 100, 20, "zzz", 0)
 	require.Less(t, compareEntries(base, laterOrder), 0)
 
 	// Same ranking fields: sender lexicographic order, then nonce.
-	senderAfter := &txEntry{tier: 1, priority: 100, order: 10, key: txKey{sender: "sender-b", nonce: 0}}
+	senderAfter := mk(1, 100, 10, "sender-b", 0)
 	require.Less(t, compareEntries(base, senderAfter), 0)
-	sameSenderHigherNonce := &txEntry{tier: 1, priority: 100, order: 10, key: txKey{sender: "sender-a", nonce: 9}}
+	sameSenderHigherNonce := mk(1, 100, 10, "sender-a", 9)
 	require.Less(t, compareEntries(base, sameSenderHigherNonce), 0)
 }
 
 func TestIsBetterThan(t *testing.T) {
 	mp := newTestPriorityMempool(t, nil)
-	existing := &txEntry{tier: 1, priority: 100}
+	existing := &txEntry{
+		tier:            1,
+		priority:        100,
+		clampedPriority: scoreByTierPriority(1, 100),
+		clampedOrder:    1,
+	}
 
 	// Better tier should always win.
 	require.True(t, mp.isBetterThan(existing, 0, 1))

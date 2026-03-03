@@ -220,6 +220,12 @@ func (p *PriorityMempool) PromoteQueued(ctx context.Context) {
 			pe.order = p.nextOrder()
 			peCtx := sdkCtx.WithTxBytes(pe.bytes)
 			pe.tier = p.selectTier(peCtx, pe.tx)
+			pe.clampedPriority, pe.clampedOrder = ss.computeClampedRankLocked(
+				pe.tier,
+				pe.priority,
+				pe.order,
+				pe.key.nonce,
+			)
 			if accepted, ev := p.canAcceptLocked(peCtx, pe.tier, pe.priority, pe.size, pe.gas, nil); accepted {
 				removed = append(removed, p.removeEntriesByReasonLocked(ev, RemovalReasonCapacityEvicted)...)
 				p.addEntryLocked(pe)
@@ -268,6 +274,13 @@ type txEntry struct {
 	tier     int
 	gas      uint64
 	bytes    []byte
+
+	// clampedPriority is computed when tx enters active set.
+	// Later same-sender nonces cannot exceed predecessor clamped priority.
+	clampedPriority int64
+	// clampedOrder is computed when tx enters active set.
+	// When clamped priority ties, sender-local FIFO is clamped to predecessor.
+	clampedOrder int64
 }
 
 // priorityIterator walks entries in the order determined by the priority index.
@@ -389,6 +402,13 @@ func (p *PriorityMempool) removeEntryLocked(entry *txEntry) {
 			p.tierDistribution[name] = count - 1
 		}
 	}
+}
+
+// scoreByTierPriority converts (tier, priority) to a single sortable score.
+// Higher score is better. Lower tier receives a large bonus so tier dominates.
+func scoreByTierPriority(tier int, priority int64) int64 {
+	const tierPenalty int64 = 1 << 50
+	return priority - int64(tier)*tierPenalty
 }
 
 // txKeyFromTx extracts the sender address and nonce that uniquely identifies the tx.

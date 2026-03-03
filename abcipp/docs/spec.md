@@ -19,7 +19,7 @@ The `abcipp` package wires up the ABCI++ surfaces that Initia needs: a priority-
    * `Tier`/`TierMatcher` pairs are canonicalized by `buildTierMatchers`, which trims empty names, drops nil matchers, and always produces a fallback `default` tier.
 
 2. **Data model**
-   * Active entries are stored in a skiplist rooted at `priorityIndex` (ordered by tier, priority, insertion order, sender, nonce) and a global map keyed by `(sender, nonce)` for quick O(1) lookups.
+   * Active entries are stored in a skiplist rooted at `priorityIndex` (ordered by clamped rank: `clampedPriority`, `clampedOrder`, sender, nonce) and a global map keyed by `(sender, nonce)` for quick O(1) lookups.
    * Per sender state is unified in `senderState` structs (held in `senders map[string]*senderState`), with each containing:
      * `active` entries (same pointers as the global map),
      * `queued` future-nonce entries,
@@ -28,7 +28,7 @@ The `abcipp` package wires up the ABCI++ surfaces that Initia needs: a priority-
    * Sender cursor is derived by `nextExpectedNonce()`:
      * `onChainSeq` when `active` is empty,
      * `max(onChainSeq, activeMax+1)` when `active` is non-empty.
-   * Each `txEntry` bundles the transaction, priority, sequence, tier index, gas, encoded bytes, and an insertion order to break ties.
+   * Each `txEntry` bundles the transaction, priority, sequence, tier index, gas, encoded bytes, insertion order, and sender-clamped ordering fields (`clampedPriority`, `clampedOrder`).
    * Tier counts are tracked in `tierDistribution`, keeping per-tier occupancies up to date. `GetTxDistribution` appends a `"queued"` entry when queued txs exist.
    * Implementation is split by responsibility:
      * `mempool_sender_state.go`: sender cursor and nonce-range helpers.
@@ -46,6 +46,7 @@ The `abcipp` package wires up the ABCI++ surfaces that Initia needs: a priority-
      * `nonce > nextExpected` -> added to the queued pool. When the per-sender limit is hit, the entry with the highest nonce is evicted to prefer lower (closer to promotable) nonces. Same nonce replacement is allowed but requires strictly higher priority.
      * `nonce == nextExpected` -> inserted into the priority index. Continuous queued nonce chain is promoted in the same call when capacity permits.
    * For active entries: if a duplicate `(sender, nonce)` already exists, a higher-priority replacement evicts the old entry; lower-priority replacements are ignored.
+   * When a tx enters active set (direct insert or queued promotion), clamped ordering fields are computed against sender predecessor/tail so later nonces cannot outrank earlier nonces for the same sender.
    * `canAcceptLocked` enforces the `MaxTx` cap by computing an eviction set from the active index and also rejects transactions that exceed consensus block gas/byte limits.
 
 4. **Promotion**
@@ -72,6 +73,7 @@ The `abcipp` package wires up the ABCI++ surfaces that Initia needs: a priority-
 
 7. **Tier mechanics**
    * `selectTier` walks the configured matchers to assign the correct tier index for a transaction; `tierName` translates indexes back into configured names for distribution tracking.
+   * `scoreByTierPriority` converts `(tier, priority)` into a sortable score (`clampedPriority`) where lower tier dominates higher priority.
 
 8. **Background cleanup**
    * `StartCleaningWorker` launches a ticker (default interval defined by `DefaultMempoolCleaningInterval`) that replays `safeGetContext` through the `BaseApp` simulation context to inspect the latest committed account sequences.

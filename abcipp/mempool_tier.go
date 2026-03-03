@@ -12,30 +12,32 @@ type tierMatcher struct {
 	Matcher TierMatcher
 }
 
-// compareEntries orders txEntries by tier, priority, order, sender, and nonce.
+// compareEntries orders active txEntries by clamped rank and deterministic ties.
 func compareEntries(a, b any) int {
 	left := a.(*txEntry)
 	right := b.(*txEntry)
+	leftScore := left.clampedPriority
+	rightScore := right.clampedPriority
 
-	// Lower tier index wins.
-	if left.tier != right.tier {
-		if left.tier < right.tier {
+	// Higher score wins.
+	if leftScore != rightScore {
+		if leftScore > rightScore {
 			return -1
 		}
 		return 1
 	}
 
-	// Higher priority wins within the same tier.
-	if left.priority != right.priority {
-		if left.priority > right.priority {
+	// Preserve clamped sender-local FIFO when score ties.
+	if left.clampedOrder != right.clampedOrder {
+		if left.clampedOrder < right.clampedOrder {
 			return -1
 		}
 		return 1
 	}
 
-	// Preserve FIFO for same-tier/same-priority entries.
-	if left.order != right.order {
-		if left.order < right.order {
+	// Within the same sender, preserve nonce order.
+	if left.key.sender == right.key.sender && left.key.nonce != right.key.nonce {
+		if left.key.nonce < right.key.nonce {
 			return -1
 		}
 		return 1
@@ -115,8 +117,5 @@ func initTierDistribution(tiers []tierMatcher) map[string]uint64 {
 
 // isBetterThan determines whether a new entry should outrank an existing one.
 func (p *PriorityMempool) isBetterThan(entry *txEntry, tier int, priority int64) bool {
-	if tier != entry.tier {
-		return tier < entry.tier
-	}
-	return priority > entry.priority
+	return scoreByTierPriority(tier, priority) > entry.clampedPriority
 }

@@ -16,6 +16,11 @@ import (
 
 func TestMoveStdAccountCreateQueueClearScenario(t *testing.T) {
 	ctx := context.Background()
+	if dl, ok := t.Deadline(); ok {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithDeadline(ctx, dl.Add(-10*time.Second))
+		t.Cleanup(cancel)
+	}
 
 	cluster, err := e2e.NewCluster(ctx, t, e2e.ClusterOptions{
 		NodeCount:    3,
@@ -25,7 +30,7 @@ func TestMoveStdAccountCreateQueueClearScenario(t *testing.T) {
 		PortStride:   20,
 	})
 	require.NoError(t, err)
-	defer cluster.Close()
+	t.Cleanup(cluster.Close)
 
 	require.NoError(t, cluster.Start(ctx))
 	require.NoError(t, cluster.WaitForReady(ctx, 90*time.Second))

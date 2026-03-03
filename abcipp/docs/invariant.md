@@ -15,6 +15,11 @@ Each sender also tracks cached nonce bounds:
 - `activeMin`, `activeMax` for `active`.
 - `queuedMin`, `queuedMax` for `queued`.
 
+Active entries also carry clamped rank fields:
+
+- `clampedPriority`
+- `clampedOrder`
+
 ## 2) Next Expected Nonce
 
 `nextExpectedNonce()` is defined as:
@@ -47,6 +52,21 @@ Given tx nonce `n` and sender cursor `next`:
 - Insert updates bounds with min/max comparison.
 - Remove updates bounds from boundary movement.
 - No full-map recompute is required in normal paths.
+
+## 4.1) Sender Clamped Rank
+
+When a tx enters active set (insert or promote), `(clampedPriority, clampedOrder)` is computed so the sender-local ordering never improves as nonce increases.
+
+- `clampedPriority` derives from `(tier, priority)` via `scoreByTierPriority`.
+- If predecessor nonce is active, successor rank is clamped against predecessor rank.
+- Otherwise, if appending beyond current active tail, successor rank is clamped against active tail rank.
+
+Comparator ordering for active index is:
+
+1. `clampedPriority` (higher first)
+2. `clampedOrder` (lower first)
+3. sender
+4. nonce
 
 ## 5) Remove Semantics
 

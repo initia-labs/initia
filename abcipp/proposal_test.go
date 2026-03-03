@@ -1,6 +1,7 @@
 package abcipp
 
 import (
+	"fmt"
 	"sync"
 	"testing"
 	"time"
@@ -9,6 +10,8 @@ import (
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/stretchr/testify/require"
 )
 
 func TestPriorityMempoolConcurrentTierDistribution(t *testing.T) {
@@ -301,6 +304,75 @@ func TestPrepareProposalSkipsTxThatWouldOverflowButKeepsLaterTx(t *testing.T) {
 	if !mp.Contains(tx2) {
 		t.Fatalf("expected tx2 to remain in mempool after being skipped")
 	}
+}
+
+func TestPrepareProposalWrongSequenceRemovesFailedNonce(t *testing.T) {
+	mp, keeper, sdkCtx, _ := newTestMempoolWithEvents(t, 32)
+	ctx := sdk.WrapSDKContext(sdkCtx)
+
+	priv := secp256k1.GenPrivKey()
+	sender := sdk.AccAddress(priv.PubKey().Address())
+	keeper.SetSequence(sender, 0)
+
+	tx0 := newTestTxWithPriv(priv, 0, 1000, "default")
+	tx1 := newTestTxWithPriv(priv, 1, 1000, "default")
+	require.NoError(t, mp.Insert(ctx, tx0))
+	require.NoError(t, mp.Insert(ctx, tx1))
+
+	ante := func(ctx sdk.Context, tx sdk.Tx, _ bool) (sdk.Context, error) {
+		tt := tx.(*testTx)
+		if tt.sequence == 1 {
+			return ctx, fmt.Errorf("account sequence mismatch: %w", sdkerrors.ErrWrongSequence)
+		}
+		return ctx, nil
+	}
+	handler := NewProposalHandler(log.NewNopLogger(), testTxDecoder, testTxEncoder, mp, ante)
+
+	resp, err := handler.PrepareProposalHandler()(sdkCtx, &abci.RequestPrepareProposal{
+		Height:     2,
+		MaxTxBytes: 1 << 20,
+	})
+	require.NoError(t, err)
+	require.Len(t, resp.Txs, 1, "seq0 should be included")
+
+	// wrong-sequence tx is treated as ante failure and removed.
+	require.False(t, mp.Contains(tx1))
+	// predecessor tx remains.
+	require.True(t, mp.Contains(tx0))
+}
+
+func TestPrepareProposalBlocksSenderAfterOverflowSkip(t *testing.T) {
+	mp := newTestPriorityMempool(t, nil)
+	ctx := testSDKContextWithParams(1<<20, 10)
+
+	priv := secp256k1.GenPrivKey()
+	sender := sdk.AccAddress(priv.PubKey().Address())
+	keeper := mp.ak.(*mockAccountKeeper)
+	keeper.SetSequence(sender, 0)
+
+	// Same sender, contiguous nonces.
+	tx0 := newTestTxWithPriv(priv, 0, 6, "default")
+	tx1 := newTestTxWithPriv(priv, 1, 6, "default") // overflows cumulative gas
+	tx2 := newTestTxWithPriv(priv, 2, 1, "default") // would fit alone, must be skipped due sender block
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(ctx.WithPriority(100)), tx0))
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(ctx.WithPriority(1)), tx1))
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(ctx.WithPriority(1)), tx2))
+
+	ante := func(ctx sdk.Context, tx sdk.Tx, _ bool) (sdk.Context, error) { return ctx, nil }
+	handler := NewProposalHandler(log.NewNopLogger(), testTxDecoder, testTxEncoder, mp, ante)
+
+	resp, err := handler.PrepareProposalHandler()(ctx, &abci.RequestPrepareProposal{
+		Height:     2,
+		MaxTxBytes: 1 << 20,
+	})
+	require.NoError(t, err)
+	require.Len(t, resp.Txs, 1, "only head nonce should be included for blocked sender")
+
+	decoded, err := testTxDecoder(resp.Txs[0])
+	require.NoError(t, err)
+	gotKey, err := txKeyFromTx(decoded)
+	require.NoError(t, err)
+	require.Equal(t, uint64(0), gotKey.nonce)
 }
 
 func TestPrepareProposalSkipsTxWhenMaxBytesWouldOverflow(t *testing.T) {

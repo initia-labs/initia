@@ -49,6 +49,13 @@ func (p *PriorityMempool) ValidateInvariants() error {
 					break
 				}
 			}
+			tail := ss.active[ss.activeMax]
+			if tail == nil {
+				return fmt.Errorf("sender %s activeMax %d missing tail entry", sender, ss.activeMax)
+			}
+			if tail.clampedOrder > tail.order {
+				return fmt.Errorf("sender %s tail clampedOrder %d exceeds raw order %d", sender, tail.clampedOrder, tail.order)
+			}
 		}
 
 		if queuedLen == 0 {
@@ -85,12 +92,36 @@ func (p *PriorityMempool) ValidateInvariants() error {
 			if entry.tier == queuedTier {
 				return fmt.Errorf("sender %s active entry at nonce %d marked as queued tier", sender, nonce)
 			}
+			if entry.clampedOrder > entry.order {
+				return fmt.Errorf("sender %s active entry at nonce %d has invalid clampedOrder %d > order %d", sender, nonce, entry.clampedOrder, entry.order)
+			}
 			global, ok := p.entries[entry.key]
 			if !ok {
 				return fmt.Errorf("sender %s active entry at nonce %d missing from global entries", sender, nonce)
 			}
 			if global != entry {
 				return fmt.Errorf("sender %s active entry pointer mismatch at nonce %d", sender, nonce)
+			}
+			if _, exists := ss.queued[nonce]; exists {
+				return fmt.Errorf("sender %s nonce %d exists in both active and queued", sender, nonce)
+			}
+		}
+
+		// Sender-local rank must not improve as nonce increases.
+		for nonce := ss.activeMin + 1; nonce <= ss.activeMax; nonce++ {
+			cur := ss.active[nonce]
+			prev := ss.active[nonce-1]
+			if cur == nil || prev == nil {
+				continue
+			}
+			if cur.clampedPriority > prev.clampedPriority {
+				return fmt.Errorf("sender %s active rank inversion at nonce %d: clampedPriority %d > prev %d", sender, nonce, cur.clampedPriority, prev.clampedPriority)
+			}
+			if cur.clampedPriority == prev.clampedPriority && cur.clampedOrder < prev.clampedOrder {
+				return fmt.Errorf("sender %s active rank inversion at nonce %d: clampedOrder %d < prev %d", sender, nonce, cur.clampedOrder, prev.clampedOrder)
+			}
+			if nonce == ss.activeMax {
+				break
 			}
 		}
 
@@ -114,6 +145,9 @@ func (p *PriorityMempool) ValidateInvariants() error {
 
 	if totalActive != len(p.entries) {
 		return fmt.Errorf("active/global count mismatch: sender active=%d, global entries=%d", totalActive, len(p.entries))
+	}
+	if p.priorityIndex.Len() != len(p.entries) {
+		return fmt.Errorf("priority index active count mismatch: index=%d, entries=%d", p.priorityIndex.Len(), len(p.entries))
 	}
 
 	for key, entry := range p.entries {

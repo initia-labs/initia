@@ -75,10 +75,25 @@ func (h *ProposalHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 			txsToInclude [][]byte
 			txsToRemove  []TxInfoEntry
 		)
+		// blockedSenders marks senders we should skip for the rest of this
+		// proposal build pass.
+		//
+		// Why this exists:
+		// - If a sender's head nonce tx cannot be included due to cumulative
+		//   block limits (bytes/gas), including later nonces from that sender in
+		//   the same pass can trigger transient wrong-sequence failures.
+		// - By blocking the sender for this pass, we preserve sender-local nonce
+		//   progression and avoid creating nonce holes from proposal-time ordering.
+		blockedSenders := make(map[string]struct{})
 
 		for iter := h.mempool.Select(ctx, nil); iter != nil; iter = iter.Next() {
 			tx := iter.Tx()
 			txInfo := iter.(TxInfoIterator).TxInfo()
+			// Sender was blocked earlier in this pass; defer all remaining txs for
+			// this sender to later proposals.
+			if _, blocked := blockedSenders[txInfo.Sender]; blocked {
+				continue
+			}
 
 			// If the transaction is too large, we skip it.
 			if updatedSize := totalSize + txInfo.Size; maxBlockSize > 0 && updatedSize > maxBlockSize {
@@ -94,8 +109,13 @@ func (h *ProposalHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 				)
 
 				if txInfo.Size > maxBlockSize {
+					// Individually oversized tx can never fit into a block, so remove it.
 					txsToRemove = append(txsToRemove, TxInfoEntry{Tx: tx, Info: txInfo})
 				}
+
+				// Cumulative overflow is transient for this pass; keep tx in mempool
+				// and block only this sender for the remainder of the loop.
+				blockedSenders[txInfo.Sender] = struct{}{}
 
 				continue
 			}
@@ -114,8 +134,13 @@ func (h *ProposalHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 				)
 
 				if txInfo.GasLimit > uint64(maxGasLimit) { //nolint:gosec
+					// Individually over-gas tx can never fit into a block, so remove it.
 					txsToRemove = append(txsToRemove, TxInfoEntry{Tx: tx, Info: txInfo})
 				}
+
+				// Cumulative overflow is transient for this pass; keep tx in mempool
+				// and block only this sender for the remainder of the loop.
+				blockedSenders[txInfo.Sender] = struct{}{}
 
 				continue
 			}

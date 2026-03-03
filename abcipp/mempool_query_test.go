@@ -1,6 +1,7 @@
 package abcipp
 
 import (
+	"context"
 	"testing"
 
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
@@ -8,6 +9,34 @@ import (
 	sdkmempool "github.com/cosmos/cosmos-sdk/types/mempool"
 	"github.com/stretchr/testify/require"
 )
+
+func TestSelectPreservesSenderNonceOrder(t *testing.T) {
+	mp, keeper, sdkCtx, _ := newTestMempoolWithEvents(t, 64)
+	privA := secp256k1.GenPrivKey()
+	privB := secp256k1.GenPrivKey()
+	senderA := sdk.AccAddress(privA.PubKey().Address())
+	senderB := sdk.AccAddress(privB.PubKey().Address())
+	keeper.SetSequence(senderA, 0)
+	keeper.SetSequence(senderB, 0)
+
+	// A sender with contiguous active nonces where later nonces have higher
+	// priority than earlier ones.
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(10)), newTestTxWithPriv(privA, 0, 1000, "default")))
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(100)), newTestTxWithPriv(privA, 1, 1000, "default")))
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(200)), newTestTxWithPriv(privA, 2, 1000, "default")))
+	// Another sender to ensure global arbitration still happens.
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(50)), newTestTxWithPriv(privB, 0, 1000, "default")))
+
+	var gotA []uint64
+	for it := mp.Select(context.Background(), nil); it != nil; it = it.Next() {
+		info := it.(TxInfoIterator).TxInfo()
+		if info.Sender == senderA.String() {
+			gotA = append(gotA, info.Sequence)
+		}
+	}
+
+	require.Equal(t, []uint64{0, 1, 2}, gotA)
+}
 
 func TestGetTxInfo(t *testing.T) {
 	mp, keeper, sdkCtx, _ := newTestMempoolWithEvents(t, 64)

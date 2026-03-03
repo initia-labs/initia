@@ -11,6 +11,7 @@
 
 - [spec.md](./docs/spec.md): behavioral spec and architecture overview.
 - [invariant.md](./docs/invariant.md): core mempool invariants and guarantees.
+  - Includes sender clamped-rank ordering (`clampedPriority`, `clampedOrder`) used by active index.
 
 ## Key Files
 

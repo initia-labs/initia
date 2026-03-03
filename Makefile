@@ -242,7 +242,10 @@ test-cover:
 	@go test -mod=readonly -timeout 30m -race -coverprofile=coverage.txt -covermode=atomic -tags='ledger test_ledger_mock' ./...
 
 test-e2e:
-	@go test ./integration-tests/e2e/... -mod=readonly -timeout 30m -tags='e2e' -count=1
+	@go test ./integration-tests/e2e/... -mod=readonly -timeout 5m -tags='e2e' -count=1
+
+test-fuzz:
+	@go test ./abcipp -mod=readonly -fuzz=. -fuzztime=30s -timeout 10m -tags='fuzz'
 
 benchmark:
 	@go test -timeout 20m -mod=readonly -bench=. ./... 

@@ -129,6 +129,12 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 		}
 		queuedToRemove = queued
 	}
+	entry.clampedPriority, entry.clampedOrder = ss.computeClampedRankLocked(
+		entry.tier,
+		entry.priority,
+		entry.order,
+		entry.key.nonce,
+	)
 
 	if ok, ev := p.canAcceptLocked(sdkCtx, entry.tier, entry.priority, entry.size, entry.gas, existing); ok {
 		if queuedToRemove != nil {
@@ -156,6 +162,12 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 		pe.order = p.nextOrder()
 		peCtx := sdkCtx.WithTxBytes(pe.bytes)
 		pe.tier = p.selectTier(peCtx, pe.tx)
+		pe.clampedPriority, pe.clampedOrder = ss.computeClampedRankLocked(
+			pe.tier,
+			pe.priority,
+			pe.order,
+			pe.key.nonce,
+		)
 		if accepted, ev := p.canAcceptLocked(peCtx, pe.tier, pe.priority, pe.size, pe.gas, nil); accepted {
 			removed = append(removed, p.removeEntriesByReasonLocked(ev, RemovalReasonCapacityEvicted)...)
 			p.addEntryLocked(pe)
