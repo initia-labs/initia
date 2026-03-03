@@ -4,10 +4,8 @@ import (
 	"testing"
 	"time"
 
-	cmtmempool "github.com/cometbft/cometbft/mempool"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkmempool "github.com/cosmos/cosmos-sdk/types/mempool"
 	"github.com/stretchr/testify/require"
 )
 
@@ -36,25 +34,8 @@ func TestCleanUpEntriesRemovesStaleActive(t *testing.T) {
 	require.Equal(t, 0, mp.CountTx())
 }
 
-func TestCleanUpEntriesAnteFailureRemovesFailedSuffix(t *testing.T) {
-	keeper := newMockAccountKeeper()
-	ante := func(ctx sdk.Context, tx sdk.Tx, simulate bool) (sdk.Context, error) {
-		tt := tx.(*testTx)
-		if tt.sequence >= 1 {
-			return ctx, sdkmempool.ErrTxNotFound
-		}
-		return ctx, nil
-	}
-	mp := NewPriorityMempool(PriorityMempoolConfig{
-		MaxTx:       32,
-		AnteHandler: ante,
-	}, testTxEncoder, keeper)
-	sdkCtx := testSDKContext()
-	eventCh := make(chan cmtmempool.AppMempoolEvent, 128)
-	mp.SetEventCh(eventCh)
-	t.Cleanup(func() {
-		assertInvariant(t, mp)
-	})
+func TestCleanUpEntriesRemovesStaleQueuedAndUpdatesOnChainSeq(t *testing.T) {
+	mp, keeper, sdkCtx, eventCh := newTestMempoolWithEvents(t, 32)
 	ctx := sdk.WrapSDKContext(sdkCtx)
 	baseApp := testBaseApp{ctx: sdkCtx}
 
@@ -63,21 +44,38 @@ func TestCleanUpEntriesAnteFailureRemovesFailedSuffix(t *testing.T) {
 	keeper.SetSequence(sender, 0)
 
 	tx0 := newTestTxWithPriv(priv, 0, 1000, "default")
-	tx1 := newTestTxWithPriv(priv, 1, 1000, "default")
 	tx2 := newTestTxWithPriv(priv, 2, 1000, "default")
 	require.NoError(t, mp.Insert(ctx, tx0))
-	require.NoError(t, mp.Insert(ctx, tx1))
 	require.NoError(t, mp.Insert(ctx, tx2))
 	drainEvents(eventCh)
 
-	// Ante fails at nonce 1, cleanup must remove nonce 1 and all following entries.
+	// Chain advanced to nonce 1: active nonce 0 is stale, queued nonce 2 remains.
+	keeper.SetSequence(sender, 1)
 	mp.cleanUpEntries(baseApp, keeper)
 
 	_, rem := drainEvents(eventCh)
-	require.Equal(t, 2, rem)
-	require.True(t, mp.Contains(tx0))
-	require.False(t, mp.Contains(tx1))
-	require.False(t, mp.Contains(tx2))
+	require.Equal(t, 1, rem)
+	require.False(t, mp.Contains(tx0))
+	require.True(t, mp.Contains(tx2))
+
+	mp.mtx.RLock()
+	ss := mp.senders[sender.String()]
+	require.NotNil(t, ss)
+	require.Equal(t, uint64(1), ss.onChainSeq)
+	mp.mtx.RUnlock()
+
+	// Chain advanced to nonce 3: remaining queued tx is stale and sender should be cleaned up.
+	keeper.SetSequence(sender, 3)
+	mp.cleanUpEntries(baseApp, keeper)
+
+	_, rem = drainEvents(eventCh)
+	require.Equal(t, 1, rem)
+	require.Equal(t, 0, mp.CountTx())
+
+	mp.mtx.RLock()
+	_, exists := mp.senders[sender.String()]
+	mp.mtx.RUnlock()
+	require.False(t, exists)
 }
 
 func TestCleaningWorkerCleansStaleAndStops(t *testing.T) {

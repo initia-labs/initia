@@ -1,10 +1,7 @@
 package abcipp
 
 import (
-	"sort"
 	"time"
-
-	cmtmempool "github.com/cometbft/cometbft/mempool"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -77,41 +74,26 @@ func safeGetContext(bApp BaseApp) (ctx sdk.Context, ok bool) {
 	return
 }
 
-// cleanUpEntries removes stale and ante-invalid active entries per sender.
+// cleanUpEntries removes stale entries per sender.
 func (p *PriorityMempool) cleanUpEntries(bApp BaseApp, ak AccountKeeper) {
 	sdkCtx, ok := safeGetContext(bApp)
 	if !ok {
 		return
 	}
 
-	type senderSnapshot struct {
-		sender  string
-		entries []*txEntry
-	}
-
 	p.mtx.RLock()
-	snapshots := make([]senderSnapshot, 0, len(p.senders))
+	senders := make([]string, 0, len(p.senders))
 	for sender, state := range p.senders {
-		if len(state.active) == 0 {
+		if len(state.active) == 0 && len(state.queued) == 0 {
 			continue
 		}
-		entries := make([]*txEntry, 0, len(state.active))
-		for _, entry := range state.active {
-			entries = append(entries, entry)
-		}
-		snapshots = append(snapshots, senderSnapshot{sender: sender, entries: entries})
+		senders = append(senders, sender)
 	}
 	p.mtx.RUnlock()
 
-	for idx := range snapshots {
-		sort.Slice(snapshots[idx].entries, func(a, b int) bool {
-			return snapshots[idx].entries[a].sequence < snapshots[idx].entries[b].sequence
-		})
-	}
-
-	var removed []*txEntry
-	for _, snap := range snapshots {
-		accountAddr, err := sdk.AccAddressFromBech32(snap.sender)
+	onChainSequences := make(map[string]uint64, len(senders))
+	for _, sender := range senders {
+		accountAddr, err := sdk.AccAddressFromBech32(sender)
 		if err != nil {
 			continue
 		}
@@ -119,47 +101,23 @@ func (p *PriorityMempool) cleanUpEntries(bApp BaseApp, ak AccountKeeper) {
 		if err != nil {
 			continue
 		}
-
-		// Remove entries that are now below on-chain sequence.
-		validStart := 0
-		for i, entry := range snap.entries {
-			if entry.sequence < accountSeq {
-				removed = append(removed, entry)
-			} else {
-				validStart = i
-				break
-			}
-			validStart = i + 1
-		}
-
-		// Recheck remaining entries in nonce order and drop suffix after first failure.
-		if p.cfg.AnteHandler != nil {
-			failed := false
-			for _, entry := range snap.entries[validStart:] {
-				if failed {
-					removed = append(removed, entry)
-					continue
-				}
-				cacheCtx, write := sdkCtx.WithTxBytes(entry.bytes).WithIsReCheckTx(true).CacheContext()
-				if _, err := p.cfg.AnteHandler(cacheCtx, entry.tx, false); err != nil {
-					failed = true
-					removed = append(removed, entry)
-					continue
-				}
-				write()
-			}
-		}
+		onChainSequences[sender] = accountSeq
 	}
 
-	if len(removed) == 0 {
+	if len(onChainSequences) == 0 {
 		return
 	}
 
 	p.mtx.Lock()
-	for _, entry := range removed {
-		if existing, ok := p.entries[entry.key]; ok {
-			p.removeEntryLocked(existing)
-			p.enqueueEvent(cmtmempool.EventTxRemoved, existing.bytes)
+	for sender, onChainSeq := range onChainSequences {
+		ss := p.senders[sender]
+		if ss == nil {
+			continue
+		}
+		ss.setOnChainSeqLocked(onChainSeq)
+		if staled := p.removeStaleLocked(ss, onChainSeq); len(staled) > 0 {
+			p.enqueueRemovedEvents(staled)
+			p.cleanupSenderLocked(sender)
 		}
 	}
 	p.mtx.Unlock()

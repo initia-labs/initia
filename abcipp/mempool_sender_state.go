@@ -30,7 +30,7 @@ func (s *senderState) nextExpectedNonce() uint64 {
 
 // setOnChainSeqLocked updates cached on-chain sequence for a sender.
 func (s *senderState) setOnChainSeqLocked(seq uint64) {
-	s.onChainSeq = seq
+	s.onChainSeq = max(s.onChainSeq, seq)
 }
 
 // resetActiveRangeLocked clears the cached active nonce range.

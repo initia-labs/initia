@@ -21,9 +21,6 @@ type PriorityMempoolConfig struct {
 	MaxQueuedPerSender int // per sender queued tx limit (0 = default)
 	MaxQueuedTotal     int // total queued tx limit (0 = default)
 	Tiers              []Tier
-
-	// AnteHandler to filter out invalid transactions from the mempool
-	AnteHandler sdk.AnteHandler
 }
 
 type TierMatcher func(ctx sdk.Context, tx sdk.Tx) bool

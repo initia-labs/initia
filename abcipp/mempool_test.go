@@ -328,6 +328,29 @@ func TestNonCommitRemovalCleansSenderState(t *testing.T) {
 	require.False(t, ok, "sender state should be cleaned when no entries remain")
 }
 
+// TestCommitRemovalCleansSenderState verifies commit removal also cleans sender
+// state when no active/queued entries remain, preventing unbounded sender-map growth.
+func TestCommitRemovalCleansSenderState(t *testing.T) {
+	mp, keeper, sdkCtx, eventCh := newTestMempoolWithEvents(t, 32)
+	ctx := sdk.WrapSDKContext(sdkCtx)
+
+	priv := secp256k1.GenPrivKey()
+	sender := sdk.AccAddress(priv.PubKey().Address())
+	keeper.SetSequence(sender, 0)
+
+	tx0 := newTestTxWithPriv(priv, 0, 1000, "default")
+	require.NoError(t, mp.Insert(ctx, tx0))
+	drainEvents(eventCh)
+
+	require.NoError(t, mp.Remove(tx0))
+	_, rem := drainEvents(eventCh)
+	require.Equal(t, 1, rem, "committed removal should emit EventTxRemoved")
+
+	_, ok, err := mp.NextExpectedSequence(sender.String())
+	require.NoError(t, err)
+	require.False(t, ok, "sender state should be cleaned when no entries remain")
+}
+
 // TestActiveReplacementEventOrder verifies active same-nonce replacement
 // emits events in order: removed old tx first, then inserted new tx.
 func TestActiveReplacementEventOrder(t *testing.T) {

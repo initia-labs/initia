@@ -205,10 +205,6 @@ func (p *PriorityMempool) removeByReasonLocked(
 		removed = append(removed, p.removeStaleLocked(ss, onChainSeq)...)
 	}
 
-	if reason == RemovalReasonCommittedInBlock {
-		return removed
-	}
-
 	p.cleanupSenderLocked(sender)
 	return removed
 }
