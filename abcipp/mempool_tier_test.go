@@ -102,15 +102,15 @@ func TestIsBetterThan(t *testing.T) {
 		tier:            1,
 		priority:        100,
 		clampedPriority: scoreByTierPriority(1, 100),
-		clampedOrder:    1,
+		clampedOrder:    10,
 	}
 
-	// Better tier should always win.
-	require.True(t, mp.isBetterThan(existing, 0, 1))
-	require.False(t, mp.isBetterThan(existing, 2, 1000))
+	// Better clamped priority should always win.
+	require.True(t, mp.isBetterThan(existing, scoreByTierPriority(0, 1), 99))
+	require.False(t, mp.isBetterThan(existing, scoreByTierPriority(2, 1000), 1))
 
-	// Same tier compares only priority.
-	require.True(t, mp.isBetterThan(existing, 1, 101))
-	require.False(t, mp.isBetterThan(existing, 1, 100))
-	require.False(t, mp.isBetterThan(existing, 1, 99))
+	// Same clamped priority compares clamped order (smaller is better).
+	require.True(t, mp.isBetterThan(existing, existing.clampedPriority, 9))
+	require.False(t, mp.isBetterThan(existing, existing.clampedPriority, 10))
+	require.False(t, mp.isBetterThan(existing, existing.clampedPriority, 11))
 }

@@ -17,9 +17,12 @@ import (
 func TestMoveStdAccountCreateQueueClearScenario(t *testing.T) {
 	ctx := context.Background()
 	if dl, ok := t.Deadline(); ok {
-		var cancel context.CancelFunc
-		ctx, cancel = context.WithDeadline(ctx, dl.Add(-10*time.Second))
-		t.Cleanup(cancel)
+		adjusted := dl.Add(-10 * time.Second)
+		if adjusted.After(time.Now()) {
+			var cancel context.CancelFunc
+			ctx, cancel = context.WithDeadline(ctx, adjusted)
+			t.Cleanup(cancel)
+		}
 	}
 
 	cluster, err := e2e.NewCluster(ctx, t, e2e.ClusterOptions{

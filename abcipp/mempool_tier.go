@@ -115,7 +115,10 @@ func initTierDistribution(tiers []tierMatcher) map[string]uint64 {
 	return dist
 }
 
-// isBetterThan determines whether a new entry should outrank an existing one.
-func (p *PriorityMempool) isBetterThan(entry *txEntry, tier int, priority int64) bool {
-	return scoreByTierPriority(tier, priority) > entry.clampedPriority
+// isBetterThan determines whether a candidate clamped rank should outrank an existing entry.
+func (p *PriorityMempool) isBetterThan(entry *txEntry, clampedPriority int64, clampedOrder int64) bool {
+	if clampedPriority != entry.clampedPriority {
+		return clampedPriority > entry.clampedPriority
+	}
+	return clampedOrder < entry.clampedOrder
 }

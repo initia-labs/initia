@@ -226,7 +226,14 @@ func (p *PriorityMempool) PromoteQueued(ctx context.Context) {
 				pe.order,
 				pe.key.nonce,
 			)
-			if accepted, ev := p.canAcceptLocked(peCtx, pe.tier, pe.priority, pe.size, pe.gas, nil); accepted {
+			if accepted, ev := p.canAcceptLocked(
+				peCtx,
+				pe.clampedPriority,
+				pe.clampedOrder,
+				pe.size,
+				pe.gas,
+				nil,
+			); accepted {
 				removed = append(removed, p.removeEntriesByReasonLocked(ev, RemovalReasonCapacityEvicted)...)
 				p.addEntryLocked(pe)
 				promoted = append(promoted, pe)
@@ -320,9 +327,17 @@ func (p *PriorityMempool) nextOrder() int64 {
 }
 
 // canAcceptLocked checks whether a tx can be accepted and returns the list of
-// entries that should be evicted to make room. It does not mutate pool state.
+// entries that should be evicted to make room. Capacity comparison uses the
+// same clamped rank ordering used by the active index. It does not mutate pool state.
 // If exclude is non-nil, capacity planning treats it as already absent.
-func (p *PriorityMempool) canAcceptLocked(ctx sdk.Context, tier int, priority int64, size int64, gas uint64, exclude *txEntry) (bool, []*txEntry) {
+func (p *PriorityMempool) canAcceptLocked(
+	ctx sdk.Context,
+	clampedPriority int64,
+	clampedOrder int64,
+	size int64,
+	gas uint64,
+	exclude *txEntry,
+) (bool, []*txEntry) {
 	var evictList []*txEntry
 
 	// First enforce per-tx hard limits. If the candidate can never fit into a
@@ -357,7 +372,7 @@ func (p *PriorityMempool) canAcceptLocked(ctx sdk.Context, tier int, priority in
 			if exclude != nil && entry.key == exclude.key {
 				continue
 			}
-			if !p.isBetterThan(entry, tier, priority) {
+			if !p.isBetterThan(entry, clampedPriority, clampedOrder) {
 				return false, evictList
 			}
 

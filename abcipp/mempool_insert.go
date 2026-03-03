@@ -136,7 +136,14 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 		entry.key.nonce,
 	)
 
-	if ok, ev := p.canAcceptLocked(sdkCtx, entry.tier, entry.priority, entry.size, entry.gas, existing); ok {
+	if ok, ev := p.canAcceptLocked(
+		sdkCtx,
+		entry.clampedPriority,
+		entry.clampedOrder,
+		entry.size,
+		entry.gas,
+		existing,
+	); ok {
 		if queuedToRemove != nil {
 			delete(ss.queued, key.nonce)
 			p.queuedCount.Add(-1)
@@ -168,7 +175,14 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 			pe.order,
 			pe.key.nonce,
 		)
-		if accepted, ev := p.canAcceptLocked(peCtx, pe.tier, pe.priority, pe.size, pe.gas, nil); accepted {
+		if accepted, ev := p.canAcceptLocked(
+			peCtx,
+			pe.clampedPriority,
+			pe.clampedOrder,
+			pe.size,
+			pe.gas,
+			nil,
+		); accepted {
 			removed = append(removed, p.removeEntriesByReasonLocked(ev, RemovalReasonCapacityEvicted)...)
 			p.addEntryLocked(pe)
 			promoted = append(promoted, pe)

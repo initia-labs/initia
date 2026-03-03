@@ -21,9 +21,12 @@ const maxNodeCount = 10
 func TestQueueClearOrdering(t *testing.T) {
 	ctx := context.Background()
 	if dl, ok := t.Deadline(); ok {
-		var cancel context.CancelFunc
-		ctx, cancel = context.WithDeadline(ctx, dl.Add(-10*time.Second))
-		t.Cleanup(cancel)
+		adjusted := dl.Add(-10 * time.Second)
+		if adjusted.After(time.Now()) {
+			var cancel context.CancelFunc
+			ctx, cancel = context.WithDeadline(ctx, adjusted)
+			t.Cleanup(cancel)
+		}
 	}
 
 	nodeCount := readEnvInt("E2E_NODE_COUNT", 5)

@@ -20,7 +20,7 @@ The `abcipp` package wires up the ABCI++ surfaces that Initia needs: a priority-
 
 2. **Data model**
    * Active entries are stored in a skiplist rooted at `priorityIndex` (ordered by clamped rank: `clampedPriority`, `clampedOrder`, sender, nonce) and a global map keyed by `(sender, nonce)` for quick O(1) lookups.
-   * Per sender state is unified in `senderState` structs (held in `senders map[string]*senderState`), with each containing:
+   * Per-sender state is unified in `senderState` structs (held in `senders map[string]*senderState`), with each containing:
      * `active` entries (same pointers as the global map),
      * `queued` future-nonce entries,
      * cached `onChainSeq`,
@@ -50,7 +50,7 @@ The `abcipp` package wires up the ABCI++ surfaces that Initia needs: a priority-
    * `canAcceptLocked` enforces the `MaxTx` cap by computing an eviction set from the active index and also rejects transactions that exceed consensus block gas/byte limits.
 
 4. **Promotion**
-   * `PromoteQueued` runs after each block commit via `PrepareCheckStater`. It partitions tracked senders into those with queued entries (requiring an on-chain sequence fetch) and active only senders (cheap in-memory check).
+   * `PromoteQueued` runs after each block commit via `PrepareCheckStater`. It partitions tracked senders into those with queued entries (requiring an on-chain sequence fetch) and active-only senders (cheap in-memory check).
    * For queued senders: cached `onChainSeq` is refreshed from `AccountKeeper.GetSequence`, stale entries (`nonce < onChainSeq`) are removed, then continuous entries starting from `nextExpectedNonce()` are collected and promoted.
    * If promotion fails mid-chain due to capacity, the failed nonce and suffix are requeued to preserve nonce continuity.
    * For active-only senders: if the sender has no remaining pool entries, sender state is cleaned up.
