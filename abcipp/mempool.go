@@ -342,15 +342,20 @@ func (p *PriorityMempool) canAcceptLocked(
 
 	// First enforce per-tx hard limits. If the candidate can never fit into a
 	// block, reject it without evicting existing mempool entries.
-	blockParams := ctx.ConsensusParams().Block
-	blockMaxBytes := blockParams.MaxBytes
-	if blockMaxBytes > 0 && size > blockMaxBytes {
-		return false, evictList
-	}
+	//
+	// PrepareCheckStater paths can run with contexts where consensus params are
+	// not populated yet; in that case skip hard-limit checks and rely on capacity
+	// + proposal-time filtering.
+	if cp := ctx.ConsensusParams(); cp.Block != nil {
+		blockMaxBytes := cp.Block.MaxBytes
+		if blockMaxBytes > 0 && size > blockMaxBytes {
+			return false, evictList
+		}
 
-	blockMaxGas := blockParams.MaxGas
-	if blockMaxGas > 0 && gas > uint64(blockMaxGas) {
-		return false, evictList
+		blockMaxGas := cp.Block.MaxGas
+		if blockMaxGas > 0 && gas > uint64(blockMaxGas) {
+			return false, evictList
+		}
 	}
 
 	// Capacity eviction comes after hard checks so we only evict when the new tx
