@@ -210,6 +210,6 @@ func newTestPriorityMempool(t *testing.T, tiers []Tier) *PriorityMempool {
 	mp := NewPriorityMempool(PriorityMempoolConfig{
 		MaxTx: 1000,
 		Tiers: tiers,
-	}, testTxEncoder, newMockAccountKeeper())
+	}, log.NewNopLogger(), testTxEncoder, newMockAccountKeeper())
 	return mp
 }

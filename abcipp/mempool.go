@@ -5,6 +5,7 @@ import (
 	"sync"
 	"sync/atomic"
 
+	"cosmossdk.io/log"
 	cmtmempool "github.com/cometbft/cometbft/mempool"
 	"github.com/huandu/skiplist"
 
@@ -21,6 +22,9 @@ type PriorityMempoolConfig struct {
 	MaxQueuedPerSender int // per sender queued tx limit (0 = default)
 	MaxQueuedTotal     int // total queued tx limit (0 = default)
 	Tiers              []Tier
+
+	// for cleanup
+	sdk.AnteHandler
 }
 
 type TierMatcher func(ctx sdk.Context, tx sdk.Tx) bool
@@ -65,9 +69,12 @@ const (
 // the priority index for consensus ordering, while future nonce txs are held in
 // a queued pool until their predecessors arrive or the on-chain sequence catches up.
 type PriorityMempool struct {
+	cfg       PriorityMempoolConfig
+	logger    log.Logger
+	txEncoder sdk.TxEncoder
+	ak        AccountKeeper
+
 	mtx              sync.RWMutex
-	cfg              PriorityMempoolConfig
-	txEncoder        sdk.TxEncoder
 	priorityIndex    *skiplist.SkipList
 	entries          map[txKey]*txEntry
 	senders          map[string]*senderState
@@ -77,7 +84,6 @@ type PriorityMempool struct {
 	cleaningStopCh   chan struct{}
 	cleaningDoneCh   chan struct{}
 
-	ak                 AccountKeeper
 	queuedCount        atomic.Int64
 	maxQueuedPerSender int
 	maxQueuedTotal     int
@@ -92,7 +98,10 @@ type PriorityMempool struct {
 
 // NewPriorityMempool creates a new PriorityMempool with the provided limits.
 // AccountKeeper is required for sender sequence routing.
-func NewPriorityMempool(cfg PriorityMempoolConfig, txEncoder sdk.TxEncoder, ak AccountKeeper) *PriorityMempool {
+func NewPriorityMempool(cfg PriorityMempoolConfig, logger log.Logger, txEncoder sdk.TxEncoder, ak AccountKeeper) *PriorityMempool {
+	if logger == nil {
+		panic("logger is required")
+	}
 	if txEncoder == nil {
 		panic("tx encoder is required")
 	}

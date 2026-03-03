@@ -121,4 +121,42 @@ func (p *PriorityMempool) cleanUpEntries(bApp BaseApp, ak AccountKeeper) {
 		}
 	}
 	p.mtx.Unlock()
+
+	// Ante cleanup for sender-head txs.
+	// Non-validator nodes do not run PrepareProposal, so without this recheck
+	// ante-invalid txs can stay in local mempool indefinitely and cause
+	// unbounded memory growth.
+	p.mtx.Lock()
+	headTxEntries := make([]*txEntry, 0, len(p.senders))
+	for _, sender := range senders {
+		ss := p.senders[sender]
+		if ss == nil {
+			continue
+		}
+
+		headTxEntry := ss.active[ss.activeMin]
+		if headTxEntry != nil {
+			headTxEntries = append(headTxEntries, headTxEntry)
+		}
+	}
+	p.mtx.Unlock()
+
+	removed := make([]*txEntry, 0, len(p.senders))
+	for _, txEntry := range headTxEntries {
+		cacheCtx, write := sdkCtx.WithTxBytes(txEntry.bytes).WithIsReCheckTx(true).CacheContext()
+		if _, err := p.cfg.AnteHandler(cacheCtx, txEntry.tx, false); err != nil {
+			removed = append(removed, txEntry)
+			continue
+		}
+		write()
+	}
+	for _, entry := range removed {
+		if err := p.RemoveWithReason(entry.tx, RemovalReasonAnteRejectedInPrepare); err != nil {
+			p.logger.Debug(
+				"failed to remove tx from app-side mempool when purging for re-check failure",
+				"removal-err", err,
+			)
+		}
+	}
+
 }

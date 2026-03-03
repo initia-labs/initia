@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/log"
 	cmtmempool "github.com/cometbft/cometbft/mempool"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -16,7 +17,7 @@ func newTestMempoolWithEvents(t *testing.T, maxTx int) (*PriorityMempool, *mockA
 	t.Helper()
 
 	keeper := newMockAccountKeeper()
-	mp := NewPriorityMempool(PriorityMempoolConfig{MaxTx: maxTx}, testTxEncoder, keeper)
+	mp := NewPriorityMempool(PriorityMempoolConfig{MaxTx: maxTx}, log.NewNopLogger(), testTxEncoder, keeper)
 	sdkCtx := testSDKContext()
 	eventCh := make(chan cmtmempool.AppMempoolEvent, 256)
 	mp.SetEventCh(eventCh)
@@ -232,7 +233,7 @@ func TestQueuedTotalCapSilentlyRejectsFutureNonce(t *testing.T) {
 	mp := NewPriorityMempool(PriorityMempoolConfig{
 		MaxTx:          64,
 		MaxQueuedTotal: 2,
-	}, testTxEncoder, keeper)
+	}, log.NewNopLogger(), testTxEncoder, keeper)
 	sdkCtx := testSDKContext()
 	eventCh := make(chan cmtmempool.AppMempoolEvent, 128)
 	mp.SetEventCh(eventCh)
@@ -377,7 +378,7 @@ func TestActiveReplacementEventOrder(t *testing.T) {
 func TestValidateInvariantsDetectsCorruption(t *testing.T) {
 	t.Run("queuedCountMismatch", func(t *testing.T) {
 		keeper := newMockAccountKeeper()
-		mp := NewPriorityMempool(PriorityMempoolConfig{MaxTx: 32}, testTxEncoder, keeper)
+		mp := NewPriorityMempool(PriorityMempoolConfig{MaxTx: 32}, log.NewNopLogger(), testTxEncoder, keeper)
 		ctx := sdk.WrapSDKContext(testSDKContext())
 
 		priv := secp256k1.GenPrivKey()
@@ -398,7 +399,7 @@ func TestValidateInvariantsDetectsCorruption(t *testing.T) {
 
 	t.Run("activeRangeBoundaryMissing", func(t *testing.T) {
 		keeper := newMockAccountKeeper()
-		mp := NewPriorityMempool(PriorityMempoolConfig{MaxTx: 32}, testTxEncoder, keeper)
+		mp := NewPriorityMempool(PriorityMempoolConfig{MaxTx: 32}, log.NewNopLogger(), testTxEncoder, keeper)
 		ctx := sdk.WrapSDKContext(testSDKContext())
 
 		priv := secp256k1.GenPrivKey()
@@ -420,7 +421,7 @@ func TestValidateInvariantsDetectsCorruption(t *testing.T) {
 
 	t.Run("globalEntryWithoutSenderState", func(t *testing.T) {
 		keeper := newMockAccountKeeper()
-		mp := NewPriorityMempool(PriorityMempoolConfig{MaxTx: 32}, testTxEncoder, keeper)
+		mp := NewPriorityMempool(PriorityMempoolConfig{MaxTx: 32}, log.NewNopLogger(), testTxEncoder, keeper)
 		ctx := sdk.WrapSDKContext(testSDKContext())
 
 		priv := secp256k1.GenPrivKey()

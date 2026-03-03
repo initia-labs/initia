@@ -2,7 +2,6 @@ package abcipp
 
 import (
 	"fmt"
-	"time"
 
 	cometabci "github.com/cometbft/cometbft/abci/types"
 
@@ -11,8 +10,6 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 )
-
-const slowCheckTxThreshold = 200 * time.Millisecond
 
 // CheckTxHandler defines a CheckTx handler for ABCI++ CheckTx processing.
 type CheckTxHandler struct {

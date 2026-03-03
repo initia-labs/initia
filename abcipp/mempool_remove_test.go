@@ -3,6 +3,7 @@ package abcipp
 import (
 	"testing"
 
+	"cosmossdk.io/log"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkmempool "github.com/cosmos/cosmos-sdk/types/mempool"
@@ -98,7 +99,7 @@ func TestRemoveActiveStaleLockedBranches(t *testing.T) {
 	})
 
 	t.Run("removesRangeWithEndClampAndSkipsHoles", func(t *testing.T) {
-		mp := NewPriorityMempool(PriorityMempoolConfig{MaxTx: 16}, testTxEncoder, newMockAccountKeeper())
+		mp := NewPriorityMempool(PriorityMempoolConfig{MaxTx: 16}, log.NewNopLogger(), testTxEncoder, newMockAccountKeeper())
 		sdkCtx := testSDKContext()
 
 		priv := secp256k1.GenPrivKey()

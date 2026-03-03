@@ -1,9 +1,12 @@
 package abcipp
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
+	"cosmossdk.io/log"
+	cmtmempool "github.com/cometbft/cometbft/mempool"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
@@ -137,4 +140,63 @@ func TestStartCleaningWorkerIsNoopWhenAlreadyRunning(t *testing.T) {
 	require.Nil(t, mp.cleaningStopCh)
 	require.Nil(t, mp.cleaningDoneCh)
 	mp.mtx.RUnlock()
+}
+
+func TestCleanUpEntriesAnteCleanupRemovesRejectedHead(t *testing.T) {
+	keeper := newMockAccountKeeper()
+	sdkCtx := testSDKContext()
+	baseApp := testBaseApp{ctx: sdkCtx}
+
+	rejectPriv := secp256k1.GenPrivKey()
+	keepPriv := secp256k1.GenPrivKey()
+	rejectSender := sdk.AccAddress(rejectPriv.PubKey().Address())
+	keepSender := sdk.AccAddress(keepPriv.PubKey().Address())
+
+	anteCalls := 0
+	mp := NewPriorityMempool(
+		PriorityMempoolConfig{
+			MaxTx: 32,
+			AnteHandler: func(ctx sdk.Context, tx sdk.Tx, _ bool) (sdk.Context, error) {
+				anteCalls++
+				require.True(t, ctx.IsReCheckTx())
+				require.NotEmpty(t, ctx.TxBytes())
+
+				tt, ok := tx.(*testTx)
+				require.True(t, ok)
+				if tt.sender.Equals(rejectSender) {
+					return ctx, fmt.Errorf("ante reject")
+				}
+
+				return ctx, nil
+			},
+		},
+		log.NewNopLogger(),
+		testTxEncoder,
+		keeper,
+	)
+	eventCh := make(chan cmtmempool.AppMempoolEvent, 256)
+	mp.SetEventCh(eventCh)
+	t.Cleanup(func() {
+		assertInvariant(t, mp)
+	})
+
+	keeper.SetSequence(rejectSender, 0)
+	keeper.SetSequence(keepSender, 0)
+
+	ctx := sdk.WrapSDKContext(sdkCtx)
+	rejectTx := newTestTxWithPriv(rejectPriv, 0, 1000, "default")
+	keepTx := newTestTxWithPriv(keepPriv, 0, 1000, "default")
+	require.NoError(t, mp.Insert(ctx, rejectTx))
+	require.NoError(t, mp.Insert(ctx, keepTx))
+	drainEvents(eventCh)
+
+	mp.cleanUpEntries(baseApp, keeper)
+
+	ins, rem := collectEvents(eventCh)
+	require.Len(t, ins, 0)
+	require.Len(t, rem, 1)
+	require.Equal(t, encodeTx(t, rejectTx), rem[0])
+	require.Equal(t, 2, anteCalls, "ante cleanup should evaluate one active head per sender")
+	require.False(t, mp.Contains(rejectTx))
+	require.True(t, mp.Contains(keepTx))
 }

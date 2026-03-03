@@ -82,9 +82,10 @@ func (app *InitiaApp) setupABCIPP(mempoolMaxTxs int) (
 
 	mempool := abcipp.NewPriorityMempool(
 		abcipp.PriorityMempoolConfig{
-			MaxTx: mempoolMaxTxs,
-			Tiers: []abcipp.Tier{}, // no tiers on L1
-		}, app.TxEncode, app.AccountKeeper,
+			MaxTx:       mempoolMaxTxs,
+			Tiers:       []abcipp.Tier{}, // no tiers on L1
+			AnteHandler: fullHandler,     // for cleanup
+		}, app.Logger(), app.TxEncode, app.AccountKeeper,
 	)
 
 	// start mempool cleaning worker

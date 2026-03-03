@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/log"
 	cmtmempool "github.com/cometbft/cometbft/mempool"
 	"github.com/stretchr/testify/require"
 )
@@ -20,7 +21,7 @@ func TestStopEventDispatchIsIdempotent(t *testing.T) {
 }
 
 func TestEnqueueEventAfterStopIsIgnored(t *testing.T) {
-	mp := NewPriorityMempool(PriorityMempoolConfig{MaxTx: 8}, testTxEncoder, newMockAccountKeeper())
+	mp := NewPriorityMempool(PriorityMempoolConfig{MaxTx: 8}, log.NewNopLogger(), testTxEncoder, newMockAccountKeeper())
 	eventCh := make(chan cmtmempool.AppMempoolEvent, 8)
 	mp.SetEventCh(eventCh)
 
