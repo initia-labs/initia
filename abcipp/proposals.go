@@ -66,8 +66,13 @@ func (h *ProposalHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 		)
 
 		// Get the max gas limit and max block size for the proposal.
-		maxGasLimit := ctx.ConsensusParams().Block.MaxGas
-		maxBlockSize := ctx.ConsensusParams().Block.MaxBytes
+		// In some contexts consensus params can be unset, so guard nil block params.
+		var maxGasLimit int64
+		var maxBlockSize int64
+		if cp := ctx.ConsensusParams(); cp.Block != nil {
+			maxGasLimit = cp.Block.MaxGas
+			maxBlockSize = cp.Block.MaxBytes
+		}
 
 		var (
 			totalSize    int64
@@ -229,8 +234,13 @@ func (h *ProposalHandler) ProcessProposalHandler() sdk.ProcessProposalHandler {
 		}
 
 		// Get the max gas limit and max block size for the proposal.
-		maxGasLimit := ctx.ConsensusParams().Block.MaxGas
-		maxBlockSize := ctx.ConsensusParams().Block.MaxBytes
+		// In some contexts consensus params can be unset, so guard nil block params.
+		var maxGasLimit int64
+		var maxBlockSize int64
+		if cp := ctx.ConsensusParams(); cp.Block != nil {
+			maxGasLimit = cp.Block.MaxGas
+			maxBlockSize = cp.Block.MaxBytes
+		}
 
 		// Verify the transaction.
 		var totalTxBytes int64
