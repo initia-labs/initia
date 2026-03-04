@@ -29,7 +29,26 @@ func NewCheckTxHandler(
 	txDecoder sdk.TxDecoder,
 	checkTx CheckTx,
 	feeChecker ante.TxFeeChecker,
-) *CheckTxHandler {
+) (*CheckTxHandler, error) {
+	if logger == nil {
+		return nil, fmt.Errorf("logger is required")
+	}
+	if baseApp == nil {
+		return nil, fmt.Errorf("baseApp is required")
+	}
+	if mempool == nil {
+		return nil, fmt.Errorf("mempool is required")
+	}
+	if txDecoder == nil {
+		return nil, fmt.Errorf("txDecoder is required")
+	}
+	if checkTx == nil {
+		return nil, fmt.Errorf("checkTx is required")
+	}
+	if feeChecker == nil {
+		return nil, fmt.Errorf("feeChecker is required")
+	}
+
 	return &CheckTxHandler{
 		logger:     logger.With("module", "abcipp-checktx"),
 		baseApp:    baseApp,
@@ -37,11 +56,14 @@ func NewCheckTxHandler(
 		txDecoder:  txDecoder,
 		checkTx:    checkTx,
 		feeChecker: feeChecker,
-	}
+	}, nil
 }
 
 // CheckTx processes a CheckTx request from CometBFT.
 func (h CheckTxHandler) CheckTx(req *cometabci.RequestCheckTx) (resp *cometabci.ResponseCheckTx, err error) {
+	isRecheck := req.Type == cometabci.CheckTxType_Recheck
+	txInMempool := false
+
 	defer func() {
 		if rec := recover(); rec != nil {
 			h.logger.Error("failed to check tx", "err", rec)
@@ -55,7 +77,6 @@ func (h CheckTxHandler) CheckTx(req *cometabci.RequestCheckTx) (resp *cometabci.
 			)
 			err = nil
 		}
-
 	}()
 
 	tx, err := h.txDecoder(req.Tx)
@@ -69,8 +90,7 @@ func (h CheckTxHandler) CheckTx(req *cometabci.RequestCheckTx) (resp *cometabci.
 		), nil
 	}
 
-	isRecheck := req.Type == cometabci.CheckTxType_Recheck
-	txInMempool := h.mempool.Contains(tx)
+	txInMempool = h.mempool.Contains(tx)
 
 	// if the mode is ReCheck and the app's mempool does not contain the given tx, we fail
 	// immediately, to purge the tx from the comet mempool.
@@ -96,7 +116,7 @@ func (h CheckTxHandler) CheckTx(req *cometabci.RequestCheckTx) (resp *cometabci.
 	// the app-side mempool
 	if isInvalidCheckTxExecution(resp, err) && isRecheck && txInMempool {
 		// remove the tx
-		if err := h.mempool.Remove(tx); err != nil {
+		if err := h.mempool.RemoveWithReason(tx, RemovalReasonAnteRejectedInPrepare); err != nil {
 			h.logger.Debug(
 				"failed to remove tx from app-side mempool when purging for re-check failure",
 				"removal-err", err,

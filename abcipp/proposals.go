@@ -28,14 +28,30 @@ func NewProposalHandler(
 	txEncoder sdk.TxEncoder,
 	mempool Mempool,
 	anteHandler sdk.AnteHandler,
-) *ProposalHandler {
+) (*ProposalHandler, error) {
+	if logger == nil {
+		return nil, fmt.Errorf("logger is required")
+	}
+	if txDecoder == nil {
+		return nil, fmt.Errorf("txDecoder is required")
+	}
+	if txEncoder == nil {
+		return nil, fmt.Errorf("txEncoder is required")
+	}
+	if mempool == nil {
+		return nil, fmt.Errorf("mempool is required")
+	}
+	if anteHandler == nil {
+		return nil, fmt.Errorf("anteHandler is required")
+	}
+
 	return &ProposalHandler{
 		logger:      logger,
 		txDecoder:   txDecoder,
 		txEncoder:   txEncoder,
 		mempool:     mempool,
 		anteHandler: anteHandler,
-	}
+	}, nil
 }
 
 // PrepareProposalHandler only runs on the block proposer. It selects transactions from the mempool,
@@ -66,8 +82,13 @@ func (h *ProposalHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 		)
 
 		// Get the max gas limit and max block size for the proposal.
-		maxGasLimit := ctx.ConsensusParams().Block.MaxGas
-		maxBlockSize := ctx.ConsensusParams().Block.MaxBytes
+		// In some contexts consensus params can be unset, so guard nil block params.
+		var maxGasLimit int64
+		var maxBlockSize int64
+		if cp := ctx.ConsensusParams(); cp.Block != nil {
+			maxGasLimit = cp.Block.MaxGas
+			maxBlockSize = cp.Block.MaxBytes
+		}
 
 		var (
 			totalSize    int64
@@ -75,10 +96,25 @@ func (h *ProposalHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 			txsToInclude [][]byte
 			txsToRemove  []TxInfoEntry
 		)
+		// blockedSenders marks senders we should skip for the rest of this
+		// proposal build pass.
+		//
+		// Why this exists:
+		// - If a sender's head nonce tx cannot be included due to cumulative
+		//   block limits (bytes/gas), including later nonces from that sender in
+		//   the same pass can trigger transient wrong-sequence failures.
+		// - By blocking the sender for this pass, we preserve sender-local nonce
+		//   progression and avoid creating nonce holes from proposal-time ordering.
+		blockedSenders := make(map[string]struct{})
 
 		for iter := h.mempool.Select(ctx, nil); iter != nil; iter = iter.Next() {
 			tx := iter.Tx()
 			txInfo := iter.(TxInfoIterator).TxInfo()
+			// Sender was blocked earlier in this pass; defer all remaining txs for
+			// this sender to later proposals.
+			if _, blocked := blockedSenders[txInfo.Sender]; blocked {
+				continue
+			}
 
 			// If the transaction is too large, we skip it.
 			if updatedSize := totalSize + txInfo.Size; maxBlockSize > 0 && updatedSize > maxBlockSize {
@@ -94,8 +130,13 @@ func (h *ProposalHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 				)
 
 				if txInfo.Size > maxBlockSize {
+					// Individually oversized tx can never fit into a block, so remove it.
 					txsToRemove = append(txsToRemove, TxInfoEntry{Tx: tx, Info: txInfo})
 				}
+
+				// Cumulative overflow is transient for this pass; keep tx in mempool
+				// and block only this sender for the remainder of the loop.
+				blockedSenders[txInfo.Sender] = struct{}{}
 
 				continue
 			}
@@ -114,8 +155,13 @@ func (h *ProposalHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 				)
 
 				if txInfo.GasLimit > uint64(maxGasLimit) { //nolint:gosec
+					// Individually over-gas tx can never fit into a block, so remove it.
 					txsToRemove = append(txsToRemove, TxInfoEntry{Tx: tx, Info: txInfo})
 				}
+
+				// Cumulative overflow is transient for this pass; keep tx in mempool
+				// and block only this sender for the remainder of the loop.
+				blockedSenders[txInfo.Sender] = struct{}{}
 
 				continue
 			}
@@ -149,7 +195,7 @@ func (h *ProposalHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 		for _, entry := range txsToRemove {
 			snapshotHash := TxHash(entry.Info.TxBytes)
 			if currentHash, ok := h.mempool.Lookup(entry.Info.Sender, entry.Info.Sequence); ok && currentHash == snapshotHash {
-				if err := h.mempool.Remove(entry.Tx); err != nil {
+				if err := h.mempool.RemoveWithReason(entry.Tx, RemovalReasonAnteRejectedInPrepare); err != nil {
 					h.logger.Error("failed to remove tx from mempool", "err", err)
 				}
 			}
@@ -204,8 +250,13 @@ func (h *ProposalHandler) ProcessProposalHandler() sdk.ProcessProposalHandler {
 		}
 
 		// Get the max gas limit and max block size for the proposal.
-		maxGasLimit := ctx.ConsensusParams().Block.MaxGas
-		maxBlockSize := ctx.ConsensusParams().Block.MaxBytes
+		// In some contexts consensus params can be unset, so guard nil block params.
+		var maxGasLimit int64
+		var maxBlockSize int64
+		if cp := ctx.ConsensusParams(); cp.Block != nil {
+			maxGasLimit = cp.Block.MaxGas
+			maxBlockSize = cp.Block.MaxBytes
+		}
 
 		// Verify the transaction.
 		var totalTxBytes int64

@@ -1,0 +1,116 @@
+package abcipp
+
+import (
+	"testing"
+
+	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/stretchr/testify/require"
+)
+
+func TestBuildTierMatchersAndDistribution(t *testing.T) {
+	cfg := PriorityMempoolConfig{
+		Tiers: []Tier{
+			{Name: "  vip  ", Matcher: func(sdk.Context, sdk.Tx) bool { return true }},
+			{Name: "", Matcher: func(sdk.Context, sdk.Tx) bool { return false }},
+			{Name: "ignored-nil", Matcher: nil},
+		},
+	}
+
+	matchers := buildTierMatchers(cfg)
+	// Nil matcher tier is skipped, default tier is always appended.
+	require.Len(t, matchers, 3)
+	require.Equal(t, "vip", matchers[0].Name)
+	require.Equal(t, "tier-1", matchers[1].Name)
+	require.Equal(t, "default", matchers[2].Name)
+
+	dist := initTierDistribution(matchers)
+	require.Equal(t, map[string]uint64{
+		"vip":     0,
+		"tier-1":  0,
+		"default": 0,
+	}, dist)
+}
+
+func TestSelectTierAndTierName(t *testing.T) {
+	mp := newTestPriorityMempool(t, []Tier{
+		testTierMatcher("vip"),
+		testTierMatcher("standard"),
+	})
+
+	ctx := testSDKContext()
+	priv := secp256k1.GenPrivKey()
+	sender := sdk.AccAddress(priv.PubKey().Address())
+
+	txVIP := newTestTx(sender, 0, 1000, "vip")
+	txStd := newTestTx(sender, 1, 1000, "standard")
+	txUnknown := newTestTx(sender, 2, 1000, "unknown")
+
+	// First matching tier should win.
+	require.Equal(t, 0, mp.selectTier(ctx, txVIP))
+	require.Equal(t, 1, mp.selectTier(ctx, txStd))
+	// Unknown should fall back to appended default tier.
+	require.Equal(t, 2, mp.selectTier(ctx, txUnknown))
+
+	require.Equal(t, "vip", mp.tierName(0))
+	require.Equal(t, "standard", mp.tierName(1))
+	require.Equal(t, "default", mp.tierName(2))
+	require.Equal(t, "", mp.tierName(-1))
+	require.Equal(t, "", mp.tierName(99))
+}
+
+func TestCompareEntriesOrdering(t *testing.T) {
+	mk := func(tier int, priority int64, order int64, sender string, nonce uint64) *txEntry {
+		return &txEntry{
+			tier:            tier,
+			priority:        priority,
+			order:           order,
+			key:             txKey{sender: sender, nonce: nonce},
+			clampedPriority: scoreByTierPriority(tier, priority),
+			clampedOrder:    order,
+		}
+	}
+
+	base := mk(1, 100, 10, "sender-a", 3)
+
+	// Lower tier outranks higher tier.
+	higherTier := mk(2, 999, 0, "zzz", 0)
+	require.Less(t, compareEntries(base, higherTier), 0)
+
+	// Within same sender and same tier/priority/FIFO rank, nonce ordering decides.
+	sameSenderLowerNonceButLowPriority := mk(1, 1, 999, "sender-a", 2)
+	require.Less(t, compareEntries(base, sameSenderLowerNonceButLowPriority), 0)
+
+	// Within same tier, higher priority outranks lower priority.
+	lowerPriority := mk(1, 50, 0, "zzz", 0)
+	require.Less(t, compareEntries(base, lowerPriority), 0)
+
+	// Same tier/priority: smaller order (earlier FIFO) outranks.
+	laterOrder := mk(1, 100, 20, "zzz", 0)
+	require.Less(t, compareEntries(base, laterOrder), 0)
+
+	// Same ranking fields: sender lexicographic order, then nonce.
+	senderAfter := mk(1, 100, 10, "sender-b", 0)
+	require.Less(t, compareEntries(base, senderAfter), 0)
+	sameSenderHigherNonce := mk(1, 100, 10, "sender-a", 9)
+	require.Less(t, compareEntries(base, sameSenderHigherNonce), 0)
+}
+
+func TestIsBetterThan(t *testing.T) {
+	mp := newTestPriorityMempool(t, nil)
+	existing := &txEntry{
+		tier:            1,
+		priority:        100,
+		clampedPriority: scoreByTierPriority(1, 100),
+		clampedOrder:    10,
+	}
+
+	// Better clamped priority should always win.
+	require.True(t, mp.isBetterThan(existing, scoreByTierPriority(0, 1), 99))
+	require.False(t, mp.isBetterThan(existing, scoreByTierPriority(2, 1000), 1))
+
+	// Same clamped priority compares clamped order (smaller is better).
+	require.True(t, mp.isBetterThan(existing, existing.clampedPriority, 9))
+	require.False(t, mp.isBetterThan(existing, existing.clampedPriority, 10))
+	require.False(t, mp.isBetterThan(existing, existing.clampedPriority, 11))
+}

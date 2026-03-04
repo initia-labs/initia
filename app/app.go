@@ -284,7 +284,7 @@ func NewInitiaApp(
 	// register context decorator for message router
 	app.RegisterMessageRouterContextDecorator()
 
-	mempool, anteHandler, prepareProposalHandler, processProposalHandler, checkTx, err := app.setupABCIPP(mempoolMaxTxs)
+	mempool, anteHandler, prepareProposalHandler, processProposalHandler, checkTx, err := app.setupABCIPP(mempoolMaxTxs, appOpts)
 	if err != nil {
 		tmos.Exit(err.Error())
 	}

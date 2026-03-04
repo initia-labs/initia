@@ -10,6 +10,7 @@ import (
 
 	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
 
+	"github.com/initia-labs/initia/abcipp"
 	initiaapp "github.com/initia-labs/initia/app"
 	moveconfig "github.com/initia-labs/initia/x/move/config"
 
@@ -19,6 +20,7 @@ import (
 // initiaappConfig initia specify app config
 type initiaappConfig struct {
 	serverconfig.Config
+	ABCIPP     abcipp.AppConfig               `mapstructure:"abcipp"`
 	MoveConfig moveconfig.MoveConfig          `mapstructure:"move"`
 	Oracle     oracleconfig.AppConfig         `mapstructure:"oracle"`
 	MemIAVL    initiastorecfg.MemIAVLConfig   `mapstructure:"memiavl"`
@@ -51,6 +53,7 @@ func initAppConfig() (string, any) {
 
 	appConfig := initiaappConfig{
 		Config:     *srvCfg,
+		ABCIPP:     abcipp.DefaultAppConfig(),
 		MoveConfig: moveconfig.DefaultMoveConfig(),
 		Oracle:     oracleconfig.NewDefaultAppConfig(),
 		MemIAVL:    initiastorecfg.DefaultMemIAVLConfig(),
@@ -59,6 +62,7 @@ func initAppConfig() (string, any) {
 	appConfig.Oracle.ClientTimeout = 500 * time.Millisecond
 
 	appConfigTemplate := serverconfig.DefaultConfigTemplate +
+		abcipp.DefaultConfigTemplate +
 		moveconfig.DefaultConfigTemplate +
 		oracleconfig.DefaultConfigTemplate +
 		initiastorecfg.DefaultMemIAVLConfigTemplate +
