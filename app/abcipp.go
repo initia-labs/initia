@@ -96,15 +96,18 @@ func (app *InitiaApp) setupABCIPP(mempoolMaxTxs int, appOpts servertypes.AppOpti
 	// start mempool cleaning worker
 	mempool.StartCleaningWorker(app.BaseApp, abcipp.DefaultMempoolCleaningInterval)
 
-	proposalHandler := abcipp.NewProposalHandler(
+	proposalHandler, err := abcipp.NewProposalHandler(
 		app.Logger(),
 		app.txConfig.TxDecoder(),
 		app.txConfig.TxEncoder(),
 		mempool,
 		fullHandler, // proposal handler uses full handler
 	)
+	if err != nil {
+		return nil, nil, nil, nil, nil, err
+	}
 
-	checkTxHandler := abcipp.NewCheckTxHandler(
+	checkTxHandler, err := abcipp.NewCheckTxHandler(
 		app.Logger(),
 		app.BaseApp,
 		mempool,
@@ -112,6 +115,9 @@ func (app *InitiaApp) setupABCIPP(mempoolMaxTxs int, appOpts servertypes.AppOpti
 		app.BaseApp.CheckTx,
 		feeCheckerWrapper,
 	)
+	if err != nil {
+		return nil, nil, nil, nil, nil, err
+	}
 
 	return mempool, anteHandler, proposalHandler.PrepareProposalHandler(), proposalHandler.ProcessProposalHandler(), checkTxHandler.CheckTx, nil
 }

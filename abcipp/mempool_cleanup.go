@@ -130,6 +130,11 @@ func (p *PriorityMempool) cleanUpEntries(bApp BaseApp, ak AccountKeeper) {
 	// Non-validator nodes do not run PrepareProposal, so without this recheck
 	// ante-invalid txs can stay in local mempool indefinitely and cause
 	// unbounded memory growth.
+
+	if p.cfg.AnteHandler == nil {
+		return
+	}
+
 	p.mtx.Lock()
 	headTxEntries := make([]*txEntry, 0, len(p.senders))
 	for _, sender := range senders {

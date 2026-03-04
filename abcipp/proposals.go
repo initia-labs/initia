@@ -28,14 +28,30 @@ func NewProposalHandler(
 	txEncoder sdk.TxEncoder,
 	mempool Mempool,
 	anteHandler sdk.AnteHandler,
-) *ProposalHandler {
+) (*ProposalHandler, error) {
+	if logger == nil {
+		return nil, fmt.Errorf("logger is required")
+	}
+	if txDecoder == nil {
+		return nil, fmt.Errorf("txDecoder is required")
+	}
+	if txEncoder == nil {
+		return nil, fmt.Errorf("txEncoder is required")
+	}
+	if mempool == nil {
+		return nil, fmt.Errorf("mempool is required")
+	}
+	if anteHandler == nil {
+		return nil, fmt.Errorf("anteHandler is required")
+	}
+
 	return &ProposalHandler{
 		logger:      logger,
 		txDecoder:   txDecoder,
 		txEncoder:   txEncoder,
 		mempool:     mempool,
 		anteHandler: anteHandler,
-	}
+	}, nil
 }
 
 // PrepareProposalHandler only runs on the block proposer. It selects transactions from the mempool,

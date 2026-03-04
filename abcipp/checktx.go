@@ -29,7 +29,26 @@ func NewCheckTxHandler(
 	txDecoder sdk.TxDecoder,
 	checkTx CheckTx,
 	feeChecker ante.TxFeeChecker,
-) *CheckTxHandler {
+) (*CheckTxHandler, error) {
+	if logger == nil {
+		return nil, fmt.Errorf("logger is required")
+	}
+	if baseApp == nil {
+		return nil, fmt.Errorf("baseApp is required")
+	}
+	if mempool == nil {
+		return nil, fmt.Errorf("mempool is required")
+	}
+	if txDecoder == nil {
+		return nil, fmt.Errorf("txDecoder is required")
+	}
+	if checkTx == nil {
+		return nil, fmt.Errorf("checkTx is required")
+	}
+	if feeChecker == nil {
+		return nil, fmt.Errorf("feeChecker is required")
+	}
+
 	return &CheckTxHandler{
 		logger:     logger.With("module", "abcipp-checktx"),
 		baseApp:    baseApp,
@@ -37,7 +56,7 @@ func NewCheckTxHandler(
 		txDecoder:  txDecoder,
 		checkTx:    checkTx,
 		feeChecker: feeChecker,
-	}
+	}, nil
 }
 
 // CheckTx processes a CheckTx request from CometBFT.

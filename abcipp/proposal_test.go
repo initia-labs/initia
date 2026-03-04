@@ -79,7 +79,8 @@ func TestProposalHandlerWithConcurrentMempool(t *testing.T) {
 		return ctx, nil
 	}
 
-	handler := NewProposalHandler(log.NewNopLogger(), testTxDecoder, testTxEncoder, mp, ante)
+	handler, err := NewProposalHandler(log.NewNopLogger(), testTxDecoder, testTxEncoder, mp, ante)
+	require.NoError(t, err)
 
 	done := make(chan struct{})
 	var wg sync.WaitGroup
@@ -122,6 +123,77 @@ func TestProposalHandlerWithConcurrentMempool(t *testing.T) {
 	}
 	if _, err := handler.ProcessProposalHandler()(sdkCtx, processReq); err != nil {
 		t.Fatalf("process proposal: %v", err)
+	}
+}
+
+func TestNewProposalHandlerReturnsErrorOnMissingDependencies(t *testing.T) {
+	mp := newTestPriorityMempool(t, nil)
+	ante := func(ctx sdk.Context, tx sdk.Tx, _ bool) (sdk.Context, error) {
+		return ctx, nil
+	}
+
+	cases := []struct {
+		name    string
+		logger  log.Logger
+		decoder sdk.TxDecoder
+		encoder sdk.TxEncoder
+		mempool Mempool
+		ante    sdk.AnteHandler
+		wantErr string
+	}{
+		{
+			name:    "nil logger",
+			logger:  nil,
+			decoder: testTxDecoder,
+			encoder: testTxEncoder,
+			mempool: mp,
+			ante:    ante,
+			wantErr: "logger is required",
+		},
+		{
+			name:    "nil txDecoder",
+			logger:  log.NewNopLogger(),
+			decoder: nil,
+			encoder: testTxEncoder,
+			mempool: mp,
+			ante:    ante,
+			wantErr: "txDecoder is required",
+		},
+		{
+			name:    "nil txEncoder",
+			logger:  log.NewNopLogger(),
+			decoder: testTxDecoder,
+			encoder: nil,
+			mempool: mp,
+			ante:    ante,
+			wantErr: "txEncoder is required",
+		},
+		{
+			name:    "nil mempool",
+			logger:  log.NewNopLogger(),
+			decoder: testTxDecoder,
+			encoder: testTxEncoder,
+			mempool: nil,
+			ante:    ante,
+			wantErr: "mempool is required",
+		},
+		{
+			name:    "nil anteHandler",
+			logger:  log.NewNopLogger(),
+			decoder: testTxDecoder,
+			encoder: testTxEncoder,
+			mempool: mp,
+			ante:    nil,
+			wantErr: "anteHandler is required",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			handler, err := NewProposalHandler(tc.logger, tc.decoder, tc.encoder, tc.mempool, tc.ante)
+			require.ErrorContains(t, err, tc.wantErr)
+			require.Nil(t, handler)
+		})
 	}
 }
 
@@ -174,7 +246,8 @@ func TestPrepareProposalRemovesTxWhenConsensusParamsShrink(t *testing.T) {
 			ante := func(ctx sdk.Context, tx sdk.Tx, _ bool) (sdk.Context, error) {
 				return ctx, nil
 			}
-			handler := NewProposalHandler(log.NewNopLogger(), testTxDecoder, testTxEncoder, mp, ante)
+			handler, err := NewProposalHandler(log.NewNopLogger(), testTxDecoder, testTxEncoder, mp, ante)
+			require.NoError(t, err)
 
 			lowLimitCtx := testSDKContextWithParams(tc.maxBytes, tc.maxGas)
 			req := &abci.RequestPrepareProposal{
@@ -222,7 +295,8 @@ func TestProcessProposalRejectsWhenConsensusParamsShrink(t *testing.T) {
 			ante := func(ctx sdk.Context, tx sdk.Tx, _ bool) (sdk.Context, error) {
 				return ctx, nil
 			}
-			handler := NewProposalHandler(log.NewNopLogger(), testTxDecoder, testTxEncoder, mp, ante)
+			handler, err := NewProposalHandler(log.NewNopLogger(), testTxDecoder, testTxEncoder, mp, ante)
+			require.NoError(t, err)
 
 			tx := newTestTx(testAddress(2), 1, tc.txGas, "default")
 			txBytes, err := testTxEncoder(tx)
@@ -270,7 +344,8 @@ func TestPrepareProposalSkipsTxThatWouldOverflowButKeepsLaterTx(t *testing.T) {
 	ante := func(ctx sdk.Context, tx sdk.Tx, _ bool) (sdk.Context, error) {
 		return ctx, nil
 	}
-	handler := NewProposalHandler(log.NewNopLogger(), testTxDecoder, testTxEncoder, mp, ante)
+	handler, err := NewProposalHandler(log.NewNopLogger(), testTxDecoder, testTxEncoder, mp, ante)
+	require.NoError(t, err)
 
 	req := &abci.RequestPrepareProposal{
 		Height:     2,
@@ -326,7 +401,8 @@ func TestPrepareProposalWrongSequenceRemovesFailedNonce(t *testing.T) {
 		}
 		return ctx, nil
 	}
-	handler := NewProposalHandler(log.NewNopLogger(), testTxDecoder, testTxEncoder, mp, ante)
+	handler, err := NewProposalHandler(log.NewNopLogger(), testTxDecoder, testTxEncoder, mp, ante)
+	require.NoError(t, err)
 
 	resp, err := handler.PrepareProposalHandler()(sdkCtx, &abci.RequestPrepareProposal{
 		Height:     2,
@@ -359,7 +435,8 @@ func TestPrepareProposalBlocksSenderAfterOverflowSkip(t *testing.T) {
 	require.NoError(t, mp.Insert(sdk.WrapSDKContext(ctx.WithPriority(1)), tx2))
 
 	ante := func(ctx sdk.Context, tx sdk.Tx, _ bool) (sdk.Context, error) { return ctx, nil }
-	handler := NewProposalHandler(log.NewNopLogger(), testTxDecoder, testTxEncoder, mp, ante)
+	handler, err := NewProposalHandler(log.NewNopLogger(), testTxDecoder, testTxEncoder, mp, ante)
+	require.NoError(t, err)
 
 	resp, err := handler.PrepareProposalHandler()(ctx, &abci.RequestPrepareProposal{
 		Height:     2,
@@ -419,7 +496,8 @@ func TestPrepareProposalSkipsTxWhenMaxBytesWouldOverflow(t *testing.T) {
 	ante := func(ctx sdk.Context, tx sdk.Tx, _ bool) (sdk.Context, error) {
 		return ctx, nil
 	}
-	handler := NewProposalHandler(log.NewNopLogger(), testTxDecoder, testTxEncoder, mp, ante)
+	handler, err := NewProposalHandler(log.NewNopLogger(), testTxDecoder, testTxEncoder, mp, ante)
+	require.NoError(t, err)
 
 	req := &abci.RequestPrepareProposal{
 		Height:     2,
