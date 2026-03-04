@@ -245,7 +245,8 @@ test-e2e:
 	@go test ./integration-tests/e2e/... -mod=readonly -timeout 30m -tags='e2e' -count=1
 
 test-fuzz:
-	@go test ./abcipp -mod=readonly -fuzz=. -fuzztime=30s -timeout 10m -tags='fuzz'
+	@go test ./abcipp -mod=readonly -tags fuzz -fuzz FuzzValidatorConcurrentQueueClearScenario -fuzztime 60s -timeout 10m
+	@go test ./abcipp -mod=readonly -tags fuzz -fuzz FuzzNonValidatorQueueClearScenario -fuzztime 60s -timeout 10m
 
 benchmark:
 	@go test -timeout 20m -mod=readonly -bench=. ./... 

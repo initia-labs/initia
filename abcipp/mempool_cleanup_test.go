@@ -185,8 +185,12 @@ func TestCleanUpEntriesAnteCleanupRemovesRejectedHead(t *testing.T) {
 
 	ctx := sdk.WrapSDKContext(sdkCtx)
 	rejectTx := newTestTxWithPriv(rejectPriv, 0, 1000, "default")
+	rejectTx1 := newTestTxWithPriv(rejectPriv, 1, 1000, "default")
+	rejectTx2 := newTestTxWithPriv(rejectPriv, 2, 1000, "default")
 	keepTx := newTestTxWithPriv(keepPriv, 0, 1000, "default")
 	require.NoError(t, mp.Insert(ctx, rejectTx))
+	require.NoError(t, mp.Insert(ctx, rejectTx1))
+	require.NoError(t, mp.Insert(ctx, rejectTx2))
 	require.NoError(t, mp.Insert(ctx, keepTx))
 	drainEvents(eventCh)
 
@@ -198,5 +202,108 @@ func TestCleanUpEntriesAnteCleanupRemovesRejectedHead(t *testing.T) {
 	require.Equal(t, encodeTx(t, rejectTx), rem[0])
 	require.Equal(t, 2, anteCalls, "ante cleanup should evaluate one active head per sender")
 	require.False(t, mp.Contains(rejectTx))
+	require.True(t, mp.Contains(rejectTx1))
+	require.True(t, mp.Contains(rejectTx2))
 	require.True(t, mp.Contains(keepTx))
+
+	// Rejected head removal should demote sender suffix (nonce 1,2) to queued.
+	require.Equal(t, 1, activeCount(mp), "only keep sender head should remain active")
+	queuedRejectNonces := make(map[uint64]bool)
+	mp.IterateQueuedTxs(func(sender string, nonce uint64, _ sdk.Tx) bool {
+		if sender == rejectSender.String() {
+			queuedRejectNonces[nonce] = true
+		}
+		return true
+	})
+	require.Equal(t, map[uint64]bool{1: true, 2: true}, queuedRejectNonces, "rejected sender suffix should be queued")
+}
+
+func TestCleanUpEntriesExpiresQueuedGapAfterTTL(t *testing.T) {
+	keeper := newMockAccountKeeper()
+	sdkCtx := testSDKContext()
+	baseApp := testBaseApp{ctx: sdkCtx}
+	mp := NewPriorityMempool(
+		PriorityMempoolConfig{
+			MaxTx:        32,
+			QueuedGapTTL: 10 * time.Millisecond,
+			AnteHandler: func(ctx sdk.Context, tx sdk.Tx, _ bool) (sdk.Context, error) {
+				return ctx, nil
+			},
+		},
+		log.NewNopLogger(),
+		testTxEncoder,
+		keeper,
+	)
+	eventCh := make(chan cmtmempool.AppMempoolEvent, 256)
+	mp.SetEventCh(eventCh)
+	t.Cleanup(func() {
+		assertInvariant(t, mp)
+	})
+
+	priv := secp256k1.GenPrivKey()
+	sender := sdk.AccAddress(priv.PubKey().Address())
+	keeper.SetSequence(sender, 0)
+	ctx := sdk.WrapSDKContext(sdkCtx)
+
+	tx2 := newTestTxWithPriv(priv, 2, 1000, "default")
+	require.NoError(t, mp.Insert(ctx, tx2))
+	drainEvents(eventCh)
+
+	// First cleanup marks sender as stalled but does not expire immediately.
+	mp.cleanUpEntries(baseApp, keeper)
+	_, rem := drainEvents(eventCh)
+	require.Equal(t, 0, rem)
+	require.True(t, mp.Contains(tx2))
+
+	time.Sleep(15 * time.Millisecond)
+	mp.cleanUpEntries(baseApp, keeper)
+	_, rem = drainEvents(eventCh)
+	require.Equal(t, 1, rem)
+	require.False(t, mp.Contains(tx2))
+	require.Equal(t, 0, mp.CountTx())
+}
+
+func TestCleanUpEntriesDoesNotExpireGapWhenSenderHasActive(t *testing.T) {
+	keeper := newMockAccountKeeper()
+	sdkCtx := testSDKContext()
+	baseApp := testBaseApp{ctx: sdkCtx}
+	mp := NewPriorityMempool(
+		PriorityMempoolConfig{
+			MaxTx:        32,
+			QueuedGapTTL: 10 * time.Millisecond,
+			AnteHandler: func(ctx sdk.Context, tx sdk.Tx, _ bool) (sdk.Context, error) {
+				return ctx, nil
+			},
+		},
+		log.NewNopLogger(),
+		testTxEncoder,
+		keeper,
+	)
+	eventCh := make(chan cmtmempool.AppMempoolEvent, 256)
+	mp.SetEventCh(eventCh)
+	t.Cleanup(func() {
+		assertInvariant(t, mp)
+	})
+
+	priv := secp256k1.GenPrivKey()
+	sender := sdk.AccAddress(priv.PubKey().Address())
+	keeper.SetSequence(sender, 0)
+	ctx := sdk.WrapSDKContext(sdkCtx)
+
+	tx2 := newTestTxWithPriv(priv, 2, 1000, "default")
+	require.NoError(t, mp.Insert(ctx, tx2))
+	drainEvents(eventCh)
+
+	// Mark as stalled, then make sender active before ttl elapses.
+	mp.cleanUpEntries(baseApp, keeper)
+	_, rem := drainEvents(eventCh)
+	require.Equal(t, 0, rem)
+	require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(priv, 0, 1000, "default")))
+	drainEvents(eventCh)
+
+	time.Sleep(15 * time.Millisecond)
+	mp.cleanUpEntries(baseApp, keeper)
+	_, rem = drainEvents(eventCh)
+	require.Equal(t, 0, rem)
+	require.True(t, mp.Contains(tx2), "queued tx should remain while sender has active txs")
 }

@@ -3,6 +3,7 @@ package abcipp
 import (
 	"context"
 	"fmt"
+	"sync"
 	"testing"
 	"time"
 
@@ -125,6 +126,7 @@ func assertInvariant(t *testing.T, mp *PriorityMempool) {
 }
 
 type mockAccountKeeper struct {
+	mu        sync.RWMutex
 	sequences map[string]uint64
 }
 
@@ -135,10 +137,14 @@ func newMockAccountKeeper() *mockAccountKeeper {
 }
 
 func (m *mockAccountKeeper) SetSequence(addr sdk.AccAddress, seq uint64) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	m.sequences[string(addr.Bytes())] = seq
 }
 
 func (m *mockAccountKeeper) GetSequence(_ context.Context, addr sdk.AccAddress) (uint64, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
 	key := string(addr.Bytes())
 	seq, ok := m.sequences[key]
 	if !ok {
