@@ -2,6 +2,7 @@ package app
 
 import (
 	"cosmossdk.io/errors"
+	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	sdkmempool "github.com/cosmos/cosmos-sdk/types/mempool"
@@ -15,7 +16,7 @@ import (
 	dynamicfeekeeper "github.com/initia-labs/initia/x/dynamic-fee/keeper"
 )
 
-func (app *InitiaApp) setupABCIPP(mempoolMaxTxs int) (
+func (app *InitiaApp) setupABCIPP(mempoolMaxTxs int, appOpts servertypes.AppOptions) (
 	sdkmempool.Mempool,
 	sdk.AnteHandler,
 	sdk.PrepareProposalHandler,
@@ -79,12 +80,16 @@ func (app *InitiaApp) setupABCIPP(mempoolMaxTxs int) (
 	}
 
 	anteHandler := appante.NewDualAnteHandler(minimalHandler, fullHandler)
+	abcippCfg := abcipp.GetConfig(appOpts)
 
 	mempool := abcipp.NewPriorityMempool(
 		abcipp.PriorityMempoolConfig{
-			MaxTx:       mempoolMaxTxs,
-			Tiers:       []abcipp.Tier{}, // no tiers on L1
-			AnteHandler: fullHandler,     // for cleanup
+			MaxTx:              mempoolMaxTxs,
+			MaxQueuedPerSender: abcippCfg.MaxQueuedPerSender,
+			MaxQueuedTotal:     abcippCfg.MaxQueuedTotal,
+			QueuedGapTTL:       abcippCfg.QueuedGapTTL,
+			Tiers:              []abcipp.Tier{}, // no tiers on L1
+			AnteHandler:        fullHandler,     // for cleanup
 		}, app.Logger(), app.TxEncode, app.AccountKeeper,
 	)
 
