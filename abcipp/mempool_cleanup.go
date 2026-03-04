@@ -80,6 +80,7 @@ func (p *PriorityMempool) cleanUpEntries(bApp BaseApp, ak AccountKeeper) {
 	if !ok {
 		return
 	}
+	now := time.Now()
 
 	p.mtx.RLock()
 	senders := make([]string, 0, len(p.senders))
@@ -117,8 +118,11 @@ func (p *PriorityMempool) cleanUpEntries(bApp BaseApp, ak AccountKeeper) {
 		ss.setOnChainSeqLocked(onChainSeq)
 		if staled := p.removeStaleLocked(ss, onChainSeq); len(staled) > 0 {
 			p.enqueueRemovedEvents(staled)
-			p.cleanupSenderLocked(sender)
 		}
+		if expired := p.expireQueuedGapLocked(ss, now); len(expired) > 0 {
+			p.enqueueRemovedEvents(expired)
+		}
+		p.cleanupSenderLocked(sender)
 	}
 	p.mtx.Unlock()
 
@@ -159,4 +163,26 @@ func (p *PriorityMempool) cleanUpEntries(bApp BaseApp, ak AccountKeeper) {
 		}
 	}
 
+}
+
+// expireQueuedGapLocked evicts all queued txs for a sender when the sender has
+// no active tx and remains blocked on a missing head nonce for longer than ttl.
+func (p *PriorityMempool) expireQueuedGapLocked(ss *senderState, now time.Time) []*txEntry {
+	if ss == nil {
+		return nil
+	}
+	if len(ss.active) == 0 && len(ss.queued) > 0 && ss.queuedMin > ss.onChainSeq {
+		if ss.gapSince.IsZero() {
+			ss.gapSince = now
+			return nil
+		}
+		if now.Sub(ss.gapSince) >= p.queuedGapTTL {
+			ss.gapSince = time.Time{}
+			return p.removeAllQueuedLocked(ss)
+		}
+		return nil
+	}
+
+	ss.gapSince = time.Time{}
+	return nil
 }

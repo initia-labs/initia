@@ -79,6 +79,22 @@ func (p *PriorityMempool) removeQueuedStaleLocked(ss *senderState, onChainSeq ui
 	return removed
 }
 
+// removeAllQueuedLocked removes all queued txs for a sender.
+func (p *PriorityMempool) removeAllQueuedLocked(ss *senderState) []*txEntry {
+	if ss == nil || len(ss.queued) == 0 {
+		return nil
+	}
+
+	removed := make([]*txEntry, 0, len(ss.queued))
+	for nonce, entry := range ss.queued {
+		removed = append(removed, entry)
+		delete(ss.queued, nonce)
+		p.queuedCount.Add(-1)
+	}
+	ss.resetQueuedRangeLocked()
+	return removed
+}
+
 // removeNonceLocked removes a single nonce from active first, then queued.
 func (p *PriorityMempool) removeNonceLocked(ss *senderState, nonce uint64) (*txEntry, bool) {
 	if entry, ok := ss.active[nonce]; ok {

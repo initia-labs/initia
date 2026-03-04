@@ -4,6 +4,7 @@ import (
 	"context"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"cosmossdk.io/log"
 	cmtmempool "github.com/cometbft/cometbft/mempool"
@@ -21,6 +22,7 @@ type PriorityMempoolConfig struct {
 	MaxTx              int // total active transaction limit
 	MaxQueuedPerSender int // per sender queued tx limit (0 = default)
 	MaxQueuedTotal     int // total queued tx limit (0 = default)
+	QueuedGapTTL       time.Duration
 	Tiers              []Tier
 
 	// for cleanup
@@ -40,11 +42,6 @@ type txKey struct {
 }
 
 const (
-	// DefaultMaxQueuedPerSender is the default per-sender queued tx limit.
-	DefaultMaxQueuedPerSender = 16
-	// DefaultMaxQueuedTotal is the default total queued tx limit.
-	DefaultMaxQueuedTotal = 1000
-
 	// queuedTier marks entries in the queued pool.
 	queuedTier = -1
 )
@@ -87,6 +84,7 @@ type PriorityMempool struct {
 	queuedCount        atomic.Int64
 	maxQueuedPerSender int
 	maxQueuedTotal     int
+	queuedGapTTL       time.Duration
 
 	eventCh     atomic.Pointer[chan<- cmtmempool.AppMempoolEvent]
 	eventMu     sync.Mutex
@@ -119,6 +117,10 @@ func NewPriorityMempool(cfg PriorityMempoolConfig, logger log.Logger, txEncoder 
 	if maxQT <= 0 {
 		maxQT = DefaultMaxQueuedTotal
 	}
+	gapTTL := cfg.QueuedGapTTL
+	if gapTTL <= 0 {
+		gapTTL = DefaultQueuedGapTTL
+	}
 
 	p := &PriorityMempool{
 		cfg:                cfg,
@@ -130,6 +132,7 @@ func NewPriorityMempool(cfg PriorityMempoolConfig, logger log.Logger, txEncoder 
 		tierDistribution:   dist,
 		maxQueuedPerSender: maxQPS,
 		maxQueuedTotal:     maxQT,
+		queuedGapTTL:       gapTTL,
 		ak:                 ak,
 		eventNotify:        make(chan struct{}, 1),
 		eventStop:          make(chan struct{}),

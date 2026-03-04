@@ -1,9 +1,12 @@
 package abcipp
 
+import "time"
+
 // senderState tracks all sender mempool state, active entries in the priority
 // index, queued future nonce entries, and the next expected insertion nonce.
 type senderState struct {
 	onChainSeq uint64
+	gapSince   time.Time
 
 	activeMin uint64
 	activeMax uint64
