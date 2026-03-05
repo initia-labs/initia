@@ -445,6 +445,54 @@ func (q Querier) Denom(ctx context.Context, req *types.QueryDenomRequest) (*type
 	}, nil
 }
 
+// DexPair implements types.QueryServer.
+func (q Querier) DexPair(ctx context.Context, req *types.QueryDexPairRequest) (*types.QueryDexPairResponse, error) {
+	metadataQuote, err := types.AccAddressFromString(q.ac, req.MetadataQuote)
+	if err != nil {
+		return nil, err
+	}
+
+	metadataLP, err := NewDexKeeper(q.Keeper).getMetadataLP(ctx, metadataQuote)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryDexPairResponse{
+		DexPair: types.DexPair{
+			MetadataQuote: metadataQuote.String(),
+			MetadataLP:    metadataLP.String(),
+		},
+	}, nil
+}
+
+// DexPairs implements types.QueryServer.
+func (q Querier) DexPairs(ctx context.Context, req *types.QueryDexPairsRequest) (*types.QueryDexPairsResponse, error) {
+	dexPairs, pageRes, err := query.CollectionPaginate(ctx, q.Keeper.DexPairs, req.Pagination, func(key []byte, value []byte) (types.DexPair, error) {
+		metadataQuote, err := vmtypes.NewAccountAddressFromBytes(key)
+		if err != nil {
+			return types.DexPair{}, err
+		}
+
+		metadataLP, err := vmtypes.NewAccountAddressFromBytes(value[:types.AddressBytesLength])
+		if err != nil {
+			return types.DexPair{}, err
+		}
+
+		return types.DexPair{
+			MetadataQuote: metadataQuote.String(),
+			MetadataLP:    metadataLP.String(),
+		}, nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryDexPairsResponse{
+		DexPairs:   dexPairs,
+		Pagination: pageRes,
+	}, nil
+}
+
 // Metadata implements types.QueryServer.
 func (q Querier) Metadata(ctx context.Context, req *types.QueryMetadataRequest) (*types.QueryMetadataResponse, error) {
 	metadataAddr, err := types.MetadataAddressFromDenom(req.Denom)
