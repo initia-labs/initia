@@ -19,19 +19,21 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Msg_Publish_FullMethodName        = "/initia.move.v1.Msg/Publish"
-	Msg_Execute_FullMethodName        = "/initia.move.v1.Msg/Execute"
-	Msg_ExecuteJSON_FullMethodName    = "/initia.move.v1.Msg/ExecuteJSON"
-	Msg_Script_FullMethodName         = "/initia.move.v1.Msg/Script"
-	Msg_ScriptJSON_FullMethodName     = "/initia.move.v1.Msg/ScriptJSON"
-	Msg_GovPublish_FullMethodName     = "/initia.move.v1.Msg/GovPublish"
-	Msg_GovExecute_FullMethodName     = "/initia.move.v1.Msg/GovExecute"
-	Msg_GovExecuteJSON_FullMethodName = "/initia.move.v1.Msg/GovExecuteJSON"
-	Msg_GovScript_FullMethodName      = "/initia.move.v1.Msg/GovScript"
-	Msg_GovScriptJSON_FullMethodName  = "/initia.move.v1.Msg/GovScriptJSON"
-	Msg_Whitelist_FullMethodName      = "/initia.move.v1.Msg/Whitelist"
-	Msg_Delist_FullMethodName         = "/initia.move.v1.Msg/Delist"
-	Msg_UpdateParams_FullMethodName   = "/initia.move.v1.Msg/UpdateParams"
+	Msg_Publish_FullMethodName           = "/initia.move.v1.Msg/Publish"
+	Msg_Execute_FullMethodName           = "/initia.move.v1.Msg/Execute"
+	Msg_ExecuteJSON_FullMethodName       = "/initia.move.v1.Msg/ExecuteJSON"
+	Msg_Script_FullMethodName            = "/initia.move.v1.Msg/Script"
+	Msg_ScriptJSON_FullMethodName        = "/initia.move.v1.Msg/ScriptJSON"
+	Msg_GovPublish_FullMethodName        = "/initia.move.v1.Msg/GovPublish"
+	Msg_GovExecute_FullMethodName        = "/initia.move.v1.Msg/GovExecute"
+	Msg_GovExecuteJSON_FullMethodName    = "/initia.move.v1.Msg/GovExecuteJSON"
+	Msg_GovScript_FullMethodName         = "/initia.move.v1.Msg/GovScript"
+	Msg_GovScriptJSON_FullMethodName     = "/initia.move.v1.Msg/GovScriptJSON"
+	Msg_WhitelistStaking_FullMethodName  = "/initia.move.v1.Msg/WhitelistStaking"
+	Msg_WhitelistGasPrice_FullMethodName = "/initia.move.v1.Msg/WhitelistGasPrice"
+	Msg_DelistStaking_FullMethodName     = "/initia.move.v1.Msg/DelistStaking"
+	Msg_DelistGasPrice_FullMethodName    = "/initia.move.v1.Msg/DelistGasPrice"
+	Msg_UpdateParams_FullMethodName      = "/initia.move.v1.Msg/UpdateParams"
 )
 
 // MsgClient is the client API for Msg service.
@@ -62,13 +64,14 @@ type MsgClient interface {
 	GovScript(ctx context.Context, in *MsgGovScript, opts ...grpc.CallOption) (*MsgGovScriptResponse, error)
 	// GovScriptJSON runs a scripts with the given message via gov proposal
 	GovScriptJSON(ctx context.Context, in *MsgGovScriptJSON, opts ...grpc.CallOption) (*MsgGovScriptJSONResponse, error)
-	// Whitelist registers a dex pair to whitelist of various features.
-	// - whitelist from coin register operation
-	// - allow counter party denom can be used as gas fee
-	// - register lp denom as staking denom
-	Whitelist(ctx context.Context, in *MsgWhitelist, opts ...grpc.CallOption) (*MsgWhitelistResponse, error)
-	// Delist unregisters a dex pair from the whitelist.
-	Delist(ctx context.Context, in *MsgDelist, opts ...grpc.CallOption) (*MsgDelistResponse, error)
+	// WhitelistStaking registers a DEX pair in the staking whitelist.
+	WhitelistStaking(ctx context.Context, in *MsgWhitelistStaking, opts ...grpc.CallOption) (*MsgWhitelistStakingResponse, error)
+	// WhitelistGasPrice registers a DEX pair in the gas price whitelist.
+	WhitelistGasPrice(ctx context.Context, in *MsgWhitelistGasPrice, opts ...grpc.CallOption) (*MsgWhitelistGasPriceResponse, error)
+	// DelistStaking removes a DEX pair from the staking whitelist.
+	DelistStaking(ctx context.Context, in *MsgDelistStaking, opts ...grpc.CallOption) (*MsgDelistStakingResponse, error)
+	// DelistGasPrice removes a DEX pair from the gas price whitelist.
+	DelistGasPrice(ctx context.Context, in *MsgDelistGasPrice, opts ...grpc.CallOption) (*MsgDelistGasPriceResponse, error)
 	// UpdateParams defines an operation for updating the x/move module
 	// parameters.
 	UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error)
@@ -172,18 +175,36 @@ func (c *msgClient) GovScriptJSON(ctx context.Context, in *MsgGovScriptJSON, opt
 	return out, nil
 }
 
-func (c *msgClient) Whitelist(ctx context.Context, in *MsgWhitelist, opts ...grpc.CallOption) (*MsgWhitelistResponse, error) {
-	out := new(MsgWhitelistResponse)
-	err := c.cc.Invoke(ctx, Msg_Whitelist_FullMethodName, in, out, opts...)
+func (c *msgClient) WhitelistStaking(ctx context.Context, in *MsgWhitelistStaking, opts ...grpc.CallOption) (*MsgWhitelistStakingResponse, error) {
+	out := new(MsgWhitelistStakingResponse)
+	err := c.cc.Invoke(ctx, Msg_WhitelistStaking_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *msgClient) Delist(ctx context.Context, in *MsgDelist, opts ...grpc.CallOption) (*MsgDelistResponse, error) {
-	out := new(MsgDelistResponse)
-	err := c.cc.Invoke(ctx, Msg_Delist_FullMethodName, in, out, opts...)
+func (c *msgClient) WhitelistGasPrice(ctx context.Context, in *MsgWhitelistGasPrice, opts ...grpc.CallOption) (*MsgWhitelistGasPriceResponse, error) {
+	out := new(MsgWhitelistGasPriceResponse)
+	err := c.cc.Invoke(ctx, Msg_WhitelistGasPrice_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) DelistStaking(ctx context.Context, in *MsgDelistStaking, opts ...grpc.CallOption) (*MsgDelistStakingResponse, error) {
+	out := new(MsgDelistStakingResponse)
+	err := c.cc.Invoke(ctx, Msg_DelistStaking_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) DelistGasPrice(ctx context.Context, in *MsgDelistGasPrice, opts ...grpc.CallOption) (*MsgDelistGasPriceResponse, error) {
+	out := new(MsgDelistGasPriceResponse)
+	err := c.cc.Invoke(ctx, Msg_DelistGasPrice_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -227,13 +248,14 @@ type MsgServer interface {
 	GovScript(context.Context, *MsgGovScript) (*MsgGovScriptResponse, error)
 	// GovScriptJSON runs a scripts with the given message via gov proposal
 	GovScriptJSON(context.Context, *MsgGovScriptJSON) (*MsgGovScriptJSONResponse, error)
-	// Whitelist registers a dex pair to whitelist of various features.
-	// - whitelist from coin register operation
-	// - allow counter party denom can be used as gas fee
-	// - register lp denom as staking denom
-	Whitelist(context.Context, *MsgWhitelist) (*MsgWhitelistResponse, error)
-	// Delist unregisters a dex pair from the whitelist.
-	Delist(context.Context, *MsgDelist) (*MsgDelistResponse, error)
+	// WhitelistStaking registers a DEX pair in the staking whitelist.
+	WhitelistStaking(context.Context, *MsgWhitelistStaking) (*MsgWhitelistStakingResponse, error)
+	// WhitelistGasPrice registers a DEX pair in the gas price whitelist.
+	WhitelistGasPrice(context.Context, *MsgWhitelistGasPrice) (*MsgWhitelistGasPriceResponse, error)
+	// DelistStaking removes a DEX pair from the staking whitelist.
+	DelistStaking(context.Context, *MsgDelistStaking) (*MsgDelistStakingResponse, error)
+	// DelistGasPrice removes a DEX pair from the gas price whitelist.
+	DelistGasPrice(context.Context, *MsgDelistGasPrice) (*MsgDelistGasPriceResponse, error)
 	// UpdateParams defines an operation for updating the x/move module
 	// parameters.
 	UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error)
@@ -274,11 +296,17 @@ func (UnimplementedMsgServer) GovScript(context.Context, *MsgGovScript) (*MsgGov
 func (UnimplementedMsgServer) GovScriptJSON(context.Context, *MsgGovScriptJSON) (*MsgGovScriptJSONResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GovScriptJSON not implemented")
 }
-func (UnimplementedMsgServer) Whitelist(context.Context, *MsgWhitelist) (*MsgWhitelistResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Whitelist not implemented")
+func (UnimplementedMsgServer) WhitelistStaking(context.Context, *MsgWhitelistStaking) (*MsgWhitelistStakingResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method WhitelistStaking not implemented")
 }
-func (UnimplementedMsgServer) Delist(context.Context, *MsgDelist) (*MsgDelistResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Delist not implemented")
+func (UnimplementedMsgServer) WhitelistGasPrice(context.Context, *MsgWhitelistGasPrice) (*MsgWhitelistGasPriceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method WhitelistGasPrice not implemented")
+}
+func (UnimplementedMsgServer) DelistStaking(context.Context, *MsgDelistStaking) (*MsgDelistStakingResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DelistStaking not implemented")
+}
+func (UnimplementedMsgServer) DelistGasPrice(context.Context, *MsgDelistGasPrice) (*MsgDelistGasPriceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DelistGasPrice not implemented")
 }
 func (UnimplementedMsgServer) UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateParams not implemented")
@@ -476,38 +504,74 @@ func _Msg_GovScriptJSON_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_Whitelist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgWhitelist)
+func _Msg_WhitelistStaking_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgWhitelistStaking)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).Whitelist(ctx, in)
+		return srv.(MsgServer).WhitelistStaking(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Msg_Whitelist_FullMethodName,
+		FullMethod: Msg_WhitelistStaking_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).Whitelist(ctx, req.(*MsgWhitelist))
+		return srv.(MsgServer).WhitelistStaking(ctx, req.(*MsgWhitelistStaking))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_Delist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgDelist)
+func _Msg_WhitelistGasPrice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgWhitelistGasPrice)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).Delist(ctx, in)
+		return srv.(MsgServer).WhitelistGasPrice(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Msg_Delist_FullMethodName,
+		FullMethod: Msg_WhitelistGasPrice_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).Delist(ctx, req.(*MsgDelist))
+		return srv.(MsgServer).WhitelistGasPrice(ctx, req.(*MsgWhitelistGasPrice))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_DelistStaking_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgDelistStaking)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).DelistStaking(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_DelistStaking_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).DelistStaking(ctx, req.(*MsgDelistStaking))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_DelistGasPrice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgDelistGasPrice)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).DelistGasPrice(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_DelistGasPrice_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).DelistGasPrice(ctx, req.(*MsgDelistGasPrice))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -578,12 +642,20 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Msg_GovScriptJSON_Handler,
 		},
 		{
-			MethodName: "Whitelist",
-			Handler:    _Msg_Whitelist_Handler,
+			MethodName: "WhitelistStaking",
+			Handler:    _Msg_WhitelistStaking_Handler,
 		},
 		{
-			MethodName: "Delist",
-			Handler:    _Msg_Delist_Handler,
+			MethodName: "WhitelistGasPrice",
+			Handler:    _Msg_WhitelistGasPrice_Handler,
+		},
+		{
+			MethodName: "DelistStaking",
+			Handler:    _Msg_DelistStaking_Handler,
+		},
+		{
+			MethodName: "DelistGasPrice",
+			Handler:    _Msg_DelistGasPrice_Handler,
 		},
 		{
 			MethodName: "UpdateParams",

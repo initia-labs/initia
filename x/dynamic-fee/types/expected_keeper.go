@@ -11,7 +11,7 @@ type TokenPriceKeeper interface {
 }
 
 type WhitelistKeeper interface {
-	GetWhitelistedTokens(ctx context.Context) ([]string, error)
+	GetWhitelistedGasTokens(ctx context.Context) ([]string, error)
 }
 
 type BaseDenomKeeper interface {

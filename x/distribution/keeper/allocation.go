@@ -19,9 +19,17 @@ func (k Keeper) beforeAllocateTokens(ctx context.Context) error {
 	feesCollected := k.bankKeeper.GetAllBalances(ctx, feeCollectorAddr)
 
 	for _, coin := range feesCollected {
-		if err := k.dexKeeper.SwapToBase(ctx, feeCollectorAddr, coin); err != nil {
-			return err
+		cacheCtx, write := sdk.UnwrapSDKContext(ctx).CacheContext()
+		if err := k.dexKeeper.SwapToBase(cacheCtx, feeCollectorAddr, coin); err != nil {
+			k.Logger(ctx).Error(
+				"failed to swap fee coin to base denom",
+				"denom", coin.Denom,
+				"amount", coin.Amount.String(),
+				"error", err,
+			)
+			continue
 		}
+		write()
 	}
 
 	return nil

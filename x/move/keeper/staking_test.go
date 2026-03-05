@@ -284,7 +284,7 @@ func TestApplyStakingDeltas(t *testing.T) {
 	denomQuote := "uusdc"
 	quoteAmount := math.NewInt(2_500_000_000_000)
 
-	metadataLP := createDexPool(
+	metadataLP := createBalancerPool(
 		t, ctx, input,
 		sdk.NewCoin(bondDenom, baseAmount), sdk.NewCoin(denomQuote, quoteAmount),
 		math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1),
@@ -387,7 +387,7 @@ func Test_SlashUnbondingDelegations(t *testing.T) {
 	denomQuote := "uusdc"
 	quoteAmount := math.NewInt(2_500_000_000_000)
 
-	metadataLP := createDexPool(
+	metadataLP := createBalancerPool(
 		t, ctx, input,
 		sdk.NewCoin(bondDenom, baseAmount), sdk.NewCoin(denomQuote, quoteAmount),
 		math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1),

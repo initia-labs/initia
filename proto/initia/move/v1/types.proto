@@ -43,6 +43,9 @@ message Params {
     (gogoproto.moretags) = "yaml:\"allowed_publishers\"",
     (amino.dont_omitempty) = true
   ];
+
+  // CLAMM module address
+  string clamm_module_address = 6 [(gogoproto.moretags) = "yaml:\"clamm_module_address\""];
 }
 
 // RawParams defines the raw params to store.
@@ -68,6 +71,9 @@ message RawParams {
 
   // flag whether to enable script execution
   bool script_enabled = 4;
+
+  // CLAMM module address
+  string clamm_module_address = 5 [(gogoproto.moretags) = "yaml:\"clamm_module_address\""];
 }
 
 // Module is data for the uploaded contract move code

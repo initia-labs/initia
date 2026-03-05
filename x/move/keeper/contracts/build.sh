@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
 if ! command -v initiad &> /dev/null
 then 
     echo "initiad could not be found"
     exit
 fi
 
-initiad move build  --named-addresses 'TestAccount=0x2'
+initiad move build --skip-fetch-latest-git-deps --named-addresses 'TestAccount=0x2'
 rm -rf ../binaries
 mkdir ../binaries
 
