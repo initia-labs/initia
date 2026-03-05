@@ -468,6 +468,19 @@ func (q Querier) DexPair(ctx context.Context, req *types.QueryDexPairRequest) (*
 // DexPairs implements types.QueryServer.
 func (q Querier) DexPairs(ctx context.Context, req *types.QueryDexPairsRequest) (*types.QueryDexPairsResponse, error) {
 	dexPairs, pageRes, err := query.CollectionPaginate(ctx, q.Keeper.DexPairs, req.Pagination, func(key []byte, value []byte) (types.DexPair, error) {
+		if len(key) < types.AddressBytesLength {
+			return types.DexPair{}, sdkerrors.ErrInvalidRequest.Wrapf(
+				"invalid dex pair key length: got %d, need at least %d",
+				len(key), types.AddressBytesLength,
+			)
+		}
+		if len(value) < types.AddressBytesLength {
+			return types.DexPair{}, sdkerrors.ErrInvalidRequest.Wrapf(
+				"invalid dex pair value length: got %d, need at least %d",
+				len(value), types.AddressBytesLength,
+			)
+		}
+
 		metadataQuote, err := vmtypes.NewAccountAddressFromBytes(key)
 		if err != nil {
 			return types.DexPair{}, err

@@ -10,11 +10,6 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 
 	"github.com/initia-labs/initia/app/upgrades"
-	movetypes "github.com/initia-labs/initia/x/move/types"
-
-	vmapi "github.com/initia-labs/movevm/api"
-	vmprecom "github.com/initia-labs/movevm/precompile"
-	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 func updateTotalEscrowAmount(ctx context.Context, app upgrades.InitiaApp) error {
@@ -70,37 +65,6 @@ func setupClammModuleAddress(ctx context.Context, app upgrades.InitiaApp) error 
 	}
 
 	if err := app.GetMoveKeeper().SetParams(ctx, params); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func upgradeMoveModules(ctx context.Context, app upgrades.InitiaApp) error {
-	// update modules
-	moduleBytesArray, err := vmprecom.ReadStdlib()
-	if err != nil {
-		return err
-	}
-
-	var modules []vmtypes.Module
-	for _, module := range moduleBytesArray {
-		// initiation-2 network upgrade, skip minitswap.move module
-		if sdk.UnwrapSDKContext(ctx).ChainID() == upgrades.TestnetChainID {
-			_, name, err := vmapi.ReadModuleInfo(module)
-			if err != nil {
-				return err
-			}
-			if name == "minitswap" {
-				continue
-			}
-		}
-
-		modules = append(modules, vmtypes.NewModule(module))
-	}
-
-	err = app.GetMoveKeeper().PublishModuleBundle(ctx, vmtypes.StdAddress, vmtypes.NewModuleBundle(modules...), movetypes.UpgradePolicy_COMPATIBLE)
-	if err != nil {
 		return err
 	}
 

@@ -72,7 +72,7 @@ func (k Keeper) setCachedBaseSpotPrice(ctx context.Context, key spotPriceCacheKe
 	cache.mu.Lock()
 	defer cache.mu.Unlock()
 
-	if cache.height != height {
+	if cache.values == nil || cache.height != height {
 		cache.height = height
 		cache.values = make(map[spotPriceCacheKey]math.LegacyDec)
 	}
