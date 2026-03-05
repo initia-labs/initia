@@ -16,7 +16,6 @@ import (
 
 func TestWhitelistProposal(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
-	dexKeeper := keeper.NewDexKeeper(&input.MoveKeeper)
 
 	// start dex creation
 	baseDenom := bondDenom
@@ -25,7 +24,7 @@ func TestWhitelistProposal(t *testing.T) {
 	denomQuote := "uusdc"
 	quoteAmount := math.NewInt(4_000_000_000_000)
 
-	metadataLP := createDexPool(
+	metadataLP := createBalancerPool(
 		t, ctx, input,
 		sdk.NewCoin(baseDenom, baseAmount), sdk.NewCoin(denomQuote, quoteAmount),
 		math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1),
@@ -33,7 +32,7 @@ func TestWhitelistProposal(t *testing.T) {
 	// finish dex creation
 
 	// create publish operation proposal
-	err := input.MoveKeeper.Whitelist(ctx, types.MsgWhitelist{
+	err := input.MoveKeeper.WhitelistStaking(ctx, types.MsgWhitelistStaking{
 		MetadataLP:   metadataLP.String(),
 		RewardWeight: math.LegacyOneDec(),
 		Authority:    input.MoveKeeper.GetAuthority(),
@@ -57,11 +56,6 @@ func TestWhitelistProposal(t *testing.T) {
 	require.NoError(t, err)
 	require.Contains(t, rewardWeights, distrtypes.RewardWeight{Denom: denomLP, Weight: math.LegacyOneDec()})
 
-	// dex pair registration
-	_metadataLP, err := dexKeeper.GetMetadataLP(ctx, denomQuote)
-	require.NoError(t, err)
-	require.Equal(t, metadataLP, _metadataLP)
-
 	found, err := input.MoveKeeper.HasStakingState(ctx, metadataLP)
 	require.NoError(t, err)
 	require.True(t, found)
@@ -70,7 +64,7 @@ func TestWhitelistProposal(t *testing.T) {
 	// delist
 	//
 
-	err = input.MoveKeeper.Delist(ctx, types.MsgDelist{
+	err = input.MoveKeeper.DelistStaking(ctx, types.MsgDelistStaking{
 		MetadataLP: metadataLP.String(),
 		Authority:  input.MoveKeeper.GetAuthority(),
 	})
@@ -90,15 +84,10 @@ func TestWhitelistProposal(t *testing.T) {
 	require.NoError(t, err)
 	require.NotContains(t, rewardWeights, distrtypes.RewardWeight{Denom: denomLP, Weight: math.LegacyOneDec()})
 
-	// check move dex pair update
-	found, err = dexKeeper.HasDexPair(ctx, denomQuote)
-	require.NoError(t, err)
-	require.False(t, found)
 }
 
 func TestWhitelistProposalReverse(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
-	dexKeeper := keeper.NewDexKeeper(&input.MoveKeeper)
 
 	// start dex creation
 	baseDenom := bondDenom
@@ -107,7 +96,7 @@ func TestWhitelistProposalReverse(t *testing.T) {
 	denomQuote := "uusdc"
 	quoteAmount := math.NewInt(4_000_000_000_000)
 
-	metadataLP := createDexPool(
+	metadataLP := createBalancerPool(
 		t, ctx, input,
 		sdk.NewCoin(denomQuote, quoteAmount), sdk.NewCoin(baseDenom, baseAmount),
 		math.LegacyNewDecWithPrec(2, 1), math.LegacyNewDecWithPrec(8, 1),
@@ -115,7 +104,7 @@ func TestWhitelistProposalReverse(t *testing.T) {
 	// finish dex creation
 
 	// create publish operation proposal
-	err := input.MoveKeeper.Whitelist(ctx, types.MsgWhitelist{
+	err := input.MoveKeeper.WhitelistStaking(ctx, types.MsgWhitelistStaking{
 		MetadataLP:   metadataLP.String(),
 		RewardWeight: math.LegacyOneDec(),
 		Authority:    input.MoveKeeper.GetAuthority(),
@@ -139,11 +128,6 @@ func TestWhitelistProposalReverse(t *testing.T) {
 	require.NoError(t, err)
 	require.Contains(t, rewardWeights, distrtypes.RewardWeight{Denom: denomLP, Weight: math.LegacyOneDec()})
 
-	// dex pair registration
-	_metadataLP, err := dexKeeper.GetMetadataLP(ctx, denomQuote)
-	require.NoError(t, err)
-	require.Equal(t, metadataLP, _metadataLP)
-
 	found, err := input.MoveKeeper.HasStakingState(ctx, metadataLP)
 	require.NoError(t, err)
 	require.True(t, found)
@@ -152,7 +136,7 @@ func TestWhitelistProposalReverse(t *testing.T) {
 	// delist
 	//
 
-	err = input.MoveKeeper.Delist(ctx, types.MsgDelist{
+	err = input.MoveKeeper.DelistStaking(ctx, types.MsgDelistStaking{
 		MetadataLP: metadataLP.String(),
 		Authority:  input.MoveKeeper.GetAuthority(),
 	})
@@ -172,15 +156,10 @@ func TestWhitelistProposalReverse(t *testing.T) {
 	require.NoError(t, err)
 	require.NotContains(t, rewardWeights, distrtypes.RewardWeight{Denom: denomLP, Weight: math.LegacyOneDec()})
 
-	// check move dex pair update
-	found, err = dexKeeper.HasDexPair(ctx, denomQuote)
-	require.NoError(t, err)
-	require.False(t, found)
 }
 
 func TestWhitelistProposal_StableSwapPool(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
-	dexKeeper := keeper.NewDexKeeper(&input.MoveKeeper)
 
 	// start stable swap creation
 
@@ -200,7 +179,7 @@ func TestWhitelistProposal_StableSwapPool(t *testing.T) {
 	// finish stable swap creation
 
 	// create publish operation proposal
-	err := input.MoveKeeper.Whitelist(ctx, types.MsgWhitelist{
+	err := input.MoveKeeper.WhitelistStaking(ctx, types.MsgWhitelistStaking{
 		MetadataLP:   metadataLP.String(),
 		RewardWeight: math.LegacyOneDec(),
 		Authority:    input.MoveKeeper.GetAuthority(),
@@ -224,12 +203,6 @@ func TestWhitelistProposal_StableSwapPool(t *testing.T) {
 	require.NoError(t, err)
 	require.Contains(t, rewardWeights, distrtypes.RewardWeight{Denom: denomLP, Weight: math.LegacyOneDec()})
 
-	// dex pair registration was not performed since it is a stable swap pool
-	_, err = dexKeeper.GetMetadataLP(ctx, denomCoinB)
-	require.Error(t, err)
-	_, err = dexKeeper.GetMetadataLP(ctx, denomCoinC)
-	require.Error(t, err)
-
 	// check move staking state
 	found, err := input.MoveKeeper.HasStakingState(ctx, metadataLP)
 	require.NoError(t, err)
@@ -239,7 +212,7 @@ func TestWhitelistProposal_StableSwapPool(t *testing.T) {
 	// delist
 	//
 
-	err = input.MoveKeeper.Delist(ctx, types.MsgDelist{
+	err = input.MoveKeeper.DelistStaking(ctx, types.MsgDelistStaking{
 		MetadataLP: metadataLP.String(),
 		Authority:  input.MoveKeeper.GetAuthority(),
 	})
@@ -259,11 +232,272 @@ func TestWhitelistProposal_StableSwapPool(t *testing.T) {
 	require.NoError(t, err)
 	require.NotContains(t, rewardWeights, distrtypes.RewardWeight{Denom: denomLP, Weight: math.LegacyOneDec()})
 
-	// check dex pair update (currently registration itself is not performed)
-	found, err = dexKeeper.HasDexPair(ctx, denomCoinB)
+}
+
+func TestWhitelistGasPrice_Balancer(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+
+	baseDenom := bondDenom
+	denomQuote := "uusdc"
+
+	metadataQuote, err := types.MetadataAddressFromDenom(denomQuote)
+	require.NoError(t, err)
+
+	metadataLP := createBalancerPool(
+		t, ctx, input,
+		sdk.NewCoin(baseDenom, math.NewInt(1_000_000_000_000)),
+		sdk.NewCoin(denomQuote, math.NewInt(4_000_000_000_000)),
+		math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1),
+	)
+
+	err = input.MoveKeeper.WhitelistGasPrice(ctx, types.MsgWhitelistGasPrice{
+		MetadataQuote: metadataQuote.String(),
+		MetadataLP:    metadataLP.String(),
+		Authority:     input.MoveKeeper.GetAuthority(),
+	})
+	require.NoError(t, err)
+
+	found, err := keeper.NewDexKeeper(&input.MoveKeeper).HasDexPair(ctx, denomQuote)
+	require.NoError(t, err)
+	require.True(t, found)
+
+	price, err := keeper.NewDexKeeper(&input.MoveKeeper).GetBaseSpotPrice(ctx, denomQuote)
+	require.NoError(t, err)
+	require.True(t, price.IsPositive())
+
+	err = input.MoveKeeper.DelistGasPrice(ctx, types.MsgDelistGasPrice{
+		MetadataQuote: metadataQuote.String(),
+		MetadataLP:    metadataLP.String(),
+		Authority:     input.MoveKeeper.GetAuthority(),
+	})
+	require.NoError(t, err)
+
+	found, err = keeper.NewDexKeeper(&input.MoveKeeper).HasDexPair(ctx, denomQuote)
 	require.NoError(t, err)
 	require.False(t, found)
-	found, err = dexKeeper.HasDexPair(ctx, denomCoinC)
+}
+
+func TestWhitelistGasPrice_StableSwap(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+
+	baseDenom := bondDenom
+	denomCoinB := "milkINIT"
+	denomCoinC := "ibiINIT"
+
+	metadataCoinB, err := types.MetadataAddressFromDenom(denomCoinB)
+	require.NoError(t, err)
+
+	metadataLP := createStableSwapPool(
+		t, ctx, input,
+		sdk.NewCoins(
+			sdk.NewCoin(baseDenom, math.NewInt(1_000_000_000_000)),
+			sdk.NewCoin(denomCoinB, math.NewInt(1_000_000_000_001)),
+			sdk.NewCoin(denomCoinC, math.NewInt(1_000_000_000_002)),
+		),
+	)
+
+	err = input.MoveKeeper.WhitelistGasPrice(ctx, types.MsgWhitelistGasPrice{
+		MetadataQuote: metadataCoinB.String(),
+		MetadataLP:    metadataLP.String(),
+		Authority:     input.MoveKeeper.GetAuthority(),
+	})
+	require.NoError(t, err)
+
+	found, err := keeper.NewDexKeeper(&input.MoveKeeper).HasDexPair(ctx, denomCoinB)
+	require.NoError(t, err)
+	require.True(t, found)
+
+	price, err := keeper.NewDexKeeper(&input.MoveKeeper).GetBaseSpotPrice(ctx, denomCoinB)
+	require.NoError(t, err)
+	require.True(t, price.IsPositive())
+
+	err = input.MoveKeeper.DelistGasPrice(ctx, types.MsgDelistGasPrice{
+		MetadataQuote: metadataCoinB.String(),
+		MetadataLP:    metadataLP.String(),
+		Authority:     input.MoveKeeper.GetAuthority(),
+	})
+	require.NoError(t, err)
+
+	found, err = keeper.NewDexKeeper(&input.MoveKeeper).HasDexPair(ctx, denomCoinB)
 	require.NoError(t, err)
 	require.False(t, found)
+}
+
+func TestWhitelistGasPrice_StableSwap_BaseDenomRejected(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+
+	baseDenom := bondDenom
+	denomCoinB := "milkINIT"
+	denomCoinC := "ibiINIT"
+
+	metadataBase, err := types.MetadataAddressFromDenom(baseDenom)
+	require.NoError(t, err)
+
+	metadataLP := createStableSwapPool(
+		t, ctx, input,
+		sdk.NewCoins(
+			sdk.NewCoin(baseDenom, math.NewInt(1_000_000_000_000)),
+			sdk.NewCoin(denomCoinB, math.NewInt(1_000_000_000_001)),
+			sdk.NewCoin(denomCoinC, math.NewInt(1_000_000_000_002)),
+		),
+	)
+
+	err = input.MoveKeeper.WhitelistGasPrice(ctx, types.MsgWhitelistGasPrice{
+		MetadataQuote: metadataBase.String(),
+		MetadataLP:    metadataLP.String(),
+		Authority:     input.MoveKeeper.GetAuthority(),
+	})
+	require.Error(t, err)
+	require.ErrorContains(t, err, "cannot be base denom")
+
+	found, err := keeper.NewDexKeeper(&input.MoveKeeper).HasDexPair(ctx, baseDenom)
+	require.NoError(t, err)
+	require.False(t, found)
+}
+
+func TestWhitelistGasPrice_CLAMM(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+
+	baseDenom := bondDenom
+	denomQuote := "uusdc"
+
+	metadataQuote, err := types.MetadataAddressFromDenom(denomQuote)
+	require.NoError(t, err)
+
+	params, err := input.MoveKeeper.GetParams(ctx)
+	require.NoError(t, err)
+	params.ClammModuleAddress = cafeAddr.String()
+	err = input.MoveKeeper.SetParams(ctx, params)
+	require.NoError(t, err)
+
+	// sqrt_price = 2^64 → price = 1.0 (base = metadata0)
+	metadataLP := createCLAMMPool(t, ctx, input, baseDenom, denomQuote, 1, 0)
+
+	err = input.MoveKeeper.WhitelistGasPrice(ctx, types.MsgWhitelistGasPrice{
+		MetadataQuote: metadataQuote.String(),
+		MetadataLP:    metadataLP.String(),
+		Authority:     input.MoveKeeper.GetAuthority(),
+	})
+	require.NoError(t, err)
+
+	found, err := keeper.NewDexKeeper(&input.MoveKeeper).HasDexPair(ctx, denomQuote)
+	require.NoError(t, err)
+	require.True(t, found)
+
+	price, err := keeper.NewDexKeeper(&input.MoveKeeper).GetBaseSpotPrice(ctx, denomQuote)
+	require.NoError(t, err)
+	require.True(t, price.IsPositive())
+
+	err = input.MoveKeeper.DelistGasPrice(ctx, types.MsgDelistGasPrice{
+		MetadataQuote: metadataQuote.String(),
+		MetadataLP:    metadataLP.String(),
+		Authority:     input.MoveKeeper.GetAuthority(),
+	})
+	require.NoError(t, err)
+
+	found, err = keeper.NewDexKeeper(&input.MoveKeeper).HasDexPair(ctx, denomQuote)
+	require.NoError(t, err)
+	require.False(t, found)
+}
+
+func TestWhitelistGasPrice_CLAMM_NoCLAMMInParams(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+
+	baseDenom := bondDenom
+	denomQuote := "uusdc"
+
+	metadataQuote, err := types.MetadataAddressFromDenom(denomQuote)
+	require.NoError(t, err)
+
+	metadataLP := createCLAMMPool(t, ctx, input, baseDenom, denomQuote, 1, 0)
+
+	// params.ClammModuleAddress is empty — should fail
+	err = input.MoveKeeper.WhitelistGasPrice(ctx, types.MsgWhitelistGasPrice{
+		MetadataQuote: metadataQuote.String(),
+		MetadataLP:    metadataLP.String(),
+		Authority:     input.MoveKeeper.GetAuthority(),
+	})
+	require.Error(t, err)
+}
+
+func TestWhitelistGasPrice_DuplicateQuoteRejected(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+
+	baseDenom := bondDenom
+	denomQuote := "uusdc"
+
+	metadataQuote, err := types.MetadataAddressFromDenom(denomQuote)
+	require.NoError(t, err)
+
+	firstLP := createBalancerPool(
+		t, ctx, input,
+		sdk.NewCoin(baseDenom, math.NewInt(1_000_000_000_000)),
+		sdk.NewCoin(denomQuote, math.NewInt(4_000_000_000_000)),
+		math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1),
+	)
+	require.NoError(t, input.MoveKeeper.WhitelistGasPrice(ctx, types.MsgWhitelistGasPrice{
+		MetadataQuote: metadataQuote.String(),
+		MetadataLP:    firstLP.String(),
+		Authority:     input.MoveKeeper.GetAuthority(),
+	}))
+
+	secondLP := createStableSwapPool(
+		t, ctx, input,
+		sdk.NewCoins(
+			sdk.NewCoin(baseDenom, math.NewInt(2_000_000_000_000)),
+			sdk.NewCoin(denomQuote, math.NewInt(2_000_000_000_000)),
+			sdk.NewCoin("milkINIT", math.NewInt(2_000_000_000_000)),
+		),
+	)
+	err = input.MoveKeeper.WhitelistGasPrice(ctx, types.MsgWhitelistGasPrice{
+		MetadataQuote: metadataQuote.String(),
+		MetadataLP:    secondLP.String(),
+		Authority:     input.MoveKeeper.GetAuthority(),
+	})
+	require.Error(t, err)
+
+	registeredLP, err := keeper.NewDexKeeper(&input.MoveKeeper).GetMetadataLP(ctx, denomQuote)
+	require.NoError(t, err)
+	require.Equal(t, firstLP, registeredLP)
+}
+
+func TestDelistGasPrice_MismatchedLPRejected(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+
+	baseDenom := bondDenom
+	denomQuote := "uusdc"
+
+	metadataQuote, err := types.MetadataAddressFromDenom(denomQuote)
+	require.NoError(t, err)
+
+	registeredLP := createBalancerPool(
+		t, ctx, input,
+		sdk.NewCoin(baseDenom, math.NewInt(1_000_000_000_000)),
+		sdk.NewCoin(denomQuote, math.NewInt(4_000_000_000_000)),
+		math.LegacyNewDecWithPrec(8, 1), math.LegacyNewDecWithPrec(2, 1),
+	)
+	require.NoError(t, input.MoveKeeper.WhitelistGasPrice(ctx, types.MsgWhitelistGasPrice{
+		MetadataQuote: metadataQuote.String(),
+		MetadataLP:    registeredLP.String(),
+		Authority:     input.MoveKeeper.GetAuthority(),
+	}))
+
+	otherLP := createStableSwapPool(
+		t, ctx, input,
+		sdk.NewCoins(
+			sdk.NewCoin(baseDenom, math.NewInt(2_000_000_000_000)),
+			sdk.NewCoin(denomQuote, math.NewInt(2_000_000_000_000)),
+			sdk.NewCoin("ibiINIT", math.NewInt(2_000_000_000_000)),
+		),
+	)
+	err = input.MoveKeeper.DelistGasPrice(ctx, types.MsgDelistGasPrice{
+		MetadataQuote: metadataQuote.String(),
+		MetadataLP:    otherLP.String(),
+		Authority:     input.MoveKeeper.GetAuthority(),
+	})
+	require.Error(t, err)
+
+	registeredAfter, err := keeper.NewDexKeeper(&input.MoveKeeper).GetMetadataLP(ctx, denomQuote)
+	require.NoError(t, err)
+	require.Equal(t, registeredLP, registeredAfter)
 }

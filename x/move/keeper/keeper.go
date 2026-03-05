@@ -8,6 +8,7 @@ import (
 	"cosmossdk.io/core/address"
 	corestoretypes "cosmossdk.io/core/store"
 	"cosmossdk.io/log"
+	"cosmossdk.io/math"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -41,6 +42,7 @@ type Keeper struct {
 	dexKeeper        DexKeeper
 	balancerKeeper   BalancerKeeper
 	stableSwapKeeper StableSwapKeeper
+	spotPriceCache   *spotPriceCache
 
 	// Msg server router
 	msgRouter  baseapp.MessageRouter
@@ -145,6 +147,9 @@ func NewKeeper(
 	k.dexKeeper = NewDexKeeper(k)
 	k.balancerKeeper = NewBalancerKeeper(k)
 	k.stableSwapKeeper = NewStableSwapKeeper(k)
+	k.spotPriceCache = &spotPriceCache{
+		values: make(map[spotPriceCacheKey]math.LegacyDec),
+	}
 	return k
 }
 

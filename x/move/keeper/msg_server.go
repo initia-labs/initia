@@ -406,7 +406,7 @@ func (ms MsgServer) GovScriptJSON(context context.Context, req *types.MsgGovScri
 	return &types.MsgGovScriptJSONResponse{}, nil
 }
 
-func (ms MsgServer) Whitelist(context context.Context, req *types.MsgWhitelist) (*types.MsgWhitelistResponse, error) {
+func (ms MsgServer) WhitelistStaking(context context.Context, req *types.MsgWhitelistStaking) (*types.MsgWhitelistStakingResponse, error) {
 	defer telemetry.MeasureSince(time.Now(), "move", "msg", "whitelist")
 	if ms.authority != req.Authority {
 		return nil, errors.Wrapf(govtypes.ErrInvalidSigner, "invalid authority; expected %s, got %s", ms.authority, req.Authority)
@@ -417,15 +417,34 @@ func (ms MsgServer) Whitelist(context context.Context, req *types.MsgWhitelist) 
 		return nil, err
 	}
 
-	err := ms.Keeper.Whitelist(ctx, *req)
+	err := ms.Keeper.WhitelistStaking(ctx, *req)
 	if err != nil {
 		return nil, err
 	}
 
-	return &types.MsgWhitelistResponse{}, nil
+	return &types.MsgWhitelistStakingResponse{}, nil
 }
 
-func (ms MsgServer) Delist(context context.Context, req *types.MsgDelist) (*types.MsgDelistResponse, error) {
+func (ms MsgServer) WhitelistGasPrice(context context.Context, req *types.MsgWhitelistGasPrice) (*types.MsgWhitelistGasPriceResponse, error) {
+	defer telemetry.MeasureSince(time.Now(), "move", "msg", "whitelist")
+	if ms.authority != req.Authority {
+		return nil, errors.Wrapf(govtypes.ErrInvalidSigner, "invalid authority; expected %s, got %s", ms.authority, req.Authority)
+	}
+
+	ctx := sdk.UnwrapSDKContext(context)
+	if err := req.Validate(ms.ac); err != nil {
+		return nil, err
+	}
+
+	err := ms.Keeper.WhitelistGasPrice(ctx, *req)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.MsgWhitelistGasPriceResponse{}, nil
+}
+
+func (ms MsgServer) DelistStaking(context context.Context, req *types.MsgDelistStaking) (*types.MsgDelistStakingResponse, error) {
 	defer telemetry.MeasureSince(time.Now(), "move", "msg", "delist")
 	if ms.authority != req.Authority {
 		return nil, errors.Wrapf(govtypes.ErrInvalidSigner, "invalid authority; expected %s, got %s", ms.authority, req.Authority)
@@ -436,12 +455,31 @@ func (ms MsgServer) Delist(context context.Context, req *types.MsgDelist) (*type
 		return nil, err
 	}
 
-	err := ms.Keeper.Delist(ctx, *req)
+	err := ms.Keeper.DelistStaking(ctx, *req)
 	if err != nil {
 		return nil, err
 	}
 
-	return &types.MsgDelistResponse{}, nil
+	return &types.MsgDelistStakingResponse{}, nil
+}
+
+func (ms MsgServer) DelistGasPrice(context context.Context, req *types.MsgDelistGasPrice) (*types.MsgDelistGasPriceResponse, error) {
+	defer telemetry.MeasureSince(time.Now(), "move", "msg", "delist")
+	if ms.authority != req.Authority {
+		return nil, errors.Wrapf(govtypes.ErrInvalidSigner, "invalid authority; expected %s, got %s", ms.authority, req.Authority)
+	}
+
+	ctx := sdk.UnwrapSDKContext(context)
+	if err := req.Validate(ms.ac); err != nil {
+		return nil, err
+	}
+
+	err := ms.Keeper.DelistGasPrice(ctx, *req)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.MsgDelistGasPriceResponse{}, nil
 }
 
 func (ms MsgServer) UpdateParams(context context.Context, req *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {

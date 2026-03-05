@@ -24,8 +24,7 @@ func NewDexKeeper(k *Keeper) DexKeeper {
 	return DexKeeper{k}
 }
 
-// SetDexPair store DexPair for both counterpart
-// and LP coins
+// SetDexPair store DexPair for both counterpart and LP coins.
 func (k DexKeeper) SetDexPair(
 	ctx context.Context,
 	dexPair types.DexPair,
@@ -43,8 +42,7 @@ func (k DexKeeper) SetDexPair(
 	return k.setDexPair(ctx, metadataQuote, metadataLP)
 }
 
-// setDexPair store DexPair for both counterpart
-// and LP coins
+// setDexPair stores a dex pair: value = metadataLP[:] (32 bytes).
 func (k DexKeeper) setDexPair(
 	ctx context.Context,
 	metadataQuote vmtypes.AccountAddress,
@@ -97,7 +95,7 @@ func (k DexKeeper) hasDexPair(
 	return k.DexPairs.Has(ctx, metadataQuote[:])
 }
 
-// IterateDexPair iterate DexPair store for genesis export
+// IterateDexPair iterate DexPair store for genesis export.
 func (k DexKeeper) IterateDexPair(ctx context.Context, cb func(types.DexPair) (bool, error)) error {
 	return k.DexPairs.Walk(ctx, nil, func(key, value []byte) (stop bool, err error) {
 		metadataQuote, err := vmtypes.NewAccountAddressFromBytes(key)
@@ -105,7 +103,7 @@ func (k DexKeeper) IterateDexPair(ctx context.Context, cb func(types.DexPair) (b
 			return true, err
 		}
 
-		metadataLP, err := vmtypes.NewAccountAddressFromBytes(value)
+		metadataLP, err := vmtypes.NewAccountAddressFromBytes(value[:types.AddressBytesLength])
 		if err != nil {
 			return true, err
 		}
@@ -130,8 +128,7 @@ func (k DexKeeper) GetMetadataLP(
 	return k.getMetadataLP(ctx, metadata)
 }
 
-// getMetadataLP return types.DexPair with the given
-// metadata
+// getMetadataLP returns the LP metadata address for the given quote.
 func (k DexKeeper) getMetadataLP(
 	ctx context.Context,
 	metadataQuote vmtypes.AccountAddress,
@@ -141,7 +138,7 @@ func (k DexKeeper) getMetadataLP(
 		return vmtypes.AccountAddress{}, err
 	}
 
-	return vmtypes.NewAccountAddressFromBytes(bz)
+	return vmtypes.NewAccountAddressFromBytes(bz[:types.AddressBytesLength])
 }
 
 // GetBaseSpotPrice return base coin spot price
@@ -150,20 +147,96 @@ func (k DexKeeper) GetBaseSpotPrice(
 	ctx context.Context,
 	denomQuote string,
 ) (math.LegacyDec, error) {
-	metadataLP, err := k.GetMetadataLP(ctx, denomQuote)
+	metadataQuote, err := types.MetadataAddressFromDenom(denomQuote)
 	if err != nil {
 		return math.LegacyZeroDec(), err
 	}
 
-	return k.getBaseSpotPrice(ctx, metadataLP)
+	metadataLP, err := k.getMetadataLP(ctx, metadataQuote)
+	if err != nil {
+		return math.LegacyZeroDec(), err
+	}
+
+	return k.getBaseSpotPrice(ctx, metadataQuote, metadataLP)
 }
 
 func (k DexKeeper) getBaseSpotPrice(
 	ctx context.Context,
+	metadataQuote vmtypes.AccountAddress,
 	metadataLP vmtypes.AccountAddress,
 ) (math.LegacyDec, error) {
-	// for now, we only support balancer dex
-	return k.BalancerKeeper().GetBaseSpotPrice(ctx, metadataLP)
+	if ok, err := k.BalancerKeeper().HasPool(ctx, metadataLP); err != nil {
+		return math.LegacyZeroDec(), err
+	} else if ok {
+		cacheKey := spotPriceCacheKey{
+			poolType:      types.MoveModuleNameDex,
+			metadataLP:    metadataLP,
+			metadataQuote: metadataQuote,
+		}
+		if cached, found := k.getCachedBaseSpotPrice(ctx, cacheKey); found {
+			return cached, nil
+		}
+
+		price, err := k.BalancerKeeper().GetBaseSpotPrice(ctx, metadataLP)
+		if err != nil {
+			return math.LegacyZeroDec(), err
+		}
+		k.setCachedBaseSpotPrice(ctx, cacheKey, price)
+		return price, nil
+	}
+
+	if ok, err := k.StableSwapKeeper().HasPool(ctx, metadataLP); err != nil {
+		return math.LegacyZeroDec(), err
+	} else if ok {
+		cacheKey := spotPriceCacheKey{
+			poolType:      types.MoveModuleNameStableSwap,
+			metadataLP:    metadataLP,
+			metadataQuote: metadataQuote,
+		}
+		if cached, found := k.getCachedBaseSpotPrice(ctx, cacheKey); found {
+			return cached, nil
+		}
+
+		price, err := k.StableSwapKeeper().GetBaseSpotPrice(ctx, metadataQuote, metadataLP)
+		if err != nil {
+			return math.LegacyZeroDec(), err
+		}
+		k.setCachedBaseSpotPrice(ctx, cacheKey, price)
+		return price, nil
+	}
+
+	// CLAMM pool: module address comes from params
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return math.LegacyZeroDec(), err
+	}
+	if params.ClammModuleAddress != "" {
+		clammModuleAddr, err := types.AccAddressFromString(k.ac, params.ClammModuleAddress)
+		if err != nil {
+			return math.LegacyZeroDec(), err
+		}
+		clammKeeper := NewCLAMMKeeper(k.Keeper, clammModuleAddr)
+		if ok, err := clammKeeper.HasPool(ctx, metadataLP); err != nil {
+			return math.LegacyZeroDec(), err
+		} else if ok {
+			cacheKey := spotPriceCacheKey{
+				poolType:      types.MoveModuleNameCLAMMPool,
+				metadataLP:    metadataLP,
+				metadataQuote: metadataQuote,
+			}
+			if cached, found := k.getCachedBaseSpotPrice(ctx, cacheKey); found {
+				return cached, nil
+			}
+			price, err := clammKeeper.GetBaseSpotPrice(ctx, metadataQuote, metadataLP)
+			if err != nil {
+				return math.LegacyZeroDec(), err
+			}
+			k.setCachedBaseSpotPrice(ctx, cacheKey, price)
+			return price, nil
+		}
+	}
+
+	return math.LegacyZeroDec(), types.ErrInvalidRequest.Wrapf("LP `%s` is not a supported DEX pool", metadataLP.String())
 }
 
 func (k DexKeeper) SwapToBase(
@@ -193,8 +266,37 @@ func (k DexKeeper) SwapToBase(
 		return err
 	}
 
-	// for now, we only support balancer dex
-	return k.BalancerKeeper().SwapToBase(ctx, vmAddr, metadataLP, metadataQuote, quoteCoin.Amount)
+	if ok, err := k.BalancerKeeper().HasPool(ctx, metadataLP); err != nil {
+		return err
+	} else if ok {
+		return k.BalancerKeeper().SwapToBase(ctx, vmAddr, metadataLP, metadataQuote, quoteCoin.Amount)
+	}
+
+	if ok, err := k.StableSwapKeeper().HasPool(ctx, metadataLP); err != nil {
+		return err
+	} else if ok {
+		return k.StableSwapKeeper().SwapToBase(ctx, vmAddr, metadataLP, metadataQuote, quoteCoin.Amount)
+	}
+
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return err
+	}
+	if params.ClammModuleAddress != "" {
+		clammModuleAddr, err := types.AccAddressFromString(k.ac, params.ClammModuleAddress)
+		if err != nil {
+			return err
+		}
+
+		clammKeeper := NewCLAMMKeeper(k.Keeper, clammModuleAddr)
+		if ok, err := clammKeeper.HasPool(ctx, metadataLP); err != nil {
+			return err
+		} else if ok {
+			return clammKeeper.SwapToBase(ctx, vmAddr, metadataLP, metadataQuote, quoteCoin.Amount)
+		}
+	}
+
+	return types.ErrInvalidRequest.Wrapf("LP `%s` is not a supported DEX pool", metadataLP.String())
 }
 
 func (k DexKeeper) PoolBalances(
