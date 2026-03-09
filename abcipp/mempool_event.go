@@ -15,6 +15,18 @@ func (p *PriorityMempool) SetEventCh(ch chan<- cmtmempool.AppMempoolEvent) {
 	}
 }
 
+// SetAppEventCh stores an app-side event channel that receives all events.
+// Unlike the cometbft channel (SetEventCh), this channel is not filtered.
+// Apps use it for internal tracking.
+func (p *PriorityMempool) SetAppEventCh(ch chan<- cmtmempool.AppMempoolEvent) {
+	p.appEventCh.Store(&ch)
+	// Wake the dispatch loop in case events were queued before channel wiring.
+	select {
+	case p.eventNotify <- struct{}{}:
+	default:
+	}
+}
+
 // StopEventDispatch signals the event dispatcher goroutine and waits for exit.
 func (p *PriorityMempool) StopEventDispatch() {
 	p.eventMu.Lock()
@@ -31,7 +43,7 @@ func (p *PriorityMempool) StopEventDispatch() {
 
 // enqueueEvent appends one event to the internal FIFO dispatch queue.
 func (p *PriorityMempool) enqueueEvent(eventType cmtmempool.AppMempoolEventType, txBytes []byte) {
-	if p.eventCh.Load() == nil {
+	if p.eventCh.Load() == nil && p.appEventCh.Load() == nil {
 		return
 	}
 
@@ -65,7 +77,13 @@ func (p *PriorityMempool) enqueueRemovedEvents(entries []*txEntry) {
 	}
 }
 
-// eventDispatchLoop forwards queued app-mempool events to cometbft.
+// eventDispatchLoop forwards queued app-mempool events to consumers.
+// Events are dispatched to two channels:
+//   - eventCh (cometbft): receives EventTxInserted and EventTxRemoved only.
+//     EventTxQueued is filtered because ProxyMempool already emits its own
+//     EventTxQueued to the reactor for gossip.
+//   - appEventCh (app): receives all events including EventTxQueued.
+//     Apps use this for internal tracking (e.g. txpool cache).
 func (p *PriorityMempool) eventDispatchLoop() {
 	defer close(p.eventDone)
 
@@ -76,8 +94,9 @@ func (p *PriorityMempool) eventDispatchLoop() {
 		case <-p.eventNotify:
 		}
 
-		chPtr := p.eventCh.Load()
-		if chPtr == nil {
+		cometChPtr := p.eventCh.Load()
+		appChPtr := p.appEventCh.Load()
+		if cometChPtr == nil && appChPtr == nil {
 			continue
 		}
 
@@ -92,10 +111,22 @@ func (p *PriorityMempool) eventDispatchLoop() {
 			p.eventQueue = p.eventQueue[1:]
 			p.eventMu.Unlock()
 
-			select {
-			case *chPtr <- ev:
-			case <-p.eventStop:
-				return
+			// dispatch to cometbft (filter EventTxQueued to avoid double gossip)
+			if cometChPtr != nil && ev.Type != cmtmempool.EventTxQueued {
+				select {
+				case *cometChPtr <- ev:
+				case <-p.eventStop:
+					return
+				}
+			}
+
+			// dispatch to app (all events)
+			if appChPtr != nil {
+				select {
+				case *appChPtr <- ev:
+				case <-p.eventStop:
+					return
+				}
 			}
 		}
 	}

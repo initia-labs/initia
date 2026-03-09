@@ -87,6 +87,7 @@ type PriorityMempool struct {
 	queuedGapTTL       time.Duration
 
 	eventCh     atomic.Pointer[chan<- cmtmempool.AppMempoolEvent]
+	appEventCh  atomic.Pointer[chan<- cmtmempool.AppMempoolEvent]
 	eventMu     sync.Mutex
 	eventQueue  []cmtmempool.AppMempoolEvent
 	eventNotify chan struct{}
