@@ -194,6 +194,26 @@ func TestQueuedSameNonceReplacement(t *testing.T) {
 	require.Equal(t, 2, mp.CountTx(), "one active + one queued should remain")
 }
 
+func TestFutureNonceWithoutQueuedExtensionRejected(t *testing.T) {
+	mp, keeper, sdkCtx, eventCh := newTestMempoolWithEvents(t, 32)
+	ctx := sdk.WrapSDKContext(sdkCtx)
+
+	priv := secp256k1.GenPrivKey()
+	sender := sdk.AccAddress(priv.PubKey().Address())
+	keeper.SetSequence(sender, 0)
+
+	require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(priv, 0, 1000, "default")))
+	drainEvents(eventCh)
+
+	tx := newTestTxWithPriv(priv, 2, 1000, "default")
+	tx.extOpts = nil
+
+	err := mp.Insert(ctx, tx)
+	require.Error(t, err)
+	require.ErrorContains(t, err, "future nonce tx requires extension option")
+	require.Equal(t, 1, mp.CountTx(), "rejected tx must not be added to active/queued pools")
+}
+
 // TestQueuedPerSenderCapEvictsHighestNonce verifies per-sender queued
 // cap policy: when full, inserting a lower nonce evicts the current highest nonce.
 func TestQueuedPerSenderCapEvictsHighestNonce(t *testing.T) {

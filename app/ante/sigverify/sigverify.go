@@ -23,6 +23,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	"github.com/initia-labs/initia/crypto/ethsecp256k1"
+	initiatx "github.com/initia-labs/initia/tx"
 
 	forwardingtypes "github.com/noble-assets/forwarding/v2/types"
 
@@ -83,6 +84,7 @@ func (svd SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simul
 	if len(sigs) != len(signers) {
 		return ctx, errorsmod.Wrapf(sdkerrors.ErrUnauthorized, "invalid number of signer;  expected: %d, got %d", len(signers), len(sigs))
 	}
+	allowQueued := initiatx.HasQueuedTxExtension(tx)
 
 	for i, sig := range sigs {
 		acc, err := authante.GetSignerAcc(ctx, svd.ak, signers[i])
@@ -99,6 +101,13 @@ func (svd SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simul
 		// Check account sequence number.
 		// skip during CheckTx/ReCheckTx so that future-nonce txs can reach the queued pool.
 		// full check still runs during PrepareProposal/ProcessProposal/FinalizeBlock.
+		if (ctx.IsCheckTx() || ctx.IsReCheckTx()) && sig.Sequence > acc.GetSequence() && !allowQueued {
+			return ctx, errorsmod.Wrapf(
+				sdkerrors.ErrInvalidRequest,
+				"future nonce tx requires extension option %s", initiatx.ExtensionOptionQueuedTxTypeURL,
+			)
+		}
+
 		if !ctx.IsCheckTx() && !ctx.IsReCheckTx() {
 			if sig.Sequence != acc.GetSequence() {
 				return ctx, errorsmod.Wrapf(
