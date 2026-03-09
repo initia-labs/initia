@@ -120,12 +120,11 @@ func (p *PriorityMempool) eventDispatchLoop() {
 				}
 			}
 
-			// dispatch to app (all events)
+			// dispatch to app (all events, non-blocking to avoid stalling cometbft)
 			if appChPtr != nil {
 				select {
 				case *appChPtr <- ev:
-				case <-p.eventStop:
-					return
+				default:
 				}
 			}
 		}
