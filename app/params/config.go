@@ -27,6 +27,17 @@ func (b queuedTxBuilder) SetExtensionOptions(extOpts ...*codectypes.Any) {
 		extBuilder.SetExtensionOptions(&codectypes.Any{TypeUrl: initiatx.ExtensionOptionQueuedTxTypeURL})
 		return
 	}
+	// Preserve the queued marker if it is not already present in extOpts.
+	hasQueued := false
+	for _, opt := range extOpts {
+		if opt != nil && opt.TypeUrl == initiatx.ExtensionOptionQueuedTxTypeURL {
+			hasQueued = true
+			break
+		}
+	}
+	if !hasQueued {
+		extOpts = append([]*codectypes.Any{{TypeUrl: initiatx.ExtensionOptionQueuedTxTypeURL}}, extOpts...)
+	}
 	extBuilder.SetExtensionOptions(extOpts...)
 }
 
