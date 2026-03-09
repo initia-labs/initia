@@ -486,7 +486,7 @@ func (q Querier) DexPairs(ctx context.Context, req *types.QueryDexPairsRequest) 
 			return types.DexPair{}, err
 		}
 
-		metadataLP, err := vmtypes.NewAccountAddressFromBytes(value[:types.AddressBytesLength])
+		metadataLP, err := vmtypes.NewAccountAddressFromBytes(value)
 		if err != nil {
 			return types.DexPair{}, err
 		}

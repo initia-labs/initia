@@ -103,7 +103,7 @@ func (k DexKeeper) IterateDexPair(ctx context.Context, cb func(types.DexPair) (b
 			return true, err
 		}
 
-		metadataLP, err := vmtypes.NewAccountAddressFromBytes(value[:types.AddressBytesLength])
+		metadataLP, err := vmtypes.NewAccountAddressFromBytes(value)
 		if err != nil {
 			return true, err
 		}
