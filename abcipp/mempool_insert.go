@@ -72,7 +72,13 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 		if _, ok := p.entries[key]; !ok {
 			if _, ok := ss.queued[key.nonce]; !ok {
 				p.mtx.Unlock()
-				return sdkerrors.ErrWrongSequence
+				return errorsmod.Wrapf(
+					sdkerrors.ErrWrongSequence,
+					"tx nonce %d is stale for sender %s (expected >= %d)",
+					key.nonce,
+					key.sender,
+					nextExpected,
+				)
 			}
 		}
 	}
