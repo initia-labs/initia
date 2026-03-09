@@ -13,11 +13,13 @@ import (
 	"cosmossdk.io/store/metrics"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	dbm "github.com/cosmos/cosmos-db"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdksigning "github.com/cosmos/cosmos-sdk/types/tx/signing"
 	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
+	initiatx "github.com/initia-labs/initia/tx"
 	protov2 "google.golang.org/protobuf/proto"
 )
 
@@ -27,6 +29,7 @@ type testTx struct {
 	gas      uint64
 	tier     string
 	sig      sdksigning.SignatureV2
+	extOpts  []*codectypes.Any
 }
 
 var _ authsigning.SigVerifiableTx = (*testTx)(nil)
@@ -47,6 +50,9 @@ func newTestTx(sender sdk.AccAddress, sequence uint64, gas uint64, tier string) 
 		gas:      gas,
 		tier:     tier,
 		sig:      sig,
+		extOpts: []*codectypes.Any{
+			{TypeUrl: initiatx.ExtensionOptionQueuedTxTypeURL},
+		},
 	}
 }
 
@@ -63,6 +69,9 @@ func newTestTxWithPriv(priv cryptotypes.PrivKey, sequence uint64, gas uint64, ti
 				Signature: []byte{0x1},
 			},
 			Sequence: sequence,
+		},
+		extOpts: []*codectypes.Any{
+			{TypeUrl: initiatx.ExtensionOptionQueuedTxTypeURL},
 		},
 	}
 }
@@ -127,11 +136,20 @@ func (tx *testTx) GetTimeoutHeight() uint64 {
 	return 0
 }
 
+func (tx *testTx) GetExtensionOptions() []*codectypes.Any {
+	return tx.extOpts
+}
+
+func (tx *testTx) GetNonCriticalExtensionOptions() []*codectypes.Any {
+	return nil
+}
+
 type encodedTestTx struct {
-	Sender   string `json:"sender"`
-	Gas      uint64 `json:"gas"`
-	Sequence uint64 `json:"sequence"`
-	Tier     string `json:"tier"`
+	Sender      string `json:"sender"`
+	Gas         uint64 `json:"gas"`
+	Sequence    uint64 `json:"sequence"`
+	Tier        string `json:"tier"`
+	AllowQueued bool   `json:"allow_queued"`
 }
 
 func testTxEncoder(tx sdk.Tx) ([]byte, error) {
@@ -140,10 +158,11 @@ func testTxEncoder(tx sdk.Tx) ([]byte, error) {
 		return nil, fmt.Errorf("unexpected tx type %T", tx)
 	}
 	enc := encodedTestTx{
-		Sender:   hex.EncodeToString(tt.sender.Bytes()),
-		Gas:      tt.gas,
-		Sequence: tt.sequence,
-		Tier:     tt.tier,
+		Sender:      hex.EncodeToString(tt.sender.Bytes()),
+		Gas:         tt.gas,
+		Sequence:    tt.sequence,
+		Tier:        tt.tier,
+		AllowQueued: len(tt.extOpts) > 0,
 	}
 	return json.Marshal(enc)
 }
@@ -158,7 +177,11 @@ func testTxDecoder(bz []byte) (sdk.Tx, error) {
 		return nil, err
 	}
 	sender := sdk.AccAddress(raw)
-	return newTestTx(sender, enc.Sequence, enc.Gas, enc.Tier), nil
+	tx := newTestTx(sender, enc.Sequence, enc.Gas, enc.Tier)
+	if !enc.AllowQueued {
+		tx.extOpts = nil
+	}
+	return tx, nil
 }
 
 func testSDKContext() sdk.Context {

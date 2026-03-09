@@ -4,10 +4,14 @@ import (
 	"context"
 	"fmt"
 
+	errorsmod "cosmossdk.io/errors"
 	cmtmempool "github.com/cometbft/cometbft/mempool"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	sdkmempool "github.com/cosmos/cosmos-sdk/types/mempool"
+
+	initiatx "github.com/initia-labs/initia/tx"
 )
 
 // Insert routes the tx to the active priority index or queued pool based on nonce.
@@ -68,12 +72,29 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 		if _, ok := p.entries[key]; !ok {
 			if _, ok := ss.queued[key.nonce]; !ok {
 				p.mtx.Unlock()
-				return fmt.Errorf("tx nonce %d is stale for sender %s (expected >= %d)", key.nonce, key.sender, nextExpected)
+				return errorsmod.Wrapf(
+					sdkerrors.ErrWrongSequence,
+					"tx nonce %d is stale for sender %s (expected >= %d)",
+					key.nonce,
+					key.sender,
+					nextExpected,
+				)
 			}
 		}
 	}
 
 	if key.nonce > nextExpected {
+		// Keep this guard even though sigverify rejects the same case in CheckTx/ReCheckTx.
+		// Insert can still be called from paths that bypass ante, so mempool invariants
+		// must be enforced here as a final safety check.
+		if !initiatx.HasQueuedTxExtension(tx) {
+			p.mtx.Unlock()
+			return errorsmod.Wrapf(
+				sdkerrors.ErrWrongSequence,
+				"future nonce tx requires extension option %s", initiatx.ExtensionOptionQueuedTxTypeURL,
+			)
+		}
+
 		entry := &txEntry{
 			tx:       tx,
 			priority: priority,

@@ -4,14 +4,15 @@ package abcipp
 
 import (
 	"context"
+	"errors"
 	"math/rand"
-	"strings"
 	"sync"
 	"testing"
 	"time"
 
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	sdkmempool "github.com/cosmos/cosmos-sdk/types/mempool"
 	"github.com/stretchr/testify/require"
 )
@@ -212,16 +213,16 @@ func runNonValidatorQueueClearScenario(t *testing.T, senderCount int, txPerSende
 			for _, seq := range seqsBySender[sender] {
 				priority := int64(localRng.Intn(1000) + 1)
 				ctx := sdk.WrapSDKContext(sdkCtx.WithPriority(priority))
-				tx := newTestTxWithPriv(privBySender[sender], seq, 1000, "default")
-				if err := mp.Insert(ctx, tx); err != nil {
-					// In this scenario Remove(tx0) can race with late nonce-0 insertion.
-					// Treat stale nonce-0 as expected under concurrent reconcile.
-					if seq == 0 && strings.Contains(err.Error(), "is stale for sender") {
-						continue
+					tx := newTestTxWithPriv(privBySender[sender], seq, 1000, "default")
+					if err := mp.Insert(ctx, tx); err != nil {
+						// In this scenario Remove(tx0) can race with late nonce-0 insertion.
+						// Treat stale nonce-0 as expected under concurrent reconcile.
+						if seq == 0 && errors.Is(err, sdkerrors.ErrWrongSequence) {
+							continue
+						}
+						errCh <- err
+						return
 					}
-					errCh <- err
-					return
-				}
 			}
 		}()
 	}

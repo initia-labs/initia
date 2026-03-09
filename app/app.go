@@ -156,6 +156,7 @@ func NewInitiaApp(
 	std.RegisterInterfaces(encodingConfig.InterfaceRegistry)
 	cryptocodec.RegisterLegacyAminoCodec(encodingConfig.Amino)
 	cryptocodec.RegisterInterfaces(encodingConfig.InterfaceRegistry)
+	initiatx.RegisterInterfaces(encodingConfig.InterfaceRegistry)
 
 	appCodec := encodingConfig.Codec
 	legacyAmino := encodingConfig.Amino

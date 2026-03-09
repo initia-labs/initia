@@ -12,6 +12,7 @@ import (
 
 	"github.com/initia-labs/initia/abcipp"
 	appante "github.com/initia-labs/initia/app/ante"
+	initiatx "github.com/initia-labs/initia/tx"
 	dynamicfeeante "github.com/initia-labs/initia/x/dynamic-fee/ante"
 	dynamicfeekeeper "github.com/initia-labs/initia/x/dynamic-fee/keeper"
 )
@@ -55,11 +56,12 @@ func (app *InitiaApp) setupABCIPP(mempoolMaxTxs int, appOpts servertypes.AppOpti
 
 	handlerOpts := appante.HandlerOptions{
 		HandlerOptions: cosmosante.HandlerOptions{
-			AccountKeeper:   app.AccountKeeper,
-			BankKeeper:      app.BankKeeper,
-			FeegrantKeeper:  app.FeeGrantKeeper,
-			SignModeHandler: app.txConfig.SignModeHandler(),
-			TxFeeChecker:    feeCheckerWrapper,
+			AccountKeeper:          app.AccountKeeper,
+			BankKeeper:             app.BankKeeper,
+			FeegrantKeeper:         app.FeeGrantKeeper,
+			SignModeHandler:        app.txConfig.SignModeHandler(),
+			ExtensionOptionChecker: initiatx.ExtensionOptionChecker,
+			TxFeeChecker:           feeCheckerWrapper,
 		},
 		Codec:     app.appCodec,
 		TxEncoder: app.txConfig.TxEncoder(),
