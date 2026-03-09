@@ -51,6 +51,7 @@ import (
 
 	oracleconfig "github.com/skip-mev/connect/v2/oracle/config"
 
+	initiatx "github.com/initia-labs/initia/tx"
 	txcli "github.com/initia-labs/initia/tx/cli"
 
 	initiastoreclient "github.com/initia-labs/store/client"
@@ -133,6 +134,16 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 			initClientCtx, err = client.ReadPersistentCommandFlags(initClientCtx, cmd.Flags())
 			if err != nil {
 				return err
+			}
+
+			// For tx commands, pass --allow-queued into the app tx config so the
+			// extension option is injected by NewTxBuilder before signing.
+			if flag := cmd.Flags().Lookup(initiatx.FlagAllowQueued); flag != nil {
+				allowQueued, err := cmd.Flags().GetBool(initiatx.FlagAllowQueued)
+				if err != nil {
+					return err
+				}
+				initClientCtx = initClientCtx.WithTxConfig(params.WithAllowQueuedTxConfig(initClientCtx.TxConfig, allowQueued))
 			}
 
 			// unsafe-reset-all is not working without viper set
@@ -315,6 +326,10 @@ func txCommand() *cobra.Command {
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
 	}
+
+	// Global tx flag: when enabled, the CLI injects the queued-tx extension option
+	// so future-nonce transactions can be accepted into the app-side queued mempool.
+	cmd.PersistentFlags().Bool(initiatx.FlagAllowQueued, false, "attach queued-tx extension option to allow future nonce tx queuing")
 
 	cmd.AddCommand(
 		authcmd.GetSignCommand(),

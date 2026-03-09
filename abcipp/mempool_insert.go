@@ -8,6 +8,8 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkmempool "github.com/cosmos/cosmos-sdk/types/mempool"
+
+	initiatx "github.com/initia-labs/initia/tx"
 )
 
 // Insert routes the tx to the active priority index or queued pool based on nonce.
@@ -74,6 +76,11 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 	}
 
 	if key.nonce > nextExpected {
+		if !initiatx.HasQueuedTxExtension(tx) {
+			p.mtx.Unlock()
+			return fmt.Errorf("future nonce tx requires extension option %s", initiatx.ExtensionOptionQueuedTxTypeURL)
+		}
+
 		entry := &txEntry{
 			tx:       tx,
 			priority: priority,
