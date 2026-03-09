@@ -122,7 +122,7 @@ func (k CLAMMKeeper) SwapToBase(
 		return err
 	}
 
-	metadata0, metadata1, sqrtPrice, err := types.ReadCLAMMPool(bz)
+	metadata0, metadata1, _, err := types.ReadCLAMMPool(bz)
 	if err != nil {
 		return err
 	}
@@ -156,19 +156,13 @@ func (k CLAMMKeeper) SwapToBase(
 	}
 
 	zeroForOne := metadataQuote == metadata0
-	sqrtPriceLimitBI := new(big.Int).Set(sqrtPrice.BigInt())
+	sqrtPriceLimitBI := new(big.Int)
 	if zeroForOne {
-		// price must move lower than current sqrt in zero-for-one direction
-		sqrtPriceLimitBI.Sub(sqrtPriceLimitBI, big.NewInt(1))
-		if sqrtPriceLimitBI.Cmp(clammMinSqrtPriceLimit) < 0 {
-			sqrtPriceLimitBI.Set(clammMinSqrtPriceLimit)
-		}
+		// use the loosest valid lower bound for zero-for-one direction
+		sqrtPriceLimitBI.Set(clammMinSqrtPriceLimit)
 	} else {
-		// price must move higher than current sqrt in one-for-zero direction
-		sqrtPriceLimitBI.Add(sqrtPriceLimitBI, big.NewInt(1))
-		if sqrtPriceLimitBI.Cmp(clammMaxSqrtPriceLimit) > 0 {
-			sqrtPriceLimitBI.Set(clammMaxSqrtPriceLimit)
-		}
+		// use the loosest valid upper bound for one-for-zero direction
+		sqrtPriceLimitBI.Set(clammMaxSqrtPriceLimit)
 	}
 
 	if sqrtPriceLimitBI.Sign() <= 0 {
