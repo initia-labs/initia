@@ -25,6 +25,10 @@ type spotPriceCache struct {
 	values map[spotPriceCacheKey]math.LegacyDec
 }
 
+// getCachedBaseSpotPrice returns (price, true) on a cache hit, or (zero, false) on a miss.
+// On a miss the caller is responsible for computing the price and calling setCachedBaseSpotPrice.
+// When height changes the stale entries are cleared and a miss is always returned; the next
+// setCachedBaseSpotPrice call will re-populate the cache for the current height.
 func (k Keeper) getCachedBaseSpotPrice(ctx context.Context, key spotPriceCacheKey) (math.LegacyDec, bool) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	if !sdkCtx.IsCheckTx() && !sdkCtx.IsReCheckTx() {

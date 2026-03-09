@@ -192,7 +192,7 @@ func (k BalancerKeeper) validation(ctx context.Context, metadataLP vmtypes.Accou
 	default:
 		return nil, false, moderrors.Wrapf(
 			types.ErrInvalidDexConfig,
-			"To be whitelisted, a dex should contain `%s` in its pair", denomBase,
+			"to be whitelisted, a balancer pool should contain `%s` in its pair", denomBase,
 		)
 	}
 
