@@ -94,6 +94,7 @@ func createBalancerPool(
 func Test_ReadPool(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 	dexKeeper := input.MoveKeeper.DexKeeper()
+	balancerKeeper := input.MoveKeeper.BalancerKeeper()
 	moveBankKeeper := input.MoveKeeper.MoveBankKeeper()
 
 	baseDenom := bondDenom
@@ -119,7 +120,7 @@ func Test_ReadPool(t *testing.T) {
 	require.NoError(t, err)
 
 	// check pool balance
-	balances, err := dexKeeper.PoolBalances(ctx, denomQuote)
+	balances, _, err := balancerKeeper.GetPoolInfo(ctx, metadataLP)
 	require.NoError(t, err)
 	require.Equal(t, baseAmount, balances[0])
 	require.Equal(t, quoteAmount, balances[1])
@@ -132,7 +133,8 @@ func Test_ReadPool(t *testing.T) {
 
 func Test_ReadWeights(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
-	dexKeeper := keeper.NewDexKeeper(&input.MoveKeeper)
+	dexKeeper := input.MoveKeeper.DexKeeper()
+	balancerKeeper := input.MoveKeeper.BalancerKeeper()
 
 	baseDenom := bondDenom
 	baseAmount := math.NewInt(1_000_000_000_000)
@@ -156,7 +158,7 @@ func Test_ReadWeights(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	weights, err := dexKeeper.PoolWeights(ctx, denomQuote)
+	_, weights, err := balancerKeeper.GetPoolInfo(ctx, metadataLP)
 	require.NoError(t, err)
 	require.Equal(t, math.LegacyNewDecWithPrec(8, 1), weights[0])
 	require.Equal(t, math.LegacyNewDecWithPrec(2, 1), weights[1])

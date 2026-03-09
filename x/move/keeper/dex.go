@@ -298,29 +298,3 @@ func (k DexKeeper) SwapToBase(
 
 	return types.ErrInvalidRequest.Wrapf("LP `%s` is not a supported DEX pool", metadataLP.String())
 }
-
-func (k DexKeeper) PoolBalances(
-	ctx context.Context,
-	denomQuote string,
-) ([]math.Int, error) {
-	metadataLP, err := k.GetMetadataLP(ctx, denomQuote)
-	if err != nil {
-		return nil, err
-	}
-
-	// for now, we only support balancer dex
-	return k.BalancerKeeper().poolBalances(ctx, metadataLP)
-}
-
-func (k DexKeeper) PoolWeights(
-	ctx context.Context,
-	denomQuote string,
-) ([]math.LegacyDec, error) {
-	metadataLP, err := k.GetMetadataLP(ctx, denomQuote)
-	if err != nil {
-		return nil, err
-	}
-
-	// for now, we only support balancer dex
-	return k.BalancerKeeper().poolWeights(ctx, metadataLP)
-}

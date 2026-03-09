@@ -213,6 +213,15 @@ func (k BalancerKeeper) validation(ctx context.Context, metadataLP vmtypes.Accou
 	return &metadataQuote, true, nil
 }
 
+// GetPoolInfo returns balances and weights in base/quote order for the pool.
+func (k BalancerKeeper) GetPoolInfo(ctx context.Context, metadataLP vmtypes.AccountAddress) (
+	balances []math.Int,
+	weights []math.LegacyDec,
+	err error,
+) {
+	return k.getPoolInfo(ctx, metadataLP)
+}
+
 // getPoolInfo returns balances and weights in base/quote order for the pool.
 func (k BalancerKeeper) getPoolInfo(ctx context.Context, metadataLP vmtypes.AccountAddress) (
 	balances []math.Int,
