@@ -7,6 +7,7 @@ import (
 	cmtmempool "github.com/cometbft/cometbft/mempool"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	sdkmempool "github.com/cosmos/cosmos-sdk/types/mempool"
 
 	initiatx "github.com/initia-labs/initia/tx"
@@ -70,7 +71,7 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 		if _, ok := p.entries[key]; !ok {
 			if _, ok := ss.queued[key.nonce]; !ok {
 				p.mtx.Unlock()
-				return fmt.Errorf("tx nonce %d is stale for sender %s (expected >= %d)", key.nonce, key.sender, nextExpected)
+				return sdkerrors.ErrWrongSequence
 			}
 		}
 	}

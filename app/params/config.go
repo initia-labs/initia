@@ -19,15 +19,15 @@ type config struct {
 
 type queuedTxBuilder struct {
 	client.TxBuilder
-	extBuilder client.ExtendedTxBuilder
 }
 
 func (b queuedTxBuilder) SetExtensionOptions(extOpts ...*codectypes.Any) {
+	extBuilder := b.TxBuilder.(client.ExtendedTxBuilder)
 	if len(extOpts) == 0 {
-		b.extBuilder.SetExtensionOptions(&codectypes.Any{TypeUrl: initiatx.ExtensionOptionQueuedTxTypeURL})
+		extBuilder.SetExtensionOptions(&codectypes.Any{TypeUrl: initiatx.ExtensionOptionQueuedTxTypeURL})
 		return
 	}
-	b.extBuilder.SetExtensionOptions(extOpts...)
+	extBuilder.SetExtensionOptions(extOpts...)
 }
 
 func (c config) NewTxBuilder() client.TxBuilder {
@@ -43,8 +43,7 @@ func (c config) NewTxBuilder() client.TxBuilder {
 	}
 	extBuilder.SetExtensionOptions(&codectypes.Any{TypeUrl: initiatx.ExtensionOptionQueuedTxTypeURL})
 	return queuedTxBuilder{
-		TxBuilder:  txBuilder,
-		extBuilder: extBuilder,
+		TxBuilder: txBuilder,
 	}
 }
 
