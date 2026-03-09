@@ -24,7 +24,7 @@ func NewDexKeeper(k *Keeper) DexKeeper {
 	return DexKeeper{k}
 }
 
-// SetDexPair store DexPair for both counterpart and LP coins.
+// SetDexPair store DexPair for Quote => LP
 func (k DexKeeper) SetDexPair(
 	ctx context.Context,
 	dexPair types.DexPair,
@@ -138,7 +138,7 @@ func (k DexKeeper) getMetadataLP(
 		return vmtypes.AccountAddress{}, err
 	}
 
-	return vmtypes.NewAccountAddressFromBytes(bz[:types.AddressBytesLength])
+	return vmtypes.NewAccountAddressFromBytes(bz)
 }
 
 // GetBaseSpotPrice return base coin spot price
