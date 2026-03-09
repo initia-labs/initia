@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	errorsmod "cosmossdk.io/errors"
 	cmtmempool "github.com/cometbft/cometbft/mempool"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -77,9 +78,15 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 	}
 
 	if key.nonce > nextExpected {
+		// Keep this guard even though sigverify rejects the same case in CheckTx/ReCheckTx.
+		// Insert can still be called from paths that bypass ante, so mempool invariants
+		// must be enforced here as a final safety check.
 		if !initiatx.HasQueuedTxExtension(tx) {
 			p.mtx.Unlock()
-			return fmt.Errorf("future nonce tx requires extension option %s", initiatx.ExtensionOptionQueuedTxTypeURL)
+			return errorsmod.Wrapf(
+				sdkerrors.ErrWrongSequence,
+				"future nonce tx requires extension option %s", initiatx.ExtensionOptionQueuedTxTypeURL,
+			)
 		}
 
 		entry := &txEntry{

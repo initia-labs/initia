@@ -103,7 +103,7 @@ func (svd SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simul
 		// full check still runs during PrepareProposal/ProcessProposal/FinalizeBlock.
 		if (ctx.IsCheckTx() || ctx.IsReCheckTx()) && sig.Sequence > acc.GetSequence() && !allowQueued {
 			return ctx, errorsmod.Wrapf(
-				sdkerrors.ErrInvalidRequest,
+				sdkerrors.ErrWrongSequence,
 				"future nonce tx requires extension option %s", initiatx.ExtensionOptionQueuedTxTypeURL,
 			)
 		}
