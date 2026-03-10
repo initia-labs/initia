@@ -113,6 +113,7 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 		if evicted != nil {
 			p.enqueueEvent(cmtmempool.EventTxRemoved, evicted.bytes)
 		}
+		p.enqueueEvent(cmtmempool.EventTxQueued, entry.bytes)
 		p.mtx.Unlock()
 		return nil
 	}

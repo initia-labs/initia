@@ -86,10 +86,15 @@ type PriorityMempool struct {
 	maxQueuedTotal     int
 	queuedGapTTL       time.Duration
 
-	eventCh     atomic.Pointer[chan<- cmtmempool.AppMempoolEvent]
-	eventMu     sync.Mutex
-	eventQueue  []cmtmempool.AppMempoolEvent
-	eventNotify chan struct{}
+	eventCh    atomic.Pointer[chan<- cmtmempool.AppMempoolEvent]
+	appEventCh atomic.Pointer[chan<- cmtmempool.AppMempoolEvent]
+
+	eventMu    sync.Mutex
+	cometQueue []cmtmempool.AppMempoolEvent
+	appQueue   []cmtmempool.AppMempoolEvent
+
+	cometNotify chan struct{}
+	appNotify   chan struct{}
 	eventStop   chan struct{}
 	eventDone   chan struct{}
 }
@@ -134,7 +139,8 @@ func NewPriorityMempool(cfg PriorityMempoolConfig, logger log.Logger, txEncoder 
 		maxQueuedTotal:     maxQT,
 		queuedGapTTL:       gapTTL,
 		ak:                 ak,
-		eventNotify:        make(chan struct{}, 1),
+		cometNotify:        make(chan struct{}, 1),
+		appNotify:          make(chan struct{}, 1),
 		eventStop:          make(chan struct{}),
 		eventDone:          make(chan struct{}),
 	}
