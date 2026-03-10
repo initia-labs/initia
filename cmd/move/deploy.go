@@ -76,12 +76,14 @@ func moveDeployCmd(ac address.Codec) *cobra.Command {
 	return cmd
 }
 
-// OBJECT_CODE_DEPLOYMENT_DOMAIN_SEPARATOR is the domain separator used for object code deployment
+// Domain separators used when computing the object address for object code deployment.
+// initia uses initia_std, minitia uses minitia_std.
 var (
 	INITIA_OBJECT_CODE_DEPLOYMENT_DOMAIN_SEPARATOR  string = "initia_std::object_code_deployment"
 	MINITIA_OBJECT_CODE_DEPLOYMENT_DOMAIN_SEPARATOR string = "minitia_std::object_code_deployment"
 )
 
+// domainSeparator returns the correct domain separator based on whether the chain uses minlib.
 func domainSeparator(useMinlib bool) string {
 	if useMinlib {
 		return MINITIA_OBJECT_CODE_DEPLOYMENT_DOMAIN_SEPARATOR
