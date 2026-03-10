@@ -130,12 +130,18 @@ func (p *PriorityMempool) cometDispatchLoop() {
 		for {
 			p.eventMu.Lock()
 			if len(p.cometQueue) == 0 {
+				p.cometQueue = nil // release backing array when fully drained
 				p.eventMu.Unlock()
 				break
 			}
 			ev := p.cometQueue[0]
 			p.cometQueue[0] = cmtmempool.AppMempoolEvent{}
 			p.cometQueue = p.cometQueue[1:]
+			// Compact when capacity has grown 2x beyond current length to
+			// reclaim memory during sustained load (queue never fully drains).
+			if cap(p.cometQueue) > 2*len(p.cometQueue) {
+				p.cometQueue = append([]cmtmempool.AppMempoolEvent(nil), p.cometQueue...)
+			}
 			p.eventMu.Unlock()
 
 			select {
@@ -163,12 +169,18 @@ func (p *PriorityMempool) appDispatchLoop() {
 		for {
 			p.eventMu.Lock()
 			if len(p.appQueue) == 0 {
+				p.appQueue = nil // release backing array when fully drained
 				p.eventMu.Unlock()
 				break
 			}
 			ev := p.appQueue[0]
 			p.appQueue[0] = cmtmempool.AppMempoolEvent{}
 			p.appQueue = p.appQueue[1:]
+			// Compact when capacity has grown 2x beyond current length to
+			// reclaim memory during sustained load (queue never fully drains).
+			if cap(p.appQueue) > 2*len(p.appQueue) {
+				p.appQueue = append([]cmtmempool.AppMempoolEvent(nil), p.appQueue...)
+			}
 			p.eventMu.Unlock()
 
 			select {
