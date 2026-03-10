@@ -139,10 +139,10 @@ func NewPriorityMempool(cfg PriorityMempoolConfig, logger log.Logger, txEncoder 
 		maxQueuedTotal:     maxQT,
 		queuedGapTTL:       gapTTL,
 		ak:                 ak,
-		cometNotify: make(chan struct{}, 1),
-		appNotify:   make(chan struct{}, 1),
-		eventStop:   make(chan struct{}),
-		eventDone:   make(chan struct{}),
+		cometNotify:        make(chan struct{}, 1),
+		appNotify:          make(chan struct{}, 1),
+		eventStop:          make(chan struct{}),
+		eventDone:          make(chan struct{}),
 	}
 	go p.eventDispatchLoop()
 	return p
