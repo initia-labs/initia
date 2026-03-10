@@ -76,10 +76,23 @@ func moveDeployCmd(ac address.Codec) *cobra.Command {
 	return cmd
 }
 
-// OBJECT_CODE_DEPLOYMENT_DOMAIN_SEPARATOR is the domain separator used for object code deployment
-var OBJECT_CODE_DEPLOYMENT_DOMAIN_SEPARATOR string = "initia_std::object_code_deployment"
+// Domain separators used when computing the object address for object code deployment.
+// initia uses initia_std, minitia uses minitia_std.
+var (
+	INITIA_OBJECT_CODE_DEPLOYMENT_DOMAIN_SEPARATOR  string = "initia_std::object_code_deployment"
+	MINITIA_OBJECT_CODE_DEPLOYMENT_DOMAIN_SEPARATOR string = "minitia_std::object_code_deployment"
+)
 
-func deployObjectCmd(ac address.Codec) *cobra.Command {
+// domainSeparator returns the correct domain separator based on whether the chain uses minlib.
+func domainSeparator(useMinlib bool) string {
+	if useMinlib {
+		return MINITIA_OBJECT_CODE_DEPLOYMENT_DOMAIN_SEPARATOR
+	} else {
+		return INITIA_OBJECT_CODE_DEPLOYMENT_DOMAIN_SEPARATOR
+	}
+}
+
+func deployObjectCmd(ac address.Codec, useMinlib bool) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "deploy-object [target-name] [flags]",
 		Short: "build and deploy a move package via @std::object_code_deployment::publish_v2",
@@ -112,7 +125,7 @@ the target name to '_' in the Move.toml file.
 			seq += 2
 
 			var buf []byte
-			bz1, err := vmtypes.SerializeString(OBJECT_CODE_DEPLOYMENT_DOMAIN_SEPARATOR)
+			bz1, err := vmtypes.SerializeString(domainSeparator(useMinlib))
 			if err != nil {
 				return err
 			}
