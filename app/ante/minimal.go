@@ -94,7 +94,7 @@ func (cfd CheckFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate boo
 // during CheckTx/ReCheckTx and to the full handler otherwise.
 func NewDualAnteHandler(minimal, full sdk.AnteHandler) sdk.AnteHandler {
 	return func(ctx sdk.Context, tx sdk.Tx, simulate bool) (sdk.Context, error) {
-		if ctx.IsCheckTx() || ctx.IsReCheckTx() {
+		if !simulate && (ctx.IsCheckTx() || ctx.IsReCheckTx()) {
 			return minimal(ctx, tx, simulate)
 		}
 		return full(ctx, tx, simulate)
