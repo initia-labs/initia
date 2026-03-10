@@ -7,6 +7,11 @@ import (
 	cmttypes "github.com/cometbft/cometbft/types"
 )
 
+// eventQueueCompactThreshold is the minimum live-element count before a
+// queue compaction is considered. Below this size the wasted memory is small
+// enough that copying is not worth it.
+const eventQueueCompactThreshold = 64
+
 // SetEventCh stores the cometbft event channel for event dispatch.
 func (p *PriorityMempool) SetEventCh(ch chan<- cmtmempool.AppMempoolEvent) {
 	p.eventCh.Store(&ch)
@@ -137,9 +142,9 @@ func (p *PriorityMempool) cometDispatchLoop() {
 			ev := p.cometQueue[0]
 			p.cometQueue[0] = cmtmempool.AppMempoolEvent{}
 			p.cometQueue = p.cometQueue[1:]
-			// Compact when capacity has grown 2x beyond current length to
-			// reclaim memory during sustained load (queue never fully drains).
-			if cap(p.cometQueue) > 2*len(p.cometQueue) {
+			// Compact only when there are enough live elements to make the
+			// copy worthwhile, and the backing array is at least 2x larger.
+			if len(p.cometQueue) >= eventQueueCompactThreshold && cap(p.cometQueue) > 2*len(p.cometQueue) {
 				p.cometQueue = append([]cmtmempool.AppMempoolEvent(nil), p.cometQueue...)
 			}
 			p.eventMu.Unlock()
@@ -176,9 +181,9 @@ func (p *PriorityMempool) appDispatchLoop() {
 			ev := p.appQueue[0]
 			p.appQueue[0] = cmtmempool.AppMempoolEvent{}
 			p.appQueue = p.appQueue[1:]
-			// Compact when capacity has grown 2x beyond current length to
-			// reclaim memory during sustained load (queue never fully drains).
-			if cap(p.appQueue) > 2*len(p.appQueue) {
+			// Compact only when there are enough live elements to make the
+			// copy worthwhile, and the backing array is at least 2x larger.
+			if len(p.appQueue) >= eventQueueCompactThreshold && cap(p.appQueue) > 2*len(p.appQueue) {
 				p.appQueue = append([]cmtmempool.AppMempoolEvent(nil), p.appQueue...)
 			}
 			p.eventMu.Unlock()
