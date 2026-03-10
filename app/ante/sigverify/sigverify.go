@@ -104,7 +104,7 @@ func (svd SigVerificationDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simul
 		if (ctx.IsCheckTx() || ctx.IsReCheckTx()) && sig.Sequence > acc.GetSequence() && !allowQueued {
 			return ctx, errorsmod.Wrapf(
 				sdkerrors.ErrWrongSequence,
-				"future nonce tx requires extension option %s", initiatx.ExtensionOptionQueuedTxTypeURL,
+				"account sequence mismatch, expected %d, got %d; use extension option %s for queued tx", acc.GetSequence(), sig.Sequence, initiatx.ExtensionOptionQueuedTxTypeURL,
 			)
 		}
 
