@@ -67,6 +67,12 @@ func (p Params) Validate(ac address.Codec) error {
 		return errors.Wrap(err, "invalid allowed_publishers")
 	}
 
+	if p.ClammModuleAddress != "" {
+		if _, err := AccAddressFromString(ac, p.ClammModuleAddress); err != nil {
+			return errors.Wrap(err, "invalid clamm_module_address")
+		}
+	}
+
 	return nil
 }
 
@@ -77,6 +83,7 @@ func (p Params) ToRaw() RawParams {
 		BaseMinGasPrice:            p.BaseMinGasPrice,
 		ContractSharedRevenueRatio: p.ContractSharedRevenueRatio,
 		ScriptEnabled:              p.ScriptEnabled,
+		ClammModuleAddress:         p.ClammModuleAddress,
 	}
 }
 
@@ -88,6 +95,7 @@ func (p RawParams) ToParams(allowedPublishers []string) Params {
 		ContractSharedRevenueRatio: p.ContractSharedRevenueRatio,
 		AllowedPublishers:          allowedPublishers,
 		ScriptEnabled:              p.ScriptEnabled,
+		ClammModuleAddress:         p.ClammModuleAddress,
 	}
 }
 

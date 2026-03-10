@@ -466,3 +466,67 @@ func Test_Query_Denom(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, bondDenom, res.Denom)
 }
+
+func Test_Query_DexPair(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+	dexKeeper := keeper.NewDexKeeper(&input.MoveKeeper)
+
+	metadataQuote, err := types.MetadataAddressFromDenom("ufoo")
+	require.NoError(t, err)
+	metadataLP, err := types.MetadataAddressFromDenom("ulppool")
+	require.NoError(t, err)
+
+	require.NoError(t, dexKeeper.SetDexPair(ctx, types.DexPair{
+		MetadataQuote: metadataQuote.String(),
+		MetadataLP:    metadataLP.String(),
+	}))
+
+	querier := keeper.NewQuerier(&input.MoveKeeper)
+	res, err := querier.DexPair(ctx, &types.QueryDexPairRequest{
+		MetadataQuote: metadataQuote.String(),
+	})
+	require.NoError(t, err)
+	require.Equal(t, types.DexPair{
+		MetadataQuote: metadataQuote.String(),
+		MetadataLP:    metadataLP.String(),
+	}, res.DexPair)
+}
+
+func Test_Query_DexPairs(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+	dexKeeper := keeper.NewDexKeeper(&input.MoveKeeper)
+
+	metadataQuoteA, err := types.MetadataAddressFromDenom("ufoo")
+	require.NoError(t, err)
+	metadataLPA, err := types.MetadataAddressFromDenom("ulppoola")
+	require.NoError(t, err)
+	require.NoError(t, dexKeeper.SetDexPair(ctx, types.DexPair{
+		MetadataQuote: metadataQuoteA.String(),
+		MetadataLP:    metadataLPA.String(),
+	}))
+
+	metadataQuoteB, err := types.MetadataAddressFromDenom("ubar")
+	require.NoError(t, err)
+	metadataLPB, err := types.MetadataAddressFromDenom("ulppoolb")
+	require.NoError(t, err)
+	require.NoError(t, dexKeeper.SetDexPair(ctx, types.DexPair{
+		MetadataQuote: metadataQuoteB.String(),
+		MetadataLP:    metadataLPB.String(),
+	}))
+
+	querier := keeper.NewQuerier(&input.MoveKeeper)
+	res, err := querier.DexPairs(ctx, &types.QueryDexPairsRequest{
+		Pagination: &query.PageRequest{Limit: 100},
+	})
+	require.NoError(t, err)
+	require.ElementsMatch(t, []types.DexPair{
+		{
+			MetadataQuote: metadataQuoteA.String(),
+			MetadataLP:    metadataLPA.String(),
+		},
+		{
+			MetadataQuote: metadataQuoteB.String(),
+			MetadataLP:    metadataLPB.String(),
+		},
+	}, res.DexPairs)
+}

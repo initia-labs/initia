@@ -20,8 +20,10 @@ var (
 	_ sdk.Msg = &MsgGovExecuteJSON{}
 	_ sdk.Msg = &MsgGovScript{}
 	_ sdk.Msg = &MsgGovScriptJSON{}
-	_ sdk.Msg = &MsgWhitelist{}
-	_ sdk.Msg = &MsgDelist{}
+	_ sdk.Msg = &MsgWhitelistStaking{}
+	_ sdk.Msg = &MsgWhitelistGasPrice{}
+	_ sdk.Msg = &MsgDelistStaking{}
+	_ sdk.Msg = &MsgDelistGasPrice{}
 	_ sdk.Msg = &MsgUpdateParams{}
 )
 
@@ -552,10 +554,10 @@ func (msg MsgGovScriptJSON) Validate(ac address.Codec) error {
 	return nil
 }
 
-/* MsgWhitelist */
+/* MsgWhitelistStaking */
 
-// Validate performs basic MsgWhitelist message validation.
-func (msg MsgWhitelist) Validate(ac address.Codec) error {
+// Validate performs basic MsgWhitelistStaking message validation.
+func (msg MsgWhitelistStaking) Validate(ac address.Codec) error {
 	if _, err := ac.StringToBytes(msg.Authority); err != nil {
 		return sdkerrors.ErrInvalidAddress.Wrapf("invalid authority address: %s", err)
 	}
@@ -571,12 +573,50 @@ func (msg MsgWhitelist) Validate(ac address.Codec) error {
 	return nil
 }
 
-/* MsgDelist */
+/* MsgWhitelistGasPrice */
 
-// Validate performs basic MsgDelist message validation.
-func (msg MsgDelist) Validate(ac address.Codec) error {
+// Validate performs basic MsgWhitelistGasPrice message validation.
+func (msg MsgWhitelistGasPrice) Validate(ac address.Codec) error {
 	if _, err := ac.StringToBytes(msg.Authority); err != nil {
 		return sdkerrors.ErrInvalidAddress.Wrapf("invalid authority address: %s", err)
+	}
+
+	if _, err := AccAddressFromString(ac, msg.MetadataQuote); err != nil {
+		return err
+	}
+
+	if _, err := AccAddressFromString(ac, msg.MetadataLP); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+/* MsgDelistStaking */
+
+// Validate performs basic MsgDelistStaking message validation.
+func (msg MsgDelistStaking) Validate(ac address.Codec) error {
+	if _, err := ac.StringToBytes(msg.Authority); err != nil {
+		return sdkerrors.ErrInvalidAddress.Wrapf("invalid authority address: %s", err)
+	}
+
+	if _, err := AccAddressFromString(ac, msg.MetadataLP); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+/* MsgDelistGasPrice */
+
+// Validate performs basic MsgDelistGasPrice message validation.
+func (msg MsgDelistGasPrice) Validate(ac address.Codec) error {
+	if _, err := ac.StringToBytes(msg.Authority); err != nil {
+		return sdkerrors.ErrInvalidAddress.Wrapf("invalid authority address: %s", err)
+	}
+
+	if _, err := AccAddressFromString(ac, msg.MetadataQuote); err != nil {
+		return err
 	}
 
 	if _, err := AccAddressFromString(ac, msg.MetadataLP); err != nil {

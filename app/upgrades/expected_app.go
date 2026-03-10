@@ -32,3 +32,8 @@ type InitiaApp interface {
 	GetModuleManager() *module.Manager
 	SetStoreLoader(loader baseapp.StoreLoader)
 }
+
+const (
+	MainnetChainID = "interwoven-1"
+	TestnetChainID = "initiation-2"
+)

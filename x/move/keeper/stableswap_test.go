@@ -1,6 +1,9 @@
 package keeper_test
 
 import (
+	"encoding/json"
+	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -136,7 +139,7 @@ func Test_StableSwap_Whitelist(t *testing.T) {
 		sdk.NewCoins(sdk.NewCoin(baseDenom, baseAmount), sdk.NewCoin(denomCoinB, amountCoinB), sdk.NewCoin(denomCoinC, amountCoinC)),
 	)
 
-	ok, err := stableSwapKeeper.Whitelist(ctx, metadataLP)
+	ok, err := stableSwapKeeper.WhitelistStaking(ctx, metadataLP)
 	require.NoError(t, err)
 	require.True(t, ok)
 }
@@ -160,7 +163,144 @@ func Test_StableSwap_Whitelist_Failed_MissingBase(t *testing.T) {
 		sdk.NewCoins(sdk.NewCoin(baseDenom, baseAmount), sdk.NewCoin(denomCoinB, amountCoinB), sdk.NewCoin(denomCoinC, amountCoinC)),
 	)
 
-	ok, err := stableSwapKeeper.Whitelist(ctx, metadataLP)
+	ok, err := stableSwapKeeper.WhitelistStaking(ctx, metadataLP)
 	require.Error(t, err)
 	require.False(t, ok)
+}
+
+func Test_StableSwap_GetBaseSpotPrice(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+	stableSwapKeeper := keeper.NewStableSwapKeeper(&input.MoveKeeper)
+
+	baseDenom := bondDenom
+	baseAmount := math.NewInt(1_000_000_000_000)
+
+	denomCoinB := "milkINIT"
+	amountCoinB := math.NewInt(1_000_000_000_001)
+
+	denomCoinC := "ibiINIT"
+	amountCoinC := math.NewInt(1_000_000_000_002)
+
+	metadataLP := createStableSwapPool(
+		t, ctx, input,
+		sdk.NewCoins(
+			sdk.NewCoin(baseDenom, baseAmount),
+			sdk.NewCoin(denomCoinB, amountCoinB),
+			sdk.NewCoin(denomCoinC, amountCoinC),
+		),
+	)
+
+	metadataCoinB, err := types.MetadataAddressFromDenom(denomCoinB)
+	require.NoError(t, err)
+
+	price, err := stableSwapKeeper.GetBaseSpotPrice(ctx, metadataCoinB, metadataLP)
+	require.NoError(t, err)
+	require.True(t, price.IsPositive())
+
+	// deterministic output for identical pool state
+	priceAgain, err := stableSwapKeeper.GetBaseSpotPrice(ctx, metadataCoinB, metadataLP)
+	require.NoError(t, err)
+	require.Equal(t, price, priceAgain)
+}
+
+func Test_StableSwap_GetBaseSpotPrice_InvalidPair(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+	stableSwapKeeper := keeper.NewStableSwapKeeper(&input.MoveKeeper)
+
+	baseDenom := "aINIT"
+	baseAmount := math.NewInt(1_000_000_000_000)
+
+	denomCoinB := "milkINIT"
+	amountCoinB := math.NewInt(1_000_000_000_001)
+
+	denomCoinC := "ibiINIT"
+	amountCoinC := math.NewInt(1_000_000_000_002)
+
+	metadataLP := createStableSwapPool(
+		t, ctx, input,
+		sdk.NewCoins(
+			sdk.NewCoin(baseDenom, baseAmount),
+			sdk.NewCoin(denomCoinB, amountCoinB),
+			sdk.NewCoin(denomCoinC, amountCoinC),
+		),
+	)
+
+	metadataCoinB, err := types.MetadataAddressFromDenom(denomCoinB)
+	require.NoError(t, err)
+
+	price, err := stableSwapKeeper.GetBaseSpotPrice(ctx, metadataCoinB, metadataLP)
+	require.Error(t, err)
+	require.Equal(t, math.LegacyZeroDec(), price)
+}
+
+func Test_StableSwap_SwapToBase(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+	stableSwapKeeper := keeper.NewStableSwapKeeper(&input.MoveKeeper)
+
+	baseDenom := bondDenom
+	denomCoinB := "milkINIT"
+	denomCoinC := "ibiINIT"
+
+	metadataBase, err := types.MetadataAddressFromDenom(baseDenom)
+	require.NoError(t, err)
+	metadataCoinB, err := types.MetadataAddressFromDenom(denomCoinB)
+	require.NoError(t, err)
+
+	metadataLP := createStableSwapPool(
+		t, ctx, input,
+		sdk.NewCoins(
+			sdk.NewCoin(baseDenom, math.NewInt(1_000_000_000_000)),
+			sdk.NewCoin(denomCoinB, math.NewInt(1_000_000_000_001)),
+			sdk.NewCoin(denomCoinC, math.NewInt(1_000_000_000_002)),
+		),
+	)
+
+	const offerAmount uint64 = 1_000
+	simRes, _, err := input.MoveKeeper.ExecuteViewFunctionJSON(
+		ctx,
+		vmtypes.StdAddress,
+		types.MoveModuleNameStableSwap,
+		"get_swap_simulation",
+		[]vmtypes.TypeTag{},
+		[]string{
+			fmt.Sprintf("\"%s\"", metadataLP),
+			fmt.Sprintf("\"%s\"", metadataCoinB),
+			fmt.Sprintf("\"%s\"", metadataBase),
+			fmt.Sprintf("\"%d\"", offerAmount),
+		},
+	)
+	require.NoError(t, err)
+	expectedOut := mustParseJSONUint64ForStableSwap(t, simRes.Ret)
+
+	quoteOfferCoin := sdk.NewCoin(denomCoinB, math.NewIntFromUint64(offerAmount))
+	fundedAddr := input.Faucet.NewFundedAccount(ctx, quoteOfferCoin)
+	before := input.BankKeeper.GetAllBalances(ctx, fundedAddr)
+
+	err = stableSwapKeeper.SwapToBase(
+		ctx,
+		types.ConvertSDKAddressToVMAddress(fundedAddr),
+		metadataLP,
+		metadataCoinB,
+		math.NewIntFromUint64(offerAmount),
+	)
+	require.NoError(t, err)
+
+	after := input.BankKeeper.GetAllBalances(ctx, fundedAddr)
+	require.True(t, before.AmountOf(denomCoinB).Sub(math.NewIntFromUint64(offerAmount)).Equal(after.AmountOf(denomCoinB)))
+	require.True(t, before.AmountOf(baseDenom).Add(math.NewIntFromUint64(expectedOut)).Equal(after.AmountOf(baseDenom)))
+}
+
+func mustParseJSONUint64ForStableSwap(t *testing.T, raw string) uint64 {
+	t.Helper()
+
+	var s string
+	if err := json.Unmarshal([]byte(raw), &s); err == nil {
+		v, err := strconv.ParseUint(s, 10, 64)
+		require.NoError(t, err)
+		return v
+	}
+
+	var v uint64
+	require.NoError(t, json.Unmarshal([]byte(raw), &v))
+	return v
 }

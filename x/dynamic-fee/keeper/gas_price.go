@@ -26,7 +26,7 @@ func (k Keeper) GasPrices(
 		return nil, err
 	}
 
-	whitelistedTokens, err := k.whitelistKeeper.GetWhitelistedTokens(ctx)
+	whitelistedTokens, err := k.whitelistKeeper.GetWhitelistedGasTokens(ctx)
 	if err != nil {
 		return nil, err
 	}
