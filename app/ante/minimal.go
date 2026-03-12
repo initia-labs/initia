@@ -92,9 +92,11 @@ func (cfd CheckFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate boo
 
 // NewDualAnteHandler returns an AnteHandler that routes to the minimal handler
 // during CheckTx/ReCheckTx and to the full handler otherwise.
+// Simulations always go through the full handler regardless of check tx context,
+// so that gas estimates reflect the complete ante handler logic.
 func NewDualAnteHandler(minimal, full sdk.AnteHandler) sdk.AnteHandler {
 	return func(ctx sdk.Context, tx sdk.Tx, simulate bool) (sdk.Context, error) {
-		if ctx.IsCheckTx() || ctx.IsReCheckTx() {
+		if !simulate && (ctx.IsCheckTx() || ctx.IsReCheckTx()) {
 			return minimal(ctx, tx, simulate)
 		}
 		return full(ctx, tx, simulate)

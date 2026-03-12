@@ -105,14 +105,24 @@ service Query {
     option (google.api.http).get = "/initia/move/v1/params";
   }
 
-  // Metadata converts metadata to denom
+  // Metadata converts denom to metadata
   rpc Metadata(QueryMetadataRequest) returns (QueryMetadataResponse) {
     option (google.api.http).get = "/initia/move/v1/metadata";
   }
 
-  // Denom converts denom to metadata
+  // Denom converts metadata to denom
   rpc Denom(QueryDenomRequest) returns (QueryDenomResponse) {
     option (google.api.http).get = "/initia/move/v1/denom";
+  }
+
+  // DexPair queries a dex pair by quote metadata address.
+  rpc DexPair(QueryDexPairRequest) returns (QueryDexPairResponse) {
+    option (google.api.http).get = "/initia/move/v1/dex/pairs/{metadata_quote}";
+  }
+
+  // DexPairs queries all dex pairs.
+  rpc DexPairs(QueryDexPairsRequest) returns (QueryDexPairsResponse) {
+    option (google.api.http).get = "/initia/move/v1/dex/pairs";
   }
 }
 
@@ -417,4 +427,33 @@ message QueryDenomRequest {
 // QueryDenomResponse is the response type for the Query/Denom RPC method.
 message QueryDenomResponse {
   string denom = 1;
+}
+
+// QueryDexPairRequest is the request type for the Query/DexPair RPC method.
+message QueryDexPairRequest {
+  string metadata_quote = 1;
+}
+
+// QueryDexPairResponse is the response type for the Query/DexPair RPC method.
+message QueryDexPairResponse {
+  DexPair dex_pair = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+// QueryDexPairsRequest is the request type for the Query/DexPairs RPC method.
+message QueryDexPairsRequest {
+  // pagination defines an optional pagination for the request.
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+// QueryDexPairsResponse is the response type for the Query/DexPairs RPC method.
+message QueryDexPairsResponse {
+  repeated DexPair dex_pairs = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  // pagination defines the pagination in the response.
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }

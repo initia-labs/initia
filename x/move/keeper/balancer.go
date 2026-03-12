@@ -19,11 +19,12 @@ type BalancerKeeper struct {
 	*Keeper
 }
 
+// NewBalancerKeeper returns a balancer-specific keeper wrapper.
 func NewBalancerKeeper(k *Keeper) BalancerKeeper {
 	return BalancerKeeper{k}
 }
 
-// HasPool checks if a pool exists for a given metadataLP
+// HasPool reports whether a balancer pool exists for the given LP metadata.
 func (k BalancerKeeper) HasPool(ctx context.Context, metadataLP vmtypes.AccountAddress) (bool, error) {
 	return k.HasResource(ctx, metadataLP, vmtypes.StructTag{
 		Address:  vmtypes.StdAddress,
@@ -33,7 +34,7 @@ func (k BalancerKeeper) HasPool(ctx context.Context, metadataLP vmtypes.AccountA
 	})
 }
 
-// GetBaseSpotPrice return base coin spot price
+// GetBaseSpotPrice returns the base asset spot price for the pool.
 // `base_price` * `quote_amount` == `base_amount`
 func (k BalancerKeeper) GetBaseSpotPrice(
 	ctx context.Context,
@@ -47,6 +48,7 @@ func (k BalancerKeeper) GetBaseSpotPrice(
 	return types.GetBaseSpotPrice(balances[0], balances[1], weights[0], weights[1]), nil
 }
 
+// SwapToBase executes a sudo swap from quote asset to base asset in the pool.
 func (k BalancerKeeper) SwapToBase(
 	ctx context.Context,
 	trader vmtypes.AccountAddress,
@@ -72,25 +74,60 @@ func (k BalancerKeeper) SwapToBase(
 	)
 }
 
-func (k BalancerKeeper) Whitelist(ctx context.Context, metadataLP vmtypes.AccountAddress) (bool, error) {
-	ok, err := k.HasPool(ctx, metadataLP)
-	if err != nil {
-		return false, err
+// WhitelistStaking validates a balancer LP for staking whitelist registration.
+func (k BalancerKeeper) WhitelistStaking(ctx context.Context, metadataLP vmtypes.AccountAddress) (bool, error) {
+	_, ok, err := k.validation(ctx, metadataLP)
+	return ok, err
+}
+
+// WhitelistGasPrice validates that the balancer LP can be whitelisted for gas-price usage.
+// It returns (true, nil) on success, (false, nil) if the LP is not a balancer pool,
+// and (false, err) on a validation error.
+// Store operations are intentionally omitted; they are handled by whitelist.go.
+func (k BalancerKeeper) WhitelistGasPrice(ctx context.Context, metadataQuote, metadataLP vmtypes.AccountAddress) (bool, error) {
+	metadataQuotePtr, ok, err := k.validation(ctx, metadataLP)
+	if !ok || err != nil {
+		return ok, err
 	}
-	if !ok {
+	if metadataQuotePtr == nil {
+		return false, moderrors.Wrap(types.ErrInvalidRequest, "failed to resolve quote metadata for the given LP")
+	}
+
+	// Ensure the provided quote metadata matches the quote asset in the LP pair.
+	if metadataQuote != *metadataQuotePtr {
+		return false, moderrors.Wrapf(
+			types.ErrInvalidRequest,
+			"invalid quote metadata: expected `%s`, got `%s`",
+			metadataQuotePtr.String(),
+			metadataQuote.String(),
+		)
+	}
+
+	return true, nil
+}
+
+// DelistStaking is a no-op for balancer staking delist.
+func (k BalancerKeeper) DelistStaking(
+	ctx context.Context,
+	metadataLP vmtypes.AccountAddress,
+) error {
+	// no-op for now
+	return nil
+}
+
+// DelistGasPrice validates that the balancer LP contains metadataQuote.
+// Returns (true, nil) on success, (false, nil) if the LP is not a balancer pool,
+// and (false, err) on a validation error.
+// Store operations are intentionally omitted; they are handled by whitelist.go.
+func (k BalancerKeeper) DelistGasPrice(
+	ctx context.Context,
+	metadataQuote vmtypes.AccountAddress,
+	metadataLP vmtypes.AccountAddress,
+) (bool, error) {
+	if ok, err := k.HasPool(ctx, metadataLP); err != nil {
+		return false, err
+	} else if !ok {
 		return false, nil
-	}
-
-	// assert base denom is exist in the dex pair
-
-	denomBase, err := k.BaseDenom(ctx)
-	if err != nil {
-		return false, err
-	}
-
-	metadataBase, err := types.MetadataAddressFromDenom(denomBase)
-	if err != nil {
-		return false, err
 	}
 
 	metadata, err := k.poolMetadata(ctx, metadataLP)
@@ -98,10 +135,51 @@ func (k BalancerKeeper) Whitelist(ctx context.Context, metadataLP vmtypes.Accoun
 		return false, err
 	}
 
-	if !slices.Contains(metadata, metadataBase) {
+	if !slices.Contains(metadata, metadataQuote) {
 		return false, moderrors.Wrapf(
+			types.ErrInvalidRequest,
+			"invalid quote metadata `%s` for LP `%s`",
+			metadataQuote.String(),
+			metadataLP.String(),
+		)
+	}
+
+	return true, nil
+}
+
+// validation validates whether the LP belongs to a balancer pool that can be
+// whitelisted and returns the quote metadata address when valid.
+// The bool return is false when the LP does not belong to a balancer pool.
+func (k BalancerKeeper) validation(ctx context.Context, metadataLP vmtypes.AccountAddress) (*vmtypes.AccountAddress, bool, error) {
+	ok, err := k.HasPool(ctx, metadataLP)
+	if err != nil {
+		return nil, false, err
+	}
+	if !ok {
+		return nil, false, nil
+	}
+
+	// assert base denom is exist in the dex pair
+
+	denomBase, err := k.BaseDenom(ctx)
+	if err != nil {
+		return nil, false, err
+	}
+
+	metadataBase, err := types.MetadataAddressFromDenom(denomBase)
+	if err != nil {
+		return nil, false, err
+	}
+
+	metadata, err := k.poolMetadata(ctx, metadataLP)
+	if err != nil {
+		return nil, false, err
+	}
+
+	if !slices.Contains(metadata, metadataBase) {
+		return nil, false, moderrors.Wrapf(
 			types.ErrInvalidDexConfig,
-			"To be whitelisted, a stableswap should contain `%s` in its pair", denomBase,
+			"to be whitelisted, a balancer pool should contain `%s` in its pair", denomBase,
 		)
 	}
 
@@ -112,9 +190,9 @@ func (k BalancerKeeper) Whitelist(ctx context.Context, metadataLP vmtypes.Accoun
 	case metadata[1]:
 		metadataQuote = metadata[0]
 	default:
-		return false, moderrors.Wrapf(
+		return nil, false, moderrors.Wrapf(
 			types.ErrInvalidDexConfig,
-			"To be whitelisted, a dex should contain `%s` in its pair", denomBase,
+			"to be whitelisted, a balancer pool should contain `%s` in its pair", denomBase,
 		)
 	}
 
@@ -124,58 +202,27 @@ func (k BalancerKeeper) Whitelist(ctx context.Context, metadataLP vmtypes.Accoun
 
 	weights, err := k.poolWeights(ctx, metadataLP)
 	if err != nil {
-		return false, err
+		return nil, false, err
 	}
 
 	if weights[0].LT(weights[1]) {
-		return false, moderrors.Wrapf(types.ErrInvalidDexConfig,
+		return nil, false, moderrors.Wrapf(types.ErrInvalidDexConfig,
 			"base weight `%s` must be bigger than quote weight `%s`", weights[0], weights[1])
 	}
 
-	// check dex pair was registered
-
-	if found, err := k.DexKeeper().hasDexPair(ctx, metadataQuote); err != nil {
-		return false, err
-	} else if found {
-		return false, moderrors.Wrapf(types.ErrInvalidRequest, "coin `%s` was already whitelisted", metadataQuote.String())
-	}
-
-	// store dex pair
-	err = k.DexKeeper().setDexPair(ctx, metadataQuote, metadataLP)
-	if err != nil {
-		return false, err
-	}
-
-	return true, nil
+	return &metadataQuote, true, nil
 }
 
-func (k BalancerKeeper) Delist(
-	ctx context.Context,
-	metadataLP vmtypes.AccountAddress,
-) error {
-	ok, err := k.HasPool(ctx, metadataLP)
-	if err != nil {
-		return err
-	}
-	if !ok {
-		return nil
-	}
-
-	metadata, err := k.poolMetadata(ctx, metadataLP)
-	if err != nil {
-		return err
-	}
-
-	for _, metadata := range metadata {
-		err = k.DexKeeper().deleteDexPair(ctx, metadata)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
+// GetPoolInfo returns balances and weights in base/quote order for the pool.
+func (k BalancerKeeper) GetPoolInfo(ctx context.Context, metadataLP vmtypes.AccountAddress) (
+	balances []math.Int,
+	weights []math.LegacyDec,
+	err error,
+) {
+	return k.getPoolInfo(ctx, metadataLP)
 }
 
+// getPoolInfo returns balances and weights in base/quote order for the pool.
 func (k BalancerKeeper) getPoolInfo(ctx context.Context, metadataLP vmtypes.AccountAddress) (
 	balances []math.Int,
 	weights []math.LegacyDec,
@@ -194,6 +241,7 @@ func (k BalancerKeeper) getPoolInfo(ctx context.Context, metadataLP vmtypes.Acco
 	return
 }
 
+// poolMetadata returns the two metadata addresses stored in the pool.
 func (k BalancerKeeper) poolMetadata(ctx context.Context, metadataLP vmtypes.AccountAddress) ([]vmtypes.AccountAddress, error) {
 	bz, err := k.GetResourceBytes(ctx, metadataLP, vmtypes.StructTag{
 		Address:  vmtypes.StdAddress,
@@ -223,6 +271,7 @@ func (k BalancerKeeper) poolMetadata(ctx context.Context, metadataLP vmtypes.Acc
 	return []vmtypes.AccountAddress{metadataA, metadataB}, nil
 }
 
+// poolBalances returns pool balances in base/quote order.
 func (k BalancerKeeper) poolBalances(ctx context.Context, metadataLP vmtypes.AccountAddress) (balances []math.Int, err error) {
 	bz, err := k.GetResourceBytes(ctx, metadataLP, vmtypes.StructTag{
 		Address:  vmtypes.StdAddress,
@@ -261,7 +310,7 @@ func (k BalancerKeeper) poolBalances(ctx context.Context, metadataLP vmtypes.Acc
 	return []math.Int{balanceA, balanceB}, nil
 }
 
-// poolWeights return base, quote dex weights with quote denom struct tag
+// poolWeights returns pool weights in base/quote order at the current block time.
 func (k BalancerKeeper) poolWeights(
 	ctx context.Context,
 	metadataLP vmtypes.AccountAddress,
@@ -294,7 +343,7 @@ func (k BalancerKeeper) poolWeights(
 	return []math.LegacyDec{weightA, weightB}, nil
 }
 
-// isReverse checks if the dex pair is reverse
+// isReverse reports whether the pool metadata order is quote/base.
 func (k BalancerKeeper) isReverse(
 	ctx context.Context,
 	metadataLP vmtypes.AccountAddress,

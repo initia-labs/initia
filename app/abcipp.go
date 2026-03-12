@@ -2,6 +2,7 @@ package app
 
 import (
 	"cosmossdk.io/errors"
+	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	sdkmempool "github.com/cosmos/cosmos-sdk/types/mempool"
@@ -11,11 +12,12 @@ import (
 
 	"github.com/initia-labs/initia/abcipp"
 	appante "github.com/initia-labs/initia/app/ante"
+	initiatx "github.com/initia-labs/initia/tx"
 	dynamicfeeante "github.com/initia-labs/initia/x/dynamic-fee/ante"
 	dynamicfeekeeper "github.com/initia-labs/initia/x/dynamic-fee/keeper"
 )
 
-func (app *InitiaApp) setupABCIPP(mempoolMaxTxs int) (
+func (app *InitiaApp) setupABCIPP(mempoolMaxTxs int, appOpts servertypes.AppOptions) (
 	sdkmempool.Mempool,
 	sdk.AnteHandler,
 	sdk.PrepareProposalHandler,
@@ -54,11 +56,12 @@ func (app *InitiaApp) setupABCIPP(mempoolMaxTxs int) (
 
 	handlerOpts := appante.HandlerOptions{
 		HandlerOptions: cosmosante.HandlerOptions{
-			AccountKeeper:   app.AccountKeeper,
-			BankKeeper:      app.BankKeeper,
-			FeegrantKeeper:  app.FeeGrantKeeper,
-			SignModeHandler: app.txConfig.SignModeHandler(),
-			TxFeeChecker:    feeCheckerWrapper,
+			AccountKeeper:          app.AccountKeeper,
+			BankKeeper:             app.BankKeeper,
+			FeegrantKeeper:         app.FeeGrantKeeper,
+			SignModeHandler:        app.txConfig.SignModeHandler(),
+			ExtensionOptionChecker: initiatx.ExtensionOptionChecker,
+			TxFeeChecker:           feeCheckerWrapper,
 		},
 		Codec:     app.appCodec,
 		TxEncoder: app.txConfig.TxEncoder(),
@@ -79,28 +82,34 @@ func (app *InitiaApp) setupABCIPP(mempoolMaxTxs int) (
 	}
 
 	anteHandler := appante.NewDualAnteHandler(minimalHandler, fullHandler)
+	abcippCfg := abcipp.GetConfig(appOpts)
 
 	mempool := abcipp.NewPriorityMempool(
 		abcipp.PriorityMempoolConfig{
-			MaxTx:       mempoolMaxTxs,
-			AnteHandler: fullHandler,     // cleaning worker uses full handler
-			Tiers:       []abcipp.Tier{}, // no tiers on L1
-		}, app.TxEncode,
+			MaxTx:              mempoolMaxTxs,
+			MaxQueuedPerSender: abcippCfg.MaxQueuedPerSender,
+			MaxQueuedTotal:     abcippCfg.MaxQueuedTotal,
+			QueuedGapTTL:       abcippCfg.QueuedGapTTL,
+			Tiers:              []abcipp.Tier{}, // no tiers on L1
+			AnteHandler:        fullHandler,     // for cleanup
+		}, app.Logger(), app.TxEncode, app.AccountKeeper,
 	)
-	mempool.SetAccountKeeper(app.AccountKeeper)
 
 	// start mempool cleaning worker
-	mempool.StartCleaningWorker(app.BaseApp, app.AccountKeeper, abcipp.DefaultMempoolCleaningInterval)
+	mempool.StartCleaningWorker(app.BaseApp, abcipp.DefaultMempoolCleaningInterval)
 
-	proposalHandler := abcipp.NewProposalHandler(
+	proposalHandler, err := abcipp.NewProposalHandler(
 		app.Logger(),
 		app.txConfig.TxDecoder(),
 		app.txConfig.TxEncoder(),
 		mempool,
 		fullHandler, // proposal handler uses full handler
 	)
+	if err != nil {
+		return nil, nil, nil, nil, nil, err
+	}
 
-	checkTxHandler := abcipp.NewCheckTxHandler(
+	checkTxHandler, err := abcipp.NewCheckTxHandler(
 		app.Logger(),
 		app.BaseApp,
 		mempool,
@@ -108,6 +117,9 @@ func (app *InitiaApp) setupABCIPP(mempoolMaxTxs int) (
 		app.BaseApp.CheckTx,
 		feeCheckerWrapper,
 	)
+	if err != nil {
+		return nil, nil, nil, nil, nil, err
+	}
 
 	return mempool, anteHandler, proposalHandler.PrepareProposalHandler(), proposalHandler.ProcessProposalHandler(), checkTxHandler.CheckTx, nil
 }

@@ -247,10 +247,14 @@ test-e2e:
 benchmark-e2e:
 	cd integration-tests/e2e && go test -v -tags benchmark -run TestBenchmark -timeout 30m -count=1 ./benchmark/
 
+test-fuzz:
+	@go test ./abcipp -mod=readonly -tags fuzz -fuzz FuzzValidatorConcurrentQueueClearScenario -fuzztime 60s -timeout 10m
+	@go test ./abcipp -mod=readonly -tags fuzz -fuzz FuzzNonValidatorQueueClearScenario -fuzztime 60s -timeout 10m
+
 benchmark:
 	@go test -timeout 20m -mod=readonly -bench=. ./... 
 
-.PHONY: test test-all test-cover test-unit test-race test-e2e benchmark benchmark-e2e
+.PHONY: test test-all test-cover test-unit test-race test-e2e benchmark benchmark-e2e test-fuzz
 
 ###############################################################################
 ###                                Linting                                  ###

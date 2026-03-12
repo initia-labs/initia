@@ -38,13 +38,14 @@ service Msg {
   rpc GovScript(MsgGovScript) returns (MsgGovScriptResponse);
   // GovScriptJSON runs a scripts with the given message via gov proposal
   rpc GovScriptJSON(MsgGovScriptJSON) returns (MsgGovScriptJSONResponse);
-  // Whitelist registers a dex pair to whitelist of various features.
-  // - whitelist from coin register operation
-  // - allow counter party denom can be used as gas fee
-  // - register lp denom as staking denom
-  rpc Whitelist(MsgWhitelist) returns (MsgWhitelistResponse);
-  // Delist unregisters a dex pair from the whitelist.
-  rpc Delist(MsgDelist) returns (MsgDelistResponse);
+  // WhitelistStaking registers a DEX pair in the staking whitelist.
+  rpc WhitelistStaking(MsgWhitelistStaking) returns (MsgWhitelistStakingResponse);
+  // WhitelistGasPrice registers a DEX pair in the gas price whitelist.
+  rpc WhitelistGasPrice(MsgWhitelistGasPrice) returns (MsgWhitelistGasPriceResponse);
+  // DelistStaking removes a DEX pair from the staking whitelist.
+  rpc DelistStaking(MsgDelistStaking) returns (MsgDelistStakingResponse);
+  // DelistGasPrice removes a DEX pair from the gas price whitelist.
+  rpc DelistGasPrice(MsgDelistGasPrice) returns (MsgDelistGasPriceResponse);
   // UpdateParams defines an operation for updating the x/move module
   // parameters.
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
@@ -291,21 +292,17 @@ message MsgGovScriptJSON {
 // MsgGovScriptJSONResponse returns execution result data.
 message MsgGovScriptJSONResponse {}
 
-// MsgWhitelist is a message to register a dex pair to
-// whitelist of various features.
-// - whitelist from coin register operation
-// - allow counter party denom can be used as gas fee
-// - register lp denom as staking denom
-message MsgWhitelist {
+// MsgWhitelistStaking registers a DEX pair in the staking whitelist.
+message MsgWhitelistStaking {
   option (cosmos.msg.v1.signer) = "authority";
-  option (amino.name) = "move/MsgWhitelist";
+  option (amino.name) = "move/MsgWhitelistStaking";
 
   // authority is the address that controls the module
   // (defaults to x/gov unless overwritten).
   string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
-  // Dex coin LP metadata address
+  // MetadataLP is the LP metadata address of the DEX pair.
   string metadata_lp = 2 [(gogoproto.customname) = "MetadataLP"];
-  // RewardWeight is registered to distribution's Params
+  // RewardWeight is applied to distribution params.
   string reward_weight = 3 [
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false,
@@ -314,24 +311,58 @@ message MsgWhitelist {
   ];
 }
 
-// MsgWhitelistResponse returns result data.
-message MsgWhitelistResponse {}
+// MsgWhitelistStakingResponse returns an empty response.
+message MsgWhitelistStakingResponse {}
 
-// MsgDelist is a message to unregister a dex pair
-// from the whitelist of various features.
-message MsgDelist {
+// MsgWhitelistGasPrice registers a DEX pair in the gas price whitelist.
+// This allows the counterparty denom to be used as gas fee.
+message MsgWhitelistGasPrice {
   option (cosmos.msg.v1.signer) = "authority";
-  option (amino.name) = "move/MsgDelist";
+  option (amino.name) = "move/MsgWhitelistGasPrice";
 
   // authority is the address that controls the module
   // (defaults to x/gov unless overwritten).
   string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
-  // Dex coin LP metadata address
+  // MetadataQuote is the metadata address of the token to whitelist as a gas token.
+  string metadata_quote = 2;
+  // MetadataLP is the LP metadata address of the DEX pair.
+  string metadata_lp = 3 [(gogoproto.customname) = "MetadataLP"];
+}
+
+// MsgWhitelistGasPriceResponse returns an empty response.
+message MsgWhitelistGasPriceResponse {}
+
+// MsgDelistStaking removes a DEX pair from the staking whitelist.
+message MsgDelistStaking {
+  option (cosmos.msg.v1.signer) = "authority";
+  option (amino.name) = "move/MsgDelistStaking";
+
+  // authority is the address that controls the module
+  // (defaults to x/gov unless overwritten).
+  string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // MetadataLP is the LP metadata address of the DEX pair.
   string metadata_lp = 2 [(gogoproto.customname) = "MetadataLP"];
 }
 
-// MsgDelistResponse returns result data.
-message MsgDelistResponse {}
+// MsgDelistStakingResponse returns an empty response.
+message MsgDelistStakingResponse {}
+
+// MsgDelistGasPrice removes a DEX pair from the gas price whitelist.
+message MsgDelistGasPrice {
+  option (cosmos.msg.v1.signer) = "authority";
+  option (amino.name) = "move/MsgDelistGasPrice";
+
+  // authority is the address that controls the module
+  // (defaults to x/gov unless overwritten).
+  string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // MetadataQuote is the metadata address of the token to whitelist as a gas token.
+  string metadata_quote = 2;
+  // MetadataLP is the LP metadata address of the DEX pair.
+  string metadata_lp = 3 [(gogoproto.customname) = "MetadataLP"];
+}
+
+// MsgDelistGasPriceResponse returns an empty response.
+message MsgDelistGasPriceResponse {}
 
 // MsgUpdateParams is the Msg/UpdateParams request type.
 message MsgUpdateParams {

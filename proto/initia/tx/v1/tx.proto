@@ -1,0 +1,11 @@
+syntax = "proto3";
+package initia.tx.v1;
+
+import "cosmos_proto/cosmos.proto";
+
+option go_package = "github.com/initia-labs/initia/tx/types";
+
+// ExtensionOptionQueuedTx allows future-nonce transactions to be queued in app mempool.
+message ExtensionOptionQueuedTx {
+  option (cosmos_proto.implements_interface) = "cosmos.tx.v1beta1.TxExtensionOptionI";
+}

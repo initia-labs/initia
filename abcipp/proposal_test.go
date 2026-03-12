@@ -1,13 +1,17 @@
 package abcipp
 
 import (
+	"fmt"
 	"sync"
 	"testing"
 	"time"
 
 	"cosmossdk.io/log"
 	abci "github.com/cometbft/cometbft/abci/types"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/stretchr/testify/require"
 )
 
 func TestPriorityMempoolConcurrentTierDistribution(t *testing.T) {
@@ -24,13 +28,14 @@ func TestPriorityMempoolConcurrentTierDistribution(t *testing.T) {
 	start := make(chan struct{})
 	worker := func(id int) {
 		defer wg.Done()
+		priv := secp256k1.GenPrivKey()
 		<-start
 		for j := 0; j < 200; j++ {
 			tier := "high"
 			if j%2 == 1 {
 				tier = "low"
 			}
-			tx := newTestTx(testAddress(id), uint64(id*1000+j), 1000, tier)
+			tx := newTestTxWithPriv(priv, uint64(j), 1000, tier)
 			_ = mp.Insert(ctx, tx)
 		}
 	}
@@ -64,7 +69,7 @@ func TestProposalHandlerWithConcurrentMempool(t *testing.T) {
 		if i%2 == 1 {
 			tier = "low"
 		}
-		tx := newTestTx(testAddress(i), uint64(i), 1000, tier)
+		tx := newTestTx(testAddress(i), 0, 1000, tier)
 		if err := mp.Insert(wrappedCtx, tx); err != nil {
 			t.Fatalf("insert: %v", err)
 		}
@@ -74,7 +79,8 @@ func TestProposalHandlerWithConcurrentMempool(t *testing.T) {
 		return ctx, nil
 	}
 
-	handler := NewProposalHandler(log.NewNopLogger(), testTxDecoder, testTxEncoder, mp, ante)
+	handler, err := NewProposalHandler(log.NewNopLogger(), testTxDecoder, testTxEncoder, mp, ante)
+	require.NoError(t, err)
 
 	done := make(chan struct{})
 	var wg sync.WaitGroup
@@ -120,6 +126,77 @@ func TestProposalHandlerWithConcurrentMempool(t *testing.T) {
 	}
 }
 
+func TestNewProposalHandlerReturnsErrorOnMissingDependencies(t *testing.T) {
+	mp := newTestPriorityMempool(t, nil)
+	ante := func(ctx sdk.Context, tx sdk.Tx, _ bool) (sdk.Context, error) {
+		return ctx, nil
+	}
+
+	cases := []struct {
+		name    string
+		logger  log.Logger
+		decoder sdk.TxDecoder
+		encoder sdk.TxEncoder
+		mempool Mempool
+		ante    sdk.AnteHandler
+		wantErr string
+	}{
+		{
+			name:    "nil logger",
+			logger:  nil,
+			decoder: testTxDecoder,
+			encoder: testTxEncoder,
+			mempool: mp,
+			ante:    ante,
+			wantErr: "logger is required",
+		},
+		{
+			name:    "nil txDecoder",
+			logger:  log.NewNopLogger(),
+			decoder: nil,
+			encoder: testTxEncoder,
+			mempool: mp,
+			ante:    ante,
+			wantErr: "txDecoder is required",
+		},
+		{
+			name:    "nil txEncoder",
+			logger:  log.NewNopLogger(),
+			decoder: testTxDecoder,
+			encoder: nil,
+			mempool: mp,
+			ante:    ante,
+			wantErr: "txEncoder is required",
+		},
+		{
+			name:    "nil mempool",
+			logger:  log.NewNopLogger(),
+			decoder: testTxDecoder,
+			encoder: testTxEncoder,
+			mempool: nil,
+			ante:    ante,
+			wantErr: "mempool is required",
+		},
+		{
+			name:    "nil anteHandler",
+			logger:  log.NewNopLogger(),
+			decoder: testTxDecoder,
+			encoder: testTxEncoder,
+			mempool: mp,
+			ante:    nil,
+			wantErr: "anteHandler is required",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			handler, err := NewProposalHandler(tc.logger, tc.decoder, tc.encoder, tc.mempool, tc.ante)
+			require.ErrorContains(t, err, tc.wantErr)
+			require.Nil(t, handler)
+		})
+	}
+}
+
 func TestPrepareProposalRemovesTxWhenConsensusParamsShrink(t *testing.T) {
 	cases := []struct {
 		name          string
@@ -148,7 +225,7 @@ func TestPrepareProposalRemovesTxWhenConsensusParamsShrink(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			mp := newTestPriorityMempool(t, nil)
 
-			tx := newTestTx(testAddress(1), 1, tc.txGas, "default")
+			tx := newTestTx(testAddress(1), 0, tc.txGas, "default")
 			txBytes, err := testTxEncoder(tx)
 			if err != nil {
 				t.Fatalf("encode tx: %v", err)
@@ -169,7 +246,8 @@ func TestPrepareProposalRemovesTxWhenConsensusParamsShrink(t *testing.T) {
 			ante := func(ctx sdk.Context, tx sdk.Tx, _ bool) (sdk.Context, error) {
 				return ctx, nil
 			}
-			handler := NewProposalHandler(log.NewNopLogger(), testTxDecoder, testTxEncoder, mp, ante)
+			handler, err := NewProposalHandler(log.NewNopLogger(), testTxDecoder, testTxEncoder, mp, ante)
+			require.NoError(t, err)
 
 			lowLimitCtx := testSDKContextWithParams(tc.maxBytes, tc.maxGas)
 			req := &abci.RequestPrepareProposal{
@@ -217,7 +295,8 @@ func TestProcessProposalRejectsWhenConsensusParamsShrink(t *testing.T) {
 			ante := func(ctx sdk.Context, tx sdk.Tx, _ bool) (sdk.Context, error) {
 				return ctx, nil
 			}
-			handler := NewProposalHandler(log.NewNopLogger(), testTxDecoder, testTxEncoder, mp, ante)
+			handler, err := NewProposalHandler(log.NewNopLogger(), testTxDecoder, testTxEncoder, mp, ante)
+			require.NoError(t, err)
 
 			tx := newTestTx(testAddress(2), 1, tc.txGas, "default")
 			txBytes, err := testTxEncoder(tx)
@@ -248,9 +327,9 @@ func TestPrepareProposalSkipsTxThatWouldOverflowButKeepsLaterTx(t *testing.T) {
 	ctx := testSDKContextWithParams(1<<20, 10)
 	wrappedCtx := sdk.WrapSDKContext(ctx)
 
-	tx1 := newTestTx(testAddress(1), 1, 6, "default")
-	tx2 := newTestTx(testAddress(2), 1, 6, "default")
-	tx3 := newTestTx(testAddress(3), 1, 4, "default")
+	tx1 := newTestTx(testAddress(1), 0, 6, "default")
+	tx2 := newTestTx(testAddress(2), 0, 6, "default")
+	tx3 := newTestTx(testAddress(3), 0, 4, "default")
 
 	if err := mp.Insert(wrappedCtx, tx1); err != nil {
 		t.Fatalf("insert tx1: %v", err)
@@ -265,7 +344,8 @@ func TestPrepareProposalSkipsTxThatWouldOverflowButKeepsLaterTx(t *testing.T) {
 	ante := func(ctx sdk.Context, tx sdk.Tx, _ bool) (sdk.Context, error) {
 		return ctx, nil
 	}
-	handler := NewProposalHandler(log.NewNopLogger(), testTxDecoder, testTxEncoder, mp, ante)
+	handler, err := NewProposalHandler(log.NewNopLogger(), testTxDecoder, testTxEncoder, mp, ante)
+	require.NoError(t, err)
 
 	req := &abci.RequestPrepareProposal{
 		Height:     2,
@@ -301,12 +381,83 @@ func TestPrepareProposalSkipsTxThatWouldOverflowButKeepsLaterTx(t *testing.T) {
 	}
 }
 
+func TestPrepareProposalWrongSequenceRemovesFailedNonce(t *testing.T) {
+	mp, keeper, sdkCtx, _ := newTestMempoolWithEvents(t, 32)
+	ctx := sdk.WrapSDKContext(sdkCtx)
+
+	priv := secp256k1.GenPrivKey()
+	sender := sdk.AccAddress(priv.PubKey().Address())
+	keeper.SetSequence(sender, 0)
+
+	tx0 := newTestTxWithPriv(priv, 0, 1000, "default")
+	tx1 := newTestTxWithPriv(priv, 1, 1000, "default")
+	require.NoError(t, mp.Insert(ctx, tx0))
+	require.NoError(t, mp.Insert(ctx, tx1))
+
+	ante := func(ctx sdk.Context, tx sdk.Tx, _ bool) (sdk.Context, error) {
+		tt := tx.(*testTx)
+		if tt.sequence == 1 {
+			return ctx, fmt.Errorf("account sequence mismatch: %w", sdkerrors.ErrWrongSequence)
+		}
+		return ctx, nil
+	}
+	handler, err := NewProposalHandler(log.NewNopLogger(), testTxDecoder, testTxEncoder, mp, ante)
+	require.NoError(t, err)
+
+	resp, err := handler.PrepareProposalHandler()(sdkCtx, &abci.RequestPrepareProposal{
+		Height:     2,
+		MaxTxBytes: 1 << 20,
+	})
+	require.NoError(t, err)
+	require.Len(t, resp.Txs, 1, "seq0 should be included")
+
+	// wrong-sequence tx is treated as ante failure and removed.
+	require.False(t, mp.Contains(tx1))
+	// predecessor tx remains.
+	require.True(t, mp.Contains(tx0))
+}
+
+func TestPrepareProposalBlocksSenderAfterOverflowSkip(t *testing.T) {
+	mp := newTestPriorityMempool(t, nil)
+	ctx := testSDKContextWithParams(1<<20, 10)
+
+	priv := secp256k1.GenPrivKey()
+	sender := sdk.AccAddress(priv.PubKey().Address())
+	keeper := mp.ak.(*mockAccountKeeper)
+	keeper.SetSequence(sender, 0)
+
+	// Same sender, contiguous nonces.
+	tx0 := newTestTxWithPriv(priv, 0, 6, "default")
+	tx1 := newTestTxWithPriv(priv, 1, 6, "default") // overflows cumulative gas
+	tx2 := newTestTxWithPriv(priv, 2, 1, "default") // would fit alone, must be skipped due sender block
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(ctx.WithPriority(100)), tx0))
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(ctx.WithPriority(1)), tx1))
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(ctx.WithPriority(1)), tx2))
+
+	ante := func(ctx sdk.Context, tx sdk.Tx, _ bool) (sdk.Context, error) { return ctx, nil }
+	handler, err := NewProposalHandler(log.NewNopLogger(), testTxDecoder, testTxEncoder, mp, ante)
+	require.NoError(t, err)
+
+	resp, err := handler.PrepareProposalHandler()(ctx, &abci.RequestPrepareProposal{
+		Height:     2,
+		MaxTxBytes: 1 << 20,
+	})
+	require.NoError(t, err)
+	require.Len(t, resp.Txs, 1, "only head nonce should be included for blocked sender")
+
+	decoded, err := testTxDecoder(resp.Txs[0])
+	require.NoError(t, err)
+	gotKey, err := txKeyFromTx(decoded)
+	require.NoError(t, err)
+	require.Equal(t, uint64(0), gotKey.nonce)
+}
+
 func TestPrepareProposalSkipsTxWhenMaxBytesWouldOverflow(t *testing.T) {
 	mp := newTestPriorityMempool(t, nil)
 
-	tx1 := newTestTx(testAddress(21), 1, 1, "a")
-	tx2 := newTestTx(testAddress(22), 1, 1, "this-tier-is-much-longer")
-	tx3 := newTestTx(testAddress(23), 1, 1, "b")
+	tx1 := newTestTx(testAddress(21), 0, 1, "a")
+	tx2 := newTestTx(testAddress(22), 0, 1, "this-tier-is-much-longer")
+	tx3 := newTestTx(testAddress(23), 0, 1, "b")
 
 	tx1Bytes, err := testTxEncoder(tx1)
 	if err != nil {
@@ -345,7 +496,8 @@ func TestPrepareProposalSkipsTxWhenMaxBytesWouldOverflow(t *testing.T) {
 	ante := func(ctx sdk.Context, tx sdk.Tx, _ bool) (sdk.Context, error) {
 		return ctx, nil
 	}
-	handler := NewProposalHandler(log.NewNopLogger(), testTxDecoder, testTxEncoder, mp, ante)
+	handler, err := NewProposalHandler(log.NewNopLogger(), testTxDecoder, testTxEncoder, mp, ante)
+	require.NoError(t, err)
 
 	req := &abci.RequestPrepareProposal{
 		Height:     2,

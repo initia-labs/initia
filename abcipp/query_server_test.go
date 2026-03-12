@@ -18,8 +18,8 @@ func TestQueryTxDistribution(t *testing.T) {
 	mp := newTestPriorityMempool(t, tiers)
 	ctx := sdk.WrapSDKContext(testSDKContext())
 
-	txHigh := newTestTx(testAddress(1), 1, 1000, "high")
-	txLow := newTestTx(testAddress(2), 1, 1000, "low")
+	txHigh := newTestTx(testAddress(1), 0, 1000, "high")
+	txLow := newTestTx(testAddress(2), 0, 1000, "low")
 
 	if err := mp.Insert(ctx, txHigh); err != nil {
 		t.Fatalf("insert high tx: %v", err)

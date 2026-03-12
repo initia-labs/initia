@@ -20,6 +20,14 @@ const maxNodeCount = 10
 
 func TestQueueClearOrdering(t *testing.T) {
 	ctx := context.Background()
+	if dl, ok := t.Deadline(); ok {
+		adjusted := dl.Add(-10 * time.Second)
+		if adjusted.After(time.Now()) {
+			var cancel context.CancelFunc
+			ctx, cancel = context.WithDeadline(ctx, adjusted)
+			t.Cleanup(cancel)
+		}
+	}
 
 	nodeCount := readEnvInt("E2E_NODE_COUNT", 5)
 	accountCount := readEnvInt("E2E_ACCOUNT_COUNT", 5)
@@ -37,7 +45,7 @@ func TestQueueClearOrdering(t *testing.T) {
 		BinaryPath:   os.Getenv("E2E_INITIAD_BIN"),
 	})
 	require.NoError(t, err)
-	defer cluster.Close()
+	t.Cleanup(cluster.Close)
 
 	require.NoError(t, cluster.Start(ctx))
 	require.NoError(t, cluster.WaitForReady(ctx, 90*time.Second))

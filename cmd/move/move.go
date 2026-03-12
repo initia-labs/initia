@@ -100,7 +100,7 @@ func MoveCommand(ac address.Codec, useMinlib bool) *cobra.Command {
 		moveNewCmd(useMinlib),
 		moveCleanCmd(),
 		moveDeployCmd(ac),
-		deployObjectCmd(ac),
+		deployObjectCmd(ac, useMinlib),
 		upgradeObjectCmd(ac),
 		moveVerifyCmd(),
 		moveDocgenCmd(),

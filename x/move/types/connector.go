@@ -28,6 +28,8 @@ const (
 	MoveModuleNameInitiaNft                 = "initia_nft"
 	MoveModuleNameCollection                = "collection"
 	MoveModuleNameStableSwap                = "stableswap"
+	MoveModuleNameCLAMMPool                 = "pool"
+	MoveModuleNameCLAMMScripts              = "scripts"
 
 	// function names for managed_coin
 	FunctionNameManagedCoinInitialize = "initialize"
@@ -65,9 +67,17 @@ const (
 
 	// function names for dex
 	FunctionNameDexSudoSwap          = "sudo_swap"
+	FunctionNameDexGetSpotPrice      = "get_spot_price"
 	FunctionNameDexProvideLiquidity  = "provide_liquidity_script"
 	FunctionNameDexWithdrawLiquidity = "withdraw_liquidity_script"
 	FunctionNameDexUpdateSwapFeeRate = "update_swap_fee_rate"
+
+	// function names for stableswap
+	FunctionNameStableSwapSpotPrice = "spot_price"
+	FunctionNameStableSwapSwap      = "swap_script"
+
+	// function names for clamm
+	FunctionNameCLAMMSwap = "swap"
 
 	// function names for object
 	FunctionNameObjectTransfer = "transfer"
@@ -80,6 +90,9 @@ const (
 	// function names for vesting
 	FunctionNameVestingTableHandle   = "vesting_table_handle"
 	FunctionNameVestingTokenMetadata = "vesting_token_metadata"
+
+	// resource name for CLAMM pool
+	ResourceNameCLAMMPool = "Pool"
 
 	// resource names
 	ResourceNameFungibleStore = "FungibleStore"
@@ -684,6 +697,79 @@ func ReadVesting(bz []byte) (allocation uint64, claimedAmount uint64, startTime 
 	}
 
 	return allocation, claimedAmount, startTime, vestingPeriod, nil
+}
+
+// ReadCLAMMPool reads the metadata addresses and sqrt_price from a CLAMM Pool resource (BCS).
+//
+// BCS layout of dex_clamm::pool::Pool:
+//
+//	[0,  32): metadata_0   Object<Metadata>  – 32 bytes
+//	[32, 64): metadata_1   Object<Metadata>  – 32 bytes
+//	[64, 96): collection_obj                 – 32 bytes
+//	[96,128): mutator_ref                    – 32 bytes
+//	[128,160): oracle_obj                    – 32 bytes
+//	[160,168): swap_fee_bps  u64             –  8 bytes
+//	[168,176): tick_spacing  u64             –  8 bytes
+//	[176,184): max_liquidity_per_tick u64    –  8 bytes
+//	[184,216): extend_ref                    – 32 bytes
+//	[216,224): position_id   u64             –  8 bytes
+//	[224,240): sqrt_price    u128            – 16 bytes  ← Q64.64 fixed-point
+func ReadCLAMMPool(bz []byte) (metadata0, metadata1 vmtypes.AccountAddress, sqrtPrice math.Int, err error) {
+	const sqrtPriceOffset = 224
+	const sqrtPriceLen = 16
+	if len(bz) < sqrtPriceOffset+sqrtPriceLen {
+		err = sdkerrors.ErrInvalidRequest.Wrapf("CLAMM Pool bytes too short: got %d, need at least %d", len(bz), sqrtPriceOffset+sqrtPriceLen)
+		return
+	}
+
+	metadata0, err = vmtypes.NewAccountAddressFromBytes(bz[0:AddressBytesLength])
+	if err != nil {
+		return
+	}
+
+	metadata1, err = vmtypes.NewAccountAddressFromBytes(bz[AddressBytesLength : 2*AddressBytesLength])
+	if err != nil {
+		return
+	}
+
+	sqrtPrice, err = DeserializeUint128(bz[sqrtPriceOffset : sqrtPriceOffset+sqrtPriceLen])
+	return
+}
+
+// CLAMMBaseSpotPrice computes the base-asset spot price from a CLAMM sqrt_price.
+//
+// Convention (same as Uniswap v3):
+//
+//	sqrt_price is Q64.64 ≡ sqrt(token1/token0) * 2^64
+//
+// spot price = base_amount / quote_amount:
+//
+//	if base = token0: price = (2^64/sqrt_price)^2 = 2^128 / sqrt_price^2
+//	if base = token1: price = (sqrt_price/2^64)^2 = sqrt_price^2 / 2^128
+func CLAMMBaseSpotPrice(sqrtPrice math.Int, isBase0 bool) (math.LegacyDec, error) {
+	sqrtPriceBI := sqrtPrice.BigInt()
+	if sqrtPriceBI.Sign() == 0 {
+		return math.LegacyZeroDec(), sdkerrors.ErrInvalidRequest.Wrap("CLAMM sqrt_price is zero")
+	}
+
+	two128 := new(big.Int).Lsh(big.NewInt(1), 128)
+	// LegacyDec precision factor: 10^18
+	precision := new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil)
+
+	sqrtPriceSq := new(big.Int).Mul(sqrtPriceBI, sqrtPriceBI)
+
+	var resultInt *big.Int
+	if isBase0 {
+		// price = 2^128 / sqrt_price^2, scaled by 10^18
+		numerator := new(big.Int).Mul(two128, precision)
+		resultInt = new(big.Int).Quo(numerator, sqrtPriceSq)
+	} else {
+		// price = sqrt_price^2 / 2^128, scaled by 10^18
+		numerator := new(big.Int).Mul(sqrtPriceSq, precision)
+		resultInt = new(big.Int).Quo(numerator, two128)
+	}
+
+	return math.LegacyNewDecFromIntWithPrec(math.NewIntFromBigInt(resultInt), 18), nil
 }
 
 // ReadStableSwapPool util function to read stable swap pool from the raw bytes (bcs)

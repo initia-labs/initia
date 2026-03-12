@@ -1,6 +1,11 @@
 name: Build & Test
 on:
   pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
     paths:
       - "**.go"
       - "**.mv"
@@ -84,14 +89,32 @@ jobs:
       - uses: technote-space/get-diff-action@v4
         with:
           PATTERNS: |
-            **/**.go
-            **/**.mv
-            **/**.move
-            go.mod
-            go.sum
-            Makefile
+            abcipp/**
+            integration-tests/e2e/**
       - name: run e2e tests
         run: make test-e2e
-        if: ${{ env.GIT_DIFF != '' }}
+        if: ${{ (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'e2e')) || env.GIT_DIFF != '' }}
+        env:
+          GIT_DIFF: ${{ env.GIT_DIFF }}
+
+  test-fuzz:
+    name: Run fuzz tests
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/setup-go@v3
+        with:
+          go-version: 1.24
+      - name: Install openssl
+        run: sudo apt-get install libssl-dev
+      - uses: actions/checkout@v5
+      - uses: technote-space/get-diff-action@v4
+        with:
+          PATTERNS: |
+            abcipp/**
+      - name: run fuzz tests
+        run: |
+          make test-fuzz
+        if: ${{ (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'fuzz')) || env.GIT_DIFF != '' }}
         env:
           GIT_DIFF: ${{ env.GIT_DIFF }}
