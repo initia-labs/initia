@@ -12,6 +12,7 @@ on:
   pull_request:
     paths:
       - "proto/**"
+      - ".github/workflows/proto.yml"
 
 permissions:
   contents: write
