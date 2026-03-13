@@ -56,8 +56,10 @@ jobs:
         run: |
           COSMOS_SDK=$(awk '/repository: cosmos-sdk/{getline; print $2}' buf.lock)
           IBC=$(awk '/repository: ibc/{getline; print $2}' buf.lock)
+          ICS23=$(awk '/repository: ics23/{getline; print $2}' buf.lock)
           buf generate "buf.build/cosmos/cosmos-sdk:${COSMOS_SDK}" --template buf.gen.es.yaml
           buf generate "buf.build/cosmos/ibc:${IBC}" --template buf.gen.es.yaml
+          buf generate "buf.build/cosmos/ics23:${ICS23}" --template buf.gen.es.yaml
           buf generate . --template buf.gen.es.yaml --include-imports
 
       - name: Set package version (tag)
