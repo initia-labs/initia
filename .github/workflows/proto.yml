@@ -1,0 +1,77 @@
+name: Protobuf
+# Protobuf runs buf (https://buf.build/) fmt, lint and pushes to buf.build
+# PR: runs lint and format on proto changes
+# Push to main/tags: pushes to BSR
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  pull_request:
+    paths:
+      - "proto/**"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  buf-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+      - uses: bufbuild/buf-action@v1
+        with:
+          input: proto
+          token: ${{ secrets.BUF_TOKEN }}
+          breaking: false
+
+  npm-publish:
+    needs: buf-build
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+
+      - uses: bufbuild/buf-setup-action@v1
+
+      - name: Install protoc-gen-es
+        run: npm install -g @bufbuild/protoc-gen-es@^2
+
+      - name: Generate TypeScript from proto
+        working-directory: proto
+        run: buf generate . --template buf.gen.es.yaml --include-imports
+
+      - name: Set package version (tag)
+        if: startsWith(github.ref, 'refs/tags/v')
+        working-directory: proto/npm
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: npm version "${VERSION#v}" --no-git-tag-version
+
+      - name: Set package version (canary)
+        if: github.ref == 'refs/heads/main'
+        working-directory: proto/npm
+        run: npm version "0.0.0-canary.${GITHUB_SHA::7}" --no-git-tag-version
+
+      - name: Publish (latest)
+        if: startsWith(github.ref, 'refs/tags/v')
+        working-directory: proto/npm
+        run: npm publish --access public
+
+      - name: Publish (canary)
+        if: github.ref == 'refs/heads/main'
+        working-directory: proto/npm
+        run: npm publish --access public --tag canary
