@@ -4,6 +4,7 @@ package-lock.json
 *.js
 *.d.ts
 amino/
+capability/
 cosmos/
 cosmos_proto/
 gogoproto/

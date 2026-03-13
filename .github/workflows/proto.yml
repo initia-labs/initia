@@ -52,7 +52,12 @@ jobs:
 
       - name: Generate TypeScript from proto
         working-directory: proto
-        run: buf generate . --template buf.gen.es.yaml --include-imports
+        run: |
+          COSMOS_SDK=$(awk '/repository: cosmos-sdk/{getline; print $2}' buf.lock)
+          IBC=$(awk '/repository: ibc/{getline; print $2}' buf.lock)
+          buf generate "buf.build/cosmos/cosmos-sdk:${COSMOS_SDK}" --template buf.gen.es.yaml
+          buf generate "buf.build/cosmos/ibc:${IBC}" --template buf.gen.es.yaml
+          buf generate . --template buf.gen.es.yaml --include-imports
 
       - name: Set package version (tag)
         if: startsWith(github.ref, 'refs/tags/v')
