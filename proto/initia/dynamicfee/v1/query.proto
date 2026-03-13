@@ -1,6 +1,8 @@
 syntax = "proto3";
 package initia.dynamicfee.v1;
 
+import "amino/amino.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "initia/dynamicfee/v1/types.proto";
