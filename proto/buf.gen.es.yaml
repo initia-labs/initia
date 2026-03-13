@@ -1,0 +1,7 @@
+version: v1
+plugins:
+  - plugin: es
+    out: npm
+    opt:
+      - target=js+dts
+      - import_extension=js
