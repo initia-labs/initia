@@ -15,6 +15,10 @@ func WriteResult(t *testing.T, result BenchResult, dir string) error {
 		return err
 	}
 
+	if result.Config.Label == "" {
+		return fmt.Errorf("cannot write result: Config.Label is empty")
+	}
+
 	safe := strings.NewReplacer("/", "_", " ", "_", "+", "_").Replace(result.Config.Label)
 	path := filepath.Join(dir, safe+".json")
 

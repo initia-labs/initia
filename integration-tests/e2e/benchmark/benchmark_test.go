@@ -45,6 +45,7 @@ func setupCluster(t *testing.T, ctx context.Context, cfg BenchConfig) *e2e.Clust
 	require.NoError(t, err)
 
 	require.NoError(t, cluster.Start(ctx))
+	t.Cleanup(cluster.Close)
 	require.NoError(t, cluster.WaitForReady(ctx, clusterReadyTimeout))
 
 	return cluster

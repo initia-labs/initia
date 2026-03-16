@@ -104,13 +104,13 @@ while Proxy+Priority includes 100%. **+115% TPS improvement** with full inclusio
 BenchHeavyState::write_mixed(5 shared, 25 local) 30 state writes per tx, 150K total writes.
 
 ```
-Config                              | Variant      |   TPS | vs base |   P50ms | vs base |   P95ms | vs base | Peak Mempool
-clist/iavl/seq-move-exec            | baseline     |  23.3 |       - |    5452 |       - |   43683 |       - |         1000
-proxy+priority/iavl/seq-move-exec   | mempool-only |  36.0 |  +54.5% |    3236 |  -40.6% |    6250 |  -85.7% |          569
-proxy+priority/memiavl/seq-move-exec| combined     |  36.1 |  +54.9% |    3816 |  -30.0% |    7606 |  -82.6% |          629
+Config                              | Variant      |   TPS | vs base |   P50ms | vs base |   P95ms | vs base | Included  | Peak Mempool
+clist/iavl/seq-move-exec            | baseline     |  23.3 |       - |    5452 |       - |   43683 |       - | 2705/5000 |         1000
+proxy+priority/iavl/seq-move-exec   | mempool-only |  36.0 |  +54.5% |    3236 |  -40.6% |    6250 |  -85.7% | 5000/5000 |          569
+proxy+priority/memiavl/seq-move-exec| combined     |  36.1 |  +54.9% |    3816 |  -30.0% |    7606 |  -82.6% | 5000/5000 |          629
 ```
 
-Under heavy state pressure, Proxy+Priority delivers **+55% TPS** and **-83-86% P95 latency** vs CList. CList only included 2705/5000 txs due to tx drops.
+Under heavy state pressure, Proxy+Priority delivers **+55% TPS** and **-83-86% P95 latency** vs CList. CList only included 2705/5000 txs (54%) due to tx drops.
 
 ### Burst Move exec: Proxy+IAVL vs Proxy+MemIAVL
 

@@ -78,7 +78,8 @@ type Cluster struct {
 	valAddresses []string
 	accounts     map[string]string
 
-	mu sync.Mutex
+	mu     sync.Mutex
+	closed bool
 }
 
 func NewCluster(ctx context.Context, t *testing.T, opts ClusterOptions) (*Cluster, error) {
@@ -151,6 +152,11 @@ func (c *Cluster) Logf(format string, args ...any) {
 func (c *Cluster) Close() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
+
+	if c.closed {
+		return
+	}
+	c.closed = true
 
 	for _, n := range c.nodes {
 		if n.cmd == nil || n.cmd.Process == nil {
@@ -1099,17 +1105,23 @@ func patchGenesisBlockGas(genesisPath string, maxGas int64) error {
 	// and set max_gas as a string (CometBFT convention).
 	gasStr := strconv.FormatInt(maxGas, 10)
 
+	patched := false
 	if cp, ok := genesis["consensus"].(map[string]interface{}); ok {
 		if params, ok := cp["params"].(map[string]interface{}); ok {
 			if block, ok := params["block"].(map[string]interface{}); ok {
 				block["max_gas"] = gasStr
+				patched = true
 			}
 		}
 	}
 	if cp, ok := genesis["consensus_params"].(map[string]interface{}); ok {
 		if block, ok := cp["block"].(map[string]interface{}); ok {
 			block["max_gas"] = gasStr
+			patched = true
 		}
+	}
+	if !patched {
+		return fmt.Errorf("genesis has no consensus_params.block or consensus.params.block to patch max_gas")
 	}
 
 	out, err := json.MarshalIndent(genesis, "", "  ")
@@ -1169,10 +1181,12 @@ func (c *Cluster) configureNodes(_ context.Context) error {
 			return err
 		}
 
+		memiavlValue := "false"
 		if c.opts.MemIAVL {
-			if err := setTOMLValue(appPath, "memiavl", "enable", "true"); err != nil {
-				return err
-			}
+			memiavlValue = "true"
+		}
+		if err := setTOMLValue(appPath, "memiavl", "enable", memiavlValue); err != nil {
+			return err
 		}
 
 		if c.opts.TimeoutCommit > 0 {
