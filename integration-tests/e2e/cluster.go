@@ -14,6 +14,7 @@ type AccountMeta = e2ecluster.AccountMeta
 type TxResult = e2ecluster.TxResult
 type BlockResult = e2ecluster.BlockResult
 type Cluster = e2ecluster.Cluster
+type SignedTx = e2ecluster.SignedTx
 
 const MaxNodeCount = e2ecluster.MaxNodeCount
 

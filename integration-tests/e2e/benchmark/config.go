@@ -1,5 +1,7 @@
 package benchmark
 
+import "time"
+
 // Variant identifies which optimization layer is being benchmarked.
 //
 // The three-way comparison measures improvements from:
@@ -18,17 +20,26 @@ const (
 	VariantCombined    Variant = "combined"     // ProxyMempool+PriorityMempool + MemIAVL
 )
 
-const defaultGasLimit uint64 = 500_000
+const (
+	defaultGasLimit uint64 = 500_000
+
+	// defaultMaxBlockGas mirrors the Initia mainnet consensus parameter.
+	defaultMaxBlockGas int64 = 200_000_000
+)
 
 // BenchConfig defines the parameters for a benchmark run.
 type BenchConfig struct {
-	MemIAVL      bool    `json:"memiavl"`
-	NodeCount    int     `json:"node_count"`
-	AccountCount int     `json:"account_count"`
-	TxPerAccount int     `json:"tx_per_account"`
-	GasLimit     uint64  `json:"gas_limit"`
-	Label        string  `json:"label"`
-	Variant      Variant `json:"variant"`
+	MemIAVL        bool          `json:"memiavl"`
+	NodeCount      int           `json:"node_count"`
+	AccountCount   int           `json:"account_count"`
+	TxPerAccount   int           `json:"tx_per_account"`
+	GasLimit       uint64        `json:"gas_limit"`
+	Label          string        `json:"label"`
+	Variant        Variant       `json:"variant"`
+	TimeoutCommit  time.Duration `json:"timeout_commit_ms,omitempty"`
+	ValidatorCount int           `json:"validator_count,omitempty"`
+	MaxBlockGas    int64         `json:"max_block_gas,omitempty"`
+	NoAllowQueued  bool          `json:"no_allow_queued,omitempty"` // true for pre-proxy baseline binaries
 }
 
 // GetGasLimit returns the configured gas limit, falling back to defaultGasLimit.
@@ -43,12 +54,15 @@ func (c BenchConfig) GetGasLimit() uint64 {
 // Uses ProxyMempool+PriorityMempool with standard IAVL.
 func MempoolOnlyConfig() BenchConfig {
 	return BenchConfig{
-		MemIAVL:      false,
-		NodeCount:    3,
-		AccountCount: 10,
-		TxPerAccount: 200,
-		Label:        "proxy+priority/iavl",
-		Variant:      VariantMempoolOnly,
+		MemIAVL:        false,
+		NodeCount:      8,
+		AccountCount:   10,
+		TxPerAccount:   200,
+		Label:          "proxy+priority/iavl",
+		Variant:        VariantMempoolOnly,
+		TimeoutCommit:  500 * time.Millisecond,
+		ValidatorCount: 5,
+		MaxBlockGas:    defaultMaxBlockGas,
 	}
 }
 
@@ -56,12 +70,15 @@ func MempoolOnlyConfig() BenchConfig {
 // Uses ProxyMempool+PriorityMempool with MemIAVL.
 func CombinedConfig() BenchConfig {
 	return BenchConfig{
-		MemIAVL:      true,
-		NodeCount:    3,
-		AccountCount: 10,
-		TxPerAccount: 200,
-		Label:        "proxy+priority/memiavl",
-		Variant:      VariantCombined,
+		MemIAVL:        true,
+		NodeCount:      8,
+		AccountCount:   10,
+		TxPerAccount:   200,
+		Label:          "proxy+priority/memiavl",
+		Variant:        VariantCombined,
+		TimeoutCommit:  500 * time.Millisecond,
+		ValidatorCount: 5,
+		MaxBlockGas:    defaultMaxBlockGas,
 	}
 }
 
@@ -70,12 +87,16 @@ func CombinedConfig() BenchConfig {
 // rebuild initiad from the pre-proxy cometbft tag and pass it via E2E_INITIAD_BIN.
 func BaselineConfig() BenchConfig {
 	return BenchConfig{
-		MemIAVL:      false,
-		NodeCount:    3,
-		AccountCount: 10,
-		TxPerAccount: 200,
-		Label:        "clist/iavl",
-		Variant:      VariantBaseline,
+		MemIAVL:        false,
+		NodeCount:      8,
+		AccountCount:   10,
+		TxPerAccount:   200,
+		Label:          "clist/iavl",
+		Variant:        VariantBaseline,
+		TimeoutCommit:  500 * time.Millisecond,
+		ValidatorCount: 5,
+		MaxBlockGas:    defaultMaxBlockGas,
+		NoAllowQueued:  true,
 	}
 }
 
