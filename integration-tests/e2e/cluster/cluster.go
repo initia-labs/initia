@@ -1116,7 +1116,7 @@ func patchGenesisBlockGas(genesisPath string, maxGas int64) error {
 	if err != nil {
 		return fmt.Errorf("marshal genesis: %w", err)
 	}
-	return os.WriteFile(genesisPath, out, 0o644)
+	return os.WriteFile(genesisPath, out, 0o600)
 }
 
 // distributeGenesis patches genesis if needed and copies it from baseHome to all other nodes.
