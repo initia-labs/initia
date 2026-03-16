@@ -1,7 +1,8 @@
 name: Protobuf
-# Protobuf runs buf (https://buf.build/) fmt, lint and pushes to buf.build
-# PR: runs lint and format on proto changes
+# Runs buf (https://buf.build/) checks and pushes to BSR
+# PR: runs lint, format, and breaking change detection
 # Push to main/tags: pushes to BSR
+# Delete branch/tag: archives corresponding BSR labels
 
 on:
   push:
@@ -13,9 +14,10 @@ on:
     paths:
       - "proto/**"
       - ".github/workflows/proto.yml"
+  delete:
 
 permissions:
-  contents: write
+  contents: read
   pull-requests: write
 
 jobs:
@@ -28,58 +30,4 @@ jobs:
         with:
           input: proto
           token: ${{ secrets.BUF_TOKEN }}
-          breaking: false
-
-  npm-publish:
-    needs: buf-build
-    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-      - uses: actions/checkout@v6
-
-      - uses: actions/setup-node@v6
-        with:
-          node-version: '24'
-          registry-url: 'https://registry.npmjs.org'
-
-      - uses: bufbuild/buf-setup-action@v1
-
-      - name: Install protoc-gen-es
-        run: npm install -g @bufbuild/protoc-gen-es@^2
-
-      - name: Generate TypeScript from proto
-        working-directory: proto
-        run: |
-          COSMOS_SDK=$(awk '/repository: cosmos-sdk/{getline; print $2}' buf.lock)
-          IBC=$(awk '/repository: ibc/{getline; print $2}' buf.lock)
-          ICS23=$(awk '/repository: ics23/{getline; print $2}' buf.lock)
-          buf generate "buf.build/cosmos/cosmos-sdk:${COSMOS_SDK}" --template buf.gen.es.yaml
-          buf generate "buf.build/cosmos/ibc:${IBC}" --template buf.gen.es.yaml
-          buf generate "buf.build/cosmos/ics23:${ICS23}" --template buf.gen.es.yaml
-          buf generate . --template buf.gen.es.yaml --include-imports
-
-      - name: Set package version (tag)
-        if: startsWith(github.ref, 'refs/tags/v')
-        working-directory: proto/npm
-        env:
-          VERSION: ${{ github.ref_name }}
-        run: npm version "${VERSION#v}" --no-git-tag-version
-
-      - name: Set package version (canary)
-        if: github.ref == 'refs/heads/main'
-        working-directory: proto/npm
-        run: npm version "0.0.0-canary.${GITHUB_SHA::7}" --no-git-tag-version
-
-      - name: Publish (latest)
-        if: startsWith(github.ref, 'refs/tags/v')
-        working-directory: proto/npm
-        run: npm publish --access public
-
-      - name: Publish (canary)
-        if: github.ref == 'refs/heads/main'
-        working-directory: proto/npm
-        run: npm publish --access public --tag canary
+          # breaking defaults to PR-only; not set explicitly to avoid running on push events
