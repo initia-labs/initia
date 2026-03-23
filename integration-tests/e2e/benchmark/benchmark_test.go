@@ -84,8 +84,9 @@ func runBenchmarkWithCluster(t *testing.T, ctx context.Context, cluster *e2e.Clu
 
 	// scale drain timeout with total tx count: base 180s + 1s per 20 txs
 	drainTimeout := mempoolDrainTimeout + time.Duration(cfg.TotalTx()/20)*time.Second
-	// wait for all txs to be included
-	endHeight, err := WaitForAllIncluded(ctx, cluster, drainTimeout)
+	// wait for load to settle. CList checks validator nodes only
+	// because CList can leave txs stranded on non-validator mempools
+	endHeight, err := WaitForLoadToSettle(ctx, cluster, drainTimeout, cfg.NoAllowQueued)
 	require.NoError(t, err)
 
 	peakMempool := poller.Stop()
@@ -420,7 +421,7 @@ func runPreSignedBenchmark(
 		loadResult.EndTime.Sub(loadResult.StartTime).Seconds())
 
 	drainTimeout := mempoolDrainTimeout + time.Duration(cfg.TotalTx()/20)*time.Second
-	endHeight, err := WaitForAllIncluded(ctx, cluster, drainTimeout)
+	endHeight, err := WaitForLoadToSettle(ctx, cluster, drainTimeout, cfg.NoAllowQueued)
 	require.NoError(t, err)
 
 	peakMempool := poller.Stop()
@@ -754,13 +755,13 @@ func TestBenchmarkQueuedGapEviction(t *testing.T) {
 	metas, err = CollectInitialMetas(ctx, cluster)
 	require.NoError(t, err)
 
+	// start mempool poller before load to capture peak queued size
+	poller := NewMempoolPoller(ctx, cluster, mempoolPollInterval)
+
 	// submit future-nonce txs (gap load never fills nonce 0)
 	loadResult := QueuedGapLoad(ctx, cluster, cfg, metas)
 	t.Logf("Submitted %d future-nonce txs (no gap fill), %d errors",
 		len(loadResult.Submissions), len(loadResult.Errors))
-
-	// start mempool poller to track peak queued size
-	poller := NewMempoolPoller(ctx, cluster, mempoolPollInterval)
 
 	// wait for gap TTL to expire (60s default) + buffer
 	t.Log("Waiting for gap TTL eviction (60s + 30s buffer)...")
@@ -809,8 +810,8 @@ func TestBenchmarkGossipPropagation(t *testing.T) {
 	loadResult := SingleNodeLoad(ctx, cluster, cfg, metas, 0)
 	t.Logf("Submitted %d txs to node 0", len(loadResult.Submissions))
 
-	// wait for inclusion
-	endHeight, err := WaitForAllIncluded(ctx, cluster, mempoolDrainTimeout)
+	// wait for load to settle
+	endHeight, err := WaitForLoadToSettle(ctx, cluster, mempoolDrainTimeout, false)
 	require.NoError(t, err)
 
 	peakMempool := poller.Stop()

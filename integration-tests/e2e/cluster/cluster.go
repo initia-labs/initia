@@ -240,6 +240,21 @@ func (c *Cluster) WaitForReady(ctx context.Context, timeout time.Duration) error
 }
 
 func (c *Cluster) WaitForMempoolEmpty(ctx context.Context, timeout time.Duration) error {
+	return c.waitForMempoolEmpty(ctx, timeout, len(c.nodes))
+}
+
+// WaitForValidatorMempoolEmpty waits until the mempool is empty on validator
+// nodes only. CList mempool can leave txs stranded on non-validator nodes
+// that never get cleared, so this avoids false timeout failures.
+func (c *Cluster) WaitForValidatorMempoolEmpty(ctx context.Context, timeout time.Duration) error {
+	valCount := max(1, c.opts.ValidatorCount)
+	if valCount > len(c.nodes) {
+		valCount = len(c.nodes)
+	}
+	return c.waitForMempoolEmpty(ctx, timeout, valCount)
+}
+
+func (c *Cluster) waitForMempoolEmpty(ctx context.Context, timeout time.Duration, nodeCount int) error {
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
@@ -251,7 +266,7 @@ func (c *Cluster) WaitForMempoolEmpty(ctx context.Context, timeout time.Duration
 		}
 
 		allEmpty := true
-		for i := range c.nodes {
+		for i := range nodeCount {
 			n, err := c.unconfirmedTxCount(ctx, i)
 			if err != nil || n != 0 {
 				allEmpty = false
