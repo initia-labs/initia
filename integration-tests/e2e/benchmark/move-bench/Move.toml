@@ -1,0 +1,11 @@
+[package]
+name = "MoveBench"
+version = "0.0.0"
+
+[dependencies]
+InitiaStdlib = { git = "https://github.com/initia-labs/move-natives.git", subdir = "initia_stdlib", rev = "v1.2.0" }
+
+[addresses]
+initia_std = "0x1"
+std = "0x1"
+Publisher = "_"

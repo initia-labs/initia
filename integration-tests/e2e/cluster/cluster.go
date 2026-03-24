@@ -2,6 +2,9 @@ package cluster
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -26,12 +29,17 @@ const (
 )
 
 type ClusterOptions struct {
-	NodeCount    int
-	AccountCount int
-	ChainID      string
-	BasePort     int
-	PortStride   int
-	BinaryPath   string
+	NodeCount      int
+	AccountCount   int
+	ChainID        string
+	BasePort       int
+	PortStride     int
+	BinaryPath     string
+	MemIAVL        bool
+	TimeoutCommit  time.Duration // 0 = use default (2s)
+	ValidatorCount int           // 0 or 1 = single validator (current behavior)
+	MaxBlockGas    int64         // 0 = no limit; >0 sets block max_gas in genesis (mainnet: 200000000)
+	NoAllowQueued  bool          // true = omit --allow-queued flag (for pre-proxy baseline binaries)
 }
 
 type Node struct {
@@ -67,10 +75,11 @@ type Cluster struct {
 	root  string
 	nodes []*Node
 
-	valAddress string
-	accounts   map[string]string
+	valAddresses []string
+	accounts     map[string]string
 
-	mu sync.Mutex
+	mu     sync.Mutex
+	closed bool
 }
 
 func NewCluster(ctx context.Context, t *testing.T, opts ClusterOptions) (*Cluster, error) {
@@ -143,6 +152,11 @@ func (c *Cluster) Logf(format string, args ...any) {
 func (c *Cluster) Close() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
+
+	if c.closed {
+		return
+	}
+	c.closed = true
 
 	for _, n := range c.nodes {
 		if n.cmd == nil || n.cmd.Process == nil {
@@ -226,6 +240,21 @@ func (c *Cluster) WaitForReady(ctx context.Context, timeout time.Duration) error
 }
 
 func (c *Cluster) WaitForMempoolEmpty(ctx context.Context, timeout time.Duration) error {
+	return c.waitForMempoolEmpty(ctx, timeout, len(c.nodes))
+}
+
+// WaitForValidatorMempoolEmpty waits until the mempool is empty on validator
+// nodes only. CList mempool can leave txs stranded on non-validator nodes
+// that never get cleared, so this avoids false timeout failures.
+func (c *Cluster) WaitForValidatorMempoolEmpty(ctx context.Context, timeout time.Duration) error {
+	valCount := max(1, c.opts.ValidatorCount)
+	if valCount > len(c.nodes) {
+		valCount = len(c.nodes)
+	}
+	return c.waitForMempoolEmpty(ctx, timeout, valCount)
+}
+
+func (c *Cluster) waitForMempoolEmpty(ctx context.Context, timeout time.Duration, nodeCount int) error {
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
@@ -237,7 +266,7 @@ func (c *Cluster) WaitForMempoolEmpty(ctx context.Context, timeout time.Duration
 		}
 
 		allEmpty := true
-		for i := range c.nodes {
+		for i := range nodeCount {
 			n, err := c.unconfirmedTxCount(ctx, i)
 			if err != nil || n != 0 {
 				allEmpty = false
@@ -255,6 +284,91 @@ func (c *Cluster) NodeCount() int {
 	return len(c.nodes)
 }
 
+// NodeRPCPort returns the RPC port for the given node index.
+func (c *Cluster) NodeRPCPort(index int) (int, error) {
+	n, err := c.getNode(index)
+	if err != nil {
+		return 0, err
+	}
+	return n.Ports.RPC, nil
+}
+
+// LatestHeight returns the latest block height from the given node.
+func (c *Cluster) LatestHeight(ctx context.Context, nodeIndex int) (int64, error) {
+	return c.latestHeight(ctx, nodeIndex)
+}
+
+// UnconfirmedTxCount returns the number of unconfirmed transactions in the given node's mempool.
+func (c *Cluster) UnconfirmedTxCount(ctx context.Context, nodeIndex int) (int64, error) {
+	return c.unconfirmedTxCount(ctx, nodeIndex)
+}
+
+// BlockResult holds the data extracted from a block query.
+type BlockResult struct {
+	TxHashes  []string
+	BlockTime time.Time
+}
+
+// QueryBlock queries a specific block by height from the given node and returns tx hashes and block time.
+func (c *Cluster) QueryBlock(ctx context.Context, nodeIndex int, height int64) (BlockResult, error) {
+	n, err := c.getNode(nodeIndex)
+	if err != nil {
+		return BlockResult{}, err
+	}
+
+	url := fmt.Sprintf("http://127.0.0.1:%d/block?height=%d", n.Ports.RPC, height)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return BlockResult{}, err
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return BlockResult{}, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return BlockResult{}, fmt.Errorf("block query status code %d", resp.StatusCode)
+	}
+
+	var decoded struct {
+		Result struct {
+			Block struct {
+				Header struct {
+					Time string `json:"time"`
+				} `json:"header"`
+				Data struct {
+					Txs []string `json:"txs"`
+				} `json:"data"`
+			} `json:"block"`
+		} `json:"result"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&decoded); err != nil {
+		return BlockResult{}, fmt.Errorf("failed to decode block response: %w", err)
+	}
+
+	blockTime, err := time.Parse(time.RFC3339Nano, decoded.Result.Block.Header.Time)
+	if err != nil {
+		return BlockResult{}, fmt.Errorf("failed to parse block time %q: %w", decoded.Result.Block.Header.Time, err)
+	}
+
+	txHashes := make([]string, 0, len(decoded.Result.Block.Data.Txs))
+	for idx, txBase64 := range decoded.Result.Block.Data.Txs {
+		txBytes, decErr := base64Decode(txBase64)
+		if decErr != nil {
+			return BlockResult{}, fmt.Errorf("failed to decode tx at height=%d index=%d: %w", height, idx, decErr)
+		}
+		hash := sha256Hash(txBytes)
+		txHashes = append(txHashes, strings.ToUpper(hash))
+	}
+
+	return BlockResult{
+		TxHashes:  txHashes,
+		BlockTime: blockTime,
+	}, nil
+}
+
 func (c *Cluster) AccountNames() []string {
 	names := make([]string, 0, len(c.accounts))
 	for i := 1; i <= c.opts.AccountCount; i++ {
@@ -264,7 +378,14 @@ func (c *Cluster) AccountNames() []string {
 }
 
 func (c *Cluster) ValidatorAddress() string {
-	return c.valAddress
+	if len(c.valAddresses) == 0 {
+		return ""
+	}
+	return c.valAddresses[0]
+}
+
+func (c *Cluster) ValidatorAddresses() []string {
+	return c.valAddresses
 }
 
 func (c *Cluster) AccountAddress(name string) (string, error) {
@@ -273,6 +394,28 @@ func (c *Cluster) AccountAddress(name string) (string, error) {
 		return "", fmt.Errorf("unknown account: %s", name)
 	}
 	return addr, nil
+}
+
+// AccountAddressHex returns the hex-encoded address for the given account name.
+// Useful for Move named-addresses which require hex format (0x...).
+func (c *Cluster) AccountAddressHex(ctx context.Context, name string) (string, error) {
+	addr, err := c.AccountAddress(name)
+	if err != nil {
+		return "", err
+	}
+	out, err := c.exec(ctx, "debug", "addr", addr)
+	if err != nil {
+		return "", err
+	}
+	// parse "Address (hex): <HEX>" line
+	for _, line := range strings.Split(string(out), "\n") {
+		line = strings.TrimSpace(line)
+		if strings.HasPrefix(line, "Address (hex):") {
+			hexAddr := strings.TrimSpace(strings.TrimPrefix(line, "Address (hex):"))
+			return "0x" + strings.ToLower(hexAddr), nil
+		}
+	}
+	return "", fmt.Errorf("failed to parse hex address from debug output: %s", string(out))
 }
 
 func (c *Cluster) RepoPath(parts ...string) string {
@@ -343,22 +486,28 @@ func (c *Cluster) SendBankTxWithSequence(ctx context.Context, fromName, toAddres
 		fromName, toAddress, amount, accountNumber, sequence, viaNode, node.Ports.RPC,
 	)
 
-	out, err := c.exec(ctx,
+	args := []string{
 		"tx", "bank", "send", fromName, toAddress, amount,
 		"--chain-id", c.opts.ChainID,
 		"--node", fmt.Sprintf("http://127.0.0.1:%d", node.Ports.RPC),
 		"--home", c.nodes[0].Home,
 		"--keyring-backend", "test",
-		"--gas-prices", "0.015uinit",
+		"--gas-prices", "0.15uinit",
 		"--gas", strconv.FormatUint(gasLimit, 10),
 		"--offline",
-		"--allow-queued",
+	}
+	if !c.opts.NoAllowQueued {
+		args = append(args, "--allow-queued")
+	}
+	args = append(args,
 		"--broadcast-mode", "sync",
 		"--account-number", strconv.FormatUint(accountNumber, 10),
 		"--sequence", strconv.FormatUint(sequence, 10),
 		"--yes",
 		"--output", "json",
 	)
+
+	out, err := c.exec(ctx, args...)
 	if err != nil {
 		c.t.Logf(
 			"[send] failed from=%s sequence=%d err=%v",
@@ -405,10 +554,14 @@ func (c *Cluster) MovePublish(ctx context.Context, fromName string, moduleFiles 
 		"--node", fmt.Sprintf("http://127.0.0.1:%d", node.Ports.RPC),
 		"--home", c.nodes[0].Home,
 		"--keyring-backend", "test",
-		"--gas-prices", "0.015uinit",
+		"--gas-prices", "0.15uinit",
 		"--gas", strconv.FormatUint(estimatedGas, 10),
 		"--offline",
-		"--allow-queued",
+	)
+	if !c.opts.NoAllowQueued {
+		args = append(args, "--allow-queued")
+	}
+	args = append(args,
 		"--account-number", strconv.FormatUint(meta.AccountNumber, 10),
 		"--sequence", strconv.FormatUint(meta.Sequence, 10),
 		"--broadcast-mode", "sync",
@@ -450,7 +603,7 @@ func (c *Cluster) MoveEstimatePublishGas(
 		"--node", fmt.Sprintf("http://127.0.0.1:%d", node.Ports.RPC),
 		"--home", c.nodes[0].Home,
 		"--keyring-backend", "test",
-		"--gas-prices", "0.015uinit",
+		"--gas-prices", "0.15uinit",
 		"--gas", "auto",
 		"--gas-adjustment", "1.2",
 		"--generate-only",
@@ -506,7 +659,7 @@ func (c *Cluster) MoveExecuteJSONWithSequence(
 		return TxResult{Err: err}
 	}
 
-	out, err := c.exec(ctx,
+	execArgs := []string{
 		"tx", "move", "execute-json",
 		moduleAddress,
 		moduleName,
@@ -518,16 +671,22 @@ func (c *Cluster) MoveExecuteJSONWithSequence(
 		"--node", fmt.Sprintf("http://127.0.0.1:%d", node.Ports.RPC),
 		"--home", c.nodes[0].Home,
 		"--keyring-backend", "test",
-		"--gas-prices", "0.015uinit",
+		"--gas-prices", "0.15uinit",
 		"--gas", strconv.FormatUint(estimatedGas, 10),
 		"--offline",
-		"--allow-queued",
+	}
+	if !c.opts.NoAllowQueued {
+		execArgs = append(execArgs, "--allow-queued")
+	}
+	execArgs = append(execArgs,
 		"--account-number", strconv.FormatUint(accountNumber, 10),
 		"--sequence", strconv.FormatUint(sequence, 10),
 		"--broadcast-mode", "sync",
 		"--yes",
 		"--output", "json",
 	)
+
+	out, err := c.exec(ctx, execArgs...)
 	if err != nil {
 		return TxResult{Err: err}
 	}
@@ -536,6 +695,65 @@ func (c *Cluster) MoveExecuteJSONWithSequence(
 		return TxResult{Err: err}
 	}
 	c.t.Logf("[move-exec-json-seq] from=%s seq=%d gas=%d %s::%s::%s args=%v code=%d txhash=%s", fromName, sequence, estimatedGas, moduleAddress, moduleName, functionName, args, res.Code, res.TxHash)
+	return res
+}
+
+func (c *Cluster) SendMoveExecuteJSONWithGas(
+	ctx context.Context,
+	fromName, moduleAddress, moduleName, functionName string,
+	typeArgs, args []string,
+	accountNumber, sequence, gasLimit uint64,
+	viaNode int,
+) TxResult {
+	node, err := c.getNode(viaNode)
+	if err != nil {
+		return TxResult{Err: err}
+	}
+	typeArgsJSON, err := json.Marshal(typeArgs)
+	if err != nil {
+		return TxResult{Err: err}
+	}
+	moveArgsJSON, err := json.Marshal(args)
+	if err != nil {
+		return TxResult{Err: err}
+	}
+
+	execArgs := []string{
+		"tx", "move", "execute-json",
+		moduleAddress,
+		moduleName,
+		functionName,
+		"--type-args", string(typeArgsJSON),
+		"--args", string(moveArgsJSON),
+		"--from", fromName,
+		"--chain-id", c.opts.ChainID,
+		"--node", fmt.Sprintf("http://127.0.0.1:%d", node.Ports.RPC),
+		"--home", c.nodes[0].Home,
+		"--keyring-backend", "test",
+		"--gas-prices", "0.15uinit",
+		"--gas", strconv.FormatUint(gasLimit, 10),
+		"--offline",
+	}
+	if !c.opts.NoAllowQueued {
+		execArgs = append(execArgs, "--allow-queued")
+	}
+	execArgs = append(execArgs,
+		"--account-number", strconv.FormatUint(accountNumber, 10),
+		"--sequence", strconv.FormatUint(sequence, 10),
+		"--broadcast-mode", "sync",
+		"--yes",
+		"--output", "json",
+	)
+
+	out, err := c.exec(ctx, execArgs...)
+	if err != nil {
+		return TxResult{Err: err}
+	}
+	res, err := parseTxResultFromOutput(out)
+	if err != nil {
+		return TxResult{Err: err}
+	}
+	c.t.Logf("[move-exec-json-gas] from=%s seq=%d gas=%d %s::%s::%s args=%v code=%d txhash=%s", fromName, sequence, gasLimit, moduleAddress, moduleName, functionName, args, res.Code, res.TxHash)
 	return res
 }
 
@@ -573,7 +791,7 @@ func (c *Cluster) MoveEstimateExecuteJSONGasWithSequence(
 		"--node", fmt.Sprintf("http://127.0.0.1:%d", node.Ports.RPC),
 		"--home", c.nodes[0].Home,
 		"--keyring-backend", "test",
-		"--gas-prices", "0.015uinit",
+		"--gas-prices", "0.15uinit",
 		"--gas", "auto",
 		"--gas-adjustment", "1.2",
 		"--generate-only",
@@ -641,6 +859,7 @@ func (c *Cluster) BuildMoveModule(
 		"move", "build",
 		"--path", packagePath,
 		"--install-dir", installDir,
+		"--skip-fetch-latest-git-deps",
 	}
 
 	if len(namedAddresses) > 0 {
@@ -698,7 +917,34 @@ func (c *Cluster) initNodes(ctx context.Context) error {
 		c.nodes = append(c.nodes, n)
 	}
 
+	// Resolve node IDs early — needed for gentx memos in multi-validator setup.
+	for _, n := range c.nodes {
+		out, err := c.exec(ctx, "comet", "show-node-id", "--home", n.Home)
+		if err != nil {
+			return err
+		}
+		n.PeerID = strings.TrimSpace(string(out))
+	}
+
 	baseHome := c.nodes[0].Home
+
+	// Determine number of validators.
+	valCount := 1
+	if c.opts.ValidatorCount > 1 {
+		valCount = c.opts.ValidatorCount
+		if valCount > c.opts.NodeCount {
+			valCount = c.opts.NodeCount
+		}
+	}
+
+	if valCount <= 1 {
+		return c.initSingleValidator(ctx, baseHome)
+	}
+	return c.initMultiValidator(ctx, baseHome, valCount)
+}
+
+// initSingleValidator is the original single-validator setup path.
+func (c *Cluster) initSingleValidator(ctx context.Context, baseHome string) error {
 	if _, err := c.exec(ctx, "keys", "add", "val", "--keyring-backend", "test", "--home", baseHome); err != nil {
 		return err
 	}
@@ -706,18 +952,10 @@ func (c *Cluster) initNodes(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	c.valAddress = valAddr
+	c.valAddresses = []string{valAddr}
 
-	for i := 1; i <= c.opts.AccountCount; i++ {
-		name := fmt.Sprintf("acc%d", i)
-		if _, err := c.exec(ctx, "keys", "add", name, "--keyring-backend", "test", "--home", baseHome); err != nil {
-			return err
-		}
-		addr, err := c.keyAddress(ctx, name)
-		if err != nil {
-			return err
-		}
-		c.accounts[name] = addr
+	if err := c.addAccountKeys(ctx, baseHome); err != nil {
+		return err
 	}
 
 	if _, err := c.exec(ctx,
@@ -727,14 +965,8 @@ func (c *Cluster) initNodes(ctx context.Context) error {
 		return err
 	}
 
-	for i := 1; i <= c.opts.AccountCount; i++ {
-		name := fmt.Sprintf("acc%d", i)
-		if _, err := c.exec(ctx,
-			"genesis", "add-genesis-account", name, "1000000000000000uinit",
-			"--home", baseHome, "--keyring-backend", "test",
-		); err != nil {
-			return err
-		}
+	if err := c.addAccountGenesisAccounts(ctx, baseHome); err != nil {
+		return err
 	}
 
 	if _, err := c.exec(ctx,
@@ -747,22 +979,189 @@ func (c *Cluster) initNodes(ctx context.Context) error {
 		return err
 	}
 
+	return c.distributeGenesis(baseHome)
+}
+
+// initMultiValidator sets up N validators across the first N nodes.
+func (c *Cluster) initMultiValidator(ctx context.Context, baseHome string, valCount int) error {
+	// 1. Create all validator keys in baseHome keyring.
+	for i := 0; i < valCount; i++ {
+		name := fmt.Sprintf("val%d", i)
+		if _, err := c.exec(ctx, "keys", "add", name, "--keyring-backend", "test", "--home", baseHome); err != nil {
+			return err
+		}
+		addr, err := c.keyAddress(ctx, name)
+		if err != nil {
+			return err
+		}
+		c.valAddresses = append(c.valAddresses, addr)
+	}
+
+	if err := c.addAccountKeys(ctx, baseHome); err != nil {
+		return err
+	}
+
+	// 2. Add genesis accounts for all validators.
+	for i := 0; i < valCount; i++ {
+		name := fmt.Sprintf("val%d", i)
+		if _, err := c.exec(ctx,
+			"genesis", "add-genesis-account", name, "1000000000000000uinit",
+			"--home", baseHome, "--keyring-backend", "test",
+		); err != nil {
+			return err
+		}
+	}
+
+	if err := c.addAccountGenesisAccounts(ctx, baseHome); err != nil {
+		return err
+	}
+
+	// 3. Create gentxs — each validator's gentx must be created from its own node home
+	//    so the correct node ID ends up in the memo.
+	baseKeyringDir := filepath.Join(baseHome, "keyring-test")
+	baseGenesisPath := filepath.Join(baseHome, "config", "genesis.json")
+
+	for i := 0; i < valCount; i++ {
+		nodeHome := c.nodes[i].Home
+		name := fmt.Sprintf("val%d", i)
+
+		// Copy keyring from baseHome to this node's home so gentx can sign.
+		nodeKeyringDir := filepath.Join(nodeHome, "keyring-test")
+		if err := copyDir(baseKeyringDir, nodeKeyringDir); err != nil {
+			return fmt.Errorf("copy keyring to node%d: %w", i, err)
+		}
+
+		// Copy genesis.json from baseHome to this node's home.
+		if err := copyFile(baseGenesisPath, filepath.Join(nodeHome, "config", "genesis.json")); err != nil {
+			return fmt.Errorf("copy genesis to node%d: %w", i, err)
+		}
+
+		// Create gentx from this node's home (embeds correct peer ID in memo).
+		if _, err := c.exec(ctx,
+			"genesis", "gentx", name, "500000000000uinit",
+			"--home", nodeHome, "--keyring-backend", "test", "--chain-id", c.opts.ChainID,
+		); err != nil {
+			return fmt.Errorf("gentx for %s: %w", name, err)
+		}
+
+		// Copy the gentx file back to baseHome/config/gentx/.
+		nodeGentxDir := filepath.Join(nodeHome, "config", "gentx")
+		baseGentxDir := filepath.Join(baseHome, "config", "gentx")
+		if i > 0 { // node0 == baseHome, no copy needed
+			if err := copyDir(nodeGentxDir, baseGentxDir); err != nil {
+				return fmt.Errorf("copy gentx from node%d: %w", i, err)
+			}
+		}
+	}
+
+	// 4. Collect gentxs in baseHome.
+	if _, err := c.exec(ctx, "genesis", "collect-gentxs", "--home", baseHome); err != nil {
+		return err
+	}
+
+	// 5. Distribute genesis and keyring to all nodes.
+	if err := c.distributeGenesis(baseHome); err != nil {
+		return err
+	}
+
+	// Copy keyring to all validator nodes so they can sign transactions.
+	for i := 1; i < len(c.nodes); i++ {
+		nodeKeyringDir := filepath.Join(c.nodes[i].Home, "keyring-test")
+		if err := copyDir(baseKeyringDir, nodeKeyringDir); err != nil {
+			return fmt.Errorf("distribute keyring to node%d: %w", i, err)
+		}
+	}
+
+	return nil
+}
+
+// addAccountKeys creates test account keys in baseHome.
+func (c *Cluster) addAccountKeys(ctx context.Context, baseHome string) error {
+	for i := 1; i <= c.opts.AccountCount; i++ {
+		name := fmt.Sprintf("acc%d", i)
+		if _, err := c.exec(ctx, "keys", "add", name, "--keyring-backend", "test", "--home", baseHome); err != nil {
+			return err
+		}
+		addr, err := c.keyAddress(ctx, name)
+		if err != nil {
+			return err
+		}
+		c.accounts[name] = addr
+	}
+	return nil
+}
+
+// addAccountGenesisAccounts adds genesis accounts for all test accounts.
+func (c *Cluster) addAccountGenesisAccounts(ctx context.Context, baseHome string) error {
+	for i := 1; i <= c.opts.AccountCount; i++ {
+		name := fmt.Sprintf("acc%d", i)
+		if _, err := c.exec(ctx,
+			"genesis", "add-genesis-account", name, "1000000000000000uinit",
+			"--home", baseHome, "--keyring-backend", "test",
+		); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// patchGenesisBlockGas sets consensus_params.block.max_gas in genesis.json.
+func patchGenesisBlockGas(genesisPath string, maxGas int64) error {
+	bz, err := os.ReadFile(genesisPath)
+	if err != nil {
+		return err
+	}
+	var genesis map[string]interface{}
+	if err := json.Unmarshal(bz, &genesis); err != nil {
+		return fmt.Errorf("unmarshal genesis: %w", err)
+	}
+
+	// Navigate to consensus_params.block (or consensus.params.block for newer SDK)
+	// and set max_gas as a string (CometBFT convention).
+	gasStr := strconv.FormatInt(maxGas, 10)
+
+	patched := false
+	if cp, ok := genesis["consensus"].(map[string]interface{}); ok {
+		if params, ok := cp["params"].(map[string]interface{}); ok {
+			if block, ok := params["block"].(map[string]interface{}); ok {
+				block["max_gas"] = gasStr
+				patched = true
+			}
+		}
+	}
+	if cp, ok := genesis["consensus_params"].(map[string]interface{}); ok {
+		if block, ok := cp["block"].(map[string]interface{}); ok {
+			block["max_gas"] = gasStr
+			patched = true
+		}
+	}
+	if !patched {
+		return fmt.Errorf("genesis has no consensus_params.block or consensus.params.block to patch max_gas")
+	}
+
+	out, err := json.MarshalIndent(genesis, "", "  ")
+	if err != nil {
+		return fmt.Errorf("marshal genesis: %w", err)
+	}
+	return os.WriteFile(genesisPath, out, 0o600)
+}
+
+// distributeGenesis patches genesis if needed and copies it from baseHome to all other nodes.
+func (c *Cluster) distributeGenesis(baseHome string) error {
 	baseGenesis := filepath.Join(baseHome, "config", "genesis.json")
+
+	if c.opts.MaxBlockGas > 0 {
+		if err := patchGenesisBlockGas(baseGenesis, c.opts.MaxBlockGas); err != nil {
+			return fmt.Errorf("patch genesis max_gas: %w", err)
+		}
+	}
+
 	for i := 1; i < len(c.nodes); i++ {
 		n := c.nodes[i]
 		if err := copyFile(baseGenesis, filepath.Join(n.Home, "config", "genesis.json")); err != nil {
 			return err
 		}
 	}
-
-	for _, n := range c.nodes {
-		out, err := c.exec(ctx, "comet", "show-node-id", "--home", n.Home)
-		if err != nil {
-			return err
-		}
-		n.PeerID = strings.TrimSpace(string(out))
-	}
-
 	return nil
 }
 
@@ -795,6 +1194,21 @@ func (c *Cluster) configureNodes(_ context.Context) error {
 		}
 		if err := setTOMLValue(appPath, "grpc", "address", fmt.Sprintf("\"127.0.0.1:%d\"", n.Ports.GRPC)); err != nil {
 			return err
+		}
+
+		memiavlValue := "false"
+		if c.opts.MemIAVL {
+			memiavlValue = "true"
+		}
+		if err := setTOMLValue(appPath, "memiavl", "enable", memiavlValue); err != nil {
+			return err
+		}
+
+		if c.opts.TimeoutCommit > 0 {
+			commitMs := fmt.Sprintf("\"%dms\"", c.opts.TimeoutCommit.Milliseconds())
+			if err := setTOMLValue(cfgPath, "consensus", "timeout_commit", commitMs); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -986,6 +1400,27 @@ func copyFile(src, dst string) error {
 	return os.WriteFile(dst, bz, 0o600)
 }
 
+// copyDir copies all files from srcDir into dstDir (non-recursive).
+// dstDir is created if it does not exist. Existing files are overwritten.
+func copyDir(srcDir, dstDir string) error {
+	if err := os.MkdirAll(dstDir, 0o700); err != nil {
+		return err
+	}
+	entries, err := os.ReadDir(srcDir)
+	if err != nil {
+		return err
+	}
+	for _, e := range entries {
+		if e.IsDir() {
+			continue
+		}
+		if err := copyFile(filepath.Join(srcDir, e.Name()), filepath.Join(dstDir, e.Name())); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func parseTxResultFromOutput(out []byte) (TxResult, error) {
 	var txResp map[string]any
 	if err := json.Unmarshal(out, &txResp); err != nil {
@@ -1076,6 +1511,15 @@ func extractJSONObject(out []byte) ([]byte, error) {
 	return []byte(s[start : end+1]), nil
 }
 
+func base64Decode(s string) ([]byte, error) {
+	return base64.StdEncoding.DecodeString(s)
+}
+
+func sha256Hash(data []byte) string {
+	h := sha256.Sum256(data)
+	return hex.EncodeToString(h[:])
+}
+
 func parseEstimatedGas(out []byte) (uint64, error) {
 	var txResp map[string]any
 	if err := json.Unmarshal(out, &txResp); err == nil {
@@ -1103,4 +1547,265 @@ func parseEstimatedGas(out []byte) (uint64, error) {
 	}
 
 	return 0, fmt.Errorf("failed to parse estimated gas from output: %s", strings.TrimSpace(string(out)))
+}
+
+// SignedTx holds a pre-signed, encoded transaction ready for HTTP broadcast.
+type SignedTx struct {
+	Account       string
+	Sequence      uint64
+	TxBase64      string
+	TxHash        string
+	AccountNumber uint64
+}
+
+// GenerateSignedBankTx generates a signed, base64-encoded bank send transaction offline.
+// Uses --generate-only to build, tx sign to sign, and tx encode to produce the final bytes.
+func (c *Cluster) GenerateSignedBankTx(ctx context.Context, fromName, toAddress, amount string, accountNumber, sequence, gasLimit uint64) (SignedTx, error) {
+	// 1. Generate unsigned tx JSON
+	genArgs := []string{
+		"tx", "bank", "send", fromName, toAddress, amount,
+		"--chain-id", c.opts.ChainID,
+		"--home", c.nodes[0].Home,
+		"--keyring-backend", "test",
+		"--gas-prices", "0.15uinit",
+		"--gas", strconv.FormatUint(gasLimit, 10),
+		"--account-number", strconv.FormatUint(accountNumber, 10),
+		"--sequence", strconv.FormatUint(sequence, 10),
+		"--generate-only",
+	}
+	if !c.opts.NoAllowQueued {
+		genArgs = append(genArgs, "--allow-queued")
+	}
+
+	unsignedJSON, err := c.exec(ctx, genArgs...)
+	if err != nil {
+		return SignedTx{}, fmt.Errorf("generate-only: %w", err)
+	}
+
+	// 2. Write unsigned tx to temp file and sign
+	tmpFile, err := os.CreateTemp("", "unsigned-tx-*.json")
+	if err != nil {
+		return SignedTx{}, err
+	}
+	defer os.Remove(tmpFile.Name())
+
+	if _, err := tmpFile.Write(unsignedJSON); err != nil {
+		tmpFile.Close()
+		return SignedTx{}, err
+	}
+	tmpFile.Close()
+
+	signArgs := []string{
+		"tx", "sign", tmpFile.Name(),
+		"--from", fromName,
+		"--chain-id", c.opts.ChainID,
+		"--home", c.nodes[0].Home,
+		"--keyring-backend", "test",
+		"--offline",
+		"--account-number", strconv.FormatUint(accountNumber, 10),
+		"--sequence", strconv.FormatUint(sequence, 10),
+	}
+
+	signedJSON, err := c.exec(ctx, signArgs...)
+	if err != nil {
+		return SignedTx{}, fmt.Errorf("sign: %w", err)
+	}
+
+	// 3. Encode to base64
+	signedFile, err := os.CreateTemp("", "signed-tx-*.json")
+	if err != nil {
+		return SignedTx{}, err
+	}
+	defer os.Remove(signedFile.Name())
+
+	if _, err := signedFile.Write(signedJSON); err != nil {
+		signedFile.Close()
+		return SignedTx{}, err
+	}
+	signedFile.Close()
+
+	encodeArgs := []string{
+		"tx", "encode", signedFile.Name(),
+		"--home", c.nodes[0].Home,
+	}
+
+	encodedOut, err := c.exec(ctx, encodeArgs...)
+	if err != nil {
+		return SignedTx{}, fmt.Errorf("encode: %w", err)
+	}
+
+	txBase64 := strings.TrimSpace(string(encodedOut))
+
+	// Compute tx hash from raw bytes
+	txBytes, err := base64.StdEncoding.DecodeString(txBase64)
+	if err != nil {
+		return SignedTx{}, fmt.Errorf("decode base64 for hash: %w", err)
+	}
+	hash := sha256.Sum256(txBytes)
+
+	return SignedTx{
+		Account:       fromName,
+		Sequence:      sequence,
+		TxBase64:      txBase64,
+		TxHash:        strings.ToUpper(hex.EncodeToString(hash[:])),
+		AccountNumber: accountNumber,
+	}, nil
+}
+
+// GenerateSignedMoveExecTx generates a signed, base64-encoded Move execute transaction offline.
+func (c *Cluster) GenerateSignedMoveExecTx(
+	ctx context.Context,
+	fromName, moduleAddress, moduleName, functionName string,
+	typeArgs, args []string,
+	accountNumber, sequence, gasLimit uint64,
+) (SignedTx, error) {
+	typeArgsJSON, err := json.Marshal(typeArgs)
+	if err != nil {
+		return SignedTx{}, err
+	}
+	moveArgsJSON, err := json.Marshal(args)
+	if err != nil {
+		return SignedTx{}, err
+	}
+
+	genArgs := []string{
+		"tx", "move", "execute-json",
+		moduleAddress, moduleName, functionName,
+		"--type-args", string(typeArgsJSON),
+		"--args", string(moveArgsJSON),
+		"--from", fromName,
+		"--chain-id", c.opts.ChainID,
+		"--home", c.nodes[0].Home,
+		"--keyring-backend", "test",
+		"--gas-prices", "0.15uinit",
+		"--gas", strconv.FormatUint(gasLimit, 10),
+		"--account-number", strconv.FormatUint(accountNumber, 10),
+		"--sequence", strconv.FormatUint(sequence, 10),
+		"--generate-only",
+	}
+	if !c.opts.NoAllowQueued {
+		genArgs = append(genArgs, "--allow-queued")
+	}
+
+	unsignedJSON, err := c.exec(ctx, genArgs...)
+	if err != nil {
+		return SignedTx{}, fmt.Errorf("generate-only: %w", err)
+	}
+
+	tmpFile, err := os.CreateTemp("", "unsigned-tx-*.json")
+	if err != nil {
+		return SignedTx{}, err
+	}
+	defer os.Remove(tmpFile.Name())
+
+	if _, err := tmpFile.Write(unsignedJSON); err != nil {
+		tmpFile.Close()
+		return SignedTx{}, err
+	}
+	tmpFile.Close()
+
+	signArgs := []string{
+		"tx", "sign", tmpFile.Name(),
+		"--from", fromName,
+		"--chain-id", c.opts.ChainID,
+		"--home", c.nodes[0].Home,
+		"--keyring-backend", "test",
+		"--offline",
+		"--account-number", strconv.FormatUint(accountNumber, 10),
+		"--sequence", strconv.FormatUint(sequence, 10),
+	}
+
+	signedJSON, err := c.exec(ctx, signArgs...)
+	if err != nil {
+		return SignedTx{}, fmt.Errorf("sign: %w", err)
+	}
+
+	signedFile, err := os.CreateTemp("", "signed-tx-*.json")
+	if err != nil {
+		return SignedTx{}, err
+	}
+	defer os.Remove(signedFile.Name())
+
+	if _, err := signedFile.Write(signedJSON); err != nil {
+		signedFile.Close()
+		return SignedTx{}, err
+	}
+	signedFile.Close()
+
+	encodeArgs := []string{
+		"tx", "encode", signedFile.Name(),
+		"--home", c.nodes[0].Home,
+	}
+
+	encodedOut, err := c.exec(ctx, encodeArgs...)
+	if err != nil {
+		return SignedTx{}, fmt.Errorf("encode: %w", err)
+	}
+
+	txBase64 := strings.TrimSpace(string(encodedOut))
+	txBytes, err := base64.StdEncoding.DecodeString(txBase64)
+	if err != nil {
+		return SignedTx{}, fmt.Errorf("decode base64 for hash: %w", err)
+	}
+	hash := sha256.Sum256(txBytes)
+
+	return SignedTx{
+		Account:       fromName,
+		Sequence:      sequence,
+		TxBase64:      txBase64,
+		TxHash:        strings.ToUpper(hex.EncodeToString(hash[:])),
+		AccountNumber: accountNumber,
+	}, nil
+}
+
+// BroadcastTxSync broadcasts a pre-signed transaction via HTTP to the given node's
+// /broadcast_tx_sync endpoint. Returns the response code and tx hash.
+func (c *Cluster) BroadcastTxSync(ctx context.Context, nodeIndex int, txBase64 string) (TxResult, error) {
+	node, err := c.getNode(nodeIndex)
+	if err != nil {
+		return TxResult{}, err
+	}
+
+	// Use JSON-RPC POST for reliability.
+	txBytes, err := base64.StdEncoding.DecodeString(txBase64)
+	if err != nil {
+		return TxResult{}, fmt.Errorf("decode tx base64: %w", err)
+	}
+
+	reqBody := fmt.Sprintf(`{"jsonrpc":"2.0","id":1,"method":"broadcast_tx_sync","params":{"tx":"%s"}}`, base64.StdEncoding.EncodeToString(txBytes))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, fmt.Sprintf("http://127.0.0.1:%d", node.Ports.RPC), strings.NewReader(reqBody))
+	if err != nil {
+		return TxResult{}, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return TxResult{}, err
+	}
+	defer resp.Body.Close()
+
+	var rpcResp struct {
+		Result struct {
+			Code int64  `json:"code"`
+			Hash string `json:"hash"`
+			Log  string `json:"log"`
+		} `json:"result"`
+		Error *struct {
+			Message string `json:"message"`
+		} `json:"error"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&rpcResp); err != nil {
+		return TxResult{}, fmt.Errorf("decode broadcast response: %w", err)
+	}
+
+	if rpcResp.Error != nil {
+		return TxResult{Err: fmt.Errorf("broadcast RPC error: %s", rpcResp.Error.Message)}, nil
+	}
+
+	return TxResult{
+		Code:   rpcResp.Result.Code,
+		TxHash: rpcResp.Result.Hash,
+		RawLog: rpcResp.Result.Log,
+	}, nil
 }
