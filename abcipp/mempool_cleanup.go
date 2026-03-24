@@ -82,15 +82,16 @@ func (p *PriorityMempool) cleanUpEntries(bApp BaseApp, ak AccountKeeper) {
 	}
 	now := time.Now()
 
-	p.mtx.RLock()
+	p.mtx.Lock()
 	senders := make([]string, 0, len(p.senders))
 	for sender, state := range p.senders {
 		if len(state.active) == 0 && len(state.queued) == 0 {
+			delete(p.senders, sender)
 			continue
 		}
 		senders = append(senders, sender)
 	}
-	p.mtx.RUnlock()
+	p.mtx.Unlock()
 
 	onChainSequences := make(map[string]uint64, len(senders))
 	for _, sender := range senders {
@@ -136,7 +137,8 @@ func (p *PriorityMempool) cleanUpEntries(bApp BaseApp, ak AccountKeeper) {
 	}
 
 	p.mtx.Lock()
-	headTxEntries := make([]*txEntry, 0, len(p.senders))
+	lenSenders := len(p.senders)
+	headTxEntries := make([]*txEntry, 0, lenSenders)
 	for _, sender := range senders {
 		ss := p.senders[sender]
 		if ss == nil {
@@ -150,7 +152,7 @@ func (p *PriorityMempool) cleanUpEntries(bApp BaseApp, ak AccountKeeper) {
 	}
 	p.mtx.Unlock()
 
-	removed := make([]*txEntry, 0, len(p.senders))
+	removed := make([]*txEntry, 0, lenSenders)
 	for _, txEntry := range headTxEntries {
 		cacheCtx, write := sdkCtx.WithTxBytes(txEntry.bytes).WithIsReCheckTx(true).CacheContext()
 		if _, err := p.cfg.AnteHandler(cacheCtx, txEntry.tx, false); err != nil {
