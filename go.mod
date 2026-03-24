@@ -40,7 +40,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/hashicorp/go-metrics v0.5.3
 	github.com/huandu/skiplist v1.2.0
-	github.com/initia-labs/OPinit v1.3.0-alpha.1
+	github.com/initia-labs/OPinit v1.3.0
 	github.com/initia-labs/OPinit/api v1.3.0
 	github.com/initia-labs/initia/api v1.4.0
 	// we also need to update `LIBMOVEVM_VERSION` of Dockerfile#11

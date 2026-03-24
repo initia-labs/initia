@@ -730,8 +730,8 @@ github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANyt
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
 github.com/influxdata/influxdb1-client v0.0.0-20191209144304-8bf82d3c094d/go.mod h1:qj24IKcXYK6Iy9ceXlo3Tc+vtHo9lIhSX5JddghvEPo=
-github.com/initia-labs/OPinit v1.3.0-alpha.1 h1:BKkxu+NJbIQyDi/YzG6NY9soXbK/X40+/X9w/sBXiWc=
-github.com/initia-labs/OPinit v1.3.0-alpha.1/go.mod h1:VZG+/Wd/9cVDbzCwZld/tve6kcJC1zemeeQvp5FKKCI=
+github.com/initia-labs/OPinit v1.3.0 h1:cGxJpzVOfxGO8Ql/Z6SVJCSpokkqB4jFBjo6kx9Uax8=
+github.com/initia-labs/OPinit v1.3.0/go.mod h1:VZG+/Wd/9cVDbzCwZld/tve6kcJC1zemeeQvp5FKKCI=
 github.com/initia-labs/OPinit/api v1.3.0 h1:MAu4XEJ2uibDVKBo0jB6b6/BGaoXjDUJC+dwhU530ag=
 github.com/initia-labs/OPinit/api v1.3.0/go.mod h1:sWDfvmcxd7KD59ukB/Wz0BSpyimyptDEzz1Epe/ET+Y=
 github.com/initia-labs/cometbft v0.38.21-initia.2 h1:sFFc6JnbPKFd4XdH3EXZ7TBfi3uVv34HdyHVX5gvvlQ=
