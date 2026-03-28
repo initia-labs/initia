@@ -1,0 +1,33 @@
+name: Protobuf
+# Runs buf (https://buf.build/) checks and pushes to BSR
+# PR: runs lint, format, and breaking change detection
+# Push to main/tags: pushes to BSR
+# Delete branch/tag: archives corresponding BSR labels
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  pull_request:
+    paths:
+      - "proto/**"
+      - ".github/workflows/proto.yml"
+  delete:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  buf-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+      - uses: bufbuild/buf-action@v1
+        with:
+          input: proto
+          token: ${{ secrets.BUF_TOKEN }}
+          # breaking defaults to PR-only; not set explicitly to avoid running on push events

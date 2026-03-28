@@ -9,6 +9,7 @@ option go_package = "github.com/initia-labs/initia/x/dynamic-fee/types";
 option (gogoproto.equal_all) = true;
 option (gogoproto.goproto_getters_all) = false;
 
+// Params defines the parameters for the dynamicfee module.
 message Params {
   string base_gas_price = 1 [
     (gogoproto.moretags) = "yaml:\"base_gas_price\"",
