@@ -47,10 +47,10 @@ func RegisterUpgradeHandlers(app upgrades.InitiaApp) {
 				}
 			}
 
-			// update modules
-			if err := upgrades.UpgradeMoveModules(ctx, app); err != nil {
-				return nil, err
-			}
+			// update modules (skip)
+			// if err := upgrades.UpgradeMoveModules(ctx, app); err != nil {
+			// 	return nil, err
+			// }
 
 			return vm, nil
 		},
