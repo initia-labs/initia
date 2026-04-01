@@ -26667,7 +26667,7 @@ paths:
   /cosmos/consensus/v1/params:
     get:
       summary: Params queries the parameters of x/consensus module.
-      operationId: GroupParams
+      operationId: Params
       responses:
         '200':
           description: A successful response.
