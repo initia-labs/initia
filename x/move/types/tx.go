@@ -20,6 +20,8 @@ var (
 	_ sdk.Msg = &MsgGovExecuteJSON{}
 	_ sdk.Msg = &MsgGovScript{}
 	_ sdk.Msg = &MsgGovScriptJSON{}
+	_ sdk.Msg = &MsgWhitelist{}
+	_ sdk.Msg = &MsgDelist{}
 	_ sdk.Msg = &MsgWhitelistStaking{}
 	_ sdk.Msg = &MsgWhitelistGasPrice{}
 	_ sdk.Msg = &MsgDelistStaking{}
@@ -549,6 +551,40 @@ func (msg MsgGovScriptJSON) Validate(ac address.Codec) error {
 			"number of argument over hard limit %d",
 			NumArgumentsHardLimit,
 		)
+	}
+
+	return nil
+}
+
+/* MsgWhitelist */
+
+// Validate performs basic MsgWhitelist message validation.
+func (msg MsgWhitelist) Validate(ac address.Codec) error {
+	if _, err := ac.StringToBytes(msg.Authority); err != nil {
+		return sdkerrors.ErrInvalidAddress.Wrapf("invalid authority address: %s", err)
+	}
+
+	if _, err := AccAddressFromString(ac, msg.MetadataLP); err != nil {
+		return err
+	}
+
+	if msg.RewardWeight.IsNegative() || msg.RewardWeight.GT(math.LegacyOneDec()) {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "reward weight must be [0, 1]")
+	}
+
+	return nil
+}
+
+/* MsgDelist */
+
+// Validate performs basic MsgDelist message validation.
+func (msg MsgDelist) Validate(ac address.Codec) error {
+	if _, err := ac.StringToBytes(msg.Authority); err != nil {
+		return sdkerrors.ErrInvalidAddress.Wrapf("invalid authority address: %s", err)
+	}
+
+	if _, err := AccAddressFromString(ac, msg.MetadataLP); err != nil {
+		return err
 	}
 
 	return nil

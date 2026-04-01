@@ -22,6 +22,8 @@ func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	legacy.RegisterAminoMsg(cdc, &MsgGovExecuteJSON{}, "move/MsgGovExecuteJSON")
 	legacy.RegisterAminoMsg(cdc, &MsgGovScript{}, "move/MsgGovScript")
 	legacy.RegisterAminoMsg(cdc, &MsgGovScriptJSON{}, "move/MsgGovScriptJSON")
+	legacy.RegisterAminoMsg(cdc, &MsgWhitelist{}, "move/MsgWhitelist")
+	legacy.RegisterAminoMsg(cdc, &MsgDelist{}, "move/MsgDelist")
 	legacy.RegisterAminoMsg(cdc, &MsgWhitelistStaking{}, "move/MsgWhitelistStaking")
 	legacy.RegisterAminoMsg(cdc, &MsgWhitelistGasPrice{}, "move/MsgWhitelistGasPrice")
 	legacy.RegisterAminoMsg(cdc, &MsgDelistStaking{}, "move/MsgDelistStaking")
@@ -48,6 +50,8 @@ func RegisterInterfaces(registry codectypes.InterfaceRegistry) {
 		&MsgGovExecuteJSON{},
 		&MsgGovScript{},
 		&MsgGovScriptJSON{},
+		&MsgWhitelist{},
+		&MsgDelist{},
 		&MsgWhitelistStaking{},
 		&MsgWhitelistGasPrice{},
 		&MsgDelistStaking{},
