@@ -180,3 +180,40 @@ func TestGasPrice(t *testing.T) {
 	require.Equal(t, gasPrice.Denom, denoms[1])
 	require.Equal(t, basePrice.Quo(gasPrice.Amount), prices[1])
 }
+
+func TestGasPrices_AfterWhitelistGasPrice(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+
+	basePrice := math.LegacyNewDecWithPrec(1, 2) // 0.01
+	err := input.DynamicFeeKeeper.SetParams(ctx, types.Params{
+		MinBaseGasPrice: basePrice,
+		MaxBaseGasPrice: basePrice,
+		BaseGasPrice:    basePrice,
+	})
+	require.NoError(t, err)
+
+	baseDenom := bondDenom
+	denomQuote := "uusdc"
+
+	metadataQuote, err := movetypes.MetadataAddressFromDenom(denomQuote)
+	require.NoError(t, err)
+
+	metadataLP := createDexPool(
+		t, ctx, input,
+		sdk.NewCoin(baseDenom, math.NewInt(40)),
+		sdk.NewCoin(denomQuote, math.NewInt(10)),
+		math.LegacyNewDecWithPrec(8, 1),
+		math.LegacyNewDecWithPrec(2, 1),
+	)
+
+	err = input.MoveKeeper.WhitelistGasPrice(ctx, movetypes.MsgWhitelistGasPrice{
+		MetadataQuote: metadataQuote.String(),
+		MetadataLP:    metadataLP.String(),
+		Authority:     input.MoveKeeper.GetAuthority(),
+	})
+	require.NoError(t, err)
+
+	gasPrices, err := input.DynamicFeeKeeper.GasPrices(ctx)
+	require.NoError(t, err)
+	require.True(t, gasPrices.AmountOf(denomQuote).IsPositive())
+}

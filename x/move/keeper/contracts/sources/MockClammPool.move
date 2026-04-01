@@ -14,8 +14,9 @@
 ///   [168,176): tick_spacing          - u64
 ///   [176,184): max_liquidity_per_tick- u64
 ///   [184,216): extend_ref_self       - address (ExtendRef.self placeholder)
-///   [216,224): position_id           - u64
-///   [224,240): sqrt_price            - u128  (Q64.64 fixed-point)
+///   [216,224): extend_ref_version    - u64     (ExtendRef.version placeholder)
+///   [224,232): position_id           - u64
+///   [232,248): sqrt_price            - u128  (Q64.64 fixed-point)
 module cafe::pool {
     use std::signer;
     use std::string::String;
@@ -55,6 +56,8 @@ module cafe::pool {
         max_liquidity_per_tick: u64,
         /// Placeholder: ExtendRef.self             (32 bytes)
         extend_ref_self: address,
+        /// Placeholder: ExtendRef.version          (8 bytes)
+        extend_ref_version: u64,
         /// Last utilized position number
         position_id: u64,
         /// Current sqrt price in Q64.64 fixed-point: sqrt(token1/token0) * 2^64
@@ -96,6 +99,7 @@ module cafe::pool {
             tick_spacing: 1,
             max_liquidity_per_tick: 0,
             extend_ref_self: @0x0,
+            extend_ref_version: 0,
             position_id: 0,
             sqrt_price,
         });

@@ -12,7 +12,7 @@ import (
 	ophosttypes "github.com/initia-labs/OPinit/x/ophost/types"
 )
 
-const upgradeName = "v1.4.0"
+const upgradeName = "v1.4.2"
 
 // RegisterUpgradeHandlers returns upgrade handlers
 func RegisterUpgradeHandlers(app upgrades.InitiaApp) {

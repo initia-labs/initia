@@ -711,11 +711,12 @@ func ReadVesting(bz []byte) (allocation uint64, claimedAmount uint64, startTime 
 //	[160,168): swap_fee_bps  u64             –  8 bytes
 //	[168,176): tick_spacing  u64             –  8 bytes
 //	[176,184): max_liquidity_per_tick u64    –  8 bytes
-//	[184,216): extend_ref                    – 32 bytes
-//	[216,224): position_id   u64             –  8 bytes
-//	[224,240): sqrt_price    u128            – 16 bytes  ← Q64.64 fixed-point
+//	[184,216): extend_ref.self               – 32 bytes
+//	[216,224): extend_ref.version            –  8 bytes
+//	[224,232): position_id   u64             –  8 bytes
+//	[232,248): sqrt_price    u128            – 16 bytes  ← Q64.64 fixed-point
 func ReadCLAMMPool(bz []byte) (metadata0, metadata1 vmtypes.AccountAddress, sqrtPrice math.Int, err error) {
-	const sqrtPriceOffset = 224
+	const sqrtPriceOffset = 232
 	const sqrtPriceLen = 16
 	if len(bz) < sqrtPriceOffset+sqrtPriceLen {
 		err = sdkerrors.ErrInvalidRequest.Wrapf("CLAMM Pool bytes too short: got %d, need at least %d", len(bz), sqrtPriceOffset+sqrtPriceLen)
