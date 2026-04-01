@@ -3,6 +3,7 @@ package ante_test
 import (
 	"context"
 	"fmt"
+	stdmath "math"
 
 	"cosmossdk.io/math"
 
@@ -146,4 +147,44 @@ func (suite *AnteTestSuite) TestEnsureMempoolFees() {
 	suite.Require().Equal(feeAmount, tx.GetFee())
 	_, _, err = fc.CheckTxFeeWithMinGasPrices(suite.ctx, tx)
 	suite.Require().NotNil(err, "Decorator should have errored on too low fee for local gasPrice")
+}
+
+func (suite *AnteTestSuite) TestEnsureMempoolFees_PriorityOverflowCapped() {
+	suite.SetupTest()
+	suite.txBuilder = suite.clientCtx.TxConfig.NewTxBuilder()
+
+	fc := ante.NewMempoolFeeChecker(TestAnteKeeper{
+		pools: map[string][]math.Int{
+			"rare": {
+				math.NewInt(5_000_000_000_000_000_000),
+				math.OneInt(),
+			},
+		},
+		weights: map[string][]math.LegacyDec{
+			"rare": {
+				math.LegacyOneDec(),
+				math.LegacyOneDec(),
+			},
+		},
+		baseDenom:    baseDenom,
+		baseGasPrice: math.LegacyZeroDec(),
+	})
+
+	priv1, _, addr1 := testdata.KeyTestPubAddr()
+	msg := testdata.NewTestMsg(addr1)
+
+	suite.Require().NoError(suite.txBuilder.SetMsgs(msg))
+	suite.txBuilder.SetFeeAmount(sdk.NewCoins(sdk.NewCoin("rare", math.OneInt())))
+	suite.txBuilder.SetGasLimit(1)
+
+	privs, accNums, accSeqs := []cryptotypes.PrivKey{priv1}, []uint64{0}, []uint64{0}
+	tx, err := suite.CreateTestTx(privs, accNums, accSeqs, suite.ctx.ChainID())
+	suite.Require().NoError(err)
+
+	suite.ctx = suite.ctx.WithIsCheckTx(true)
+	suite.ctx = suite.ctx.WithMinGasPrices(nil)
+
+	_, priority, err := fc.CheckTxFeeWithMinGasPrices(suite.ctx, tx)
+	suite.Require().NoError(err)
+	suite.Require().Equal(int64(stdmath.MaxInt64), priority)
 }
