@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	"github.com/initia-labs/initia/x/move/keeper"
 	"github.com/initia-labs/initia/x/move/types"
@@ -350,15 +351,19 @@ func TestDex_SwapToBase_CLAMM(t *testing.T) {
 	}))
 
 	quoteOfferCoin := sdk.NewInt64Coin(quoteDenom, 1_000)
-	fundedAddr := input.Faucet.NewFundedAccount(ctx, quoteOfferCoin)
-	before := input.BankKeeper.GetAllBalances(ctx, fundedAddr)
+	feeCollectorAddr := authtypes.NewModuleAddress(authtypes.FeeCollectorName)
+	input.Faucet.Fund(ctx, feeCollectorAddr, quoteOfferCoin)
+	before := input.BankKeeper.GetAllBalances(ctx, feeCollectorAddr)
+	stdBaseBefore := input.BankKeeper.GetBalance(ctx, types.StdAddr, bondDenom).Amount
 
-	require.NoError(t, dexKeeper.SwapToBase(ctx, fundedAddr, quoteOfferCoin))
+	require.NoError(t, dexKeeper.SwapToBase(ctx, feeCollectorAddr, quoteOfferCoin))
 
-	after := input.BankKeeper.GetAllBalances(ctx, fundedAddr)
+	after := input.BankKeeper.GetAllBalances(ctx, feeCollectorAddr)
+	stdBaseAfter := input.BankKeeper.GetBalance(ctx, types.StdAddr, bondDenom).Amount
 	require.NotNil(t, after)
 	require.True(t, before.AmountOf(quoteDenom).Sub(quoteOfferCoin.Amount).Equal(after.AmountOf(quoteDenom)))
 	require.True(t, before.AmountOf(bondDenom).Add(math.NewInt(1_000)).Equal(after.AmountOf(bondDenom)))
+	require.True(t, stdBaseBefore.Equal(stdBaseAfter))
 }
 
 func mustParseJSONUint64(t *testing.T, raw string) uint64 {
