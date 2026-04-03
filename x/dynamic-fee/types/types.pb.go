@@ -26,6 +26,7 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+// Params defines the parameters for the dynamicfee module.
 type Params struct {
 	BaseGasPrice    cosmossdk_io_math.LegacyDec `protobuf:"bytes,1,opt,name=base_gas_price,json=baseGasPrice,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"base_gas_price" yaml:"base_gas_price"`
 	MinBaseGasPrice cosmossdk_io_math.LegacyDec `protobuf:"bytes,2,opt,name=min_base_gas_price,json=minBaseGasPrice,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"min_base_gas_price" yaml:"min_base_gas_price"`
