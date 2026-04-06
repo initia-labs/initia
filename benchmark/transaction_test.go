@@ -43,7 +43,7 @@ func BenchmarkTPS(b *testing.B) {
 			b.ResetTimer()
 
 			for i := 0; i < b.N/numTxs; i++ {
-				for j := 0; j < numTxs; j++ {
+				for j := range numTxs {
 					idx := i*numTxs + j
 
 					_, _, err := appInfo.App.SimDeliver(txEncoder, txs[idx])

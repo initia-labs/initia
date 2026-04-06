@@ -161,7 +161,7 @@ func TestWithdrawRewards(t *testing.T) {
 	moveAccOriginBalance := input.BankKeeper.GetAllBalances(ctx, types.MoveStakingModuleAddress)
 
 	var accRewards sdk.Coins
-	for i := 0; i < 10; i++ {
+	for range 10 {
 		setValidatorRewards(t, ctx, input.Faucet, input.StakingKeeper, input.DistKeeper, valAddr, sdk.NewCoin(bondDenom, math.NewInt(100)))
 		ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 		rewards, err := input.MoveKeeper.SafeWithdrawRewards(ctx, valAddr)

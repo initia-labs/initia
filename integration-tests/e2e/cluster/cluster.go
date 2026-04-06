@@ -247,10 +247,7 @@ func (c *Cluster) WaitForMempoolEmpty(ctx context.Context, timeout time.Duration
 // nodes only. CList mempool can leave txs stranded on non-validator nodes
 // that never get cleared, so this avoids false timeout failures.
 func (c *Cluster) WaitForValidatorMempoolEmpty(ctx context.Context, timeout time.Duration) error {
-	valCount := max(1, c.opts.ValidatorCount)
-	if valCount > len(c.nodes) {
-		valCount = len(c.nodes)
-	}
+	valCount := min(max(1, c.opts.ValidatorCount), len(c.nodes))
 	return c.waitForMempoolEmpty(ctx, timeout, valCount)
 }
 
@@ -408,10 +405,10 @@ func (c *Cluster) AccountAddressHex(ctx context.Context, name string) (string, e
 		return "", err
 	}
 	// parse "Address (hex): <HEX>" line
-	for _, line := range strings.Split(string(out), "\n") {
+	for line := range strings.SplitSeq(string(out), "\n") {
 		line = strings.TrimSpace(line)
-		if strings.HasPrefix(line, "Address (hex):") {
-			hexAddr := strings.TrimSpace(strings.TrimPrefix(line, "Address (hex):"))
+		if after, ok := strings.CutPrefix(line, "Address (hex):"); ok {
+			hexAddr := strings.TrimSpace(after)
 			return "0x" + strings.ToLower(hexAddr), nil
 		}
 	}
@@ -931,10 +928,7 @@ func (c *Cluster) initNodes(ctx context.Context) error {
 	// Determine number of validators.
 	valCount := 1
 	if c.opts.ValidatorCount > 1 {
-		valCount = c.opts.ValidatorCount
-		if valCount > c.opts.NodeCount {
-			valCount = c.opts.NodeCount
-		}
+		valCount = min(c.opts.ValidatorCount, c.opts.NodeCount)
 	}
 
 	if valCount <= 1 {
@@ -985,7 +979,7 @@ func (c *Cluster) initSingleValidator(ctx context.Context, baseHome string) erro
 // initMultiValidator sets up N validators across the first N nodes.
 func (c *Cluster) initMultiValidator(ctx context.Context, baseHome string, valCount int) error {
 	// 1. Create all validator keys in baseHome keyring.
-	for i := 0; i < valCount; i++ {
+	for i := range valCount {
 		name := fmt.Sprintf("val%d", i)
 		if _, err := c.exec(ctx, "keys", "add", name, "--keyring-backend", "test", "--home", baseHome); err != nil {
 			return err
@@ -1002,7 +996,7 @@ func (c *Cluster) initMultiValidator(ctx context.Context, baseHome string, valCo
 	}
 
 	// 2. Add genesis accounts for all validators.
-	for i := 0; i < valCount; i++ {
+	for i := range valCount {
 		name := fmt.Sprintf("val%d", i)
 		if _, err := c.exec(ctx,
 			"genesis", "add-genesis-account", name, "1000000000000000uinit",
@@ -1021,7 +1015,7 @@ func (c *Cluster) initMultiValidator(ctx context.Context, baseHome string, valCo
 	baseKeyringDir := filepath.Join(baseHome, "keyring-test")
 	baseGenesisPath := filepath.Join(baseHome, "config", "genesis.json")
 
-	for i := 0; i < valCount; i++ {
+	for i := range valCount {
 		nodeHome := c.nodes[i].Home
 		name := fmt.Sprintf("val%d", i)
 
@@ -1111,7 +1105,7 @@ func patchGenesisBlockGas(genesisPath string, maxGas int64) error {
 	if err != nil {
 		return err
 	}
-	var genesis map[string]interface{}
+	var genesis map[string]any
 	if err := json.Unmarshal(bz, &genesis); err != nil {
 		return fmt.Errorf("unmarshal genesis: %w", err)
 	}
@@ -1121,16 +1115,16 @@ func patchGenesisBlockGas(genesisPath string, maxGas int64) error {
 	gasStr := strconv.FormatInt(maxGas, 10)
 
 	patched := false
-	if cp, ok := genesis["consensus"].(map[string]interface{}); ok {
-		if params, ok := cp["params"].(map[string]interface{}); ok {
-			if block, ok := params["block"].(map[string]interface{}); ok {
+	if cp, ok := genesis["consensus"].(map[string]any); ok {
+		if params, ok := cp["params"].(map[string]any); ok {
+			if block, ok := params["block"].(map[string]any); ok {
 				block["max_gas"] = gasStr
 				patched = true
 			}
 		}
 	}
-	if cp, ok := genesis["consensus_params"].(map[string]interface{}); ok {
-		if block, ok := cp["block"].(map[string]interface{}); ok {
+	if cp, ok := genesis["consensus_params"].(map[string]any); ok {
+		if block, ok := cp["block"].(map[string]any); ok {
 			block["max_gas"] = gasStr
 			patched = true
 		}

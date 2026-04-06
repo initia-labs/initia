@@ -6,8 +6,9 @@ import (
 	"cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	vmtypes "github.com/initia-labs/movevm/types"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func TestSpotPriceCache_NonCheckTxIgnored(t *testing.T) {

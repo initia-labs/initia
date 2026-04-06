@@ -71,7 +71,7 @@ func (vk VestingKeeper) getVestingTokenDenom(ctx context.Context, moduleAccAddr 
 		moduleName,
 		types.FunctionNameVestingTokenMetadata,
 		[]vmtypes.TypeTag{},
-		[][]byte{[]byte(fmt.Sprintf("\"%s\"", creatorAddr))},
+		[][]byte{fmt.Appendf(nil, "\"%s\"", creatorAddr)},
 		true,
 	)
 	if err != nil {
@@ -111,7 +111,7 @@ func (vk VestingKeeper) getVestingTableHandler(ctx context.Context, moduleAccAdd
 		moduleName,
 		types.FunctionNameVestingTableHandle,
 		[]vmtypes.TypeTag{},
-		[][]byte{[]byte(fmt.Sprintf("\"%s\"", creatorAddr))},
+		[][]byte{fmt.Appendf(nil, "\"%s\"", creatorAddr)},
 		true,
 	)
 	if err != nil {

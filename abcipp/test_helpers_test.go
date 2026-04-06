@@ -13,14 +13,15 @@ import (
 	"cosmossdk.io/store/metrics"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	dbm "github.com/cosmos/cosmos-db"
+	initiatx "github.com/initia-labs/initia/tx"
+	protov2 "google.golang.org/protobuf/proto"
+
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdksigning "github.com/cosmos/cosmos-sdk/types/tx/signing"
 	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
-	initiatx "github.com/initia-labs/initia/tx"
-	protov2 "google.golang.org/protobuf/proto"
 )
 
 type testTx struct {
@@ -211,7 +212,7 @@ func testSDKContextWithParams(maxBytes int64, maxGas int64) sdk.Context {
 }
 
 func testAddress(id int) sdk.AccAddress {
-	sum := sha256.Sum256([]byte(fmt.Sprintf("addr-%d", id)))
+	sum := sha256.Sum256(fmt.Appendf(nil, "addr-%d", id))
 	return sdk.AccAddress(sum[:20])
 }
 

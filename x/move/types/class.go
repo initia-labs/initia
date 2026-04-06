@@ -31,8 +31,8 @@ type CollectionKeeper interface {
 }
 
 func CollectionAddressFromClassId(classId string) (vmtypes.AccountAddress, error) {
-	if strings.HasPrefix(classId, ClassTraceClassIdPrefixMove) {
-		addrBz, err := hex.DecodeString(strings.TrimPrefix(classId, ClassTraceClassIdPrefixMove))
+	if after, ok := strings.CutPrefix(classId, ClassTraceClassIdPrefixMove); ok {
+		addrBz, err := hex.DecodeString(after)
 		if err != nil {
 			return vmtypes.AccountAddress{}, err
 		}

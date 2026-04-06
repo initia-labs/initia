@@ -70,13 +70,13 @@ func asciiDecodeString(s string) ([]byte, error) {
 func BCSEncode(ac address.Codec, flagArgs []string) ([][]byte, error) {
 	bcsArgs := [][]byte{}
 	for _, flagArg := range flagArgs {
-		idx := strings.Index(flagArg, ":")
-		if idx == -1 {
+		before, after, ok := strings.Cut(flagArg, ":")
+		if !ok {
 			return nil, fmt.Errorf(`expect "type:value" format but got "%s"`, flagArg)
 		}
 
-		moveType := flagArg[:idx]
-		moveValue := flagArg[idx+1:]
+		moveType := before
+		moveValue := after
 
 		serializer := NewSerializer()
 		bcsArg, err := bcsSerializeArg(moveType, moveValue, serializer, ac)
@@ -151,8 +151,8 @@ func bcsSerializeArg(argType string, arg string, s serde.Serializer, ac address.
 
 		var num uint64
 		var err error
-		if strings.HasPrefix(arg, "0x") {
-			num, err = strconv.ParseUint(strings.TrimPrefix(arg, "0x"), 16, bitSize)
+		if after, ok := strings.CutPrefix(arg, "0x"); ok {
+			num, err = strconv.ParseUint(after, 16, bitSize)
 			if err != nil {
 				return nil, err
 			}
@@ -289,8 +289,8 @@ func DivideUint128String(s string) (uint64, uint64, error) {
 	n := new(big.Int)
 
 	var ok bool
-	if strings.HasPrefix(s, "0x") {
-		_, ok = n.SetString(strings.TrimPrefix(s, "0x"), 16)
+	if after, ok0 := strings.CutPrefix(s, "0x"); ok0 {
+		_, ok = n.SetString(after, 16)
 	} else {
 		_, ok = n.SetString(s, 10)
 	}
@@ -312,8 +312,8 @@ func DivideUint256String(s string) (uint64, uint64, uint64, uint64, error) {
 	n := new(big.Int)
 
 	var ok bool
-	if strings.HasPrefix(s, "0x") {
-		_, ok = n.SetString(strings.TrimPrefix(s, "0x"), 16)
+	if after, ok0 := strings.CutPrefix(s, "0x"); ok0 {
+		_, ok = n.SetString(after, 16)
 	} else {
 		_, ok = n.SetString(s, 10)
 	}

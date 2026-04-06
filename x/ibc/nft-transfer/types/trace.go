@@ -249,8 +249,8 @@ func ParseHexHash(hexHash string) (tmbytes.HexBytes, error) {
 // in trace.path needs to be removed
 func RemoveClassPrefix(portID, channelID, classID string) (string, error) {
 	classPrefix := GetClassIdPrefix(portID, channelID)
-	if strings.HasPrefix(classID, classPrefix) {
-		return strings.TrimPrefix(classID, classPrefix), nil
+	if after, ok := strings.CutPrefix(classID, classPrefix); ok {
+		return after, nil
 	}
 	return "", fmt.Errorf("invalid class:%s, no class prefix: %s", classID, classPrefix)
 }

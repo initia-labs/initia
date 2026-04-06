@@ -213,7 +213,7 @@ func consumeMultiSignatureVerificationGas(
 	size := sig.BitArray.Count()
 	sigIndex := 0
 
-	for i := 0; i < size; i++ {
+	for i := range size {
 		if !sig.BitArray.GetIndex(i) {
 			continue
 		}

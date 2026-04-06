@@ -111,7 +111,7 @@ func Test_CLAMMBaseSpotPrice(t *testing.T) {
 			require.Equal(t, tc.expected, price)
 
 			// repeat calls to ensure deterministic output for edge values
-			for i := 0; i < 5; i++ {
+			for range 5 {
 				repeated, err := types.CLAMMBaseSpotPrice(sqrtPrice, tc.isBase0)
 				require.NoError(t, err)
 				require.Equal(t, price, repeated)

@@ -13,8 +13,8 @@ import (
 // AccAddressFromString return sdk.AccAddress from the bech32 encoded string address
 // or hex encoded string address
 func AccAddressFromString(ac address.Codec, addrStr string) (vmtypes.AccountAddress, error) {
-	if strings.HasPrefix(addrStr, "0x") {
-		addrStr = strings.TrimPrefix(addrStr, "0x")
+	if after, ok := strings.CutPrefix(addrStr, "0x"); ok {
+		addrStr = after
 		if len(addrStr)%2 == 1 {
 			addrStr = "0" + addrStr
 		}

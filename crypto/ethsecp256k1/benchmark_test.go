@@ -19,7 +19,7 @@ func BenchmarkPubKey_VerifySignature(b *testing.B) {
 	b.ResetTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		msg := []byte(fmt.Sprintf("%10d", i))
+		msg := fmt.Appendf(nil, "%10d", i)
 		sig, err := privKey.Sign(msg)
 		if err != nil {
 			b.Fatal(err)
