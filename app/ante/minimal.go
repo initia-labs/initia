@@ -3,10 +3,11 @@ package ante
 import (
 	"cosmossdk.io/errors"
 
+	ibcante "github.com/cosmos/ibc-go/v8/modules/core/ante"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
-	ibcante "github.com/cosmos/ibc-go/v8/modules/core/ante"
 
 	"github.com/initia-labs/initia/app/ante/sigverify"
 	dynamicfeeante "github.com/initia-labs/initia/x/dynamic-fee/ante"
