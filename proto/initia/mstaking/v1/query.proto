@@ -86,6 +86,12 @@ service Query {
     option (google.api.http).get = "/initia/mstaking/v1/delegators/{delegator_addr}/total_delegation_balance";
   }
 
+  // DelegatorTotalUnbondingBalance queries the sum of all unbonding delegations' balance
+  // of a delegator.
+  rpc DelegatorTotalUnbondingBalance(QueryDelegatorTotalUnbondingBalanceRequest) returns (QueryDelegatorTotalUnbondingBalanceResponse) {
+    option (google.api.http).get = "/initia/mstaking/v1/delegators/{delegator_addr}/total_unbonding_balance";
+  }
+
   // Redelegations queries redelegations of given address.
   rpc Redelegations(QueryRedelegationsRequest) returns (QueryRedelegationsResponse) {
     option (google.api.http).get = "/initia/mstaking/v1/redelegations";
@@ -346,6 +352,24 @@ message QueryDelegatorTotalDelegationBalanceRequest {
 // Query/DelegatorTotalDelegationBalance RPC method.
 message QueryDelegatorTotalDelegationBalanceResponse {
   // balance defines the sum of all the delegations' balance of a delegator.
+  repeated cosmos.base.v1beta1.Coin balance = 1 [
+    (gogoproto.moretags) = "yaml:\"balance\"",
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// QueryDelegatorTotalUnbondingBalanceRequest is request type for the
+// Query/DelegatorTotalUnbondingBalance RPC method.
+message QueryDelegatorTotalUnbondingBalanceRequest {
+  // delegator_addr defines the delegator address to query for.
+  string delegator_addr = 1;
+}
+
+// QueryDelegatorTotalUnbondingBalanceResponse is response type for the
+// Query/DelegatorTotalUnbondingBalance RPC method.
+message QueryDelegatorTotalUnbondingBalanceResponse {
+  // balance defines the sum of all unbonding delegations' balance of a delegator.
   repeated cosmos.base.v1beta1.Coin balance = 1 [
     (gogoproto.moretags) = "yaml:\"balance\"",
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",

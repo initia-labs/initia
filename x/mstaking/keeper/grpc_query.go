@@ -446,6 +446,35 @@ func (q Querier) DelegatorTotalDelegationBalance(ctx context.Context, req *types
 	return &types.QueryDelegatorTotalDelegationBalanceResponse{Balance: totalDelegationBalance}, nil
 }
 
+// DelegatorTotalUnbondingBalance queries the sum of all unbonding delegations' balance of a delegator
+func (q Querier) DelegatorTotalUnbondingBalance(ctx context.Context, req *types.QueryDelegatorTotalUnbondingBalanceRequest) (*types.QueryDelegatorTotalUnbondingBalanceResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "empty request")
+	}
+
+	if req.DelegatorAddr == "" {
+		return nil, status.Error(codes.InvalidArgument, "delegator address cannot be empty")
+	}
+	delAddr, err := q.authKeeper.AddressCodec().StringToBytes(req.DelegatorAddr)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	unbondings, err := q.GetAllUnbondingDelegations(ctx, delAddr)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	totalBalance := sdk.NewCoins()
+	for _, unbonding := range unbondings {
+		for _, entry := range unbonding.Entries {
+			totalBalance = totalBalance.Add(entry.Balance...)
+		}
+	}
+
+	return &types.QueryDelegatorTotalUnbondingBalanceResponse{Balance: totalBalance}, nil
+}
+
 // Pool queries the pool info
 func (q Querier) Pool(ctx context.Context, _ *types.QueryPoolRequest) (*types.QueryPoolResponse, error) {
 	bondedPool := q.GetBondedPool(ctx)
