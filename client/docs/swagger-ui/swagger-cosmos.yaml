@@ -12102,7 +12102,7 @@ paths:
                       vetoed. Default value: 1/3.
               params:
                 description: |-
-                  params defines all the paramaters of x/gov module.
+                  params defines all the parameters of x/gov module.
 
                   Since: cosmos-sdk 0.47
                 type: object
@@ -37768,7 +37768,7 @@ definitions:
               vetoed. Default value: 1/3.
       params:
         description: |-
-          params defines all the paramaters of x/gov module.
+          params defines all the parameters of x/gov module.
 
           Since: cosmos-sdk 0.47
         type: object
