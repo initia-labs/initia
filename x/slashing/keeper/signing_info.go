@@ -238,7 +238,7 @@ func (k Keeper) IterateMissedBlockBitmap(ctx context.Context, addr sdk.ConsAddre
 			return errors.Wrapf(err, "failed to decode bitmap chunk; index: %v", string(iter.Key()))
 		}
 
-		for i := uint(0); i < types.MissedBlockBitmapChunkSize; i++ {
+		for i := range uint(types.MissedBlockBitmapChunkSize) {
 			// execute the callback, where Test() returns true if the bit is set
 			if cb(index, bs.Test(i)) {
 				break

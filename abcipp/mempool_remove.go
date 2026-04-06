@@ -58,10 +58,7 @@ func (p *PriorityMempool) removeQueuedStaleLocked(ss *senderState, onChainSeq ui
 		return removed
 	}
 
-	end := onChainSeq - 1
-	if end > ss.queuedMax {
-		end = ss.queuedMax
-	}
+	end := min(onChainSeq-1, ss.queuedMax)
 
 	// Intentional tradeoff: iterate by nonce range (queuedMin..end) for simple
 	// boundary-based state updates. This is bounded in practice by small queued

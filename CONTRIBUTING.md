@@ -131,6 +131,8 @@ When you change Go code, keep formatting and imports clean:
 
 - `make format`
 
+GitHub Actions validates `make format`.
+
 When you change protobuf definitions, regenerate the related outputs:
 
 - `make proto-gen`

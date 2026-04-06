@@ -239,12 +239,12 @@ func (pools DecPools) String() string {
 		return ""
 	}
 
-	out := ""
+	var out strings.Builder
 	for _, pool := range pools {
-		out += fmt.Sprintf("%v,", pool.String())
+		out.WriteString(fmt.Sprintf("%v,", pool.String()))
 	}
 
-	return out[:len(out)-1]
+	return strings.TrimSuffix(out.String(), ",")
 }
 
 //-----------------------------------------------------------------------------

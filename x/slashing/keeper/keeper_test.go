@@ -248,7 +248,7 @@ func TestValidatorDippingInAndOut(t *testing.T) {
 	require.True(t, validator1.IsJailed())
 
 	// array should be cleared
-	for offset := int64(0); offset < signedBlock; offset++ {
+	for offset := range signedBlock {
 		missed, err := input.SlashingKeeper.GetMissedBlockBitmapValue(ctx, sdk.ConsAddress(valPubKey1.Address()), offset)
 		require.NoError(t, err)
 		require.False(t, missed)

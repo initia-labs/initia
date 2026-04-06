@@ -22,13 +22,13 @@ func Test_HandleVMStargateMsg(t *testing.T) {
 	addr1, err := vmtypes.NewAccountAddressFromBytes(addrs[1])
 	require.NoError(t, err)
 
-	jsonData := []byte(fmt.Sprintf(`{
+	jsonData := fmt.Appendf(nil, `{
 		"@type": "%s",
 		"proposal_id": "1",
 		"voter": "%s", 
 		"option": 2,
 		"metadata": ""
-	}`, sdk.MsgTypeURL(&govtypes.MsgVote{}), addrs[1]))
+	}`, sdk.MsgTypeURL(&govtypes.MsgVote{}), addrs[1])
 
 	// unauthorized test
 	_, err = input.MoveKeeper.HandleVMStargateMsg(ctx, &vmtypes.CosmosMessage{

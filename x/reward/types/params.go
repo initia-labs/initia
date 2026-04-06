@@ -79,7 +79,7 @@ func (p Params) Validate() error {
 	return nil
 }
 
-func validateRewardDenom(i interface{}) error {
+func validateRewardDenom(i any) error {
 	v, ok := i.(string)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
@@ -92,7 +92,7 @@ func validateRewardDenom(i interface{}) error {
 	return nil
 }
 
-func validateDilutionPeriod(i interface{}) error {
+func validateDilutionPeriod(i any) error {
 	v, ok := i.(time.Duration)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
@@ -105,7 +105,7 @@ func validateDilutionPeriod(i interface{}) error {
 	return nil
 }
 
-func validateReleaseRate(i interface{}) error {
+func validateReleaseRate(i any) error {
 	v, ok := i.(math.LegacyDec)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
@@ -122,7 +122,7 @@ func validateReleaseRate(i interface{}) error {
 	return nil
 }
 
-func validateDilutionRate(i interface{}) error {
+func validateDilutionRate(i any) error {
 	v, ok := i.(math.LegacyDec)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
@@ -139,7 +139,7 @@ func validateDilutionRate(i interface{}) error {
 	return nil
 }
 
-func validateReleaseEnabled(i interface{}) error {
+func validateReleaseEnabled(i any) error {
 	_, ok := i.(bool)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)

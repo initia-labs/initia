@@ -279,7 +279,7 @@ func TestValidatorsSortDeterminism(t *testing.T) {
 	copy(sortedVals, vals)
 
 	// Randomly shuffle validators, sort, and check it is equal to original sort
-	for i := 0; i < 10; i++ {
+	for range 10 {
 		rand.Shuffle(10, func(i, j int) {
 			it := vals[i]
 			vals[i] = vals[j]
@@ -303,7 +303,7 @@ func TestValidatorsSortCometBFT(t *testing.T) {
 		vals[i].VotingPower = math.NewInt(rand.Int63())
 	}
 	// create some validators with the same power
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		vals[i].VotingPower = math.NewInt(1000000)
 	}
 
@@ -328,7 +328,7 @@ func TestValidatorToCmt(t *testing.T) {
 	vals := types.Validators{}
 	expected := make([]*cmttypes.Validator, 10)
 
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		pk := ed25519.GenPrivKey().PubKey()
 		val := newValidator(t, sdk.ValAddress(pk.Address()), pk)
 		val.Status = types.Bonded
