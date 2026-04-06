@@ -632,7 +632,7 @@ func ReadCodeModuleStore(bz []byte) ([]vmtypes.AccountAddress, error) {
 	cursor += len
 
 	allowedPublishers := make([]vmtypes.AccountAddress, addrsLen)
-	for i := 0; i < addrsLen; i++ {
+	for i := range addrsLen {
 		var err error
 		allowedPublishers[i], err = vmtypes.NewAccountAddressFromBytes(bz[cursor : cursor+AddressBytesLength])
 		if err != nil {
@@ -792,7 +792,7 @@ func ReadStableSwapPool(bz []byte) ([]vmtypes.AccountAddress, error) {
 	cursor += len
 
 	metadata := make([]vmtypes.AccountAddress, numMetadata)
-	for i := 0; i < numMetadata; i++ {
+	for i := range numMetadata {
 		metadata[i] = vmtypes.AccountAddress(bz[cursor : cursor+AddressBytesLength])
 
 		cursor += AddressBytesLength

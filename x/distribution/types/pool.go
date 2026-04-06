@@ -3,6 +3,7 @@ package types
 import (
 	"fmt"
 	"sort"
+	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -178,12 +179,12 @@ func (pools Pools) String() string {
 		return ""
 	}
 
-	out := ""
+	var out strings.Builder
 	for _, pool := range pools {
-		out += fmt.Sprintf("%v,", pool.String())
+		out.WriteString(fmt.Sprintf("%v,", pool.String()))
 	}
 
-	return out[:len(out)-1]
+	return out.String()[:len(out.String())-1]
 }
 
 //-----------------------------------------------------------------------------

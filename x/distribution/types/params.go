@@ -46,7 +46,7 @@ func (p Params) ValidateBasic() error {
 	return nil
 }
 
-func validateCommunityTax(i interface{}) error {
+func validateCommunityTax(i any) error {
 	v, ok := i.(math.LegacyDec)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
@@ -65,7 +65,7 @@ func validateCommunityTax(i interface{}) error {
 	return nil
 }
 
-func validateWithdrawAddrEnabled(i interface{}) error {
+func validateWithdrawAddrEnabled(i any) error {
 	_, ok := i.(bool)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
@@ -74,7 +74,7 @@ func validateWithdrawAddrEnabled(i interface{}) error {
 	return nil
 }
 
-func validateRewardWeights(i interface{}) error {
+func validateRewardWeights(i any) error {
 	v, ok := i.([]RewardWeight)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)

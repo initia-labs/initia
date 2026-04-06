@@ -212,7 +212,7 @@ func testSDKContextWithParams(maxBytes int64, maxGas int64) sdk.Context {
 }
 
 func testAddress(id int) sdk.AccAddress {
-	sum := sha256.Sum256([]byte(fmt.Sprintf("addr-%d", id)))
+	sum := sha256.Sum256(fmt.Appendf(nil, "addr-%d", id))
 	return sdk.AccAddress(sum[:20])
 }
 

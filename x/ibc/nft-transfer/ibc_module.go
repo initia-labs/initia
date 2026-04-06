@@ -351,7 +351,7 @@ func (IBCModule) OnChanUpgradeOpen(ctx sdk.Context, portID, channelID string, pr
 // UnmarshalPacketData attempts to unmarshal the provided packet data bytes
 // into a FungibleTokenPacketData. This function implements the optional
 // PacketDataUnmarshaler interface required for ADR 008 support.
-func (im IBCModule) UnmarshalPacketData(bz []byte) (interface{}, error) {
+func (im IBCModule) UnmarshalPacketData(bz []byte) (any, error) {
 	var packetData types.NonFungibleTokenPacketData
 	if err := im.keeper.Codec().UnmarshalJSON(bz, &packetData); err != nil {
 		return nil, err

@@ -99,7 +99,7 @@ func (p RawParams) ToParams(allowedPublishers []string) Params {
 	}
 }
 
-func validateBaseDenom(i interface{}) error {
+func validateBaseDenom(i any) error {
 	v, ok := i.(string)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
@@ -112,7 +112,7 @@ func validateBaseDenom(i interface{}) error {
 	return nil
 }
 
-func validateBaseMinGasPrice(i interface{}) error {
+func validateBaseMinGasPrice(i any) error {
 	v, ok := i.(math.LegacyDec)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
@@ -125,7 +125,7 @@ func validateBaseMinGasPrice(i interface{}) error {
 	return nil
 }
 
-func validateContractSharedRatio(i interface{}) error {
+func validateContractSharedRatio(i any) error {
 	v, ok := i.(math.LegacyDec)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
@@ -142,7 +142,7 @@ func validateContractSharedRatio(i interface{}) error {
 	return nil
 }
 
-func validateAllowedPublishers(ac address.Codec, i interface{}) error {
+func validateAllowedPublishers(ac address.Codec, i any) error {
 	allowedPublishers, ok := i.([]string)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)

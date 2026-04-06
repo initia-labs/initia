@@ -53,8 +53,8 @@ func UserDerivedObjectAddress(source vmtypes.AccountAddress, deriveFrom vmtypes.
 
 // Extract metadata address from a denom
 func MetadataAddressFromDenom(denom string) (vmtypes.AccountAddress, error) {
-	if strings.HasPrefix(denom, DenomTraceDenomPrefixMove) {
-		hexStr := strings.TrimPrefix(denom, DenomTraceDenomPrefixMove)
+	if after, ok := strings.CutPrefix(denom, DenomTraceDenomPrefixMove); ok {
+		hexStr := after
 		if strings.ToLower(hexStr) != hexStr {
 			return vmtypes.AccountAddress{}, errors.New("metadata address should be lowercase")
 		}

@@ -54,7 +54,7 @@ func Test_EndBlocker(t *testing.T) {
 	require.True(t, lessBaseGasPrice.LT(types.DefaultBaseGasPrice))
 
 	msgs := []sdk.Msg{}
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		msgs = append(msgs, &banktypes.MsgSend{
 			FromAddress: addr2.String(),
 			ToAddress:   addr1.String(),
@@ -101,7 +101,7 @@ func Test_EndBlocker_NoBaseGasPriceChange(t *testing.T) {
 	require.True(t, baseGasPrice.Equal(types.DefaultBaseGasPrice))
 
 	msgs := []sdk.Msg{}
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		msgs = append(msgs, &banktypes.MsgSend{
 			FromAddress: addr2.String(),
 			ToAddress:   addr1.String(),

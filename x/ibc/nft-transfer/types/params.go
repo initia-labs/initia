@@ -43,7 +43,7 @@ func (p Params) Validate() error {
 	return validateEnabled(p.ReceiveEnabled)
 }
 
-func validateEnabled(i interface{}) error {
+func validateEnabled(i any) error {
 	_, ok := i.(bool)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)

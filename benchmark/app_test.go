@@ -76,7 +76,7 @@ func InitializeBenchApp(b *testing.B, db *dbm.DB, numAccounts int) AppInfo {
 	genAccs[0] = &authtypes.BaseAccount{Address: minterAddr.String()}
 	bals[0] = banktypes.Balance{Address: minterAddr.String(), Coins: sdk.NewCoins(sdk.NewInt64Coin(denom, 1_000_000_000_000_000))}
 
-	for i := 0; i < numAccounts; i++ {
+	for i := range numAccounts {
 		pk := secp256k1.GenPrivKey()
 
 		accKeys[i] = *pk

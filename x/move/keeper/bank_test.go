@@ -152,7 +152,7 @@ func Test_GetSupply(t *testing.T) {
 	mintAmount := sdkmath.NewIntFromUint64(math.MaxUint64)
 	mintNum := 5
 
-	for i := 0; i < mintNum; i++ {
+	for i := range mintNum {
 		bz, err := hex.DecodeString(fmt.Sprintf("000000000000000000000000000000000000000%d", i))
 		require.NoError(t, err)
 		addr := sdk.AccAddress(bz)
@@ -176,7 +176,7 @@ func Test_IterateSupply(t *testing.T) {
 	mintAmount := sdkmath.NewIntFromUint64(math.MaxUint64)
 	mintNum := 5
 
-	for i := 0; i < mintNum; i++ {
+	for i := range mintNum {
 		bz, err := hex.DecodeString(fmt.Sprintf("000000000000000000000000000000000000000%d", i))
 		require.NoError(t, err)
 		addr := sdk.AccAddress(bz)

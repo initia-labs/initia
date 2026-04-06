@@ -35,7 +35,7 @@ func TestPrivKey(t *testing.T) {
 	require.Equal(t, addr.Bytes(), expectedAddr)
 
 	// validate we can sign some bytes
-	msg := []byte(fmt.Sprintf("\x19Ethereum Signed Message:\n%d%s", 11, "hello world"))
+	msg := fmt.Appendf(nil, "\x19Ethereum Signed Message:\n%d%s", 11, "hello world")
 	sig, err := privKey.Sign(msg)
 	require.NoError(t, err)
 
@@ -73,7 +73,7 @@ func TestMarshalAmino(t *testing.T) {
 	testCases := []struct {
 		desc      string
 		msg       codec.AminoMarshaler
-		typ       interface{}
+		typ       any
 		expBinary []byte
 		expJSON   string
 	}{

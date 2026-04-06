@@ -1,0 +1,39 @@
+name: Modernize Go
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 2 * * 1"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  modernize-go:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v5
+      - name: Setup go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.24
+          check-latest: true
+      - name: Modernize go code
+        run: go fix ./...
+      - uses: peter-evans/create-pull-request@v7.0.5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: modernize go code"
+          title: "chore: modernize go code"
+          branch: "chore/modernize-go"
+          delete-branch: true
+          body: |
+            This PR applies `go fix ./...` using the repository's GitHub Actions toolchain.
+
+            It is generated automatically by `.github/workflows/go-fix.yml`.

@@ -178,7 +178,7 @@ func NewTestChain(t *testing.T, coord *Coordinator, chainID string) *TestChain {
 		signersByAddress   = make(map[string]cmttypes.PrivValidator, validatorsPerChain)
 	)
 
-	for i := 0; i < validatorsPerChain; i++ {
+	for range validatorsPerChain {
 		privVal := mock.NewPV()
 		pubKey, err := privVal.GetPubKey()
 		require.NoError(t, err)
