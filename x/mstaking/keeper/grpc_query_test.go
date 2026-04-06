@@ -262,6 +262,50 @@ func Test_grpcQueryDelegatorTotalDelegationBalance(t *testing.T) {
 	require.Equal(t, res.Balance, sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(1_000_000))))
 }
 
+func Test_grpcQueryDelegatorTotalUnbondingBalance(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+
+	valAddr1 := createValidatorWithBalance(ctx, input, 100_000_000, 2_000_000, 1)
+	delAddrStr1, err := input.AccountKeeper.AddressCodec().BytesToString(valAddr1)
+	require.NoError(t, err)
+
+	valAddr2 := createValidatorWithBalance(ctx, input, 100_000_000, 2_000_000, 2)
+
+	bondCoins := sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(1_000_000)))
+
+	validator, err := input.StakingKeeper.Validators.Get(ctx, valAddr2)
+	require.NoError(t, err)
+
+	shares, err := input.StakingKeeper.Delegate(ctx, valAddr1.Bytes(), bondCoins, types.Unbonded, validator, true)
+	require.NoError(t, err)
+	require.Equal(t, sdk.NewDecCoinsFromCoins(bondCoins...), shares)
+
+	// undelegate from both validators
+	_, _, err = input.StakingKeeper.Undelegate(ctx, valAddr1.Bytes(), valAddr1, sdk.NewDecCoins(sdk.NewInt64DecCoin(bondDenom, 500_000)))
+	require.NoError(t, err)
+	_, _, err = input.StakingKeeper.Undelegate(ctx, valAddr1.Bytes(), valAddr2, sdk.NewDecCoins(sdk.NewInt64DecCoin(bondDenom, 500_000)))
+	require.NoError(t, err)
+
+	querier := keeper.Querier{Keeper: &input.StakingKeeper}
+
+	// query total unbonding balance
+	res, err := querier.DelegatorTotalUnbondingBalance(ctx, &types.QueryDelegatorTotalUnbondingBalanceRequest{
+		DelegatorAddr: delAddrStr1,
+	})
+	require.NoError(t, err)
+
+	// 500_000 + 500_000 = 1_000_000
+	require.Equal(t, sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(1_000_000))), res.Balance)
+
+	// empty request
+	_, err = querier.DelegatorTotalUnbondingBalance(ctx, nil)
+	require.Error(t, err)
+
+	// empty delegator address
+	_, err = querier.DelegatorTotalUnbondingBalance(ctx, &types.QueryDelegatorTotalUnbondingBalanceRequest{})
+	require.Error(t, err)
+}
+
 func Test_grpcQueryDelegatorUnbondingDelegations(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 
