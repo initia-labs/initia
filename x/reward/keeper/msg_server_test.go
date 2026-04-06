@@ -4,10 +4,11 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/initia-labs/initia/x/reward/keeper"
 	"github.com/initia-labs/initia/x/reward/types"
 	"github.com/stretchr/testify/require"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func Test_UpdateParams(t *testing.T) {
