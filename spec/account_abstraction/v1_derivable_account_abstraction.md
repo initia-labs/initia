@@ -1,8 +1,8 @@
 # Derivable Account Abstraction
 
-[Derivable Account Abstraction (DATA)](https://github.com/aptos-foundation/AIPs/blob/main/aips/aip-113.md) is a standard for account abstraction that enables custom authentication schemes by registering a `derivable_authentication_function`.
+[Derivable Account Abstraction (DAA)](https://github.com/aptos-foundation/AIPs/blob/main/aips/aip-113.md) is a standard for account abstraction that enables custom authentication schemes by registering a `derivable_authentication_function`.
 
-DATA differs from vanilla [Account Abstraction (AA)](./v1_account_abstraction.md) in that, for a given `derivable_authentication_function`, it defines how to deterministically derive the account address from an `abstract_public_key`, which can be done off-chain.
+DAA differs from vanilla [Account Abstraction (AA)](./v1_account_abstraction.md) in that, for a given `derivable_authentication_function`, it defines how to deterministically derive the account address from an `abstract_public_key`, which can be done off-chain.
 
 In contrast, vanilla AA is enabled for a specific pre-existing account by explicitly registering an on-chain `authentication_function` and submitting a transaction, which involves extra steps and costs gas for each account.
 
@@ -174,7 +174,7 @@ The abstract public key is a custom data structure that represents the authentic
    }
    ```
 
-## Constructing DATA Signature
+## Constructing DAA Signature
 
 For Derivable Account Abstraction, the signature structure is:
 
