@@ -21,4 +21,4 @@ Initia supports the following AA modes:
 * Define custom authentication logic using Move smart contracts
 * Support various signature schemes beyond traditional cryptographic keys
 * Implement complex multi-signature or threshold-based authentication
-* Create deterministic account addresses using abstract public keys (DAA)
+* Create deterministic account addresses using abstract public keys (DATA)
