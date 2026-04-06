@@ -2,6 +2,9 @@ name: Spell Check
 
 on:
   pull_request:
+  push:
+    branches:
+      - main
 
 permissions:
   contents: write
@@ -17,9 +20,9 @@ jobs:
         continue-on-error: true
         run: |
           sudo apt-get install codespell -y
-          codespell -w --skip="*.pulsar.go,*.pb.go,*.pb.gw.go,*.cosmos_orm.go,*.json,*.git,*.js,crypto/keys,fuzz,*.h,proto/tendermint,*.bin,go.sum,go.mod,statik.go,*.map" --ignore-words=.github/config/.codespellignore
+          codespell -w --skip="*.pulsar.go,*.pb.go,*.pb.gw.go,*.cosmos_orm.go,*.json,*.git,*.js,crypto/keys,fuzz,*.h,proto/tendermint,*.bin,go.sum,go.work.sum,go.mod,statik.go,*.map,swagger.yaml,swagger-ui.css" --ignore-words=.github/config/.codespellignore
       - uses: peter-evans/create-pull-request@v7.0.5
-        if: github.event_name != 'pull_request'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "chore: fix typos"
