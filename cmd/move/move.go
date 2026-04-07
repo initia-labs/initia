@@ -589,7 +589,7 @@ func getBuildConfig(cmd *cobra.Command) (*types.CompilerBuildConfig, error) {
 	}
 	if len(namedAddresses) > 0 {
 		namedAddressMap := make(map[string]types.AccountAddress)
-		for _, namedAddress := range strings.Split(namedAddresses, ",") {
+		for namedAddress := range strings.SplitSeq(namedAddresses, ",") {
 			v := strings.Split(namedAddress, "=")
 			if len(v) != 2 {
 				return nil, fmt.Errorf("invalid named-addresses: %s", namedAddresses)

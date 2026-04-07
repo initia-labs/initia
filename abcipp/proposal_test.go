@@ -8,10 +8,11 @@ import (
 
 	"cosmossdk.io/log"
 	abci "github.com/cometbft/cometbft/abci/types"
+	"github.com/stretchr/testify/require"
+
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/stretchr/testify/require"
 )
 
 func TestPriorityMempoolConcurrentTierDistribution(t *testing.T) {
@@ -30,7 +31,7 @@ func TestPriorityMempoolConcurrentTierDistribution(t *testing.T) {
 		defer wg.Done()
 		priv := secp256k1.GenPrivKey()
 		<-start
-		for j := 0; j < 200; j++ {
+		for j := range 200 {
 			tier := "high"
 			if j%2 == 1 {
 				tier = "low"
@@ -40,7 +41,7 @@ func TestPriorityMempoolConcurrentTierDistribution(t *testing.T) {
 		}
 	}
 
-	for i := 0; i < 4; i++ {
+	for i := range 4 {
 		wg.Add(1)
 		go worker(i)
 	}
@@ -64,7 +65,7 @@ func TestProposalHandlerWithConcurrentMempool(t *testing.T) {
 	sdkCtx := testSDKContext()
 	wrappedCtx := sdk.WrapSDKContext(sdkCtx)
 
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		tier := "high"
 		if i%2 == 1 {
 			tier = "low"

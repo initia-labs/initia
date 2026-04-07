@@ -6104,7 +6104,7 @@ type Params struct {
 	// It is a list of addresses with permission to distribute contracts,
 	// and an empty list is interpreted as allowing anyone to distribute.
 	AllowedPublishers []string `protobuf:"bytes,5,rep,name=allowed_publishers,json=allowedPublishers,proto3" json:"allowed_publishers,omitempty"`
-	// clamm module address
+	// CLAMM module address
 	ClammModuleAddress string `protobuf:"bytes,6,opt,name=clamm_module_address,json=clammModuleAddress,proto3" json:"clamm_module_address,omitempty"`
 }
 
@@ -6184,7 +6184,7 @@ type RawParams struct {
 	ContractSharedRevenueRatio string `protobuf:"bytes,3,opt,name=contract_shared_revenue_ratio,json=contractSharedRevenueRatio,proto3" json:"contract_shared_revenue_ratio,omitempty"`
 	// flag whether to enable script execution
 	ScriptEnabled bool `protobuf:"varint,4,opt,name=script_enabled,json=scriptEnabled,proto3" json:"script_enabled,omitempty"`
-	// clamm module address
+	// CLAMM module address
 	ClammModuleAddress string `protobuf:"bytes,5,opt,name=clamm_module_address,json=clammModuleAddress,proto3" json:"clamm_module_address,omitempty"`
 }
 

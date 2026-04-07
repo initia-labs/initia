@@ -129,6 +129,7 @@ func NewPriorityMempool(cfg PriorityMempoolConfig, logger log.Logger, txEncoder 
 
 	p := &PriorityMempool{
 		cfg:                cfg,
+		logger:             logger,
 		priorityIndex:      skiplist.New(skiplist.GreaterThanFunc(compareEntries)),
 		entries:            make(map[txKey]*txEntry),
 		senders:            make(map[string]*senderState),

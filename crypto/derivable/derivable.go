@@ -22,6 +22,11 @@ const (
 	PubKeyName = "initia/PubKeyDerivable"
 )
 
+// DerivableAbstractionDerivedScheme identifies the scheme used for derivable
+// account abstraction public keys. This value must exactly match the constant
+// defined in 0x1::account_abstraction on the Move side.
+const DerivableAbstractionDerivedScheme = byte(0x5)
+
 var (
 	_ cryptotypes.PubKey = &PubKey{}
 )
@@ -46,7 +51,7 @@ func NewPubKey(moduleAddress string, moduleName string, functionName string, abs
 //	bcs(module_name),
 //	bcs(function_name),
 //	bcs(abstract_public_key),
-//	DERIVABLE_ABSTRACTION_DERIVED_SCHEME
+//	DerivableAbstractionDerivedScheme
 //
 // )
 func (pubKey PubKey) Address() crypto.Address {
@@ -62,7 +67,7 @@ func (pubKey PubKey) Address() crypto.Address {
 // Bytes returns the bytes of the derived public key.
 //
 // Format:
-// bcs(module_address) | bcs(module_name) | bcs(function_name) | bcs(abstract_public_key) | DERIVABLE_ABSTRACTION_DERIVED_SCHEME
+// bcs(module_address) | bcs(module_name) | bcs(function_name) | bcs(abstract_public_key) | DerivableAbstractionDerivedScheme
 func (pubKey PubKey) Bytes() []byte {
 	fInfo, err := vmtypes.NewFunctionInfo(pubKey.ModuleAddress, pubKey.ModuleName, pubKey.FunctionName)
 	if err != nil {
@@ -79,8 +84,7 @@ func (pubKey PubKey) Bytes() []byte {
 		panic(fmt.Sprintf("failed to serialize abstract public key: %v", err))
 	}
 
-	const DERIVABLE_ABSTRACTION_DERIVED_SCHEME = byte(0x5)
-	bytes = append(append(bytes, pubkeyBytes...), DERIVABLE_ABSTRACTION_DERIVED_SCHEME)
+	bytes = append(append(bytes, pubkeyBytes...), DerivableAbstractionDerivedScheme)
 
 	return bytes
 }
@@ -90,7 +94,7 @@ func (pubKey PubKey) String() string {
 	ModuleAddress: %s,
 	ModuleName: %s,
 	FunctionName: %s,
-	AbstractPublicKey: %s,
+	AbstractPublicKey: 0x%x,
 }`, pubKey.ModuleAddress, pubKey.ModuleName, pubKey.FunctionName, pubKey.AbstractPublicKey)
 }
 

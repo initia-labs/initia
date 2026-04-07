@@ -61,9 +61,9 @@ type HookData struct {
 
 // intermediateCallback is used internally for JSON unmarshaling
 type intermediateCallback struct {
-	Id            interface{} `json:"id"`
-	ModuleAddress string      `json:"module_address"`
-	ModuleName    string      `json:"module_name"`
+	Id            any    `json:"id"`
+	ModuleAddress string `json:"module_address"`
+	ModuleName    string `json:"module_name"`
 }
 
 // UnmarshalJSON implements the json unmarshaler interface.

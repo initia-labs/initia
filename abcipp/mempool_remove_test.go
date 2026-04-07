@@ -4,10 +4,11 @@ import (
 	"testing"
 
 	"cosmossdk.io/log"
+	"github.com/stretchr/testify/require"
+
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkmempool "github.com/cosmos/cosmos-sdk/types/mempool"
-	"github.com/stretchr/testify/require"
 )
 
 // TestRemoveUnknownTxReturnsNotFound keeps error behavior explicit so

@@ -9,11 +9,12 @@ import (
 	"testing"
 	"time"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkbech32 "github.com/cosmos/cosmos-sdk/types/bech32"
 	e2e "github.com/initia-labs/initia/integration-tests/e2e"
 	movetypes "github.com/initia-labs/initia/x/move/types"
 	"github.com/stretchr/testify/require"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkbech32 "github.com/cosmos/cosmos-sdk/types/bech32"
 )
 
 func TestMoveTableGeneratorResourceScenario(t *testing.T) {

@@ -72,7 +72,7 @@ func BasicManager() module.BasicManager {
 type EmptyAppOptions struct{}
 
 // Get implements AppOptions
-func (ao EmptyAppOptions) Get(o string) interface{} {
+func (ao EmptyAppOptions) Get(o string) any {
 	if o == flags.FlagHome {
 		return DefaultNodeHome
 	}

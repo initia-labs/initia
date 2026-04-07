@@ -349,7 +349,7 @@ func (w *wallet) selfDerive() {
 
 			context = context.Background()
 		)
-		for i := 0; i < len(nextAddrs); i++ {
+		for i := range nextAddrs {
 			for empty := false; !empty; {
 				// Retrieve the next derived Ethereum account
 				if nextAddrs[i] == (common.Address{}) {

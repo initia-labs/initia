@@ -8,8 +8,9 @@ import (
 	"time"
 
 	cmtmempool "github.com/cometbft/cometbft/mempool"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // drainEvents reads buffered app-mempool events and returns inserted/removed counts.

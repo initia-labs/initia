@@ -184,21 +184,22 @@ func UnmarshalUBD(cdc codec.BinaryCodec, value []byte) (ubd UnbondingDelegation,
 
 // String returns a human readable string representation of an UnbondingDelegation.
 func (ubd UnbondingDelegation) String() string {
-	out := fmt.Sprintf(`Unbonding Delegations between:
+	var out strings.Builder
+	out.WriteString(fmt.Sprintf(`Unbonding Delegations between:
   Delegator:                 %s
   Validator:                 %s
-	Entries:`, ubd.DelegatorAddress, ubd.ValidatorAddress)
+	Entries:`, ubd.DelegatorAddress, ubd.ValidatorAddress))
 	for i, entry := range ubd.Entries {
-		out += fmt.Sprintf(`    Unbonding Delegation %d:
+		out.WriteString(fmt.Sprintf(`    Unbonding Delegation %d:
       Creation Height:           %v
       Min time to unbond (unix): %v
       Expected balance:          %s
 	  Unbonding ID:              %d
       Unbonding Ref Count:       %d`, i, entry.CreationHeight,
-			entry.CompletionTime, entry.Balance, entry.UnbondingId, entry.UnbondingOnHoldRefCount)
+			entry.CompletionTime, entry.Balance, entry.UnbondingId, entry.UnbondingOnHoldRefCount))
 	}
 
-	return out
+	return out.String()
 }
 
 // UnbondingDelegations is a collection of UnbondingDelegation
@@ -288,17 +289,18 @@ func UnmarshalRED(cdc codec.BinaryCodec, value []byte) (red Redelegation, err er
 
 // String returns a human readable string representation of a Redelegation.
 func (red Redelegation) String() string {
-	out := fmt.Sprintf(`Redelegations between:
+	var out strings.Builder
+	out.WriteString(fmt.Sprintf(`Redelegations between:
   Delegator:                 %s
   Source Validator:          %s
   Destination Validator:     %s
   Entries:
 `,
 		red.DelegatorAddress, red.ValidatorSrcAddress, red.ValidatorDstAddress,
-	)
+	))
 
 	for i, entry := range red.Entries {
-		out += fmt.Sprintf(`    Redelegation Entry #%d:
+		out.WriteString(fmt.Sprintf(`    Redelegation Entry #%d:
     Creation height:           %v
     Min time to unbond (unix): %v
     Dest Shares:               %s
@@ -306,10 +308,10 @@ func (red Redelegation) String() string {
     Unbonding Ref Count:       %d
 `,
 			i, entry.CreationHeight, entry.CompletionTime, entry.SharesDst, entry.UnbondingId, entry.UnbondingOnHoldRefCount,
-		)
+		))
 	}
 
-	return strings.TrimRight(out, "\n")
+	return strings.TrimRight(out.String(), "\n")
 }
 
 // Redelegations are a collection of Redelegation

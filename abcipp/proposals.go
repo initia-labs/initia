@@ -6,6 +6,7 @@ import (
 	abci "github.com/cometbft/cometbft/abci/types"
 
 	"cosmossdk.io/log"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
