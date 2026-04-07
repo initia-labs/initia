@@ -67,7 +67,7 @@ transferFunds collections.Item[types.TransferFunds]
 
 ### Custom Query Name
 
-```plantext
+```plaintext
 move_hook_get_transfer_funds
 ```
 
