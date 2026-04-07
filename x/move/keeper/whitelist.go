@@ -49,6 +49,10 @@ func (k Keeper) WhitelistGasPrice(ctx context.Context, msg types.MsgWhitelistGas
 	if stableswap, err := NewStableSwapKeeper(&k).WhitelistGasPrice(ctx, metadataQuote, metadataLP); err != nil {
 		return err
 	} else if stableswap {
+		// NOTE: Until the next upgrade, stableswap-backed gas-price swaps can still
+		// fail during execution and emit logs repeatedly. This does not affect chain
+		// liveness, but operators should avoid whitelisting stableswap pools for gas
+		// prices before that upgrade unless they accept the noisy failures.
 		return dexKeeper.setDexPair(ctx, metadataQuote, metadataLP)
 	}
 
