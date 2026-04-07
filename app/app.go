@@ -61,7 +61,7 @@ import (
 	"github.com/initia-labs/initia/abcipp"
 	"github.com/initia-labs/initia/app/keepers"
 	"github.com/initia-labs/initia/app/params"
-	upgrades_v1_4_2 "github.com/initia-labs/initia/app/upgrades/v1_4_2"
+	upgrades_v1_4_5 "github.com/initia-labs/initia/app/upgrades/v1_4_5"
 	cryptocodec "github.com/initia-labs/initia/crypto/codec"
 	initiatx "github.com/initia-labs/initia/tx"
 	moveconfig "github.com/initia-labs/initia/x/move/config"
@@ -261,7 +261,7 @@ func NewInitiaApp(
 	// The cosmos upgrade handler attempts to create ${HOME}/.initia/data to check for upgrade info,
 	// but this isn't required during initial encoding config setup.
 	if loadLatest {
-		upgrades_v1_4_2.RegisterUpgradeHandlers(app)
+		upgrades_v1_4_5.RegisterUpgradeHandlers(app)
 	}
 
 	autocliv1.RegisterQueryServer(app.GRPCQueryRouter(), runtimeservices.NewAutoCLIQueryService(app.ModuleManager.Modules))

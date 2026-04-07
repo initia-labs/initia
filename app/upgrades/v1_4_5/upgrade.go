@@ -1,4 +1,4 @@
-package v1_4_0
+package v1_4_5
 
 import (
 	"context"
@@ -13,7 +13,7 @@ import (
 	ophosttypes "github.com/initia-labs/OPinit/x/ophost/types"
 )
 
-const upgradeName = "v1.4.2"
+const upgradeName = "v1.4.5"
 
 // RegisterUpgradeHandlers returns upgrade handlers
 func RegisterUpgradeHandlers(app upgrades.InitiaApp) {
