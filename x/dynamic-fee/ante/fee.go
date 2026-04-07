@@ -1,6 +1,8 @@
 package ante
 
 import (
+	stdmath "math"
+
 	"cosmossdk.io/errors"
 	"cosmossdk.io/math"
 
@@ -28,6 +30,26 @@ func NewMempoolFeeChecker(
 		keeper,
 	}
 }
+
+var maxPriority math.LegacyDec
+
+func init() {
+	maxPriority = math.LegacyNewDecFromInt(math.NewInt(stdmath.MaxInt64))
+}
+
+func priorityFromGasPrice(gasPrice math.LegacyDec) int64 {
+	if !gasPrice.IsPositive() {
+		return 1
+	}
+
+	scaledPriority := gasPrice.MulInt64(1_000_000)
+	if scaledPriority.GTE(maxPriority) {
+		return stdmath.MaxInt64
+	}
+
+	return math.Max(scaledPriority.TruncateInt64(), 1)
+}
+
 func (fc MempoolFeeChecker) CheckTxFeeWithMinGasPrices(ctx sdk.Context, tx sdk.Tx) (sdk.Coins, int64, error) {
 	feeTx, ok := tx.(sdk.FeeTx)
 	if !ok {
@@ -69,8 +91,8 @@ func (fc MempoolFeeChecker) CheckTxFeeWithMinGasPrices(ctx sdk.Context, tx sdk.T
 
 			gasPriceFromTotalFee := math.LegacyNewDecFromInt(totalFeeBaseAmount).Quo(math.LegacyNewDec(int64(gas))) //nolint: gosec
 
-			// priority is max(gasPriceFromTotalFee * 1e6, 1)
-			priority = math.Max(gasPriceFromTotalFee.MulInt64(1000000).TruncateInt64(), 1)
+			// priority is max(gasPriceFromTotalFee * 1e6, 1), capped to int64 bounds.
+			priority = priorityFromGasPrice(gasPriceFromTotalFee)
 
 			if gasPriceFromTotalFee.LT(baseGasPrice) {
 				return nil, 0, errors.Wrapf(
