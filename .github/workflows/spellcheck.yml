@@ -17,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Install codespell
-        run: pip install codespell
+        run: python3 -m pip install "codespell==2.4.2"
       - name: Run codespell
         continue-on-error: true
         run: codespell -w --skip="*.pulsar.go,*.pb.go,*.pb.gw.go,*.cosmos_orm.go,*.json,*.git,*.js,crypto/keys,fuzz,*.h,proto/tendermint,*.bin,go.sum,go.work.sum,go.mod,statik.go,*.map,swagger.yaml,swagger-ui.css" --ignore-words=.github/config/.codespellignore
