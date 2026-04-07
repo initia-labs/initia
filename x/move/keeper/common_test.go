@@ -51,6 +51,7 @@ import (
 
 	ibcfee "github.com/cosmos/ibc-go/v8/modules/apps/29-fee"
 	ibctransfer "github.com/cosmos/ibc-go/v8/modules/apps/transfer"
+
 	ibcnfttransfer "github.com/initia-labs/initia/x/ibc/nft-transfer"
 
 	initiaapp "github.com/initia-labs/initia/app"

@@ -4,9 +4,10 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
+	"github.com/stretchr/testify/require"
+
 	"github.com/initia-labs/initia/x/reward/keeper"
 	"github.com/initia-labs/initia/x/reward/types"
-	"github.com/stretchr/testify/require"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )

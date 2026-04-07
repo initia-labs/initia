@@ -16,8 +16,9 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/initia-labs/initia/x/move/types"
 	vmtypes "github.com/initia-labs/movevm/types"
+
+	"github.com/initia-labs/initia/x/move/types"
 )
 
 // newTestMsgCreateValidator test msg creator

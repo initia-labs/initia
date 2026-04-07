@@ -5,8 +5,9 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/initia-labs/initia/x/ibc-hooks/types"
 	"github.com/stretchr/testify/require"
+
+	"github.com/initia-labs/initia/x/ibc-hooks/types"
 
 	sdkmath "cosmossdk.io/math"
 

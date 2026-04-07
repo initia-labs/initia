@@ -3,6 +3,7 @@ package ibc_hooks
 import (
 	// external libraries
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
+
 	"github.com/initia-labs/initia/x/ibc-hooks/keeper"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"

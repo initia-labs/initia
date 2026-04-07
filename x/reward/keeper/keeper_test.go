@@ -5,8 +5,9 @@ import (
 	"time"
 
 	"cosmossdk.io/math"
-	"github.com/initia-labs/initia/x/reward/types"
 	"github.com/stretchr/testify/require"
+
+	"github.com/initia-labs/initia/x/reward/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"

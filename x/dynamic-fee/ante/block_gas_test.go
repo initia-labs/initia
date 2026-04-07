@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"cosmossdk.io/math"
+
 	"github.com/initia-labs/initia/x/dynamic-fee/ante"
 
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"

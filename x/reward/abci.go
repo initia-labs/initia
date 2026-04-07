@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"cosmossdk.io/math"
+
 	"github.com/initia-labs/initia/x/reward/keeper"
 	"github.com/initia-labs/initia/x/reward/types"
 

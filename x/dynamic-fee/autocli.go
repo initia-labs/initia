@@ -2,6 +2,7 @@ package dynamicfee
 
 import (
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
+
 	dynamicfeev1 "github.com/initia-labs/initia/api/initia/dynamicfee/v1"
 )
 

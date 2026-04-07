@@ -14,9 +14,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 
+	vmtypes "github.com/initia-labs/movevm/types"
+
 	banktypes "github.com/initia-labs/initia/x/bank/types"
 	"github.com/initia-labs/initia/x/move/types"
-	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 var _ banktypes.MoveBankKeeper = MoveBankKeeper{}

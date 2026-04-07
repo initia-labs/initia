@@ -12,9 +12,10 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	vmtypes "github.com/initia-labs/movevm/types"
+
 	"github.com/initia-labs/initia/x/move/keeper"
 	"github.com/initia-labs/initia/x/move/types"
-	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 func createStableSwapPool(

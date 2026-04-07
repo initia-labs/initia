@@ -6,9 +6,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	vmtypes "github.com/initia-labs/movevm/types"
+
 	nfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 	"github.com/initia-labs/initia/x/move/types"
-	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 var _ nfttransfertypes.NftKeeper = NftKeeper{}

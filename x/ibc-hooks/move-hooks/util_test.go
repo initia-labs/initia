@@ -6,9 +6,10 @@ import (
 	"fmt"
 	"testing"
 
+	vmtypes "github.com/initia-labs/movevm/types"
+
 	nfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 	movetypes "github.com/initia-labs/initia/x/move/types"
-	vmtypes "github.com/initia-labs/movevm/types"
 
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 

@@ -1,10 +1,11 @@
 package keepers
 
 import (
+	oracletypes "github.com/skip-mev/connect/v2/x/oracle/types"
+
 	movehooktypes "github.com/initia-labs/initia/x/ibc-hooks/types"
 	movetypes "github.com/initia-labs/initia/x/move/types"
 	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
-	oracletypes "github.com/skip-mev/connect/v2/x/oracle/types"
 )
 
 func (appKeepers *AppKeepers) makeQueryWhitelist() movetypes.VMQueryWhiteList {

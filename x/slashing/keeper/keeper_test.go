@@ -6,9 +6,10 @@ import (
 
 	"cosmossdk.io/core/comet"
 	"cosmossdk.io/math"
+	"github.com/stretchr/testify/require"
+
 	staking "github.com/initia-labs/initia/x/mstaking"
 	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
-	"github.com/stretchr/testify/require"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )

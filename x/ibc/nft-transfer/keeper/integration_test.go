@@ -8,11 +8,12 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	vmtypes "github.com/initia-labs/movevm/types"
+
 	"github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 	ibctesting "github.com/initia-labs/initia/x/ibc/testing"
 	movekeeper "github.com/initia-labs/initia/x/move/keeper"
 	movetypes "github.com/initia-labs/initia/x/move/types"
-	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 func (suite *KeeperTestSuite) CreateNftClass(

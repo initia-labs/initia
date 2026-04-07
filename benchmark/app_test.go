@@ -12,9 +12,10 @@ import (
 	abci "github.com/cometbft/cometbft/abci/types"
 
 	simappparams "cosmossdk.io/simapp/params"
+	vmtypes "github.com/initia-labs/movevm/types"
+
 	initiaapp "github.com/initia-labs/initia/app"
 	movetypes "github.com/initia-labs/initia/x/move/types"
-	vmtypes "github.com/initia-labs/movevm/types"
 
 	dbm "github.com/cosmos/cosmos-db"
 

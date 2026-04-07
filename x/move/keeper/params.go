@@ -5,8 +5,9 @@ import (
 
 	"cosmossdk.io/math"
 
-	"github.com/initia-labs/initia/x/move/types"
 	vmtypes "github.com/initia-labs/movevm/types"
+
+	"github.com/initia-labs/initia/x/move/types"
 )
 
 // BaseDenom - base denom of native move dex

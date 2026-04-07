@@ -4,8 +4,9 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
-	"github.com/initia-labs/initia/x/distribution/keeper"
 	"github.com/stretchr/testify/require"
+
+	"github.com/initia-labs/initia/x/distribution/keeper"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"

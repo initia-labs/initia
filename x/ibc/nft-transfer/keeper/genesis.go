@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"cosmossdk.io/collections"
+
 	"github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 )
 

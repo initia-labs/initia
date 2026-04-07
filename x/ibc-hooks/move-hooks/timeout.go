@@ -9,11 +9,12 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	vmtypes "github.com/initia-labs/movevm/types"
+
 	ibchooks "github.com/initia-labs/initia/x/ibc-hooks"
 	"github.com/initia-labs/initia/x/ibc-hooks/types"
 	nfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 	movetypes "github.com/initia-labs/initia/x/move/types"
-	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 func (h MoveHooks) onTimeoutIcs20Packet(

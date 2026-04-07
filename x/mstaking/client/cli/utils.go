@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"cosmossdk.io/math"
+
 	"github.com/initia-labs/initia/x/mstaking/types"
 )
 

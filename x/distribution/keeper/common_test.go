@@ -50,6 +50,8 @@ import (
 	govtypesv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 
+	"github.com/initia-labs/movevm/precompile"
+
 	initiaapp "github.com/initia-labs/initia/app"
 	initiaappparams "github.com/initia-labs/initia/app/params"
 	movebank "github.com/initia-labs/initia/x/bank/keeper"
@@ -71,7 +73,6 @@ import (
 	rewardkeeper "github.com/initia-labs/initia/x/reward/keeper"
 	rewardtypes "github.com/initia-labs/initia/x/reward/types"
 	"github.com/initia-labs/initia/x/slashing"
-	"github.com/initia-labs/movevm/precompile"
 )
 
 var ModuleBasics = module.NewBasicManager(

@@ -11,8 +11,9 @@ import (
 
 	storetypes "cosmossdk.io/store/types"
 
-	movetypes "github.com/initia-labs/initia/x/move/types"
 	vmtypes "github.com/initia-labs/movevm/types"
+
+	movetypes "github.com/initia-labs/initia/x/move/types"
 )
 
 func TestVerifyAccountAbstractionSignature(t *testing.T) {

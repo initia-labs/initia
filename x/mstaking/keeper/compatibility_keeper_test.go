@@ -4,8 +4,9 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
-	stakingkeeper "github.com/initia-labs/initia/x/mstaking/keeper"
 	"github.com/stretchr/testify/require"
+
+	stakingkeeper "github.com/initia-labs/initia/x/mstaking/keeper"
 
 	cosmostypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
