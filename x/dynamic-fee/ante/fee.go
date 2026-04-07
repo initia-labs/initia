@@ -31,13 +31,18 @@ func NewMempoolFeeChecker(
 	}
 }
 
+var maxPriority math.LegacyDec
+
+func init() {
+	maxPriority = math.LegacyNewDecFromInt(math.NewInt(stdmath.MaxInt64))
+}
+
 func priorityFromGasPrice(gasPrice math.LegacyDec) int64 {
 	if !gasPrice.IsPositive() {
 		return 1
 	}
 
 	scaledPriority := gasPrice.MulInt64(1_000_000)
-	maxPriority := math.LegacyNewDecFromInt(math.NewInt(stdmath.MaxInt64))
 	if scaledPriority.GTE(maxPriority) {
 		return stdmath.MaxInt64
 	}
