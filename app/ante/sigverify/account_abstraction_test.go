@@ -35,13 +35,14 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	simcli "github.com/cosmos/cosmos-sdk/x/simulation/client/cli"
 
+	"github.com/initia-labs/movevm/precompile"
+	vmtypes "github.com/initia-labs/movevm/types"
+
 	initiaapp "github.com/initia-labs/initia/app"
 	"github.com/initia-labs/initia/app/ante/sigverify"
 	initiatx "github.com/initia-labs/initia/tx"
 	moveconfig "github.com/initia-labs/initia/x/move/config"
 	movetypes "github.com/initia-labs/initia/x/move/types"
-	"github.com/initia-labs/movevm/precompile"
-	vmtypes "github.com/initia-labs/movevm/types"
 
 	oracleconfig "github.com/skip-mev/connect/v2/oracle/config"
 

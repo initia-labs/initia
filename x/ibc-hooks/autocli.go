@@ -2,6 +2,7 @@ package ibc_hooks
 
 import (
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
+
 	ibchooksv1 "github.com/initia-labs/initia/api/initia/ibchooks/v1"
 )
 

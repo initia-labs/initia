@@ -16,9 +16,10 @@ import (
 	sdkmath "cosmossdk.io/math"
 	"github.com/aptos-labs/serde-reflection/serde-generate/runtime/golang/bcs"
 	"github.com/aptos-labs/serde-reflection/serde-generate/runtime/golang/serde"
-	"github.com/initia-labs/initia/x/move/types"
 	"github.com/spf13/cobra"
 	flag "github.com/spf13/pflag"
+
+	"github.com/initia-labs/initia/x/move/types"
 )
 
 var NewSerializer = bcs.NewSerializer

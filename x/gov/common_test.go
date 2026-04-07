@@ -5,8 +5,9 @@ import (
 	"testing"
 	"time"
 
-	initiaapp "github.com/initia-labs/initia/app"
 	"github.com/stretchr/testify/require"
+
+	initiaapp "github.com/initia-labs/initia/app"
 
 	"cosmossdk.io/math"
 	"github.com/cometbft/cometbft/crypto"

@@ -13,8 +13,9 @@ import (
 	"cosmossdk.io/store/metrics"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	dbm "github.com/cosmos/cosmos-db"
-	initiatx "github.com/initia-labs/initia/tx"
 	protov2 "google.golang.org/protobuf/proto"
+
+	initiatx "github.com/initia-labs/initia/tx"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"

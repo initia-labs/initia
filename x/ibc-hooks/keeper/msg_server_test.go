@@ -3,9 +3,10 @@ package keeper_test
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/initia-labs/initia/x/ibc-hooks/keeper"
 	"github.com/initia-labs/initia/x/ibc-hooks/types"
-	"github.com/stretchr/testify/require"
 )
 
 func Test_UpdateACL(t *testing.T) {

@@ -11,9 +11,10 @@ import (
 
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/proto/tendermint/types"
+	"github.com/stretchr/testify/require"
+
 	customtypes "github.com/initia-labs/initia/x/distribution/types"
 	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
-	"github.com/stretchr/testify/require"
 )
 
 func setRewardWeights(t *testing.T, ctx context.Context, input TestKeepers, weights []customtypes.RewardWeight) {

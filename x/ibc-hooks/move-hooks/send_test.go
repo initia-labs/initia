@@ -14,10 +14,12 @@ import (
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
+
 	nfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 
-	movehooks "github.com/initia-labs/initia/x/ibc-hooks/move-hooks"
 	vmtypes "github.com/initia-labs/movevm/types"
+
+	movehooks "github.com/initia-labs/initia/x/ibc-hooks/move-hooks"
 )
 
 func Test_SendPacket_without_async_callback(t *testing.T) {

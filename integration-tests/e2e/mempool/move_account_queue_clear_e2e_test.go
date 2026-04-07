@@ -10,8 +10,9 @@ import (
 	"testing"
 	"time"
 
-	e2e "github.com/initia-labs/initia/integration-tests/e2e"
 	"github.com/stretchr/testify/require"
+
+	e2e "github.com/initia-labs/initia/integration-tests/e2e"
 )
 
 func TestMoveStdAccountCreateQueueClearScenario(t *testing.T) {

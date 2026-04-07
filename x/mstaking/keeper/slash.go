@@ -7,6 +7,7 @@ import (
 
 	"cosmossdk.io/collections"
 	"cosmossdk.io/math"
+
 	types "github.com/initia-labs/initia/x/mstaking/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"

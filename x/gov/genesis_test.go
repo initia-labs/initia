@@ -3,8 +3,9 @@ package gov_test
 import (
 	"testing"
 
-	"github.com/initia-labs/initia/x/gov"
 	"github.com/stretchr/testify/require"
+
+	"github.com/initia-labs/initia/x/gov"
 
 	customtypes "github.com/initia-labs/initia/x/gov/types"
 )

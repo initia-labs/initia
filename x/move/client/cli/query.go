@@ -15,8 +15,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/version"
 
-	"github.com/initia-labs/initia/x/move/types"
 	vmapi "github.com/initia-labs/movevm/api"
+
+	"github.com/initia-labs/initia/x/move/types"
 )
 
 func GetQueryCmd(ac address.Codec) *cobra.Command {

@@ -7,9 +7,10 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	vmtypes "github.com/initia-labs/movevm/types"
+
 	distrtypes "github.com/initia-labs/initia/x/distribution/types"
 	"github.com/initia-labs/initia/x/move/types"
-	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 var _ distrtypes.DexKeeper = DexKeeper{}

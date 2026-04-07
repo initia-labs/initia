@@ -19,6 +19,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/version"
 
 	cmtlocal "github.com/cometbft/cometbft/rpc/client/local"
+
 	"github.com/initia-labs/initia/tx/types"
 )
 

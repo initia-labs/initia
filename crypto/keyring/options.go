@@ -1,8 +1,9 @@
 package keyring
 
 import (
-	ethhd "github.com/initia-labs/initia/crypto/hd"
 	"github.com/spf13/cobra"
+
+	ethhd "github.com/initia-labs/initia/crypto/hd"
 
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	cosmoshd "github.com/cosmos/cosmos-sdk/crypto/hd"

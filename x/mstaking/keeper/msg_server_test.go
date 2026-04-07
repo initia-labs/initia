@@ -5,8 +5,9 @@ import (
 	"time"
 
 	"cosmossdk.io/math"
-	initiaapp "github.com/initia-labs/initia/app"
 	"github.com/stretchr/testify/require"
+
+	initiaapp "github.com/initia-labs/initia/app"
 
 	"github.com/initia-labs/initia/x/mstaking/keeper"
 	"github.com/initia-labs/initia/x/mstaking/types"

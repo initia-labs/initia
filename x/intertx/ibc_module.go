@@ -4,6 +4,7 @@ import (
 	proto "github.com/cosmos/gogoproto/proto"
 
 	errorsmod "cosmossdk.io/errors"
+
 	"github.com/initia-labs/initia/x/intertx/keeper"
 
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"

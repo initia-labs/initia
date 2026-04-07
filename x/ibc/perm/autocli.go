@@ -2,6 +2,7 @@ package perm
 
 import (
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
+
 	permv1 "github.com/initia-labs/initia/api/ibc/applications/perm/v1"
 )
 

@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 	"testing"
 
-	movehooks "github.com/initia-labs/initia/x/ibc-hooks/move-hooks"
 	"github.com/stretchr/testify/require"
+
+	movehooks "github.com/initia-labs/initia/x/ibc-hooks/move-hooks"
 )
 
 func Test_Unmarshal_AsyncCallback(t *testing.T) {

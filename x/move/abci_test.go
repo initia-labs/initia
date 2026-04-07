@@ -12,8 +12,9 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 
-	"github.com/initia-labs/initia/x/move/types"
 	vmtypes "github.com/initia-labs/movevm/types"
+
+	"github.com/initia-labs/initia/x/move/types"
 )
 
 func Test_BeginBlocker(t *testing.T) {

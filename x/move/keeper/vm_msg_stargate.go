@@ -11,8 +11,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	"github.com/initia-labs/initia/x/move/types"
 	vmtypes "github.com/initia-labs/movevm/types"
+
+	"github.com/initia-labs/initia/x/move/types"
 )
 
 func (k Keeper) HandleVMStargateMsg(ctx context.Context, req *vmtypes.CosmosMessage) (proto.Message, error) {

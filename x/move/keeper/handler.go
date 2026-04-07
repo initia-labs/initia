@@ -17,8 +17,9 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	"github.com/cosmos/gogoproto/proto"
-	"github.com/initia-labs/initia/x/move/types"
 	vmtypes "github.com/initia-labs/movevm/types"
+
+	"github.com/initia-labs/initia/x/move/types"
 )
 
 func isSimulation(

@@ -14,12 +14,14 @@ import (
 
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+
 	nfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
+
+	vmtypes "github.com/initia-labs/movevm/types"
 
 	movehooks "github.com/initia-labs/initia/x/ibc-hooks/move-hooks"
 	ibchookstypes "github.com/initia-labs/initia/x/ibc-hooks/types"
 	movetypes "github.com/initia-labs/initia/x/move/types"
-	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 func Test_OnReceivePacketWithoutMemo(t *testing.T) {

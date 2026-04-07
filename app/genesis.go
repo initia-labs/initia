@@ -17,6 +17,7 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
 	l2connect "github.com/initia-labs/OPinit/x/opchild/l2connect"
+
 	"github.com/initia-labs/initia/app/genesis_markets"
 	customdistrtypes "github.com/initia-labs/initia/x/distribution/types"
 	customgovtypes "github.com/initia-labs/initia/x/gov/types"

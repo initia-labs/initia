@@ -6,8 +6,9 @@ import (
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/initia-labs/initia/x/move/types"
 	vmtypes "github.com/initia-labs/movevm/types"
+
+	"github.com/initia-labs/initia/x/move/types"
 )
 
 func TestInitializeIBCCoin(t *testing.T) {

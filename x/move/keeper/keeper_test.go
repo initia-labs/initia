@@ -6,9 +6,10 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/initia-labs/initia/x/move/types"
 	vmapi "github.com/initia-labs/movevm/api"
 	vmtypes "github.com/initia-labs/movevm/types"
+
+	"github.com/initia-labs/initia/x/move/types"
 )
 
 func TestGetModule(t *testing.T) {

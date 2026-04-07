@@ -69,12 +69,12 @@ Where authzItems.json contains:
     {
         "module_address": "init1vr...",
         "module_name": "foo",
-        "function_names": ["ba*"]
+        "function_names": ["parse_*"]
     },
   	{
         "module_address": "init1vr...",
         "module_name": "bar",
-        "function_names": ["baz"]
+        "function_names": ["parse_function"]
     }
 ]
     `, version.AppName, authz.ModuleName, bank.SendAuthorization{}.MsgTypeURL(), version.AppName, authz.ModuleName, version.AppName, authz.ModuleName, version.AppName, authz.ModuleName),

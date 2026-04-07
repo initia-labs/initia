@@ -15,9 +15,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/crypto/types/multisig"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 
+	vmtypes "github.com/initia-labs/movevm/types"
+
 	"github.com/initia-labs/initia/crypto/derivable"
 	initiatx "github.com/initia-labs/initia/tx"
-	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 // internalSignModeToAPI converts a signing.SignMode to a protobuf SignMode.

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
+
 	initiaapp "github.com/initia-labs/initia/app"
 
 	"github.com/stretchr/testify/require"

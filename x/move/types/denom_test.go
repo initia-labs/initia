@@ -3,8 +3,9 @@ package types_test
 import (
 	"testing"
 
-	"github.com/initia-labs/initia/x/move/types"
 	"github.com/stretchr/testify/require"
+
+	"github.com/initia-labs/initia/x/move/types"
 )
 
 func Test_MetadataAddressFromDenom(t *testing.T) {

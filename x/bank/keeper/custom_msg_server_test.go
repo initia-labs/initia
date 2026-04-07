@@ -3,9 +3,10 @@ package keeper_test
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/initia-labs/initia/x/bank/keeper"
 	"github.com/initia-labs/initia/x/bank/types"
-	"github.com/stretchr/testify/require"
 
 	cosmosbanktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 )

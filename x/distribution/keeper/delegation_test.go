@@ -11,10 +11,11 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
+	"github.com/stretchr/testify/require"
+
 	customtypes "github.com/initia-labs/initia/x/distribution/types"
 	staking "github.com/initia-labs/initia/x/mstaking"
 	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
-	"github.com/stretchr/testify/require"
 )
 
 func TestCalculateRewardsBasic(t *testing.T) {

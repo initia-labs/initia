@@ -8,9 +8,10 @@ import (
 
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
+	vmtypes "github.com/initia-labs/movevm/types"
+
 	distrtypes "github.com/initia-labs/initia/x/distribution/types"
 	"github.com/initia-labs/initia/x/move/types"
-	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 func (k Keeper) WhitelistGasPrice(ctx context.Context, msg types.MsgWhitelistGasPrice) error {

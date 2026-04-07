@@ -3,8 +3,9 @@ package keeper_test
 import (
 	"testing"
 
-	"github.com/initia-labs/initia/x/distribution/keeper"
 	"github.com/stretchr/testify/require"
+
+	"github.com/initia-labs/initia/x/distribution/keeper"
 
 	"github.com/cosmos/cosmos-sdk/x/distribution/types"
 )

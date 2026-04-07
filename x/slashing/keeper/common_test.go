@@ -51,6 +51,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/initia-labs/movevm/precompile"
+
 	initiaapp "github.com/initia-labs/initia/app"
 	initiaappparams "github.com/initia-labs/initia/app/params"
 	movebank "github.com/initia-labs/initia/x/bank/keeper"
@@ -73,7 +75,6 @@ import (
 	rewardtypes "github.com/initia-labs/initia/x/reward/types"
 	"github.com/initia-labs/initia/x/slashing"
 	slashingkeeper "github.com/initia-labs/initia/x/slashing/keeper"
-	"github.com/initia-labs/movevm/precompile"
 )
 
 var ModuleBasics = module.NewBasicManager(

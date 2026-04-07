@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"cosmossdk.io/collections"
+
 	"github.com/initia-labs/initia/x/mstaking/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"cosmossdk.io/core/address"
+
 	"github.com/initia-labs/initia/x/move/keeper"
 	"github.com/initia-labs/initia/x/move/types"
 

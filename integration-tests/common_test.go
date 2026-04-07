@@ -21,11 +21,12 @@ import (
 	abci "github.com/cometbft/cometbft/abci/types"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 
+	vmtypes "github.com/initia-labs/movevm/types"
+
 	initiaapp "github.com/initia-labs/initia/app"
 	customdistrtypes "github.com/initia-labs/initia/x/distribution/types"
 	movetypes "github.com/initia-labs/initia/x/move/types"
 	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
-	vmtypes "github.com/initia-labs/movevm/types"
 )
 
 // Bond denom should be set for staking test

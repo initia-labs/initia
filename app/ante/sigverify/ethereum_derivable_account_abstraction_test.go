@@ -23,11 +23,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	authsign "github.com/cosmos/cosmos-sdk/x/auth/signing"
 
+	vmtypes "github.com/initia-labs/movevm/types"
+
 	initiaapp "github.com/initia-labs/initia/app"
 	"github.com/initia-labs/initia/app/ante/sigverify"
 	initiatx "github.com/initia-labs/initia/tx"
 	movetypes "github.com/initia-labs/initia/x/move/types"
-	vmtypes "github.com/initia-labs/movevm/types"
 
 	"github.com/initia-labs/initia/crypto/derivable"
 	ethsecp256k1 "github.com/initia-labs/initia/crypto/ethsecp256k1"

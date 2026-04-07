@@ -5,9 +5,10 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/initia-labs/initia/x/move/types"
 	vmtypes "github.com/initia-labs/movevm/types"
 	"github.com/stretchr/testify/require"
+
+	"github.com/initia-labs/initia/x/move/types"
 
 	"github.com/cosmos/cosmos-sdk/codec/address"
 )

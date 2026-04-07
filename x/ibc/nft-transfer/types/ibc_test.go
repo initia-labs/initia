@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 	"github.com/stretchr/testify/require"
+
+	"github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 )
 
 func Test_ConvertDescriptionToICS721Data(t *testing.T) {
