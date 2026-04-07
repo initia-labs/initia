@@ -315,7 +315,7 @@ func (k DexKeeper) SwapToBase(
 
 			if postBaseBalance.GT(prevBaseBalance) {
 				baseBalanceDiff := postBaseBalance.Sub(prevBaseBalance)
-				if err := k.moveBankKeeper.SendCoin(ctx, types.StdAddr, addr, params.BaseDenom, baseBalanceDiff); err != nil {
+				if err := k.moveBankKeeper.SendCoin(ctx, types.StdAddr, addr, baseDenom, baseBalanceDiff); err != nil {
 					return err
 				}
 			}
