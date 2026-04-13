@@ -46,6 +46,7 @@ require (
 	// we also need to update `LIBMOVEVM_VERSION` of Dockerfile#11
 	github.com/initia-labs/movevm v1.2.0
 	github.com/initia-labs/store v0.1.1
+	github.com/mitchellh/mapstructure v1.5.0
 	github.com/noble-assets/forwarding/v2 v2.0.3
 	github.com/pelletier/go-toml v1.9.5
 	github.com/pkg/errors v0.9.1
@@ -66,8 +67,6 @@ require (
 	google.golang.org/protobuf v1.36.5
 	gopkg.in/yaml.v3 v3.0.1
 )
-
-require github.com/mitchellh/mapstructure v1.5.0
 
 require (
 	cloud.google.com/go v0.115.1 // indirect
