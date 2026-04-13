@@ -80,6 +80,9 @@ func applyAppToml(cfg QuickstartConfig, homeDir string) error {
 	if cfg.Pruning == PruningCustom {
 		appCfg.PruningKeepRecent = cfg.PruningKeepRecent
 		appCfg.PruningInterval = cfg.PruningInterval
+	} else {
+		appCfg.PruningKeepRecent = "0"
+		appCfg.PruningInterval = "0"
 	}
 
 	// Min retain blocks (block pruning)
