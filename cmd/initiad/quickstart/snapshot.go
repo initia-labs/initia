@@ -23,7 +23,8 @@ func downloadAndExtractSnapshot(snapshotURL, homeDir string) error {
 	}
 
 	// Use separate exec.Command calls to avoid shell injection
-	curl := exec.Command("curl", "-o", "-", "-L", snapshotURL)
+	curl := exec.Command("curl", "-o", "-", "-L", "--progress-bar", snapshotURL)
+	curl.Stderr = os.Stderr // show progress bar
 	lz4 := exec.Command("lz4", "-c", "-d", "-")
 	tar := exec.Command("tar", "-x", "-C", homeDir)
 
