@@ -35,6 +35,9 @@ func setupTestConfigDir(t *testing.T) string {
 func TestApplyConfigToml(t *testing.T) {
 	tmpDir := setupTestConfigDir(t)
 
+	// Save original values before applying quickstart
+	origCfg := cmtcfg.DefaultConfig()
+
 	cfg := QuickstartConfig{
 		RPCAddress:      "tcp://0.0.0.0:26657",
 		TxIndexing:      TxIndexDefault,
@@ -44,7 +47,7 @@ func TestApplyConfigToml(t *testing.T) {
 	err := applyConfigToml(cfg, tmpDir)
 	require.NoError(t, err)
 
-	// Load back and verify
+	// Load back and verify changed fields
 	configPath := filepath.Join(tmpDir, "config")
 	loaded, err := loadCometConfig(configPath)
 	require.NoError(t, err)
@@ -52,6 +55,12 @@ func TestApplyConfigToml(t *testing.T) {
 	require.Equal(t, "tcp://0.0.0.0:26657", loaded.RPC.ListenAddress)
 	require.Equal(t, "kv", loaded.TxIndex.Indexer)
 	require.Equal(t, int64(500000), loaded.TxIndex.RetainHeight)
+
+	// Verify unchanged fields are preserved
+	require.Equal(t, origCfg.P2P.ListenAddress, loaded.P2P.ListenAddress)
+	require.Equal(t, origCfg.Consensus.TimeoutCommit, loaded.Consensus.TimeoutCommit)
+	require.Equal(t, origCfg.Mempool.Size, loaded.Mempool.Size)
+	require.Equal(t, origCfg.P2P.PersistentPeers, loaded.P2P.PersistentPeers)
 }
 
 func TestApplyConfigTomlNullIndex(t *testing.T) {
@@ -77,21 +86,24 @@ func TestApplyConfigTomlNullIndex(t *testing.T) {
 func TestApplyAppToml(t *testing.T) {
 	tmpDir := setupTestConfigDir(t)
 
+	// Save original values before applying quickstart
+	_, origCfg := appconfig.InitAppConfig()
+
 	cfg := QuickstartConfig{
-		Pruning:         PruningCustom,
+		Pruning:           PruningCustom,
 		PruningKeepRecent: "500",
 		PruningInterval:   "100",
-		MinRetainBlocks: 1000000,
-		TxIndexing:      TxIndexDefault,
-		TxIndexingKeys:  DefaultTxIndexingKeys,
-		APIAddress:      "tcp://0.0.0.0:1317",
-		MemIAVL:         true,
+		MinRetainBlocks:   1000000,
+		TxIndexing:        TxIndexDefault,
+		TxIndexingKeys:    DefaultTxIndexingKeys,
+		APIAddress:        "tcp://0.0.0.0:1317",
+		MemIAVL:           true,
 	}
 
 	err := applyAppToml(cfg, tmpDir)
 	require.NoError(t, err)
 
-	// Load back and verify
+	// Load back and verify changed fields
 	configPath := filepath.Join(tmpDir, "config")
 	loaded, err := loadAppConfig(configPath)
 	require.NoError(t, err)
@@ -104,6 +116,16 @@ func TestApplyAppToml(t *testing.T) {
 	require.Equal(t, "tcp://0.0.0.0:1317", loaded.API.Address)
 	require.True(t, loaded.MemIAVL.Enable)
 	require.Equal(t, DefaultTxIndexingKeys, loaded.IndexEvents)
+
+	// Verify unchanged fields are preserved
+	require.Equal(t, origCfg.MinGasPrices, loaded.MinGasPrices)
+	require.Equal(t, origCfg.Mempool.MaxTxs, loaded.Mempool.MaxTxs)
+	require.Equal(t, origCfg.QueryGasLimit, loaded.QueryGasLimit)
+	require.Equal(t, origCfg.GRPC.Enable, loaded.GRPC.Enable)
+	require.Equal(t, origCfg.GRPC.Address, loaded.GRPC.Address)
+	require.Equal(t, origCfg.GRPCWeb.Enable, loaded.GRPCWeb.Enable)
+	require.Equal(t, origCfg.API.RPCReadTimeout, loaded.API.RPCReadTimeout)
+	require.Equal(t, origCfg.API.MaxOpenConnections, loaded.API.MaxOpenConnections)
 }
 
 func TestApplyAppTomlDefaults(t *testing.T) {
