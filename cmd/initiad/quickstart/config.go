@@ -2,6 +2,7 @@ package quickstart
 
 import (
 	"fmt"
+	"math"
 	"path/filepath"
 
 	cmtcfg "github.com/cometbft/cometbft/config"
@@ -36,7 +37,7 @@ func applyConfigToml(cfg QuickstartConfig, homeDir string) error {
 
 	// TX index retain-height follows min-retain-blocks (only when indexing is enabled)
 	if cfg.TxIndexing != TxIndexNull {
-		cmtCfg.TxIndex.RetainHeight = int64(cfg.MinRetainBlocks)
+		cmtCfg.TxIndex.RetainHeight = int64(min(cfg.MinRetainBlocks, uint64(math.MaxInt64))) //nolint:gosec // bounded by min()
 	} else {
 		cmtCfg.TxIndex.RetainHeight = 0
 	}
