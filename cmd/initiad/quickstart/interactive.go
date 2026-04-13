@@ -99,12 +99,16 @@ func runInteractive(cmd *cobra.Command) (QuickstartConfig, error) {
 		cfg.TxIndexingKeys = splitAndTrim(keysStr)
 	}
 
-	// 9. MemIAVL
-	memiavl, err := promptYesNo(reader, cmd, "Enable MemIAVL?")
-	if err != nil {
-		return cfg, err
+	// 9. MemIAVL (not compatible with snapshot sync)
+	if cfg.SyncMethod == SyncSnapshot {
+		cfg.MemIAVL = false
+	} else {
+		memiavl, err := promptYesNo(reader, cmd, "Enable MemIAVL?")
+		if err != nil {
+			return cfg, err
+		}
+		cfg.MemIAVL = memiavl
 	}
-	cfg.MemIAVL = memiavl
 
 	// 10. REST API
 	apiEnable, err := promptYesNo(reader, cmd, "Enable REST API?")

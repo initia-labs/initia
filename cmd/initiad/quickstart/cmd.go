@@ -186,6 +186,11 @@ func readFromFlags(cmd *cobra.Command) (QuickstartConfig, error) {
 		return QuickstartConfig{}, fmt.Errorf("invalid pruning %q: must be %q, %q, %q, or %q", pruning, PruningDefault, PruningNothing, PruningEverything, PruningCustom)
 	}
 
+	// MemIAVL is not compatible with snapshot sync
+	if syncMethod == SyncSnapshot && memIAVL {
+		return QuickstartConfig{}, fmt.Errorf("--memiavl-enable cannot be used with --sync-method=snapshot")
+	}
+
 	return QuickstartConfig{
 		Network:           network,
 		SyncMethod:        syncMethod,
