@@ -57,7 +57,7 @@ initiad quickstart \
 
 ### Mainnet with Snapshot
 
-Find the latest snapshot URL at https://polkachu.com/tendermint_snapshots/initia
+Find the latest snapshot URL at <https://polkachu.com/tendermint_snapshots/initia>
 
 ```bash
 initiad quickstart \
