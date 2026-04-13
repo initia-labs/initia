@@ -1,8 +1,6 @@
 package quickstart
 
 import (
-	"crypto/rand"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -16,8 +14,9 @@ import (
 	"time"
 
 	cmtcfg "github.com/cometbft/cometbft/config"
-	"github.com/mitchellh/mapstructure"
-	"github.com/spf13/viper"
+	"github.com/cometbft/cometbft/libs/log"
+	"github.com/cometbft/cometbft/p2p"
+	"github.com/cometbft/cometbft/p2p/pex"
 )
 
 var httpClient = &http.Client{
@@ -84,7 +83,8 @@ func downloadFile(url, destPath string) error {
 	}
 	defer os.Remove(tmpPath)
 
-	if _, err = io.Copy(out, resp.Body); err != nil {
+	// Limit download to 500MB to prevent disk exhaustion
+	if _, err = io.Copy(out, io.LimitReader(resp.Body, 500<<20)); err != nil {
 		out.Close()
 		return fmt.Errorf("failed to write %s: %w", destPath, err)
 	}
@@ -236,131 +236,43 @@ func applyStateSync(homeDir, rpc string, trustHeight int64, trustHash, polkachuP
 	return nil
 }
 
-// loadCometConfig reads config.toml via viper and unmarshals into a CometBFT Config struct.
-func loadCometConfig(configPath string) (*cmtcfg.Config, error) {
-	v := viper.New()
-	v.SetConfigType("toml")
-	v.SetConfigName("config")
-	v.AddConfigPath(configPath)
 
-	if err := v.ReadInConfig(); err != nil {
-		return nil, err
-	}
 
-	cfg := cmtcfg.DefaultConfig()
-	if err := v.Unmarshal(cfg, func(dc *mapstructure.DecoderConfig) {
-		dc.Squash = true
-	}); err != nil {
-		return nil, err
-	}
-
-	cfg.SetRoot(filepath.Dir(configPath))
-	return cfg, nil
-}
-
-// ── Fallback addrbook generation from RPC ──────────────────────────────────────
-//
-// When the pre-built addrbook download fails, we reconstruct addrbook.json by
-// querying the public RPC node's /net_info (peer list) and /status (node identity).
-//
-// CometBFT addrbook format notes:
-//   - "key": a random 20-byte hex string used internally for bucket hashing.
-//     We generate a fresh random one; CometBFT accepts any valid hex string.
-//   - "addr": the peer's reachable address. We use remote_ip from net_info
-//     combined with the port parsed from node_info.listen_addr.
-//   - "src": the node that told us about this peer (the RPC node itself).
-//     We use result.node_info.id from /status and resolve the RPC hostname to get the IP.
-//   - "bucket_type": 1 = "new" bucket (peers we haven't connected to yet).
-//   - "buckets": [0] is a valid assignment; CometBFT rehashes on load.
-//   - "last_attempt": set to current time to indicate freshly discovered peers.
-//   - "last_success" / "last_ban_time": zero time.
-
-// addrBook is the top-level CometBFT address book structure.
-type addrBook struct {
-	Key   string          `json:"key"`
-	Addrs []addrBookEntry `json:"addrs"`
-}
-
-// addrBookEntry represents a single peer entry in the address book.
-type addrBookEntry struct {
-	Addr        netAddress `json:"addr"`
-	Src         netAddress `json:"src"`
-	Buckets     []int      `json:"buckets"`
-	Attempts    int        `json:"attempts"`
-	BucketType  int        `json:"bucket_type"`
-	LastAttempt time.Time  `json:"last_attempt"`
-	LastSuccess time.Time  `json:"last_success"`
-	LastBanTime time.Time  `json:"last_ban_time"`
-}
-
-// netAddress is a CometBFT network address (node ID + IP + port).
-type netAddress struct {
-	ID   string `json:"id"`
-	IP   string `json:"ip"`
-	Port uint16 `json:"port"`
-}
-
-// buildAddrbookFromRPC fetches peers from the RPC node and writes addrbook.json.
+// buildAddrbookFromRPC fetches peers from the RPC node's /net_info and builds
+// addrbook.json using CometBFT's pex.AddrBook API.
 func buildAddrbookFromRPC(rpcURL, destPath string) error {
-	// Fetch peers from /net_info
-	peers, err := fetchNetInfoPeers(rpcURL)
+	// Fetch peer addresses from /net_info
+	peerAddrs, err := fetchNetInfoPeerAddrs(rpcURL)
 	if err != nil {
 		return fmt.Errorf("failed to fetch net_info: %w", err)
 	}
-	if len(peers) == 0 {
+	if len(peerAddrs) == 0 {
 		return fmt.Errorf("RPC %s/net_info returned no peers", rpcURL)
 	}
 
-	// Fetch RPC node identity for the "src" field
-	src, err := fetchRPCNodeAddress(rpcURL)
+	// Fetch RPC node address for the "src" field
+	srcAddr, err := fetchRPCNodeAddr(rpcURL)
 	if err != nil {
 		return fmt.Errorf("failed to fetch RPC node status: %w", err)
 	}
 
-	// Generate random 20-byte key
-	keyBytes := make([]byte, 20)
-	if _, err := rand.Read(keyBytes); err != nil {
-		return fmt.Errorf("failed to generate addrbook key: %w", err)
+	// Create addrbook using CometBFT's pex API
+	book := pex.NewAddrBook(destPath, false)
+	book.SetLogger(log.NewNopLogger())
+
+	for _, addr := range peerAddrs {
+		if err := book.AddAddress(addr, srcAddr); err != nil {
+			// Skip peers that fail validation (e.g., non-routable IPs)
+			continue
+		}
 	}
 
-	now := time.Now()
-	zeroTime := time.Time{}
-
-	book := addrBook{
-		Key:   hex.EncodeToString(keyBytes),
-		Addrs: make([]addrBookEntry, 0, len(peers)),
-	}
-
-	for _, p := range peers {
-		book.Addrs = append(book.Addrs, addrBookEntry{
-			Addr:        p,
-			Src:         src,
-			Buckets:     []int{0},
-			Attempts:    0,
-			BucketType:  1,
-			LastAttempt: now,
-			LastSuccess: zeroTime,
-			LastBanTime: zeroTime,
-		})
-	}
-
-	data, err := json.MarshalIndent(book, "", "    ")
-	if err != nil {
-		return fmt.Errorf("failed to marshal addrbook: %w", err)
-	}
-
-	// Write atomically via temp file
-	tmpPath := destPath + ".tmp"
-	if err := os.WriteFile(tmpPath, data, 0o644); err != nil {
-		return fmt.Errorf("failed to write %s: %w", tmpPath, err)
-	}
-	defer os.Remove(tmpPath)
-
-	return os.Rename(tmpPath, destPath)
+	book.Save()
+	return nil
 }
 
-// fetchNetInfoPeers calls /net_info and returns parsed peer addresses.
-func fetchNetInfoPeers(rpcURL string) ([]netAddress, error) {
+// fetchNetInfoPeerAddrs calls /net_info and returns parsed p2p.NetAddress entries.
+func fetchNetInfoPeerAddrs(rpcURL string) ([]*p2p.NetAddress, error) {
 	resp, err := httpClient.Get(rpcURL + "/net_info")
 	if err != nil {
 		return nil, err
@@ -387,38 +299,34 @@ func fetchNetInfoPeers(rpcURL string) ([]netAddress, error) {
 		return nil, err
 	}
 
-	addrs := make([]netAddress, 0, len(result.Result.Peers))
-	for _, p := range result.Result.Peers {
-		port, err := parsePortFromListenAddr(p.NodeInfo.ListenAddr)
+	addrs := make([]*p2p.NetAddress, 0, len(result.Result.Peers))
+	for _, peer := range result.Result.Peers {
+		if peer.RemoteIP == "" || peer.NodeInfo.ID == "" {
+			continue
+		}
+		port, err := parsePortFromListenAddr(peer.NodeInfo.ListenAddr)
 		if err != nil {
-			// Skip peers with unparseable listen addresses
 			continue
 		}
-		if p.RemoteIP == "" || p.NodeInfo.ID == "" {
-			continue
-		}
-		addrs = append(addrs, netAddress{
-			ID:   p.NodeInfo.ID,
-			IP:   p.RemoteIP,
-			Port: port,
-		})
+		addr := p2p.NewNetAddressIPPort(net.ParseIP(peer.RemoteIP), port)
+		addr.ID = p2p.ID(peer.NodeInfo.ID)
+		addrs = append(addrs, addr)
 	}
 
 	return addrs, nil
 }
 
-// fetchRPCNodeAddress calls /status and resolves the RPC hostname to build
-// the "src" address for addrbook entries.
-func fetchRPCNodeAddress(rpcURL string) (netAddress, error) {
-	// Fetch node ID and listen port from /status
+// fetchRPCNodeAddr calls /status and resolves the RPC hostname to build
+// the source p2p.NetAddress for addrbook entries.
+func fetchRPCNodeAddr(rpcURL string) (*p2p.NetAddress, error) {
 	resp, err := httpClient.Get(rpcURL + "/status")
 	if err != nil {
-		return netAddress{}, err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return netAddress{}, fmt.Errorf("%s/status returned status %d", rpcURL, resp.StatusCode)
+		return nil, fmt.Errorf("%s/status returned status %d", rpcURL, resp.StatusCode)
 	}
 
 	var result struct {
@@ -431,44 +339,38 @@ func fetchRPCNodeAddress(rpcURL string) (netAddress, error) {
 	}
 
 	if err := json.NewDecoder(io.LimitReader(resp.Body, 1<<20)).Decode(&result); err != nil {
-		return netAddress{}, err
+		return nil, err
 	}
 
 	port, err := parsePortFromListenAddr(result.Result.NodeInfo.ListenAddr)
 	if err != nil {
-		port = 26656 // default CometBFT P2P port
+		port = 26656
 	}
 
-	// Resolve the RPC URL hostname to get the IP for the src field
+	// Resolve the RPC URL hostname to get the IP
 	parsed, err := url.Parse(rpcURL)
 	if err != nil {
-		return netAddress{}, fmt.Errorf("failed to parse RPC URL %q: %w", rpcURL, err)
+		return nil, fmt.Errorf("failed to parse RPC URL %q: %w", rpcURL, err)
 	}
 
 	host := parsed.Hostname()
-	ip := host // fallback: use the hostname directly if it's already an IP
-	if net.ParseIP(host) == nil {
-		// It's a hostname, resolve it
+	ip := net.ParseIP(host)
+	if ip == nil {
 		ips, err := net.LookupHost(host)
 		if err != nil || len(ips) == 0 {
-			// If DNS resolution fails, use the hostname as-is
-			ip = host
-		} else {
-			ip = ips[0]
+			return nil, fmt.Errorf("failed to resolve RPC hostname %q: %w", host, err)
 		}
+		ip = net.ParseIP(ips[0])
 	}
 
-	return netAddress{
-		ID:   result.Result.NodeInfo.ID,
-		IP:   ip,
-		Port: port,
-	}, nil
+	addr := p2p.NewNetAddressIPPort(ip, port)
+	addr.ID = p2p.ID(result.Result.NodeInfo.ID)
+	return addr, nil
 }
 
 // parsePortFromListenAddr extracts the port number from a CometBFT listen address
 // like "tcp://0.0.0.0:26656" or "0.0.0.0:26656".
 func parsePortFromListenAddr(listenAddr string) (uint16, error) {
-	// Strip protocol prefix if present
 	addr := listenAddr
 	if idx := strings.Index(addr, "://"); idx >= 0 {
 		addr = addr[idx+3:]

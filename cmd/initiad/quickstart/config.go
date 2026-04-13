@@ -34,8 +34,12 @@ func applyConfigToml(cfg QuickstartConfig, homeDir string) error {
 		cmtCfg.TxIndex.Indexer = "kv"
 	}
 
-	// TX index retain-height follows min-retain-blocks
-	cmtCfg.TxIndex.RetainHeight = int64(cfg.MinRetainBlocks)
+	// TX index retain-height follows min-retain-blocks (only when indexing is enabled)
+	if cfg.TxIndexing != TxIndexNull {
+		cmtCfg.TxIndex.RetainHeight = int64(cfg.MinRetainBlocks)
+	} else {
+		cmtCfg.TxIndex.RetainHeight = 0
+	}
 
 	cmtcfg.WriteConfigFile(configFile, cmtCfg)
 	return nil
