@@ -78,7 +78,11 @@ func runInteractive(cmd *cobra.Command) (QuickstartConfig, error) {
 	cfg.MinRetainBlocks = minRetain
 
 	// 7. TX indexing
-	txIndexing, err := promptChoice(reader, cmd, "Select tx indexing", []string{TxIndexNull, TxIndexDefault, TxIndexCustom})
+	txIndexing, err := promptChoiceWithLabels(reader, cmd, "Select tx indexing", []choiceOption{
+		{Value: TxIndexNull, Label: "disable - no tx indexing"},
+		{Value: TxIndexDefault, Label: "default - IBC related keys (tx.height, tx.hash, packet sequences, etc.)"},
+		{Value: TxIndexCustom, Label: "custom - specify your own indexing keys"},
+	})
 	if err != nil {
 		return cfg, err
 	}
@@ -144,6 +148,32 @@ func promptChoice(reader *bufio.Reader, cmd *cobra.Command, prompt string, choic
 	}
 
 	return choices[idx-1], nil
+}
+
+type choiceOption struct {
+	Value string
+	Label string
+}
+
+func promptChoiceWithLabels(reader *bufio.Reader, cmd *cobra.Command, prompt string, choices []choiceOption) (string, error) {
+	cmd.Printf("\n%s:\n", prompt)
+	for i, c := range choices {
+		cmd.Printf("  %d) %s\n", i+1, c.Label)
+	}
+	cmd.Printf("Enter choice [1-%d]: ", len(choices))
+
+	input, err := reader.ReadString('\n')
+	if err != nil {
+		return "", err
+	}
+	input = strings.TrimSpace(input)
+
+	idx, err := strconv.Atoi(input)
+	if err != nil || idx < 1 || idx > len(choices) {
+		return "", fmt.Errorf("invalid choice: %s", input)
+	}
+
+	return choices[idx-1].Value, nil
 }
 
 func promptString(reader *bufio.Reader, cmd *cobra.Command, prompt, defaultVal string) (string, error) {
