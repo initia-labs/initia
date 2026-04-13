@@ -5,11 +5,11 @@ import (
 	"path/filepath"
 
 	cmtcfg "github.com/cometbft/cometbft/config"
+	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"
 
 	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
 
-	initiaapp "github.com/initia-labs/initia/app"
 	"github.com/initia-labs/initia/abcipp"
 	moveconfig "github.com/initia-labs/initia/x/move/config"
 
@@ -111,27 +111,8 @@ func applyAppToml(cfg QuickstartConfig, homeDir string) error {
 	return nil
 }
 
-// defaultAppConfig returns an appConfig initialized with the same defaults
-// that initiad init uses, so fields not modified by quickstart retain their values.
-func defaultAppConfig() *appConfig {
-	srvCfg := serverconfig.DefaultConfig()
-	srvCfg.MinGasPrices = fmt.Sprintf("0%s", initiaapp.BondDenom)
-	srvCfg.Mempool.MaxTxs = 2000
-	srvCfg.QueryGasLimit = 3000000
-	srvCfg.InterBlockCache = false
-
-	return &appConfig{
-		Config:     *srvCfg,
-		ABCIPP:     abcipp.DefaultAppConfig(),
-		MoveConfig: moveconfig.DefaultMoveConfig(),
-		Oracle:     oracleconfig.NewDefaultAppConfig(),
-		MemIAVL:    initiastorecfg.DefaultMemIAVLConfig(),
-		VersionDB:  initiastorecfg.DefaultVersionDBConfig(),
-	}
-}
-
 // loadAppConfig reads app.toml via viper and unmarshals into the app config struct.
-// Starts from initiad's default values so unset fields keep their defaults.
+// Uses Squash option to properly handle embedded BaseConfig fields.
 func loadAppConfig(configPath string) (*appConfig, error) {
 	v := viper.New()
 	v.SetConfigType("toml")
@@ -142,8 +123,10 @@ func loadAppConfig(configPath string) (*appConfig, error) {
 		return nil, err
 	}
 
-	cfg := defaultAppConfig()
-	if err := v.Unmarshal(cfg); err != nil {
+	cfg := &appConfig{}
+	if err := v.Unmarshal(cfg, func(dc *mapstructure.DecoderConfig) {
+		dc.Squash = true
+	}); err != nil {
 		return nil, err
 	}
 
