@@ -103,10 +103,7 @@ func setupStateSync(network, homeDir string) error {
 		return fmt.Errorf("failed to fetch latest height: %w", err)
 	}
 
-	trustHeight := latestHeight - 2000
-	if trustHeight < 1 {
-		trustHeight = 1
-	}
+	trustHeight := max(latestHeight-2000, 1)
 
 	trustHash, err := fetchBlockHash(nc.StateSyncRPC, trustHeight)
 	if err != nil {
@@ -116,15 +113,15 @@ func setupStateSync(network, homeDir string) error {
 		return fmt.Errorf("RPC returned empty block hash for height %d; the block may have been pruned", trustHeight)
 	}
 
-	polkachuPeer, err := fetchPolkachuPeer(nc.LivePeersAPI)
+	stateSyncPeer, err := fetchStateSyncPeer(nc.LivePeersAPI)
 	if err != nil {
-		return fmt.Errorf("failed to fetch polkachu peer: %w", err)
+		return fmt.Errorf("failed to fetch state sync peer: %w", err)
 	}
-	if polkachuPeer == "" {
-		return fmt.Errorf("polkachu API returned empty peer")
+	if stateSyncPeer == "" {
+		return fmt.Errorf("API returned empty state sync peer")
 	}
 
-	return applyStateSync(homeDir, nc.StateSyncRPC, trustHeight, trustHash, polkachuPeer)
+	return applyStateSync(homeDir, nc.StateSyncRPC, trustHeight, trustHash, stateSyncPeer)
 }
 
 func fetchLatestHeight(rpc string) (int64, error) {
@@ -183,10 +180,10 @@ func fetchBlockHash(rpc string, height int64) (string, error) {
 }
 
 type livePeersResponse struct {
-	PolkachuPeer string `json:"polkachu_peer"`
+	StateSyncPeer string `json:"polkachu_peer"`
 }
 
-func fetchPolkachuPeer(apiURL string) (string, error) {
+func fetchStateSyncPeer(apiURL string) (string, error) {
 	resp, err := httpClient.Get(apiURL)
 	if err != nil {
 		return "", err
@@ -202,12 +199,12 @@ func fetchPolkachuPeer(apiURL string) (string, error) {
 		return "", err
 	}
 
-	return result.PolkachuPeer, nil
+	return result.StateSyncPeer, nil
 }
 
 // applyStateSync loads config.toml via viper, modifies statesync/p2p fields,
 // then writes back using CometBFT's WriteConfigFile to preserve comments and formatting.
-func applyStateSync(homeDir, rpc string, trustHeight int64, trustHash, polkachuPeer string) error {
+func applyStateSync(homeDir, rpc string, trustHeight int64, trustHash, stateSyncPeer string) error {
 	configPath := filepath.Join(homeDir, "config")
 	configFile := filepath.Join(configPath, "config.toml")
 
@@ -223,20 +220,18 @@ func applyStateSync(homeDir, rpc string, trustHeight int64, trustHash, polkachuP
 	cfg.StateSync.TrustHeight = trustHeight
 	cfg.StateSync.TrustHash = trustHash
 
-	// Append polkachu peer to persistent_peers if not already present
-	if !strings.Contains(cfg.P2P.PersistentPeers, polkachuPeer) {
+	// Append state sync peer to persistent_peers if not already present
+	if !strings.Contains(cfg.P2P.PersistentPeers, stateSyncPeer) {
 		if cfg.P2P.PersistentPeers != "" {
 			cfg.P2P.PersistentPeers += ","
 		}
-		cfg.P2P.PersistentPeers += polkachuPeer
+		cfg.P2P.PersistentPeers += stateSyncPeer
 	}
 
 	// Write back using CometBFT template to preserve comments
 	cmtcfg.WriteConfigFile(configFile, cfg)
 	return nil
 }
-
-
 
 // buildAddrbookFromRPC fetches peers from the RPC node's /net_info and builds
 // addrbook.json using CometBFT's pex.AddrBook API.
