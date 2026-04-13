@@ -70,11 +70,11 @@ func setupStateSync(network, homeDir string) error {
 		return fmt.Errorf("API returned empty state sync peer")
 	}
 
-	return applyStateSync(homeDir, pc.StateSyncRPC, trustHeight, trustHash, stateSyncPeer)
+	return applyStateSync(homeDir, pc.StateSyncRPC, rpcEndpoints[network], trustHeight, trustHash, stateSyncPeer)
 }
 
 // applyStateSync modifies statesync and p2p settings in config.toml.
-func applyStateSync(homeDir, rpc string, trustHeight int64, trustHash, stateSyncPeer string) error {
+func applyStateSync(homeDir, providerRPC, officialRPC string, trustHeight int64, trustHash, stateSyncPeer string) error {
 	configPath := filepath.Join(homeDir, "config")
 	configFile := filepath.Join(configPath, "config.toml")
 
@@ -84,7 +84,7 @@ func applyStateSync(homeDir, rpc string, trustHeight int64, trustHash, stateSync
 	}
 
 	cfg.StateSync.Enable = true
-	cfg.StateSync.RPCServers = []string{rpc, rpc}
+	cfg.StateSync.RPCServers = []string{providerRPC, officialRPC}
 	cfg.StateSync.TrustHeight = trustHeight
 	cfg.StateSync.TrustHash = trustHash
 
