@@ -265,23 +265,11 @@ func runInteractive(cmd *cobra.Command) (QuickstartConfig, error) {
 	return QuickstartConfig{}, fmt.Errorf("not implemented")
 }
 
-func downloadGenesis(network, homeDir string) error {
-	return nil
-}
-
-func downloadAddrbook(network, homeDir string) error {
-	return nil
-}
-
 func applyConfigToml(cfg QuickstartConfig, homeDir string) error {
 	return nil
 }
 
 func applyAppToml(cfg QuickstartConfig, homeDir string) error {
-	return nil
-}
-
-func setupStateSync(network, homeDir string) error {
 	return nil
 }
 
