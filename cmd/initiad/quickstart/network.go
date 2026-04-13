@@ -149,10 +149,15 @@ func buildAddrbookFromRPC(rpcURL, destPath string) error {
 	book := pex.NewAddrBook(destPath, false)
 	book.SetLogger(log.NewNopLogger())
 
+	added := 0
 	for _, addr := range peerAddrs {
 		if err := book.AddAddress(addr, srcAddr); err != nil {
 			continue
 		}
+		added++
+	}
+	if added == 0 {
+		return fmt.Errorf("RPC %s/net_info returned no usable peers", rpcURL)
 	}
 
 	book.Save()
