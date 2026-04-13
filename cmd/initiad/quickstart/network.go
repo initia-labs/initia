@@ -16,6 +16,7 @@ import (
 	"time"
 
 	cmtcfg "github.com/cometbft/cometbft/config"
+	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"
 )
 
@@ -247,7 +248,9 @@ func loadCometConfig(configPath string) (*cmtcfg.Config, error) {
 	}
 
 	cfg := cmtcfg.DefaultConfig()
-	if err := v.Unmarshal(cfg); err != nil {
+	if err := v.Unmarshal(cfg, func(dc *mapstructure.DecoderConfig) {
+		dc.Squash = true
+	}); err != nil {
 		return nil, err
 	}
 
