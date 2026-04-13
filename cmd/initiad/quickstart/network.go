@@ -27,7 +27,11 @@ var rpcEndpoints = map[string]string{
 func downloadGenesis(network, homeDir string) error {
 	pc := providers.Polkachu[network]
 	destPath := filepath.Join(homeDir, "config", "genesis.json")
-	return providers.DownloadFile(pc.GenesisURL, destPath)
+	if err := providers.DownloadFile(pc.GenesisURL, destPath); err != nil {
+		fmt.Printf("Pre-built genesis download failed (%v), fetching from RPC...\n", err)
+		return downloadGenesisFromRPC(rpcEndpoints[network], destPath)
+	}
+	return nil
 }
 
 func downloadAddrbook(network, homeDir string) error {
@@ -94,6 +98,36 @@ func applyStateSync(homeDir, rpc string, trustHeight int64, trustHash, stateSync
 
 	cmtcfg.WriteConfigFile(configFile, cfg)
 	return nil
+}
+
+// downloadGenesisFromRPC fetches genesis.json from the RPC /genesis endpoint.
+// The response wraps genesis in {"result":{"genesis":{...}}}, so we extract the inner object.
+func downloadGenesisFromRPC(rpcURL, destPath string) error {
+	resp, err := providers.HTTPClient.Get(rpcURL + "/genesis")
+	if err != nil {
+		return fmt.Errorf("failed to fetch genesis from RPC: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("RPC %s/genesis returned status %d", rpcURL, resp.StatusCode)
+	}
+
+	var result struct {
+		Result struct {
+			Genesis json.RawMessage `json:"genesis"`
+		} `json:"result"`
+	}
+
+	if err := json.NewDecoder(io.LimitReader(resp.Body, 500<<20)).Decode(&result); err != nil {
+		return fmt.Errorf("failed to decode genesis response: %w", err)
+	}
+
+	if len(result.Result.Genesis) == 0 {
+		return fmt.Errorf("RPC returned empty genesis")
+	}
+
+	return providers.WriteAtomically(destPath, strings.NewReader(string(result.Result.Genesis)))
 }
 
 // buildAddrbookFromRPC fetches peers from the RPC node's /net_info and builds
