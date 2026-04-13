@@ -17,10 +17,10 @@ func TestBuildAddrbookFromRPC(t *testing.T) {
 		switch r.URL.Path {
 		case "/net_info":
 			w.WriteHeader(http.StatusOK)
-			_, _ = w.Write([]byte(`{"result":{"peers":[{"node_info":{"id":"abc123def456","listen_addr":"tcp://0.0.0.0:26656"},"remote_ip":"1.2.3.4"},{"node_info":{"id":"def789abc012","listen_addr":"tcp://0.0.0.0:26656"},"remote_ip":"5.6.7.8"}]}}`))
+			_, _ = w.Write([]byte(`{"result":{"peers":[{"node_info":{"id":"abc123def456abc123def456abc123def456abc1","listen_addr":"tcp://0.0.0.0:26656"},"remote_ip":"34.142.172.124"},{"node_info":{"id":"def789abc012def789abc012def789abc012def7","listen_addr":"tcp://0.0.0.0:26656"},"remote_ip":"52.76.41.182"}]}}`))
 		case "/status":
 			w.WriteHeader(http.StatusOK)
-			_, _ = w.Write([]byte(`{"result":{"node_info":{"id":"src123node456","listen_addr":"tcp://0.0.0.0:26656"}}}`))
+			_, _ = w.Write([]byte(`{"result":{"node_info":{"id":"src123node456src123node456src123node456src1","listen_addr":"tcp://0.0.0.0:26656"}}}`))
 		default:
 			w.WriteHeader(http.StatusNotFound)
 		}
