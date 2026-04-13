@@ -89,9 +89,10 @@ func runInteractive(cmd *cobra.Command) (QuickstartConfig, error) {
 	cfg.TxIndexing = txIndexing
 
 	// 8. Custom indexing keys
-	if cfg.TxIndexing == TxIndexDefault {
+	switch cfg.TxIndexing {
+	case TxIndexDefault:
 		cfg.TxIndexingKeys = DefaultTxIndexingKeys
-	} else if cfg.TxIndexing == TxIndexCustom {
+	case TxIndexCustom:
 		keysStr, err := promptString(reader, cmd, "Enter indexing keys (comma-separated)", "")
 		if err != nil {
 			return cfg, err

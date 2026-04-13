@@ -54,7 +54,7 @@ func BurstLoad(ctx context.Context, cluster *e2e.Cluster, cfg BenchConfig, metas
 				default:
 				}
 
-				seq := meta.Sequence + uint64(i) //nolint:gosec // i is bounded by TxPerAccount
+				seq := meta.Sequence + uint64(i)
 				viaNode := i % cfg.NodeCount
 				if cfg.ValidatorCount > 0 && cfg.ValidatorCount < cfg.NodeCount {
 					viaNode = edgeNodeIndex(i, cfg.NodeCount, cfg.ValidatorCount)
@@ -125,7 +125,7 @@ func SequentialLoad(ctx context.Context, cluster *e2e.Cluster, cfg BenchConfig, 
 				default:
 				}
 
-				seq := meta.Sequence + uint64(i) //nolint:gosec // i is bounded by TxPerAccount
+				seq := meta.Sequence + uint64(i)
 				submitTime := time.Now()
 
 				res := cluster.SendBankTxWithSequence(
@@ -253,7 +253,7 @@ func SingleNodeLoad(ctx context.Context, cluster *e2e.Cluster, cfg BenchConfig, 
 				default:
 				}
 
-				seq := meta.Sequence + uint64(i) //nolint:gosec // i is bounded by TxPerAccount
+				seq := meta.Sequence + uint64(i)
 				submitTime := time.Now()
 
 				res := cluster.SendBankTxWithSequence(
@@ -320,7 +320,7 @@ func MoveExecSequentialLoad(moduleAddr, moduleName, functionName string, typeArg
 					default:
 					}
 
-					seq := meta.Sequence + uint64(i) //nolint:gosec // i is bounded by TxPerAccount
+					seq := meta.Sequence + uint64(i)
 					submitTime := time.Now()
 
 					res := cluster.SendMoveExecuteJSONWithGas(
@@ -384,7 +384,7 @@ func MoveExecBurstLoad(moduleAddr, moduleName, functionName string, typeArgs, ar
 					default:
 					}
 
-					seq := meta.Sequence + uint64(i) //nolint:gosec // i is bounded by TxPerAccount
+					seq := meta.Sequence + uint64(i)
 					viaNode := i % cfg.NodeCount
 					if cfg.ValidatorCount > 0 && cfg.ValidatorCount < cfg.NodeCount {
 						viaNode = edgeNodeIndex(i, cfg.NodeCount, cfg.ValidatorCount)
@@ -457,7 +457,7 @@ func QueuedFloodLoad(ctx context.Context, cluster *e2e.Cluster, cfg BenchConfig,
 				default:
 				}
 
-				seq := meta.Sequence + uint64(i) //nolint:gosec // i is bounded by TxPerAccount
+				seq := meta.Sequence + uint64(i)
 				viaNode := i % cfg.NodeCount
 				if cfg.ValidatorCount > 0 && cfg.ValidatorCount < cfg.NodeCount {
 					viaNode = edgeNodeIndex(i, cfg.NodeCount, cfg.ValidatorCount)
@@ -558,7 +558,7 @@ func QueuedGapLoad(ctx context.Context, cluster *e2e.Cluster, cfg BenchConfig, m
 				default:
 				}
 
-				seq := meta.Sequence + uint64(i) //nolint:gosec // i is bounded by TxPerAccount
+				seq := meta.Sequence + uint64(i)
 				viaNode := i % cfg.NodeCount
 				if cfg.ValidatorCount > 0 && cfg.ValidatorCount < cfg.NodeCount {
 					viaNode = edgeNodeIndex(i, cfg.NodeCount, cfg.ValidatorCount)
@@ -610,7 +610,7 @@ func PreSignBankTxs(ctx context.Context, t *testing.T, cluster *e2e.Cluster, cfg
 		go func() {
 			defer wg.Done()
 			for i := 0; i < cfg.TxPerAccount; i++ {
-				seq := meta.Sequence + uint64(i) //nolint:gosec // i is bounded by TxPerAccount
+				seq := meta.Sequence + uint64(i)
 				signed, err := cluster.GenerateSignedBankTx(
 					ctx, name, cluster.ValidatorAddress(), "1uinit",
 					meta.AccountNumber, seq, cfg.GetGasLimit(),
@@ -647,7 +647,7 @@ func PreSignMoveExecTxs(
 		go func() {
 			defer wg.Done()
 			for i := 0; i < cfg.TxPerAccount; i++ {
-				seq := meta.Sequence + uint64(i) //nolint:gosec // i is bounded by TxPerAccount
+				seq := meta.Sequence + uint64(i)
 				signed, err := cluster.GenerateSignedMoveExecTx(
 					ctx, name, moduleAddr, moduleName, functionName,
 					typeArgs, args,
@@ -863,7 +863,7 @@ func sequencePattern(base uint64, count int) []uint64 {
 	}
 
 	for i := 3; i < count; i++ {
-		seqs = append(seqs, base+uint64(i)) //nolint:gosec // i is bounded by count
+		seqs = append(seqs, base+uint64(i))
 	}
 
 	return seqs

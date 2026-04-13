@@ -113,7 +113,7 @@ func NewTestChainWithValSet(t *testing.T, coord *Coordinator, chainID string, va
 	// generate genesis accounts
 	for i := 0; i < MaxAccounts; i++ {
 		senderPrivKey := secp256k1.GenPrivKey()
-		acc := authtypes.NewBaseAccount(senderPrivKey.PubKey().Address().Bytes(), senderPrivKey.PubKey(), uint64(i), 0) //nolint: gosec
+		acc := authtypes.NewBaseAccount(senderPrivKey.PubKey().Address().Bytes(), senderPrivKey.PubKey(), uint64(i), 0)
 		amount, ok := math.NewIntFromString(DefaultGenesisAccBalance)
 		require.True(t, ok)
 

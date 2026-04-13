@@ -40,10 +40,10 @@ func (vs ValidatorSlashEvents) String() string {
 	var out strings.Builder
 	out.WriteString("Validator Slash Events:\n")
 	for i, sl := range vs.ValidatorSlashEvents {
-		out.WriteString(fmt.Sprintf(`  Slash %d:
+		fmt.Fprintf(&out, `  Slash %d:
     Period:    %d
     Fractions: %s
-`, i, sl.ValidatorPeriod, sl.Fractions))
+`, i, sl.ValidatorPeriod, sl.Fractions)
 	}
 	return strings.TrimSpace(out.String())
 }

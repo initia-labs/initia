@@ -288,7 +288,7 @@ func (w *ledgerDriver) ledgerVersion() ([3]byte, error) {
 func (w *ledgerDriver) ledgerDerive(derivationPath []uint32) (common.Address, *ecdsa.PublicKey, error) {
 	// Flatten the derivation path into the Ledger request
 	path := make([]byte, 1+4*len(derivationPath))
-	path[0] = byte(len(derivationPath))
+	path[0] = byte(len(derivationPath)) //nolint:gosec
 	for i, component := range derivationPath {
 		binary.BigEndian.PutUint32(path[1+4*i:], component)
 	}
@@ -360,7 +360,7 @@ func (w *ledgerDriver) ledgerDerive(derivationPath []uint32) (common.Address, *e
 func (w *ledgerDriver) ledgerSign(derivationPath []uint32, tx *types.Transaction, chainID *big.Int) (common.Address, *types.Transaction, error) {
 	// Flatten the derivation path into the Ledger request
 	path := make([]byte, 1+4*len(derivationPath))
-	path[0] = byte(len(derivationPath))
+	path[0] = byte(len(derivationPath)) //nolint:gosec
 	for i, component := range derivationPath {
 		binary.BigEndian.PutUint32(path[1+4*i:], component)
 	}
@@ -418,7 +418,7 @@ func (w *ledgerDriver) ledgerSign(derivationPath []uint32, tx *types.Transaction
 		signer = new(types.HomesteadSigner)
 	} else {
 		signer = types.NewEIP155Signer(chainID)
-		signature[64] -= byte(chainID.Uint64()*2 + 35)
+		signature[64] -= byte(chainID.Uint64()*2 + 35) //nolint:gosec
 	}
 	signed, err := tx.WithSignature(signer, signature)
 	if err != nil {
@@ -461,7 +461,7 @@ func (w *ledgerDriver) ledgerSign(derivationPath []uint32, tx *types.Transaction
 func (w *ledgerDriver) ledgerSignTypedMessage(derivationPath []uint32, domainHash []byte, messageHash []byte) ([]byte, error) {
 	// Flatten the derivation path into the Ledger request
 	path := make([]byte, 1+4*len(derivationPath))
-	path[0] = byte(len(derivationPath))
+	path[0] = byte(len(derivationPath)) //nolint:gosec
 	for i, component := range derivationPath {
 		binary.BigEndian.PutUint32(path[1+4*i:], component)
 	}
@@ -523,7 +523,7 @@ func (w *ledgerDriver) ledgerSignTypedMessage(derivationPath []uint32, domainHas
 func (w *ledgerDriver) ledgerSignPersonalMessage(derivationPath []uint32, data []byte) ([]byte, error) {
 	// Flatten the derivation path into the Ledger request
 	path := make([]byte, 1+4*len(derivationPath))
-	path[0] = byte(len(derivationPath))
+	path[0] = byte(len(derivationPath)) //nolint:gosec
 	for i, component := range derivationPath {
 		binary.BigEndian.PutUint32(path[1+4*i:], component)
 	}
@@ -619,8 +619,8 @@ func (w *ledgerDriver) ledgerExchange(opcode ledgerOpcode, p1 ledgerParam1, p2 l
 	// Construct the message payload, possibly split into multiple chunks
 	apdu := make([]byte, 2, 7+len(data))
 
-	binary.BigEndian.PutUint16(apdu, uint16(5+len(data))) //nolint: gosec
-	apdu = append(apdu, []byte{0xe0, byte(opcode), byte(p1), byte(p2), byte(len(data))}...)
+	binary.BigEndian.PutUint16(apdu, uint16(5+len(data)))                                   //nolint:gosec
+	apdu = append(apdu, []byte{0xe0, byte(opcode), byte(p1), byte(p2), byte(len(data))}...) //nolint:gosec
 	apdu = append(apdu, data...)
 
 	// Stream all the chunks to the device
@@ -631,7 +631,7 @@ func (w *ledgerDriver) ledgerExchange(opcode ledgerOpcode, p1 ledgerParam1, p2 l
 	for i := 0; len(apdu) > 0; i++ {
 		// Construct the new message to stream
 		chunk = append(chunk[:0], header...)
-		binary.BigEndian.PutUint16(chunk[3:], uint16(i)) //nolint: gosec
+		binary.BigEndian.PutUint16(chunk[3:], uint16(i))
 
 		if len(apdu) > space {
 			chunk = append(chunk, apdu[:space]...)

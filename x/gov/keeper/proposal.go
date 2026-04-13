@@ -45,7 +45,7 @@ func (k Keeper) SubmitProposal(ctx context.Context, messages []sdk.Msg, metadata
 	// Loop through all messages and confirm that each has a handler and the gov module account
 	// as the only signer
 	for _, msg := range messages {
-		msgsStr.WriteString(fmt.Sprintf(",%s", sdk.MsgTypeURL(msg)))
+		fmt.Fprintf(&msgsStr, ",%s", sdk.MsgTypeURL(msg))
 
 		// perform a basic validation of the message
 		if m, ok := msg.(sdk.HasValidateBasic); ok {

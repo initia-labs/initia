@@ -263,5 +263,3 @@ func splitAndTrim(s string) []string {
 	}
 	return result
 }
-
-

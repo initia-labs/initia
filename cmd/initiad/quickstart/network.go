@@ -239,4 +239,3 @@ func parsePortFromListenAddr(listenAddr string) (uint16, error) {
 
 	return uint16(port), nil
 }
-

@@ -21,10 +21,10 @@ import (
 type InitiaAppConfig struct {
 	serverconfig.Config
 	ABCIPP     abcipp.AppConfig               `mapstructure:"abcipp"`
-	MoveConfig moveconfig.MoveConfig           `mapstructure:"move"`
-	Oracle     oracleconfig.AppConfig          `mapstructure:"oracle"`
-	MemIAVL    initiastorecfg.MemIAVLConfig    `mapstructure:"memiavl"`
-	VersionDB  initiastorecfg.VersionDBConfig  `mapstructure:"versiondb"`
+	MoveConfig moveconfig.MoveConfig          `mapstructure:"move"`
+	Oracle     oracleconfig.AppConfig         `mapstructure:"oracle"`
+	MemIAVL    initiastorecfg.MemIAVLConfig   `mapstructure:"memiavl"`
+	VersionDB  initiastorecfg.VersionDBConfig `mapstructure:"versiondb"`
 }
 
 // AppConfigTemplate returns the full app.toml template string.

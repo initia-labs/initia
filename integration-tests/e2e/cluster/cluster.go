@@ -1391,7 +1391,7 @@ func copyFile(src, dst string) error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(dst, bz, 0o600)
+	return os.WriteFile(dst, bz, 0o600) //nolint:gosec
 }
 
 // copyDir copies all files from srcDir into dstDir (non-recursive).

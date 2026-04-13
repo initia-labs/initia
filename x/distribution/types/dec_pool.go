@@ -241,7 +241,7 @@ func (pools DecPools) String() string {
 
 	var out strings.Builder
 	for _, pool := range pools {
-		out.WriteString(fmt.Sprintf("%v,", pool.String()))
+		fmt.Fprintf(&out, "%v,", pool.String())
 	}
 
 	return strings.TrimSuffix(out.String(), ",")

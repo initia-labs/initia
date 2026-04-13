@@ -185,18 +185,18 @@ func UnmarshalUBD(cdc codec.BinaryCodec, value []byte) (ubd UnbondingDelegation,
 // String returns a human readable string representation of an UnbondingDelegation.
 func (ubd UnbondingDelegation) String() string {
 	var out strings.Builder
-	out.WriteString(fmt.Sprintf(`Unbonding Delegations between:
+	fmt.Fprintf(&out, `Unbonding Delegations between:
   Delegator:                 %s
   Validator:                 %s
-	Entries:`, ubd.DelegatorAddress, ubd.ValidatorAddress))
+	Entries:`, ubd.DelegatorAddress, ubd.ValidatorAddress)
 	for i, entry := range ubd.Entries {
-		out.WriteString(fmt.Sprintf(`    Unbonding Delegation %d:
+		fmt.Fprintf(&out, `    Unbonding Delegation %d:
       Creation Height:           %v
       Min time to unbond (unix): %v
       Expected balance:          %s
 	  Unbonding ID:              %d
       Unbonding Ref Count:       %d`, i, entry.CreationHeight,
-			entry.CompletionTime, entry.Balance, entry.UnbondingId, entry.UnbondingOnHoldRefCount))
+			entry.CompletionTime, entry.Balance, entry.UnbondingId, entry.UnbondingOnHoldRefCount)
 	}
 
 	return out.String()
@@ -290,25 +290,23 @@ func UnmarshalRED(cdc codec.BinaryCodec, value []byte) (red Redelegation, err er
 // String returns a human readable string representation of a Redelegation.
 func (red Redelegation) String() string {
 	var out strings.Builder
-	out.WriteString(fmt.Sprintf(`Redelegations between:
+	fmt.Fprintf(&out, `Redelegations between:
   Delegator:                 %s
   Source Validator:          %s
   Destination Validator:     %s
   Entries:
 `,
-		red.DelegatorAddress, red.ValidatorSrcAddress, red.ValidatorDstAddress,
-	))
+		red.DelegatorAddress, red.ValidatorSrcAddress, red.ValidatorDstAddress)
 
 	for i, entry := range red.Entries {
-		out.WriteString(fmt.Sprintf(`    Redelegation Entry #%d:
+		fmt.Fprintf(&out, `    Redelegation Entry #%d:
     Creation height:           %v
     Min time to unbond (unix): %v
     Dest Shares:               %s
     Unbonding ID:              %d
     Unbonding Ref Count:       %d
 `,
-			i, entry.CreationHeight, entry.CompletionTime, entry.SharesDst, entry.UnbondingId, entry.UnbondingOnHoldRefCount,
-		))
+			i, entry.CreationHeight, entry.CompletionTime, entry.SharesDst, entry.UnbondingId, entry.UnbondingOnHoldRefCount)
 	}
 
 	return strings.TrimRight(out.String(), "\n")

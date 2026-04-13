@@ -105,7 +105,7 @@ initiad qstart --network=mainnet --sync-method=statesync --tx-indexing=default -
 ## Flags Reference
 
 | Flag | Description | Values | Default |
-|------|-------------|--------|---------|
+| ------ | ------------- | -------- | --------- |
 | `--interactive` | Run in interactive mode | - | false |
 | `--network` | Target network | `mainnet`, `testnet` | required |
 | `--sync-method` | How to sync the node | `statesync`, `snapshot` | required |
@@ -122,7 +122,7 @@ initiad qstart --network=mainnet --sync-method=statesync --tx-indexing=default -
 
 ## What It Does
 
-1. **Downloads genesis.json** from Polkachu (with RPC fallback)
+1. **Downloads genesis.json** from Polkachu (with RPC `/genesis` fallback)
 2. **Downloads addrbook.json** from Polkachu (with RPC `/net_info` fallback)
 3. **Configures config.toml** - RPC address, TX indexing, retain height
 4. **Configures app.toml** - pruning, block retention, API, MemIAVL, index events
