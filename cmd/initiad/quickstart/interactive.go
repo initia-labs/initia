@@ -98,6 +98,9 @@ func runInteractive(cmd *cobra.Command) (QuickstartConfig, error) {
 			return cfg, err
 		}
 		cfg.TxIndexingKeys = splitAndTrim(keysStr)
+		if len(cfg.TxIndexingKeys) == 0 {
+			return cfg, fmt.Errorf("tx indexing keys are required when using custom indexing")
+		}
 	}
 
 	// 9. MemIAVL (not compatible with snapshot sync)

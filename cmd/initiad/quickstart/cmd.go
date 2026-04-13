@@ -176,10 +176,10 @@ func readFromFlags(cmd *cobra.Command) (QuickstartConfig, error) {
 	case PruningDefault, PruningNothing, PruningEverything:
 		// valid
 	case PruningCustom:
-		if pruningKeepRecent == "" {
+		if !cmd.Flags().Changed(flagPruningKeepRecent) {
 			return QuickstartConfig{}, fmt.Errorf("--%s is required when --%s=%s", flagPruningKeepRecent, flagPruning, PruningCustom)
 		}
-		if pruningInterval == "" {
+		if !cmd.Flags().Changed(flagPruningInterval) {
 			return QuickstartConfig{}, fmt.Errorf("--%s is required when --%s=%s", flagPruningInterval, flagPruning, PruningCustom)
 		}
 	default:

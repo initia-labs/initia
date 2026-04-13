@@ -84,6 +84,10 @@ func FetchLatestHeight(rpc string) (int64, error) {
 		return 0, err
 	}
 
+	if result.Result.Response.LastBlockHeight == "" {
+		return 0, fmt.Errorf("RPC returned empty last_block_height")
+	}
+
 	var height int64
 	_, err = fmt.Sscanf(result.Result.Response.LastBlockHeight, "%d", &height)
 	return height, err

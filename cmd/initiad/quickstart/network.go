@@ -162,7 +162,11 @@ func fetchNetInfoPeerAddrs(rpcURL string) ([]*p2p.NetAddress, error) {
 		if err != nil {
 			continue
 		}
-		addr := p2p.NewNetAddressIPPort(net.ParseIP(peer.RemoteIP), port)
+		ip := net.ParseIP(peer.RemoteIP)
+		if ip == nil {
+			continue
+		}
+		addr := p2p.NewNetAddressIPPort(ip, port)
 		addr.ID = p2p.ID(peer.NodeInfo.ID)
 		addrs = append(addrs, addr)
 	}
