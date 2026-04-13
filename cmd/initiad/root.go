@@ -43,6 +43,7 @@ import (
 	"github.com/initia-labs/initia/app/keepers"
 	"github.com/initia-labs/initia/app/params"
 	initiacmdflags "github.com/initia-labs/initia/cmd/flags"
+	"github.com/initia-labs/initia/cmd/initiad/quickstart"
 	movecmd "github.com/initia-labs/initia/cmd/move"
 	cryptokeyring "github.com/initia-labs/initia/crypto/keyring"
 	"github.com/initia-labs/initia/x/genutil"
@@ -206,6 +207,7 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig, b
 
 	rootCmd.AddCommand(
 		genutilcli.InitCmd(basicManager, initiaapp.DefaultNodeHome),
+		quickstart.QuickstartCmd(initiaapp.DefaultNodeHome),
 		debug.Cmd(),
 		confixcmd.ConfigCommand(),
 		pruning.Cmd(a.newApp, initiaapp.DefaultNodeHome),

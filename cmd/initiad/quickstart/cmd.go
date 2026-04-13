@@ -52,7 +52,7 @@ const (
 	flagPruningKeepRecent = "pruning-keep-recent"
 	flagPruningInterval   = "pruning-interval"
 	flagMinRetainBlocks   = "min-retain-blocks"
-	flagMemIAVL           = "memiavl"
+	flagMemIAVL           = "memiavl-enable"
 	flagAPIAddress        = "api-address"
 	flagRPCAddress        = "rpc-address"
 )
@@ -108,17 +108,17 @@ address book, and configuring sync method, pruning, indexing, and other settings
 	}
 
 	cmd.Flags().Bool(flagInteractive, false, "Run in interactive mode")
-	cmd.Flags().String(flagNetwork, NetworkMainnet, "Network to join (mainnet or testnet)")
-	cmd.Flags().String(flagSyncMethod, SyncStateSync, "Sync method (statesync or snapshot)")
+	cmd.Flags().String(flagNetwork, "", "Network to join (mainnet or testnet)")
+	cmd.Flags().String(flagSyncMethod, "", "Sync method (statesync or snapshot)")
 	cmd.Flags().String(flagSnapshotURL, "", "URL of the snapshot to download (required when sync-method=snapshot)")
-	cmd.Flags().String(flagTxIndexing, TxIndexDefault, "Transaction indexing mode (null, default, or custom)")
+	cmd.Flags().String(flagTxIndexing, "", "Transaction indexing mode (null, default, or custom)")
 	cmd.Flags().String(flagTxIndexingKeys, "", "Comma-separated list of tx indexing keys (required when tx-indexing=custom)")
-	cmd.Flags().String(flagPruning, PruningDefault, "Pruning strategy (default, nothing, everything, or custom)")
-	cmd.Flags().String(flagPruningKeepRecent, "", "Number of recent states to keep (required when pruning=custom)")
-	cmd.Flags().String(flagPruningInterval, "", "Pruning interval (required when pruning=custom)")
+	cmd.Flags().String(flagPruning, "", "Pruning strategy (default, nothing, everything, or custom)")
+	cmd.Flags().String(flagPruningKeepRecent, "0", "Number of recent states to keep (required when pruning=custom)")
+	cmd.Flags().String(flagPruningInterval, "0", "Pruning interval (required when pruning=custom)")
 	cmd.Flags().Uint64(flagMinRetainBlocks, DefaultMinRetainBlocks, "Minimum number of blocks to retain")
-	cmd.Flags().Bool(flagMemIAVL, true, "Enable MemIAVL for faster sync")
-	cmd.Flags().String(flagAPIAddress, DefaultAPIAddress, "API server listen address")
+	cmd.Flags().Bool(flagMemIAVL, false, "Enable MemIAVL")
+	cmd.Flags().String(flagAPIAddress, "", "REST API listen address (enables API if set)")
 	cmd.Flags().String(flagRPCAddress, DefaultRPCAddress, "RPC server listen address")
 
 	return cmd
@@ -259,20 +259,4 @@ func splitAndTrim(s string) []string {
 	return result
 }
 
-// Stub functions — to be implemented in later tasks.
 
-func runInteractive(cmd *cobra.Command) (QuickstartConfig, error) {
-	return QuickstartConfig{}, fmt.Errorf("not implemented")
-}
-
-func applyConfigToml(cfg QuickstartConfig, homeDir string) error {
-	return nil
-}
-
-func applyAppToml(cfg QuickstartConfig, homeDir string) error {
-	return nil
-}
-
-func downloadAndExtractSnapshot(url, homeDir string) error {
-	return nil
-}

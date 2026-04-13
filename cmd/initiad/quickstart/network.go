@@ -8,9 +8,15 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
+	cmtcfg "github.com/cometbft/cometbft/config"
 	"github.com/spf13/viper"
 )
+
+var httpClient = &http.Client{
+	Timeout: 60 * time.Second,
+}
 
 type networkConfig struct {
 	GenesisURL   string
@@ -47,7 +53,7 @@ func downloadAddrbook(network, homeDir string) error {
 }
 
 func downloadFile(url, destPath string) error {
-	resp, err := http.Get(url)
+	resp, err := httpClient.Get(url)
 	if err != nil {
 		return fmt.Errorf("failed to download %s: %w", url, err)
 	}
@@ -57,14 +63,23 @@ func downloadFile(url, destPath string) error {
 		return fmt.Errorf("failed to download %s: status %d", url, resp.StatusCode)
 	}
 
-	out, err := os.Create(destPath)
+	// Write to temp file and rename atomically to avoid corrupt files on failure
+	tmpPath := destPath + ".tmp"
+	out, err := os.Create(tmpPath)
 	if err != nil {
-		return fmt.Errorf("failed to create %s: %w", destPath, err)
+		return fmt.Errorf("failed to create %s: %w", tmpPath, err)
 	}
-	defer out.Close()
+	defer os.Remove(tmpPath)
 
-	_, err = io.Copy(out, resp.Body)
-	return err
+	if _, err = io.Copy(out, resp.Body); err != nil {
+		out.Close()
+		return fmt.Errorf("failed to write %s: %w", destPath, err)
+	}
+	if err := out.Close(); err != nil {
+		return fmt.Errorf("failed to close %s: %w", destPath, err)
+	}
+
+	return os.Rename(tmpPath, destPath)
 }
 
 func setupStateSync(network, homeDir string) error {
@@ -76,26 +91,39 @@ func setupStateSync(network, homeDir string) error {
 	}
 
 	trustHeight := latestHeight - 2000
+	if trustHeight < 1 {
+		trustHeight = 1
+	}
 
 	trustHash, err := fetchBlockHash(nc.StateSyncRPC, trustHeight)
 	if err != nil {
 		return fmt.Errorf("failed to fetch trust hash: %w", err)
+	}
+	if trustHash == "" {
+		return fmt.Errorf("RPC returned empty block hash for height %d; the block may have been pruned", trustHeight)
 	}
 
 	polkachuPeer, err := fetchPolkachuPeer(nc.LivePeersAPI)
 	if err != nil {
 		return fmt.Errorf("failed to fetch polkachu peer: %w", err)
 	}
+	if polkachuPeer == "" {
+		return fmt.Errorf("polkachu API returned empty peer")
+	}
 
 	return applyStateSync(homeDir, nc.StateSyncRPC, trustHeight, trustHash, polkachuPeer)
 }
 
 func fetchLatestHeight(rpc string) (int64, error) {
-	resp, err := http.Get(rpc + "/abci_info")
+	resp, err := httpClient.Get(rpc + "/abci_info")
 	if err != nil {
 		return 0, err
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return 0, fmt.Errorf("RPC %s/abci_info returned status %d", rpc, resp.StatusCode)
+	}
 
 	var result struct {
 		Result struct {
@@ -105,7 +133,7 @@ func fetchLatestHeight(rpc string) (int64, error) {
 		} `json:"result"`
 	}
 
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+	if err := json.NewDecoder(io.LimitReader(resp.Body, 1<<20)).Decode(&result); err != nil {
 		return 0, err
 	}
 
@@ -116,11 +144,15 @@ func fetchLatestHeight(rpc string) (int64, error) {
 
 func fetchBlockHash(rpc string, height int64) (string, error) {
 	url := fmt.Sprintf("%s/block?height=%d", rpc, height)
-	resp, err := http.Get(url)
+	resp, err := httpClient.Get(url)
 	if err != nil {
 		return "", err
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("RPC %s returned status %d", url, resp.StatusCode)
+	}
 
 	var result struct {
 		Result struct {
@@ -130,7 +162,7 @@ func fetchBlockHash(rpc string, height int64) (string, error) {
 		} `json:"result"`
 	}
 
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+	if err := json.NewDecoder(io.LimitReader(resp.Body, 1<<20)).Decode(&result); err != nil {
 		return "", err
 	}
 
@@ -142,42 +174,71 @@ type livePeersResponse struct {
 }
 
 func fetchPolkachuPeer(apiURL string) (string, error) {
-	resp, err := http.Get(apiURL)
+	resp, err := httpClient.Get(apiURL)
 	if err != nil {
 		return "", err
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("API %s returned status %d", apiURL, resp.StatusCode)
+	}
+
 	var result livePeersResponse
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+	if err := json.NewDecoder(io.LimitReader(resp.Body, 1<<20)).Decode(&result); err != nil {
 		return "", err
 	}
 
 	return result.PolkachuPeer, nil
 }
 
+// applyStateSync loads config.toml via viper, modifies statesync/p2p fields,
+// then writes back using CometBFT's WriteConfigFile to preserve comments and formatting.
 func applyStateSync(homeDir, rpc string, trustHeight int64, trustHash, polkachuPeer string) error {
-	configPath := filepath.Join(homeDir, "config", "config.toml")
+	configPath := filepath.Join(homeDir, "config")
+	configFile := filepath.Join(configPath, "config.toml")
 
-	vpr := viper.New()
-	vpr.SetConfigFile(configPath)
-	if err := vpr.ReadInConfig(); err != nil {
-		return fmt.Errorf("failed to read config.toml: %w", err)
+	// Load config via viper and unmarshal into CometBFT config struct
+	cfg, err := loadCometConfig(configPath)
+	if err != nil {
+		return fmt.Errorf("failed to load config.toml: %w", err)
 	}
 
-	vpr.Set("statesync.enable", true)
-	vpr.Set("statesync.rpc_servers", rpc+","+rpc)
-	vpr.Set("statesync.trust_height", trustHeight)
-	vpr.Set("statesync.trust_hash", trustHash)
+	// Set statesync config
+	cfg.StateSync.Enable = true
+	cfg.StateSync.RPCServers = []string{rpc, rpc}
+	cfg.StateSync.TrustHeight = trustHeight
+	cfg.StateSync.TrustHash = trustHash
 
-	existingPeers := vpr.GetString("p2p.persistent_peers")
-	if !strings.Contains(existingPeers, polkachuPeer) {
-		if existingPeers != "" {
-			existingPeers += ","
+	// Append polkachu peer to persistent_peers if not already present
+	if !strings.Contains(cfg.P2P.PersistentPeers, polkachuPeer) {
+		if cfg.P2P.PersistentPeers != "" {
+			cfg.P2P.PersistentPeers += ","
 		}
-		existingPeers += polkachuPeer
-		vpr.Set("p2p.persistent_peers", existingPeers)
+		cfg.P2P.PersistentPeers += polkachuPeer
 	}
 
-	return vpr.WriteConfig()
+	// Write back using CometBFT template to preserve comments
+	cmtcfg.WriteConfigFile(configFile, cfg)
+	return nil
+}
+
+// loadCometConfig reads config.toml via viper and unmarshals into a CometBFT Config struct.
+func loadCometConfig(configPath string) (*cmtcfg.Config, error) {
+	v := viper.New()
+	v.SetConfigType("toml")
+	v.SetConfigName("config")
+	v.AddConfigPath(configPath)
+
+	if err := v.ReadInConfig(); err != nil {
+		return nil, err
+	}
+
+	cfg := cmtcfg.DefaultConfig()
+	if err := v.Unmarshal(cfg); err != nil {
+		return nil, err
+	}
+
+	cfg.SetRoot(filepath.Dir(configPath))
+	return cfg, nil
 }
