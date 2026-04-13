@@ -10,33 +10,8 @@ import (
 
 	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
 
-	"github.com/initia-labs/initia/abcipp"
-	moveconfig "github.com/initia-labs/initia/x/move/config"
-
-	oracleconfig "github.com/skip-mev/connect/v2/oracle/config"
-
-	initiastorecfg "github.com/initia-labs/store/config"
+	"github.com/initia-labs/initia/cmd/initiad/appconfig"
 )
-
-// appConfig mirrors initiaappConfig from cmd/initiad/config.go
-// to support template-based writing that preserves comments.
-type appConfig struct {
-	serverconfig.Config
-	ABCIPP     abcipp.AppConfig               `mapstructure:"abcipp"`
-	MoveConfig moveconfig.MoveConfig           `mapstructure:"move"`
-	Oracle     oracleconfig.AppConfig          `mapstructure:"oracle"`
-	MemIAVL    initiastorecfg.MemIAVLConfig    `mapstructure:"memiavl"`
-	VersionDB  initiastorecfg.VersionDBConfig  `mapstructure:"versiondb"`
-}
-
-func appConfigTemplate() string {
-	return serverconfig.DefaultConfigTemplate +
-		abcipp.DefaultConfigTemplate +
-		moveconfig.DefaultConfigTemplate +
-		oracleconfig.DefaultConfigTemplate +
-		initiastorecfg.DefaultMemIAVLConfigTemplate +
-		initiastorecfg.DefaultVersionDBConfigTemplate
-}
 
 // applyConfigToml modifies config.toml: rpc address, tx_index, retain-height.
 func applyConfigToml(cfg QuickstartConfig, homeDir string) error {
@@ -106,14 +81,13 @@ func applyAppToml(cfg QuickstartConfig, homeDir string) error {
 	appCfg.MemIAVL.Enable = cfg.MemIAVL
 
 	// Write back using template to preserve comments
-	serverconfig.SetConfigTemplate(appConfigTemplate())
+	serverconfig.SetConfigTemplate(appconfig.AppConfigTemplate())
 	serverconfig.WriteConfigFile(appCfgFile, appCfg)
 	return nil
 }
 
 // loadAppConfig reads app.toml via viper and unmarshals into the app config struct.
-// Uses Squash option to properly handle embedded BaseConfig fields.
-func loadAppConfig(configPath string) (*appConfig, error) {
+func loadAppConfig(configPath string) (*appconfig.InitiaAppConfig, error) {
 	v := viper.New()
 	v.SetConfigType("toml")
 	v.SetConfigName("app")
@@ -123,12 +97,34 @@ func loadAppConfig(configPath string) (*appConfig, error) {
 		return nil, err
 	}
 
-	cfg := &appConfig{}
+	cfg := &appconfig.InitiaAppConfig{}
 	if err := v.Unmarshal(cfg, func(dc *mapstructure.DecoderConfig) {
 		dc.Squash = true
 	}); err != nil {
 		return nil, err
 	}
 
+	return cfg, nil
+}
+
+// loadCometConfig reads config.toml via viper and unmarshals into a CometBFT Config struct.
+func loadCometConfig(configPath string) (*cmtcfg.Config, error) {
+	v := viper.New()
+	v.SetConfigType("toml")
+	v.SetConfigName("config")
+	v.AddConfigPath(configPath)
+
+	if err := v.ReadInConfig(); err != nil {
+		return nil, err
+	}
+
+	cfg := cmtcfg.DefaultConfig()
+	if err := v.Unmarshal(cfg, func(dc *mapstructure.DecoderConfig) {
+		dc.Squash = true
+	}); err != nil {
+		return nil, err
+	}
+
+	cfg.SetRoot(filepath.Dir(configPath))
 	return cfg, nil
 }
