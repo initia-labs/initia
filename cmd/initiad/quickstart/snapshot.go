@@ -52,6 +52,11 @@ func downloadAndExtractSnapshot(snapshotURL, homeDir string) error {
 		return fmt.Errorf("failed to start curl: %w", err)
 	}
 
+	// cleanup
+	defer tar.Cancel()
+	defer lz4.Cancel()
+	defer curl.Cancel()
+
 	// Wait for all processes
 	if err := curl.Wait(); err != nil {
 		return fmt.Errorf("curl failed: %w", err)
