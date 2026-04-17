@@ -53,9 +53,9 @@ func downloadAndExtractSnapshot(snapshotURL, homeDir string) error {
 	}
 
 	// cleanup
-	defer tar.Cancel()
-	defer lz4.Cancel()
-	defer curl.Cancel()
+	defer tar.Cancel()  //nolint:errcheck
+	defer lz4.Cancel()  //nolint:errcheck
+	defer curl.Cancel() //nolint:errcheck
 
 	// Wait for all processes
 	if err := curl.Wait(); err != nil {
