@@ -28,8 +28,8 @@ func NewEnv(ctx context.Context, nextAccountNumber uint64, executionCounter uint
 
 	return vmtypes.Env{
 		ChainId:             sdkCtx.ChainID(),
-		BlockHeight:         uint64(sdkCtx.BlockHeader().Height),          //nolint: gosec
-		BlockTimestampNanos: uint64(sdkCtx.BlockHeader().Time.UnixNano()), //nolint: gosec
+		BlockHeight:         uint64(sdkCtx.BlockHeader().Height), //nolint: gosec
+		BlockTimestampNanos: uint64(sdkCtx.BlockHeader().Time.UnixNano()),
 		NextAccountNumber:   nextAccountNumber,
 		TxHash:              txHash,
 		SessionId:           sessionID,

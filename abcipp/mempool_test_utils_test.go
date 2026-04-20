@@ -15,7 +15,7 @@ import (
 
 // drainEvents reads buffered app-mempool events and returns inserted/removed counts.
 func drainEvents(ch <-chan cmtmempool.AppMempoolEvent) (inserted, removed int) {
-	const idleWindow = 2 * time.Millisecond
+	const idleWindow = 50 * time.Millisecond
 	const maxWait = 500 * time.Millisecond
 
 	idle := time.NewTimer(idleWindow)
@@ -49,7 +49,7 @@ func drainEvents(ch <-chan cmtmempool.AppMempoolEvent) (inserted, removed int) {
 
 // collectEvents returns buffered inserted/removed event tx bytes.
 func collectEvents(ch <-chan cmtmempool.AppMempoolEvent) (inserted, removed [][]byte) {
-	const idleWindow = 2 * time.Millisecond
+	const idleWindow = 50 * time.Millisecond
 	const maxWait = 500 * time.Millisecond
 
 	idle := time.NewTimer(idleWindow)

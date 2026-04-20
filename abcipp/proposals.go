@@ -155,7 +155,7 @@ func (h *ProposalHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 					"tx_hash", TxHash(txInfo.TxBytes),
 				)
 
-				if txInfo.GasLimit > uint64(maxGasLimit) { //nolint:gosec
+				if txInfo.GasLimit > uint64(maxGasLimit) {
 					// Individually over-gas tx can never fit into a block, so remove it.
 					txsToRemove = append(txsToRemove, TxInfoEntry{Tx: tx, Info: txInfo})
 				}

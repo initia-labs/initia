@@ -375,7 +375,7 @@ func (solo *Solomachine) SendTransfer(chain *TestChain, portID, channelID string
 		Sender:           chain.SenderAccount.GetAddress().String(),
 		Receiver:         chain.SenderAccount.GetAddress().String(),
 		TimeoutHeight:    clienttypes.ZeroHeight(),
-		TimeoutTimestamp: uint64(chain.GetContext().BlockTime().Add(time.Hour).UnixNano()), //nolint: gosec
+		TimeoutTimestamp: uint64(chain.GetContext().BlockTime().Add(time.Hour).UnixNano()),
 	}
 
 	for _, fn := range fns {

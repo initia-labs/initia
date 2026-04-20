@@ -614,7 +614,7 @@ func ReadMetadataTableHandleFromMetadataStore(bz []byte) (tableHandle vmtypes.Ac
 
 func ReadUpgradePolicyFromModuleMetadata(bz []byte) (UpgradePolicy, error) {
 	cursor := int(0)
-	upgradePolicy := int8(bz[cursor])
+	upgradePolicy := int8(bz[cursor]) //nolint:gosec
 
 	return UpgradePolicy(upgradePolicy), nil
 }

@@ -181,7 +181,7 @@ func (pools Pools) String() string {
 
 	var out strings.Builder
 	for _, pool := range pools {
-		out.WriteString(fmt.Sprintf("%v,", pool.String()))
+		fmt.Fprintf(&out, "%v,", pool.String())
 	}
 
 	return out.String()[:len(out.String())-1]
