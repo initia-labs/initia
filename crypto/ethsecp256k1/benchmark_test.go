@@ -16,14 +16,14 @@ func BenchmarkPubKey_VerifySignature(b *testing.B) {
 	privKey := GenerateKey()
 	pubKey := privKey.PubKey()
 
+	msg := []byte("benchmark message")
+	sig, err := privKey.Sign(msg)
+	if err != nil {
+	    b.Fatal(err)
+	}
 	b.ResetTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		msg := fmt.Appendf(nil, "%10d", i)
-		sig, err := privKey.Sign(msg)
-		if err != nil {
-			b.Fatal(err)
-		}
-		pubKey.VerifySignature(msg, sig)
+	    pubKey.VerifySignature(msg, sig)
 	}
 }
