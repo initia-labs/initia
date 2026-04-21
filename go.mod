@@ -301,7 +301,7 @@ replace (
 // - https://github.com/initia-labs/iavl/commit/1a8bbb22bb7defa7108dbd07b2f4a4f80f37d060
 replace (
 	github.com/cometbft/cometbft => github.com/initia-labs/cometbft v0.38.21-initia.2
-	github.com/cosmos/cosmos-sdk => ../cosmos-sdk
+	github.com/cosmos/cosmos-sdk => github.com/initia-labs/cosmos-sdk v0.53.7-initia.0
 	github.com/cosmos/iavl => github.com/initia-labs/iavl v1.2.6-initia.1
 
 	github.com/noble-assets/forwarding/simapp => github.com/initia-labs/forwarding/simapp v1.0.0
