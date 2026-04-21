@@ -16,6 +16,7 @@ func BenchmarkPubKey_VerifySignature(b *testing.B) {
 	privKey := GenerateKey()
 	pubKey := privKey.PubKey()
 
+	b.ResetTimer()
 	b.ReportAllocs()
 	for i := 0; b.Loop(); i++ {
 		b.StopTimer()
