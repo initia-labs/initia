@@ -70,7 +70,7 @@ func WithAllowQueuedTxConfig(txConfig client.TxConfig, allowQueued bool) client.
 	return cfg
 }
 
-func CreateTxConfig(protoCodec codec.ProtoCodecMarshaler) client.TxConfig {
+func CreateTxConfig(protoCodec codec.Codec) client.TxConfig {
 	signingOptions, err := authtx.NewDefaultSigningOptions()
 	if err != nil {
 		panic(err)

@@ -62,8 +62,8 @@ func NewKeeper(
 		feeCollectorName:      feeCollectorName,
 		authority:             authority,
 		Params:                collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
-		LastReleaseTimestamp:  collections.NewItem(sb, types.LastReleaseTimestampKey, "last_release_timestamp", collectioncodec.KeyToValueCodec(sdk.TimeKey)),
-		LastDilutionTimestamp: collections.NewItem(sb, types.LastDilutionTimestampKey, "last_dilution_timestamp", collectioncodec.KeyToValueCodec(sdk.TimeKey)),
+		LastReleaseTimestamp:  collections.NewItem(sb, types.LastReleaseTimestampKey, "last_release_timestamp", collectioncodec.KeyToValueCodec(sdk.TimeKey)),   //nolint:staticcheck
+		LastDilutionTimestamp: collections.NewItem(sb, types.LastDilutionTimestampKey, "last_dilution_timestamp", collectioncodec.KeyToValueCodec(sdk.TimeKey)), //nolint:staticcheck
 	}
 
 	schema, err := sb.Build()

@@ -13,13 +13,13 @@ import (
 )
 
 // RegisterInvariants registers all governance invariants
-func RegisterInvariants(ir sdk.InvariantRegistry, keeper *Keeper, bk types.BankKeeper) {
+func RegisterInvariants(ir sdk.InvariantRegistry, keeper *Keeper, bk types.BankKeeper) { //nolint:staticcheck
 	ir.RegisterRoute(types.ModuleName, "module-account", ModuleAccountInvariant(keeper, bk))
 }
 
 // ModuleAccountInvariant checks that the module account coins reflects the sum of
 // deposit amounts held on store
-func ModuleAccountInvariant(keeper *Keeper, bk types.BankKeeper) sdk.Invariant {
+func ModuleAccountInvariant(keeper *Keeper, bk types.BankKeeper) sdk.Invariant { //nolint:staticcheck
 	return func(ctx sdk.Context) (string, bool) {
 		var expectedDeposits sdk.Coins
 
@@ -39,7 +39,7 @@ func ModuleAccountInvariant(keeper *Keeper, bk types.BankKeeper) sdk.Invariant {
 		// module's account and so the balance can be larger.
 		broken := !balances.IsAllGTE(expectedDeposits)
 
-		return sdk.FormatInvariant(types.ModuleName, "deposits",
+		return sdk.FormatInvariant(types.ModuleName, "deposits", //nolint:staticcheck
 			fmt.Sprintf("\tgov ModuleAccount coins: %s\n\tsum of deposit amounts:  %s\n",
 				balances, expectedDeposits)), broken
 	}
