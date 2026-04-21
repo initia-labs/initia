@@ -175,7 +175,7 @@ func NewInitiaApp(
 
 	// app opts
 	homePath := cast.ToString(appOpts.Get(flags.FlagHome))
-	skipGenesisInvariants := cast.ToBool(appOpts.Get(crisis.FlagSkipGenesisInvariants))
+	skipGenesisInvariants := cast.ToBool(appOpts.Get(crisis.FlagSkipGenesisInvariants)) //nolint:staticcheck
 	invCheckPeriod := cast.ToUint(appOpts.Get(server.FlagInvCheckPeriod))
 	skipUpgradeHeights := make(map[int64]bool)
 	for _, h := range cast.ToIntSlice(appOpts.Get(server.FlagUnsafeSkipUpgrades)) {
@@ -247,7 +247,7 @@ func NewInitiaApp(
 	app.ModuleManager.SetOrderExportGenesis(genesisModuleOrder...)
 
 	// register invariants for crisis module
-	app.ModuleManager.RegisterInvariants(app.CrisisKeeper)
+	app.ModuleManager.RegisterInvariants(app.CrisisKeeper) //nolint:staticcheck
 
 	// register the service configurator
 	app.configurator = module.NewConfigurator(app.appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter())

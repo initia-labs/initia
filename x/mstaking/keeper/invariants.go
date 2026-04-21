@@ -11,7 +11,7 @@ import (
 )
 
 // RegisterInvariants registers all staking invariants
-func RegisterInvariants(ir sdk.InvariantRegistry, k Keeper) {
+func RegisterInvariants(ir sdk.InvariantRegistry, k Keeper) { //nolint:staticcheck
 	ir.RegisterRoute(types.ModuleName, "module-accounts",
 		ModuleAccountInvariants(k))
 	ir.RegisterRoute(types.ModuleName, "nonnegative-power",
@@ -23,7 +23,7 @@ func RegisterInvariants(ir sdk.InvariantRegistry, k Keeper) {
 }
 
 // AllInvariants runs all invariants of the staking module.
-func AllInvariants(k Keeper) sdk.Invariant {
+func AllInvariants(k Keeper) sdk.Invariant { //nolint:staticcheck
 	return func(ctx sdk.Context) (string, bool) {
 		res, stop := ModuleAccountInvariants(k)(ctx)
 		if stop {
@@ -46,7 +46,7 @@ func AllInvariants(k Keeper) sdk.Invariant {
 
 // ModuleAccountInvariants checks that the bonded and notBonded ModuleAccounts pools
 // reflects the tokens actively bonded and not bonded
-func ModuleAccountInvariants(k Keeper) sdk.Invariant {
+func ModuleAccountInvariants(k Keeper) sdk.Invariant { //nolint:staticcheck
 	return func(ctx sdk.Context) (string, bool) {
 		bonded := sdk.NewCoins()
 		notBonded := sdk.NewCoins()
@@ -89,7 +89,7 @@ func ModuleAccountInvariants(k Keeper) sdk.Invariant {
 
 		// Bonded tokens should equal sum of tokens with bonded validators
 		// Not-bonded tokens should equal unbonding delegations	plus tokens on unbonded validators
-		return sdk.FormatInvariant(types.ModuleName, "bonded and not bonded module account coins", fmt.Sprintf(
+		return sdk.FormatInvariant(types.ModuleName, "bonded and not bonded module account coins", fmt.Sprintf( //nolint:staticcheck
 			"\tPool's bonded tokens: %v\n"+
 				"\tsum of bonded tokens: %v\n"+
 				"not bonded token invariance:\n"+
@@ -103,7 +103,7 @@ func ModuleAccountInvariants(k Keeper) sdk.Invariant {
 }
 
 // NonNegativePowerInvariant checks that all stored validators have >= 0 power.
-func NonNegativePowerInvariant(k Keeper) sdk.Invariant {
+func NonNegativePowerInvariant(k Keeper) sdk.Invariant { //nolint:staticcheck
 	return func(ctx sdk.Context) (string, bool) {
 		var (
 			msg    string
@@ -136,12 +136,12 @@ func NonNegativePowerInvariant(k Keeper) sdk.Invariant {
 			panic(err)
 		}
 
-		return sdk.FormatInvariant(types.ModuleName, "nonnegative power", fmt.Sprintf("found invalid validator powers\n%s", msg)), broken
+		return sdk.FormatInvariant(types.ModuleName, "nonnegative power", fmt.Sprintf("found invalid validator powers\n%s", msg)), broken //nolint:staticcheck
 	}
 }
 
 // PositiveDelegationInvariant checks that all stored delegations have > 0 shares.
-func PositiveDelegationInvariant(k Keeper) sdk.Invariant {
+func PositiveDelegationInvariant(k Keeper) sdk.Invariant { //nolint:staticcheck
 	return func(ctx sdk.Context) (string, bool) {
 		var (
 			msg   string
@@ -169,7 +169,7 @@ func PositiveDelegationInvariant(k Keeper) sdk.Invariant {
 
 		broken := count != 0
 
-		return sdk.FormatInvariant(types.ModuleName, "positive delegations", fmt.Sprintf(
+		return sdk.FormatInvariant(types.ModuleName, "positive delegations", fmt.Sprintf( //nolint:staticcheck
 			"%d invalid delegations found\n%s", count, msg)), broken
 	}
 }
@@ -177,7 +177,7 @@ func PositiveDelegationInvariant(k Keeper) sdk.Invariant {
 // DelegatorSharesInvariant checks whether all the delegator shares which persist
 // in the delegator object add up to the correct total delegator shares
 // amount stored in each validator.
-func DelegatorSharesInvariant(k Keeper) sdk.Invariant {
+func DelegatorSharesInvariant(k Keeper) sdk.Invariant { //nolint:staticcheck
 	return func(ctx sdk.Context) (string, bool) {
 		var (
 			msg    string
@@ -219,6 +219,6 @@ func DelegatorSharesInvariant(k Keeper) sdk.Invariant {
 			}
 		}
 
-		return sdk.FormatInvariant(types.ModuleName, "delegator shares", msg), broken
+		return sdk.FormatInvariant(types.ModuleName, "delegator shares", msg), broken //nolint:staticcheck
 	}
 }

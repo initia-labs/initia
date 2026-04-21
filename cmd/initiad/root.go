@@ -222,7 +222,7 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig, b
 		server.StartCmdOptions{
 			DBOpener: initiastoreopendb.OpenDB,
 			AddFlags: func(startCmd *cobra.Command) {
-				crisis.AddModuleInitFlags(startCmd)
+				crisis.AddModuleInitFlags(startCmd) //nolint:staticcheck
 				initiacmdflags.AddCometBFTFlags(startCmd)
 				initiastoreconfig.AddMemIAVLConfigFlags(startCmd)
 				initiastoreconfig.AddVersionDBConfigFlags(startCmd)

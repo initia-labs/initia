@@ -34,7 +34,7 @@ var (
 	_ module.AppModuleBasic = AppModule{}
 	_ module.HasGenesis     = AppModule{}
 	_ module.HasServices    = AppModule{}
-	_ module.HasInvariants  = AppModule{}
+	_ module.HasInvariants  = AppModule{} //nolint:staticcheck
 
 	_ appmodule.AppModule       = AppModule{}
 	_ appmodule.HasBeginBlocker = AppModule{}
@@ -122,7 +122,7 @@ func (AppModule) Name() string {
 }
 
 // RegisterInvariants registers the distribution module invariants.
-func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
+func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) { //nolint:staticcheck
 	keeper.RegisterInvariants(ir, am.keeper)
 }
 

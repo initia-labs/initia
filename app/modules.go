@@ -107,13 +107,13 @@ var maccPerms = map[string][]string{
 func appModules(
 	app *InitiaApp,
 	skipGenesisInvariants bool,
-) []module.AppModule {
-	return []module.AppModule{
+) []module.AppModule { //nolint:staticcheck
+	return []module.AppModule{ //nolint:staticcheck
 		genutil.NewAppModule(app.AccountKeeper, app.StakingKeeper, app, app.txConfig),
 		auth.NewAppModule(app.appCodec, *app.AccountKeeper, nil, nil),
 		bank.NewAppModule(app.appCodec, *app.BankKeeper, app.AccountKeeper),
 		capability.NewAppModule(app.appCodec, *app.CapabilityKeeper, false),
-		crisis.NewAppModule(app.CrisisKeeper, skipGenesisInvariants, nil),
+		crisis.NewAppModule(app.CrisisKeeper, skipGenesisInvariants, nil), //nolint:staticcheck
 		feegrantmodule.NewAppModule(app.appCodec, app.AccountKeeper, app.BankKeeper, *app.FeeGrantKeeper, app.interfaceRegistry),
 		gov.NewAppModule(app.appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper),
 		reward.NewAppModule(app.appCodec, *app.RewardKeeper),
