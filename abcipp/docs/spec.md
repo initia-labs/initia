@@ -43,7 +43,7 @@ The `abcipp` package wires up the ABCI++ surfaces that Initia needs: a priority-
 3. **Insert routing**
    * `Insert` infers the tx key from `FirstSignature`, encodes the tx, extracts gas from `FeeTx`, and routes based on nonce vs `nextExpectedNonce()`:
      * `nonce < nextExpected` -> rejected as stale unless it is same-nonce replacement of existing active/queued tx.
-     * `nonce > nextExpected` -> added to the queued pool. When the per-sender limit is hit, the entry with the highest nonce is evicted to prefer lower (closer to promotable) nonces. Same nonce replacement is allowed but requires strictly higher priority; lower-priority candidates are rejected.
+     * `nonce > nextExpected` -> routed to the queued pool. Same-nonce replacement is allowed only when the incoming priority is strictly higher; lower-priority candidates are rejected. When the per-sender limit is hit, a lower-nonce candidate can evict the current highest nonce to prefer closer-to-promotable entries, but a candidate that is itself the highest nonce is rejected. Inserts are also rejected when `MaxQueuedTotal` is already full.
      * `nonce == nextExpected` -> inserted into the priority index. Continuous queued nonce chain is promoted in the same call when capacity permits.
    * For active entries: if a duplicate `(sender, nonce)` already exists, a higher-priority replacement evicts the old entry; lower-priority replacements are rejected.
    * When a tx enters active set (direct insert or queued promotion), clamped ordering fields are computed against sender predecessor/tail so later nonces cannot outrank earlier nonces for the same sender.
