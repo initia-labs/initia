@@ -173,7 +173,7 @@ func (p *PriorityMempool) demoteActiveRangeLocked(
 		}
 
 		entry.tier = queuedTier
-		inserted, evicted := p.insertQueuedLocked(ss, entry.key, entry)
+		inserted, evicted, _ := p.insertQueuedLocked(ss, entry.key, entry)
 		if evicted != nil {
 			removed = append(removed, evicted)
 		}

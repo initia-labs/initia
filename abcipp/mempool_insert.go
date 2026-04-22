@@ -105,10 +105,13 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 			gas:      gas,
 			bytes:    bz,
 		}
-		inserted, evicted := p.insertQueuedLocked(ss, key, entry)
+		inserted, evicted, insertErr := p.insertQueuedLocked(ss, key, entry)
 		if !inserted {
 			p.mtx.Unlock()
-			return nil
+			if insertErr != nil {
+				return insertErr
+			}
+			return sdkmempool.ErrMempoolTxMaxCapacity
 		}
 		if evicted != nil {
 			p.enqueueEvent(cmtmempool.EventTxRemoved, evicted.bytes)
@@ -137,7 +140,14 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 	if hasExisting {
 		if entry.priority <= existing.priority {
 			p.mtx.Unlock()
-			return nil
+			return errorsmod.Wrapf(
+				sdkerrors.ErrTxInMempoolCache,
+				"active tx with nonce %d for sender %s has priority %d >= replacement priority %d",
+				key.nonce,
+				key.sender,
+				existing.priority,
+				entry.priority,
+			)
 		}
 	}
 	// If a queued tx exists for the same nonce, check priority but defer
@@ -147,7 +157,14 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 	if queued, exists := ss.queued[key.nonce]; exists {
 		if !hasExisting && entry.priority <= queued.priority {
 			p.mtx.Unlock()
-			return nil
+			return errorsmod.Wrapf(
+				sdkerrors.ErrTxInMempoolCache,
+				"queued tx with nonce %d for sender %s has priority %d >= replacement priority %d",
+				key.nonce,
+				key.sender,
+				queued.priority,
+				entry.priority,
+			)
 		}
 		queuedToRemove = queued
 	}
@@ -228,14 +245,21 @@ func (p *PriorityMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 // insertQueuedLocked adds or replaces a tx in the queued pool. When the per sender
 // limit is hit, the entry with the highest nonce is evicted (unless the new tx has
 // the highest nonce, in which case it is rejected). the caller must hold p.mtx.
-func (p *PriorityMempool) insertQueuedLocked(ss *senderState, key txKey, entry *txEntry) (bool, *txEntry) {
+func (p *PriorityMempool) insertQueuedLocked(ss *senderState, key txKey, entry *txEntry) (bool, *txEntry, error) {
 	// same nonce replacement, only if higher priority
 	if existing, exists := ss.queued[key.nonce]; exists {
 		if entry.priority <= existing.priority {
-			return false, nil
+			return false, nil, errorsmod.Wrapf(
+				sdkerrors.ErrTxInMempoolCache,
+				"queued tx with nonce %d for sender %s has priority %d >= replacement priority %d",
+				key.nonce,
+				key.sender,
+				existing.priority,
+				entry.priority,
+			)
 		}
 		ss.queued[key.nonce] = entry
-		return true, existing
+		return true, existing, nil
 	}
 
 	// per sender eviction, swap highest nonce for a lower one
@@ -248,21 +272,21 @@ func (p *PriorityMempool) insertQueuedLocked(ss *senderState, key txKey, entry *
 			}
 		}
 		if key.nonce >= highestNonce {
-			return false, nil
+			return false, nil, sdkmempool.ErrMempoolTxMaxCapacity
 		}
 		evicted = ss.queued[highestNonce]
 		delete(ss.queued, highestNonce)
 		p.queuedCount.Add(-1)
 		ss.setQueuedRangeOnRemoveLocked(highestNonce)
 	} else if p.maxQueuedTotal > 0 && int(p.queuedCount.Load()) >= p.maxQueuedTotal {
-		return false, nil
+		return false, nil, sdkmempool.ErrMempoolTxMaxCapacity
 	}
 
 	ss.queued[key.nonce] = entry
 	p.queuedCount.Add(1)
 	ss.setQueuedRangeOnInsertLocked(key.nonce)
 
-	return true, evicted
+	return true, evicted, nil
 }
 
 // collectPromotableLocked removes queued txs with continuous nonces starting from

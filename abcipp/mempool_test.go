@@ -10,6 +10,8 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	sdkmempool "github.com/cosmos/cosmos-sdk/types/mempool"
 )
 
 // newTestMempoolWithEvents builds a mempool with event channel wiring so each
@@ -247,9 +249,10 @@ func TestQueuedPerSenderCapEvictsHighestNonce(t *testing.T) {
 	require.False(t, ok4)
 }
 
-// TestQueuedTotalCapSilentlyRejectsFutureNonce verifies global queued
-// limit behavior: inserts beyond global queued capacity are skipped without error.
-func TestQueuedTotalCapSilentlyRejectsFutureNonce(t *testing.T) {
+// TestQueuedTotalCapRejectsFutureNonce verifies global queued limit behavior:
+// inserts beyond global queued capacity are rejected so ProxyMempool does not
+// cache txs that the app-side mempool did not accept.
+func TestQueuedTotalCapRejectsFutureNonce(t *testing.T) {
 	keeper := newMockAccountKeeper()
 	mp := NewPriorityMempool(PriorityMempoolConfig{
 		MaxTx:          64,
@@ -280,12 +283,125 @@ func TestQueuedTotalCapSilentlyRejectsFutureNonce(t *testing.T) {
 	require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(privB, 2, 1000, "default")))
 	drainEvents(eventCh)
 
-	// This queued insert should be silently skipped because total queued is full.
-	require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(privC, 2, 1000, "default")))
+	// This queued insert should be rejected because total queued is full.
+	require.ErrorIs(t, mp.Insert(ctx, newTestTxWithPriv(privC, 2, 1000, "default")), sdkmempool.ErrMempoolTxMaxCapacity)
 	ins, rem := collectEvents(eventCh)
 	require.Len(t, ins, 0)
 	require.Len(t, rem, 0)
 	require.Equal(t, 5, mp.CountTx(), "3 active + 2 queued expected")
+}
+
+func TestLowerPriorityReplacementRejected(t *testing.T) {
+	mp, keeper, sdkCtx, eventCh := newTestMempoolWithEvents(t, 32)
+
+	priv := secp256k1.GenPrivKey()
+	sender := sdk.AccAddress(priv.PubKey().Address())
+	keeper.SetSequence(sender, 0)
+
+	txHigh := newTestTxWithPriv(priv, 0, 1000, "default")
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(100)), txHigh))
+	drainEvents(eventCh)
+
+	txLow := newTestTxWithPriv(priv, 0, 1000, "default")
+	err := mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(10)), txLow)
+	require.ErrorIs(t, err, sdkerrors.ErrTxInMempoolCache)
+
+	ins, rem := collectEvents(eventCh)
+	require.Len(t, ins, 0)
+	require.Len(t, rem, 0)
+	require.True(t, mp.Contains(txHigh))
+	require.Equal(t, 1, mp.CountTx())
+}
+
+// TestQueuedLowerPriorityReplacementRejected verifies that a same-nonce queued
+// replacement with insufficient priority is rejected with ErrTxInMempoolCache
+// so ProxyMempool does not cache a tx the app-side mempool did not accept.
+func TestQueuedLowerPriorityReplacementRejected(t *testing.T) {
+	mp, keeper, sdkCtx, eventCh := newTestMempoolWithEvents(t, 32)
+
+	priv := secp256k1.GenPrivKey()
+	sender := sdk.AccAddress(priv.PubKey().Address())
+	keeper.SetSequence(sender, 0)
+
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(50)), newTestTxWithPriv(priv, 0, 1000, "default")))
+	txHigh := newTestTxWithPriv(priv, 2, 1000, "default")
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(100)), txHigh))
+	drainEvents(eventCh)
+
+	txLow := newTestTxWithPriv(priv, 2, 1000, "default")
+	err := mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(10)), txLow)
+	require.ErrorIs(t, err, sdkerrors.ErrTxInMempoolCache)
+
+	ins, rem := collectEvents(eventCh)
+	require.Len(t, ins, 0)
+	require.Len(t, rem, 0)
+	require.True(t, mp.Contains(txHigh))
+	require.Equal(t, 2, mp.CountTx(), "1 active + 1 queued, rejected replacement must not change counts")
+}
+
+// TestQueuedSameNonceAsNextExpectedLowerPriorityRejected covers the Insert main
+// body path where a queued tx exists for key.nonce == nextExpected and the new
+// insert has insufficient priority. This path must also reject instead of
+// silently returning nil.
+func TestQueuedSameNonceAsNextExpectedLowerPriorityRejected(t *testing.T) {
+	mp, keeper, sdkCtx, eventCh := newTestMempoolWithEvents(t, 32)
+
+	priv := secp256k1.GenPrivKey()
+	sender := sdk.AccAddress(priv.PubKey().Address())
+	keeper.SetSequence(sender, 0)
+
+	// Put a higher-priority tx in the queued pool at nonce 1 (since nextExpected=0).
+	txQueuedHigh := newTestTxWithPriv(priv, 1, 1000, "default")
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(100)), txQueuedHigh))
+
+	// Advance the sender cursor so nextExpected becomes 1, placing queued[1] at
+	// exactly nonce == nextExpected. This drives the next Insert through the
+	// main-body queued-collision branch rather than insertQueuedLocked.
+	mp.mtx.Lock()
+	ss := mp.senders[sender.String()]
+	ss.setOnChainSeqLocked(1)
+	mp.mtx.Unlock()
+	drainEvents(eventCh)
+
+	txLow := newTestTxWithPriv(priv, 1, 1000, "default")
+	err := mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(10)), txLow)
+	require.ErrorIs(t, err, sdkerrors.ErrTxInMempoolCache)
+
+	ins, rem := collectEvents(eventCh)
+	require.Len(t, ins, 0)
+	require.Len(t, rem, 0)
+	require.Equal(t, 1, mp.CountTx(), "queued entry must remain untouched")
+}
+
+// TestQueuedPerSenderCapRejectsHighestNonce verifies the per-sender cap edge
+// case: when the sender's queued pool is full and the new nonce is >= current
+// highest nonce, the insert is rejected with ErrMempoolTxMaxCapacity instead
+// of silently returning nil.
+func TestQueuedPerSenderCapRejectsHighestNonce(t *testing.T) {
+	mp, keeper, sdkCtx, eventCh := newTestMempoolWithEvents(t, 64)
+	mp.SetMaxQueuedPerSender(2)
+	ctx := sdk.WrapSDKContext(sdkCtx)
+
+	priv := secp256k1.GenPrivKey()
+	sender := sdk.AccAddress(priv.PubKey().Address())
+	keeper.SetSequence(sender, 0)
+
+	require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(priv, 0, 1000, "default")))
+	require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(priv, 2, 1000, "default")))
+	require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(priv, 3, 1000, "default")))
+	drainEvents(eventCh)
+
+	// nonce=5 is higher than current highest queued nonce=3, must be rejected.
+	err := mp.Insert(ctx, newTestTxWithPriv(priv, 5, 1000, "default"))
+	require.ErrorIs(t, err, sdkmempool.ErrMempoolTxMaxCapacity)
+
+	ins, rem := collectEvents(eventCh)
+	require.Len(t, ins, 0)
+	require.Len(t, rem, 0)
+	require.Equal(t, 3, mp.CountTx(), "1 active + 2 queued, rejected tx must not change counts")
+
+	_, ok5 := mp.Lookup(sender.String(), 5)
+	require.False(t, ok5)
 }
 
 // TestPromotionCapacityFailureRequeuesChain verifies promotion under capacity
