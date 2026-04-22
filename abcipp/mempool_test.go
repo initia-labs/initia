@@ -10,6 +10,8 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	sdkmempool "github.com/cosmos/cosmos-sdk/types/mempool"
 )
 
 // newTestMempoolWithEvents builds a mempool with event channel wiring so each
@@ -247,9 +249,10 @@ func TestQueuedPerSenderCapEvictsHighestNonce(t *testing.T) {
 	require.False(t, ok4)
 }
 
-// TestQueuedTotalCapSilentlyRejectsFutureNonce verifies global queued
-// limit behavior: inserts beyond global queued capacity are skipped without error.
-func TestQueuedTotalCapSilentlyRejectsFutureNonce(t *testing.T) {
+// TestQueuedTotalCapRejectsFutureNonce verifies global queued limit behavior:
+// inserts beyond global queued capacity are rejected so ProxyMempool does not
+// cache txs that the app-side mempool did not accept.
+func TestQueuedTotalCapRejectsFutureNonce(t *testing.T) {
 	keeper := newMockAccountKeeper()
 	mp := NewPriorityMempool(PriorityMempoolConfig{
 		MaxTx:          64,
@@ -280,12 +283,34 @@ func TestQueuedTotalCapSilentlyRejectsFutureNonce(t *testing.T) {
 	require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(privB, 2, 1000, "default")))
 	drainEvents(eventCh)
 
-	// This queued insert should be silently skipped because total queued is full.
-	require.NoError(t, mp.Insert(ctx, newTestTxWithPriv(privC, 2, 1000, "default")))
+	// This queued insert should be rejected because total queued is full.
+	require.ErrorIs(t, mp.Insert(ctx, newTestTxWithPriv(privC, 2, 1000, "default")), sdkmempool.ErrMempoolTxMaxCapacity)
 	ins, rem := collectEvents(eventCh)
 	require.Len(t, ins, 0)
 	require.Len(t, rem, 0)
 	require.Equal(t, 5, mp.CountTx(), "3 active + 2 queued expected")
+}
+
+func TestLowerPriorityReplacementRejected(t *testing.T) {
+	mp, keeper, sdkCtx, eventCh := newTestMempoolWithEvents(t, 32)
+
+	priv := secp256k1.GenPrivKey()
+	sender := sdk.AccAddress(priv.PubKey().Address())
+	keeper.SetSequence(sender, 0)
+
+	txHigh := newTestTxWithPriv(priv, 0, 1000, "default")
+	require.NoError(t, mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(100)), txHigh))
+	drainEvents(eventCh)
+
+	txLow := newTestTxWithPriv(priv, 0, 1000, "default")
+	err := mp.Insert(sdk.WrapSDKContext(sdkCtx.WithPriority(10)), txLow)
+	require.ErrorIs(t, err, sdkerrors.ErrTxInMempoolCache)
+
+	ins, rem := collectEvents(eventCh)
+	require.Len(t, ins, 0)
+	require.Len(t, rem, 0)
+	require.True(t, mp.Contains(txHigh))
+	require.Equal(t, 1, mp.CountTx())
 }
 
 // TestPromotionCapacityFailureRequeuesChain verifies promotion under capacity
