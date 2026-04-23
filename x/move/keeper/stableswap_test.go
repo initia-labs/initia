@@ -11,6 +11,7 @@ import (
 	"cosmossdk.io/math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	vmtypes "github.com/initia-labs/movevm/types"
 
@@ -289,6 +290,40 @@ func Test_StableSwap_SwapToBase(t *testing.T) {
 	after := input.BankKeeper.GetAllBalances(ctx, fundedAddr)
 	require.True(t, before.AmountOf(denomCoinB).Sub(math.NewIntFromUint64(offerAmount)).Equal(after.AmountOf(denomCoinB)))
 	require.True(t, before.AmountOf(baseDenom).Add(math.NewIntFromUint64(expectedOut)).Equal(after.AmountOf(baseDenom)))
+}
+
+func Test_StableSwap_SwapToBase_BlockedRecipient(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+	stableSwapKeeper := keeper.NewStableSwapKeeper(&input.MoveKeeper)
+
+	baseDenom := bondDenom
+	denomCoinB := "milkINIT"
+	denomCoinC := "ibiINIT"
+
+	metadataCoinB, err := types.MetadataAddressFromDenom(denomCoinB)
+	require.NoError(t, err)
+
+	metadataLP := createStableSwapPool(
+		t, ctx, input,
+		sdk.NewCoins(
+			sdk.NewCoin(baseDenom, math.NewInt(1_000_000_000_000)),
+			sdk.NewCoin(denomCoinB, math.NewInt(1_000_000_000_001)),
+			sdk.NewCoin(denomCoinC, math.NewInt(1_000_000_000_002)),
+		),
+	)
+
+	quoteOfferCoin := sdk.NewInt64Coin(denomCoinB, 1_000)
+	feeCollectorAddr := authtypes.NewModuleAddress(authtypes.FeeCollectorName)
+	input.Faucet.Fund(ctx, feeCollectorAddr, quoteOfferCoin)
+
+	err = stableSwapKeeper.SwapToBase(
+		ctx,
+		types.ConvertSDKAddressToVMAddress(feeCollectorAddr),
+		metadataLP,
+		metadataCoinB,
+		quoteOfferCoin.Amount,
+	)
+	require.Error(t, err)
 }
 
 func mustParseJSONUint64ForStableSwap(t *testing.T, raw string) uint64 {

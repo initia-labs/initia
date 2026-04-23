@@ -300,14 +300,18 @@ func TestDex_SwapToBase_StableSwap(t *testing.T) {
 
 	expectedOut := mustParseJSONUint64(t, simRes.Ret)
 	quoteOfferCoin := sdk.NewCoin(denomCoinB, math.NewIntFromUint64(offerAmount))
-	fundedAddr := input.Faucet.NewFundedAccount(ctx, quoteOfferCoin)
-	before := input.BankKeeper.GetAllBalances(ctx, fundedAddr)
+	feeCollectorAddr := authtypes.NewModuleAddress(authtypes.FeeCollectorName)
+	input.Faucet.Fund(ctx, feeCollectorAddr, quoteOfferCoin)
+	before := input.BankKeeper.GetAllBalances(ctx, feeCollectorAddr)
+	stdBaseBefore := input.BankKeeper.GetBalance(ctx, types.StdAddr, bondDenom).Amount
 
-	require.NoError(t, dexKeeper.SwapToBase(ctx, fundedAddr, quoteOfferCoin))
+	require.NoError(t, dexKeeper.SwapToBase(ctx, feeCollectorAddr, quoteOfferCoin))
 
-	after := input.BankKeeper.GetAllBalances(ctx, fundedAddr)
+	after := input.BankKeeper.GetAllBalances(ctx, feeCollectorAddr)
+	stdBaseAfter := input.BankKeeper.GetBalance(ctx, types.StdAddr, bondDenom).Amount
 	require.True(t, before.AmountOf(denomCoinB).Sub(math.NewIntFromUint64(offerAmount)).Equal(after.AmountOf(denomCoinB)))
 	require.True(t, before.AmountOf(bondDenom).Add(math.NewIntFromUint64(expectedOut)).Equal(after.AmountOf(bondDenom)))
+	require.True(t, stdBaseBefore.Equal(stdBaseAfter))
 }
 
 func TestDex_SwapToBase_UnsupportedPool(t *testing.T) {
