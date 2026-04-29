@@ -79,6 +79,9 @@ func Test_ScriptDisabled(t *testing.T) {
 	msgServer := keeper.NewMsgServerImpl(&input.MoveKeeper)
 	_, err = msgServer.Script(ctx, nil)
 	require.ErrorIs(t, err, types.ErrScriptDisabled)
+
+	_, err = msgServer.ScriptJSON(ctx, nil)
+	require.ErrorIs(t, err, types.ErrScriptDisabled)
 }
 
 func Test_ExecuteMsg(t *testing.T) {
