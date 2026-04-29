@@ -38,8 +38,8 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/hashicorp/go-metrics v0.5.4
 	github.com/huandu/skiplist v1.2.1
-	github.com/initia-labs/OPinit v1.3.0
-	github.com/initia-labs/OPinit/api v1.3.0
+	github.com/initia-labs/OPinit v1.4.0
+	github.com/initia-labs/OPinit/api v1.4.1
 	github.com/initia-labs/initia/api v1.4.0
 	// we also need to update `LIBMOVEVM_VERSION` of Dockerfile#11
 	github.com/initia-labs/movevm v1.2.0
@@ -319,10 +319,6 @@ replace (
 	github.com/cometbft/cometbft => github.com/initia-labs/cometbft v0.38.21-initia.3
 	github.com/cosmos/cosmos-sdk => github.com/initia-labs/cosmos-sdk v0.53.7-initia.0
 	github.com/cosmos/iavl => github.com/initia-labs/iavl v1.2.6-initia.1
-
-	// TODO: drop these once OPinit PR #190 (pulsar regen for ibc-go v10) is merged and api/v1.4.0 is re-tagged.
-	github.com/initia-labs/OPinit => github.com/initia-labs/OPinit v1.4.1-0.20260428110601-176530cb9d56
-	github.com/initia-labs/OPinit/api => github.com/initia-labs/OPinit/api v1.4.1-0.20260428110601-176530cb9d56
 
 	github.com/noble-assets/forwarding/simapp => github.com/initia-labs/forwarding/simapp v1.0.0
 	github.com/noble-assets/forwarding/v2 => github.com/initia-labs/forwarding/v2 v2.0.3-initia.4
