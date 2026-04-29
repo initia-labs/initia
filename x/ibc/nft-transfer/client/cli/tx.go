@@ -85,16 +85,22 @@ corresponding to the counterpartychannel. Any timeout set to 0 is disabled.`),
 				return err
 			}
 
-			// for relative timestamp timeouts, fall back to local clock time
-			// height timeouts must now be passed as absolute values.
+			// relative timeouts using block height are not supported.
+			// if the timeouts are not absolute, CLI users rely solely on local clock time to calculate relative timestamps.
 			if !absoluteTimeouts {
-				if timeoutTimestamp != 0 {
-					now := time.Now().UTC().UnixNano()
-					if now <= 0 {
-						return errors.New("local clock time is not greater than Jan 1st, 1970 12:00 AM")
-					}
-					timeoutTimestamp = uint64(now) + timeoutTimestamp
+				if !timeoutHeight.IsZero() {
+					return errors.New("relative timeouts using block height is not supported")
 				}
+
+				if timeoutTimestamp == 0 {
+					return errors.New("relative timeouts must provide a non zero value timestamp")
+				}
+
+				now := time.Now().UTC().UnixNano()
+				if now <= 0 {
+					return errors.New("local clock time is not greater than Jan 1st, 1970 12:00 AM")
+				}
+				timeoutTimestamp = uint64(now) + timeoutTimestamp
 			}
 
 			msg := types.NewMsgTransfer(
@@ -105,7 +111,7 @@ corresponding to the counterpartychannel. Any timeout set to 0 is disabled.`),
 		},
 	}
 
-	cmd.Flags().String(flagPacketTimeoutHeight, types.DefaultRelativePacketTimeoutHeight, "Packet timeout block height. The timeout is disabled when set to 0-0.")
+	cmd.Flags().String(flagPacketTimeoutHeight, types.DefaultPacketTimeoutHeight, "Packet timeout block height in the format {revision}-{height}. Must be an absolute height and relative heights are not supported.")
 	cmd.Flags().Uint64(flagPacketTimeoutTimestamp, types.DefaultRelativePacketTimeoutTimestamp, "Packet timeout timestamp in nanoseconds from now. Default is 10 minutes. The timeout is disabled when set to 0.")
 	cmd.Flags().Bool(flagAbsoluteTimeouts, false, "Timeout flags are used as absolute timeouts.")
 	cmd.Flags().String(flagMemo, "", "Memo to be sent along with the packet.")
