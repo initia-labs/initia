@@ -32,7 +32,7 @@ require (
 	github.com/cosmos/ibc-go/v10 v10.6.0
 	github.com/cosmos/ledger-cosmos-go v1.0.0
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.4.0
-	github.com/ethereum/go-ethereum v1.16.8
+	github.com/ethereum/go-ethereum v1.16.9
 	github.com/golang/protobuf v1.5.4
 	github.com/gorilla/mux v1.8.1
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
