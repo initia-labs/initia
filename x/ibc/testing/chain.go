@@ -26,12 +26,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/staking/testutil"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
+	sdkmock "github.com/cosmos/cosmos-sdk/testutil/mock"
 	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
 	commitmenttypes "github.com/cosmos/ibc-go/v10/modules/core/23-commitment/types"
 	host "github.com/cosmos/ibc-go/v10/modules/core/24-host"
 	"github.com/cosmos/ibc-go/v10/modules/core/exported"
 	ibctm "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
-	sdkmock "github.com/cosmos/cosmos-sdk/testutil/mock"
 	"github.com/cosmos/ibc-go/v10/testing/simapp"
 
 	initiaapp "github.com/initia-labs/initia/app"

@@ -53,4 +53,3 @@ type ClientKeeper interface {
 type ConnectionKeeper interface {
 	GetConnection(ctx sdk.Context, connectionID string) (connection connectiontypes.ConnectionEnd, found bool)
 }
-

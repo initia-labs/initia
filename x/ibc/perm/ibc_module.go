@@ -182,4 +182,3 @@ func newEmitErrorAcknowledgement(ctx sdk.Context, err error, errorContexts ...st
 
 	return channeltypes.NewErrorAcknowledgement(err)
 }
-
