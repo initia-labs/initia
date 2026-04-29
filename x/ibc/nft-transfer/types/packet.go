@@ -92,7 +92,7 @@ func (nftpd NonFungibleTokenPacketData) GetBytes() []byte {
 		nftpd.TokenData = nil
 	}
 
-	return sdk.MustSortJSON(mustProtoMarshalJSON(&nftpd))
+	return sdk.MustSortJSON(mustProtoMarshalJSON(&nftpd)) //nolint:staticcheck
 }
 
 // requireShape checks if TokenUris/TokenData needs to be set as nil

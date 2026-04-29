@@ -85,7 +85,7 @@ type AppModule struct {
 func NewAppModule(accountKeeper cosmostypes.AccountKeeper,
 	stakingKeeper cosmostypes.StakingKeeper, deliverTx genesis.TxHandler,
 	txEncodingConfig client.TxEncodingConfig,
-) module.AppModule {
+) module.AppModule { //nolint:staticcheck
 	return module.NewGenesisOnlyAppModule(AppModule{
 		AppModuleBasic:   AppModuleBasic{},
 		accountKeeper:    accountKeeper,

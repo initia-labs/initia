@@ -13,7 +13,7 @@ import (
 )
 
 // register all distribution invariants
-func RegisterInvariants(ir sdk.InvariantRegistry, k Keeper) {
+func RegisterInvariants(ir sdk.InvariantRegistry, k Keeper) { //nolint:staticcheck
 	ir.RegisterRoute(types.ModuleName, "nonnegative-outstanding",
 		NonNegativeOutstandingInvariant(k))
 	ir.RegisterRoute(types.ModuleName, "can-withdraw",
@@ -25,7 +25,7 @@ func RegisterInvariants(ir sdk.InvariantRegistry, k Keeper) {
 }
 
 // AllInvariants runs all invariants of the distribution module
-func AllInvariants(k Keeper) sdk.Invariant {
+func AllInvariants(k Keeper) sdk.Invariant { //nolint:staticcheck
 	return func(ctx sdk.Context) (string, bool) {
 		res, stop := CanWithdrawInvariant(k)(ctx)
 		if stop {
@@ -44,7 +44,7 @@ func AllInvariants(k Keeper) sdk.Invariant {
 }
 
 // NonNegativeOutstandingInvariant checks that outstanding unwithdrawn fees are never negative
-func NonNegativeOutstandingInvariant(k Keeper) sdk.Invariant {
+func NonNegativeOutstandingInvariant(k Keeper) sdk.Invariant { //nolint:staticcheck
 	return func(ctx sdk.Context) (string, bool) {
 		var msg string
 		var count int
@@ -63,13 +63,13 @@ func NonNegativeOutstandingInvariant(k Keeper) sdk.Invariant {
 		}
 		broken := count != 0
 
-		return sdk.FormatInvariant(types.ModuleName, "nonnegative outstanding",
+		return sdk.FormatInvariant(types.ModuleName, "nonnegative outstanding", //nolint:staticcheck
 			fmt.Sprintf("found %d validators with negative outstanding rewards\n%s", count, msg)), broken
 	}
 }
 
 // CanWithdrawInvariant checks that current rewards can be completely withdrawn
-func CanWithdrawInvariant(k Keeper) sdk.Invariant {
+func CanWithdrawInvariant(k Keeper) sdk.Invariant { //nolint:staticcheck
 	return func(ctx sdk.Context) (string, bool) {
 
 		// cache, we don't want to write changes
@@ -121,13 +121,13 @@ func CanWithdrawInvariant(k Keeper) sdk.Invariant {
 		}
 
 		broken := remaining.IsAnyNegative()
-		return sdk.FormatInvariant(types.ModuleName, "can withdraw",
+		return sdk.FormatInvariant(types.ModuleName, "can withdraw", //nolint:staticcheck
 			fmt.Sprintf("remaining coins: %v\n", remaining)), broken
 	}
 }
 
 // ReferenceCountInvariant checks that the number of historical rewards records is correct
-func ReferenceCountInvariant(k Keeper) sdk.Invariant {
+func ReferenceCountInvariant(k Keeper) sdk.Invariant { //nolint:staticcheck
 	return func(ctx sdk.Context) (string, bool) {
 
 		valCount := uint64(0)
@@ -164,7 +164,7 @@ func ReferenceCountInvariant(k Keeper) sdk.Invariant {
 
 		broken := count != expected
 
-		return sdk.FormatInvariant(types.ModuleName, "reference count",
+		return sdk.FormatInvariant(types.ModuleName, "reference count", //nolint:staticcheck
 			fmt.Sprintf("expected historical reference count: %d = %v validators + %v delegations + %v slashes\n"+
 				"total validator historical reference count: %d\n",
 				expected, valCount, len(dels), slashCount, count)), broken
@@ -173,7 +173,7 @@ func ReferenceCountInvariant(k Keeper) sdk.Invariant {
 
 // ModuleAccountInvariant checks that the coins held by the distr ModuleAccount
 // is consistent with the sum of validator outstanding rewards
-func ModuleAccountInvariant(k Keeper) sdk.Invariant {
+func ModuleAccountInvariant(k Keeper) sdk.Invariant { //nolint:staticcheck
 	return func(ctx sdk.Context) (string, bool) {
 
 		var expectedCoins sdk.DecCoins
@@ -202,7 +202,7 @@ func ModuleAccountInvariant(k Keeper) sdk.Invariant {
 		// if the ModuleAccount balance is greater than or equal to the sum of
 		// the distribution rewards and community pool.
 		broken := !balances.IsAllGTE(expectedInt)
-		return sdk.FormatInvariant(
+		return sdk.FormatInvariant( //nolint:staticcheck
 			types.ModuleName, "ModuleAccount coins",
 			fmt.Sprintf("\texpected ModuleAccount coins:     %s\n"+
 				"\tdistribution ModuleAccount coins: %s\n",

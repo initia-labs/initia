@@ -33,7 +33,7 @@ func InternalSignModeToAPI(mode signing.SignMode) (signingv1beta1.SignMode, erro
 	case signing.SignMode_SIGN_MODE_DIRECT_AUX:
 		return signingv1beta1.SignMode_SIGN_MODE_DIRECT_AUX, nil
 	case signing.SignMode_SIGN_MODE_EIP_191:
-		return signingv1beta1.SignMode_SIGN_MODE_EIP_191, nil //nolint
+		return signingv1beta1.SignMode_SIGN_MODE_EIP_191, nil
 	case initiatx.Signing_SignMode_ACCOUNT_ABSTRACTION:
 		return initiatx.Signingv1beta1_SignMode_ACCOUNT_ABSTRACTION, nil
 	default:

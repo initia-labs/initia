@@ -25,7 +25,7 @@ import (
 const ConsensusVersion = 1
 
 var (
-	_ module.AppModule      = AppModule{}
+	_ module.AppModule      = AppModule{} //nolint:staticcheck
 	_ module.AppModuleBasic = AppModuleBasic{}
 	_ module.HasGenesis     = AppModule{}
 	_ module.HasServices    = AppModule{}
@@ -114,9 +114,6 @@ func NewAppModule(cdc codec.Codec, keeper keeper.Keeper) AppModule {
 func (AppModule) Name() string {
 	return types.ModuleName
 }
-
-// RegisterInvariants registers the slashing module invariants.
-func (am AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {}
 
 // RegisterServices registers module services.
 func (am AppModule) RegisterServices(cfg module.Configurator) {

@@ -35,7 +35,7 @@ jobs:
     steps:
       - uses: actions/setup-go@v3
         with:
-          go-version: 1.24
+          go-version: 1.26
       - name: Install openssl
         run: sudo apt-get install libssl-dev
       - uses: actions/checkout@v5
@@ -82,7 +82,7 @@ jobs:
     steps:
       - uses: actions/setup-go@v3
         with:
-          go-version: 1.24
+          go-version: 1.26
       - name: Install openssl
         run: sudo apt-get install libssl-dev
       - uses: actions/checkout@v5
@@ -104,7 +104,7 @@ jobs:
     steps:
       - uses: actions/setup-go@v3
         with:
-          go-version: 1.24
+          go-version: 1.26
       - name: Install openssl
         run: sudo apt-get install libssl-dev
       - uses: actions/checkout@v5

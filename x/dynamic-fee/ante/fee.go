@@ -114,7 +114,7 @@ func (fc MempoolFeeChecker) CheckTxFeeWithMinGasPrices(ctx sdk.Context, tx sdk.T
 				isSufficient := false
 
 				if fc.keeper != nil {
-					requiredBaseAmount := requiredFees.AmountOfNoDenomValidation(baseDenom)
+					requiredBaseAmount := requiredFees.AmountOf(baseDenom)
 
 					// converting to base token only works when the requiredBaseAmount is non-zero.
 					isSufficient = !requiredBaseAmount.IsZero() && totalFeeBaseAmount.GTE(requiredBaseAmount)

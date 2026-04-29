@@ -118,7 +118,7 @@ func (AppModule) Name() string {
 }
 
 // RegisterInvariants registers the staking module invariants.
-func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
+func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) { //nolint:staticcheck
 	keeper.RegisterInvariants(ir, am.keeper)
 }
 

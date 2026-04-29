@@ -29,7 +29,6 @@ var (
 	_ module.AppModuleBasic = AppModule{}
 	_ module.HasGenesis     = AppModule{}
 	_ module.HasServices    = AppModule{}
-	_ module.HasInvariants  = AppModule{}
 
 	_ appmodule.AppModule = AppModule{}
 )
@@ -112,9 +111,6 @@ func NewAppModule(cdc codec.Codec, keeper keeper.BaseKeeper, accountKeeper types
 
 // Name returns the bank module's name.
 func (AppModule) Name() string { return types.ModuleName }
-
-// RegisterInvariants registers the bank module invariants.
-func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {}
 
 // InitGenesis performs genesis initialization for the bank module. It returns
 // no validator updates.

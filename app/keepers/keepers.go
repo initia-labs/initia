@@ -124,7 +124,7 @@ type AppKeepers struct {
 	RewardKeeper          *rewardkeeper.Keeper
 	DistrKeeper           *distrkeeper.Keeper
 	GovKeeper             *govkeeper.Keeper
-	CrisisKeeper          *crisiskeeper.Keeper
+	CrisisKeeper          *crisiskeeper.Keeper //nolint:staticcheck
 	UpgradeKeeper         *upgradekeeper.Keeper
 	GroupKeeper           *groupkeeper.Keeper
 	DynamicFeeKeeper      *dynamicfeekeeper.Keeper
@@ -278,7 +278,7 @@ func NewAppKeeper(
 	)
 	appKeepers.SlashingKeeper = &slashingKeeper
 
-	appKeepers.CrisisKeeper = crisiskeeper.NewKeeper(
+	appKeepers.CrisisKeeper = crisiskeeper.NewKeeper( //nolint:staticcheck
 		appCodec,
 		runtime.NewKVStoreService(appKeepers.keys[crisistypes.StoreKey]),
 		invCheckPeriod,

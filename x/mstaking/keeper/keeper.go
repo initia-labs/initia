@@ -128,9 +128,9 @@ func NewKeeper(
 		UnbondingsIndex: collections.NewMap(sb, types.UnbondingsIndexPrefix, "unbondings_index", collections.Uint64Key, collectioncodec.KeyToValueCodec(collections.TripleKeyCodec(collections.BytesKey, collections.BytesKey, collections.BytesKey))),
 		UnbondingsType:  collections.NewMap(sb, types.UnbondingsTypePrefix, "unbondings_type", collections.Uint64Key, collections.Uint32Value),
 
-		UnbondingQueue:    collections.NewMap(sb, types.UnbondingQueuePrefix, "unbonding_queue", sdk.TimeKey, codec.CollValue[types.DVPairs](cdc)),
-		RedelegationQueue: collections.NewMap(sb, types.RedelegationQueuePrefix, "redelegation_queue", sdk.TimeKey, codec.CollValue[types.DVVTriplets](cdc)),
-		ValidatorQueue:    collections.NewMap(sb, types.ValidatorQueuePrefix, "validator_queue", sdk.TimeKey, codec.CollValue[types.ValAddresses](cdc)),
+		UnbondingQueue:    collections.NewMap(sb, types.UnbondingQueuePrefix, "unbonding_queue", sdk.TimeKey, codec.CollValue[types.DVPairs](cdc)),           //nolint:staticcheck
+		RedelegationQueue: collections.NewMap(sb, types.RedelegationQueuePrefix, "redelegation_queue", sdk.TimeKey, codec.CollValue[types.DVVTriplets](cdc)), //nolint:staticcheck
+		ValidatorQueue:    collections.NewMap(sb, types.ValidatorQueuePrefix, "validator_queue", sdk.TimeKey, codec.CollValue[types.ValAddresses](cdc)),      //nolint:staticcheck
 
 		HistoricalInfos: collections.NewMap(sb, types.HistoricalInfosPrefix, "historical_infos", collections.Int64Key, codec.CollValue[cosmostypes.HistoricalInfo](cdc)),
 
