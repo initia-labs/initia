@@ -140,7 +140,7 @@ func Test_OnTimeoutPacket_ICS721(t *testing.T) {
 	dataBz, err := json.Marshal(&data)
 	require.NoError(t, err)
 
-	err = input.IBCHooksMiddleware.OnTimeoutPacket(ctx, transfertypes.V1, channeltypes.Packet{
+	err = input.IBCHooksMiddleware.OnTimeoutPacket(ctx, nfttransfertypes.Version, channeltypes.Packet{
 		Data: dataBz,
 	}, addr)
 	require.NoError(t, err)
@@ -185,7 +185,7 @@ func Test_onTimeoutPacket_memo_ICS721(t *testing.T) {
 	require.NoError(t, input.IBCHooksKeeper.SetAsyncCallback(ctx, sourcePort, sourceChannel, sequence, callbackBz))
 
 	// hook should not be called to due to acl
-	err = input.IBCHooksMiddleware.OnTimeoutPacket(ctx, transfertypes.V1, channeltypes.Packet{
+	err = input.IBCHooksMiddleware.OnTimeoutPacket(ctx, nfttransfertypes.Version, channeltypes.Packet{
 		Data:          dataBz,
 		SourcePort:    sourcePort,
 		SourceChannel: sourceChannel,
@@ -210,7 +210,7 @@ func Test_onTimeoutPacket_memo_ICS721(t *testing.T) {
 	require.NoError(t, input.IBCHooksKeeper.SetAsyncCallback(ctx, sourcePort, sourceChannel, sequence, callbackBz))
 
 	// success
-	err = input.IBCHooksMiddleware.OnTimeoutPacket(ctx, transfertypes.V1, channeltypes.Packet{
+	err = input.IBCHooksMiddleware.OnTimeoutPacket(ctx, "", channeltypes.Packet{
 		Data:          dataBz,
 		SourcePort:    sourcePort,
 		SourceChannel: sourceChannel,
