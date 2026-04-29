@@ -7,8 +7,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 
 	nfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 
@@ -37,7 +37,7 @@ func Test_OnAckPacket(t *testing.T) {
 	ackBz, err := json.Marshal(channeltypes.NewResultAcknowledgement([]byte{byte(1)}))
 	require.NoError(t, err)
 
-	err = input.IBCHooksMiddleware.OnAcknowledgementPacket(ctx, channeltypes.Packet{
+	err = input.IBCHooksMiddleware.OnAcknowledgementPacket(ctx, transfertypes.V1, channeltypes.Packet{
 		Data: dataBz,
 	}, ackBz, addr)
 	require.NoError(t, err)
@@ -80,7 +80,7 @@ func Test_onAckPacket_memo(t *testing.T) {
 	require.NoError(t, input.IBCHooksKeeper.SetAsyncCallback(ctx, sourcePort, sourceChannel, sequence, callbackBz))
 
 	// hook should not be called to due to acl
-	err = input.IBCHooksMiddleware.OnAcknowledgementPacket(ctx, channeltypes.Packet{
+	err = input.IBCHooksMiddleware.OnAcknowledgementPacket(ctx, transfertypes.V1, channeltypes.Packet{
 		Data:          dataBz,
 		SourcePort:    sourcePort,
 		SourceChannel: sourceChannel,
@@ -105,7 +105,7 @@ func Test_onAckPacket_memo(t *testing.T) {
 	require.NoError(t, input.IBCHooksKeeper.SetAsyncCallback(ctx, sourcePort, sourceChannel, sequence, callbackBz))
 
 	// success with success ack
-	err = input.IBCHooksMiddleware.OnAcknowledgementPacket(ctx, channeltypes.Packet{
+	err = input.IBCHooksMiddleware.OnAcknowledgementPacket(ctx, transfertypes.V1, channeltypes.Packet{
 		Data:          dataBz,
 		SourcePort:    sourcePort,
 		SourceChannel: sourceChannel,
@@ -127,7 +127,7 @@ func Test_onAckPacket_memo(t *testing.T) {
 
 	// success with failed ack
 	require.NoError(t, input.IBCHooksKeeper.SetAsyncCallback(ctx, sourcePort, sourceChannel, sequence, callbackBz))
-	err = input.IBCHooksMiddleware.OnAcknowledgementPacket(ctx, channeltypes.Packet{
+	err = input.IBCHooksMiddleware.OnAcknowledgementPacket(ctx, transfertypes.V1, channeltypes.Packet{
 		Data:          dataBz,
 		SourcePort:    sourcePort,
 		SourceChannel: sourceChannel,
@@ -170,7 +170,7 @@ func Test_OnAckPacket_ICS721(t *testing.T) {
 	ackBz, err := json.Marshal(channeltypes.NewResultAcknowledgement([]byte{byte(1)}))
 	require.NoError(t, err)
 
-	err = input.IBCHooksMiddleware.OnAcknowledgementPacket(ctx, channeltypes.Packet{
+	err = input.IBCHooksMiddleware.OnAcknowledgementPacket(ctx, transfertypes.V1, channeltypes.Packet{
 		Data: dataBz,
 	}, ackBz, addr)
 	require.NoError(t, err)
@@ -217,7 +217,7 @@ func Test_onAckPacket_memo_ICS721(t *testing.T) {
 	require.NoError(t, input.IBCHooksKeeper.SetAsyncCallback(ctx, sourcePort, sourceChannel, sequence, callbackBz))
 
 	// hook should not be called to due to acl
-	err = input.IBCHooksMiddleware.OnAcknowledgementPacket(ctx, channeltypes.Packet{
+	err = input.IBCHooksMiddleware.OnAcknowledgementPacket(ctx, transfertypes.V1, channeltypes.Packet{
 		Data:          dataBz,
 		SourcePort:    sourcePort,
 		SourceChannel: sourceChannel,
@@ -242,7 +242,7 @@ func Test_onAckPacket_memo_ICS721(t *testing.T) {
 	require.NoError(t, input.IBCHooksKeeper.SetAsyncCallback(ctx, sourcePort, sourceChannel, sequence, callbackBz))
 
 	// success with success ack
-	err = input.IBCHooksMiddleware.OnAcknowledgementPacket(ctx, channeltypes.Packet{
+	err = input.IBCHooksMiddleware.OnAcknowledgementPacket(ctx, transfertypes.V1, channeltypes.Packet{
 		Data:          dataBz,
 		SourcePort:    sourcePort,
 		SourceChannel: sourceChannel,
@@ -264,7 +264,7 @@ func Test_onAckPacket_memo_ICS721(t *testing.T) {
 
 	// success with failed ack
 	require.NoError(t, input.IBCHooksKeeper.SetAsyncCallback(ctx, sourcePort, sourceChannel, sequence, callbackBz))
-	err = input.IBCHooksMiddleware.OnAcknowledgementPacket(ctx, channeltypes.Packet{
+	err = input.IBCHooksMiddleware.OnAcknowledgementPacket(ctx, transfertypes.V1, channeltypes.Packet{
 		Data:          dataBz,
 		SourcePort:    sourcePort,
 		SourceChannel: sourceChannel,

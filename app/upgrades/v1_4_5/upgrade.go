@@ -9,8 +9,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 
 	"github.com/initia-labs/initia/app/upgrades"
-
-	ophosttypes "github.com/initia-labs/OPinit/x/ophost/types"
 )
 
 const upgradeName = "v1.4.5"
@@ -42,11 +40,15 @@ func RegisterUpgradeHandlers(app upgrades.InitiaApp) {
 			}
 
 			// bind the opinit IBC port for ophost module
-			if !app.GetOPHostKeeper().IsBound(ctx, ophosttypes.PortID) {
-				if err := app.GetOPHostKeeper().BindPort(ctx, ophosttypes.PortID); err != nil {
-					return nil, err
-				}
-			}
+			//
+			// commented out for ibc-go v10: capability module removed, port binding now
+			// handled via router registration in-app wiring.
+			//
+			// if !app.GetOPHostKeeper().IsBound(ctx, ophosttypes.PortID) {
+			// 	if err := app.GetOPHostKeeper().BindPort(ctx, ophosttypes.PortID); err != nil {
+			// 		return nil, err
+			// 	}
+			// }
 
 			// update modules (skip)
 			// if err := upgrades.UpgradeMoveModules(ctx, app); err != nil {

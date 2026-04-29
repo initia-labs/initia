@@ -3,7 +3,7 @@ package keeper_test
 import (
 	"testing"
 
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
 	"github.com/stretchr/testify/require"
 
 	vmtypes "github.com/initia-labs/movevm/types"
@@ -15,11 +15,7 @@ func TestInitializeIBCCoin(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
 	moveBankKeeper := input.MoveKeeper.MoveBankKeeper()
 
-	denomTrace := transfertypes.DenomTrace{
-		Path:      "",
-		BaseDenom: "ufoo",
-	}
-	denom := denomTrace.IBCDenom()
+	denom := transfertypes.NewDenom("ufoo").IBCDenom()
 
 	err := moveBankKeeper.InitializeCoin(ctx, denom)
 	require.NoError(t, err)

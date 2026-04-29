@@ -11,9 +11,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
 
 	nfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 
@@ -43,7 +42,7 @@ func Test_SendPacket_without_async_callback(t *testing.T) {
 		Memo:     memo,
 	}
 
-	seq, err := ics4.SendPacket(ctx, &capabilitytypes.Capability{}, "transfer", "channel-0", clienttypes.Height{}, 0, data.GetBytes())
+	seq, err := ics4.SendPacket(ctx, "transfer", "channel-0", clienttypes.Height{}, 0, data.GetBytes())
 	require.NoError(t, err)
 	require.Equal(t, uint64(7), seq)
 
@@ -76,7 +75,7 @@ func Test_SendPacket_with_async_callback(t *testing.T) {
 		Memo:     memo,
 	}
 
-	seq, err := ics4.SendPacket(ctx, &capabilitytypes.Capability{}, "transfer", "channel-1", clienttypes.Height{}, 0, data.GetBytes())
+	seq, err := ics4.SendPacket(ctx, "transfer", "channel-1", clienttypes.Height{}, 0, data.GetBytes())
 	require.NoError(t, err)
 	require.Equal(t, uint64(9), seq)
 
@@ -117,7 +116,7 @@ func Test_SendPacket_ICS721_with_async_callback(t *testing.T) {
 		Memo:      memo,
 	}
 
-	seq, err := ics4.SendPacket(ctx, &capabilitytypes.Capability{}, "nft-transfer", "channel-2", clienttypes.Height{}, 0, data.GetBytes())
+	seq, err := ics4.SendPacket(ctx, "nft-transfer", "channel-2", clienttypes.Height{}, 0, data.GetBytes())
 	require.NoError(t, err)
 	require.Equal(t, uint64(11), seq)
 
@@ -152,7 +151,7 @@ func Test_SendPacket_not_routed(t *testing.T) {
 		Memo:     "{\"memo\":true}",
 	}
 
-	seq, err := ics4.SendPacket(ctx, &capabilitytypes.Capability{}, "transfer", "channel-9", clienttypes.Height{}, 0, data.GetBytes())
+	seq, err := ics4.SendPacket(ctx, "transfer", "channel-9", clienttypes.Height{}, 0, data.GetBytes())
 	require.NoError(t, err)
 	require.Equal(t, uint64(5), seq)
 

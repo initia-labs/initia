@@ -1,10 +1,9 @@
 package move_hooks
 
 import (
-	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
-	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
-	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
+	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
+	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
 
 	"cosmossdk.io/core/address"
 	"cosmossdk.io/log"
@@ -46,52 +45,52 @@ func NewMoveHooks(
 	}
 }
 
-func (h MoveHooks) SendPacketOverride(im ibchooks.ICS4Middleware, ctx sdk.Context, chanCap *capabilitytypes.Capability, sourcePort string, sourceChannel string, timeoutHeight clienttypes.Height, timeoutTimestamp uint64, data []byte) (uint64, error) {
+func (h MoveHooks) SendPacketOverride(im ibchooks.ICS4Middleware, ctx sdk.Context, sourcePort string, sourceChannel string, timeoutHeight clienttypes.Height, timeoutTimestamp uint64, data []byte) (uint64, error) {
 	if isIcs20, ics20Data := isIcs20Packet(data); isIcs20 {
-		return h.sendIcs20Packet(ctx, im, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, ics20Data)
+		return h.sendIcs20Packet(ctx, im, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, ics20Data)
 	}
 
 	if isIcs721, ics721Data := isIcs721Packet(data); isIcs721 {
-		return h.sendIcs721Packet(ctx, im, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, ics721Data)
+		return h.sendIcs721Packet(ctx, im, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, ics721Data)
 	}
 
-	return im.ICS4Wrapper.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data)
+	return im.ICS4Wrapper.SendPacket(ctx, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data)
 }
 
-func (h MoveHooks) OnRecvPacketOverride(im ibchooks.IBCMiddleware, ctx sdk.Context, packet channeltypes.Packet, relayer sdk.AccAddress) ibcexported.Acknowledgement {
+func (h MoveHooks) OnRecvPacketOverride(im ibchooks.IBCMiddleware, ctx sdk.Context, channelVersion string, packet channeltypes.Packet, relayer sdk.AccAddress) ibcexported.Acknowledgement {
 	if isIcs20, ics20Data := isIcs20Packet(packet.GetData()); isIcs20 {
-		return h.onRecvIcs20Packet(ctx, im, packet, relayer, ics20Data)
+		return h.onRecvIcs20Packet(ctx, im, channelVersion, packet, relayer, ics20Data)
 	}
 
 	if isIcs721, ics721Data := isIcs721Packet(packet.Data); isIcs721 {
-		return h.onRecvIcs721Packet(ctx, im, packet, relayer, ics721Data)
+		return h.onRecvIcs721Packet(ctx, im, channelVersion, packet, relayer, ics721Data)
 	}
 
-	return im.App.OnRecvPacket(ctx, packet, relayer)
+	return im.App.OnRecvPacket(ctx, channelVersion, packet, relayer)
 }
 
-func (h MoveHooks) OnAcknowledgementPacketOverride(im ibchooks.IBCMiddleware, ctx sdk.Context, packet channeltypes.Packet, acknowledgement []byte, relayer sdk.AccAddress) error {
+func (h MoveHooks) OnAcknowledgementPacketOverride(im ibchooks.IBCMiddleware, ctx sdk.Context, channelVersion string, packet channeltypes.Packet, acknowledgement []byte, relayer sdk.AccAddress) error {
 	if isIcs20, ics20Data := isIcs20Packet(packet.GetData()); isIcs20 {
-		return h.onAckIcs20Packet(ctx, im, packet, acknowledgement, relayer, ics20Data)
+		return h.onAckIcs20Packet(ctx, im, channelVersion, packet, acknowledgement, relayer, ics20Data)
 	}
 
 	if isIcs721, ics721Data := isIcs721Packet(packet.Data); isIcs721 {
-		return h.onAckIcs721Packet(ctx, im, packet, acknowledgement, relayer, ics721Data)
+		return h.onAckIcs721Packet(ctx, im, channelVersion, packet, acknowledgement, relayer, ics721Data)
 	}
 
-	return im.App.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
+	return im.App.OnAcknowledgementPacket(ctx, channelVersion, packet, acknowledgement, relayer)
 }
 
-func (h MoveHooks) OnTimeoutPacketOverride(im ibchooks.IBCMiddleware, ctx sdk.Context, packet channeltypes.Packet, relayer sdk.AccAddress) error {
+func (h MoveHooks) OnTimeoutPacketOverride(im ibchooks.IBCMiddleware, ctx sdk.Context, channelVersion string, packet channeltypes.Packet, relayer sdk.AccAddress) error {
 	if isIcs20, ics20Data := isIcs20Packet(packet.GetData()); isIcs20 {
-		return h.onTimeoutIcs20Packet(ctx, im, packet, relayer, ics20Data)
+		return h.onTimeoutIcs20Packet(ctx, im, channelVersion, packet, relayer, ics20Data)
 	}
 
 	if isIcs721, ics721Data := isIcs721Packet(packet.Data); isIcs721 {
-		return h.onTimeoutIcs721Packet(ctx, im, packet, relayer, ics721Data)
+		return h.onTimeoutIcs721Packet(ctx, im, channelVersion, packet, relayer, ics721Data)
 	}
 
-	return im.App.OnTimeoutPacket(ctx, packet, relayer)
+	return im.App.OnTimeoutPacket(ctx, channelVersion, packet, relayer)
 }
 
 func (h MoveHooks) checkACL(im ibchooks.IBCMiddleware, ctx sdk.Context, addrStr string) (bool, error) {

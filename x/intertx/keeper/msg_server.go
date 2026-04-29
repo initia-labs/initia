@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/cosmos/gogoproto/proto"
-	icacontrollerkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/keeper"
-	icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
-	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
+	icacontrollerkeeper "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/controller/keeper"
+	icacontrollertypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/controller/types"
+	icatypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -34,8 +34,7 @@ func (k msgServer) RegisterAccount(goCtx context.Context, msg *types.MsgRegister
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	icaMsg := icacontrollertypes.NewMsgRegisterInterchainAccount(msg.ConnectionId, msg.Owner, msg.Version)
-	icaMsg.Ordering = msg.Ordering
+	icaMsg := icacontrollertypes.NewMsgRegisterInterchainAccount(msg.ConnectionId, msg.Owner, msg.Version, msg.Ordering)
 
 	// validate the icaMsg
 	err := icaMsg.ValidateBasic()

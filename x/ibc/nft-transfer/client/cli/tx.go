@@ -14,8 +14,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/cosmos/cosmos-sdk/version"
 
-	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
-	channelutils "github.com/cosmos/ibc-go/v8/modules/core/04-channel/client/utils"
+	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
 
 	"github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 )
@@ -86,37 +85,15 @@ corresponding to the counterpartychannel. Any timeout set to 0 is disabled.`),
 				return err
 			}
 
-			// if the timeouts are not absolute, retrieve latest block height and block timestamp
-			// for the consensus state connected to the destination port/channel
+			// for relative timestamp timeouts, fall back to local clock time
+			// height timeouts must now be passed as absolute values.
 			if !absoluteTimeouts {
-				consensusState, height, _, err := channelutils.QueryLatestConsensusState(clientCtx, srcPort, srcChannel)
-				if err != nil {
-					return err
-				}
-
-				if !timeoutHeight.IsZero() {
-					absoluteHeight := height
-					absoluteHeight.RevisionNumber += timeoutHeight.RevisionNumber
-					absoluteHeight.RevisionHeight += timeoutHeight.RevisionHeight
-					timeoutHeight = absoluteHeight
-				}
-
 				if timeoutTimestamp != 0 {
-					// use local clock time as reference time if it is later than the
-					// consensus state timestamp of the counter party chain, otherwise
-					// still use consensus state timestamp as reference
 					now := time.Now().UTC().UnixNano()
-					consensusStateTimestamp := consensusState.GetTimestamp()
-					if now > 0 {
-						now := uint64(now)
-						if now > consensusStateTimestamp {
-							timeoutTimestamp = now + timeoutTimestamp
-						} else {
-							timeoutTimestamp = consensusStateTimestamp + timeoutTimestamp
-						}
-					} else {
+					if now <= 0 {
 						return errors.New("local clock time is not greater than Jan 1st, 1970 12:00 AM")
 					}
+					timeoutTimestamp = uint64(now) + timeoutTimestamp
 				}
 			}
 

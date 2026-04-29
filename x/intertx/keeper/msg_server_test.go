@@ -2,8 +2,8 @@ package keeper_test
 
 import (
 	"cosmossdk.io/math"
-	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	icatypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/types"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -26,13 +26,6 @@ func (suite *KeeperTestSuite) TestRegisterInterchainAccount() {
 	}{
 		{
 			"success", func() {}, true,
-		},
-		{
-			"failure - port is already bound",
-			func() {
-				GetICAApp(suite.chainA).GetIBCKeeper().PortKeeper.BindPort(suite.chainA.GetContext(), TestPortID)
-			},
-			false,
 		},
 		{
 			"failure - owner is empty",

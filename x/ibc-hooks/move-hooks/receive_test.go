@@ -12,8 +12,8 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 
 	nfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 
@@ -44,7 +44,7 @@ func Test_OnReceivePacketWithoutMemo(t *testing.T) {
 	dataBz, err := json.Marshal(&data)
 	require.NoError(t, err)
 
-	ack := input.IBCHooksMiddleware.OnRecvPacket(ctx, channeltypes.Packet{
+	ack := input.IBCHooksMiddleware.OnRecvPacket(ctx, transfertypes.V1, channeltypes.Packet{
 		Data: dataBz,
 	}, addr)
 
@@ -75,7 +75,7 @@ func Test_onReceiveIcs20Packet_memo(t *testing.T) {
 	require.NoError(t, err)
 
 	// failed to due to acl
-	ack := input.IBCHooksMiddleware.OnRecvPacket(ctx, channeltypes.Packet{
+	ack := input.IBCHooksMiddleware.OnRecvPacket(ctx, transfertypes.V1, channeltypes.Packet{
 		Data: dataBz,
 	}, addr)
 	require.False(t, ack.Success())
@@ -84,7 +84,7 @@ func Test_onReceiveIcs20Packet_memo(t *testing.T) {
 	require.NoError(t, input.IBCHooksKeeper.SetAllowed(ctx, movetypes.ConvertVMAddressToSDKAddress(vmtypes.StdAddress), true))
 
 	// success
-	ack = input.IBCHooksMiddleware.OnRecvPacket(ctx, channeltypes.Packet{
+	ack = input.IBCHooksMiddleware.OnRecvPacket(ctx, transfertypes.V1, channeltypes.Packet{
 		SourcePort:         "transfer",
 		SourceChannel:      "channel-0",
 		DestinationPort:    "transfer",
@@ -132,7 +132,7 @@ func Test_onReceiveIcs20Packet_memo_JSON(t *testing.T) {
 	require.NoError(t, err)
 
 	// fails due to acl
-	ack := input.IBCHooksMiddleware.OnRecvPacket(ctx, channeltypes.Packet{
+	ack := input.IBCHooksMiddleware.OnRecvPacket(ctx, transfertypes.V1, channeltypes.Packet{
 		Data: dataBz,
 	}, addr)
 	require.False(t, ack.Success())
@@ -141,7 +141,7 @@ func Test_onReceiveIcs20Packet_memo_JSON(t *testing.T) {
 	require.NoError(t, input.IBCHooksKeeper.SetAllowed(ctx, movetypes.ConvertVMAddressToSDKAddress(vmtypes.StdAddress), true))
 
 	// success with message_json path
-	ack = input.IBCHooksMiddleware.OnRecvPacket(ctx, channeltypes.Packet{
+	ack = input.IBCHooksMiddleware.OnRecvPacket(ctx, transfertypes.V1, channeltypes.Packet{
 		SourcePort:         "transfer",
 		SourceChannel:      "channel-0",
 		DestinationPort:    "transfer",
@@ -239,7 +239,7 @@ func Test_onReceiveIcs20Packet_memo_and_transfer_funds(t *testing.T) {
 	input.Faucet.Fund(ctx, intermediateAddr, sdk.NewCoin(denom, sdkmath.NewInt(10000)))
 
 	// success
-	ack := input.IBCHooksMiddleware.OnRecvPacket(ctx, packet, addr)
+	ack := input.IBCHooksMiddleware.OnRecvPacket(ctx, transfertypes.V1, packet, addr)
 	require.True(t, ack.Success())
 
 	afterBalance, err := input.MoveKeeper.MoveBankKeeper().GetBalance(ctx, addr2, denom)
@@ -271,7 +271,7 @@ func Test_onReceiveIcs20Packet_memo_with_hashed_receiver(t *testing.T) {
 	require.NoError(t, err)
 
 	// failed to due to acl
-	ack := input.IBCHooksMiddleware.OnRecvPacket(ctx, channeltypes.Packet{
+	ack := input.IBCHooksMiddleware.OnRecvPacket(ctx, transfertypes.V1, channeltypes.Packet{
 		Data: dataBz,
 	}, addr)
 	require.False(t, ack.Success())
@@ -280,7 +280,7 @@ func Test_onReceiveIcs20Packet_memo_with_hashed_receiver(t *testing.T) {
 	require.NoError(t, input.IBCHooksKeeper.SetAllowed(ctx, movetypes.ConvertVMAddressToSDKAddress(vmtypes.StdAddress), true))
 
 	// success
-	ack = input.IBCHooksMiddleware.OnRecvPacket(ctx, channeltypes.Packet{
+	ack = input.IBCHooksMiddleware.OnRecvPacket(ctx, transfertypes.V1, channeltypes.Packet{
 		SourcePort:         "transfer",
 		SourceChannel:      "channel-0",
 		DestinationPort:    "transfer",
@@ -322,7 +322,7 @@ func Test_OnReceivePacket_ICS721(t *testing.T) {
 	dataBz, err := json.Marshal(&data)
 	require.NoError(t, err)
 
-	ack := input.IBCHooksMiddleware.OnRecvPacket(ctx, channeltypes.Packet{
+	ack := input.IBCHooksMiddleware.OnRecvPacket(ctx, transfertypes.V1, channeltypes.Packet{
 		Data: dataBz,
 	}, addr)
 
@@ -357,7 +357,7 @@ func Test_onReceivePacket_memo_ICS721(t *testing.T) {
 	require.NoError(t, err)
 
 	// failed to due to acl
-	ack := input.IBCHooksMiddleware.OnRecvPacket(ctx, channeltypes.Packet{
+	ack := input.IBCHooksMiddleware.OnRecvPacket(ctx, transfertypes.V1, channeltypes.Packet{
 		Data: dataBz,
 	}, addr)
 	require.False(t, ack.Success())
@@ -366,7 +366,7 @@ func Test_onReceivePacket_memo_ICS721(t *testing.T) {
 	require.NoError(t, input.IBCHooksKeeper.SetAllowed(ctx, movetypes.ConvertVMAddressToSDKAddress(vmtypes.StdAddress), true))
 
 	// success
-	ack = input.IBCHooksMiddleware.OnRecvPacket(ctx, channeltypes.Packet{
+	ack = input.IBCHooksMiddleware.OnRecvPacket(ctx, transfertypes.V1, channeltypes.Packet{
 		Data: dataBz,
 	}, addr)
 	require.True(t, ack.Success())
@@ -414,7 +414,7 @@ func Test_onReceivePacket_memo_ICS721_JSON(t *testing.T) {
 	require.NoError(t, err)
 
 	// failed to due to acl
-	ack := input.IBCHooksMiddleware.OnRecvPacket(ctx, channeltypes.Packet{
+	ack := input.IBCHooksMiddleware.OnRecvPacket(ctx, transfertypes.V1, channeltypes.Packet{
 		Data: dataBz,
 	}, addr)
 	require.False(t, ack.Success())
@@ -423,7 +423,7 @@ func Test_onReceivePacket_memo_ICS721_JSON(t *testing.T) {
 	require.NoError(t, input.IBCHooksKeeper.SetAllowed(ctx, movetypes.ConvertVMAddressToSDKAddress(vmtypes.StdAddress), true))
 
 	// success
-	ack = input.IBCHooksMiddleware.OnRecvPacket(ctx, channeltypes.Packet{
+	ack = input.IBCHooksMiddleware.OnRecvPacket(ctx, transfertypes.V1, channeltypes.Packet{
 		Data: dataBz,
 	}, addr)
 	require.True(t, ack.Success())
