@@ -133,7 +133,6 @@ require (
 	github.com/cosmos/btcutil v1.0.5 // indirect
 	github.com/cosmos/gogogateway v1.2.0 // indirect
 	github.com/cosmos/iavl v1.2.6 // indirect
-	github.com/cosmos/ibc-go/v8 v8.5.1 // indirect
 	github.com/cosmos/ics23/go v0.11.0 // indirect
 	github.com/cosmos/interchain-security/v7 v7.0.1 // indirect
 	github.com/crate-crypto/go-eth-kzg v1.4.0 // indirect
@@ -320,7 +319,7 @@ replace (
 	github.com/cosmos/cosmos-sdk => github.com/initia-labs/cosmos-sdk v0.53.7-initia.0
 	github.com/cosmos/iavl => github.com/initia-labs/iavl v1.2.6-initia.1
 
-	github.com/noble-assets/forwarding/simapp => github.com/initia-labs/forwarding/simapp v1.0.0
+	github.com/noble-assets/forwarding/simapp => github.com/initia-labs/forwarding/simapp v1.0.1-0.20260421090420-f24c4fc5f529
 	github.com/noble-assets/forwarding/v2 => github.com/initia-labs/forwarding/v2 v2.0.3-initia.4
 	github.com/skip-mev/connect/v2 => github.com/initia-labs/connect/v2 v2.4.0
 )

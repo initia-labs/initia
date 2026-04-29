@@ -252,8 +252,6 @@ github.com/cosmos/ibc-go/modules/capability v1.0.1 h1:ibwhrpJ3SftEEZRxCRkH0fQZ9s
 github.com/cosmos/ibc-go/modules/capability v1.0.1/go.mod h1:rquyOV262nGJplkumH+/LeYs04P3eV8oB7ZM4Ygqk4E=
 github.com/cosmos/ibc-go/v10 v10.6.0 h1:k7PZVSLXFtCdoWlU+ERGn2m1Np4Tw8BF8WyPGl0DOi4=
 github.com/cosmos/ibc-go/v10 v10.6.0/go.mod h1:a74pAPUSJ7NewvmvELU74hUClJhwnmm5MGbEaiTw/kE=
-github.com/cosmos/ibc-go/v8 v8.5.1 h1:3JleEMKBjRKa3FeTKt4fjg22za/qygLBo7mDkoYTNBs=
-github.com/cosmos/ibc-go/v8 v8.5.1/go.mod h1:P5hkAvq0Qbg0h18uLxDVA9q1kOJ0l36htMsskiNwXbo=
 github.com/cosmos/ics23/go v0.11.0 h1:jk5skjT0TqX5e5QJbEnwXIS2yI2vnmLOgpQPeM5RtnU=
 github.com/cosmos/ics23/go v0.11.0/go.mod h1:A8OjxPE67hHST4Icw94hOxxFEJMBG031xIGF/JHNIY0=
 github.com/cosmos/interchain-security/v7 v7.0.1 h1:jg2pMbchCBN5LRDDgd9l86fcvw1v8dezGAxazhI0gtQ=
@@ -568,8 +566,8 @@ github.com/initia-labs/connect/v2 v2.4.0 h1:zKVpemWjeBsOVPLu7PuB/JUSJfo4uX+V6r+f
 github.com/initia-labs/connect/v2 v2.4.0/go.mod h1:OF8WmQ1ANSqXSUnIxM/1mMXPgPUNYUnP9z+Su2Bbw5A=
 github.com/initia-labs/cosmos-sdk v0.53.7-initia.0 h1:8jslRHSt0UWGK2EDENuXDjnkyPf5gSN7wtae8oH6pKY=
 github.com/initia-labs/cosmos-sdk v0.53.7-initia.0/go.mod h1:N6YuprhAabInbT3YGumGDKONbvPX5dNro7RjHvkQoKE=
-github.com/initia-labs/forwarding/simapp v1.0.0 h1:MNHLACO0053BAMO3+Ra2ZTlTTB5WieFElguDQH5d8fc=
-github.com/initia-labs/forwarding/simapp v1.0.0/go.mod h1:MOIDS73NjoIvTZ3OxUmJXY+Ry7xxXumrXPVZrAeJOhY=
+github.com/initia-labs/forwarding/simapp v1.0.1-0.20260421090420-f24c4fc5f529 h1:VtRalCzaGpXf15nClKICeDdbd16fY1bQchaOqDG6I/E=
+github.com/initia-labs/forwarding/simapp v1.0.1-0.20260421090420-f24c4fc5f529/go.mod h1:zh/XgqfgVWiW7FI36AMBVbMu3B9cPETK0srUlevEOso=
 github.com/initia-labs/forwarding/v2 v2.0.3-initia.4 h1:jHxKhDxt1Yhg7AVZoCFfABPOOXXJTdI3SI/yyiEWDbg=
 github.com/initia-labs/forwarding/v2 v2.0.3-initia.4/go.mod h1:slR65ckL3elajwnJO1RRHbqRFue4YtZrDVFh33Ux6FE=
 github.com/initia-labs/iavl v1.2.6-initia.1 h1:4vf9eiccLkob2eiM8YAM8Gf/UBniEFUKpvncM/hVoO8=
