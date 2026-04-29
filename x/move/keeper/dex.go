@@ -276,7 +276,9 @@ func (k DexKeeper) SwapToBase(
 	if ok, err := k.StableSwapKeeper().HasPool(ctx, metadataLP); err != nil {
 		return err
 	} else if ok {
-		return k.StableSwapKeeper().SwapToBase(ctx, vmAddr, metadataLP, metadataQuote, quoteCoin.Amount)
+		return k.swapToBaseViaStdAddr(ctx, addr, quoteCoin, func() error {
+			return k.StableSwapKeeper().SwapToBase(ctx, vmtypes.StdAddress, metadataLP, metadataQuote, quoteCoin.Amount)
+		})
 	}
 
 	params, err := k.GetParams(ctx)
@@ -293,37 +295,50 @@ func (k DexKeeper) SwapToBase(
 		if ok, err := clammKeeper.HasPool(ctx, metadataLP); err != nil {
 			return err
 		} else if ok {
-			baseDenom := params.BaseDenom
-			prevBaseBalance, err := k.moveBankKeeper.GetBalance(ctx, types.StdAddr, baseDenom)
-			if err != nil {
-				return err
-			}
-
-			// CLAMM cannot swap directly from blocked recipients such as the fee collector,
-			// so route the quote through StdAddr, execute the swap there, then send only
-			// the base-denom delta back to the original caller.
-			if err := k.moveBankKeeper.SendCoin(ctx, addr, types.StdAddr, quoteCoin.Denom, quoteCoin.Amount); err != nil {
-				return err
-			}
-			if err := clammKeeper.SwapToBase(ctx, vmtypes.StdAddress, metadataLP, metadataQuote, quoteCoin.Amount); err != nil {
-				return err
-			}
-
-			postBaseBalance, err := k.moveBankKeeper.GetBalance(ctx, types.StdAddr, baseDenom)
-			if err != nil {
-				return err
-			}
-
-			if postBaseBalance.GT(prevBaseBalance) {
-				baseBalanceDiff := postBaseBalance.Sub(prevBaseBalance)
-				if err := k.moveBankKeeper.SendCoin(ctx, types.StdAddr, addr, baseDenom, baseBalanceDiff); err != nil {
-					return err
-				}
-			}
-
-			return nil
+			return k.swapToBaseViaStdAddr(ctx, addr, quoteCoin, func() error {
+				return clammKeeper.SwapToBase(ctx, vmtypes.StdAddress, metadataLP, metadataQuote, quoteCoin.Amount)
+			})
 		}
 	}
 
 	return types.ErrInvalidRequest.Wrapf("LP `%s` is not a supported DEX pool", metadataLP.String())
+}
+
+func (k DexKeeper) swapToBaseViaStdAddr(
+	ctx context.Context,
+	addr sdk.AccAddress,
+	quoteCoin sdk.Coin,
+	swap func() error,
+) error {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return err
+	}
+
+	baseDenom := params.BaseDenom
+	prevBaseBalance, err := k.moveBankKeeper.GetBalance(ctx, types.StdAddr, baseDenom)
+	if err != nil {
+		return err
+	}
+
+	if err := k.moveBankKeeper.SendCoin(ctx, addr, types.StdAddr, quoteCoin.Denom, quoteCoin.Amount); err != nil {
+		return err
+	}
+	if err := swap(); err != nil {
+		return err
+	}
+
+	postBaseBalance, err := k.moveBankKeeper.GetBalance(ctx, types.StdAddr, baseDenom)
+	if err != nil {
+		return err
+	}
+
+	if postBaseBalance.GT(prevBaseBalance) {
+		baseBalanceDiff := postBaseBalance.Sub(prevBaseBalance)
+		if err := k.moveBankKeeper.SendCoin(ctx, types.StdAddr, addr, baseDenom, baseBalanceDiff); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

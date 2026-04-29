@@ -7,6 +7,7 @@ import (
 	"cosmossdk.io/math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	vmtypes "github.com/initia-labs/movevm/types"
 
@@ -261,6 +262,31 @@ func Test_CLAMM_SwapToBase(t *testing.T) {
 	after := input.BankKeeper.GetAllBalances(ctx, fundedAddr)
 	require.True(t, before.AmountOf(quoteDenom).Sub(quoteOfferCoin.Amount).Equal(after.AmountOf(quoteDenom)))
 	require.True(t, before.AmountOf(baseDenom).Add(math.NewInt(1_000)).Equal(after.AmountOf(baseDenom)))
+}
+
+func Test_CLAMM_SwapToBase_BlockedRecipient(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+
+	baseDenom := bondDenom
+	quoteDenom := "uusdc"
+	metadataQuote, err := types.MetadataAddressFromDenom(quoteDenom)
+	require.NoError(t, err)
+	metadataLP := createCLAMMPool(t, ctx, input, baseDenom, quoteDenom, 1, 0)
+
+	clammKeeper := keeper.NewCLAMMKeeper(&input.MoveKeeper, cafeAddr)
+
+	quoteOfferCoin := sdk.NewInt64Coin(quoteDenom, 1_000)
+	feeCollectorAddr := authtypes.NewModuleAddress(authtypes.FeeCollectorName)
+	input.Faucet.Fund(ctx, feeCollectorAddr, quoteOfferCoin)
+
+	err = clammKeeper.SwapToBase(
+		ctx,
+		types.ConvertSDKAddressToVMAddress(feeCollectorAddr),
+		metadataLP,
+		metadataQuote,
+		quoteOfferCoin.Amount,
+	)
+	require.Error(t, err)
 }
 
 func Test_CLAMM_SwapToBase_InvalidQuote(t *testing.T) {
