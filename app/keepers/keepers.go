@@ -67,6 +67,7 @@ import (
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 
 	appheaderinfo "github.com/initia-labs/initia/app/header_info"
+	legacyfeeack "github.com/initia-labs/initia/app/ibc/legacyfeeack"
 	bankkeeper "github.com/initia-labs/initia/x/bank/keeper"
 	distrkeeper "github.com/initia-labs/initia/x/distribution/keeper"
 	dynamicfeekeeper "github.com/initia-labs/initia/x/dynamic-fee/keeper"
@@ -467,6 +468,10 @@ func NewAppKeeper(
 			nil,
 			*appKeepers.IBCPermKeeper,
 		)
+
+		// legacy 29-fee ack compatibility for pre-v10 channels
+		// whose counterparties are still on ibc-go v8.
+		transferStack = legacyfeeack.NewIBCMiddleware(transferStack)
 	}
 
 	////////////////////////////////
@@ -511,6 +516,10 @@ func NewAppKeeper(
 			nil,
 			*appKeepers.IBCPermKeeper,
 		)
+
+		// legacy 29-fee ack compatibility for pre-v10 channels
+		// whose counterparties are still on ibc-go v8.
+		nftTransferStack = legacyfeeack.NewIBCMiddleware(nftTransferStack)
 	}
 
 	///////////////////////
