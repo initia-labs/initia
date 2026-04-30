@@ -145,8 +145,8 @@ type AppKeepers struct {
 	RatelimitKeeper       *ratelimitkeeper.Keeper
 
 	// light client modules
-	TMLightClientModule ibctm.LightClientModule
-	SMLightClientModule solomachine.LightClientModule
+	TMLightClientModule *ibctm.LightClientModule
+	SMLightClientModule *solomachine.LightClientModule
 }
 
 func NewAppKeeper(
@@ -650,11 +650,11 @@ func NewAppKeeper(
 
 	tmLightClientModule := ibctm.NewLightClientModule(appCodec, storeProvider)
 	clientKeeper.AddRoute(ibctm.ModuleName, &tmLightClientModule)
-	appKeepers.TMLightClientModule = tmLightClientModule
+	appKeepers.TMLightClientModule = &tmLightClientModule
 
 	smLightClientModule := solomachine.NewLightClientModule(appCodec, storeProvider)
 	clientKeeper.AddRoute(solomachine.ModuleName, &smLightClientModule)
-	appKeepers.SMLightClientModule = smLightClientModule
+	appKeepers.SMLightClientModule = &smLightClientModule
 
 	govConfig := govtypes.DefaultConfig()
 	appKeepers.GovKeeper = govkeeper.NewKeeper(

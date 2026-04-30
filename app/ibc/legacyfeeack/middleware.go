@@ -18,15 +18,16 @@ func NewIBCMiddleware(app porttypes.IBCModule) IBCMiddleware {
 	return IBCMiddleware{IBCModule: app}
 }
 
-// effectiveAppVersion returns the `app_version` the inner app should see. v10
-// transfer's packet-data parser rejects the wrapped version envelope, so on
-// fee-wrapped channels we hand it the unwrapped inner version (e.g. "ics20-1").
-func effectiveAppVersion(channelVersion string) string {
+// resolveAppVersion returns the `app_version` the inner app should see and
+// whether the channel was fee-wrapped. v10 transfer's packet-data parser
+// rejects the wrapped version envelope, so on fee-wrapped channels we hand
+// it the unwrapped inner version (e.g. "ics20-1").
+func resolveAppVersion(channelVersion string) (string, bool) {
 	if v, ok := UnwrapAppVersion(channelVersion); ok {
-		return v
+		return v, true
 	}
 
-	return channelVersion
+	return channelVersion, false
 }
 
 // OnRecvPacket dispatches to the underlying app and, if the channel was opened
@@ -38,8 +39,8 @@ func (im IBCMiddleware) OnRecvPacket(
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) ibcexported.Acknowledgement {
-	wrapped := IsFeeWrappedVersion(channelVersion)
-	inner := im.IBCModule.OnRecvPacket(ctx, effectiveAppVersion(channelVersion), packet, relayer)
+	appVersion, wrapped := resolveAppVersion(channelVersion)
+	inner := im.IBCModule.OnRecvPacket(ctx, appVersion, packet, relayer)
 	if inner == nil || !wrapped {
 		return inner
 	}
@@ -56,13 +57,14 @@ func (im IBCMiddleware) OnAcknowledgementPacket(
 	acknowledgement []byte,
 	relayer sdk.AccAddress,
 ) error {
-	if IsFeeWrappedVersion(channelVersion) {
+	appVersion, wrapped := resolveAppVersion(channelVersion)
+	if wrapped {
 		if peeled, ok := TryUnwrapFeeAck(acknowledgement); ok {
 			acknowledgement = peeled
 		}
 	}
 
-	return im.IBCModule.OnAcknowledgementPacket(ctx, effectiveAppVersion(channelVersion), packet, acknowledgement, relayer)
+	return im.IBCModule.OnAcknowledgementPacket(ctx, appVersion, packet, acknowledgement, relayer)
 }
 
 // OnTimeoutPacket unwraps the channel version so the inner app's packet-data
@@ -73,7 +75,9 @@ func (im IBCMiddleware) OnTimeoutPacket(
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) error {
-	return im.IBCModule.OnTimeoutPacket(ctx, effectiveAppVersion(channelVersion), packet, relayer)
+	appVersion, _ := resolveAppVersion(channelVersion)
+
+	return im.IBCModule.OnTimeoutPacket(ctx, appVersion, packet, relayer)
 }
 
 // wrappedAck implements the inner Acknowledgement.

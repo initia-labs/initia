@@ -210,7 +210,7 @@ func Test_onTimeoutPacket_memo_ICS721(t *testing.T) {
 	require.NoError(t, input.IBCHooksKeeper.SetAsyncCallback(ctx, sourcePort, sourceChannel, sequence, callbackBz))
 
 	// success
-	err = input.IBCHooksMiddleware.OnTimeoutPacket(ctx, "", channeltypes.Packet{
+	err = input.IBCHooksMiddleware.OnTimeoutPacket(ctx, nfttransfertypes.Version, channeltypes.Packet{
 		Data:          dataBz,
 		SourcePort:    sourcePort,
 		SourceChannel: sourceChannel,
