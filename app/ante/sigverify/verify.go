@@ -3,10 +3,9 @@ package sigverify
 import (
 	"bytes"
 	"context"
+	"crypto/sha3"
 	"encoding/json"
 	"fmt"
-
-	"golang.org/x/crypto/sha3"
 
 	signingv1beta1 "cosmossdk.io/api/cosmos/tx/signing/v1beta1"
 	txsigning "cosmossdk.io/x/tx/signing"

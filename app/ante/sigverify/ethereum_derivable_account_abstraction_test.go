@@ -2,13 +2,13 @@ package sigverify_test
 
 import (
 	"context"
+	"crypto/sha3"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
 
-	"golang.org/x/crypto/sha3"
 	"google.golang.org/protobuf/types/known/anypb"
 
 	"cosmossdk.io/math"

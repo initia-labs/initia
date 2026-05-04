@@ -2,10 +2,11 @@ package derivable
 
 import (
 	"bytes"
+	"crypto/sha3"
 	"fmt"
+	"hash"
 
 	"github.com/cometbft/cometbft/crypto"
-	"golang.org/x/crypto/sha3"
 
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 
@@ -57,7 +58,7 @@ func NewPubKey(moduleAddress string, moduleName string, functionName string, abs
 func (pubKey PubKey) Address() crypto.Address {
 	bytes := pubKey.Bytes()
 
-	hasher := sha3.New256()
+	hasher := hash.Hash(sha3.New256())
 	hasher.Write(bytes)
 	hash := hasher.Sum(nil)
 

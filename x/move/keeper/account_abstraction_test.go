@@ -2,12 +2,13 @@ package keeper_test
 
 import (
 	"crypto/ed25519"
+	"crypto/sha3"
 	"encoding/hex"
 	"fmt"
+	"hash"
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"golang.org/x/crypto/sha3"
 
 	storetypes "cosmossdk.io/store/types"
 
@@ -59,7 +60,7 @@ func TestVerifyAccountAbstractionSignature(t *testing.T) {
 	require.NoError(t, err)
 
 	// prepare authentication data
-	hasher := sha3.New256()
+	hasher := hash.Hash(sha3.New256())
 	hasher.Write(publicKeyAuthenticator)
 	digest := hasher.Sum(nil)
 	digestBytes := digest[:]

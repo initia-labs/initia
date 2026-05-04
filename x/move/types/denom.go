@@ -2,11 +2,11 @@ package types
 
 import (
 	context "context"
+	sha30 "crypto/sha3"
 	"encoding/hex"
 	"errors"
+	"hash"
 	"strings"
-
-	"golang.org/x/crypto/sha3"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -26,7 +26,7 @@ const (
 func NamedObjectAddress(source vmtypes.AccountAddress, name string) vmtypes.AccountAddress {
 	// 0xFE is the suffix of named object address, which is
 	// defined in object.move as `OBJECT_FROM_SEED_ADDRESS_SCHEME`.
-	hasher := sha3.New256()
+	hasher := hash.Hash(sha30.New256())
 	hasher.Write(append(append(source[:], []byte(name)...), 0xFE))
 	bz := hasher.Sum(nil)
 
@@ -39,7 +39,7 @@ func NamedObjectAddress(source vmtypes.AccountAddress, name string) vmtypes.Acco
 }
 
 func UserDerivedObjectAddress(source vmtypes.AccountAddress, deriveFrom vmtypes.AccountAddress) vmtypes.AccountAddress {
-	hasher := sha3.New256()
+	hasher := hash.Hash(sha30.New256())
 	hasher.Write(append(append(source[:], deriveFrom[:]...), 0xFC))
 	bz := hasher.Sum(nil)
 

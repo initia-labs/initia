@@ -1,11 +1,12 @@
 package derivable
 
 import (
+	"crypto/sha3"
+	"hash"
 	"testing"
 
 	vmtypes "github.com/initia-labs/movevm/types"
 	"github.com/stretchr/testify/require"
-	"golang.org/x/crypto/sha3"
 )
 
 func TestDerivablePubKey(t *testing.T) {
@@ -30,7 +31,7 @@ func TestDerivablePubKey(t *testing.T) {
 	require.Equal(t, expectedBytes, pubKeyBytes)
 
 	address := pubKey.Address()
-	hasher := sha3.New256()
+	hasher := hash.Hash(sha3.New256())
 	hasher.Write(pubKeyBytes)
 	hash := hasher.Sum(nil)
 
