@@ -2,6 +2,7 @@ package sigverify_test
 
 import (
 	"context"
+	"crypto/sha3"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -11,7 +12,7 @@ import (
 	"crypto/ed25519"
 
 	"github.com/stretchr/testify/suite"
-	"golang.org/x/crypto/sha3"
+
 	"google.golang.org/protobuf/types/known/anypb"
 
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"

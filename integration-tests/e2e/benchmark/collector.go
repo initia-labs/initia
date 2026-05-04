@@ -238,9 +238,7 @@ func CollectInitialMetas(ctx context.Context, cluster *e2e.Cluster) (map[string]
 	var firstErr error
 
 	for _, name := range cluster.AccountNames() {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			addr, err := cluster.AccountAddress(name)
 			if err != nil {
 				mu.Lock()
@@ -262,7 +260,7 @@ func CollectInitialMetas(ctx context.Context, cluster *e2e.Cluster) (map[string]
 			mu.Lock()
 			metas[name] = meta
 			mu.Unlock()
-		}()
+		})
 	}
 	wg.Wait()
 	if firstErr != nil {

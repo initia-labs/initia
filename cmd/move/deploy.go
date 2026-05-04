@@ -3,12 +3,12 @@ package movecmd
 import (
 	"bufio"
 	"context"
+	"crypto/sha3"
 	"fmt"
 	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
-	"golang.org/x/crypto/sha3"
 
 	"cosmossdk.io/core/address"
 	errorsmod "cosmossdk.io/errors"

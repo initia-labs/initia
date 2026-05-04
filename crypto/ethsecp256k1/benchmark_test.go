@@ -20,7 +20,7 @@ func BenchmarkPubKey_VerifySignature(b *testing.B) {
 	const numSamples = 100
 	msgs := make([][]byte, numSamples)
 	sigs := make([][]byte, numSamples)
-	for i := 0; i < numSamples; i++ {
+	for i := range numSamples {
 		msgs[i] = fmt.Appendf(nil, "%10d", i)
 		sig, err := privKey.Sign(msgs[i])
 		if err != nil {

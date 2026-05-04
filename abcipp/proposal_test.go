@@ -85,9 +85,7 @@ func TestProposalHandlerWithConcurrentMempool(t *testing.T) {
 
 	done := make(chan struct{})
 	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		var idx uint64
 		for {
 			select {
@@ -104,7 +102,7 @@ func TestProposalHandlerWithConcurrentMempool(t *testing.T) {
 				time.Sleep(time.Millisecond)
 			}
 		}
-	}()
+	})
 
 	req := &abci.RequestPrepareProposal{
 		Height:     2,

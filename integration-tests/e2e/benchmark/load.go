@@ -44,9 +44,7 @@ func BurstLoad(ctx context.Context, cluster *e2e.Cluster, cfg BenchConfig, metas
 	for _, name := range cluster.AccountNames() {
 		meta := metas[name]
 
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			for i := 0; i < cfg.TxPerAccount; i++ {
 				select {
 				case <-ctx.Done():
@@ -82,7 +80,7 @@ func BurstLoad(ctx context.Context, cluster *e2e.Cluster, cfg BenchConfig, metas
 				}
 				mu.Unlock()
 			}
-		}()
+		})
 	}
 
 	wg.Wait()
@@ -115,9 +113,7 @@ func SequentialLoad(ctx context.Context, cluster *e2e.Cluster, cfg BenchConfig, 
 			viaNode = edgeNodeIndex(accountIdx, cfg.NodeCount, cfg.ValidatorCount)
 		}
 
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			for i := 0; i < cfg.TxPerAccount; i++ {
 				select {
 				case <-ctx.Done():
@@ -149,7 +145,7 @@ func SequentialLoad(ctx context.Context, cluster *e2e.Cluster, cfg BenchConfig, 
 				}
 				mu.Unlock()
 			}
-		}()
+		})
 	}
 
 	wg.Wait()
@@ -179,9 +175,7 @@ func OutOfOrderLoad(ctx context.Context, cluster *e2e.Cluster, cfg BenchConfig, 
 	for _, name := range cluster.AccountNames() {
 		meta := metas[name]
 
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			seqs := sequencePattern(meta.Sequence, cfg.TxPerAccount)
 			for i, seq := range seqs {
 				select {
@@ -217,7 +211,7 @@ func OutOfOrderLoad(ctx context.Context, cluster *e2e.Cluster, cfg BenchConfig, 
 				}
 				mu.Unlock()
 			}
-		}()
+		})
 	}
 
 	wg.Wait()
@@ -243,9 +237,7 @@ func SingleNodeLoad(ctx context.Context, cluster *e2e.Cluster, cfg BenchConfig, 
 	for _, name := range cluster.AccountNames() {
 		meta := metas[name]
 
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			for i := 0; i < cfg.TxPerAccount; i++ {
 				select {
 				case <-ctx.Done():
@@ -277,7 +269,7 @@ func SingleNodeLoad(ctx context.Context, cluster *e2e.Cluster, cfg BenchConfig, 
 				}
 				mu.Unlock()
 			}
-		}()
+		})
 	}
 
 	wg.Wait()
@@ -310,9 +302,7 @@ func MoveExecSequentialLoad(moduleAddr, moduleName, functionName string, typeArg
 				viaNode = edgeNodeIndex(accountIdx, cfg.NodeCount, cfg.ValidatorCount)
 			}
 
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
+			wg.Go(func() {
 				for i := 0; i < cfg.TxPerAccount; i++ {
 					select {
 					case <-ctx.Done():
@@ -345,7 +335,7 @@ func MoveExecSequentialLoad(moduleAddr, moduleName, functionName string, typeArg
 					}
 					mu.Unlock()
 				}
-			}()
+			})
 		}
 
 		wg.Wait()
@@ -374,9 +364,7 @@ func MoveExecBurstLoad(moduleAddr, moduleName, functionName string, typeArgs, ar
 		for _, name := range cluster.AccountNames() {
 			meta := metas[name]
 
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
+			wg.Go(func() {
 				for i := 0; i < cfg.TxPerAccount; i++ {
 					select {
 					case <-ctx.Done():
@@ -413,7 +401,7 @@ func MoveExecBurstLoad(moduleAddr, moduleName, functionName string, typeArgs, ar
 					}
 					mu.Unlock()
 				}
-			}()
+			})
 		}
 
 		wg.Wait()
@@ -447,9 +435,7 @@ func QueuedFloodLoad(ctx context.Context, cluster *e2e.Cluster, cfg BenchConfig,
 	for _, name := range cluster.AccountNames() {
 		meta := metas[name]
 
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			for i := 1; i < cfg.TxPerAccount; i++ {
 				select {
 				case <-ctx.Done():
@@ -485,7 +471,7 @@ func QueuedFloodLoad(ctx context.Context, cluster *e2e.Cluster, cfg BenchConfig,
 				}
 				mu.Unlock()
 			}
-		}()
+		})
 	}
 
 	wg.Wait()
@@ -548,9 +534,7 @@ func QueuedGapLoad(ctx context.Context, cluster *e2e.Cluster, cfg BenchConfig, m
 	for _, name := range cluster.AccountNames() {
 		meta := metas[name]
 
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			for i := 1; i <= cfg.TxPerAccount; i++ {
 				select {
 				case <-ctx.Done():
@@ -586,7 +570,7 @@ func QueuedGapLoad(ctx context.Context, cluster *e2e.Cluster, cfg BenchConfig, m
 				}
 				mu.Unlock()
 			}
-		}()
+		})
 	}
 
 	wg.Wait()
@@ -606,9 +590,7 @@ func PreSignBankTxs(ctx context.Context, t *testing.T, cluster *e2e.Cluster, cfg
 
 	for _, name := range cluster.AccountNames() {
 		meta := metas[name]
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			for i := 0; i < cfg.TxPerAccount; i++ {
 				seq := meta.Sequence + uint64(i)
 				signed, err := cluster.GenerateSignedBankTx(
@@ -623,7 +605,7 @@ func PreSignBankTxs(ctx context.Context, t *testing.T, cluster *e2e.Cluster, cfg
 				txs = append(txs, signed)
 				mu.Unlock()
 			}
-		}()
+		})
 	}
 	wg.Wait()
 	t.Logf("Pre-signed %d/%d bank txs", len(txs), total)
@@ -643,9 +625,7 @@ func PreSignMoveExecTxs(
 
 	for _, name := range cluster.AccountNames() {
 		meta := metas[name]
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			for i := 0; i < cfg.TxPerAccount; i++ {
 				seq := meta.Sequence + uint64(i)
 				signed, err := cluster.GenerateSignedMoveExecTx(
@@ -661,7 +641,7 @@ func PreSignMoveExecTxs(
 				txs = append(txs, signed)
 				mu.Unlock()
 			}
-		}()
+		})
 	}
 	wg.Wait()
 	t.Logf("Pre-signed %d/%d move exec txs", len(txs), total)
@@ -701,9 +681,7 @@ func PreSignedBurstLoad(signedTxs []e2e.SignedTx) func(ctx context.Context, clus
 		accountIdx := 0
 		for acct, txs := range byAccount {
 			_ = acct
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
+			wg.Go(func() {
 				for i, stx := range txs {
 					select {
 					case <-ctx.Done():
@@ -742,7 +720,7 @@ func PreSignedBurstLoad(signedTxs []e2e.SignedTx) func(ctx context.Context, clus
 					}
 					mu.Unlock()
 				}
-			}()
+			})
 			accountIdx++
 		}
 
@@ -791,9 +769,7 @@ func PreSignedSequentialLoad(signedTxs []e2e.SignedTx) func(ctx context.Context,
 				viaNode = edgeNodeIndex(accountIdx, cfg.NodeCount, cfg.ValidatorCount)
 			}
 
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
+			wg.Go(func() {
 				for i, stx := range txs {
 					select {
 					case <-ctx.Done():
@@ -833,7 +809,7 @@ func PreSignedSequentialLoad(signedTxs []e2e.SignedTx) func(ctx context.Context,
 						time.Sleep(5 * time.Millisecond)
 					}
 				}
-			}()
+			})
 			accountIdx++
 		}
 
