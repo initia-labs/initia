@@ -44,7 +44,7 @@ require (
 	github.com/initia-labs/initia/api v1.4.0
 	// we also need to update `LIBMOVEVM_VERSION` of Dockerfile#11
 	github.com/initia-labs/movevm v1.2.0
-	github.com/initia-labs/store v0.1.1
+	github.com/initia-labs/store v0.1.2
 	github.com/noble-assets/forwarding/v2 v2.0.3
 	github.com/pelletier/go-toml v1.9.5
 	github.com/pkg/errors v0.9.1
@@ -194,7 +194,7 @@ require (
 	github.com/iancoleman/strcase v0.3.0 // indirect
 	github.com/improbable-eng/grpc-web v0.15.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/initia-labs/store/memiavl v0.1.1 // indirect
+	github.com/initia-labs/store/memiavl v0.1.2 // indirect
 	github.com/initia-labs/store/versiondb v0.1.0 // indirect
 	github.com/jmhodges/levigo v1.0.0 // indirect
 	github.com/klauspost/compress v1.18.5 // indirect
