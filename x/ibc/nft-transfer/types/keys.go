@@ -29,6 +29,9 @@ const (
 
 	// ClassIdPrefix is the prefix used for internal class id representation.
 	ClassIdPrefix = "ibc"
+
+	// IbcRouterKey is the IBC router key string for nft-transfer
+	IbcRouterKey = "nft"
 )
 
 var (
