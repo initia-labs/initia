@@ -562,16 +562,21 @@ func NewAppKeeper(
 
 		icaAuthIBCModule := icaauth.NewIBCModule(*appKeepers.ICAAuthKeeper)
 		icaHostIBCModule := icahost.NewIBCModule(*appKeepers.ICAHostKeeper)
-		icaHostStack = ibcperm.NewIBCMiddleware(
-			icaHostIBCModule,
-			nil,
-			*appKeepers.IBCPermKeeper,
+		// legacyfeeack outermost on both ICA stacks for fee-wrapped channel ack compatibility.
+		icaHostStack = legacyfeeack.NewIBCMiddleware(
+			ibcperm.NewIBCMiddleware(
+				icaHostIBCModule,
+				nil,
+				*appKeepers.IBCPermKeeper,
+			),
 		)
 		icaControllerIBCModule := icacontroller.NewIBCMiddlewareWithAuth(icaAuthIBCModule, *appKeepers.ICAControllerKeeper)
-		icaControllerStack = ibcperm.NewIBCMiddleware(
-			icaControllerIBCModule,
-			nil,
-			*appKeepers.IBCPermKeeper,
+		icaControllerStack = legacyfeeack.NewIBCMiddleware(
+			ibcperm.NewIBCMiddleware(
+				icaControllerIBCModule,
+				nil,
+				*appKeepers.IBCPermKeeper,
+			),
 		)
 	}
 
@@ -625,7 +630,7 @@ func NewAppKeeper(
 		vc,
 	)
 
-	ophostStack := ophost.NewIBCModule(*appKeepers.OPHostKeeper)
+	ophostStack := legacyfeeack.NewIBCMiddleware(ophost.NewIBCModule(*appKeepers.OPHostKeeper))
 
 	//////////////////////////////
 	// IBC router Configuration //
