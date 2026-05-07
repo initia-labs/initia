@@ -53,7 +53,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/posthandler"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/cosmos/cosmos-sdk/x/crisis"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
 	// this line is used by starport scaffolding # stargate/app/moduleImport
@@ -175,8 +174,6 @@ func NewInitiaApp(
 
 	// app opts
 	homePath := cast.ToString(appOpts.Get(flags.FlagHome))
-	skipGenesisInvariants := cast.ToBool(appOpts.Get(crisis.FlagSkipGenesisInvariants)) //nolint:staticcheck
-	invCheckPeriod := cast.ToUint(appOpts.Get(server.FlagInvCheckPeriod))
 	skipUpgradeHeights := make(map[int64]bool)
 	for _, h := range cast.ToIntSlice(appOpts.Get(server.FlagUnsafeSkipUpgrades)) {
 		skipUpgradeHeights[int64(h)] = true
@@ -215,7 +212,6 @@ func NewInitiaApp(
 		blockedModuleAccountAddrs,
 		skipUpgradeHeights,
 		homePath,
-		invCheckPeriod,
 		logger,
 		moveConfig,
 		appOpts,
@@ -225,7 +221,7 @@ func NewInitiaApp(
 
 	// NOTE: Any module instantiated in the module manager that is later modified
 	// must be passed by reference here.
-	app.ModuleManager = module.NewManager(appModules(app, skipGenesisInvariants)...)
+	app.ModuleManager = module.NewManager(appModules(app)...)
 
 	// BasicModuleManager defines the module BasicManager is in charge of setting up basic,
 	// non-dependant module elements, such as codec registration and genesis verification.
@@ -245,9 +241,6 @@ func NewInitiaApp(
 	genesisModuleOrder := orderInitBlockers()
 	app.ModuleManager.SetOrderInitGenesis(genesisModuleOrder...)
 	app.ModuleManager.SetOrderExportGenesis(genesisModuleOrder...)
-
-	// register invariants for crisis module
-	app.ModuleManager.RegisterInvariants(app.CrisisKeeper) //nolint:staticcheck
 
 	// register the service configurator
 	app.configurator = module.NewConfigurator(app.appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter())

@@ -35,7 +35,6 @@ import (
 	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/cosmos/cosmos-sdk/x/crisis"
 	cosmosgenutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 
@@ -222,7 +221,6 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig, b
 		server.StartCmdOptions{
 			DBOpener: initiastoreopendb.OpenDB,
 			AddFlags: func(startCmd *cobra.Command) {
-				crisis.AddModuleInitFlags(startCmd) //nolint:staticcheck
 				initiacmdflags.AddCometBFTFlags(startCmd)
 				initiastoreconfig.AddMemIAVLConfigFlags(startCmd)
 				initiastoreconfig.AddVersionDBConfigFlags(startCmd)

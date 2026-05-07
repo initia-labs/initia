@@ -12,7 +12,6 @@ import (
 	"cosmossdk.io/math"
 
 	"github.com/cosmos/cosmos-sdk/codec"
-	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 
@@ -59,11 +58,6 @@ func (genState GenesisState) ConfigureBondDenom(cdc codec.JSONCodec, bondDenom s
 	cdc.MustUnmarshalJSON(genState[distrtypes.ModuleName], &distrGenState)
 	distrGenState.Params.RewardWeights = []customdistrtypes.RewardWeight{{Denom: bondDenom, Weight: math.LegacyOneDec()}}
 	genState[distrtypes.ModuleName] = cdc.MustMarshalJSON(&distrGenState)
-
-	var crisisGenState crisistypes.GenesisState
-	cdc.MustUnmarshalJSON(genState[crisistypes.ModuleName], &crisisGenState)
-	crisisGenState.ConstantFee.Denom = bondDenom
-	genState[crisistypes.ModuleName] = cdc.MustMarshalJSON(&crisisGenState)
 
 	var govGenState customgovtypes.GenesisState
 	cdc.MustUnmarshalJSON(genState[govtypes.ModuleName], &govGenState)

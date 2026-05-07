@@ -16,13 +16,14 @@ const upgradeName = "v1.5.0"
 // RegisterUpgradeHandlers registers the v1.5.0 upgrade.
 //
 // v1.5.0 migrates the chain to ibc-go v10. The upgrade:
-//   - Deletes the legacy `capability` and `feeibc` (29-fee) module stores,
-//     both of which were removed in ibc-go v10.
+//   - Deletes the legacy `capability`, `feeibc` (29-fee), and `crisis` module
+//     stores. capability + feeibc were removed in ibc-go v10, crisis was
+//     removed in cosmos-sdk v0.53.
 func RegisterUpgradeHandlers(app upgrades.InitiaApp) {
 	if upgradeInfo, err := app.GetUpgradeKeeper().ReadUpgradeInfoFromDisk(); err == nil {
 		if upgradeInfo.Name == upgradeName && !app.GetUpgradeKeeper().IsSkipHeight(upgradeInfo.Height) {
 			storeUpgrades := storetypes.StoreUpgrades{
-				Deleted: []string{"capability", "feeibc"},
+				Deleted: []string{"capability", "feeibc", "crisis"},
 			}
 			app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
 		}

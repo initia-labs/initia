@@ -24,8 +24,6 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	consensusparamkeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
-	crisiskeeper "github.com/cosmos/cosmos-sdk/x/crisis/keeper"
-	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/cosmos/cosmos-sdk/x/group"
@@ -120,7 +118,6 @@ type AppKeepers struct {
 	RewardKeeper          *rewardkeeper.Keeper
 	DistrKeeper           *distrkeeper.Keeper
 	GovKeeper             *govkeeper.Keeper
-	CrisisKeeper          *crisiskeeper.Keeper //nolint:staticcheck
 	UpgradeKeeper         *upgradekeeper.Keeper
 	GroupKeeper           *groupkeeper.Keeper
 	DynamicFeeKeeper      *dynamicfeekeeper.Keeper
@@ -158,7 +155,6 @@ func NewAppKeeper(
 	blockedAddress map[string]bool,
 	skipUpgradeHeights map[int64]bool,
 	homePath string,
-	invCheckPeriod uint,
 	logger log.Logger,
 	moveConfig moveconfig.MoveConfig,
 	appOpts servertypes.AppOptions,
@@ -251,16 +247,6 @@ func NewAppKeeper(
 		authorityAddr,
 	)
 	appKeepers.SlashingKeeper = &slashingKeeper
-
-	appKeepers.CrisisKeeper = crisiskeeper.NewKeeper( //nolint:staticcheck
-		appCodec,
-		runtime.NewKVStoreService(appKeepers.keys[crisistypes.StoreKey]),
-		invCheckPeriod,
-		appKeepers.BankKeeper,
-		authtypes.FeeCollectorName,
-		authorityAddr,
-		ac,
-	)
 
 	appKeepers.UpgradeKeeper = upgradekeeper.NewKeeper(
 		skipUpgradeHeights,

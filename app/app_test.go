@@ -22,7 +22,6 @@ import (
 	authzmodule "github.com/cosmos/cosmos-sdk/x/authz/module"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/consensus"
-	"github.com/cosmos/cosmos-sdk/x/crisis"
 	groupmodule "github.com/cosmos/cosmos-sdk/x/group/module"
 
 	feegrantmodule "cosmossdk.io/x/feegrant/module"
@@ -110,7 +109,6 @@ func TestInitGenesisOnMigration(t *testing.T) {
 			"upgrade":                    upgrade.AppModule{}.ConsensusVersion(),
 			"feegrant":                   feegrantmodule.AppModule{}.ConsensusVersion(),
 			"evidence":                   evidence.AppModule{}.ConsensusVersion(),
-			"crisis":                     crisis.AppModule{}.ConsensusVersion(),
 			"genutil":                    genutil.AppModule{}.ConsensusVersion(),
 			"group":                      groupmodule.AppModule{}.ConsensusVersion(),
 			"consensus":                  consensus.AppModule{}.ConsensusVersion(),

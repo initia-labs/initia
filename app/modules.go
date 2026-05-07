@@ -16,8 +16,6 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/consensus"
 	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
-	"github.com/cosmos/cosmos-sdk/x/crisis"
-	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
@@ -101,13 +99,11 @@ var maccPerms = map[string][]string{
 
 func appModules(
 	app *InitiaApp,
-	skipGenesisInvariants bool,
 ) []module.AppModule { //nolint:staticcheck
 	return []module.AppModule{ //nolint:staticcheck
 		genutil.NewAppModule(app.AccountKeeper, app.StakingKeeper, app, app.txConfig),
 		auth.NewAppModule(app.appCodec, *app.AccountKeeper, nil, nil),
 		bank.NewAppModule(app.appCodec, *app.BankKeeper, app.AccountKeeper),
-		crisis.NewAppModule(app.CrisisKeeper, skipGenesisInvariants, nil), //nolint:staticcheck
 		feegrantmodule.NewAppModule(app.appCodec, app.AccountKeeper, app.BankKeeper, *app.FeeGrantKeeper, app.interfaceRegistry),
 		gov.NewAppModule(app.appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper),
 		reward.NewAppModule(app.appCodec, *app.RewardKeeper),
@@ -193,7 +189,6 @@ thus, gov.EndBlock must be executed before staking.EndBlock
 */
 func orderEndBlockers() []string {
 	return []string{
-		crisistypes.ModuleName,
 		govtypes.ModuleName,
 		stakingtypes.ModuleName,
 		evidencetypes.ModuleName,
@@ -221,7 +216,7 @@ func orderInitBlockers() []string {
 	return []string{
 		authtypes.ModuleName, movetypes.ModuleName, banktypes.ModuleName,
 		distrtypes.ModuleName, stakingtypes.ModuleName, slashingtypes.ModuleName, govtypes.ModuleName,
-		dynamicfeetypes.ModuleName, rewardtypes.ModuleName, crisistypes.ModuleName, genutiltypes.ModuleName, evidencetypes.ModuleName,
+		dynamicfeetypes.ModuleName, rewardtypes.ModuleName, genutiltypes.ModuleName, evidencetypes.ModuleName,
 		authz.ModuleName, group.ModuleName, upgradetypes.ModuleName, feegrant.ModuleName,
 		consensusparamtypes.ModuleName, ibcexported.ModuleName, ibctransfertypes.ModuleName,
 		ibcnfttransfertypes.ModuleName, icatypes.ModuleName, icaauthtypes.ModuleName,
