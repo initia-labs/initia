@@ -532,9 +532,9 @@ func NewAppKeeper(
 		icaHostKeeper := icahostkeeper.NewKeeper(
 			appCodec,
 			runtime.NewKVStoreService(appKeepers.keys[icahosttypes.StoreKey]),
-			nil, // we don't need migration
-			appKeepers.IBCKeeper.ChannelKeeper,
+			nil,                                // we don't need migration
 			appKeepers.IBCKeeper.ChannelKeeper, // ics4Wrapper
+			appKeepers.IBCKeeper.ChannelKeeper,
 			appKeepers.AccountKeeper,
 			bApp.MsgServiceRouter(),
 			bApp.GRPCQueryRouter(),
