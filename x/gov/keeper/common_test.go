@@ -26,7 +26,6 @@ import (
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/gogoproto/proto"
-	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -47,7 +46,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/cosmos/cosmos-sdk/x/crisis"
 	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	govtypesv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
@@ -85,7 +83,6 @@ var ModuleBasics = module.NewBasicManager(
 	reward.AppModuleBasic{},
 	distribution.AppModuleBasic{},
 	gov.AppModuleBasic{},
-	crisis.AppModuleBasic{},
 	slashing.AppModuleBasic{},
 	upgrade.AppModuleBasic{},
 	evidence.AppModuleBasic{},
@@ -259,7 +256,7 @@ func _createTestInput(
 		authtypes.StoreKey, banktypes.StoreKey, stakingtypes.StoreKey,
 		rewardtypes.StoreKey, distributiontypes.StoreKey, slashingtypes.StoreKey,
 		govtypes.StoreKey, upgradetypes.StoreKey, evidencetypes.StoreKey,
-		capabilitytypes.StoreKey, feegrant.StoreKey, authzkeeper.StoreKey,
+		feegrant.StoreKey, authzkeeper.StoreKey,
 		movetypes.StoreKey,
 	)
 	ms := store.NewCommitMultiStore(db, log.NewNopLogger(), metrics.NewNoOpMetrics())

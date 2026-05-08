@@ -11,10 +11,9 @@ import (
 )
 
 var (
-	// DefaultRelativePacketTimeoutHeight is the default packet timeout height (in blocks) relative
-	// to the current block height of the counterparty chain provided by the client state. The
-	// timeout is disabled when set to 0.
-	DefaultRelativePacketTimeoutHeight = "0-1000"
+	// DefaultPacketTimeoutHeight is the default packet timeout height. Relative timeout heights
+	// are not supported; the timeout is disabled when set to 0-0.
+	DefaultPacketTimeoutHeight = "0-0"
 
 	// DefaultRelativePacketTimeoutTimestamp is the default packet timeout timestamp (in nanoseconds)
 	// relative to the current block timestamp of the counterparty chain provided by the client

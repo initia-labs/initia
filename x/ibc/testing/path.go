@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 )
 
 // Path contains two endpoints representing two chains connected over IBC
@@ -40,7 +40,7 @@ func (path *Path) SetChannelOrdered() {
 // if a relay step fails or the packet commitment does not exist on either endpoint.
 func (path *Path) RelayPacket(packet channeltypes.Packet) error {
 	pc := path.EndpointA.Chain.App.GetIBCKeeper().ChannelKeeper.GetPacketCommitment(path.EndpointA.Chain.GetContext(), packet.GetSourcePort(), packet.GetSourceChannel(), packet.GetSequence())
-	if bytes.Equal(pc, channeltypes.CommitPacket(path.EndpointA.Chain.App.AppCodec(), packet)) {
+	if bytes.Equal(pc, channeltypes.CommitPacket(packet)) {
 
 		// packet found, relay from A to B
 		if err := path.EndpointB.UpdateClient(); err != nil {
@@ -65,7 +65,7 @@ func (path *Path) RelayPacket(packet channeltypes.Packet) error {
 	}
 
 	pc = path.EndpointB.Chain.App.GetIBCKeeper().ChannelKeeper.GetPacketCommitment(path.EndpointB.Chain.GetContext(), packet.GetSourcePort(), packet.GetSourceChannel(), packet.GetSequence())
-	if bytes.Equal(pc, channeltypes.CommitPacket(path.EndpointB.Chain.App.AppCodec(), packet)) {
+	if bytes.Equal(pc, channeltypes.CommitPacket(packet)) {
 
 		// packet found, relay B to A
 		if err := path.EndpointA.UpdateClient(); err != nil {

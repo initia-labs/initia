@@ -4,8 +4,8 @@ import (
 	"errors"
 
 	"cosmossdk.io/collections"
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -20,31 +20,34 @@ import (
 func (h MoveHooks) onTimeoutIcs20Packet(
 	ctx sdk.Context,
 	im ibchooks.IBCMiddleware,
+	channelVersion string,
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 	data transfertypes.FungibleTokenPacketData,
 ) error {
-	return h.handleOnTimeout(ctx, im, packet, relayer, data.Sender)
+	return h.handleOnTimeout(ctx, im, channelVersion, packet, relayer, data.Sender)
 }
 
 func (h MoveHooks) onTimeoutIcs721Packet(
 	ctx sdk.Context,
 	im ibchooks.IBCMiddleware,
+	channelVersion string,
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 	data nfttransfertypes.NonFungibleTokenPacketData,
 ) error {
-	return h.handleOnTimeout(ctx, im, packet, relayer, data.Sender)
+	return h.handleOnTimeout(ctx, im, channelVersion, packet, relayer, data.Sender)
 }
 
 func (h MoveHooks) handleOnTimeout(
 	ctx sdk.Context,
 	im ibchooks.IBCMiddleware,
+	channelVersion string,
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 	sender string,
 ) error {
-	if err := im.App.OnTimeoutPacket(ctx, packet, relayer); err != nil {
+	if err := im.App.OnTimeoutPacket(ctx, channelVersion, packet, relayer); err != nil {
 		return err
 	}
 

@@ -11,12 +11,11 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	connectiontypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
-	commitmenttypes "github.com/cosmos/ibc-go/v8/modules/core/23-commitment/types"
-	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
-	"github.com/cosmos/ibc-go/v8/testing/mock"
-	"github.com/cosmos/ibc-go/v8/testing/simapp"
+	ibctransfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	connectiontypes "github.com/cosmos/ibc-go/v10/modules/core/03-connection/types"
+	commitmenttypes "github.com/cosmos/ibc-go/v10/modules/core/23-commitment/types"
+	ibctm "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
+	"github.com/cosmos/ibc-go/v10/testing/mock"
 )
 
 const (
@@ -37,7 +36,6 @@ const (
 	// Application Ports
 	TransferPort = ibctransfertypes.ModuleName
 	MockPort     = mock.ModuleName
-	MockFeePort  = simapp.MockFeePort
 
 	// used for testing proposals
 	Title       = "title"
@@ -61,10 +59,9 @@ var (
 
 	ConnectionVersion = connectiontypes.GetCompatibleVersions()[0]
 
-	MockAcknowledgement          = mock.MockAcknowledgement.Acknowledgement()
-	MockPacketData               = mock.MockPacketData
-	MockFailPacketData           = mock.MockFailPacketData
-	MockRecvCanaryCapabilityName = mock.MockRecvCanaryCapabilityName
+	MockAcknowledgement = mock.MockAcknowledgement.Acknowledgement()
+	MockPacketData      = mock.MockPacketData
+	MockFailPacketData  = mock.MockFailPacketData
 
 	prefix = commitmenttypes.NewMerklePrefix([]byte("ibc"))
 )

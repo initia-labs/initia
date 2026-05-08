@@ -1,7 +1,7 @@
 package types
 
 import (
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
 
 	nfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 )

@@ -6,7 +6,7 @@ import (
 	"cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
 
-	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
+	icatypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/types"
 
 	ibctesting "github.com/initia-labs/initia/x/ibc/testing"
 

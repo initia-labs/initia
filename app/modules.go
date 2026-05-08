@@ -16,8 +16,6 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/consensus"
 	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
-	"github.com/cosmos/cosmos-sdk/x/crisis"
-	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
@@ -25,22 +23,18 @@ import (
 	groupmodule "github.com/cosmos/cosmos-sdk/x/group/module"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 
-	packetforward "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward"
-	packetforwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types"
-	ratelimit "github.com/cosmos/ibc-apps/modules/rate-limiting/v8"
-	ratelimittypes "github.com/cosmos/ibc-apps/modules/rate-limiting/v8/types"
-	"github.com/cosmos/ibc-go/modules/capability"
-	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
-	ica "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts"
-	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
-	ibcfee "github.com/cosmos/ibc-go/v8/modules/apps/29-fee"
-	ibcfeetypes "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/types"
-	ibctransfer "github.com/cosmos/ibc-go/v8/modules/apps/transfer"
-	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	ibc "github.com/cosmos/ibc-go/v8/modules/core"
-	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
-	solomachine "github.com/cosmos/ibc-go/v8/modules/light-clients/06-solomachine"
-	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
+	"github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/packetforward"
+	packetforwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v10/packetforward/types"
+	ratelimit "github.com/cosmos/ibc-apps/modules/rate-limiting/v10"
+	ratelimittypes "github.com/cosmos/ibc-apps/modules/rate-limiting/v10/types"
+	ica "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts"
+	icatypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/types"
+	ibctransfer "github.com/cosmos/ibc-go/v10/modules/apps/transfer"
+	ibctransfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	ibc "github.com/cosmos/ibc-go/v10/modules/core"
+	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
+	solomachine "github.com/cosmos/ibc-go/v10/modules/light-clients/06-solomachine"
+	ibctm "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
 
 	ibcnfttransfer "github.com/initia-labs/initia/x/ibc/nft-transfer"
 	ibcnfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
@@ -89,7 +83,6 @@ var maccPerms = map[string][]string{
 	authtypes.FeeCollectorName:      nil,
 	distrtypes.ModuleName:           nil,
 	icatypes.ModuleName:             nil,
-	ibcfeetypes.ModuleName:          nil,
 	rewardtypes.ModuleName:          nil,
 	stakingtypes.BondedPoolName:     {authtypes.Burner, authtypes.Staking},
 	stakingtypes.NotBondedPoolName:  {authtypes.Burner, authtypes.Staking},
@@ -106,14 +99,11 @@ var maccPerms = map[string][]string{
 
 func appModules(
 	app *InitiaApp,
-	skipGenesisInvariants bool,
 ) []module.AppModule { //nolint:staticcheck
 	return []module.AppModule{ //nolint:staticcheck
 		genutil.NewAppModule(app.AccountKeeper, app.StakingKeeper, app, app.txConfig),
 		auth.NewAppModule(app.appCodec, *app.AccountKeeper, nil, nil),
 		bank.NewAppModule(app.appCodec, *app.BankKeeper, app.AccountKeeper),
-		capability.NewAppModule(app.appCodec, *app.CapabilityKeeper, false),
-		crisis.NewAppModule(app.CrisisKeeper, skipGenesisInvariants, nil), //nolint:staticcheck
 		feegrantmodule.NewAppModule(app.appCodec, app.AccountKeeper, app.BankKeeper, *app.FeeGrantKeeper, app.interfaceRegistry),
 		gov.NewAppModule(app.appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper),
 		reward.NewAppModule(app.appCodec, *app.RewardKeeper),
@@ -136,10 +126,9 @@ func appModules(
 		ibcnfttransfer.NewAppModule(app.appCodec, *app.NftTransferKeeper),
 		ica.NewAppModule(app.ICAControllerKeeper, app.ICAHostKeeper),
 		icaauth.NewAppModule(app.appCodec, *app.ICAAuthKeeper),
-		ibcfee.NewAppModule(*app.IBCFeeKeeper),
 		ibcperm.NewAppModule(app.appCodec, *app.IBCPermKeeper),
-		ibctm.NewAppModule(),
-		solomachine.NewAppModule(),
+		ibctm.NewAppModule(*app.TMLightClientModule),
+		solomachine.NewAppModule(*app.SMLightClientModule),
 		packetforward.NewAppModule(app.PacketForwardKeeper, nil),
 		ibchooks.NewAppModule(app.appCodec, *app.IBCHooksKeeper),
 		forwarding.NewAppModule(app.ForwardingKeeper),
@@ -176,7 +165,6 @@ NOTE: capability module's beginblocker must come before any modules using capabi
 */
 func orderBeginBlockers() []string {
 	return []string{
-		capabilitytypes.ModuleName,
 		rewardtypes.ModuleName,
 		distrtypes.ModuleName,
 		slashingtypes.ModuleName,
@@ -201,7 +189,6 @@ thus, gov.EndBlock must be executed before staking.EndBlock
 */
 func orderEndBlockers() []string {
 	return []string{
-		crisistypes.ModuleName,
 		govtypes.ModuleName,
 		stakingtypes.ModuleName,
 		evidencetypes.ModuleName,
@@ -227,12 +214,12 @@ can do so safely.
 */
 func orderInitBlockers() []string {
 	return []string{
-		capabilitytypes.ModuleName, authtypes.ModuleName, movetypes.ModuleName, banktypes.ModuleName,
+		authtypes.ModuleName, movetypes.ModuleName, banktypes.ModuleName,
 		distrtypes.ModuleName, stakingtypes.ModuleName, slashingtypes.ModuleName, govtypes.ModuleName,
-		dynamicfeetypes.ModuleName, rewardtypes.ModuleName, crisistypes.ModuleName, genutiltypes.ModuleName, evidencetypes.ModuleName,
+		dynamicfeetypes.ModuleName, rewardtypes.ModuleName, genutiltypes.ModuleName, evidencetypes.ModuleName,
 		authz.ModuleName, group.ModuleName, upgradetypes.ModuleName, feegrant.ModuleName,
 		consensusparamtypes.ModuleName, ibcexported.ModuleName, ibctransfertypes.ModuleName,
-		ibcnfttransfertypes.ModuleName, icatypes.ModuleName, icaauthtypes.ModuleName, ibcfeetypes.ModuleName,
+		ibcnfttransfertypes.ModuleName, icatypes.ModuleName, icaauthtypes.ModuleName,
 		ibcpermtypes.ModuleName, ophosttypes.ModuleName, oracletypes.ModuleName, marketmaptypes.ModuleName,
 		packetforwardtypes.ModuleName, ibchookstypes.ModuleName, forwardingtypes.ModuleName, ratelimittypes.ModuleName,
 	}

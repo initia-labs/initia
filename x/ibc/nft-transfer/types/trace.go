@@ -12,8 +12,8 @@ import (
 
 	"cosmossdk.io/errors"
 
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
-	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
+	host "github.com/cosmos/ibc-go/v10/modules/core/24-host"
 )
 
 // ParseClassTrace parses a string with the ibc prefix (class id trace) and the base class id

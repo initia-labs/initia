@@ -13,7 +13,6 @@ import (
 
 	"cosmossdk.io/log"
 	dbm "github.com/cosmos/cosmos-db"
-	"github.com/cosmos/ibc-go/modules/capability"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/testutil/mock"
@@ -23,7 +22,6 @@ import (
 	authzmodule "github.com/cosmos/cosmos-sdk/x/authz/module"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/consensus"
-	"github.com/cosmos/cosmos-sdk/x/crisis"
 	groupmodule "github.com/cosmos/cosmos-sdk/x/group/module"
 
 	feegrantmodule "cosmossdk.io/x/feegrant/module"
@@ -31,9 +29,9 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/x/slashing"
 
-	ica "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts"
-	ibctransfer "github.com/cosmos/ibc-go/v8/modules/apps/transfer"
-	ibc "github.com/cosmos/ibc-go/v8/modules/core"
+	ica "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts"
+	ibctransfer "github.com/cosmos/ibc-go/v10/modules/apps/transfer"
+	ibc "github.com/cosmos/ibc-go/v10/modules/core"
 
 	"github.com/initia-labs/initia/x/bank"
 	"github.com/initia-labs/initia/x/distribution"
@@ -111,9 +109,7 @@ func TestInitGenesisOnMigration(t *testing.T) {
 			"upgrade":                    upgrade.AppModule{}.ConsensusVersion(),
 			"feegrant":                   feegrantmodule.AppModule{}.ConsensusVersion(),
 			"evidence":                   evidence.AppModule{}.ConsensusVersion(),
-			"crisis":                     crisis.AppModule{}.ConsensusVersion(),
 			"genutil":                    genutil.AppModule{}.ConsensusVersion(),
-			"capability":                 capability.AppModule{}.ConsensusVersion(),
 			"group":                      groupmodule.AppModule{}.ConsensusVersion(),
 			"consensus":                  consensus.AppModule{}.ConsensusVersion(),
 			"ibc":                        ibc.AppModule{}.ConsensusVersion(),

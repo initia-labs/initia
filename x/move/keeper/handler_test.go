@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
-	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
+	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
 	"github.com/stretchr/testify/require"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -312,72 +312,6 @@ func TestDispatchTransferMessage(t *testing.T) {
 		sdk.NewAttribute("timeout_height", clienttypes.NewHeight(revisionNumber, revisionHeight).String()),
 		sdk.NewAttribute("timeout_timestamp", fmt.Sprint(timeoutTimestamp)),
 		sdk.NewAttribute("memo", memo),
-	), event)
-}
-
-func TestDispatchPayFeeMessage(t *testing.T) {
-	ctx, input := createDefaultTestInput(t)
-
-	sender := addrs[0]
-	senderAddr, err := vmtypes.NewAccountAddressFromBytes(addrs[0])
-	require.NoError(t, err)
-	recvFeeDenom := testDenoms[0]
-	recvFeeAmount := math.NewInt(100)
-	ackFeeDenom := testDenoms[1]
-	ackFeeAmount := math.NewInt(200)
-	timeoutFeeDenom := testDenoms[2]
-	timeoutFeeAmount := math.NewInt(300)
-
-	sourcePort := "port-1"
-	sourceChannel := "channel-1"
-
-	recvFeeMetadata, err := types.MetadataAddressFromDenom(recvFeeDenom)
-	require.NoError(t, err)
-	ackFeeMetadata, err := types.MetadataAddressFromDenom(ackFeeDenom)
-	require.NoError(t, err)
-	timeoutFeeMetadata, err := types.MetadataAddressFromDenom(timeoutFeeDenom)
-	require.NoError(t, err)
-
-	recvFeeAmountBz, err := vmtypes.SerializeUint64(recvFeeAmount.Uint64())
-	require.NoError(t, err)
-	ackFeeAmountBz, err := vmtypes.SerializeUint64(ackFeeAmount.Uint64())
-	require.NoError(t, err)
-	timeoutFeeAmountBz, err := vmtypes.SerializeUint64(timeoutFeeAmount.Uint64())
-	require.NoError(t, err)
-
-	sourcePortBz, err := vmtypes.SerializeString(sourcePort)
-	require.NoError(t, err)
-
-	sourceChannelBz, err := vmtypes.SerializeString(sourceChannel)
-	require.NoError(t, err)
-
-	err = input.MoveKeeper.ExecuteEntryFunction(ctx, senderAddr, vmtypes.StdAddress,
-		"cosmos",
-		"pay_fee",
-		[]vmtypes.TypeTag{},
-		[][]byte{
-			sourcePortBz,
-			sourceChannelBz,
-			recvFeeMetadata[:],
-			recvFeeAmountBz,
-			ackFeeMetadata[:],
-			ackFeeAmountBz,
-			timeoutFeeMetadata[:],
-			timeoutFeeAmountBz,
-		})
-	require.NoError(t, err)
-
-	events := ctx.EventManager().Events()
-	event := events[len(events)-2]
-
-	require.Equal(t, sdk.NewEvent("pay_fee",
-		sdk.NewAttribute("signer", sender.String()),
-		sdk.NewAttribute("source_port", sourcePort),
-		sdk.NewAttribute("source_channel", sourceChannel),
-		sdk.NewAttribute("recv_fee", sdk.NewCoins(sdk.NewCoin(recvFeeDenom, recvFeeAmount)).String()),
-		sdk.NewAttribute("ack_fee", sdk.NewCoins(sdk.NewCoin(ackFeeDenom, ackFeeAmount)).String()),
-		sdk.NewAttribute("timeout_fee", sdk.NewCoins(sdk.NewCoin(timeoutFeeDenom, timeoutFeeAmount)).String()),
-		sdk.NewAttribute("relayers", ""),
 	), event)
 }
 

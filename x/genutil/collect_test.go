@@ -23,6 +23,7 @@ type doNothingUnmarshalJSON struct {
 	codec.JSONCodec
 }
 
+//nolint:stdmethods // intentional shadow of codec.JSONCodec.UnmarshalJSON
 func (dnj *doNothingUnmarshalJSON) UnmarshalJSON(_ []byte, _ proto.Message) error {
 	return nil
 }

@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	"cosmossdk.io/math"
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
-	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
+	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -21,12 +21,13 @@ import (
 func (h MoveHooks) onRecvIcs20Packet(
 	ctx sdk.Context,
 	im ibchooks.IBCMiddleware,
+	channelVersion string,
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 	data transfertypes.FungibleTokenPacketData,
 ) ibcexported.Acknowledgement {
 	var beforeBalance math.Int
-	return h.handleOnReceive(ctx, im, packet, relayer, ibchookstypes.ICSData{
+	return h.handleOnReceive(ctx, im, channelVersion, packet, relayer, ibchookstypes.ICSData{
 		ICS20Data: &data,
 	}, func(intermediateAddr sdk.AccAddress) error {
 		denom := ibchookstypes.GetReceivedTokenDenom(packet, data)
@@ -73,11 +74,12 @@ func (h MoveHooks) onRecvIcs20Packet(
 func (h MoveHooks) onRecvIcs721Packet(
 	ctx sdk.Context,
 	im ibchooks.IBCMiddleware,
+	channelVersion string,
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 	data nfttransfertypes.NonFungibleTokenPacketData,
 ) ibcexported.Acknowledgement {
-	return h.handleOnReceive(ctx, im, packet, relayer, ibchookstypes.ICSData{
+	return h.handleOnReceive(ctx, im, channelVersion, packet, relayer, ibchookstypes.ICSData{
 		ICS721Data: &data,
 	}, nil, nil, nil)
 }
@@ -150,6 +152,7 @@ func (h MoveHooks) prepareHookMessage(hookData HookData) (hookMessage, error) {
 func (h MoveHooks) handleOnReceive(
 	ctx sdk.Context,
 	im ibchooks.IBCMiddleware,
+	channelVersion string,
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 	data ibchookstypes.ICSData,
@@ -162,7 +165,7 @@ func (h MoveHooks) handleOnReceive(
 		return newEmitErrorAcknowledgement(err)
 	}
 	if !isMoveRouted || hookData == nil {
-		return im.App.OnRecvPacket(ctx, packet, relayer)
+		return im.App.OnRecvPacket(ctx, channelVersion, packet, relayer)
 	}
 
 	hookMsg, err := h.prepareHookMessage(*hookData)
@@ -170,7 +173,7 @@ func (h MoveHooks) handleOnReceive(
 		return newEmitErrorAcknowledgement(err)
 	}
 	if hookMsg.exec == nil {
-		return im.App.OnRecvPacket(ctx, packet, relayer)
+		return im.App.OnRecvPacket(ctx, channelVersion, packet, relayer)
 	}
 
 	if allowed, err := h.checkACL(im, ctx, hookMsg.moduleAddress); err != nil {
@@ -207,7 +210,7 @@ func (h MoveHooks) handleOnReceive(
 		}
 	}
 
-	ack := im.App.OnRecvPacket(ctx, packet, relayer)
+	ack := im.App.OnRecvPacket(ctx, channelVersion, packet, relayer)
 	if !ack.Success() {
 		return ack
 	}

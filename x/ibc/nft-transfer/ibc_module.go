@@ -7,15 +7,12 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 
-	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
-	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
-	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
-	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
+	porttypes "github.com/cosmos/ibc-go/v10/modules/core/05-port/types"
+	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
 
 	"github.com/initia-labs/initia/x/ibc/nft-transfer/keeper"
 	"github.com/initia-labs/initia/x/ibc/nft-transfer/types"
@@ -24,7 +21,6 @@ import (
 var (
 	_ porttypes.IBCModule             = (*IBCModule)(nil)
 	_ porttypes.PacketDataUnmarshaler = (*IBCModule)(nil)
-	_ porttypes.UpgradableModule      = (*IBCModule)(nil)
 )
 
 // IBCModule implements the ICS26 interface for nft-transfer given the nft transfer keeper.
@@ -81,7 +77,6 @@ func (im IBCModule) OnChanOpenInit(
 	connectionHops []string,
 	portID string,
 	channelID string,
-	chanCap *capabilitytypes.Capability,
 	counterparty channeltypes.Counterparty,
 	version string,
 ) (string, error) {
@@ -97,11 +92,6 @@ func (im IBCModule) OnChanOpenInit(
 		return "", errorsmod.Wrapf(types.ErrInvalidVersion, "got %s, expected %s", version, types.Version)
 	}
 
-	// Claim channel capability passed back by IBC module
-	if err := im.keeper.ClaimCapability(ctx, chanCap, host.ChannelCapabilityPath(portID, channelID)); err != nil {
-		return "", err
-	}
-
 	return version, nil
 }
 
@@ -112,7 +102,6 @@ func (im IBCModule) OnChanOpenTry(
 	connectionHops []string,
 	portID,
 	channelID string,
-	chanCap *capabilitytypes.Capability,
 	counterparty channeltypes.Counterparty,
 	counterpartyVersion string,
 ) (string, error) {
@@ -122,11 +111,6 @@ func (im IBCModule) OnChanOpenTry(
 
 	if counterpartyVersion != types.Version {
 		return "", errorsmod.Wrapf(types.ErrInvalidVersion, "invalid counterparty version: got: %s, expected %s", counterpartyVersion, types.Version)
-	}
-
-	// OpenTry must claim the channelCapability that IBC passes into the callback
-	if err := im.keeper.ClaimCapability(ctx, chanCap, host.ChannelCapabilityPath(portID, channelID)); err != nil {
-		return "", err
 	}
 
 	return types.Version, nil
@@ -179,6 +163,7 @@ func (im IBCModule) OnChanCloseConfirm(
 // logic returns without error.
 func (im IBCModule) OnRecvPacket(
 	ctx sdk.Context,
+	channelVersion string,
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) ibcexported.Acknowledgement {
@@ -230,6 +215,7 @@ func (im IBCModule) OnRecvPacket(
 // OnAcknowledgementPacket implements the IBCModule interface
 func (im IBCModule) OnAcknowledgementPacket(
 	ctx sdk.Context,
+	channelVersion string,
 	packet channeltypes.Packet,
 	acknowledgement []byte,
 	relayer sdk.AccAddress,
@@ -283,6 +269,7 @@ func (im IBCModule) OnAcknowledgementPacket(
 // OnTimeoutPacket implements the IBCModule interface
 func (im IBCModule) OnTimeoutPacket(
 	ctx sdk.Context,
+	channelVersion string,
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) error {
@@ -309,53 +296,14 @@ func (im IBCModule) OnTimeoutPacket(
 	return nil
 }
 
-// OnChanUpgradeInit implements the IBCModule interface
-func (im IBCModule) OnChanUpgradeInit(ctx sdk.Context, portID, channelID string, proposedOrder channeltypes.Order, proposedConnectionHops []string, proposedVersion string) (string, error) {
-	if err := ValidateNftTransferChannelParams(ctx, im.keeper, proposedOrder, portID, channelID); err != nil {
-		return "", err
-	}
-
-	if proposedVersion != types.Version {
-		return "", errorsmod.Wrapf(types.ErrInvalidVersion, "expected %s, got %s", types.Version, proposedVersion)
-	}
-
-	return proposedVersion, nil
-}
-
-// OnChanUpgradeTry implements the IBCModule interface
-func (im IBCModule) OnChanUpgradeTry(ctx sdk.Context, portID, channelID string, proposedOrder channeltypes.Order, proposedConnectionHops []string, counterpartyVersion string) (string, error) {
-	if err := ValidateNftTransferChannelParams(ctx, im.keeper, proposedOrder, portID, channelID); err != nil {
-		return "", err
-	}
-
-	if counterpartyVersion != types.Version {
-		return "", errorsmod.Wrapf(types.ErrInvalidVersion, "expected %s, got %s", types.Version, counterpartyVersion)
-	}
-
-	return counterpartyVersion, nil
-}
-
-// OnChanUpgradeAck implements the IBCModule interface
-func (IBCModule) OnChanUpgradeAck(ctx sdk.Context, portID, channelID, counterpartyVersion string) error {
-	if counterpartyVersion != types.Version {
-		return errorsmod.Wrapf(types.ErrInvalidVersion, "expected %s, got %s", types.Version, counterpartyVersion)
-	}
-
-	return nil
-}
-
-// OnChanUpgradeOpen implements the IBCModule interface
-func (IBCModule) OnChanUpgradeOpen(ctx sdk.Context, portID, channelID string, proposedOrder channeltypes.Order, proposedConnectionHops []string, proposedVersion string) {
-}
-
 // UnmarshalPacketData attempts to unmarshal the provided packet data bytes
-// into a FungibleTokenPacketData. This function implements the optional
-// PacketDataUnmarshaler interface required for ADR 008 support.
-func (im IBCModule) UnmarshalPacketData(bz []byte) (any, error) {
+// into a NonFungibleTokenPacketData. signature includes context + port/channel
+// scoping plus a returned version string.
+func (im IBCModule) UnmarshalPacketData(_ sdk.Context, _, _ string, bz []byte) (any, string, error) {
 	var packetData types.NonFungibleTokenPacketData
 	if err := im.keeper.Codec().UnmarshalJSON(bz, &packetData); err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
-	return packetData, nil
+	return packetData, types.Version, nil
 }
