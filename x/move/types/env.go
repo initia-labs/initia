@@ -12,7 +12,7 @@ import (
 	vmtypes "github.com/initia-labs/movevm/types"
 )
 
-func NewEnv(ctx context.Context, nextAccountNumber uint64, executionCounter uint64) vmtypes.Env {
+func NewEnv(ctx context.Context, nextAccountNumber uint64, executionCounter uint64, feePayer *vmtypes.AccountAddress) vmtypes.Env {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	txBytes := sdkCtx.TxBytes()
 	if len(txBytes) == 0 {
@@ -33,6 +33,7 @@ func NewEnv(ctx context.Context, nextAccountNumber uint64, executionCounter uint
 		NextAccountNumber:   nextAccountNumber,
 		TxHash:              txHash,
 		SessionId:           sessionID,
+		FeePayer:            feePayer,
 	}
 }
 

@@ -42,7 +42,7 @@ require (
 	github.com/initia-labs/OPinit/api v1.4.1
 	github.com/initia-labs/initia/api v1.4.0
 	// we also need to update `LIBMOVEVM_VERSION` of Dockerfile#11
-	github.com/initia-labs/movevm v1.2.0
+	github.com/initia-labs/movevm v1.3.0
 	github.com/initia-labs/store v0.1.2
 	github.com/noble-assets/forwarding/v2 v2.0.3
 	github.com/pelletier/go-toml v1.9.5

@@ -175,7 +175,7 @@ func (k Keeper) executeEntryFunction(
 		&gasBalance,
 		types.NewVMStore(sdkCtx, k.VMStore),
 		NewApi(k, sdkCtx),
-		types.NewEnv(sdkCtx, ac, ec),
+		types.NewEnv(sdkCtx, ac, ec, types.FeePayer(ctx)),
 		senders,
 		payload,
 	)
@@ -285,7 +285,7 @@ func (k Keeper) executeScript(
 		&gasBalance,
 		types.NewVMStore(sdkCtx, k.VMStore),
 		NewApi(k, sdkCtx),
-		types.NewEnv(sdkCtx, ac, ec),
+		types.NewEnv(sdkCtx, ac, ec, types.FeePayer(ctx)),
 		senders,
 		payload,
 	)
@@ -600,7 +600,7 @@ func (k Keeper) executeViewFunction(
 		&gasBalance,
 		types.NewVMStore(sdkCtx, k.VMStore),
 		NewApi(k, sdkCtx),
-		types.NewEnv(sdkCtx, ac, ec),
+		types.NewEnv(sdkCtx, ac, ec, types.FeePayer(ctx)),
 		payload,
 	)
 

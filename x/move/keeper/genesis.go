@@ -27,11 +27,7 @@ func (k Keeper) Initialize(
 	}
 
 	api := NewApi(k, ctx)
-	env := types.NewEnv(
-		ctx,
-		types.NextAccountNumber(ctx, k.authKeeper),
-		ec,
-	)
+	env := types.NewEnv(ctx, types.NextAccountNumber(ctx, k.authKeeper), ec, nil)
 
 	modules := make([]vmtypes.Module, len(moduleBytes))
 	for i, moduleBz := range moduleBytes {

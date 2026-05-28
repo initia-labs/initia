@@ -572,8 +572,8 @@ github.com/initia-labs/forwarding/v2 v2.0.3-initia.4 h1:jHxKhDxt1Yhg7AVZoCFfABPO
 github.com/initia-labs/forwarding/v2 v2.0.3-initia.4/go.mod h1:slR65ckL3elajwnJO1RRHbqRFue4YtZrDVFh33Ux6FE=
 github.com/initia-labs/iavl v1.2.6-initia.1 h1:4vf9eiccLkob2eiM8YAM8Gf/UBniEFUKpvncM/hVoO8=
 github.com/initia-labs/iavl v1.2.6-initia.1/go.mod h1:GiM43q0pB+uG53mLxLDzimxM9l/5N9UuSY3/D0huuVw=
-github.com/initia-labs/movevm v1.2.0 h1:IbpipjRIZe851FJZZzP3RGIqrOCcNsI6bDF9VC0K0do=
-github.com/initia-labs/movevm v1.2.0/go.mod h1:sj/kXD7mUQASqogPTjqltIr4Uid3xxnlcbfiFvvqeXA=
+github.com/initia-labs/movevm v1.3.0 h1:6kpIuNGDV3ZP9VMxBv+gWl+BWKokX2fMeEcWJfor7Zc=
+github.com/initia-labs/movevm v1.3.0/go.mod h1:s+ryMZQ4ef8gEmvLjvHJDz5w9OGyBezfyMiaR0wo+bs=
 github.com/initia-labs/store v0.1.2 h1:NiTc0uz2dSd/A8biFU88G2+K4yFQhVT7NQwrBsZNps0=
 github.com/initia-labs/store v0.1.2/go.mod h1:AV8QLhCM1qQH3fywIy08xLqf7GlZMECi54NzBNQ92mk=
 github.com/initia-labs/store/memiavl v0.1.2 h1:0q+V0x6NO6mwXfbTKJHkwdCbwTU/NsEJF3OjWxMOJPM=
