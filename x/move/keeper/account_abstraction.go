@@ -54,7 +54,7 @@ func (k Keeper) VerifyAccountAbstractionSignature(ctx context.Context, sender st
 		&gasBalance,
 		types.NewVMStore(sdkCtx, k.VMStore),
 		NewApi(k, sdkCtx),
-		types.NewEnv(sdkCtx, ac, ec),
+		types.NewEnv(sdkCtx, ac, ec, types.FeePayer(ctx)),
 		signer,
 		abstractionData,
 	)

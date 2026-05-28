@@ -44,7 +44,7 @@ func NewMinimalAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 	anteDecorators := []sdk.AnteDecorator{
 		ante.NewSetUpContextDecorator(),
 		ante.NewExtensionOptionsDecorator(options.ExtensionOptionChecker),
-		moveante.NewGasPricesDecorator(),
+		moveante.NewMoveContextDecorator(),
 		dynamicfeeante.NewBlockGasDecorator(options.DynamicFeeKeeper),
 		ante.NewValidateBasicDecorator(),
 		ante.NewTxTimeoutHeightDecorator(),

@@ -1,6 +1,7 @@
 package types
 
 import (
+	context "context"
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -139,4 +140,16 @@ type contextKey int
 const (
 	GasPricesContextKey contextKey = iota
 	AllowDispatchableContextKey
+	FeePayerContextKey
 )
+
+// FeePayer extract fee payer from the context
+func FeePayer(ctx context.Context) *vmtypes.AccountAddress {
+	if value := ctx.Value(FeePayerContextKey); value != nil {
+		if feePayer, ok := value.(*vmtypes.AccountAddress); ok {
+			return feePayer
+		}
+	}
+
+	return nil
+}

@@ -500,6 +500,7 @@ var publicKeyAuthenticator []byte
 var counterModule []byte
 var clammPoolModule []byte
 var clammScriptsModule []byte
+var txContextTestsModule []byte
 
 func init() {
 	basicCoinModule = ReadMoveFile("BasicCoin")
@@ -516,6 +517,7 @@ func init() {
 	counterModule = ReadMoveFile("Counter")
 	clammPoolModule = ReadMoveFile("pool")
 	clammScriptsModule = ReadMoveFile("scripts")
+	txContextTestsModule = ReadMoveFile("TxContextTests")
 }
 
 func ReadMoveFile(filename string) []byte {
