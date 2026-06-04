@@ -363,8 +363,26 @@ func (k Keeper) SlashRedelegation(
 			continue
 		}
 
-		// Unbond from target validator
-		sharesToUnbond := entry.SharesDst.MulDec(slashFactor)
+		// Unbond from target validator.
+		//
+		// The amount to slash from the still-bonded delegation must be bounded by
+		// the remaining slashAmount (after the unbonding-delegation path above
+		// consumed part of it), not the original destination shares.
+		// Otherwise, a redelegate -> partial-undelegate -> slash sequence double-counts.
+		dstValidator, err := k.Validators.Get(ctx, valDstAddr)
+		if err != nil {
+			return nil, err
+		}
+
+		// shares equivalent to the slash amount still owed for this entry
+		remainingShares, err := dstValidator.SharesFromTokensTruncated(slashAmount)
+		if err != nil {
+			return nil, err
+		}
+
+		// never slash more shares than the original redelegated proportion, and
+		// never more than what is still owed.
+		sharesToUnbond := entry.SharesDst.MulDec(slashFactor).Intersect(remainingShares)
 		if sharesToUnbond.IsZero() {
 			continue
 		}
@@ -386,7 +404,8 @@ func (k Keeper) SlashRedelegation(
 			return nil, err
 		}
 
-		dstValidator, err := k.Validators.Get(ctx, valDstAddr)
+		// re-read the destination validator: unbond may have changed its status.
+		dstValidator, err = k.Validators.Get(ctx, valDstAddr)
 		if err != nil {
 			return nil, err
 		}

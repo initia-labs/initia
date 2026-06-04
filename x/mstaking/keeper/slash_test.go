@@ -100,6 +100,56 @@ func Test_SlashRedelegation(t *testing.T) {
 	require.Equal(t, sdk.NewDecCoins(sdk.NewInt64DecCoin(bondDenom, 450_000)), delegation.Shares)
 }
 
+// Test_SlashRedelegation_UndelegateAfterRedelegate is a test for SlashRedelegation
+// when a delegator redelegates and then partially undelegates from the
+// destination validator, the destination-side unbonding delegation is slashed
+// AND the still-bonded delegation used to be slashed for the full `SharesDst * slashFactor`.
+func Test_SlashRedelegation_UndelegateAfterRedelegate(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+
+	valAddr1 := createValidatorWithBalance(ctx, input, 100_000_000, 2_000_000, 1)
+	valAddr2 := createValidatorWithBalance(ctx, input, 100_000_000, 2_000_000, 2)
+	validator1, err := input.StakingKeeper.Validators.Get(ctx, valAddr1)
+	require.NoError(t, err)
+
+	delAddr := sdk.AccAddress(valAddr1)
+
+	// redelegate 1_000_000 from val1 to val2 at the infraction height
+	ctx = ctx.WithBlockHeight(90)
+	_, err = input.StakingKeeper.BeginRedelegation(ctx, delAddr, valAddr1, valAddr2, sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, math.NewInt(1_000_000))))
+	require.NoError(t, err)
+
+	// partially undelegate from the destination validator after redelegating,
+	// creating a destination-side unbonding delegation eligible for slashing.
+	ctx = ctx.WithBlockHeight(95)
+	_, _, err = input.StakingKeeper.Undelegate(ctx, delAddr, valAddr2, sdk.NewDecCoins(sdk.NewDecCoin(bondDenom, math.NewInt(400_000))))
+	require.NoError(t, err)
+
+	delegation, err := input.StakingKeeper.GetDelegation(ctx, delAddr, valAddr2)
+	require.NoError(t, err)
+	require.Equal(t, math.LegacyNewDec(600_000), delegation.Shares.AmountOf(bondDenom))
+
+	consAddr, err := validator1.GetConsAddr()
+	require.NoError(t, err)
+
+	// slash val1 by 50% for the infraction at height 90
+	ctx = ctx.WithBlockHeight(100)
+	_, err = input.StakingKeeper.Slash(ctx, consAddr, 90, math.LegacyNewDecWithPrec(5, 1))
+	require.NoError(t, err)
+
+	// the destination-side unbonding delegation absorbs 400_000 of the slash.
+	ubd, err := input.StakingKeeper.GetUnbondingDelegation(ctx, delAddr, valAddr2)
+	require.NoError(t, err)
+	require.Len(t, ubd.Entries, 1)
+	require.Equal(t, math.NewInt(0), ubd.Entries[0].Balance.AmountOf(bondDenom))
+
+	// only the remaining 100_000 should be slashed from the still-bonded
+	// delegation (600_000 -> 500_000).
+	delegation, err = input.StakingKeeper.GetDelegation(ctx, delAddr, valAddr2)
+	require.NoError(t, err)
+	require.Equal(t, math.LegacyNewDec(500_000), delegation.Shares.AmountOf(bondDenom))
+}
+
 // tests Slash at a future height (must panic)
 func Test_SlashAtFutureHeight(t *testing.T) {
 	ctx, input := createDefaultTestInput(t)
