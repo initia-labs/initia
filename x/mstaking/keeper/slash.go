@@ -380,8 +380,8 @@ func (k Keeper) SlashRedelegation(
 			return nil, err
 		}
 
-		// never slash more shares than the original redelegated proportion, and
-		// never more than what is still owed.
+		// capping equal to remainingShares unless the dst validator was slashed
+		// since the redelegation, this prevents slashing more than slashFactor of the position.
 		sharesToUnbond := entry.SharesDst.MulDec(slashFactor).Intersect(remainingShares)
 		if sharesToUnbond.IsZero() {
 			continue
