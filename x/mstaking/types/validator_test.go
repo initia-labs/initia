@@ -104,6 +104,15 @@ func TestShareTokens(t *testing.T) {
 	assert.Equal(t, decCoins(5), validator.TokensFromShares(sdk.NewDecCoins(sdk.NewDecCoin(sdk.DefaultBondDenom, math.NewInt(10)))))
 }
 
+func TestInvalidExRate(t *testing.T) {
+	validator := mkValidator(coins(100), decCoins(100))
+	require.False(t, validator.InvalidExRate())
+
+	validator = validator.RemoveTokens(coins(100))
+	require.True(t, validator.Tokens.IsZero())
+	require.True(t, validator.InvalidExRate())
+}
+
 func TestRemoveTokens(t *testing.T) {
 	validator := mkValidator(coins(100), decCoins(100))
 

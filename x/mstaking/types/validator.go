@@ -277,8 +277,8 @@ func (v Validator) SetInitialCommission(commission Commission) (Validator, error
 // Validator loses all tokens due to slashing. In this case,
 // make all future delegations invalid.
 func (v Validator) InvalidExRate() bool {
-	for _, token := range v.Tokens {
-		if token.IsZero() && v.DelegatorShares.AmountOf(token.Denom).IsPositive() {
+	for _, share := range v.DelegatorShares {
+		if share.Amount.IsPositive() && v.Tokens.AmountOf(share.Denom).IsZero() {
 			return true
 		}
 	}
