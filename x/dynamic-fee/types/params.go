@@ -51,8 +51,8 @@ func (p Params) Validate() error {
 		return fmt.Errorf("max base gas price must be non-negative")
 	}
 
-	if p.TargetGas < 0 {
-		return fmt.Errorf("target gas must be non-negative")
+	if p.TargetGas <= 0 {
+		return fmt.Errorf("target gas must be positive")
 	}
 
 	if p.BaseGasPrice.LT(p.MinBaseGasPrice) {
