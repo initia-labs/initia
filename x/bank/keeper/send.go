@@ -140,6 +140,12 @@ func (k MoveSendKeeper) InputOutputCoins(ctx context.Context, input types.Input,
 			return err
 		}
 
+		// apply the registered send restriction, consistent with SendCoins
+		addr, err = k.sendRestriction.apply(ctx, fromAddr, addr, output.Coins)
+		if err != nil {
+			return err
+		}
+
 		// cache bytes address
 		addrMap[output.Address] = addr
 
