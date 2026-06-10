@@ -224,8 +224,8 @@ func (im IBCModule) OnAcknowledgementPacket(
 	if err := im.keeper.Codec().UnmarshalJSON(acknowledgement, &ack); err != nil {
 		return errorsmod.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-721 nft-transfer packet acknowledgement: %v", err)
 	}
-	var data types.NonFungibleTokenPacketData
-	if err := im.keeper.Codec().UnmarshalJSON(packet.GetData(), &data); err != nil {
+	data, err := types.DecodePacketData(packet.GetData())
+	if err != nil {
 		return errorsmod.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-721 nft-transfer packet data: %s", err.Error())
 	}
 
@@ -273,8 +273,8 @@ func (im IBCModule) OnTimeoutPacket(
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) error {
-	var data types.NonFungibleTokenPacketData
-	if err := im.keeper.Codec().UnmarshalJSON(packet.GetData(), &data); err != nil {
+	data, err := types.DecodePacketData(packet.GetData())
+	if err != nil {
 		return errorsmod.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-721 nft-transfer packet data: %s", err.Error())
 	}
 	// refund tokens
