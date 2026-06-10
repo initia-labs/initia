@@ -169,6 +169,75 @@ func (suite *KeeperTestSuite) TestOnTimeoutPacket() {
 	suite.Require().Equal(sender, owner)
 }
 
+func (suite *KeeperTestSuite) TestOnTimeoutPacketSinkZoneRefundPadsOmittedTokenUris() {
+	suite.SetupTest()
+
+	classUri := "uri"
+	className := "name"
+	classSymbol := "symbol"
+	nftId := "kitty"
+	nftUri := ""
+	nftData := ""
+
+	pathA2B := NewTransferPath(suite.chainA, suite.chainB)
+	suite.coordinator.SetupConnections(pathA2B)
+	suite.coordinator.CreateChannels(pathA2B)
+
+	senderA := pathA2B.EndpointA.Chain.SenderAccount.GetAddress()
+	receiverB := pathA2B.EndpointB.Chain.SenderAccount.GetAddress()
+	moveKeeperB := pathA2B.EndpointB.Chain.GetInitiaApp().MoveKeeper
+	nftKeeperB := movekeeper.NewNftKeeper(moveKeeperB)
+
+	classId := suite.CreateNftClass(pathA2B.EndpointA, className, classUri, classSymbol)
+	suite.MintNft(pathA2B.EndpointA, senderA, classId, className, nftId, nftUri, nftData)
+
+	packet := suite.transferNft(
+		pathA2B.EndpointA,
+		pathA2B.EndpointB,
+		classId,
+		nftId,
+		senderA.String(),
+		receiverB.String(),
+	)
+
+	voucherClassId := suite.receiverNft(pathA2B.EndpointA, pathA2B.EndpointB, packet)
+	suite.ConfirmClassId(pathA2B.EndpointB, classId, voucherClassId)
+
+	returnPacket := suite.transferNft(
+		pathA2B.EndpointB,
+		pathA2B.EndpointA,
+		voucherClassId,
+		nftId,
+		receiverB.String(),
+		senderA.String(),
+	)
+
+	var rawData types.NonFungibleTokenPacketData
+	err := suite.chainB.Codec.UnmarshalJSON(returnPacket.GetData(), &rawData)
+	suite.Require().NoError(err)
+	suite.Require().Len(rawData.TokenIds, 1)
+	suite.Require().Empty(rawData.TokenUris)
+
+	for uint64(suite.chainA.GetContext().BlockHeight()) <= returnPacket.TimeoutHeight.RevisionHeight {
+		suite.coordinator.CommitBlock(suite.chainA)
+	}
+	suite.Require().NoError(pathA2B.EndpointB.UpdateClient())
+
+	err = pathA2B.EndpointB.TimeoutPacket(returnPacket)
+	suite.Require().NoError(err)
+
+	owner := suite.GetNFTOwner(
+		pathA2B.EndpointB.Chain.GetContext(),
+		pathA2B.EndpointB.Chain.GetInitiaApp().NftTransferKeeper,
+		moveKeeperB,
+		&nftKeeperB,
+		voucherClassId,
+		voucherClassId,
+		nftId,
+	)
+	suite.Require().Equal(receiverB, owner)
+}
+
 func (suite *KeeperTestSuite) TestClassIdPathFromHash() {
 	ctx, k := suite.SetupKeeperTest()
 
