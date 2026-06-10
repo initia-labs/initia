@@ -132,16 +132,22 @@ func (k MoveSendKeeper) InputOutputCoins(ctx context.Context, input types.Input,
 		types.NewCoinSpentEvent(fromAddr, input.Coins),
 	)
 
-	// emit coin received events and do address caching
-	addrMap := make(map[string][]byte)
-	for _, output := range outputs {
+	// emit coin received events and resolve recipients
+	outAddrs := make([]sdk.AccAddress, len(outputs))
+	for i, output := range outputs {
 		addr, err := k.ak.AddressCodec().StringToBytes(output.Address)
 		if err != nil {
 			return err
 		}
 
-		// cache bytes address
-		addrMap[output.Address] = addr
+		// apply the registered send restriction, consistent with SendCoins
+		addr, err = k.sendRestriction.apply(ctx, fromAddr, addr, output.Coins)
+		if err != nil {
+			return err
+		}
+
+		// cache the post-restriction recipient
+		outAddrs[i] = addr
 
 		// emit coin received event
 		sdkCtx.EventManager().EmitEvent(
@@ -152,7 +158,7 @@ func (k MoveSendKeeper) InputOutputCoins(ctx context.Context, input types.Input,
 		sdkCtx.EventManager().EmitEvent(
 			sdk.NewEvent(
 				types.EventTypeTransfer,
-				sdk.NewAttribute(types.AttributeKeyRecipient, output.Address),
+				sdk.NewAttribute(types.AttributeKeyRecipient, sdk.AccAddress(addr).String()),
 				sdk.NewAttribute(sdk.AttributeKeyAmount, output.Coins.String()),
 			),
 		)
@@ -165,9 +171,9 @@ func (k MoveSendKeeper) InputOutputCoins(ctx context.Context, input types.Input,
 
 		recipients := make([]sdk.AccAddress, 0, len(outputs))
 		amounts := make([]math.Int, 0, len(outputs))
-		for _, output := range outputs {
+		for i, output := range outputs {
 			// Create account if recipient does not exist.
-			outAddress := addrMap[output.Address]
+			outAddress := outAddrs[i]
 			accExists := k.ak.HasAccount(ctx, outAddress)
 			if !accExists {
 				defer telemetry.IncrCounter(1, "new", "account")
