@@ -10,6 +10,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/cosmos/gogoproto/proto"
 
 	vmtypes "github.com/initia-labs/movevm/types"
 
@@ -64,7 +65,7 @@ func (k Keeper) queryStargate(ctx sdk.Context, req *vmtypes.StargateQuery) ([]by
 		return nil, types.ErrNotSupportedStargateQuery
 	}
 
-	reqData, err := types.ConvertJSONMarshalToProto(k.cdc, protoSet.Request, req.Data)
+	reqData, err := types.ConvertJSONMarshalToProto(k.cdc, proto.Clone(protoSet.Request), req.Data)
 	if err != nil {
 		return nil, err
 	}
@@ -79,5 +80,5 @@ func (k Keeper) queryStargate(ctx sdk.Context, req *vmtypes.StargateQuery) ([]by
 		return nil, err
 	}
 
-	return types.ConvertProtoToJSONMarshal(k.cdc, protoSet.Response, res.Value)
+	return types.ConvertProtoToJSONMarshal(k.cdc, proto.Clone(protoSet.Response), res.Value)
 }
