@@ -116,7 +116,7 @@ func TestQueryStargateDataRace(t *testing.T) {
 	mu := sync.Mutex{}
 	samples := []string{}
 
-	for w := 0; w < workers; w++ {
+	for w := range workers {
 		wg.Add(1)
 		go func(w int) {
 			defer wg.Done()
@@ -132,7 +132,7 @@ func TestQueryStargateDataRace(t *testing.T) {
 			res, err := k.HandleVMQuery(cctx, &vmtypes.QueryRequest{
 				Stargate: &vmtypes.StargateQuery{
 					Path: "/initia.gov.v1.Query/Proposal",
-					Data: []byte(fmt.Sprintf(`{"proposal_id":"%d"}`, reqID)),
+					Data: fmt.Appendf(nil, `{"proposal_id":"%d"}`, reqID),
 				},
 			})
 			if err != nil {
@@ -196,7 +196,7 @@ func TestQueryStargateVMSessionRace(t *testing.T) {
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
-	for w := 0; w < workers; w++ {
+	for w := range workers {
 		wg.Add(1)
 		go func(w int) {
 			defer wg.Done()
