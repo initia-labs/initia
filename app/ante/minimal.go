@@ -1,6 +1,8 @@
 package ante
 
 import (
+	"fmt"
+
 	"cosmossdk.io/errors"
 
 	ibcante "github.com/cosmos/ibc-go/v8/modules/core/ante"
@@ -89,6 +91,27 @@ func (cfd CheckFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate boo
 	}
 
 	return next(ctx, tx, simulate)
+}
+
+// NewRecoverAnteHandler wraps an AnteHandler so that a panic during ante
+// execution is converted into an error instead of unwinding the stack.
+//
+// This is intended for ante invocations that run outside of baseapp's runTx
+// recovery, namely the mempool cleanup worker (a background goroutine) and the
+// PrepareProposal/ProcessProposal handlers. In those paths an unrecovered panic
+// would crash the node process; converting it to an error lets the caller drop
+// or reject the offending tx and keep running.
+func NewRecoverAnteHandler(h sdk.AnteHandler) sdk.AnteHandler {
+	return func(ctx sdk.Context, tx sdk.Tx, simulate bool) (newCtx sdk.Context, err error) {
+		defer func() {
+			if r := recover(); r != nil {
+				newCtx = ctx
+				err = fmt.Errorf("ante handler panicked: %v", r)
+			}
+		}()
+
+		return h(ctx, tx, simulate)
+	}
 }
 
 // NewDualAnteHandler returns an AnteHandler that routes to the minimal handler
