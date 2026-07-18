@@ -98,7 +98,7 @@ func (app *InitiaApp) setupABCIPP(mempoolMaxTxs int, appOpts servertypes.AppOpti
 			MaxQueuedPerSender: abcippCfg.MaxQueuedPerSender,
 			MaxQueuedTotal:     abcippCfg.MaxQueuedTotal,
 			QueuedGapTTL:       abcippCfg.QueuedGapTTL,
-			Tiers:              []abcipp.Tier{},  // no tiers on L1
+			Tiers:              []abcipp.Tier{}, // no tiers on L1
 			AnteHandler:        safeFullHandler, // for cleanup (panic-safe)
 		}, app.Logger(), app.TxEncode, app.AccountKeeper,
 	)
