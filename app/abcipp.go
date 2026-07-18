@@ -85,6 +85,13 @@ func (app *InitiaApp) setupABCIPP(mempoolMaxTxs int, appOpts servertypes.AppOpti
 	anteHandler := appante.NewDualAnteHandler(minimalHandler, fullHandler)
 	abcippCfg := abcipp.GetConfig(appOpts)
 
+	// safeFullHandler wraps the full handler with panic recovery for the ante
+	// invocations that run outside of baseapp's runTx recovery: the mempool
+	// cleanup worker goroutine and the proposal handlers. Without it, a tx that
+	// panics during ante (e.g. a fee amount exceeding uint64) would crash the
+	// node instead of being dropped/rejected.
+	safeFullHandler := appante.NewRecoverAnteHandler(fullHandler)
+
 	mempool := abcipp.NewPriorityMempool(
 		abcipp.PriorityMempoolConfig{
 			MaxTx:              mempoolMaxTxs,
@@ -92,7 +99,7 @@ func (app *InitiaApp) setupABCIPP(mempoolMaxTxs int, appOpts servertypes.AppOpti
 			MaxQueuedTotal:     abcippCfg.MaxQueuedTotal,
 			QueuedGapTTL:       abcippCfg.QueuedGapTTL,
 			Tiers:              []abcipp.Tier{}, // no tiers on L1
-			AnteHandler:        fullHandler,     // for cleanup
+			AnteHandler:        safeFullHandler, // for cleanup (panic-safe)
 		}, app.Logger(), app.TxEncode, app.AccountKeeper,
 	)
 
@@ -104,7 +111,7 @@ func (app *InitiaApp) setupABCIPP(mempoolMaxTxs int, appOpts servertypes.AppOpti
 		app.txConfig.TxDecoder(),
 		app.txConfig.TxEncoder(),
 		mempool,
-		fullHandler, // proposal handler uses full handler
+		safeFullHandler, // proposal handler uses full handler (panic-safe)
 	)
 	if err != nil {
 		return nil, nil, nil, nil, nil, err
