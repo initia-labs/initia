@@ -354,8 +354,6 @@ github.com/cosmos/gogogateway v1.2.0/go.mod h1:iQpLkGWxYcnCdz5iAdLcRBSw3h7NXeOkZ
 github.com/cosmos/gogoproto v1.4.2/go.mod h1:cLxOsn1ljAHSV527CHOtaIP91kK6cCrZETRBrkzItWU=
 github.com/cosmos/gogoproto v1.7.0 h1:79USr0oyXAbxg3rspGh/m4SWNyoz/GLaAh0QlCe2fro=
 github.com/cosmos/gogoproto v1.7.0/go.mod h1:yWChEv5IUEYURQasfyBW5ffkMHR/90hiHgbNgrtp4j0=
-github.com/cosmos/iavl v1.2.6 h1:Hs3LndJbkIB+rEvToKJFXZvKo6Vy0Ex1SJ54hhtioIs=
-github.com/cosmos/iavl v1.2.6/go.mod h1:GiM43q0pB+uG53mLxLDzimxM9l/5N9UuSY3/D0huuVw=
 github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8 v8.2.0 h1:rM+S14DFiqmu6Rc3PuhvWqwywPsnt/CbIslSnBftPFs=
 github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8 v8.2.0/go.mod h1:O5H9Ic3Pe6cmJn1eqlj5N48sLb8WQ1VWmDP4/11g/4E=
 github.com/cosmos/ibc-apps/modules/rate-limiting/v8 v8.0.0 h1:AQO9NIAP3RFqvBCj7IqM/V1LCxmuvcvGUdu0RIEz/c0=
@@ -742,6 +740,8 @@ github.com/initia-labs/forwarding/simapp v1.0.0 h1:MNHLACO0053BAMO3+Ra2ZTlTTB5Wi
 github.com/initia-labs/forwarding/simapp v1.0.0/go.mod h1:MOIDS73NjoIvTZ3OxUmJXY+Ry7xxXumrXPVZrAeJOhY=
 github.com/initia-labs/forwarding/v2 v2.0.3-initia.3 h1:Uu1VqRsSwX7rgS2A4M3Snzyzk9mJRq2v/ZD4xKHTJkM=
 github.com/initia-labs/forwarding/v2 v2.0.3-initia.3/go.mod h1:N3OzYf14ton71zCxomBmpR7tOxZ2dKwhsMxUmtuJuVQ=
+github.com/initia-labs/iavl v1.2.8-initia.1 h1:qR5DtZu5n1gQ1z3oZkIeezcFhpF/2s7QfbgJkdhVlE4=
+github.com/initia-labs/iavl v1.2.8-initia.1/go.mod h1:FRHN4tO+6crf0p2zsqye+nAbsMgiwdkxpWm18DyP6+Y=
 github.com/initia-labs/movevm v1.2.0 h1:IbpipjRIZe851FJZZzP3RGIqrOCcNsI6bDF9VC0K0do=
 github.com/initia-labs/movevm v1.2.0/go.mod h1:sj/kXD7mUQASqogPTjqltIr4Uid3xxnlcbfiFvvqeXA=
 github.com/jhump/protoreflect v1.15.3 h1:6SFRuqU45u9hIZPJAoZ8c28T3nK64BNdp9w6jFonzls=
