@@ -271,10 +271,11 @@ replace (
 //
 // iavl
 // - https://github.com/initia-labs/iavl/commit/1a8bbb22bb7defa7108dbd07b2f4a4f80f37d060
+// - upstream v1.2.8 base: cosmos/iavl#1142 fastnode cache race
 replace (
 	github.com/cometbft/cometbft => github.com/initia-labs/cometbft v0.38.21-initia.4
 	github.com/cosmos/cosmos-sdk => github.com/initia-labs/cosmos-sdk v0.50.15-initia.0
-	github.com/cosmos/iavl => github.com/initia-labs/iavl v1.2.6-initia.1
+	github.com/cosmos/iavl => github.com/initia-labs/iavl v1.2.8-initia.1
 
 	github.com/noble-assets/forwarding/simapp => github.com/initia-labs/forwarding/simapp v1.0.0
 	github.com/noble-assets/forwarding/v2 => github.com/initia-labs/forwarding/v2 v2.0.3-initia.3
