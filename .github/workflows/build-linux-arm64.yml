@@ -19,7 +19,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: "1.24"
+          go-version: "1.26"
 
       - name: Set environment variables
         run: |
@@ -50,7 +50,7 @@ jobs:
 
       - name: Build for ARM64
         run: |
-          make build \
+          CGO_LDFLAGS='-Wl,-rpath,$ORIGIN' make build \
           && cd ./build \
           && cp ~/go/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libmovevm.${ARCH_NAME}.so ./ \
           && cp ~/go/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libcompiler.${ARCH_NAME}.so ./ \

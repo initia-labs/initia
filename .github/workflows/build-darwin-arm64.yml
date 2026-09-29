@@ -18,7 +18,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: "1.24"
+          go-version: "1.26"
       - name: Set environment variables
         run: |
           echo "GOARCH=arm64" >> $GITHUB_ENV
@@ -48,7 +48,7 @@ jobs:
 
       - name: Build and Package for Darwin ARM64
         run: |
-          make build \
+          CGO_LDFLAGS='-Wl,-rpath,@loader_path' make build \
           && cd ./build \
           && cp ~/go/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libmovevm.dylib ./ \
           && cp ~/go/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libcompiler.dylib ./ \
