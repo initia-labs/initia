@@ -20,7 +20,7 @@ RUN VERSION=${VERSION} COMMIT=${COMMIT} LEDGER_ENABLED=false COSMOS_BUILD_OPTION
 RUN cp /go/pkg/mod/github.com/initia-labs/movevm@v*/api/libmovevm.x86_64.so /usr/local/lib/libmovevm.x86_64.so && \
     cp /go/pkg/mod/github.com/initia-labs/movevm@v*/api/libcompiler.x86_64.so /usr/local/lib/libcompiler.x86_64.so
 
-FROM debian:bullseye-slim
+FROM debian:bookworm-slim
 
 # Install runtime shared libs
 RUN apt-get update && \
