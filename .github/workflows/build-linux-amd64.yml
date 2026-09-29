@@ -50,7 +50,7 @@ jobs:
 
       - name: Build for Linux AMD64
         run: |
-          make build \
+          CGO_LDFLAGS='-Wl,-rpath,$ORIGIN' make build \
           && cd ./build \
           && cp ~/go/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libmovevm.${ARCH_NAME}.so libmovevm.${ARCH_NAME}.so \
           && cp ~/go/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libcompiler.${ARCH_NAME}.so libcompiler.${ARCH_NAME}.so \

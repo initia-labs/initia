@@ -48,7 +48,7 @@ jobs:
 
       - name: Build and Package for Darwin ARM64
         run: |
-          make build \
+          CGO_LDFLAGS='-Wl,-rpath,@loader_path' make build \
           && cd ./build \
           && cp ~/go/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libmovevm.dylib ./ \
           && cp ~/go/pkg/mod/github.com/initia-labs/movevm@${MOVEVM_VERSION}/api/libcompiler.dylib ./ \
