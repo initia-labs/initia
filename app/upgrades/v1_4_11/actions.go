@@ -110,11 +110,13 @@ func run(ctx context.Context, app upgrades.InitiaApp) error {
 	return resetRateLimitEpoch(ctx, app)
 }
 
+var rateLimitEpochStart = time.Date(2026, time.November, 2, 2, 0, 0, 0, time.UTC)
+
 func resetRateLimitEpoch(ctx context.Context, app upgrades.InitiaApp) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	epoch := app.GetRatelimitKeeper().GetHourEpoch(sdkCtx)
 	epoch.EpochNumber++
-	epoch.EpochStartTime = sdkCtx.BlockTime().Truncate(time.Hour)
+	epoch.EpochStartTime = rateLimitEpochStart
 	epoch.EpochStartHeight = sdkCtx.BlockHeight()
 	if epoch.Duration == 0 {
 		epoch.Duration = time.Hour
