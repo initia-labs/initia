@@ -298,3 +298,5 @@ replace (
 
 // local modules
 replace github.com/initia-labs/initia/api => ./api
+
+replace github.com/initia-labs/movevm => github.com/initia-labs/movevm-sec v1.2.2-sec
