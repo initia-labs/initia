@@ -208,6 +208,20 @@ func (k Keeper) InstantUnbondFromValidator(ctx context.Context, valAddr sdk.ValA
 	return returnCoins, err
 }
 
+// canonicalValAddress decodes a validator address coming from Move and rejects any spelling other
+// than the canonical lowercase bech32. BeginBlock then deposits rewards under the lowercase key,
+// aborts, and the chain halts.
+func canonicalValAddress(valAddrStr string) (sdk.ValAddress, error) {
+	valAddr, err := sdk.ValAddressFromBech32(valAddrStr)
+	if err != nil {
+		return nil, err
+	}
+	if valAddr.String() != valAddrStr {
+		return nil, fmt.Errorf("validator address must be canonical bech32: %s", valAddrStr)
+	}
+	return valAddr, nil
+}
+
 // ApplyStakingDeltas iterate staking deltas to increase or decrease
 // a staking amount, and deposit unbonding coin to staking contract.
 func (k Keeper) ApplyStakingDeltas(
@@ -253,7 +267,7 @@ func (k Keeper) ApplyStakingDeltas(
 	for _, valAddrStr := range delegationValAddrs {
 		delegationCoins := delegations[valAddrStr]
 		if !delegationCoins.IsZero() {
-			valAddr, err := sdk.ValAddressFromBech32(valAddrStr)
+			valAddr, err := canonicalValAddress(valAddrStr)
 			if err != nil {
 				return err
 			}
@@ -272,7 +286,7 @@ func (k Keeper) ApplyStakingDeltas(
 	for _, valAddrStr := range undelegationValAddrs {
 		undelegationShares := undelegations[valAddrStr]
 		if !undelegationShares.IsZero() {
-			valAddr, err := sdk.ValAddressFromBech32(valAddrStr)
+			valAddr, err := canonicalValAddress(valAddrStr)
 			if err != nil {
 				return err
 			}

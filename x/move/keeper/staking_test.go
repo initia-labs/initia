@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"strings"
 	"testing"
 
 	"cosmossdk.io/math"
@@ -496,4 +497,32 @@ func Test_SlashUnbondingDelegations(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, unbondingAmount, math.NewInt(23_750_000))
 	require.Equal(t, unbondingShare, math.LegacyNewDecFromInt(math.NewInt(25_000_000)))
+}
+
+// bech32 accepts all-uppercase input, so Move could delegate under an uppercase validator key that
+func TestApplyStakingDeltas_RejectsNonCanonicalValidator(t *testing.T) {
+	ctx, input := createDefaultTestInput(t)
+
+	valAddr := valAddrs[0]
+	upper := strings.ToUpper(valAddr.String())
+	require.NotEqual(t, valAddr.String(), upper)
+
+	metadata, err := types.MetadataAddressFromDenom(bondDenom)
+	require.NoError(t, err)
+
+	err = input.MoveKeeper.ApplyStakingDeltas(ctx, []vmtypes.StakingDelta{{
+		Validator:    []byte(upper),
+		Metadata:     metadata,
+		Delegation:   100,
+		Undelegation: "0",
+	}})
+	require.ErrorContains(t, err, "canonical")
+
+	err = input.MoveKeeper.ApplyStakingDeltas(ctx, []vmtypes.StakingDelta{{
+		Validator:    []byte(upper),
+		Metadata:     metadata,
+		Delegation:   0,
+		Undelegation: "1",
+	}})
+	require.ErrorContains(t, err, "canonical")
 }
