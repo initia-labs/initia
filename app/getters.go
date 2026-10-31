@@ -10,16 +10,20 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 
+	ratelimitkeeper "github.com/cosmos/ibc-apps/modules/rate-limiting/v8/keeper"
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/keeper"
 	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 
+	govkeeper "github.com/initia-labs/initia/x/gov/keeper"
 	ibctestingtypes "github.com/initia-labs/initia/x/ibc/testing/types"
 	icaauthkeeper "github.com/initia-labs/initia/x/intertx/keeper"
 	movekeeper "github.com/initia-labs/initia/x/move/keeper"
 
 	ophostkeeper "github.com/initia-labs/OPinit/x/ophost/keeper"
+
+	forwardingkeeper "github.com/noble-assets/forwarding/v2/keeper"
 
 	marketmapkeeper "github.com/skip-mev/connect/v2/x/marketmap/keeper"
 )
@@ -99,6 +103,21 @@ func (app *InitiaApp) CheckStateContextGetter() func() sdk.Context {
 // GetTransferKeeper returns the IBC transfer keeper for the app.
 func (app *InitiaApp) GetTransferKeeper() *ibctransferkeeper.Keeper {
 	return app.TransferKeeper
+}
+
+// GetForwardingKeeper returns the noble forwarding keeper for the app.
+func (app *InitiaApp) GetForwardingKeeper() *forwardingkeeper.Keeper {
+	return app.ForwardingKeeper
+}
+
+// GetGovKeeper returns the gov keeper for the app.
+func (app *InitiaApp) GetGovKeeper() *govkeeper.Keeper {
+	return app.GovKeeper
+}
+
+// GetRatelimitKeeper returns the ibc rate-limit keeper for the app.
+func (app *InitiaApp) GetRatelimitKeeper() *ratelimitkeeper.Keeper {
+	return app.RatelimitKeeper
 }
 
 // GetOPHostKeeper returns the ophost keeper for the app.

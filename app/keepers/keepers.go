@@ -434,6 +434,7 @@ func NewAppKeeper(
 			authorityAddr,
 		)
 		appKeepers.TransferKeeper = &transferKeeper
+		appKeepers.ForwardingKeeper.SetIBCKeepers(appKeepers.IBCKeeper.ChannelKeeper, appKeepers.TransferKeeper)
 		transferIBCModule := ibctransfer.NewIBCModule(*appKeepers.TransferKeeper)
 		transferStack = transferIBCModule
 

@@ -8,12 +8,16 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 
+	ratelimitkeeper "github.com/cosmos/ibc-apps/modules/rate-limiting/v8/keeper"
 	transferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 
+	govkeeper "github.com/initia-labs/initia/x/gov/keeper"
 	movekeeper "github.com/initia-labs/initia/x/move/keeper"
 
 	ophostkeeper "github.com/initia-labs/OPinit/x/ophost/keeper"
+
+	forwardingkeeper "github.com/noble-assets/forwarding/v2/keeper"
 
 	marketmapkeeper "github.com/skip-mev/connect/v2/x/marketmap/keeper"
 )
@@ -26,6 +30,9 @@ type InitiaApp interface {
 	GetMarketMapKeeper() *marketmapkeeper.Keeper
 	GetTransferKeeper() *transferkeeper.Keeper
 	GetIBCKeeper() *ibckeeper.Keeper
+	GetForwardingKeeper() *forwardingkeeper.Keeper
+	GetGovKeeper() *govkeeper.Keeper
+	GetRatelimitKeeper() *ratelimitkeeper.Keeper
 
 	GetLogger() log.Logger
 	GetConfigurator() module.Configurator
