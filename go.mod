@@ -44,7 +44,7 @@ require (
 	github.com/initia-labs/OPinit/api v1.3.0
 	github.com/initia-labs/initia/api v1.4.0
 	// we also need to update `LIBMOVEVM_VERSION` of Dockerfile#11
-	github.com/initia-labs/movevm v1.2.0
+	github.com/initia-labs/movevm v1.2.2
 	github.com/initia-labs/store v0.1.2
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/noble-assets/forwarding/v2 v2.0.3
@@ -298,5 +298,3 @@ replace (
 
 // local modules
 replace github.com/initia-labs/initia/api => ./api
-
-replace github.com/initia-labs/movevm => github.com/initia-labs/movevm-sec v1.2.2-sec
