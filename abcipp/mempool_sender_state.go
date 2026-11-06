@@ -109,39 +109,26 @@ func (s *senderState) setQueuedRangeOnInsertLocked(nonce uint64) {
 	s.queuedMax = max(s.queuedMax, nonce)
 }
 
-// setQueuedRangeOnRemoveLocked updates queued bounds after nonce removal.
+// setQueuedRangeOnRemoveLocked updates queued bounds after nonce removal. CheckTx
+// accepts any future sequence with the queued extension option. The bounds are
+// therefore recomputed from the queued set itself (capped by maxQueuedPerSender).
 func (s *senderState) setQueuedRangeOnRemoveLocked(removedNonce uint64) {
 	if len(s.queued) == 0 {
 		s.resetQueuedRangeLocked()
 		return
 	}
-	// Intentional tradeoff: boundary recovery scans between cached min/max and
-	// the next existing nonce. Sender-local queued size is capped, so this stays
-	// bounded while keeping range maintenance simple and map-only.
-	if removedNonce == s.queuedMin {
-		for n := s.queuedMin + 1; ; n++ {
-			if _, ok := s.queued[n]; ok {
-				s.queuedMin = n
-				break
-			}
-			if n >= s.queuedMax {
-				s.queuedMin = s.queuedMax
-				break
-			}
-		}
+	if removedNonce != s.queuedMin && removedNonce != s.queuedMax {
 		return
 	}
-	if removedNonce == s.queuedMax {
-		for n := s.queuedMax - 1; ; n-- {
-			if _, ok := s.queued[n]; ok {
-				s.queuedMax = n
-				break
-			}
-			if n <= s.queuedMin {
-				s.queuedMax = s.queuedMin
-				break
-			}
+	first := true
+	for n := range s.queued {
+		if first {
+			s.queuedMin, s.queuedMax = n, n
+			first = false
+			continue
 		}
+		s.queuedMin = min(s.queuedMin, n)
+		s.queuedMax = max(s.queuedMax, n)
 	}
 }
 
