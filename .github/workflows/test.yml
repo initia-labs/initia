@@ -33,13 +33,13 @@ jobs:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v3.6.1
         with:
           go-version: 1.26
       - name: Install openssl
         run: sudo apt-get install libssl-dev
-      - uses: actions/checkout@v5
-      - uses: technote-space/get-diff-action@v4
+      - uses: actions/checkout@v5.1.0
+      - uses: technote-space/get-diff-action@v4.2.0
         with:
           PATTERNS: |
             **/**.go
@@ -66,7 +66,7 @@ jobs:
         if: ${{ env.GIT_DIFF != '' }}
         env:
           GIT_DIFF: ${{ env.GIT_DIFF }}
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v3.1.6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.txt
@@ -80,13 +80,13 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 45
     steps:
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v3.6.1
         with:
           go-version: 1.26
       - name: Install openssl
         run: sudo apt-get install libssl-dev
-      - uses: actions/checkout@v5
-      - uses: technote-space/get-diff-action@v4
+      - uses: actions/checkout@v5.1.0
+      - uses: technote-space/get-diff-action@v4.2.0
         with:
           PATTERNS: |
             abcipp/**
@@ -102,13 +102,13 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 20
     steps:
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v3.6.1
         with:
           go-version: 1.26
       - name: Install openssl
         run: sudo apt-get install libssl-dev
-      - uses: actions/checkout@v5
-      - uses: technote-space/get-diff-action@v4
+      - uses: actions/checkout@v5.1.0
+      - uses: technote-space/get-diff-action@v4.2.0
         with:
           PATTERNS: |
             abcipp/**
