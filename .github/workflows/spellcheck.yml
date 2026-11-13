@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v5.1.0
       - name: Install codespell
         run: python3 -m pip install "codespell==2.4.2"
       - name: Run codespell

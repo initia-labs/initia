@@ -12,11 +12,11 @@ jobs:
     runs-on: macos-15
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v5.1.0
         with:
           fetch-depth: 0
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v5.6.0
         with:
           go-version: "1.26"
       - name: Set environment variables
@@ -68,7 +68,7 @@ jobs:
           rm -f libmovevm.dylib libcompiler.dylib initiad
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.6.2
         with:
           name: initia-darwin-amd64
           path: initia_*.tar.gz
